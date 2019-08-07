@@ -1,4 +1,5 @@
 #include "ImageViewerPlugin.h"
+#include "ImageViewerWidget.h"
 
 #include "PointsPlugin.h"
 #include "Set.h"
@@ -18,6 +19,9 @@ ImageViewerPlugin::~ImageViewerPlugin(void)
 
 void ImageViewerPlugin::init()
 {
+	_imageViewerWidget = new ImageViewerWidget();
+
+	addWidget(_imageViewerWidget);
 }
 
 void ImageViewerPlugin::dataAdded(const QString name)

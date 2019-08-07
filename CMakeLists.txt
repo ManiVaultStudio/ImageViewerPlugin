@@ -23,6 +23,8 @@ find_package(Qt5 COMPONENTS Widgets WebEngineWidgets REQUIRED)
 set(SOURCES
     src/ImageViewerPlugin.h
     src/ImageViewerPlugin.cpp
+	src/ImageViewerWidget.h
+    src/ImageViewerWidget.cpp
 )
 
 set(UIS)
