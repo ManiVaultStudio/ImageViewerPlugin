@@ -16,6 +16,7 @@
 #include "widgets/ColormapWidget.h"
 
 #include <QOpenGLWidget>
+#include <QOpenGLTexture>
 #include <QOpenGLFunctions_3_3_Core>
 
 #include <QMouseEvent>
@@ -102,4 +103,6 @@ private:
 	Selection _selection;
 	std::vector<plugin::SelectionListener*> _selectionListeners;
 	*/
+
+	QOpenGLTexture	_texture;
 };

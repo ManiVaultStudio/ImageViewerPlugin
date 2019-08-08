@@ -5,7 +5,8 @@
 #include <QSize>
 #include <QDebug>
 
-ImageViewerWidget::ImageViewerWidget()
+ImageViewerWidget::ImageViewerWidget() :
+	_texture(QImage("C:\Users\tkroes\Desktop\harakka_timo-activation_model.jpg"))
 {
 }
 
@@ -73,6 +74,32 @@ void ImageViewerWidget::resizeGL(int w, int h)
 
 void ImageViewerWidget::paintGL()
 {
+	/*
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, filename);
+
+	glLoadIdentity();
+	glTranslatef(xx, yy, 0.0);
+	glRotatef(angle, 0.0, 0.0, 1.0);
+	glTranslatef(-xx, -yy, 0.0);
+
+	// Draw a textured quad
+	glBegin(GL_QUADS);
+	glTexCoord2f(0, 0); glVertex2f(xx, yy);
+	glTexCoord2f(0, 1); glVertex2f(xx, yy + hh);
+	glTexCoord2f(1, 1); glVertex2f(xx + ww, yy + hh);
+	glTexCoord2f(1, 0); glVertex2f(xx + ww, yy);
+
+	glDisable(GL_TEXTURE_2D);
+	glPopMatrix();
+
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+
+	glMatrixMode(GL_MODELVIEW);
+	glEnd();
+	*/
+
 	/*
 	// Bind the framebuffer belonging to the widget
 	glBindFramebuffer(GL_FRAMEBUFFER, defaultFramebufferObject());
