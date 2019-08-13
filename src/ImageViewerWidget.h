@@ -35,21 +35,6 @@ public:
 
 	ImageViewerWidget();
 
-	/*
-	bool isInitialized();
-	void setRenderMode(RenderMode renderMode);
-	void setData(const std::vector<Vector2f>* data, const QRectF bounds);
-	void setHighlights(const std::vector<char>& highlights);
-	void setScalarProperty(const std::vector<float>& scalarProperty);
-	void setPointSize(const float size);
-	void setAlpha(const float alpha);
-	void setPointScaling(hdps::gui::PointScaling scalingMode);
-	void setSigma(const float sigma);
-	void addSelectionListener(plugin::SelectionListener* listener);
-
-	Selection getSelection();
-	*/
-
 protected:
 	void initializeGL()         Q_DECL_OVERRIDE;
 	void resizeGL(int w, int h) Q_DECL_OVERRIDE;
@@ -59,50 +44,6 @@ protected:
 	void mouseMoveEvent(QMouseEvent *event)    Q_DECL_OVERRIDE;
 	void mouseReleaseEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
 
-	/*
-	void onSelecting(Selection selection);
-	void onSelection(Selection selection);
-	void cleanup();
-	*/
-
-signals:
-	void initialized();
-
-public slots:
-	/*
-	void renderModePicked(const int index);
-	void pointSizeChanged(const int size);
-	void sigmaChanged(const int sigma);
-
-	void colormapChanged(QString colormapName);
-	void colormapdiscreteChanged(bool isDiscrete);
-	*/
-
 private:
-	/*
-	const Matrix3f toClipCoordinates = Matrix3f(2, 0, 0, 2, -1, -1);
-	Matrix3f toNormalisedCoordinates;
-	Matrix3f toIsotropicCoordinates;
-
-	bool _isInitialized = false;
-
-	RenderMode _renderMode = SCATTERPLOT;
-
-	PointRenderer _pointRenderer;
-	DensityRenderer _densityRenderer;
-	SelectionRenderer _selectionRenderer;
-
-	QSize _windowSize;
-
-	ColormapWidget _colormapWidget;
-
-	unsigned int _numPoints = 0;
-	QRectF _dataBounds;
-
-	bool _selecting = false;
-	Selection _selection;
-	std::vector<plugin::SelectionListener*> _selectionListeners;
-	*/
-
 	QOpenGLTexture	_texture;
 };

@@ -25,6 +25,12 @@ set(SOURCES
     src/ImageViewerPlugin.cpp
 	src/ImageViewerWidget.h
     src/ImageViewerWidget.cpp
+	src/SettingsWidget.h
+    src/SettingsWidget.cpp
+	src/ImageSequenceSettingsWidget.h
+    src/ImageSequenceSettingsWidget.cpp
+	src/ImageStackSettingsWidget.h
+    src/ImageStackSettingsWidget.cpp
 )
 
 set(UIS)
