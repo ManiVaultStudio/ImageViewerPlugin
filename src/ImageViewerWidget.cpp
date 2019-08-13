@@ -6,7 +6,7 @@
 #include <QDebug>
 
 ImageViewerWidget::ImageViewerWidget() :
-	_texture(QImage("C:\Users\tkroes\Desktop\harakka_timo-activation_model.jpg"))
+	_texture(QImage("C:\\Users\\tkroes\\Desktop\\harakka_timo-activation_model.jpg"))
 {
 }
 
