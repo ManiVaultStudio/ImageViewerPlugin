@@ -47,22 +47,30 @@ void SettingsWidget::removeDataSet(const QString & name)
 
 void SettingsWidget::onCurrentDataSetChanged(const QString& name)
 {
-	const auto dataSetType = _imageViewerPlugin->dataSetType(name);
+	const auto imageCollectionType = _imageViewerPlugin->imageCollectionType(name);
 
-	qDebug() << "Changed data set to:" << name << "which is of type" << dataSetType;
+	qDebug() << "Changed data set to:" << name << "which is of type" << imageCollectionType;
 
-	if (dataSetType == "SEQUENCE") {
+	_imagesComboBox->clear();
+
+	if (imageCollectionType == "SEQUENCE") {
 		_imagesLabel->setText("Image");
 		_imagesLabel->setToolTip("Image from an image sequence");
 
+		auto imageNames = QStringList();
 
+		for (int i = 1; i <= _imageViewerPlugin->noImages(name); i++) {
+			imageNames << QString("Image %1").arg(i);
+		}
+
+		_imagesComboBox->addItems(imageNames);
 	}
 
-	if (dataSetType == "STACK") {
+	if (imageCollectionType == "STACK") {
 		_imagesLabel->setText("Channel");
 		_imagesLabel->setToolTip("Image channel from an image stack");
 
-		const auto dataSetDimensionNames = _imageViewerPlugin->dataSetDimensionNames(name);
+		const auto dataSetDimensionNames = _imageViewerPlugin->dimensionNames(name);
 
 		qDebug() << "Image stack channels: " << dataSetDimensionNames;
 

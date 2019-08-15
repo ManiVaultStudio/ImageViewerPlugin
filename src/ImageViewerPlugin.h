@@ -2,6 +2,8 @@
 
 #include <ViewPlugin.h>
 
+#include "PointsPlugin.h"
+
 #include <QComboBox>
 
 using hdps::plugin::ViewPluginFactory;
@@ -24,8 +26,10 @@ public:
 	void selectionChanged(const QString dataName) Q_DECL_OVERRIDE;
 	QStringList supportedDataKinds() Q_DECL_OVERRIDE;
 
-	QString dataSetType(const QString& name) const;
-	QStringList dataSetDimensionNames(const QString& name) const;
+	PointsPlugin& pointsData(const QString& name) const;
+	QString imageCollectionType(const QString& name) const;
+	QStringList dimensionNames(const QString& name) const;
+	int noImages(const QString& name) const;
 
 private:
 	ImageViewerWidget*	_imageViewerWidget;

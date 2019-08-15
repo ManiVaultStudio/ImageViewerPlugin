@@ -2,7 +2,6 @@
 #include "ImageViewerWidget.h"
 #include "SettingsWidget.h"
 
-#include "PointsPlugin.h"
 #include "Set.h"
 
 #include <QtCore>
@@ -35,11 +34,16 @@ void ImageViewerPlugin::init()
 	setLayout(layout);
 }
 
-QString ImageViewerPlugin::dataSetType(const QString& name) const
+PointsPlugin& ImageViewerPlugin::pointsData(const QString& name) const
 {
 	const IndexSet& set = dynamic_cast<const IndexSet&>(_core->requestSet(name));
 
-	PointsPlugin& points = set.getData();
+	return set.getData();
+}
+
+QString ImageViewerPlugin::imageCollectionType(const QString& name) const
+{
+	PointsPlugin& points = pointsData(name);
 
 	if (points.hasProperty("type")) {
 		return points.getProperty("type").toString();
@@ -48,7 +52,7 @@ QString ImageViewerPlugin::dataSetType(const QString& name) const
 	return QString();
 }
 
-QStringList ImageViewerPlugin::dataSetDimensionNames(const QString & name) const
+QStringList ImageViewerPlugin::dimensionNames(const QString & name) const
 {
 	const IndexSet& set = dynamic_cast<const IndexSet&>(_core->requestSet(name));
 
@@ -64,6 +68,17 @@ QStringList ImageViewerPlugin::dataSetDimensionNames(const QString & name) const
 		dimensionNames << points.dimNames[i];
 
 	return dimensionNames;
+}
+
+int ImageViewerPlugin::noImages(const QString & name) const
+{
+	PointsPlugin& points = pointsData(name);
+
+	if (points.hasProperty("noImages")) {
+		return points.getProperty("noImages").toInt();
+	}
+
+	return 0;
 }
 
 void ImageViewerPlugin::dataAdded(const QString name)
