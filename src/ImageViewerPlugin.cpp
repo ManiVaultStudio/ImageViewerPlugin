@@ -17,10 +17,8 @@ Q_PLUGIN_METADATA(IID "nl.tudelft.ImageViewerPlugin")
 inline ImageViewerPlugin::ImageViewerPlugin() : 
 	ViewPlugin("Image Viewer")
 {
-	_imageDataSetsComboBox	= new QComboBox();
-	_imagesComboBox			= new QComboBox();
-	_imageViewerWidget		= new ImageViewerWidget();
-	_settingsWidget			= new SettingsWidget();
+	_imageViewerWidget	= new ImageViewerWidget();
+	_settingsWidget		= new SettingsWidget(this);
 }
 
 ImageViewerPlugin::~ImageViewerPlugin()
@@ -29,10 +27,43 @@ ImageViewerPlugin::~ImageViewerPlugin()
 
 void ImageViewerPlugin::init()
 {
-	addWidget(_imageDataSetsComboBox);
-	addWidget(_imagesComboBox);
+	auto layout = new QVBoxLayout();
+
 	addWidget(_imageViewerWidget);
 	addWidget(_settingsWidget);
+
+	setLayout(layout);
+}
+
+QString ImageViewerPlugin::dataSetType(const QString& name) const
+{
+	const IndexSet& set = dynamic_cast<const IndexSet&>(_core->requestSet(name));
+
+	PointsPlugin& points = set.getData();
+
+	if (points.hasProperty("type")) {
+		return points.getProperty("type").toString();
+	}
+
+	return QString();
+}
+
+QStringList ImageViewerPlugin::dataSetDimensionNames(const QString & name) const
+{
+	const IndexSet& set = dynamic_cast<const IndexSet&>(_core->requestSet(name));
+
+	PointsPlugin& points = set.getData();
+
+	const auto noDimensions = points.dimNames.size();
+
+	auto dimensionNames = QStringList();
+
+	dimensionNames.reserve(noDimensions);
+
+	for (size_t i = 0, l = noDimensions; i < l; ++i)
+		dimensionNames << points.dimNames[i];
+
+	return dimensionNames;
 }
 
 void ImageViewerPlugin::dataAdded(const QString name)
@@ -41,13 +72,11 @@ void ImageViewerPlugin::dataAdded(const QString name)
 
 	PointsPlugin& points = set.getData();
 
-	qDebug() << points.propertyNames();
-
 	if (points.hasProperty("type")) {
 		const auto type = points.getProperty("type");
 
 		if (type == "SEQUENCE" || type == "STACK") {
-			_imageDataSetsComboBox->addItem(name);
+			_settingsWidget->addDataSet(name);
 		}
 	}
 }
@@ -58,10 +87,7 @@ void ImageViewerPlugin::dataChanged(const QString name)
 
 void ImageViewerPlugin::dataRemoved(const QString name)
 {
-	const auto index = _imageDataSetsComboBox->findText(name);
-
-	if (index >= 0)
-		_imageDataSetsComboBox->removeItem(index);
+	_settingsWidget->removeDataSet(name);
 }
 
 void ImageViewerPlugin::selectionChanged(const QString dataName)

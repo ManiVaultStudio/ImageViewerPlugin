@@ -2,13 +2,26 @@
 
 #include <QStackedWidget.h>
 
-class SettingsWidget : public QStackedWidget
+class ImageViewerPlugin;
+
+class QComboBox;
+class QLabel;
+
+class SettingsWidget : public QWidget
 {
 	Q_OBJECT
 public:
-	SettingsWidget();
+	SettingsWidget(ImageViewerPlugin* imageViewerPlugin);
+
+	void addDataSet(const QString& name);
+	void removeDataSet(const QString& name);
 
 protected:
+	void onCurrentDataSetChanged(const QString& name);
 
 private:
+	ImageViewerPlugin*	_imageViewerPlugin;
+	QComboBox*			_dataSetsComboBox;
+	QLabel*				_imagesLabel;
+	QComboBox*			_imagesComboBox;
 };

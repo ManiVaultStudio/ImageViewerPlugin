@@ -8,6 +8,7 @@
 ImageViewerWidget::ImageViewerWidget() :
 	_texture(QImage("C:\\Users\\tkroes\\Desktop\\harakka_timo-activation_model.jpg"))
 {
+	setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
 }
 
 void ImageViewerWidget::initializeGL()

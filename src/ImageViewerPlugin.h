@@ -10,8 +10,6 @@ using hdps::plugin::ViewPlugin;
 class ImageViewerWidget;
 class SettingsWidget;
 
-class QComboBox;
-
 class ImageViewerPlugin : public ViewPlugin
 {
 public:
@@ -26,11 +24,10 @@ public:
 	void selectionChanged(const QString dataName) Q_DECL_OVERRIDE;
 	QStringList supportedDataKinds() Q_DECL_OVERRIDE;
 
-protected:
+	QString dataSetType(const QString& name) const;
+	QStringList dataSetDimensionNames(const QString& name) const;
 
 private:
-	QComboBox*			_imageDataSetsComboBox;
-	QComboBox*			_imagesComboBox;
 	ImageViewerWidget*	_imageViewerWidget;
 	SettingsWidget*		_settingsWidget;
 	QString				_dataSetName;
