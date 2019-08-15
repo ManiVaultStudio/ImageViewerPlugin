@@ -16,8 +16,10 @@ Q_PLUGIN_METADATA(IID "nl.tudelft.ImageViewerPlugin")
 inline ImageViewerPlugin::ImageViewerPlugin() : 
 	ViewPlugin("Image Viewer")
 {
-	_imageViewerWidget	= new ImageViewerWidget();
+	_imageViewerWidget	= new ImageViewerWidget(this);
 	_settingsWidget		= new SettingsWidget(this);
+
+	connect(_settingsWidget, &SettingsWidget::currentImageChanged, _imageViewerWidget, &ImageViewerWidget::onCurrentImageChanged);
 }
 
 ImageViewerPlugin::~ImageViewerPlugin()

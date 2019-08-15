@@ -16,8 +16,12 @@ public:
 	void addDataSet(const QString& name);
 	void removeDataSet(const QString& name);
 
+signals:
+	void currentImageChanged(const QString& dataSetName, const int& imageIndex);
+
 protected:
 	void onCurrentDataSetChanged(const QString& name);
+	void onCurrentImageIndexChanged(int index);
 
 private:
 	ImageViewerPlugin*	_imageViewerPlugin;

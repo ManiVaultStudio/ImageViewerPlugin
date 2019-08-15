@@ -25,6 +25,8 @@
 using namespace hdps;
 using namespace hdps::gui;
 
+class ImageViewerPlugin;
+
 class ImageViewerWidget : public QOpenGLWidget, QOpenGLFunctions_3_3_Core
 {
 	Q_OBJECT
@@ -33,7 +35,9 @@ public:
 		SCATTERPLOT, DENSITY, LANDSCAPE
 	};
 
-	ImageViewerWidget();
+	ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin);
+
+	void onCurrentImageChanged(const QString& dataSetName, const int& imageIndex);
 
 protected:
 	void initializeGL()         Q_DECL_OVERRIDE;
@@ -44,6 +48,9 @@ protected:
 	void mouseMoveEvent(QMouseEvent *event)    Q_DECL_OVERRIDE;
 	void mouseReleaseEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
 
+	void loadImage(const QString& dataSetName, const int& imageIndex);
+
 private:
-	QOpenGLTexture	_texture;
+	ImageViewerPlugin*	_imageViewerPlugin;
+	QOpenGLTexture		_texture;
 };

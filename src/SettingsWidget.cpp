@@ -26,6 +26,7 @@ SettingsWidget::SettingsWidget(ImageViewerPlugin* imageViewerPlugin) :
 	setLayout(layout);
 
 	connect(_dataSetsComboBox, QOverload<const QString&>::of(&QComboBox::currentTextChanged), this, &SettingsWidget::onCurrentDataSetChanged);
+	connect(_imagesComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsWidget::onCurrentImageIndexChanged);
 }
 
 void SettingsWidget::addDataSet(const QString & name)
@@ -76,4 +77,9 @@ void SettingsWidget::onCurrentDataSetChanged(const QString& name)
 
 		_imagesComboBox->addItems(dataSetDimensionNames);
 	}
+}
+
+void SettingsWidget::onCurrentImageIndexChanged(int index)
+{
+	emit currentImageChanged(_dataSetsComboBox->currentText(), index);
 }

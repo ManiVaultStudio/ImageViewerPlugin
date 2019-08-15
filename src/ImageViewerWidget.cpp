@@ -1,14 +1,31 @@
 #include "ImageViewerWidget.h"
+#include "ImageViewerPlugin.h"
 
 #include <vector>
 
 #include <QSize>
 #include <QDebug>
 
-ImageViewerWidget::ImageViewerWidget() :
+ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
+	_imageViewerPlugin(imageViewerPlugin),
 	_texture(QImage("C:\\Users\\tkroes\\Desktop\\harakka_timo-activation_model.jpg"))
 {
 	setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
+}
+
+void ImageViewerWidget::onCurrentImageChanged(const QString & dataSetName, const int & imageIndex)
+{
+	if (imageIndex < 0)
+		return;
+
+	const auto imageCollectionType = _imageViewerPlugin->imageCollectionType(dataSetName);
+
+	qDebug() << QString("Loading image %1 from %2 (%3)").arg(QString::number(imageIndex), dataSetName, imageCollectionType);
+}
+
+void ImageViewerWidget::loadImage(const QString& dataSetName, const int& imageIndex)
+{
+	
 }
 
 void ImageViewerWidget::initializeGL()
