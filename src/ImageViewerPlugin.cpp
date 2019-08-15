@@ -13,15 +13,19 @@
 
 Q_PLUGIN_METADATA(IID "nl.tudelft.ImageViewerPlugin")
 
-inline ImageViewerPlugin::ImageViewerPlugin() : 
-	ViewPlugin("Image Viewer")
+ImageViewerPlugin::ImageViewerPlugin() : 
+	ViewPlugin("Image Viewer"),
+	_imageViewerWidget(nullptr),
+	_settingsWidget(nullptr),
+	_currentDataSetName("")
 {
 	_imageViewerWidget	= new ImageViewerWidget(this);
 	_settingsWidget		= new SettingsWidget(this);
 
-	connect(_settingsWidget, &SettingsWidget::currentImageChanged, _imageViewerWidget, &ImageViewerWidget::onCurrentImageChanged);
-	connect(this, &ImageViewerPlugin::selectedPointsChanged, _imageViewerWidget, &ImageViewerWidget::onSelectedPointsChanged);
-	connect(this, &ImageViewerPlugin::selectedPointsChanged, _settingsWidget, &SettingsWidget::onSelectedPointsChanged);
+	//connect(_settingsWidget, &SettingsWidget::currentImageChanged, _imageViewerWidget, &ImageViewerWidget::onCurrentImageChanged);
+	//connect(this, &ImageViewerPlugin::selectedPointsChanged, _imageViewerWidget, &ImageViewerWidget::onSelectedPointsChanged);
+	//connect(this, &ImageViewerPlugin::selectedPointsChanged, _settingsWidget, &SettingsWidget::onSelectedPointsChanged);
+	
 }
 
 ImageViewerPlugin::~ImageViewerPlugin()
@@ -57,15 +61,18 @@ bool ImageViewerPlugin::hasSelection(const QString& name) const
 	return selection(name).size() > 0;
 }
 
-QString ImageViewerPlugin::imageCollectionType(const QString& name) const
+QString ImageViewerPlugin::imageCollectionType() const
 {
-	PointsPlugin& points = pointsData(name);
+	if (_currentDataSetName.isEmpty())
+		return "";
+
+	PointsPlugin& points = pointsData(_currentDataSetName);
 
 	if (points.hasProperty("type")) {
 		return points.getProperty("type").toString();
 	}
 
-	return QString();
+	return "";
 }
 
 QStringList ImageViewerPlugin::dimensionNames(const QString & name) const
@@ -95,13 +102,23 @@ int ImageViewerPlugin::noImages(const QString & name) const
 	return 0;
 }
 
+QString ImageViewerPlugin::currentDataSetName() const
+{
+	return _currentDataSetName;
+}
+
+void ImageViewerPlugin::setCurrentDataSetName(const QString& currentDataSetName)
+{
+	_currentDataSetName = currentDataSetName;
+
+	emit currentDataSetNameChanged(_currentDataSetName);
+}
+
 void ImageViewerPlugin::dataAdded(const QString name)
 {
 	const IndexSet& set = dynamic_cast<const IndexSet&>(_core->requestSet(name));
 
 	PointsPlugin& points = set.getData();
-
-	qDebug() << name;
 
 	if (points.hasProperty("type")) {
 		const auto type = points.getProperty("type");

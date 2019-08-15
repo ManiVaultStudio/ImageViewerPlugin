@@ -25,8 +25,11 @@ SettingsWidget::SettingsWidget(ImageViewerPlugin* imageViewerPlugin) :
 
 	setLayout(layout);
 
-	connect(_dataSetsComboBox, QOverload<const QString&>::of(&QComboBox::currentTextChanged), this, &SettingsWidget::onCurrentDataSetChanged);
-	connect(_imagesComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsWidget::onCurrentImageIndexChanged);
+	// connect(_dataSetsComboBox, QOverload<const QString&>::of(&QComboBox::currentTextChanged), _imageViewerPlugin, &ImageViewerPlugin::setCurrentDataSetName);
+	// connect(_imagesComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsWidget::onCurrentImageIndexChanged);
+
+	connect(_dataSetsComboBox, QOverload<const QString&>::of(&QComboBox::currentTextChanged), _imageViewerPlugin, &ImageViewerPlugin::setCurrentDataSetName);
+	connect(_imageViewerPlugin, QOverload<const QString&>::of(&ImageViewerPlugin::currentDataSetNameChanged), this, &SettingsWidget::onCurrentDataSetNameChanged);
 }
 
 void SettingsWidget::addDataSet(const QString & name)
@@ -46,23 +49,18 @@ void SettingsWidget::removeDataSet(const QString & name)
 		_dataSetsComboBox->removeItem(index);
 }
 
-QString SettingsWidget::currentDataSetName() const
+void SettingsWidget::onCurrentDataSetNameChanged(const QString& name)
 {
-	return _dataSetsComboBox->currentText();
-}
-
-void SettingsWidget::onCurrentDataSetChanged(const QString& name)
-{
-	const auto imageCollectionType = _imageViewerPlugin->imageCollectionType(name);
+	const auto imageCollectionType = _imageViewerPlugin->imageCollectionType();
 
 	qDebug() << "Changed data set to:" << name << "which is of type" << imageCollectionType;
 
-	updateImagesComboBox();
+	// updateImagesComboBox();
 }
 
 void SettingsWidget::onCurrentImageIndexChanged(int index)
 {
-	emit currentImageChanged(_dataSetsComboBox->currentText(), index);
+	// emit currentImageChanged(_dataSetsComboBox->currentText(), index);
 }
 
 void SettingsWidget::onSelectedPointsChanged()
@@ -74,12 +72,12 @@ void SettingsWidget::onSelectedPointsChanged()
 
 void SettingsWidget::updateImagesComboBox()
 {
-	const auto name = currentDataSetName();
+	const auto name = _imageViewerPlugin->currentDataSetName();
 
 	if (name.isEmpty())
 		return;
 
-	const auto imageCollectionType = _imageViewerPlugin->imageCollectionType(name);
+	const auto imageCollectionType = _imageViewerPlugin->imageCollectionType();
 
 	_imagesComboBox->clear();
 

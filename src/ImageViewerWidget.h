@@ -52,6 +52,9 @@ protected:
 	void loadImage(const QString& dataSetName, const int& imageIndex);
 
 private:
+	void computeSequenceAverageImage();
+
+private:
 	ImageViewerPlugin*	_imageViewerPlugin;
 	QOpenGLTexture		_texture;
 };

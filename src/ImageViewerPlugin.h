@@ -31,17 +31,20 @@ public:
 	PointsPlugin& pointsData(const QString& name) const;
 	std::vector<unsigned int> selection(const QString& name) const;
 	bool hasSelection(const QString& name) const;
-	QString imageCollectionType(const QString& name) const;
+	QString imageCollectionType() const;
 	QStringList dimensionNames(const QString& name) const;
 	int noImages(const QString& name) const;
+	QString currentDataSetName() const;
+	void setCurrentDataSetName(const QString& name);
 
 signals:
+	void currentDataSetNameChanged(const QString& currentDataSetName);
 	void selectedPointsChanged();
 
 private:
 	ImageViewerWidget*	_imageViewerWidget;
 	SettingsWidget*		_settingsWidget;
-	QString				_dataSetName;
+	QString				_currentDataSetName;
 };
 
 class ImageViewerPluginFactory : public ViewPluginFactory
