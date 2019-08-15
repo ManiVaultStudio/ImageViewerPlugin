@@ -23,9 +23,7 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	_settingsWidget		= new SettingsWidget(this);
 
 	//connect(_settingsWidget, &SettingsWidget::currentImageChanged, _imageViewerWidget, &ImageViewerWidget::onCurrentImageChanged);
-	//connect(this, &ImageViewerPlugin::selectedPointsChanged, _imageViewerWidget, &ImageViewerWidget::onSelectedPointsChanged);
 	//connect(this, &ImageViewerPlugin::selectedPointsChanged, _settingsWidget, &SettingsWidget::onSelectedPointsChanged);
-	
 }
 
 ImageViewerPlugin::~ImageViewerPlugin()
@@ -42,23 +40,23 @@ void ImageViewerPlugin::init()
 	setLayout(layout);
 }
 
-PointsPlugin& ImageViewerPlugin::pointsData(const QString& name) const
+PointsPlugin& ImageViewerPlugin::pointsData() const
 {
-	const IndexSet& set = dynamic_cast<const IndexSet&>(_core->requestSet(name));
+	const IndexSet& set = dynamic_cast<const IndexSet&>(_core->requestSet(_currentDataSetName));
 
 	return set.getData();
 }
 
-std::vector<unsigned int> ImageViewerPlugin::selection(const QString& name) const
+std::vector<unsigned int> ImageViewerPlugin::selection() const
 {
-	const IndexSet& selection = dynamic_cast<const IndexSet&>(pointsData(name).getSelection());
+	const IndexSet& selection = dynamic_cast<const IndexSet&>(pointsData().getSelection());
 
 	return selection.indices;
 }
 
-bool ImageViewerPlugin::hasSelection(const QString& name) const
+bool ImageViewerPlugin::hasSelection() const
 {
-	return selection(name).size() > 0;
+	return selection().size() > 0;
 }
 
 QString ImageViewerPlugin::imageCollectionType() const
@@ -66,7 +64,7 @@ QString ImageViewerPlugin::imageCollectionType() const
 	if (_currentDataSetName.isEmpty())
 		return "";
 
-	PointsPlugin& points = pointsData(_currentDataSetName);
+	PointsPlugin& points = pointsData();
 
 	if (points.hasProperty("type")) {
 		return points.getProperty("type").toString();
@@ -75,9 +73,9 @@ QString ImageViewerPlugin::imageCollectionType() const
 	return "";
 }
 
-QStringList ImageViewerPlugin::dimensionNames(const QString & name) const
+QStringList ImageViewerPlugin::dimensionNames() const
 {
-	PointsPlugin& points = pointsData(name);
+	PointsPlugin& points = pointsData();
 
 	const auto noDimensions = points.dimNames.size();
 
@@ -91,9 +89,9 @@ QStringList ImageViewerPlugin::dimensionNames(const QString & name) const
 	return dimensionNames;
 }
 
-int ImageViewerPlugin::noImages(const QString & name) const
+int ImageViewerPlugin::noImages() const
 {
-	PointsPlugin& points = pointsData(name);
+	PointsPlugin& points = pointsData();
 
 	if (points.hasProperty("noImages")) {
 		return points.getProperty("noImages").toInt();
@@ -109,9 +107,25 @@ QString ImageViewerPlugin::currentDataSetName() const
 
 void ImageViewerPlugin::setCurrentDataSetName(const QString& currentDataSetName)
 {
+	qDebug() << "Set current data set name: " << currentDataSetName;
+
 	_currentDataSetName = currentDataSetName;
 
 	emit currentDataSetNameChanged(_currentDataSetName);
+}
+
+bool ImageViewerPlugin::averageImages() const
+{
+	return _averageImages;
+}
+
+void ImageViewerPlugin::setAverageImages(const bool& averageImages)
+{
+	qDebug() << "Set average images: " << averageImages;
+
+	_averageImages = averageImages;
+
+	emit averageImagesChanged(_averageImages);
 }
 
 void ImageViewerPlugin::dataAdded(const QString name)
@@ -140,25 +154,7 @@ void ImageViewerPlugin::dataRemoved(const QString name)
 
 void ImageViewerPlugin::selectionChanged(const QString dataName)
 {
-	/*
-	const auto currentDataSetName = _settingsWidget->currentDataSetName();
-
-	if (currentDataSetName.isEmpty())
-		return;
-
-	PointsPlugin& points = pointsData(currentDataSetName);
-
-	if (points.isDerivedData())
-	{
-		if (dataName != points.getSourceData().getName())
-			return;
-	}
-	else
-	{
-		if (dataName != points.getName())
-			return;
-	}
-	*/
+	setAverageImages(hasSelection() && imageCollectionType() == "SEQUENCE");
 
 	emit selectedPointsChanged();
 }

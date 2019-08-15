@@ -11,6 +11,8 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_texture(QImage("C:\\Users\\tkroes\\Desktop\\harakka_timo-activation_model.jpg"))
 {
 	setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
+
+	connect(_imageViewerPlugin, &ImageViewerPlugin::selectedPointsChanged, this, &ImageViewerWidget::onSelectedPointsChanged);
 }
 
 void ImageViewerWidget::onCurrentImageChanged(const QString & dataSetName, const int & imageIndex)

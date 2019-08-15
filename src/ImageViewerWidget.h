@@ -37,6 +37,7 @@ public:
 
 	ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin);
 
+public:
 	void onCurrentImageChanged(const QString& dataSetName, const int& imageIndex);
 	void onSelectedPointsChanged();
 

@@ -5,6 +5,7 @@
 class ImageViewerPlugin;
 
 class QComboBox;
+class QCheckBox;
 class QLabel;
 
 class SettingsWidget : public QWidget
@@ -16,18 +17,22 @@ public:
 
 	void addDataSet(const QString& name);
 	void removeDataSet(const QString& name);
+
+public:
 	void onSelectedPointsChanged();
 
 protected:
 	void onCurrentDataSetNameChanged(const QString& name);
 	void onCurrentImageIndexChanged(int index);
+	void onAverageImagesChanged(const bool& averageImages);
 
 private:
-	void updateImagesComboBox();
+	void update();
 
 private:
 	ImageViewerPlugin*	_imageViewerPlugin;
 	QComboBox*			_dataSetsComboBox;
 	QLabel*				_imagesLabel;
 	QComboBox*			_imagesComboBox;
+	QCheckBox*			_imagesAverageCheckBox;
 };
