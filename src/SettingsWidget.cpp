@@ -46,11 +46,40 @@ void SettingsWidget::removeDataSet(const QString & name)
 		_dataSetsComboBox->removeItem(index);
 }
 
+QString SettingsWidget::currentDataSetName() const
+{
+	return _dataSetsComboBox->currentText();
+}
+
 void SettingsWidget::onCurrentDataSetChanged(const QString& name)
 {
 	const auto imageCollectionType = _imageViewerPlugin->imageCollectionType(name);
 
 	qDebug() << "Changed data set to:" << name << "which is of type" << imageCollectionType;
+
+	updateImagesComboBox();
+}
+
+void SettingsWidget::onCurrentImageIndexChanged(int index)
+{
+	emit currentImageChanged(_dataSetsComboBox->currentText(), index);
+}
+
+void SettingsWidget::onSelectedPointsChanged()
+{
+	qDebug() << "Selection changed!";
+
+	updateImagesComboBox();
+}
+
+void SettingsWidget::updateImagesComboBox()
+{
+	const auto name = currentDataSetName();
+
+	if (name.isEmpty())
+		return;
+
+	const auto imageCollectionType = _imageViewerPlugin->imageCollectionType(name);
 
 	_imagesComboBox->clear();
 
@@ -60,8 +89,16 @@ void SettingsWidget::onCurrentDataSetChanged(const QString& name)
 
 		auto imageNames = QStringList();
 
-		for (int i = 1; i <= _imageViewerPlugin->noImages(name); i++) {
-			imageNames << QString("Image %1").arg(i);
+		if (_imageViewerPlugin->hasSelection(name)) {
+			for (unsigned int index : _imageViewerPlugin->selection(name))
+			{
+				imageNames << QString("Image %1").arg(index);
+			}
+		}
+		else {
+			for (int i = 1; i <= _imageViewerPlugin->noImages(name); i++) {
+				imageNames << QString("Image %1").arg(i);
+			}
 		}
 
 		_imagesComboBox->addItems(imageNames);
@@ -77,9 +114,4 @@ void SettingsWidget::onCurrentDataSetChanged(const QString& name)
 
 		_imagesComboBox->addItems(dataSetDimensionNames);
 	}
-}
-
-void SettingsWidget::onCurrentImageIndexChanged(int index)
-{
-	emit currentImageChanged(_dataSetsComboBox->currentText(), index);
 }

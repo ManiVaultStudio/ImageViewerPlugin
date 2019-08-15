@@ -20,6 +20,8 @@ inline ImageViewerPlugin::ImageViewerPlugin() :
 	_settingsWidget		= new SettingsWidget(this);
 
 	connect(_settingsWidget, &SettingsWidget::currentImageChanged, _imageViewerWidget, &ImageViewerWidget::onCurrentImageChanged);
+	connect(this, &ImageViewerPlugin::selectedPointsChanged, _imageViewerWidget, &ImageViewerWidget::onSelectedPointsChanged);
+	connect(this, &ImageViewerPlugin::selectedPointsChanged, _settingsWidget, &SettingsWidget::onSelectedPointsChanged);
 }
 
 ImageViewerPlugin::~ImageViewerPlugin()
@@ -43,6 +45,18 @@ PointsPlugin& ImageViewerPlugin::pointsData(const QString& name) const
 	return set.getData();
 }
 
+std::vector<unsigned int> ImageViewerPlugin::selection(const QString& name) const
+{
+	const IndexSet& selection = dynamic_cast<const IndexSet&>(pointsData(name).getSelection());
+
+	return selection.indices;
+}
+
+bool ImageViewerPlugin::hasSelection(const QString& name) const
+{
+	return selection(name).size() > 0;
+}
+
 QString ImageViewerPlugin::imageCollectionType(const QString& name) const
 {
 	PointsPlugin& points = pointsData(name);
@@ -56,9 +70,7 @@ QString ImageViewerPlugin::imageCollectionType(const QString& name) const
 
 QStringList ImageViewerPlugin::dimensionNames(const QString & name) const
 {
-	const IndexSet& set = dynamic_cast<const IndexSet&>(_core->requestSet(name));
-
-	PointsPlugin& points = set.getData();
+	PointsPlugin& points = pointsData(name);
 
 	const auto noDimensions = points.dimNames.size();
 
@@ -89,9 +101,11 @@ void ImageViewerPlugin::dataAdded(const QString name)
 
 	PointsPlugin& points = set.getData();
 
+	qDebug() << name;
+
 	if (points.hasProperty("type")) {
 		const auto type = points.getProperty("type");
-
+		
 		if (type == "SEQUENCE" || type == "STACK") {
 			_settingsWidget->addDataSet(name);
 		}
@@ -109,6 +123,27 @@ void ImageViewerPlugin::dataRemoved(const QString name)
 
 void ImageViewerPlugin::selectionChanged(const QString dataName)
 {
+	/*
+	const auto currentDataSetName = _settingsWidget->currentDataSetName();
+
+	if (currentDataSetName.isEmpty())
+		return;
+
+	PointsPlugin& points = pointsData(currentDataSetName);
+
+	if (points.isDerivedData())
+	{
+		if (dataName != points.getSourceData().getName())
+			return;
+	}
+	else
+	{
+		if (dataName != points.getName())
+			return;
+	}
+	*/
+
+	emit selectedPointsChanged();
 }
 
 QStringList ImageViewerPlugin::supportedDataKinds()

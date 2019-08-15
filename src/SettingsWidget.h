@@ -15,6 +15,9 @@ public:
 
 	void addDataSet(const QString& name);
 	void removeDataSet(const QString& name);
+	QString currentDataSetName() const;
+
+	void onSelectedPointsChanged();
 
 signals:
 	void currentImageChanged(const QString& dataSetName, const int& imageIndex);
@@ -22,6 +25,9 @@ signals:
 protected:
 	void onCurrentDataSetChanged(const QString& name);
 	void onCurrentImageIndexChanged(int index);
+
+private:
+	void updateImagesComboBox();
 
 private:
 	ImageViewerPlugin*	_imageViewerPlugin;

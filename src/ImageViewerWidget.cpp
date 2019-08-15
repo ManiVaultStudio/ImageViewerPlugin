@@ -23,6 +23,10 @@ void ImageViewerWidget::onCurrentImageChanged(const QString & dataSetName, const
 	qDebug() << QString("Loading image %1 from %2 (%3)").arg(QString::number(imageIndex), dataSetName, imageCollectionType);
 }
 
+void ImageViewerWidget::onSelectedPointsChanged()
+{
+}
+
 void ImageViewerWidget::loadImage(const QString& dataSetName, const int& imageIndex)
 {
 	

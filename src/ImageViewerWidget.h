@@ -38,6 +38,7 @@ public:
 	ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin);
 
 	void onCurrentImageChanged(const QString& dataSetName, const int& imageIndex);
+	void onSelectedPointsChanged();
 
 protected:
 	void initializeGL()         Q_DECL_OVERRIDE;

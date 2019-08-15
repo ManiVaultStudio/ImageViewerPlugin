@@ -14,6 +14,8 @@ class SettingsWidget;
 
 class ImageViewerPlugin : public ViewPlugin
 {
+	Q_OBJECT
+
 public:
 	ImageViewerPlugin();
     ~ImageViewerPlugin(void);
@@ -27,9 +29,14 @@ public:
 	QStringList supportedDataKinds() Q_DECL_OVERRIDE;
 
 	PointsPlugin& pointsData(const QString& name) const;
+	std::vector<unsigned int> selection(const QString& name) const;
+	bool hasSelection(const QString& name) const;
 	QString imageCollectionType(const QString& name) const;
 	QStringList dimensionNames(const QString& name) const;
 	int noImages(const QString& name) const;
+
+signals:
+	void selectedPointsChanged();
 
 private:
 	ImageViewerWidget*	_imageViewerWidget;
