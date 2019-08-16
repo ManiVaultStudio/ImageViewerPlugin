@@ -12,6 +12,9 @@ using hdps::plugin::ViewPlugin;
 class ImageViewerWidget;
 class SettingsWidget;
 
+using Index = unsigned int;
+using Indices = std::vector<Index>;
+
 class ImageViewerPlugin : public ViewPlugin
 {
 	Q_OBJECT
@@ -29,26 +32,38 @@ public:
 	QStringList supportedDataKinds() Q_DECL_OVERRIDE;
 
 	PointsPlugin& pointsData() const;
-	std::vector<unsigned int> selection() const;
+	Indices selection() const;
 	bool hasSelection() const;
 	QString imageCollectionType() const;
 	QStringList dimensionNames() const;
 	int noImages() const;
+	QSize imageSize() const;
 	QString currentDataSetName() const;
 	void setCurrentDataSetName(const QString& name);
 	bool averageImages() const;
 	void setAverageImages(const bool& averageImages);
 
+	Index currentImageId() const;
+	void setCurrentImageId(const int& currentImageId);
+
+	Indices displayImageIds() const;
+
+private:
+	void updateDisplayImageIds();
+
 signals:
 	void currentDataSetNameChanged(const QString& currentDataSetName);
 	void selectedPointsChanged();
 	void averageImagesChanged(const bool& averageImages);
+	void displayImageIdsChanged();
 
 private:
-	ImageViewerWidget*	_imageViewerWidget;
-	SettingsWidget*		_settingsWidget;
-	QString				_currentDataSetName;
-	bool				_averageImages;
+	ImageViewerWidget*		_imageViewerWidget;
+	SettingsWidget*			_settingsWidget;
+	QString					_currentDataSetName;
+	bool					_averageImages;
+	Index					_currentImageId;
+	Indices					_displayImageIds;
 };
 
 class ImageViewerPluginFactory : public ViewPluginFactory

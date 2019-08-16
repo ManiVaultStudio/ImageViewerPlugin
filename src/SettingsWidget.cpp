@@ -31,7 +31,7 @@ SettingsWidget::SettingsWidget(ImageViewerPlugin* imageViewerPlugin) :
 	setLayout(layout);
 
 	// connect(_dataSetsComboBox, QOverload<const QString&>::of(&QComboBox::currentTextChanged), _imageViewerPlugin, &ImageViewerPlugin::setCurrentDataSetName);
-	// connect(_imagesComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsWidget::onCurrentImageIndexChanged);
+	connect(_imagesComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), _imageViewerPlugin, &ImageViewerPlugin::setCurrentImageId);
 
 	connect(_dataSetsComboBox, QOverload<const QString&>::of(&QComboBox::currentTextChanged), _imageViewerPlugin, &ImageViewerPlugin::setCurrentDataSetName);
 	connect(_imageViewerPlugin, QOverload<const QString&>::of(&ImageViewerPlugin::currentDataSetNameChanged), this, &SettingsWidget::onCurrentDataSetNameChanged);
@@ -72,11 +72,6 @@ void SettingsWidget::onCurrentDataSetNameChanged(const QString& name)
 	update();
 }
 
-void SettingsWidget::onCurrentImageIndexChanged(int index)
-{
-	// emit currentImageChanged(_dataSetsComboBox->currentText(), index);
-}
-
 void SettingsWidget::onAverageImagesChanged(const bool& averageImages)
 {
 	_imagesAverageCheckBox->setChecked(averageImages);
@@ -112,17 +107,20 @@ void SettingsWidget::update()
 		_imagesLabel->setText("Image");
 		_imagesLabel->setToolTip("Image from an image sequence");
 		
+		_imagesAverageCheckBox->setText("Average images");
+		_imagesAverageCheckBox->setToolTip("Average images");
+
 		auto imageNames = QStringList();
 
 		if (_imageViewerPlugin->hasSelection()) {
 			for (unsigned int index : _imageViewerPlugin->selection())
 			{
-				imageNames << QString("Image %1").arg(index);
+				imageNames << QString("%1").arg(index);
 			}
 		}
 		else {
 			for (int i = 1; i <= _imageViewerPlugin->noImages(); i++) {
-				imageNames << QString("Image %1").arg(i);
+				imageNames << QString("%1").arg(i);
 			}
 		}
 
@@ -134,12 +132,14 @@ void SettingsWidget::update()
 		_imagesLabel->setText("Channel");
 		_imagesLabel->setToolTip("Image channel from an image stack");
 
+		_imagesAverageCheckBox->setText("Average channels");
+		_imagesAverageCheckBox->setToolTip("Average channels");
+
 		const auto dataSetDimensionNames = _imageViewerPlugin->dimensionNames();
 
 		// qDebug() << "Image stack channels: " << dataSetDimensionNames;
 
 		_imagesComboBox->addItems(dataSetDimensionNames);
-
 		_imagesAverageCheckBox->setEnabled(dataSetDimensionNames.size() > 1);
 	}
 }

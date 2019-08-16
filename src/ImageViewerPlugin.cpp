@@ -47,7 +47,7 @@ PointsPlugin& ImageViewerPlugin::pointsData() const
 	return set.getData();
 }
 
-std::vector<unsigned int> ImageViewerPlugin::selection() const
+Indices ImageViewerPlugin::selection() const
 {
 	const IndexSet& selection = dynamic_cast<const IndexSet&>(pointsData().getSelection());
 
@@ -100,6 +100,17 @@ int ImageViewerPlugin::noImages() const
 	return 0;
 }
 
+QSize ImageViewerPlugin::imageSize() const
+{
+	PointsPlugin& points = pointsData();
+
+	if (points.hasProperty("imageSize")) {
+		return points.getProperty("imageSize").toSize();
+	}
+
+	return QSize();
+}
+
 QString ImageViewerPlugin::currentDataSetName() const
 {
 	return _currentDataSetName;
@@ -125,7 +136,68 @@ void ImageViewerPlugin::setAverageImages(const bool& averageImages)
 
 	_averageImages = averageImages;
 
+	updateDisplayImageIds();
+
 	emit averageImagesChanged(_averageImages);
+}
+
+Index ImageViewerPlugin::currentImageId() const
+{
+	return _currentImageId;
+}
+
+void ImageViewerPlugin::setCurrentImageId(const int& currentImageId)
+{
+	if (currentImageId < 0)
+		return;
+
+	qDebug() << "Set current image index to:" << currentImageId;
+
+	_currentImageId = currentImageId;
+
+	updateDisplayImageIds();
+}
+
+Indices ImageViewerPlugin::displayImageIds() const
+{
+	return _displayImageIds;
+}
+
+void ImageViewerPlugin::updateDisplayImageIds()
+{
+	// qDebug() << "Update display image IDs";
+
+	const auto type = imageCollectionType();
+
+	if (_averageImages) {
+		if (type == "SEQUENCE") {
+			if (hasSelection()) {
+				_displayImageIds = selection();
+			} else {
+				_displayImageIds.resize(noImages());
+				std::iota(std::begin(_displayImageIds), std::end(_displayImageIds), 0);
+			}
+		}
+		
+		if (type == "STACK") {
+			_displayImageIds.resize(noImages());
+			std::iota(std::begin(_displayImageIds), std::end(_displayImageIds), 0);
+		}
+	} else {
+		_displayImageIds = Indices({ _currentImageId });
+	}
+
+	emit displayImageIdsChanged();
+
+	/*
+	auto imageIds = QStringList();
+
+	for (auto displayImageId : _displayImageIds) {
+		imageIds << QString::number(displayImageId);
+	}
+	
+	qDebug() << imageIds.size();
+	*/
 }
 
 void ImageViewerPlugin::dataAdded(const QString name)

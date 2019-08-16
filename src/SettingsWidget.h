@@ -23,7 +23,6 @@ public:
 
 protected:
 	void onCurrentDataSetNameChanged(const QString& name);
-	void onCurrentImageIndexChanged(int index);
 	void onAverageImagesChanged(const bool& averageImages);
 
 private:

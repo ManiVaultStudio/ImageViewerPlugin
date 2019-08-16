@@ -38,8 +38,7 @@ public:
 	ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin);
 
 public:
-	void onCurrentImageChanged(const QString& dataSetName, const int& imageIndex);
-	void onSelectedPointsChanged();
+	void onDisplayImageIdsChanged();
 
 protected:
 	void initializeGL()         Q_DECL_OVERRIDE;
@@ -50,10 +49,8 @@ protected:
 	void mouseMoveEvent(QMouseEvent *event)    Q_DECL_OVERRIDE;
 	void mouseReleaseEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
 
-	void loadImage(const QString& dataSetName, const int& imageIndex);
-
 private:
-	void computeSequenceAverageImage();
+	void setupTexture(const QSize& imageSize);
 
 private:
 	ImageViewerPlugin*	_imageViewerPlugin;
