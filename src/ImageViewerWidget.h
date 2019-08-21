@@ -36,6 +36,7 @@ public:
 
 public:
 	void onDisplayImageIdsChanged();
+	void onSelectedPointsChanged();
 
 protected:
 	void initializeGL()         Q_DECL_OVERRIDE;
@@ -50,12 +51,14 @@ protected:
 private:
 	void setupTextures(const QSize& imageSize);
 	void drawQuad(const float& z);
+	void drawSelectionRectangle(const QPoint& start, const QPoint& end);
 	void drawTextureQuad(QOpenGLTexture& texture, const float& z);
-	void pan(const float& dx, const float& dy);
+	void pan(const QPointF& delta);
 	void zoom(const float& factor);
 	void zoomAt(const QPointF & position, const float & factor);
 	void zoomExtents();
 	void resetView();
+	bool imageInitialized() const;
 
 private:
 	ImageViewerPlugin*	_imageViewerPlugin;
@@ -66,4 +69,5 @@ private:
 	float				_zoom;
 	float				_zoomSensitivity;
 	int					_margin;
+	bool				_selecting;
 };

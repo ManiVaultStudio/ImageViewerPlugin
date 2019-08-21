@@ -21,6 +21,9 @@ public:
 public:
 	void onSelectedPointsChanged();
 
+public:
+	void updateImagesComboBox();
+
 protected:
 	void onCurrentDataSetNameChanged(const QString& name);
 	void onAverageImagesChanged(const bool& averageImages);

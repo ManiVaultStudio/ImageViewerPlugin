@@ -21,9 +21,6 @@ ImageViewerPlugin::ImageViewerPlugin() :
 {
 	_imageViewerWidget	= new ImageViewerWidget(this);
 	_settingsWidget		= new SettingsWidget(this);
-
-	//connect(_settingsWidget, &SettingsWidget::currentImageChanged, _imageViewerWidget, &ImageViewerWidget::onCurrentImageChanged);
-	//connect(this, &ImageViewerPlugin::selectedPointsChanged, _settingsWidget, &SettingsWidget::onSelectedPointsChanged);
 }
 
 ImageViewerPlugin::~ImageViewerPlugin()
@@ -226,7 +223,7 @@ void ImageViewerPlugin::dataRemoved(const QString name)
 
 void ImageViewerPlugin::selectionChanged(const QString dataName)
 {
-	setAverageImages(hasSelection() && imageCollectionType() == "SEQUENCE");
+	// setAverageImages(hasSelection() && imageCollectionType() == "SEQUENCE");
 
 	emit selectedPointsChanged();
 }

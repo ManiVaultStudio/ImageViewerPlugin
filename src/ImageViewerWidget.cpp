@@ -18,24 +18,26 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_mousePosition(),
 	_zoom(1.f),
 	_zoomSensitivity(0.05f),
-	_margin(10)
+	_margin(25),
+	_selecting(false)
 {
 	setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
 
 	connect(_imageViewerPlugin, &ImageViewerPlugin::displayImageIdsChanged, this, &ImageViewerWidget::onDisplayImageIdsChanged);
 	connect(_imageViewerPlugin, QOverload<const QString&>::of(&ImageViewerPlugin::currentDataSetNameChanged), this, &ImageViewerWidget::zoomExtents);
+	connect(_imageViewerPlugin, &ImageViewerPlugin::selectedPointsChanged, this, &ImageViewerWidget::onSelectedPointsChanged);
 }
 
 void ImageViewerWidget::onDisplayImageIdsChanged()
 {
-	const auto imageSize		= _imageViewerPlugin->imageSize();
-	const auto noPixels			= imageSize.width() * imageSize.height();
-	const auto type				= _imageViewerPlugin->imageCollectionType();
-	const auto displayImageIds	= _imageViewerPlugin->displayImageIds();
-	const auto noDisplayImages	= displayImageIds.size();
-	const auto noImages			= _imageViewerPlugin->noImages();
-	const auto width			= imageSize.width();
-	const auto height			= imageSize.height();
+	const auto imageSize			= _imageViewerPlugin->imageSize();
+	const auto noPixels				= imageSize.width() * imageSize.height();
+	const auto imageCollectionType	= _imageViewerPlugin->imageCollectionType();
+	const auto displayImageIds		= _imageViewerPlugin->displayImageIds();
+	const auto noDisplayImages		= displayImageIds.size();
+	const auto noImages				= _imageViewerPlugin->noImages();
+	const auto width				= imageSize.width();
+	const auto height				= imageSize.height();
 	
 	if (QSize(_texture.width(), _texture.height()) != imageSize) {
 		setupTextures(imageSize);
@@ -46,9 +48,8 @@ void ImageViewerWidget::onDisplayImageIdsChanged()
 	std::vector<unsigned char> image, selectionOverlay;
 
 	image.resize(noPixels * 3);
-	selectionOverlay.resize(noPixels * 4);
 
-	if (type == "SEQUENCE") {
+	if (imageCollectionType == "SEQUENCE") {
 		for (int x = 0; x < width; x++) {
 			for (int y = 0; y < height; y++) {
 				const auto pixelId = y * width + x;
@@ -71,7 +72,7 @@ void ImageViewerWidget::onDisplayImageIdsChanged()
 		}
 	}
 
-	if (type == "STACK") {
+	if (imageCollectionType == "STACK") {
 		for (int x = 0; x < width; x++) {
 			for (int y = 0; y < height; y++) {
 				const auto pixelId = y * width + x;
@@ -104,12 +105,37 @@ void ImageViewerWidget::onDisplayImageIdsChanged()
 	}
 
 	_texture.setData(QOpenGLTexture::PixelFormat::RGB, QOpenGLTexture::PixelType::UInt8, static_cast<void*>(&image[0]));
-	_selectionOverlayTexture.setData(QOpenGLTexture::PixelFormat::RGBA, QOpenGLTexture::PixelType::UInt8, static_cast<void*>(&selectionOverlay[0]));
 
 	update();
+}
 
-	//qDebug() << _texture.isCreated();
-	//qDebug() << _texture.isStorageAllocated();
+void ImageViewerWidget::onSelectedPointsChanged()
+{
+	qDebug() << "Selected points changed";
+
+	const auto imageCollectionType	= _imageViewerPlugin->imageCollectionType();
+	const auto imageSize			= _imageViewerPlugin->imageSize();
+	const auto noPixels				= imageSize.width() * imageSize.height();
+
+	std::vector<unsigned char> selectionOverlay;
+	
+	selectionOverlay.resize(noPixels * 4);
+
+	if (imageCollectionType == "STACK") {
+		if (_imageViewerPlugin->hasSelection()) {
+			for (unsigned int index : _imageViewerPlugin->selection())
+			{
+				selectionOverlay[index * 4 + 0] = 0;
+				selectionOverlay[index * 4 + 1] = 255;
+				selectionOverlay[index * 4 + 2] = 0;
+				selectionOverlay[index * 4 + 3] = 128;
+			}
+		}
+
+		_selectionOverlayTexture.setData(QOpenGLTexture::PixelFormat::RGBA, QOpenGLTexture::PixelType::UInt8, static_cast<void*>(&selectionOverlay[0]));
+	}
+
+	update();
 }
 
 void ImageViewerWidget::setupTextures(const QSize& imageSize)
@@ -132,8 +158,7 @@ void ImageViewerWidget::setupTextures(const QSize& imageSize)
 	_selectionOverlayTexture.allocateStorage();
 }
 
-void ImageViewerWidget::drawQuad(const float& z)
-{
+void ImageViewerWidget::drawQuad(const float& z) {
 	const auto imageSize		= _imageViewerPlugin->imageSize();
 	const auto halfImageSize	= _imageViewerPlugin->imageSize() / 2;
 
@@ -143,6 +168,22 @@ void ImageViewerWidget::drawQuad(const float& z)
 		glTexCoord2f(0, 1); glVertex3f(-halfImageSize.width(), halfImageSize.height(), z);
 		glTexCoord2f(1, 1); glVertex3f(halfImageSize.width(), halfImageSize.height(), z);
 		glTexCoord2f(1, 0); glVertex3f(halfImageSize.width(), -halfImageSize.height(), z);
+	}
+	glEnd();
+}
+
+void ImageViewerWidget::drawSelectionRectangle(const QPoint& start, const QPoint& end) {
+	
+	const auto z = 0.1;
+
+	glColor4f(0.f, 1.f, 0.f, 0.1f);
+
+	glBegin(GL_QUADS);
+	{
+		glVertex3f(start.x(), height() - start.y(), z);
+		glVertex3f(end.x(), height() - start.y(), z);
+		glVertex3f(end.x(), height() - end.y(), z);
+		glVertex3f(start.x(), height() - end.y(), z);
 	}
 	glEnd();
 }
@@ -162,6 +203,8 @@ void ImageViewerWidget::drawTextureQuad(QOpenGLTexture& texture, const float& z)
 
 void ImageViewerWidget::initializeGL()
 {
+	qDebug() << "Initializing OpenGL";
+
 	initializeOpenGLFunctions();
 
 	glEnable(GL_BLEND);
@@ -179,72 +222,116 @@ void ImageViewerWidget::resizeGL(int w, int h)
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(0, w, 0, h, -1, 1);
+	glOrtho(0, w, 0, h, -100, 100);
 
 	zoomExtents();
 }
 
-void ImageViewerWidget::paintGL()
-{
-	if (!_texture.isCreated())
+void ImageViewerWidget::paintGL() {
+
+	if (!imageInitialized())
 		return;
 
-	glClearColor(0.2, 0.2, 0.2, 1);
+	glClearColor(0.1, 0.1, 0.1, 1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
+
+	glDisable(GL_LIGHTING);
+
+	if (_selecting) {
+		const auto currentMousePosition = QWidget::mapFromGlobal(QCursor::pos());
+		drawSelectionRectangle(_mousePosition, currentMousePosition);
+	}
+
 	glScalef(_zoom, _zoom, 1);
 	glTranslatef(_pan.x(), _pan.y(), 0);
 	
-	glDisable(GL_LIGHTING);
+	glColor4f(1.f, 1.f, 1.f, 1.f);
 
 	drawTextureQuad(_texture, 0.5);
 	drawTextureQuad(_selectionOverlayTexture, 0);
 }
 
-void ImageViewerWidget::mousePressEvent(QMouseEvent* event)
+void ImageViewerWidget::mousePressEvent(QMouseEvent* event) 
 {
+	if (!imageInitialized())
+		return;
+
+	qDebug() << "Mouse press event" << event->pos();
+
 	_mousePosition = event->pos();
-}
 
-void ImageViewerWidget::mouseMoveEvent(QMouseEvent* event)
-{
-	qDebug() << "Moving mouse" << event->button();
+	if (event->modifiers() & Qt::AltModifier) {
 
-	if (event->buttons() == Qt::LeftButton) {
-		pan(event->pos().x() - _mousePosition.x(), -(event->pos().y() - _mousePosition.y()));
-		_mousePosition = event->pos();
-	}
-}
-
-void ImageViewerWidget::wheelEvent(QWheelEvent* event)
-{
-	qDebug() << "wheelEvent";
-
-	const auto world_x = (event->posF().x() - _pan.x()) / _zoom;
-	const auto world_y = (event->posF().y() - _pan.y()) / _zoom;
-	
-	auto zoomCenter = event->posF();
-
-	zoomCenter.setY(height() - event->posF().y());
-
-	if (event->delta() > 0) {
-		zoomAt(zoomCenter, 1.f + _zoomSensitivity);
 	}
 	else {
-		zoomAt(zoomCenter, 1.f - _zoomSensitivity);
+		_selecting = true;
 	}
 }
 
-void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* event)
-{
+void ImageViewerWidget::mouseMoveEvent(QMouseEvent* event) {
+
+	if (!imageInitialized())
+		return;
+
+	qDebug() << "Mouse move event" << event->button();
+
+	if (event->buttons() == Qt::LeftButton) {
+		if (event->modifiers() & Qt::AltModifier) {
+			pan(QPointF(event->pos().x() - _mousePosition.x(), -(event->pos().y() - _mousePosition.y())));
+
+			_mousePosition = event->pos();
+		}
+		else {
+
+		}
+
+		update();
+	}
+}
+
+void ImageViewerWidget::wheelEvent(QWheelEvent* event) {
+
+	if (!imageInitialized())
+		return;
+
+	qDebug() << "Mouse wheel event" << event->delta();
+
+	if (event->modifiers() & Qt::AltModifier) {
+		const auto world_x = (event->posF().x() - _pan.x()) / _zoom;
+		const auto world_y = (event->posF().y() - _pan.y()) / _zoom;
+
+		auto zoomCenter = event->posF();
+
+		zoomCenter.setY(height() - event->posF().y());
+
+		if (event->delta() > 0) {
+			zoomAt(zoomCenter, 1.f - _zoomSensitivity);
+		}
+		else {
+			zoomAt(zoomCenter, 1.f + _zoomSensitivity);
+		}
+
+		update();
+	}
+}
+
+void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* event) {
+
+	if (!imageInitialized())
+		return;
+
+	qDebug() << "Mouse release event";
+
 	if (event->button() == Qt::RightButton)
 	{
 		QMenu menu;
 
 		QAction* zoomToExtentsAction = new QAction("Zoom extents", this);
 
+		// zoomToExtentsAction->setShortcut(QKeySequence(Qt::Key_Space));
 		zoomToExtentsAction->setToolTip("Zoom to the boundaries of the image");
 		
 		connect(zoomToExtentsAction, &QAction::triggered, this, &ImageViewerWidget::zoomExtents);
@@ -255,38 +342,43 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* event)
 		menu.exec(mapToGlobal(event->pos()));
 	}
 
+	if (event->modifiers() & Qt::AltModifier) {
+
+	}
+	else {
+		_selecting = false;
+	}
+
+	update();
+
 	QOpenGLWidget::mouseReleaseEvent(event);
 }
 
-void ImageViewerWidget::pan(const float& dx, const float& dy) {
-	qDebug() << "Pan";
+void ImageViewerWidget::pan(const QPointF& delta) {
 
-	_pan.setX(_pan.x() + (dx / _zoom));
-	_pan.setY(_pan.y() + (dy / _zoom));
+	qDebug() << "Pan" << delta;
 
-	update();
+	_pan.setX(_pan.x() + (delta.x() / _zoom));
+	_pan.setY(_pan.y() + (delta.y() / _zoom));
 }
 
 void ImageViewerWidget::zoom(const float& factor) {
-	qDebug() << "Zoom";
+
+	qDebug() << "Zoom" << factor;
 
 	_zoom *= factor;
 	
 	_pan.setX(_pan.x() * factor);
 	_pan.setY(_pan.y() * factor);
-
-	update();
 }
 
-void ImageViewerWidget::zoomAt(const QPointF& screenPosition, const float& factor)
-{
-	qDebug() << "Zoom at";
+void ImageViewerWidget::zoomAt(const QPointF& screenPosition, const float& factor) {
 
-	pan(-screenPosition.x(), -screenPosition.y());
+	qDebug() << "Zoom at" << screenPosition << factor;
+
+	pan(QPointF(-screenPosition.x(), -screenPosition.y()));
 	zoom(factor);
-	pan(screenPosition.x(), screenPosition.y());
-
-	update();
+	pan(QPointF(screenPosition.x(), screenPosition.y()));
 }
 
 void ImageViewerWidget::zoomExtents()
@@ -311,7 +403,9 @@ void ImageViewerWidget::zoomExtents()
 	const auto factorY = (height() - _margin) / static_cast<float>(imageSize.height());
 	
 	zoom(factorX < factorY ? factorX : factorY);
-	pan(width() / 2, height() / 2);
+	pan(QPointF(width() / 2, height() / 2));
+
+	update();
 }
 
 void ImageViewerWidget::resetView()
@@ -322,4 +416,11 @@ void ImageViewerWidget::resetView()
 	_pan.setY(0);
 	
 	_zoom = 1.f;
+
+	update();
+}
+
+bool ImageViewerWidget::imageInitialized() const
+{
+	return _texture.isCreated();
 }

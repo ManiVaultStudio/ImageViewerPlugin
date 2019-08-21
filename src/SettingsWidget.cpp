@@ -69,6 +69,8 @@ void SettingsWidget::onCurrentDataSetNameChanged(const QString& name)
 		_imageViewerPlugin->setAverageImages(false);
 	}
 
+	updateImagesComboBox();
+
 	update();
 }
 
@@ -80,6 +82,37 @@ void SettingsWidget::onAverageImagesChanged(const bool& averageImages)
 void SettingsWidget::onSelectedPointsChanged()
 {
 	update();
+}
+
+void SettingsWidget::updateImagesComboBox()
+{
+	const auto imageCollectionType = _imageViewerPlugin->imageCollectionType();
+
+	_imagesComboBox->clear();
+
+	if (imageCollectionType == "SEQUENCE") {
+		auto imageNames = QStringList();
+
+		if (_imageViewerPlugin->hasSelection()) {
+			for (unsigned int index : _imageViewerPlugin->selection())
+			{
+				imageNames << QString("%1").arg(index);
+			}
+		}
+		else {
+			for (int i = 1; i <= _imageViewerPlugin->noImages(); i++) {
+				imageNames << QString("%1").arg(i);
+			}
+		}
+
+		_imagesComboBox->addItems(imageNames);
+	}
+
+	if (imageCollectionType == "STACK") {
+		const auto dataSetDimensionNames = _imageViewerPlugin->dimensionNames();
+		
+		_imagesComboBox->addItems(dataSetDimensionNames);
+	}
 }
 
 void SettingsWidget::update()
@@ -101,8 +134,6 @@ void SettingsWidget::update()
 
 	const auto imageCollectionType = _imageViewerPlugin->imageCollectionType();
 
-	_imagesComboBox->clear();
-
 	if (imageCollectionType == "SEQUENCE") {
 		_imagesLabel->setText("Image");
 		_imagesLabel->setToolTip("Image from an image sequence");
@@ -110,21 +141,6 @@ void SettingsWidget::update()
 		_imagesAverageCheckBox->setText("Average images");
 		_imagesAverageCheckBox->setToolTip("Average images");
 
-		auto imageNames = QStringList();
-
-		if (_imageViewerPlugin->hasSelection()) {
-			for (unsigned int index : _imageViewerPlugin->selection())
-			{
-				imageNames << QString("%1").arg(index);
-			}
-		}
-		else {
-			for (int i = 1; i <= _imageViewerPlugin->noImages(); i++) {
-				imageNames << QString("%1").arg(i);
-			}
-		}
-
-		_imagesComboBox->addItems(imageNames);
 		_imagesAverageCheckBox->setEnabled(_imageViewerPlugin->noImages() > 1);
 	}
 
@@ -137,9 +153,6 @@ void SettingsWidget::update()
 
 		const auto dataSetDimensionNames = _imageViewerPlugin->dimensionNames();
 
-		// qDebug() << "Image stack channels: " << dataSetDimensionNames;
-
-		_imagesComboBox->addItems(dataSetDimensionNames);
 		_imagesAverageCheckBox->setEnabled(dataSetDimensionNames.size() > 1);
 	}
 }
