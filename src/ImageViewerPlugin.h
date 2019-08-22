@@ -64,7 +64,7 @@ private:
 	SettingsWidget*			_settingsWidget;
 	QString					_currentDataSetName;
 	bool					_averageImages;
-	Index					_currentImageId;
+	int						_currentImageId;
 	Indices					_displayImageIds;
 };
 

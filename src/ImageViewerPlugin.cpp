@@ -17,7 +17,8 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	ViewPlugin("Image Viewer"),
 	_imageViewerWidget(nullptr),
 	_settingsWidget(nullptr),
-	_currentDataSetName("")
+	_currentDataSetName(""),
+	_currentImageId(-1)
 {
 	_imageViewerWidget	= new ImageViewerWidget(this);
 	_settingsWidget		= new SettingsWidget(this);
@@ -53,11 +54,17 @@ Indices ImageViewerPlugin::selection() const
 
 void ImageViewerPlugin::setSelection(Indices& indices)
 {
-	IndexSet& selection = dynamic_cast<IndexSet&>(pointsData().getSelection());
+	IndexSet& selectionSet = dynamic_cast<IndexSet&>(pointsData().getSelection());
 
-	selection.indices.swap(indices);
+	selectionSet.indices.swap(indices);
+	//selectionSet.indices.clear();
+	//selectionSet.indices.reserve(indices.size());
 
-	_core->notifySelectionChanged(_currentDataSetName);
+	//for (const unsigned int& index : indices) {
+	//	selectionSet.indices.push_back(index);
+	//}
+
+	_core->notifySelectionChanged(selectionSet.getDataName());
 }
 
 bool ImageViewerPlugin::hasSelection() const
@@ -200,7 +207,13 @@ void ImageViewerPlugin::updateDisplayImageIds()
 			std::iota(std::begin(_displayImageIds), std::end(_displayImageIds), 0);
 		}
 	} else {
-		_displayImageIds = Indices({ _currentImageId });
+		if (_currentImageId >= 0) {
+			_displayImageIds = Indices({ static_cast<unsigned int>(_currentImageId) });
+		}
+		else {
+			_displayImageIds = Indices();
+		}
+		
 	}
 
 	emit displayImageIdsChanged();

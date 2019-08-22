@@ -8,6 +8,7 @@
 #include <QSize>
 #include <QDebug>
 #include <QMenu>
+#include <QList>
 
 // Panning and zooming inspired by: https://community.khronos.org/t/opengl-compound-zoom-and-pan-effect/72565/7
 
@@ -124,10 +125,17 @@ void ImageViewerWidget::onSelectedPointsChanged()
 	
 	selectionOverlay.resize(noPixels * 4);
 
+	auto missed = QList<int>();
+
 	if (imageCollectionType == "STACK") {
 		if (_imageViewerPlugin->hasSelection()) {
 			for (unsigned int index : _imageViewerPlugin->selection())
 			{
+				if (index >= noPixels) {
+					missed.push_back(index);
+					continue;
+				}
+
 				selectionOverlay[index * 4 + 0] = 0;
 				selectionOverlay[index * 4 + 1] = 255;
 				selectionOverlay[index * 4 + 2] = 0;
@@ -137,6 +145,8 @@ void ImageViewerWidget::onSelectedPointsChanged()
 
 		_selectionOverlayTexture.setData(QOpenGLTexture::PixelFormat::RGBA, QOpenGLTexture::PixelType::UInt8, static_cast<void*>(&selectionOverlay[0]));
 	}
+
+	qDebug() << "Missed" << missed;
 
 	update();
 }
@@ -273,6 +283,8 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* event)
 	}
 	else {
 		if (_imageViewerPlugin->isStack()) {
+			_imageViewerPlugin->setSelection(Indices());
+
 			_initialMousePosition = _mousePosition;
 			_selecting = true;
 		}
@@ -481,17 +493,19 @@ void ImageViewerWidget::updateSelection()
 
 				for (int x = imageSelection.x(); x < (imageSelection.x() + imageSelection.width()); x++) {
 					for (int y = imageSelection.y(); y < (imageSelection.y() + imageSelection.height()); y++) {
-						selection[selectionIndex] = (y + (imageHeight / 2)) * imageWidth + (x + (imageWidth / 2));
+						
+						const auto imageY = imageHeight - (y + (imageHeight / 2));
+						selection[selectionIndex] = imageY * imageWidth + (x + (imageWidth / 2));
 
 						selectionIndex++;
 					}
 				}
 
-				
+				/*
 				for (auto id : selection) {
 					qDebug() << id;
 				}
-				/**/
+				*/
 
 				_imageViewerPlugin->setSelection(selection);
 			}
