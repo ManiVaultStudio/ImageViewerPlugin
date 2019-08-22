@@ -31,10 +31,13 @@ public:
 	void selectionChanged(const QString dataName) Q_DECL_OVERRIDE;
 	QStringList supportedDataKinds() Q_DECL_OVERRIDE;
 
+public:
 	PointsPlugin& pointsData() const;
 	Indices selection() const;
 	bool hasSelection() const;
 	QString imageCollectionType() const;
+	bool isSequence() const;
+	bool isStack() const;
 	QStringList dimensionNames() const;
 	int noImages() const;
 	QSize imageSize() const;
@@ -42,10 +45,8 @@ public:
 	void setCurrentDataSetName(const QString& name);
 	bool averageImages() const;
 	void setAverageImages(const bool& averageImages);
-
 	Index currentImageId() const;
 	void setCurrentImageId(const int& currentImageId);
-
 	Indices displayImageIds() const;
 
 private:

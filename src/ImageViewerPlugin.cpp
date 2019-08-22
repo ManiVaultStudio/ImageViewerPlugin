@@ -70,6 +70,16 @@ QString ImageViewerPlugin::imageCollectionType() const
 	return "";
 }
 
+bool ImageViewerPlugin::isSequence() const
+{
+	return imageCollectionType() == "SEQUENCE";
+}
+
+bool ImageViewerPlugin::isStack() const
+{
+	return imageCollectionType() == "STACK";
+}
+
 QStringList ImageViewerPlugin::dimensionNames() const
 {
 	PointsPlugin& points = pointsData();

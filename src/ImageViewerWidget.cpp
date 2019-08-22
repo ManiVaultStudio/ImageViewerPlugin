@@ -15,11 +15,14 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_imageViewerPlugin(imageViewerPlugin),
 	_texture(QOpenGLTexture::Target2D),
 	_selectionOverlayTexture(QOpenGLTexture::Target2D),
+	_initialMousePosition(),
 	_mousePosition(),
 	_zoom(1.f),
 	_zoomSensitivity(0.05f),
 	_margin(25),
-	_selecting(false)
+	_selecting(false),
+	_selectionType(SelectionType::Rectangle),
+	_selectionRealtime(false)
 {
 	setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
 
@@ -174,7 +177,7 @@ void ImageViewerWidget::drawQuad(const float& z) {
 
 void ImageViewerWidget::drawSelectionRectangle(const QPoint& start, const QPoint& end) {
 	
-	const auto z = 0.1;
+	const auto z = -0.5;
 
 	glColor4f(0.f, 1.f, 0.f, 0.1f);
 
@@ -240,11 +243,6 @@ void ImageViewerWidget::paintGL() {
 
 	glDisable(GL_LIGHTING);
 
-	if (_selecting) {
-		const auto currentMousePosition = QWidget::mapFromGlobal(QCursor::pos());
-		drawSelectionRectangle(_mousePosition, currentMousePosition);
-	}
-
 	glScalef(_zoom, _zoom, 1);
 	glTranslatef(_pan.x(), _pan.y(), 0);
 	
@@ -252,6 +250,14 @@ void ImageViewerWidget::paintGL() {
 
 	drawTextureQuad(_texture, 0.5);
 	drawTextureQuad(_selectionOverlayTexture, 0);
+
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
+	if (_selecting) {
+		const auto currentMousePosition = QWidget::mapFromGlobal(QCursor::pos());
+		drawSelectionRectangle(_initialMousePosition, currentMousePosition);
+	}
 }
 
 void ImageViewerWidget::mousePressEvent(QMouseEvent* event) 
@@ -267,7 +273,10 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* event)
 
 	}
 	else {
-		_selecting = true;
+		if (_imageViewerPlugin->isStack()) {
+			_initialMousePosition = _mousePosition;
+			_selecting = true;
+		}
 	}
 }
 
@@ -276,17 +285,23 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* event) {
 	if (!imageInitialized())
 		return;
 
-	qDebug() << "Mouse move event" << event->button();
+	qDebug() << "Mouse move event" << event->pos();
 
 	if (event->buttons() == Qt::LeftButton) {
 		if (event->modifiers() & Qt::AltModifier) {
 			pan(QPointF(event->pos().x() - _mousePosition.x(), -(event->pos().y() - _mousePosition.y())));
-
-			_mousePosition = event->pos();
 		}
 		else {
+			if (_imageViewerPlugin->isStack()) {
+				_selecting = true;
 
+				if (_selectionRealtime) {
+					updateSelection();
+				}
+			}
 		}
+
+		_mousePosition = event->pos();
 
 		update();
 	}
@@ -346,7 +361,11 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* event) {
 
 	}
 	else {
-		_selecting = false;
+		if (_imageViewerPlugin->isStack()) {
+			_selecting = false;
+
+			updateSelection();
+		}
 	}
 
 	update();
@@ -423,4 +442,52 @@ void ImageViewerWidget::resetView()
 bool ImageViewerWidget::imageInitialized() const
 {
 	return _texture.isCreated();
+}
+
+QPoint ImageViewerWidget::screenToWorld(const QPoint& screen) const
+{
+	const auto halfSize = size() / 2;
+	
+	return QPoint((screen.x() - halfSize.width()) / _zoom, (screen.y() - halfSize.height()) / _zoom);
+}
+
+QPoint ImageViewerWidget::worldToScreen(const QPoint& world) const
+{
+	return QPoint();
+}
+
+void ImageViewerWidget::updateSelection()
+{
+	qDebug() << "Update selection";
+
+	switch (_selectionType)
+	{
+		case SelectionType::Rectangle: {
+			const auto initialMousePosition = screenToWorld(QPoint(_initialMousePosition.x(), _initialMousePosition.y()));
+			const auto currentMousePosition = screenToWorld(QPoint(_mousePosition.x(), _mousePosition.y()));
+			const auto selectionTopLeft = QPoint(qMin(initialMousePosition.x(), currentMousePosition.x()), qMin(initialMousePosition.y(), currentMousePosition.y()));
+			const auto selectionBottomRight = QPoint(qMax(initialMousePosition.x(), currentMousePosition.x()), qMax(initialMousePosition.y(), currentMousePosition.y()));
+			const auto selectionRect = QRect(selectionTopLeft, selectionBottomRight);
+			const auto halfImageSize = _imageViewerPlugin->imageSize() / 2;
+			const auto imageTopLeft = QPoint(-halfImageSize.width(), -halfImageSize.height());
+			const auto imageBottomRight = QPoint(halfImageSize.width(), halfImageSize.height());
+			const auto imageRect = QRect(imageTopLeft, imageBottomRight);
+
+			if (imageRect.intersects(selectionRect)) {
+				const auto roi = selectionRect.intersected(imageRect);
+
+				/*
+				for (int x = 0; x < width; x++) {
+					for (int y = 0; y < height; y++) {
+					}
+				}
+				*/
+			}
+
+			break;
+		}
+
+		default:
+			break;
+	}
 }
