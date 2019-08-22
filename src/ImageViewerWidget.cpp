@@ -474,9 +474,15 @@ void ImageViewerWidget::updateSelection()
 			const auto imageRect = QRect(imageTopLeft, imageBottomRight);
 
 			if (imageRect.intersects(selectionRect)) {
-				const auto roi = selectionRect.intersected(imageRect);
+				const auto roi				= selectionRect.intersected(imageRect);
+				const auto noSelectedPixels = roi.width() * roi.height();
 
+				//auto selection = std::vector<unsigned int>;
+
+				qDebug() << noSelectedPixels;
 				/*
+				selection.resize(noSelectedPixels);
+
 				for (int x = 0; x < width; x++) {
 					for (int y = 0; y < height; y++) {
 					}
