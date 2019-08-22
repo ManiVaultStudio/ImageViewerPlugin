@@ -34,6 +34,7 @@ public:
 public:
 	PointsPlugin& pointsData() const;
 	Indices selection() const;
+	void setSelection(Indices& indices);
 	bool hasSelection() const;
 	QString imageCollectionType() const;
 	bool isSequence() const;

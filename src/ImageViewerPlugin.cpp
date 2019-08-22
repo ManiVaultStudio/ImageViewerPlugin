@@ -51,6 +51,15 @@ Indices ImageViewerPlugin::selection() const
 	return selection.indices;
 }
 
+void ImageViewerPlugin::setSelection(Indices& indices)
+{
+	IndexSet& selection = dynamic_cast<IndexSet&>(pointsData().getSelection());
+
+	selection.indices.swap(indices);
+
+	_core->notifySelectionChanged(_currentDataSetName);
+}
+
 bool ImageViewerPlugin::hasSelection() const
 {
 	return selection().size() > 0;

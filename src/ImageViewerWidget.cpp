@@ -162,8 +162,7 @@ void ImageViewerWidget::setupTextures(const QSize& imageSize)
 }
 
 void ImageViewerWidget::drawQuad(const float& z) {
-	const auto imageSize		= _imageViewerPlugin->imageSize();
-	const auto halfImageSize	= _imageViewerPlugin->imageSize() / 2;
+	const auto halfImageSize = _imageViewerPlugin->imageSize() / 2;
 
 	glBegin(GL_QUADS);
 	{
@@ -409,13 +408,6 @@ void ImageViewerWidget::zoomExtents()
 
 	const auto imageSize = _imageViewerPlugin->imageSize();
 
-	/*
-	const auto world_x = (halfImageSize.width() - _pan.x()) / _zoom;
-	const auto world_y = (halfImageSize.height() - _pan.y()) / _zoom;
-	const auto screen_x = halfImageSize.width() * _zoom + _pan.x();
-	const auto screen_y = halfImageSize.height() * _zoom + _pan.y();
-	*/
-
 	resetView();
 	
 	const auto factorX = (width() - _margin) / static_cast<float>(imageSize.width());
@@ -446,9 +438,7 @@ bool ImageViewerWidget::imageInitialized() const
 
 QPoint ImageViewerWidget::screenToWorld(const QPoint& screen) const
 {
-	const auto halfSize = size() / 2;
-	
-	return QPoint((screen.x() - halfSize.width()) / _zoom, (screen.y() - halfSize.height()) / _zoom);
+	return QPoint(((screen.x()) / _zoom) - _pan.x(), -((-(screen.y() - height()) / _zoom) - _pan.y()));
 }
 
 QPoint ImageViewerWidget::worldToScreen(const QPoint& world) const
@@ -465,29 +455,45 @@ void ImageViewerWidget::updateSelection()
 		case SelectionType::Rectangle: {
 			const auto initialMousePosition = screenToWorld(QPoint(_initialMousePosition.x(), _initialMousePosition.y()));
 			const auto currentMousePosition = screenToWorld(QPoint(_mousePosition.x(), _mousePosition.y()));
-			const auto selectionTopLeft = QPoint(qMin(initialMousePosition.x(), currentMousePosition.x()), qMin(initialMousePosition.y(), currentMousePosition.y()));
+			const auto selectionTopLeft		= QPoint(qMin(initialMousePosition.x(), currentMousePosition.x()), qMin(initialMousePosition.y(), currentMousePosition.y()));
 			const auto selectionBottomRight = QPoint(qMax(initialMousePosition.x(), currentMousePosition.x()), qMax(initialMousePosition.y(), currentMousePosition.y()));
-			const auto selectionRect = QRect(selectionTopLeft, selectionBottomRight);
-			const auto halfImageSize = _imageViewerPlugin->imageSize() / 2;
-			const auto imageTopLeft = QPoint(-halfImageSize.width(), -halfImageSize.height());
-			const auto imageBottomRight = QPoint(halfImageSize.width(), halfImageSize.height());
-			const auto imageRect = QRect(imageTopLeft, imageBottomRight);
+			const auto selectionRect		= QRect(selectionTopLeft, selectionBottomRight);
+			const auto imageSize			= _imageViewerPlugin->imageSize();
+			const auto halfImageSize		= _imageViewerPlugin->imageSize() / 2;
+			const auto imageRect			= QRect(-halfImageSize.width(), -halfImageSize.height(), imageSize.width(), imageSize.height());
+
+			//qDebug() << imageRect << selectionRect;
 
 			if (imageRect.intersects(selectionRect)) {
-				const auto roi				= selectionRect.intersected(imageRect);
-				const auto noSelectedPixels = roi.width() * roi.height();
+				auto imageSelection	= selectionRect.intersected(imageRect);
+				const auto noSelectedPixels = imageSelection.width() * imageSelection.height();
+				
+				auto selection = Indices();
 
-				//auto selection = std::vector<unsigned int>;
-
-				qDebug() << noSelectedPixels;
-				/*
 				selection.resize(noSelectedPixels);
 
-				for (int x = 0; x < width; x++) {
-					for (int y = 0; y < height; y++) {
+				const auto imageWidth			= imageSize.width();
+				const auto imageHeight			= imageSize.height();
+				const auto imageSelectionWidth	= imageSelection.width();
+				const auto imageSelectionHeight	= imageSelection.height();
+
+				auto selectionIndex = 0;
+
+				for (int x = imageSelection.x(); x < (imageSelection.x() + imageSelection.width()); x++) {
+					for (int y = imageSelection.y(); y < (imageSelection.y() + imageSelection.height()); y++) {
+						selection[selectionIndex] = (y + (imageHeight / 2)) * imageWidth + (x + (imageWidth / 2));
+
+						selectionIndex++;
 					}
 				}
-				*/
+
+				
+				for (auto id : selection) {
+					qDebug() << id;
+				}
+				/**/
+
+				_imageViewerPlugin->setSelection(selection);
 			}
 
 			break;
