@@ -32,6 +32,15 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	connect(_imageViewerPlugin, &ImageViewerPlugin::selectedPointsChanged, this, &ImageViewerWidget::onSelectedPointsChanged);
 }
 
+void ImageViewerWidget::setSelectionType(const SelectionType& selectionType)
+{
+	qDebug() << "Set selection type" << selectionType;
+
+	_selectionType = selectionType;
+
+	emit selectionTypeChanged();
+}
+
 void ImageViewerWidget::onDisplayImageIdsChanged()
 {
 	const auto imageSize			= _imageViewerPlugin->imageSize();
@@ -483,7 +492,7 @@ void ImageViewerWidget::updateSelection()
 				const auto imageSelectionHeight	= imageSelection.height();
 
 				auto selectionIndex = 0;
-				// qDebug() << imageSelection;
+				
 				for (int x = imageSelection.x(); x < (imageSelection.x() + imageSelection.width()); x++) {
 					for (int y = imageSelection.y(); y < (imageSelection.y() + imageSelection.height()); y++) {
 						

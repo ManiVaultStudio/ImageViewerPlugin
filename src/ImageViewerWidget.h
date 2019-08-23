@@ -41,6 +41,11 @@ public:
 		Freehand
 	};
 
+	void setSelectionType(const SelectionType& selectionType);
+
+signals:
+	void selectionTypeChanged();
+
 public:
 	void onDisplayImageIdsChanged();
 	void onSelectedPointsChanged();

@@ -260,6 +260,29 @@ void ImageViewerPlugin::selectionChanged(const QString dataName)
 	emit selectedPointsChanged();
 }
 
+void ImageViewerPlugin::keyPressEvent(QKeyEvent* keyEvent)
+{
+	qDebug() << "Key press event" << keyEvent->key();
+
+	switch (keyEvent->key())
+	{
+		case Qt::Key::Key_R:
+			_imageViewerWidget->setSelectionType(ImageViewerWidget::SelectionType::Rectangle);
+			break;
+
+		case Qt::Key::Key_B:
+			_imageViewerWidget->setSelectionType(ImageViewerWidget::SelectionType::Brush);
+			break;
+
+		case Qt::Key::Key_F:
+			_imageViewerWidget->setSelectionType(ImageViewerWidget::SelectionType::Freehand);
+			break;
+
+		default:
+			break;
+	}
+}
+
 QStringList ImageViewerPlugin::supportedDataKinds()
 {
 	QStringList supportedKinds;
