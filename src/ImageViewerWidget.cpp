@@ -131,11 +131,6 @@ void ImageViewerWidget::onSelectedPointsChanged()
 		if (_imageViewerPlugin->hasSelection()) {
 			for (unsigned int index : _imageViewerPlugin->selection())
 			{
-				if (index >= noPixels) {
-					missed.push_back(index);
-					continue;
-				}
-
 				selectionOverlay[index * 4 + 0] = 0;
 				selectionOverlay[index * 4 + 1] = 255;
 				selectionOverlay[index * 4 + 2] = 0;
@@ -145,8 +140,6 @@ void ImageViewerWidget::onSelectedPointsChanged()
 
 		_selectionOverlayTexture.setData(QOpenGLTexture::PixelFormat::RGBA, QOpenGLTexture::PixelType::UInt8, static_cast<void*>(&selectionOverlay[0]));
 	}
-
-	qDebug() << "Missed" << missed;
 
 	update();
 }
@@ -498,17 +491,8 @@ void ImageViewerWidget::updateSelection()
 						selection[selectionIndex] = imageY * imageWidth + (x + (imageWidth / 2));
 
 						selectionIndex++;
-
-						//if (x == 0)
-						//	qDebug() << imageY;
 					}
 				}
-
-				/*
-				for (auto id : selection) {
-					qDebug() << id;
-				}
-				*/
 
 				_imageViewerPlugin->setSelection(selection);
 			}
