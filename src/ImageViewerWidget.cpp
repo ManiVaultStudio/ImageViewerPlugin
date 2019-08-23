@@ -26,9 +26,13 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_selecting(false),
 	_selectionType(SelectionType::Rectangle),
 	_selectionModifier(SelectionModifier::Replace),
-	_selectionRealtime(false)
+	_selectionRealtime(false),
+	_brushRadius(10.f),
+	_brushRadiusDelta(1.f)
 {
 	setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
+	
+	setMouseTracking(true);
 
 	connect(_imageViewerPlugin, &ImageViewerPlugin::displayImageIdsChanged, this, &ImageViewerWidget::onDisplayImageIdsChanged);
 	connect(_imageViewerPlugin, QOverload<const QString&>::of(&ImageViewerPlugin::currentDataSetNameChanged), this, &ImageViewerWidget::zoomExtents);
@@ -37,12 +41,11 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 
 void ImageViewerWidget::setSelectionType(const SelectionType& selectionType)
 {
-	if (!_selecting)
-		return;
-
 	qDebug() << "Set selection type" << selectionType;
 
 	_selectionType = selectionType;
+
+	update();
 
 	emit selectionTypeChanged();
 }
@@ -59,6 +62,15 @@ void ImageViewerWidget::setSelectionModifier(const SelectionModifier& selectionM
 	_selectionModifier = selectionModifier;
 
 	emit selectionModifierChanged();
+}
+
+void ImageViewerWidget::setBrushRadius(const float& brushRadius)
+{
+	_brushRadius = brushRadius;
+
+	update();
+
+	emit brushRadiusChanged();
 }
 
 void ImageViewerWidget::onDisplayImageIdsChanged()
@@ -206,8 +218,23 @@ void ImageViewerWidget::drawQuad(const float& z) {
 	glEnd();
 }
 
-void ImageViewerWidget::drawSelectionRectangle(const QPoint& start, const QPoint& end) {
+void ImageViewerWidget::drawCircle(const QPointF& center, const float& radius, const int& noSegments /*= 30*/)
+{
+	glBegin(GL_LINE_LOOP);
 	
+	for (int ii = 0; ii < noSegments; ii++) {
+		float theta = 2.0f * 3.1415926f * float(ii) / float(noSegments);
+		float x = radius * cosf(theta);
+		float y = radius * sinf(theta);
+		
+		glVertex2f(x + center.x(), y + center.y());
+	}
+
+	glEnd();
+}
+
+void ImageViewerWidget::drawSelectionRectangle(const QPoint& start, const QPoint& end)
+{
 	const auto z = -0.5;
 
 	glColor4f(0.f, 1.f, 0.f, 0.1f);
@@ -222,6 +249,15 @@ void ImageViewerWidget::drawSelectionRectangle(const QPoint& start, const QPoint
 	glEnd();
 }
 
+void ImageViewerWidget::drawSelectionBrush()
+{
+	auto brushCenter = QWidget::mapFromGlobal(QCursor::pos());
+
+	brushCenter.setY(height() - brushCenter.y());
+
+	drawCircle(brushCenter, _brushRadius, 20);
+}
+
 void ImageViewerWidget::drawTextureQuad(QOpenGLTexture& texture, const float& z)
 {
 	glEnable(GL_TEXTURE_2D);
@@ -233,6 +269,31 @@ void ImageViewerWidget::drawTextureQuad(QOpenGLTexture& texture, const float& z)
 	texture.release();
 
 	glDisable(GL_TEXTURE_2D);
+}
+
+void ImageViewerWidget::drawSelectionGeometry()
+{
+	switch (_selectionType)
+	{
+		case SelectionType::Rectangle:
+		{
+			if (_selecting) {
+				const auto currentMousePosition = QWidget::mapFromGlobal(QCursor::pos());
+				drawSelectionRectangle(_initialMousePosition, currentMousePosition);
+			}
+			
+			break;
+		}
+
+		case SelectionType::Brush:
+		{
+			drawSelectionBrush();
+			break;
+		}
+
+		default:
+			break;
+	}
 }
 
 void ImageViewerWidget::initializeGL()
@@ -285,10 +346,7 @@ void ImageViewerWidget::paintGL() {
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	if (_selecting) {
-		const auto currentMousePosition = QWidget::mapFromGlobal(QCursor::pos());
-		drawSelectionRectangle(_initialMousePosition, currentMousePosition);
-	}
+	drawSelectionGeometry();
 }
 
 void ImageViewerWidget::mousePressEvent(QMouseEvent* event) 
@@ -296,7 +354,7 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* event)
 	if (!imageInitialized())
 		return;
 
-	qDebug() << "Mouse press event" << event->pos();
+	//qDebug() << "Mouse press event" << event->pos();
 
 	_mousePosition = event->pos();
 
@@ -322,7 +380,7 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* event) {
 	if (!imageInitialized())
 		return;
 
-	qDebug() << "Mouse move event" << event->pos();
+	//qDebug() << "Mouse move event" << event->pos();
 
 	if (event->buttons() == Qt::LeftButton) {
 		if (event->modifiers() & Qt::AltModifier) {
@@ -341,6 +399,10 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* event) {
 		_mousePosition = event->pos();
 
 		update();
+	}
+	else {
+		if (_selectionType == SelectionType::Brush) 
+			update();
 	}
 }
 
@@ -368,6 +430,16 @@ void ImageViewerWidget::wheelEvent(QWheelEvent* event) {
 
 		update();
 	}
+	else {
+		if (_selectionType == SelectionType::Brush) {
+			if (event->delta() > 0) {
+				setBrushRadius(_brushRadius + _brushRadiusDelta);
+			}
+			else {
+				setBrushRadius(_brushRadius - _brushRadiusDelta);
+			}
+		}
+	}
 }
 
 void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* event) {
@@ -375,7 +447,7 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* event) {
 	if (!imageInitialized())
 		return;
 
-	qDebug() << "Mouse release event";
+	//qDebug() << "Mouse release event";
 
 	if (event->button() == Qt::RightButton)
 	{
@@ -488,7 +560,7 @@ QPoint ImageViewerWidget::worldToScreen(const QPoint& world) const
 }*/
 void ImageViewerWidget::updateSelection()
 {
-	qDebug() << "Update selection";
+	qDebug() << "Update selection" << _selectionType;
 
 	switch (_selectionType)
 	{

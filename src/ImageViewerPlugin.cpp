@@ -21,6 +21,8 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	_currentDataSetName(""),
 	_currentImageId(-1)
 {
+	setFocusPolicy(Qt::FocusPolicy::StrongFocus);
+
 	_imageViewerWidget	= new ImageViewerWidget(this);
 	_settingsWidget		= new SettingsWidget(this);
 }

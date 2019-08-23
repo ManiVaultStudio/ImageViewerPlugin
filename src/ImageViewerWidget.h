@@ -51,10 +51,12 @@ public:
 	void setSelectionType(const SelectionType& selectionType);
 	SelectionModifier selectionModifier() const;
 	void setSelectionModifier(const SelectionModifier& selectionModifier);
+	void setBrushRadius(const float& brushRadius);
 
 signals:
 	void selectionTypeChanged();
 	void selectionModifierChanged();
+	void brushRadiusChanged();
 
 public:
 	void onDisplayImageIdsChanged();
@@ -73,8 +75,11 @@ protected:
 private:
 	void setupTextures(const QSize& imageSize);
 	void drawQuad(const float& z);
+	void drawCircle(const QPointF & center, const float & radius, const int & noSegments = 30);
 	void drawSelectionRectangle(const QPoint& start, const QPoint& end);
+	void drawSelectionBrush();
 	void drawTextureQuad(QOpenGLTexture& texture, const float& z);
+	void drawSelectionGeometry();
 	void pan(const QPointF& delta);
 	void zoom(const float& factor);
 	void zoomAt(const QPointF & position, const float & factor);
@@ -85,7 +90,7 @@ private:
 	QPoint worldToScreen(const QPoint& world) const;
 	void updateSelection();
 	void select(std::vector<unsigned int>& indices);
-
+	
 private:
 	ImageViewerPlugin*	_imageViewerPlugin;
 	QOpenGLTexture		_texture;
@@ -100,4 +105,6 @@ private:
 	SelectionType		_selectionType;
 	SelectionModifier	_selectionModifier;
 	bool				_selectionRealtime;
+	float				_brushRadius;
+	float				_brushRadiusDelta;
 };
