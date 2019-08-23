@@ -8,8 +8,9 @@
 #include <QtDebug>
 
 #include <QImageReader>
-#include <vector>
 #include <QInputDialog>
+
+#include <vector>
 
 Q_PLUGIN_METADATA(IID "nl.tudelft.ImageViewerPlugin")
 
@@ -54,17 +55,11 @@ Indices ImageViewerPlugin::selection() const
 
 void ImageViewerPlugin::setSelection(Indices& indices)
 {
-	IndexSet& selectionSet = dynamic_cast<IndexSet&>(pointsData().getSelection());
+	IndexSet& selection = dynamic_cast<IndexSet&>(pointsData().getSelection());
 
-	selectionSet.indices.swap(indices);
-	//selectionSet.indices.clear();
-	//selectionSet.indices.reserve(indices.size());
+	selection.indices.swap(indices);
 
-	//for (const unsigned int& index : indices) {
-	//	selectionSet.indices.push_back(index);
-	//}
-
-	_core->notifySelectionChanged(selectionSet.getDataName());
+	_core->notifySelectionChanged(selection.getDataName());
 }
 
 bool ImageViewerPlugin::hasSelection() const
@@ -267,20 +262,62 @@ void ImageViewerPlugin::keyPressEvent(QKeyEvent* keyEvent)
 	switch (keyEvent->key())
 	{
 		case Qt::Key::Key_R:
+		{
 			_imageViewerWidget->setSelectionType(ImageViewerWidget::SelectionType::Rectangle);
 			break;
+		}
 
 		case Qt::Key::Key_B:
+		{
 			_imageViewerWidget->setSelectionType(ImageViewerWidget::SelectionType::Brush);
 			break;
+		}
 
 		case Qt::Key::Key_F:
+		{
 			_imageViewerWidget->setSelectionType(ImageViewerWidget::SelectionType::Freehand);
 			break;
+		}
+
+		case Qt::Key::Key_Shift:
+		{
+			if (_imageViewerWidget->selectionModifier() != ImageViewerWidget::SelectionModifier::Remove)
+				_imageViewerWidget->setSelectionModifier(ImageViewerWidget::SelectionModifier::Add);
+			break;
+		}
+
+		case Qt::Key::Key_Control:
+		{
+			if (_imageViewerWidget->selectionModifier() != ImageViewerWidget::SelectionModifier::Add)
+				_imageViewerWidget->setSelectionModifier(ImageViewerWidget::SelectionModifier::Remove);
+			break;
+		}
 
 		default:
 			break;
 	}
+
+	QWidget::keyPressEvent(keyEvent);
+}
+
+void ImageViewerPlugin::keyReleaseEvent(QKeyEvent* keyEvent)
+{
+	qDebug() << "Key release event" << keyEvent->key();
+
+	switch (keyEvent->key())
+	{
+		case Qt::Key::Key_Shift:
+		case Qt::Key::Key_Control:
+		{
+			_imageViewerWidget->setSelectionModifier(ImageViewerWidget::SelectionModifier::Replace);
+			break;
+		}
+
+		default:
+			break;
+	}
+
+	QWidget::keyReleaseEvent(keyEvent);
 }
 
 QStringList ImageViewerPlugin::supportedDataKinds()

@@ -41,10 +41,20 @@ public:
 		Freehand
 	};
 
+	enum SelectionModifier
+	{
+		Replace,
+		Add,
+		Remove
+	};
+
 	void setSelectionType(const SelectionType& selectionType);
+	SelectionModifier selectionModifier() const;
+	void setSelectionModifier(const SelectionModifier& selectionModifier);
 
 signals:
 	void selectionTypeChanged();
+	void selectionModifierChanged();
 
 public:
 	void onDisplayImageIdsChanged();
@@ -74,6 +84,7 @@ private:
 	QPoint screenToWorld(const QPoint& screen) const;
 	QPoint worldToScreen(const QPoint& world) const;
 	void updateSelection();
+	void select(std::vector<unsigned int>& indices);
 
 private:
 	ImageViewerPlugin*	_imageViewerPlugin;
@@ -87,5 +98,6 @@ private:
 	int					_margin;
 	bool				_selecting;
 	SelectionType		_selectionType;
+	SelectionModifier	_selectionModifier;
 	bool				_selectionRealtime;
 };

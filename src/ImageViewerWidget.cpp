@@ -4,11 +4,13 @@
 #include "PointsPlugin.h"
 
 #include <vector>
+#include <set>
 
 #include <QSize>
 #include <QDebug>
 #include <QMenu>
 #include <QList>
+#include <QGuiApplication>
 
 // Panning and zooming inspired by: https://community.khronos.org/t/opengl-compound-zoom-and-pan-effect/72565/7
 
@@ -23,6 +25,7 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_margin(25),
 	_selecting(false),
 	_selectionType(SelectionType::Rectangle),
+	_selectionModifier(SelectionModifier::Replace),
 	_selectionRealtime(false)
 {
 	setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
@@ -34,11 +37,28 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 
 void ImageViewerWidget::setSelectionType(const SelectionType& selectionType)
 {
+	if (!_selecting)
+		return;
+
 	qDebug() << "Set selection type" << selectionType;
 
 	_selectionType = selectionType;
 
 	emit selectionTypeChanged();
+}
+
+ImageViewerWidget::SelectionModifier ImageViewerWidget::selectionModifier() const
+{
+	return _selectionModifier;
+}
+
+void ImageViewerWidget::setSelectionModifier(const SelectionModifier& selectionModifier)
+{
+	qDebug() << "Set selection modifier" << selectionModifier;
+
+	_selectionModifier = selectionModifier;
+
+	emit selectionModifierChanged();
 }
 
 void ImageViewerWidget::onDisplayImageIdsChanged()
@@ -285,7 +305,11 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* event)
 	}
 	else {
 		if (_imageViewerPlugin->isStack()) {
-			_imageViewerPlugin->setSelection(Indices());
+			if (_selectionModifier == SelectionModifier::Replace) {
+				qDebug() << "Reset selection";
+
+				_imageViewerPlugin->setSelection(Indices());
+			}
 
 			_initialMousePosition = _mousePosition;
 			_selecting = true;
@@ -460,6 +484,8 @@ QPoint ImageViewerWidget::worldToScreen(const QPoint& world) const
 	return QPoint();
 }
 
+/*
+}*/
 void ImageViewerWidget::updateSelection()
 {
 	qDebug() << "Update selection";
@@ -503,7 +529,7 @@ void ImageViewerWidget::updateSelection()
 					}
 				}
 
-				_imageViewerPlugin->setSelection(selection);
+				select(selection);
 			}
 
 			break;
@@ -511,5 +537,53 @@ void ImageViewerWidget::updateSelection()
 
 		default:
 			break;
+	}
+}
+
+void ImageViewerWidget::select(std::vector<unsigned int>& indices)
+{
+	if (indices.size() > 0) {
+		switch (_selectionModifier) {
+			case SelectionModifier::Replace:
+			{
+				qDebug() << "Replace selection";
+
+				_imageViewerPlugin->setSelection(indices);
+				break;
+			}
+
+			
+			case SelectionModifier::Add:
+			{
+				qDebug() << "Add to selection";
+
+				const auto selection = _imageViewerPlugin->selection();
+				auto selectionSet = std::set<Index>(selection.begin(), selection.end());
+
+				for (Index index : indices) {
+					selectionSet.insert(index);
+				}
+
+				_imageViewerPlugin->setSelection(Indices(selectionSet.begin(), selectionSet.end()));
+				
+				break;
+			}
+
+			case SelectionModifier::Remove:
+			{
+				qDebug() << "Remove from selection";
+
+				const auto selection = _imageViewerPlugin->selection();
+				auto selectionSet = std::set<Index>(selection.begin(), selection.end());
+
+				for (Index index : indices) {
+					selectionSet.erase(index);
+				}
+
+				_imageViewerPlugin->setSelection(Indices(selectionSet.begin(), selectionSet.end()));
+
+				break;
+			}
+		}
 	}
 }

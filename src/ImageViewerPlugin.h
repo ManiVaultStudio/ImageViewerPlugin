@@ -54,6 +54,7 @@ private:
 	void updateDisplayImageIds();
 	
 	void keyPressEvent(QKeyEvent* keyEvent) Q_DECL_OVERRIDE;
+	void keyReleaseEvent(QKeyEvent* keyEvent) Q_DECL_OVERRIDE;
 
 signals:
 	void currentDataSetNameChanged(const QString& currentDataSetName);
