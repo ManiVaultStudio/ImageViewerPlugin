@@ -490,14 +490,17 @@ void ImageViewerWidget::updateSelection()
 				const auto imageSelectionHeight	= imageSelection.height();
 
 				auto selectionIndex = 0;
-
+				// qDebug() << imageSelection;
 				for (int x = imageSelection.x(); x < (imageSelection.x() + imageSelection.width()); x++) {
 					for (int y = imageSelection.y(); y < (imageSelection.y() + imageSelection.height()); y++) {
 						
-						const auto imageY = imageHeight - (y + (imageHeight / 2));
+						const auto imageY = imageHeight - (y + (imageHeight / 2)) - 1;
 						selection[selectionIndex] = imageY * imageWidth + (x + (imageWidth / 2));
 
 						selectionIndex++;
+
+						//if (x == 0)
+						//	qDebug() << imageY;
 					}
 				}
 
