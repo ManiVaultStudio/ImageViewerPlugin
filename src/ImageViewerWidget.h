@@ -115,6 +115,7 @@ private:
 	bool				_selectionRealtime;
 	float				_brushRadius;
 	float				_brushRadiusDelta;
+	QColor				_selectionColor;
 	QColor				_selectionGeometryColor;
 
 	QAction*			_zoomToExtentsAction;

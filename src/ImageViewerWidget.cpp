@@ -30,6 +30,7 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_selectionRealtime(false),
 	_brushRadius(10.f),
 	_brushRadiusDelta(1.f),
+	_selectionColor(0, 1, 0),
 	_selectionGeometryColor(1, 0, 0)
 {
 	setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
@@ -162,9 +163,9 @@ void ImageViewerWidget::onDisplayImageIdsChanged()
 		if (_imageViewerPlugin->hasSelection()) {
 			for (unsigned int index : _imageViewerPlugin->selection())
 			{
-				selectionOverlay[index * 4 + 0] = 0;
-				selectionOverlay[index * 4 + 1] = 255;
-				selectionOverlay[index * 4 + 2] = 0;
+				selectionOverlay[index * 4 + 0] = _selectionColor.red();
+				selectionOverlay[index * 4 + 1] = _selectionColor.green();
+				selectionOverlay[index * 4 + 2] = _selectionColor.blue();
 				selectionOverlay[index * 4 + 3] = 128;
 			}
 		}
