@@ -20,6 +20,8 @@
 #include <QOpenGLFunctions_3_3_Core>
 
 #include <QMouseEvent>
+#include <QColor>
+
 #include <memory>
 
 using namespace hdps;
@@ -48,6 +50,7 @@ public:
 		Remove
 	};
 
+	SelectionType selectionType() const;
 	void setSelectionType(const SelectionType& selectionType);
 	SelectionModifier selectionModifier() const;
 	void setSelectionModifier(const SelectionModifier& selectionModifier);
@@ -107,4 +110,5 @@ private:
 	bool				_selectionRealtime;
 	float				_brushRadius;
 	float				_brushRadiusDelta;
+	QColor				_selectionGeometryColor;
 };

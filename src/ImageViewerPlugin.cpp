@@ -259,7 +259,7 @@ void ImageViewerPlugin::selectionChanged(const QString dataName)
 
 void ImageViewerPlugin::keyPressEvent(QKeyEvent* keyEvent)
 {
-	qDebug() << "Key press event" << keyEvent->key();
+	//qDebug() << "Key press event" << keyEvent->key();
 
 	switch (keyEvent->key())
 	{
@@ -283,15 +283,15 @@ void ImageViewerPlugin::keyPressEvent(QKeyEvent* keyEvent)
 
 		case Qt::Key::Key_Shift:
 		{
-			if (_imageViewerWidget->selectionModifier() != ImageViewerWidget::SelectionModifier::Remove)
-				_imageViewerWidget->setSelectionModifier(ImageViewerWidget::SelectionModifier::Add);
+			//if (_imageViewerWidget->selectionModifier() != ImageViewerWidget::SelectionModifier::Remove)
+			_imageViewerWidget->setSelectionModifier(ImageViewerWidget::SelectionModifier::Add);
 			break;
 		}
 
 		case Qt::Key::Key_Control:
 		{
-			if (_imageViewerWidget->selectionModifier() != ImageViewerWidget::SelectionModifier::Add)
-				_imageViewerWidget->setSelectionModifier(ImageViewerWidget::SelectionModifier::Remove);
+			//if (_imageViewerWidget->selectionModifier() != ImageViewerWidget::SelectionModifier::Add)
+			_imageViewerWidget->setSelectionModifier(ImageViewerWidget::SelectionModifier::Remove);
 			break;
 		}
 
@@ -304,14 +304,17 @@ void ImageViewerPlugin::keyPressEvent(QKeyEvent* keyEvent)
 
 void ImageViewerPlugin::keyReleaseEvent(QKeyEvent* keyEvent)
 {
-	qDebug() << "Key release event" << keyEvent->key();
+	//qDebug() << "Key release event" << keyEvent->key();
 
 	switch (keyEvent->key())
 	{
 		case Qt::Key::Key_Shift:
 		case Qt::Key::Key_Control:
 		{
-			_imageViewerWidget->setSelectionModifier(ImageViewerWidget::SelectionModifier::Replace);
+			if (_imageViewerWidget->selectionType() != ImageViewerWidget::SelectionType::Brush) {
+				_imageViewerWidget->setSelectionModifier(ImageViewerWidget::SelectionModifier::Replace);
+			}
+			
 			break;
 		}
 

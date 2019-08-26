@@ -10,6 +10,7 @@
 #include <QDebug>
 #include <QMenu>
 #include <QList>
+#include <QtMath>
 #include <QGuiApplication>
 
 // Panning and zooming inspired by: https://community.khronos.org/t/opengl-compound-zoom-and-pan-effect/72565/7
@@ -28,7 +29,8 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_selectionModifier(SelectionModifier::Replace),
 	_selectionRealtime(false),
 	_brushRadius(10.f),
-	_brushRadiusDelta(1.f)
+	_brushRadiusDelta(1.f),
+	_selectionGeometryColor(1, 0, 0)
 {
 	setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
 	
@@ -39,11 +41,23 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	connect(_imageViewerPlugin, &ImageViewerPlugin::selectedPointsChanged, this, &ImageViewerWidget::onSelectedPointsChanged);
 }
 
+ImageViewerWidget::SelectionType ImageViewerWidget::selectionType() const
+{
+	return _selectionType;
+}
+
 void ImageViewerWidget::setSelectionType(const SelectionType& selectionType)
 {
 	qDebug() << "Set selection type" << selectionType;
 
 	_selectionType = selectionType;
+
+	if (selectionType == SelectionType::Brush) {
+		_selectionModifier = SelectionModifier::Add;
+	}
+	else {
+		_selectionModifier = SelectionModifier::Replace;
+	}
 
 	update();
 
@@ -59,14 +73,18 @@ void ImageViewerWidget::setSelectionModifier(const SelectionModifier& selectionM
 {
 	qDebug() << "Set selection modifier" << selectionModifier;
 
-	_selectionModifier = selectionModifier;
+	if (selectionType() == SelectionType::Brush && selectionModifier == SelectionModifier::Replace) {
+	}
+	else {
+		_selectionModifier = selectionModifier;
 
-	emit selectionModifierChanged();
+		emit selectionModifierChanged();
+	}
 }
 
 void ImageViewerWidget::setBrushRadius(const float& brushRadius)
 {
-	_brushRadius = brushRadius;
+	_brushRadius = qBound(0.01f, 10000.f, brushRadius);
 
 	update();
 
@@ -237,15 +255,15 @@ void ImageViewerWidget::drawSelectionRectangle(const QPoint& start, const QPoint
 {
 	const auto z = -0.5;
 
-	glColor4f(0.f, 1.f, 0.f, 0.1f);
+	glColor4f(_selectionGeometryColor.red(), _selectionGeometryColor.green(), _selectionGeometryColor.blue(), 1.f);
 
-	glBegin(GL_QUADS);
-	{
-		glVertex3f(start.x(), height() - start.y(), z);
-		glVertex3f(end.x(), height() - start.y(), z);
-		glVertex3f(end.x(), height() - end.y(), z);
-		glVertex3f(start.x(), height() - end.y(), z);
-	}
+	glBegin(GL_LINE_LOOP);
+
+	glVertex3f(start.x(), height() - start.y(), z);
+	glVertex3f(end.x(), height() - start.y(), z);
+	glVertex3f(end.x(), height() - end.y(), z);
+	glVertex3f(start.x(), height() - end.y(), z);
+
 	glEnd();
 }
 
@@ -254,6 +272,8 @@ void ImageViewerWidget::drawSelectionBrush()
 	auto brushCenter = QWidget::mapFromGlobal(QCursor::pos());
 
 	brushCenter.setY(height() - brushCenter.y());
+
+	glColor4f(_selectionGeometryColor.red(), _selectionGeometryColor.green(), _selectionGeometryColor.blue(), 1.f);
 
 	drawCircle(brushCenter, _brushRadius, 20);
 }
@@ -278,8 +298,8 @@ void ImageViewerWidget::drawSelectionGeometry()
 		case SelectionType::Rectangle:
 		{
 			if (_selecting) {
-				const auto currentMousePosition = QWidget::mapFromGlobal(QCursor::pos());
-				drawSelectionRectangle(_initialMousePosition, currentMousePosition);
+				const auto currentMouseWorldPos = QWidget::mapFromGlobal(QCursor::pos());
+				drawSelectionRectangle(_initialMousePosition, currentMouseWorldPos);
 			}
 			
 			break;
@@ -363,11 +383,13 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* event)
 	}
 	else {
 		if (_imageViewerPlugin->isStack()) {
+			/*
 			if (_selectionModifier == SelectionModifier::Replace) {
 				qDebug() << "Reset selection";
 
 				_imageViewerPlugin->setSelection(Indices());
 			}
+			*/
 
 			_initialMousePosition = _mousePosition;
 			_selecting = true;
@@ -390,7 +412,7 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* event) {
 			if (_imageViewerPlugin->isStack()) {
 				_selecting = true;
 
-				if (_selectionRealtime) {
+				if (_selectionRealtime || _selectionType == SelectionType::Brush) {
 					updateSelection();
 				}
 			}
@@ -411,7 +433,7 @@ void ImageViewerWidget::wheelEvent(QWheelEvent* event) {
 	if (!imageInitialized())
 		return;
 
-	qDebug() << "Mouse wheel event" << event->delta();
+	//qDebug() << "Mouse wheel event" << event->delta();
 
 	if (event->modifiers() & Qt::AltModifier) {
 		const auto world_x = (event->posF().x() - _pan.x()) / _zoom;
@@ -560,19 +582,20 @@ QPoint ImageViewerWidget::worldToScreen(const QPoint& world) const
 }*/
 void ImageViewerWidget::updateSelection()
 {
-	qDebug() << "Update selection" << _selectionType;
+	//qDebug() << "Update selection" << _selectionType;
+
+	const auto imageSize		= _imageViewerPlugin->imageSize();
+	const auto halfImageSize	= _imageViewerPlugin->imageSize() / 2;
+	const auto imageRect		= QRect(-halfImageSize.width(), -halfImageSize.height(), imageSize.width(), imageSize.height());
 
 	switch (_selectionType)
 	{
 		case SelectionType::Rectangle: {
-			const auto initialMousePosition = screenToWorld(QPoint(_initialMousePosition.x(), _initialMousePosition.y()));
-			const auto currentMousePosition = screenToWorld(QPoint(_mousePosition.x(), _mousePosition.y()));
-			const auto selectionTopLeft		= QPoint(qMin(initialMousePosition.x(), currentMousePosition.x()), qMin(initialMousePosition.y(), currentMousePosition.y()));
-			const auto selectionBottomRight = QPoint(qMax(initialMousePosition.x(), currentMousePosition.x()), qMax(initialMousePosition.y(), currentMousePosition.y()));
+			const auto initialMouseWorldPos = screenToWorld(QPoint(_initialMousePosition.x(), _initialMousePosition.y()));
+			const auto currentMouseWorldPos = screenToWorld(QPoint(_mousePosition.x(), _mousePosition.y()));
+			const auto selectionTopLeft		= QPoint(qMin(initialMouseWorldPos.x(), currentMouseWorldPos.x()), qMin(initialMouseWorldPos.y(), currentMouseWorldPos.y()));
+			const auto selectionBottomRight = QPoint(qMax(initialMouseWorldPos.x(), currentMouseWorldPos.x()), qMax(initialMouseWorldPos.y(), currentMouseWorldPos.y()));
 			const auto selectionRect		= QRect(selectionTopLeft, selectionBottomRight);
-			const auto imageSize			= _imageViewerPlugin->imageSize();
-			const auto halfImageSize		= _imageViewerPlugin->imageSize() / 2;
-			const auto imageRect			= QRect(-halfImageSize.width(), -halfImageSize.height(), imageSize.width(), imageSize.height());
 
 			//qDebug() << imageRect << selectionRect;
 
@@ -607,6 +630,45 @@ void ImageViewerWidget::updateSelection()
 			break;
 		}
 
+		case SelectionType::Brush: {
+			const auto currentMouseWorldPos = screenToWorld(QPoint(_mousePosition.x(), _mousePosition.y()));
+			const auto brushRadius			= _brushRadius / _zoom;
+			const auto offset				= QPoint(qCeil(brushRadius), qCeil(brushRadius));
+			const auto selectionRect		= QRect(currentMouseWorldPos - offset, currentMouseWorldPos + offset);
+
+			if (imageRect.intersects(selectionRect)) {
+				qDebug() << "Intersects";
+				auto imageSelection = selectionRect.intersected(imageRect);
+
+				const auto noSelectedPixels = imageSelection.width() * imageSelection.height();
+
+				auto selection = Indices();
+
+				selection.resize(noSelectedPixels);
+
+				const auto imageWidth = imageSize.width();
+				const auto imageHeight = imageSize.height();
+				const auto imageSelectionWidth = imageSelection.width();
+				const auto imageSelectionHeight = imageSelection.height();
+
+				auto selectionIndex = 0;
+
+				for (int x = imageSelection.x(); x < (imageSelection.x() + imageSelection.width()); x++) {
+					for (int y = imageSelection.y(); y < (imageSelection.y() + imageSelection.height()); y++) {
+
+						const auto imageY = imageHeight - (y + (imageHeight / 2)) - 1;
+						selection[selectionIndex] = imageY * imageWidth + (x + (imageWidth / 2));
+
+						selectionIndex++;
+					}
+				}
+
+				select(selection);
+			}
+
+			break;
+		}
+
 		default:
 			break;
 	}
@@ -618,7 +680,7 @@ void ImageViewerWidget::select(std::vector<unsigned int>& indices)
 		switch (_selectionModifier) {
 			case SelectionModifier::Replace:
 			{
-				qDebug() << "Replace selection";
+				//qDebug() << "Replace selection";
 
 				_imageViewerPlugin->setSelection(indices);
 				break;
@@ -627,7 +689,7 @@ void ImageViewerWidget::select(std::vector<unsigned int>& indices)
 			
 			case SelectionModifier::Add:
 			{
-				qDebug() << "Add to selection";
+				//qDebug() << "Add to selection";
 
 				const auto selection = _imageViewerPlugin->selection();
 				auto selectionSet = std::set<Index>(selection.begin(), selection.end());
@@ -643,7 +705,7 @@ void ImageViewerWidget::select(std::vector<unsigned int>& indices)
 
 			case SelectionModifier::Remove:
 			{
-				qDebug() << "Remove from selection";
+				//qDebug() << "Remove from selection";
 
 				const auto selection = _imageViewerPlugin->selection();
 				auto selectionSet = std::set<Index>(selection.begin(), selection.end());
