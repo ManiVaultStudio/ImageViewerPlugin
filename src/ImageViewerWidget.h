@@ -21,6 +21,8 @@
 
 #include <QMouseEvent>
 #include <QColor>
+#include <QAction>
+#include <QMenu>
 
 #include <memory>
 
@@ -94,6 +96,9 @@ private:
 	void updateSelection();
 	void select(std::vector<unsigned int>& indices);
 	
+	void createActions();
+	void createMenus();
+
 private:
 	ImageViewerPlugin*	_imageViewerPlugin;
 	QOpenGLTexture		_texture;
@@ -111,4 +116,12 @@ private:
 	float				_brushRadius;
 	float				_brushRadiusDelta;
 	QColor				_selectionGeometryColor;
+
+	QAction*			_zoomToExtentsAction;
+	QAction*			_rectangleSelectionAction;
+	QAction*			_brushSelectionAction;
+	QAction*			_freehandSelectionAction;
+	QAction*			_clearSelectionAction;
+	QMenu*				_contextMenu;
+	QMenu*				_selectionMenu;
 };

@@ -39,6 +39,9 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	connect(_imageViewerPlugin, &ImageViewerPlugin::displayImageIdsChanged, this, &ImageViewerWidget::onDisplayImageIdsChanged);
 	connect(_imageViewerPlugin, QOverload<const QString&>::of(&ImageViewerPlugin::currentDataSetNameChanged), this, &ImageViewerWidget::zoomExtents);
 	connect(_imageViewerPlugin, &ImageViewerPlugin::selectedPointsChanged, this, &ImageViewerWidget::onSelectedPointsChanged);
+
+	createActions();
+	createMenus();
 }
 
 ImageViewerWidget::SelectionType ImageViewerWidget::selectionType() const
@@ -369,44 +372,46 @@ void ImageViewerWidget::paintGL() {
 	drawSelectionGeometry();
 }
 
-void ImageViewerWidget::mousePressEvent(QMouseEvent* event) 
+void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent) 
 {
 	if (!imageInitialized())
 		return;
 
 	//qDebug() << "Mouse press event" << event->pos();
 
-	_mousePosition = event->pos();
+	if (mouseEvent->button() == Qt::LeftButton) {
+		_mousePosition = mouseEvent->pos();
 
-	if (event->modifiers() & Qt::AltModifier) {
+		if (mouseEvent->modifiers() & Qt::AltModifier) {
 
-	}
-	else {
-		if (_imageViewerPlugin->isStack()) {
-			/*
-			if (_selectionModifier == SelectionModifier::Replace) {
-				qDebug() << "Reset selection";
+		}
+		else {
+			if (_imageViewerPlugin->isStack()) {
+				/*
+				if (_selectionModifier == SelectionModifier::Replace) {
+					qDebug() << "Reset selection";
 
-				_imageViewerPlugin->setSelection(Indices());
+					_imageViewerPlugin->setSelection(Indices());
+				}
+				*/
+
+				_initialMousePosition = _mousePosition;
+				_selecting = true;
 			}
-			*/
-
-			_initialMousePosition = _mousePosition;
-			_selecting = true;
 		}
 	}
 }
 
-void ImageViewerWidget::mouseMoveEvent(QMouseEvent* event) {
+void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 
 	if (!imageInitialized())
 		return;
 
 	//qDebug() << "Mouse move event" << event->pos();
 
-	if (event->buttons() == Qt::LeftButton) {
-		if (event->modifiers() & Qt::AltModifier) {
-			pan(QPointF(event->pos().x() - _mousePosition.x(), -(event->pos().y() - _mousePosition.y())));
+	if (mouseEvent->buttons() == Qt::LeftButton) {
+		if (mouseEvent->modifiers() & Qt::AltModifier) {
+			pan(QPointF(mouseEvent->pos().x() - _mousePosition.x(), -(mouseEvent->pos().y() - _mousePosition.y())));
 		}
 		else {
 			if (_imageViewerPlugin->isStack()) {
@@ -418,7 +423,7 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* event) {
 			}
 		}
 
-		_mousePosition = event->pos();
+		_mousePosition = mouseEvent->pos();
 
 		update();
 	}
@@ -428,22 +433,22 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* event) {
 	}
 }
 
-void ImageViewerWidget::wheelEvent(QWheelEvent* event) {
+void ImageViewerWidget::wheelEvent(QWheelEvent* wheelEvent) {
 
 	if (!imageInitialized())
 		return;
 
 	//qDebug() << "Mouse wheel event" << event->delta();
 
-	if (event->modifiers() & Qt::AltModifier) {
-		const auto world_x = (event->posF().x() - _pan.x()) / _zoom;
-		const auto world_y = (event->posF().y() - _pan.y()) / _zoom;
+	if (wheelEvent->modifiers() & Qt::AltModifier) {
+		const auto world_x = (wheelEvent->posF().x() - _pan.x()) / _zoom;
+		const auto world_y = (wheelEvent->posF().y() - _pan.y()) / _zoom;
 
-		auto zoomCenter = event->posF();
+		auto zoomCenter = wheelEvent->posF();
 
-		zoomCenter.setY(height() - event->posF().y());
+		zoomCenter.setY(height() - wheelEvent->posF().y());
 
-		if (event->delta() > 0) {
+		if (wheelEvent->delta() > 0) {
 			zoomAt(zoomCenter, 1.f - _zoomSensitivity);
 		}
 		else {
@@ -454,7 +459,7 @@ void ImageViewerWidget::wheelEvent(QWheelEvent* event) {
 	}
 	else {
 		if (_selectionType == SelectionType::Brush) {
-			if (event->delta() > 0) {
+			if (wheelEvent->delta() > 0) {
 				setBrushRadius(_brushRadius + _brushRadiusDelta);
 			}
 			else {
@@ -464,44 +469,34 @@ void ImageViewerWidget::wheelEvent(QWheelEvent* event) {
 	}
 }
 
-void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* event) {
+void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 
 	if (!imageInitialized())
 		return;
 
 	//qDebug() << "Mouse release event";
 
-	if (event->button() == Qt::RightButton)
+	if (mouseEvent->button() == Qt::RightButton)
 	{
-		QMenu menu;
-
-		QAction* zoomToExtentsAction = new QAction("Zoom extents", this);
-
-		// zoomToExtentsAction->setShortcut(QKeySequence(Qt::Key_Space));
-		zoomToExtentsAction->setToolTip("Zoom to the boundaries of the image");
-		
-		connect(zoomToExtentsAction, &QAction::triggered, this, &ImageViewerWidget::zoomExtents);
-
-		menu.addAction(zoomToExtentsAction);
-
-		menu.addSeparator();
-		menu.exec(mapToGlobal(event->pos()));
+		_contextMenu->exec(mapToGlobal(mouseEvent->pos()));
 	}
 
-	if (event->modifiers() & Qt::AltModifier) {
+	if (mouseEvent->modifiers() & Qt::AltModifier) {
 
 	}
 	else {
-		if (_imageViewerPlugin->isStack()) {
-			_selecting = false;
+		if (_selecting) {
+			if (_imageViewerPlugin->isStack()) {
+				_selecting = false;
 
-			updateSelection();
+				updateSelection();
+			}
 		}
 	}
 
 	update();
 
-	QOpenGLWidget::mouseReleaseEvent(event);
+	QOpenGLWidget::mouseReleaseEvent(mouseEvent);
 }
 
 void ImageViewerWidget::pan(const QPointF& delta) {
@@ -578,11 +573,9 @@ QPoint ImageViewerWidget::worldToScreen(const QPoint& world) const
 	return QPoint();
 }
 
-/*
-}*/
 void ImageViewerWidget::updateSelection()
 {
-	//qDebug() << "Update selection" << _selectionType;
+	qDebug() << "Update selection" << _selectionType;
 
 	const auto imageSize		= _imageViewerPlugin->imageSize();
 	const auto halfImageSize	= _imageViewerPlugin->imageSize() / 2;
@@ -720,4 +713,40 @@ void ImageViewerWidget::select(std::vector<unsigned int>& indices)
 			}
 		}
 	}
+}
+
+void ImageViewerWidget::createActions()
+{
+	_zoomToExtentsAction = new QAction("Zoom extents", this);
+	_zoomToExtentsAction->setToolTip("Zoom to the boundaries of the image");
+
+	connect(_zoomToExtentsAction, &QAction::triggered, this, &ImageViewerWidget::zoomExtents);
+
+	_rectangleSelectionAction = new QAction("Rectangle", this);
+
+	_brushSelectionAction = new QAction("Brush", this);
+	_brushSelectionAction->setEnabled(false);
+
+	_freehandSelectionAction = new QAction("Freehand", this);
+	_freehandSelectionAction->setEnabled(false);
+
+	_clearSelectionAction = new QAction("Clear", this);
+}
+
+void ImageViewerWidget::createMenus()
+{
+	_contextMenu = new QMenu();
+
+	_contextMenu->addAction(_zoomToExtentsAction);
+	_contextMenu->addSeparator();
+
+	_selectionMenu = new QMenu("Selection");
+
+	_selectionMenu->addAction(_rectangleSelectionAction);
+	_selectionMenu->addAction(_brushSelectionAction);
+	_selectionMenu->addAction(_freehandSelectionAction);
+	_selectionMenu->addSeparator();
+	_selectionMenu->addAction(_clearSelectionAction);
+
+	_contextMenu->addMenu(_selectionMenu);
 }
