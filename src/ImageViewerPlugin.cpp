@@ -19,7 +19,9 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	_imageViewerWidget(nullptr),
 	_settingsWidget(nullptr),
 	_currentDataSetName(""),
-	_currentImageId(-1)
+	_averageImages(false),
+	_currentImageId(-1),
+	_displayImageIds()
 {
 	setFocusPolicy(Qt::FocusPolicy::StrongFocus);
 
@@ -252,7 +254,9 @@ void ImageViewerPlugin::dataRemoved(const QString name)
 
 void ImageViewerPlugin::selectionChanged(const QString dataName)
 {
-	// setAverageImages(hasSelection() && imageCollectionType() == "SEQUENCE");
+	if (imageCollectionType() == "SEQUENCE") {
+		setAverageImages(hasSelection());
+	}
 
 	emit selectedPointsChanged();
 }

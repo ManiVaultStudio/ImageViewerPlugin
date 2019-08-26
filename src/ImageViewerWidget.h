@@ -66,6 +66,7 @@ signals:
 public:
 	void onDisplayImageIdsChanged();
 	void onSelectedPointsChanged();
+	void onCurrentDataSetNameChanged();
 
 protected:
 	void initializeGL() Q_DECL_OVERRIDE;

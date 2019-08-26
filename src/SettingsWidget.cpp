@@ -83,11 +83,14 @@ void SettingsWidget::onAverageImagesChanged(const bool& averageImages)
 
 void SettingsWidget::onSelectedPointsChanged()
 {
+	updateImagesComboBox();
+
 	update();
 }
 
 void SettingsWidget::updateImagesComboBox()
 {
+	qDebug() << "updateImagesComboBox";
 	const auto imageCollectionType = _imageViewerPlugin->imageCollectionType();
 
 	_imagesComboBox->clear();

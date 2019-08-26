@@ -38,7 +38,7 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	setMouseTracking(true);
 
 	connect(_imageViewerPlugin, &ImageViewerPlugin::displayImageIdsChanged, this, &ImageViewerWidget::onDisplayImageIdsChanged);
-	connect(_imageViewerPlugin, QOverload<const QString&>::of(&ImageViewerPlugin::currentDataSetNameChanged), this, &ImageViewerWidget::zoomExtents);
+	connect(_imageViewerPlugin, QOverload<const QString&>::of(&ImageViewerPlugin::currentDataSetNameChanged), this, &ImageViewerWidget::onCurrentDataSetNameChanged);
 	connect(_imageViewerPlugin, &ImageViewerPlugin::selectedPointsChanged, this, &ImageViewerWidget::onSelectedPointsChanged);
 
 	createActions();
@@ -112,7 +112,7 @@ void ImageViewerWidget::onDisplayImageIdsChanged()
 
 	PointsPlugin& pointsData = _imageViewerPlugin->pointsData();
 	
-	std::vector<unsigned char> image, selectionOverlay;
+	std::vector<unsigned char> image;
 
 	image.resize(noPixels * 3);
 
@@ -159,16 +159,6 @@ void ImageViewerWidget::onDisplayImageIdsChanged()
 				image[pixelId * 3 + 2] = pixelValue;
 			}
 		}
-
-		if (_imageViewerPlugin->hasSelection()) {
-			for (unsigned int index : _imageViewerPlugin->selection())
-			{
-				selectionOverlay[index * 4 + 0] = _selectionColor.red();
-				selectionOverlay[index * 4 + 1] = _selectionColor.green();
-				selectionOverlay[index * 4 + 2] = _selectionColor.blue();
-				selectionOverlay[index * 4 + 3] = 128;
-			}
-		}
 	}
 
 	_texture.setData(QOpenGLTexture::PixelFormat::RGB, QOpenGLTexture::PixelType::UInt8, static_cast<void*>(&image[0]));
@@ -205,6 +195,13 @@ void ImageViewerWidget::onSelectedPointsChanged()
 	}
 
 	update();
+}
+
+void ImageViewerWidget::onCurrentDataSetNameChanged()
+{
+	_selecting = false;
+
+	zoomExtents();
 }
 
 void ImageViewerWidget::setupTextures(const QSize& imageSize)
@@ -631,29 +628,32 @@ void ImageViewerWidget::updateSelection()
 			const auto selectionRect		= QRect(currentMouseWorldPos - offset, currentMouseWorldPos + offset);
 
 			if (imageRect.intersects(selectionRect)) {
-				qDebug() << "Intersects";
+				//qDebug() << "Intersects";
+
 				auto imageSelection = selectionRect.intersected(imageRect);
 
 				const auto noSelectedPixels = imageSelection.width() * imageSelection.height();
 
 				auto selection = Indices();
 
-				selection.resize(noSelectedPixels);
+				selection.reserve(noSelectedPixels);
 
-				const auto imageWidth = imageSize.width();
-				const auto imageHeight = imageSize.height();
-				const auto imageSelectionWidth = imageSelection.width();
+				const auto imageWidth			= imageSize.width();
+				const auto imageHeight			= imageSize.height();
+				const auto imageSelectionWidth	= imageSelection.width();
 				const auto imageSelectionHeight = imageSelection.height();
-
-				auto selectionIndex = 0;
+				const auto center				= QVector2D(currentMouseWorldPos);
 
 				for (int x = imageSelection.x(); x < (imageSelection.x() + imageSelection.width()); x++) {
 					for (int y = imageSelection.y(); y < (imageSelection.y() + imageSelection.height()); y++) {
-
 						const auto imageY = imageHeight - (y + (imageHeight / 2)) - 1;
-						selection[selectionIndex] = imageY * imageWidth + (x + (imageWidth / 2));
 
-						selectionIndex++;
+						const auto pos = QVector2D(x, y) - QVector2D(selectionRect.center());
+						//qDebug() << pos.length();
+
+						if (pos.length() < (_brushRadius / _zoom)) {
+							selection.push_back(imageY * imageWidth + (x + (imageWidth / 2)));
+						}
 					}
 				}
 
