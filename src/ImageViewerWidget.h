@@ -100,6 +100,8 @@ private:
 	void createActions();
 	void createMenus();
 
+	QMenu* contextMenu() const;
+
 private:
 	ImageViewerPlugin*	_imageViewerPlugin;
 	QOpenGLTexture		_texture;

@@ -362,7 +362,10 @@ void ImageViewerWidget::paintGL() {
 	glColor4f(1.f, 1.f, 1.f, 1.f);
 
 	drawTextureQuad(_texture, 0.5);
-	drawTextureQuad(_selectionOverlayTexture, 0);
+
+	if (_imageViewerPlugin->imageCollectionType() == "STACK") {
+		drawTextureQuad(_selectionOverlayTexture, 0);
+	}
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -476,7 +479,7 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 
 	if (mouseEvent->button() == Qt::RightButton)
 	{
-		_contextMenu->exec(mapToGlobal(mouseEvent->pos()));
+		contextMenu()->exec(mapToGlobal(mouseEvent->pos()));
 	}
 
 	if (mouseEvent->modifiers() & Qt::AltModifier) {
@@ -738,8 +741,7 @@ void ImageViewerWidget::createMenus()
 {
 	_contextMenu = new QMenu();
 
-	_contextMenu->addAction(_zoomToExtentsAction);
-	_contextMenu->addSeparator();
+	
 
 	_selectionMenu = new QMenu("Selection");
 
@@ -749,5 +751,17 @@ void ImageViewerWidget::createMenus()
 	_selectionMenu->addSeparator();
 	_selectionMenu->addAction(_clearSelectionAction);
 
-	_contextMenu->addMenu(_selectionMenu);
+	
+}
+
+QMenu* ImageViewerWidget::contextMenu() const
+{
+	_contextMenu->addAction(_zoomToExtentsAction);
+
+	if (_imageViewerPlugin->imageCollectionType() == "STACK") {
+		_contextMenu->addSeparator();
+		_contextMenu->addMenu(_selectionMenu);
+	}
+
+	return _contextMenu;
 }
