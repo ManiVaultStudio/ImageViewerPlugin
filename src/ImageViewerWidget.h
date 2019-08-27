@@ -96,6 +96,8 @@ private:
 	QPoint worldToScreen(const QPoint& world) const;
 	void updateSelection();
 	void select(std::vector<unsigned int>& indices);
+
+	void commitSelection();
 	
 	void createActions();
 	void createMenus();
@@ -103,29 +105,33 @@ private:
 	QMenu* contextMenu() const;
 
 private:
-	ImageViewerPlugin*	_imageViewerPlugin;
-	QOpenGLTexture		_texture;
-	QOpenGLTexture		_selectionOverlayTexture;
-	QPoint				_initialMousePosition;
-	QPoint				_mousePosition;
-	QPointF				_pan;
-	float				_zoom;
-	float				_zoomSensitivity;
-	int					_margin;
-	bool				_selecting;
-	SelectionType		_selectionType;
-	SelectionModifier	_selectionModifier;
-	bool				_selectionRealtime;
-	float				_brushRadius;
-	float				_brushRadiusDelta;
-	QColor				_selectionColor;
-	QColor				_selectionGeometryColor;
-
-	QAction*			_zoomToExtentsAction;
-	QAction*			_rectangleSelectionAction;
-	QAction*			_brushSelectionAction;
-	QAction*			_freehandSelectionAction;
-	QAction*			_clearSelectionAction;
-	QMenu*				_contextMenu;
-	QMenu*				_selectionMenu;
+	ImageViewerPlugin*			_imageViewerPlugin;
+	std::vector<unsigned char>	_imageTextureData;
+	std::vector<unsigned char>	_overlayTextureData;
+	std::vector<unsigned char>	_selectionTextureData;
+	QOpenGLTexture				_imageTexture;
+	QOpenGLTexture				_overlayTexture;
+	QOpenGLTexture				_selectionTexture;
+	QPoint						_initialMousePosition;
+	QPoint						_mousePosition;
+	QPointF						_pan;
+	float						_zoom;
+	float						_zoomSensitivity;
+	int							_margin;
+	bool						_selecting;
+	SelectionType				_selectionType;
+	SelectionModifier			_selectionModifier;
+	bool						_selectionRealtime;
+	float						_brushRadius;
+	float						_brushRadiusDelta;
+	QColor						_selectionColor;
+	QColor						_selectionGeometryColor;
+	std::vector<unsigned int>	_selection;
+	QAction*					_zoomToExtentsAction;
+	QAction*					_rectangleSelectionAction;
+	QAction*					_brushSelectionAction;
+	QAction*					_freehandSelectionAction;
+	QAction*					_clearSelectionAction;
+	QMenu*						_contextMenu;
+	QMenu*						_selectionMenu;
 };

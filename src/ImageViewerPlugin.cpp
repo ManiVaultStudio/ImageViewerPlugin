@@ -61,7 +61,7 @@ void ImageViewerPlugin::setSelection(Indices& indices)
 {
 	IndexSet& selection = dynamic_cast<IndexSet&>(pointsData().getSelection());
 
-	selection.indices.swap(indices);
+	selection.indices = indices;
 
 	_core->notifySelectionChanged(selection.getDataName());
 }
