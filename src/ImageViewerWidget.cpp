@@ -43,6 +43,15 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 
 	createActions();
 	createMenus();
+
+	QSurfaceFormat surfaceFormat;
+	
+	surfaceFormat.setRenderableType(QSurfaceFormat::OpenGL);
+	surfaceFormat.setProfile(QSurfaceFormat::CoreProfile);
+	//surfaceFormat.setVersion(4, 1);
+	surfaceFormat.setSamples(16);
+	
+	setFormat(surfaceFormat);
 }
 
 ImageViewerWidget::SelectionType ImageViewerWidget::selectionType() const
@@ -325,6 +334,8 @@ void ImageViewerWidget::initializeGL()
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	glEnable(GL_MULTISAMPLE);
 }
 
 void ImageViewerWidget::resizeGL(int w, int h)
