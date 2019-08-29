@@ -209,6 +209,7 @@ void ImageViewerWidget::onSelectedPointsChanged()
 	auto missed = QList<int>();
 
 	resetTextureData("selection");
+	resetTexture("overlay");
 
 	TextureData& selectionTextureData = textureData("selection");
 
@@ -235,8 +236,7 @@ void ImageViewerWidget::onCurrentDataSetNameChanged()
 {
 	_selecting = false;
 
-	//resetTextureData(_overlayTextureData);
-	//applyTextureData(_overlayTexture, _overlayTextureData);
+	resetTexture("overlay");
 
 	zoomExtents();
 }
@@ -405,9 +405,8 @@ void ImageViewerWidget::paintGL() {
 
 	drawTextureQuad(texture("image"), 1.0f);
 
-	drawTextureQuad(texture("overlay"), 0.5f);
-
 	if (_imageViewerPlugin->imageCollectionType() == "STACK") {
+		drawTextureQuad(texture("overlay"), 0.5f);
 		drawTextureQuad(texture("selection"), 0.0f);
 	}
 
@@ -788,6 +787,15 @@ void ImageViewerWidget::commitSelection()
 	resetTextureData("overlay");
 	
 	_imageViewerPlugin->setSelection(_selection);
+}
+
+void ImageViewerWidget::resetTexture(const QString & textureName)
+{
+	resetTextureData(textureName);
+
+	if (texture(textureName).isCreated()) {
+		applyTextureData(textureName);
+	}
 }
 
 void ImageViewerWidget::resetTextureData(const QString& textureName)

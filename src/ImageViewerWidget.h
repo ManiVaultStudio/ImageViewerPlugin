@@ -81,6 +81,7 @@ private:
 	void updateSelection();
 	void modifySelection(std::vector<unsigned int>& indices);
 	void commitSelection();
+	void resetTexture(const QString& textureName);
 	void resetTextureData(const QString& textureName);
 	void applyTextureData(const QString& name);
 	void createActions();
