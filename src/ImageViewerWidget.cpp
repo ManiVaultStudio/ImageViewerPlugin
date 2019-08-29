@@ -122,6 +122,7 @@ void ImageViewerWidget::setBrushRadius(const float& brushRadius)
 void ImageViewerWidget::onDisplayImageIdsChanged()
 {
 	const auto imageSize			= _imageViewerPlugin->imageSize();
+	const auto noPixels				= _imageViewerPlugin->noPixels();
 	const auto imageCollectionType	= _imageViewerPlugin->imageCollectionType();
 	const auto displayImageIds		= _imageViewerPlugin->displayImageIds();
 	const auto noDisplayImages		= displayImageIds.size();
@@ -143,7 +144,7 @@ void ImageViewerWidget::onDisplayImageIdsChanged()
 				float pixelValue = 0.f;
 
 				for (unsigned int displayImageId : displayImageIds) {
-					const auto imageOffset	= displayImageId * _imageViewerPlugin->noPixels();
+					const auto imageOffset	= displayImageId * noPixels;
 					const auto pointId		= imageOffset + pixelId;
 
 					pixelValue += pointsData.data[pointId];
@@ -186,7 +187,7 @@ void ImageViewerWidget::onDisplayImageIdsChanged()
 		}
 	}
 
-	_imageTexture.setData(QOpenGLTexture::PixelFormat::RGBA, QOpenGLTexture::PixelType::UInt8, static_cast<void*>(&_imageTextureData[0]));
+	applyTextureData(_imageTexture, _imageTextureData);
 
 	update();
 }
@@ -201,8 +202,7 @@ void ImageViewerWidget::onSelectedPointsChanged()
 
 	auto missed = QList<int>();
 
-	_selectionTextureData.clear();
-	_selectionTextureData.resize(noPixels * 4);
+	resetTextureData(_selectionTextureData);
 
 	if (imageCollectionType == "STACK") {
 		if (_imageViewerPlugin->hasSelection()) {
@@ -217,7 +217,7 @@ void ImageViewerWidget::onSelectedPointsChanged()
 			}
 		}
 
-		_selectionTexture.setData(QOpenGLTexture::PixelFormat::RGBA, QOpenGLTexture::PixelType::UInt8, static_cast<void*>(&_selectionTextureData[0]));
+		applyTextureData(_selectionTexture, _selectionTextureData);
 	}
 
 	update();
@@ -706,7 +706,7 @@ void ImageViewerWidget::updateSelection()
 	}
 }
 
-void ImageViewerWidget::modifySelection(std::vector<unsigned int>& indices)
+void ImageViewerWidget::modifySelection(Indices& indices)
 {
 	if (indices.size() > 0) {
 		switch (_selectionModifier) {
@@ -730,7 +730,7 @@ void ImageViewerWidget::modifySelection(std::vector<unsigned int>& indices)
 					selectionSet.insert(index);
 				}
 
-				_selection = std::vector<unsigned int>(selectionSet.begin(), selectionSet.end());
+				_selection = Indices(selectionSet.begin(), selectionSet.end());
 				
 				break;
 			}
@@ -745,18 +745,13 @@ void ImageViewerWidget::modifySelection(std::vector<unsigned int>& indices)
 					selectionSet.erase(index);
 				}
 
-				_selection = std::vector<unsigned int>(selectionSet.begin(), selectionSet.end());
+				_selection = Indices(selectionSet.begin(), selectionSet.end());
 
 				break;
 			}
 		}
 
-		const auto imageSize = _imageViewerPlugin->imageSize();
-		const auto noPixels = imageSize.width() * imageSize.height();
-
-		_overlayTextureData = std::vector<unsigned char>();
-
-		_overlayTextureData.resize(noPixels * 4);
+		resetTextureData(_overlayTextureData);
 
 		for (Index index : _selection) {
 			const auto offset = index * 4;
@@ -767,7 +762,7 @@ void ImageViewerWidget::modifySelection(std::vector<unsigned int>& indices)
 			_overlayTextureData[offset + 3] = _selectionProxyColor.alpha();
 		}
 
-		_overlayTexture.setData(QOpenGLTexture::PixelFormat::RGBA, QOpenGLTexture::PixelType::UInt8, static_cast<void*>(&_overlayTextureData[0]));
+		applyTextureData(_overlayTexture, _overlayTextureData);
 
 		update();
 	}
@@ -788,6 +783,11 @@ void ImageViewerWidget::resetTextureData(TextureData& textureData)
 
 	textureData.clear();
 	textureData.resize(_imageViewerPlugin->noPixels() * 4);
+}
+
+void ImageViewerWidget::applyTextureData(QOpenGLTexture& texture, TextureData& textureData)
+{
+	texture.setData(QOpenGLTexture::PixelFormat::RGBA, QOpenGLTexture::PixelType::UInt8, static_cast<void*>(&textureData[0]));
 }
 
 void ImageViewerWidget::createActions()

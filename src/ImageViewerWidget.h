@@ -56,10 +56,10 @@ protected:
 	void resizeGL(int w, int h) Q_DECL_OVERRIDE;
 	void paintGL() Q_DECL_OVERRIDE;
 
-	void mousePressEvent(QMouseEvent* event) Q_DECL_OVERRIDE;
-	void mouseMoveEvent(QMouseEvent* event) Q_DECL_OVERRIDE;
-	void wheelEvent(QWheelEvent* event) Q_DECL_OVERRIDE;
-	void mouseReleaseEvent(QMouseEvent* event) Q_DECL_OVERRIDE;
+	void mousePressEvent(QMouseEvent* mouseEvent) Q_DECL_OVERRIDE;
+	void mouseMoveEvent(QMouseEvent* mouseEvent) Q_DECL_OVERRIDE;
+	void wheelEvent(QWheelEvent* wheelEvent) Q_DECL_OVERRIDE;
+	void mouseReleaseEvent(QMouseEvent* mouseEvent) Q_DECL_OVERRIDE;
 
 private:
 	void setupTexture(QOpenGLTexture& texture);
@@ -82,40 +82,41 @@ private:
 	void modifySelection(std::vector<unsigned int>& indices);
 	void commitSelection();
 	void resetTextureData(TextureData& textureData);
+	void applyTextureData(QOpenGLTexture& texture, TextureData& textureData);
 	void createActions();
 	void createMenus();
 
 	QMenu* contextMenu() const;
 	
 private:
-	ImageViewerPlugin*			_imageViewerPlugin;
-	TextureData					_imageTextureData;
-	TextureData					_overlayTextureData;
-	TextureData					_selectionTextureData;
-	QOpenGLTexture				_imageTexture;
-	QOpenGLTexture				_overlayTexture;
-	QOpenGLTexture				_selectionTexture;
-	QPoint						_initialMousePosition;
-	QPoint						_mousePosition;
-	QPointF						_pan;
-	float						_zoom;
-	float						_zoomSensitivity;
-	int							_margin;
-	bool						_selecting;
-	SelectionType				_selectionType;
-	SelectionModifier			_selectionModifier;
-	bool						_selectionRealtime;
-	float						_brushRadius;
-	float						_brushRadiusDelta;
-	QColor						_selectionColor;
-	QColor						_selectionProxyColor;
-	QColor						_selectionGeometryColor;
-	std::vector<unsigned int>	_selection;
-	QAction*					_zoomToExtentsAction;
-	QAction*					_rectangleSelectionAction;
-	QAction*					_brushSelectionAction;
-	QAction*					_freehandSelectionAction;
-	QAction*					_clearSelectionAction;
-	QMenu*						_contextMenu;
-	QMenu*						_selectionMenu;
+	ImageViewerPlugin*	_imageViewerPlugin;
+	TextureData			_imageTextureData;
+	TextureData			_overlayTextureData;
+	TextureData			_selectionTextureData;
+	QOpenGLTexture		_imageTexture;
+	QOpenGLTexture		_overlayTexture;
+	QOpenGLTexture		_selectionTexture;
+	QPoint				_initialMousePosition;
+	QPoint				_mousePosition;
+	QPointF				_pan;
+	float				_zoom;
+	float				_zoomSensitivity;
+	int					_margin;
+	bool				_selecting;
+	SelectionType		_selectionType;
+	SelectionModifier	_selectionModifier;
+	bool				_selectionRealtime;
+	float				_brushRadius;
+	float				_brushRadiusDelta;
+	QColor				_selectionColor;
+	QColor				_selectionProxyColor;
+	QColor				_selectionGeometryColor;
+	Indices				_selection;
+	QAction*			_zoomToExtentsAction;
+	QAction*			_rectangleSelectionAction;
+	QAction*			_brushSelectionAction;
+	QAction*			_freehandSelectionAction;
+	QAction*			_clearSelectionAction;
+	QMenu*				_contextMenu;
+	QMenu*				_selectionMenu;
 };

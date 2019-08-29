@@ -7,13 +7,16 @@
 #include <QLabel>
 
 SettingsWidget::SettingsWidget(ImageViewerPlugin* imageViewerPlugin) :
-	_imageViewerPlugin(imageViewerPlugin)
+	_imageViewerPlugin(imageViewerPlugin),
+	_dataSetsComboBox(nullptr),
+	_imagesLabel(nullptr),
+	_imagesComboBox(nullptr),
+	_imagesAverageCheckBox(nullptr)
 {
 	_dataSetsComboBox		= new QComboBox();
 	_imagesLabel			= new QLabel("Image");
 	_imagesComboBox			= new QComboBox();
 	_imagesAverageCheckBox	= new QCheckBox("Average images");
-	_zoomToSelection		= new QCheckBox("Zoom to selection");
 
 	_imagesComboBox->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
 
@@ -28,7 +31,6 @@ SettingsWidget::SettingsWidget(ImageViewerPlugin* imageViewerPlugin) :
 	imagesLayout->addWidget(_imagesAverageCheckBox);
 
 	layout->addLayout(imagesLayout);
-	layout->addWidget(_zoomToSelection);
 
 	setLayout(layout);
 
@@ -83,14 +85,15 @@ void SettingsWidget::onAverageImagesChanged(const bool& averageImages)
 
 void SettingsWidget::onSelectedPointsChanged()
 {
-	updateImagesComboBox();
+	if (_imageViewerPlugin->imageCollectionType() == "SEQUENCE") {
+		updateImagesComboBox();
+	}
 
 	update();
 }
 
 void SettingsWidget::updateImagesComboBox()
 {
-	qDebug() << "updateImagesComboBox";
 	const auto imageCollectionType = _imageViewerPlugin->imageCollectionType();
 
 	_imagesComboBox->clear();
@@ -130,7 +133,6 @@ void SettingsWidget::update()
 		_imagesLabel->setEnabled(false);
 		_imagesComboBox->setEnabled(false);
 		_imagesAverageCheckBox->setEnabled(false);
-		_zoomToSelection->setEnabled(false);
 		return;
 	}
 
@@ -148,7 +150,6 @@ void SettingsWidget::update()
 		_imagesAverageCheckBox->setToolTip("Average images");
 
 		_imagesAverageCheckBox->setEnabled(_imageViewerPlugin->noImages() > 1);
-		_zoomToSelection->setEnabled(false);
 	}
 
 	if (imageCollectionType == "STACK") {
@@ -161,6 +162,5 @@ void SettingsWidget::update()
 		const auto dataSetDimensionNames = _imageViewerPlugin->dimensionNames();
 
 		_imagesAverageCheckBox->setEnabled(dataSetDimensionNames.size() > 1);
-		_zoomToSelection->setEnabled(true);
 	}
 }

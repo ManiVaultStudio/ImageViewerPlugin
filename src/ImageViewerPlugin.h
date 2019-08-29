@@ -3,6 +3,7 @@
 #include <ViewPlugin.h>
 
 #include "PointsPlugin.h"
+#include "Common.h"
 
 #include <QComboBox>
 
@@ -11,9 +12,6 @@ using hdps::plugin::ViewPlugin;
 
 class ImageViewerWidget;
 class SettingsWidget;
-
-using Index = unsigned int;
-using Indices = std::vector<Index>;
 
 class ImageViewerPlugin : public ViewPlugin
 {

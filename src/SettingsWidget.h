@@ -37,5 +37,4 @@ private:
 	QLabel*				_imagesLabel;
 	QComboBox*			_imagesComboBox;
 	QCheckBox*			_imagesAverageCheckBox;
-	QCheckBox*			_zoomToSelection;
 };
