@@ -20,9 +20,10 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_imageTextureData(),
 	_overlayTextureData(),
 	_selectionTextureData(),
-	_imageTexture(QOpenGLTexture::Target2D),
-	_overlayTexture(QOpenGLTexture::Target2D),
-	_selectionTexture(QOpenGLTexture::Target2D),
+	_textures(),
+	// _imageTexture(QOpenGLTexture::Target2D),
+	//_overlayTexture(QOpenGLTexture::Target2D),
+	//_selectionTexture(QOpenGLTexture::Target2D),
 	_initialMousePosition(),
 	_mousePosition(),
 	_zoom(1.f),
@@ -65,6 +66,10 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	surfaceFormat.setSamples(16);
 	
 	setFormat(surfaceFormat);
+
+	_textures.emplace("image", QOpenGLTexture::Target2D);
+	_textures.emplace("overlay", QOpenGLTexture::Target2D);
+	_textures.emplace("selection", QOpenGLTexture::Target2D);
 }
 
 ImageViewerWidget::SelectionType ImageViewerWidget::selectionType() const
@@ -130,7 +135,7 @@ void ImageViewerWidget::onDisplayImageIdsChanged()
 	const auto width				= imageSize.width();
 	const auto height				= imageSize.height();
 	
-	if (QSize(_imageTexture.width(), _imageTexture.height()) != imageSize) {
+	if (QSize(texture("image").width(), texture("image").height()) != imageSize) {
 		setupTextures();
 	}
 
@@ -187,7 +192,7 @@ void ImageViewerWidget::onDisplayImageIdsChanged()
 		}
 	}
 
-	applyTextureData(_imageTexture, _imageTextureData);
+	applyTextureData(texture("image"), _imageTextureData);
 
 	update();
 }
@@ -217,7 +222,7 @@ void ImageViewerWidget::onSelectedPointsChanged()
 			}
 		}
 
-		applyTextureData(_selectionTexture, _selectionTextureData);
+		applyTextureData(texture("selection"), _selectionTextureData);
 	}
 
 	update();
@@ -253,9 +258,9 @@ void ImageViewerWidget::setupTextures()
 	resetTextureData(_overlayTextureData);
 	resetTextureData(_selectionTextureData);
 
-	setupTexture(_imageTexture);
-	setupTexture(_overlayTexture);
-	setupTexture(_selectionTexture);
+	setupTexture(texture("image"));
+	setupTexture(texture("overlay"));
+	setupTexture(texture("selection"));
 }
 
 void ImageViewerWidget::drawQuad(const float& z) {
@@ -395,12 +400,12 @@ void ImageViewerWidget::paintGL() {
 	
 	glColor4f(1.f, 1.f, 1.f, 1.f);
 
-	drawTextureQuad(_imageTexture, 1.0f);
+	drawTextureQuad(texture("image"), 1.0f);
 
-	drawTextureQuad(_overlayTexture, 0.5f);
+	drawTextureQuad(texture("overlay"), 0.5f);
 
 	if (_imageViewerPlugin->imageCollectionType() == "STACK") {
-		drawTextureQuad(_selectionTexture, 0.0f);
+		drawTextureQuad(texture("selection"), 0.0f);
 	}
 
 	glMatrixMode(GL_MODELVIEW);
@@ -597,9 +602,9 @@ void ImageViewerWidget::resetView()
 	update();
 }
 
-bool ImageViewerWidget::imageInitialized() const
+bool ImageViewerWidget::imageInitialized()
 {
-	return _imageTexture.isCreated();
+	return texture("image").isCreated();
 }
 
 QPoint ImageViewerWidget::screenToWorld(const QPoint& screen) const
@@ -765,7 +770,7 @@ void ImageViewerWidget::modifySelection(Indices& indices)
 			_overlayTextureData[offset + 3] = _selectionProxyColor.alpha();
 		}
 
-		applyTextureData(_overlayTexture, _overlayTextureData);
+		applyTextureData(texture("overlay"), _overlayTextureData);
 
 		update();
 	}
@@ -834,4 +839,9 @@ QMenu* ImageViewerWidget::contextMenu() const
 	}
 
 	return _contextMenu;
+}
+
+QOpenGLTexture & ImageViewerWidget::texture(const QString& name)
+{
+	return _textures.at(name);
 }

@@ -75,7 +75,7 @@ private:
 	void zoomAt(const QPointF & position, const float & factor);
 	void zoomExtents();
 	void resetView();
-	bool imageInitialized() const;
+	bool imageInitialized();
 	QPoint screenToWorld(const QPoint& screen) const;
 	QPoint worldToScreen(const QPoint& world) const;
 	void updateSelection();
@@ -88,14 +88,17 @@ private:
 
 	QMenu* contextMenu() const;
 	
+	QOpenGLTexture& texture(const QString& name);
+
 private:
 	ImageViewerPlugin*	_imageViewerPlugin;
 	TextureData			_imageTextureData;
 	TextureData			_overlayTextureData;
 	TextureData			_selectionTextureData;
-	QOpenGLTexture		_imageTexture;
-	QOpenGLTexture		_overlayTexture;
-	QOpenGLTexture		_selectionTexture;
+	TextureMap			_textures;
+	//QOpenGLTexture		_imageTexture;
+	//QOpenGLTexture		_overlayTexture;
+	//QOpenGLTexture		_selectionTexture;
 	QPoint				_initialMousePosition;
 	QPoint				_mousePosition;
 	QPointF				_pan;
