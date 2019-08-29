@@ -1,23 +1,7 @@
 #pragma once
 
-#include "renderers/PointRenderer.h"
-#include "renderers/DensityRenderer.h"
-#include "renderers/SelectionRenderer.h"
-
-#include "SelectionListener.h"
-
-#include "graphics/BufferObject.h"
-#include "graphics/Vector2f.h"
-#include "graphics/Vector3f.h"
-#include "graphics/Matrix3f.h"
-#include "graphics/Selection.h"
-#include "graphics/Shader.h"
-
-#include "widgets/ColormapWidget.h"
-
 #include <QOpenGLWidget>
 #include <QOpenGLTexture>
-#include <QOpenGLFunctions_3_3_Core>
 
 #include <QMouseEvent>
 #include <QColor>
@@ -26,12 +10,9 @@
 
 #include <memory>
 
-using namespace hdps;
-using namespace hdps::gui;
-
 class ImageViewerPlugin;
 
-class ImageViewerWidget : public QOpenGLWidget, QOpenGLFunctions_3_3_Core
+class ImageViewerWidget : public QOpenGLWidget
 {
 	Q_OBJECT
 
@@ -95,7 +76,7 @@ private:
 	QPoint screenToWorld(const QPoint& screen) const;
 	QPoint worldToScreen(const QPoint& world) const;
 	void updateSelection();
-	void select(std::vector<unsigned int>& indices);
+	void modifySelection(std::vector<unsigned int>& indices);
 
 	void commitSelection();
 	
@@ -103,7 +84,7 @@ private:
 	void createMenus();
 
 	QMenu* contextMenu() const;
-
+	
 private:
 	ImageViewerPlugin*			_imageViewerPlugin;
 	std::vector<unsigned char>	_imageTextureData;
@@ -125,6 +106,7 @@ private:
 	float						_brushRadius;
 	float						_brushRadiusDelta;
 	QColor						_selectionColor;
+	QColor						_selectionProxyColor;
 	QColor						_selectionGeometryColor;
 	std::vector<unsigned int>	_selection;
 	QAction*					_zoomToExtentsAction;

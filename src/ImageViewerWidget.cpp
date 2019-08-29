@@ -33,9 +33,10 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_selectionModifier(SelectionModifier::Replace),
 	_selectionRealtime(false),
 	_brushRadius(10.f),
-	_brushRadiusDelta(1.f),
-	_selectionColor(0, 1, 0),
-	_selectionGeometryColor(1, 0, 0),
+	_brushRadiusDelta(2.0f),
+	_selectionColor(255, 0, 0, 200),
+	_selectionProxyColor(255, 0, 0, 100),
+	_selectionGeometryColor(255, 0, 0, 255),
 	_selection(),
 	_zoomToExtentsAction(nullptr),
 	_rectangleSelectionAction(nullptr),
@@ -191,24 +192,23 @@ void ImageViewerWidget::onSelectedPointsChanged()
 	const auto imageSize			= _imageViewerPlugin->imageSize();
 	const auto noPixels				= imageSize.width() * imageSize.height();
 
-	std::vector<unsigned char> selectionOverlay;
-	
-	selectionOverlay.resize(noPixels * 4);
-
 	auto missed = QList<int>();
+
+	_selectionTextureData.clear();
+	_selectionTextureData.resize(noPixels * 4);
 
 	if (imageCollectionType == "STACK") {
 		if (_imageViewerPlugin->hasSelection()) {
 			for (unsigned int index : _imageViewerPlugin->selection())
 			{
-				selectionOverlay[index * 4 + 0] = 0;
-				selectionOverlay[index * 4 + 1] = 255;
-				selectionOverlay[index * 4 + 2] = 0;
-				selectionOverlay[index * 4 + 3] = 128;
+				_selectionTextureData[index * 4 + 0] = _selectionColor.red();
+				_selectionTextureData[index * 4 + 1] = _selectionColor.green();
+				_selectionTextureData[index * 4 + 2] = _selectionColor.blue();
+				_selectionTextureData[index * 4 + 3] = _selectionColor.alpha();
 			}
 		}
 
-		_selectionTexture.setData(QOpenGLTexture::PixelFormat::RGBA, QOpenGLTexture::PixelType::UInt8, static_cast<void*>(&selectionOverlay[0]));
+		_selectionTexture.setData(QOpenGLTexture::PixelFormat::RGBA, QOpenGLTexture::PixelType::UInt8, static_cast<void*>(&_selectionTextureData[0]));
 	}
 
 	update();
@@ -350,8 +350,6 @@ void ImageViewerWidget::initializeGL()
 {
 	qDebug() << "Initializing OpenGL";
 
-	initializeOpenGLFunctions();
-
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -450,9 +448,9 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 		else {
 			if (_imageViewerPlugin->isStack()) {
 				_selecting = true;
+				updateSelection();
 
-				if (_selectionRealtime || _selectionType == SelectionType::Brush) {
-					updateSelection();
+				if (_selectionRealtime || _selectionType == SelectionType::Brush) {	
 				}
 			}
 		}
@@ -611,7 +609,7 @@ QPoint ImageViewerWidget::worldToScreen(const QPoint& world) const
 
 void ImageViewerWidget::updateSelection()
 {
-	qDebug() << "Update selection" << _selectionType;
+	//qDebug() << "Update selection" << _selectionType;
 
 	const auto imageSize		= _imageViewerPlugin->imageSize();
 	const auto halfImageSize	= _imageViewerPlugin->imageSize() / 2;
@@ -653,7 +651,7 @@ void ImageViewerWidget::updateSelection()
 					}
 				}
 
-				select(selection);
+				modifySelection(selection);
 			}
 
 			break;
@@ -695,7 +693,7 @@ void ImageViewerWidget::updateSelection()
 					}
 				}
 
-				select(selection);
+				modifySelection(selection);
 			}
 
 			break;
@@ -706,12 +704,14 @@ void ImageViewerWidget::updateSelection()
 	}
 }
 
-void ImageViewerWidget::select(std::vector<unsigned int>& indices)
+void ImageViewerWidget::modifySelection(std::vector<unsigned int>& indices)
 {
 	if (indices.size() > 0) {
 		switch (_selectionModifier) {
 			case SelectionModifier::Replace:
 			{
+				//qDebug() << "Replace selection";
+				
 				_selection = indices;
 
 				break;
@@ -748,12 +748,36 @@ void ImageViewerWidget::select(std::vector<unsigned int>& indices)
 				break;
 			}
 		}
+
+		const auto imageSize = _imageViewerPlugin->imageSize();
+		const auto noPixels = imageSize.width() * imageSize.height();
+
+		_overlayTextureData = std::vector<unsigned char>();
+
+		_overlayTextureData.resize(noPixels * 4);
+
+		for (Index index : _selection) {
+			_overlayTextureData[index * 4 + 0] = _selectionProxyColor.red();
+			_overlayTextureData[index * 4 + 1] = _selectionProxyColor.green();
+			_overlayTextureData[index * 4 + 2] = _selectionProxyColor.blue();
+			_overlayTextureData[index * 4 + 3] = _selectionProxyColor.alpha();
+		}
+
+		_overlayTexture.setData(QOpenGLTexture::PixelFormat::RGBA, QOpenGLTexture::PixelType::UInt8, static_cast<void*>(&_overlayTextureData[0]));
+
+		update();
 	}
 }
 
 void ImageViewerWidget::commitSelection()
 {
-	qDebug() << "Comitting selection";
+	qDebug() << "Comitting selection to core";
+
+	const auto imageSize	= _imageViewerPlugin->imageSize();
+	const auto noPixels		= imageSize.width() * imageSize.height();
+
+	_overlayTextureData.clear();
+	_overlayTextureData.resize(noPixels * 4);
 
 	_imageViewerPlugin->setSelection(_selection);
 }
