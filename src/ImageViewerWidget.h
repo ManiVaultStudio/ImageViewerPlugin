@@ -10,6 +10,8 @@
 
 #include <memory>
 
+#include "Common.h"
+
 class ImageViewerPlugin;
 
 class ImageViewerWidget : public QOpenGLWidget
@@ -60,7 +62,8 @@ protected:
 	void mouseReleaseEvent(QMouseEvent* event) Q_DECL_OVERRIDE;
 
 private:
-	void setupTextures(const QSize& imageSize);
+	void setupTexture(QOpenGLTexture& texture);
+	void setupTextures();
 	void drawQuad(const float& z);
 	void drawCircle(const QPointF & center, const float & radius, const int & noSegments = 30);
 	void drawSelectionRectangle(const QPoint& start, const QPoint& end);
@@ -77,9 +80,8 @@ private:
 	QPoint worldToScreen(const QPoint& world) const;
 	void updateSelection();
 	void modifySelection(std::vector<unsigned int>& indices);
-
 	void commitSelection();
-	
+	void resetTextureData(TextureData& textureData);
 	void createActions();
 	void createMenus();
 
@@ -87,9 +89,9 @@ private:
 	
 private:
 	ImageViewerPlugin*			_imageViewerPlugin;
-	std::vector<unsigned char>	_imageTextureData;
-	std::vector<unsigned char>	_overlayTextureData;
-	std::vector<unsigned char>	_selectionTextureData;
+	TextureData					_imageTextureData;
+	TextureData					_overlayTextureData;
+	TextureData					_selectionTextureData;
 	QOpenGLTexture				_imageTexture;
 	QOpenGLTexture				_overlayTexture;
 	QOpenGLTexture				_selectionTexture;

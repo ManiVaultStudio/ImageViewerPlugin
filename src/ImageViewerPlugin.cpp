@@ -185,6 +185,11 @@ Indices ImageViewerPlugin::displayImageIds() const
 	return _displayImageIds;
 }
 
+long ImageViewerPlugin::noPixels() const
+{
+	return imageSize().width() * imageSize().height();
+}
+
 void ImageViewerPlugin::updateDisplayImageIds()
 {
 	// qDebug() << "Update display image IDs";

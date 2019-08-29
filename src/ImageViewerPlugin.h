@@ -49,6 +49,7 @@ public:
 	Index currentImageId() const;
 	void setCurrentImageId(const int& currentImageId);
 	Indices displayImageIds() const;
+	long noPixels() const;
 
 private:
 	void updateDisplayImageIds();

@@ -28,6 +28,7 @@ set(SOURCES
     src/ImageViewerWidget.cpp
 	src/SettingsWidget.h
     src/SettingsWidget.cpp
+    src/Common.h
 )
 
 set(UIS)
