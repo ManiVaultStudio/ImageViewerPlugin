@@ -34,13 +34,11 @@ SettingsWidget::SettingsWidget(ImageViewerPlugin* imageViewerPlugin) :
 
 	setLayout(layout);
 
-	// connect(_dataSetsComboBox, QOverload<const QString&>::of(&QComboBox::currentTextChanged), _imageViewerPlugin, &ImageViewerPlugin::setCurrentDataSetName);
 	connect(_imagesComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), _imageViewerPlugin, &ImageViewerPlugin::setCurrentImageId);
-
 	connect(_dataSetsComboBox, QOverload<const QString&>::of(&QComboBox::currentTextChanged), _imageViewerPlugin, &ImageViewerPlugin::setCurrentDataSetName);
 	connect(_imageViewerPlugin, QOverload<const QString&>::of(&ImageViewerPlugin::currentDataSetNameChanged), this, &SettingsWidget::onCurrentDataSetNameChanged);
 	connect(_imageViewerPlugin, &ImageViewerPlugin::selectedPointsChanged, this, &SettingsWidget::onSelectedPointsChanged);
-	connect(_imageViewerPlugin, QOverload<const bool&>::of(&ImageViewerPlugin::averageImagesChanged), this, &SettingsWidget::update);
+	connect(_imageViewerPlugin, QOverload<const bool&>::of(&ImageViewerPlugin::averageImagesChanged), this, &SettingsWidget::onAverageImagesChanged);
 	connect(_imagesAverageCheckBox, &QCheckBox::stateChanged, _imageViewerPlugin, QOverload<const bool&>::of(&ImageViewerPlugin::setAverageImages));
 
 	update();
@@ -71,9 +69,8 @@ void SettingsWidget::onCurrentDataSetNameChanged(const QString& name)
 
 	if (_imageViewerPlugin->imageCollectionType() == "STACK") {
 		_imageViewerPlugin->setAverageImages(false);
+		_imageViewerPlugin->setCurrentImageId(0);
 	}
-
-	updateImagesComboBox();
 
 	update();
 }
@@ -81,46 +78,13 @@ void SettingsWidget::onCurrentDataSetNameChanged(const QString& name)
 void SettingsWidget::onAverageImagesChanged(const bool& averageImages)
 {
 	_imagesAverageCheckBox->setChecked(averageImages);
+	
+	update();
 }
 
 void SettingsWidget::onSelectedPointsChanged()
 {
-	if (_imageViewerPlugin->imageCollectionType() == "SEQUENCE") {
-		updateImagesComboBox();
-	}
-
 	update();
-}
-
-void SettingsWidget::updateImagesComboBox()
-{
-	const auto imageCollectionType = _imageViewerPlugin->imageCollectionType();
-
-	_imagesComboBox->clear();
-
-	if (imageCollectionType == "SEQUENCE") {
-		auto imageNames = QStringList();
-
-		if (_imageViewerPlugin->hasSelection()) {
-			for (unsigned int index : _imageViewerPlugin->selection())
-			{
-				imageNames << QString("%1").arg(index);
-			}
-		}
-		else {
-			for (int i = 1; i <= _imageViewerPlugin->noImages(); i++) {
-				imageNames << QString("%1").arg(i);
-			}
-		}
-
-		_imagesComboBox->addItems(imageNames);
-	}
-
-	if (imageCollectionType == "STACK") {
-		const auto dataSetDimensionNames = _imageViewerPlugin->dimensionNames();
-		
-		_imagesComboBox->addItems(dataSetDimensionNames);
-	}
 }
 
 void SettingsWidget::update()
@@ -138,7 +102,10 @@ void SettingsWidget::update()
 
 	_imagesLabel->setEnabled(true);
 	_imagesAverageCheckBox->setChecked(_imageViewerPlugin->averageImages());
+	
+	_imagesComboBox->clear();
 	_imagesComboBox->setEnabled(!_imageViewerPlugin->averageImages());
+	_imagesComboBox->setToolTip("");
 
 	const auto imageCollectionType = _imageViewerPlugin->imageCollectionType();
 
@@ -150,6 +117,45 @@ void SettingsWidget::update()
 		_imagesAverageCheckBox->setToolTip("Average images");
 
 		_imagesAverageCheckBox->setEnabled(_imageViewerPlugin->noImages() > 1);
+
+		auto imageList = QStringList();
+
+		if (_imageViewerPlugin->hasSelection()) {
+			auto images = QStringList();
+
+			for (unsigned int index : _imageViewerPlugin->selection())
+			{
+				images << QString("%1").arg(index);
+			}
+
+			const auto imagesString = images.join(", ");
+
+			imageList << imagesString;
+
+			_imagesComboBox->setToolTip(imagesString);
+		}
+		else {
+			if (_imageViewerPlugin->averageImages()) {
+				auto images = QStringList();
+
+				for (int i = 1; i <= _imageViewerPlugin->noImages(); i++) {
+					images << QString("%1").arg(i);
+				}
+
+				const auto imagesString = images.join(", ");
+
+				imageList << imagesString;
+
+				_imagesComboBox->setToolTip(imagesString);
+			}
+			else {
+				for (int i = 1; i <= _imageViewerPlugin->noImages(); i++) {
+					imageList << QString("%1").arg(i);
+				}
+			}
+		}
+
+		_imagesComboBox->addItems(imageList);
 	}
 
 	if (imageCollectionType == "STACK") {
@@ -162,5 +168,25 @@ void SettingsWidget::update()
 		const auto dataSetDimensionNames = _imageViewerPlugin->dimensionNames();
 
 		_imagesAverageCheckBox->setEnabled(dataSetDimensionNames.size() > 1);
+
+		auto imageList = QStringList();
+
+		if (_imageViewerPlugin->averageImages()) {
+			const auto imagesString = _imageViewerPlugin->dimensionNames().join(", ");
+
+			imageList << imagesString;
+
+			_imagesComboBox->setToolTip(imagesString);
+		}
+		else {
+			imageList = _imageViewerPlugin->dimensionNames();
+		}
+
+		_imagesComboBox->blockSignals(true);
+
+		_imagesComboBox->addItems(imageList);
+		_imagesComboBox->setCurrentIndex(_imageViewerPlugin->currentImageId());
+
+		_imagesComboBox->blockSignals(false);
 	}
 }

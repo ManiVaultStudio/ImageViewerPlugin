@@ -227,6 +227,9 @@ void ImageViewerWidget::onCurrentDataSetNameChanged()
 {
 	_selecting = false;
 
+	//resetTextureData(_overlayTextureData);
+	//applyTextureData(_overlayTexture, _overlayTextureData);
+
 	zoomExtents();
 }
 
