@@ -81,24 +81,20 @@ private:
 	void updateSelection();
 	void modifySelection(std::vector<unsigned int>& indices);
 	void commitSelection();
-	void resetTextureData(TextureData& textureData);
-	void applyTextureData(QOpenGLTexture& texture, TextureData& textureData);
+	void resetTextureData(const QString& textureName);
+	void applyTextureData(const QString& name);
 	void createActions();
 	void createMenus();
 
 	QMenu* contextMenu() const;
 	
 	QOpenGLTexture& texture(const QString& name);
+	TextureData& textureData(const QString& textureName);
 
 private:
 	ImageViewerPlugin*	_imageViewerPlugin;
-	TextureData			_imageTextureData;
-	TextureData			_overlayTextureData;
-	TextureData			_selectionTextureData;
-	TextureMap			_textures;
-	//QOpenGLTexture		_imageTexture;
-	//QOpenGLTexture		_overlayTexture;
-	//QOpenGLTexture		_selectionTexture;
+	TextureDataMap		_textureDataMap;
+	TextureMap			_textureMap;
 	QPoint				_initialMousePosition;
 	QPoint				_mousePosition;
 	QPointF				_pan;

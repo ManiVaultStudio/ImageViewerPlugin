@@ -17,13 +17,8 @@
 
 ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_imageViewerPlugin(imageViewerPlugin),
-	_imageTextureData(),
-	_overlayTextureData(),
-	_selectionTextureData(),
-	_textures(),
-	// _imageTexture(QOpenGLTexture::Target2D),
-	//_overlayTexture(QOpenGLTexture::Target2D),
-	//_selectionTexture(QOpenGLTexture::Target2D),
+	_textureDataMap(),
+	_textureMap(),
 	_initialMousePosition(),
 	_mousePosition(),
 	_zoom(1.f),
@@ -67,9 +62,13 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	
 	setFormat(surfaceFormat);
 
-	_textures.emplace("image", QOpenGLTexture::Target2D);
-	_textures.emplace("overlay", QOpenGLTexture::Target2D);
-	_textures.emplace("selection", QOpenGLTexture::Target2D);
+	_textureDataMap.insert(std::make_pair("image", TextureData()));
+	_textureDataMap.insert(std::make_pair("overlay", TextureData()));
+	_textureDataMap.insert(std::make_pair("selection", TextureData()));
+
+	_textureMap.emplace("image", QOpenGLTexture::Target2D);
+	_textureMap.emplace("overlay", QOpenGLTexture::Target2D);
+	_textureMap.emplace("selection", QOpenGLTexture::Target2D);
 }
 
 ImageViewerWidget::SelectionType ImageViewerWidget::selectionType() const
@@ -140,7 +139,9 @@ void ImageViewerWidget::onDisplayImageIdsChanged()
 	}
 
 	PointsPlugin& pointsData = _imageViewerPlugin->pointsData();
-		
+	
+	TextureData& imageTextureData = textureData("image");
+
 	if (imageCollectionType == "SEQUENCE") {
 		for (int x = 0; x < width; x++) {
 			for (int y = 0; y < height; y++) {
@@ -159,10 +160,10 @@ void ImageViewerWidget::onDisplayImageIdsChanged()
 
 				const auto offset = pixelId * 4;
 
-				_imageTextureData[offset + 0] = pixelValue;
-				_imageTextureData[offset + 1] = pixelValue;
-				_imageTextureData[offset + 2] = pixelValue;
-				_imageTextureData[offset + 3] = 255;
+				imageTextureData[offset + 0] = pixelValue;
+				imageTextureData[offset + 1] = pixelValue;
+				imageTextureData[offset + 2] = pixelValue;
+				imageTextureData[offset + 3] = 255;
 			}
 		}
 	}
@@ -184,15 +185,15 @@ void ImageViewerWidget::onDisplayImageIdsChanged()
 
 				const auto offset = pixelId * 4;
 
-				_imageTextureData[offset + 0] = pixelValue;
-				_imageTextureData[offset + 1] = pixelValue;
-				_imageTextureData[offset + 2] = pixelValue;
-				_imageTextureData[offset + 3] = 255;
+				imageTextureData[offset + 0] = pixelValue;
+				imageTextureData[offset + 1] = pixelValue;
+				imageTextureData[offset + 2] = pixelValue;
+				imageTextureData[offset + 3] = 255;
 			}
 		}
 	}
 
-	applyTextureData(texture("image"), _imageTextureData);
+	applyTextureData("image");
 
 	update();
 }
@@ -207,7 +208,9 @@ void ImageViewerWidget::onSelectedPointsChanged()
 
 	auto missed = QList<int>();
 
-	resetTextureData(_selectionTextureData);
+	resetTextureData("selection");
+
+	TextureData& selectionTextureData = textureData("selection");
 
 	if (imageCollectionType == "STACK") {
 		if (_imageViewerPlugin->hasSelection()) {
@@ -215,14 +218,14 @@ void ImageViewerWidget::onSelectedPointsChanged()
 			{
 				const auto offset = index * 4;
 
-				_selectionTextureData[offset + 0] = _selectionColor.red();
-				_selectionTextureData[offset + 1] = _selectionColor.green();
-				_selectionTextureData[offset + 2] = _selectionColor.blue();
-				_selectionTextureData[offset + 3] = _selectionColor.alpha();
+				selectionTextureData[offset + 0] = _selectionColor.red();
+				selectionTextureData[offset + 1] = _selectionColor.green();
+				selectionTextureData[offset + 2] = _selectionColor.blue();
+				selectionTextureData[offset + 3] = _selectionColor.alpha();
 			}
 		}
 
-		applyTextureData(texture("selection"), _selectionTextureData);
+		applyTextureData("selection");
 	}
 
 	update();
@@ -254,9 +257,9 @@ void ImageViewerWidget::setupTextures()
 	
 	qDebug() << "Setup textures";
 
-	resetTextureData(_imageTextureData);
-	resetTextureData(_overlayTextureData);
-	resetTextureData(_selectionTextureData);
+	resetTextureData("image");
+	resetTextureData("overlay");
+	resetTextureData("selection");
 
 	setupTexture(texture("image"));
 	setupTexture(texture("overlay"));
@@ -759,18 +762,20 @@ void ImageViewerWidget::modifySelection(Indices& indices)
 			}
 		}
 
-		resetTextureData(_overlayTextureData);
+		resetTextureData("overlay");
+
+		TextureData& overlayTextureData = textureData("overlay");
 
 		for (Index index : _selection) {
 			const auto offset = index * 4;
 
-			_overlayTextureData[offset + 0] = _selectionProxyColor.red();
-			_overlayTextureData[offset + 1] = _selectionProxyColor.green();
-			_overlayTextureData[offset + 2] = _selectionProxyColor.blue();
-			_overlayTextureData[offset + 3] = _selectionProxyColor.alpha();
+			overlayTextureData[offset + 0] = _selectionProxyColor.red();
+			overlayTextureData[offset + 1] = _selectionProxyColor.green();
+			overlayTextureData[offset + 2] = _selectionProxyColor.blue();
+			overlayTextureData[offset + 3] = _selectionProxyColor.alpha();
 		}
 
-		applyTextureData(texture("overlay"), _overlayTextureData);
+		applyTextureData("overlay");
 
 		update();
 	}
@@ -780,22 +785,23 @@ void ImageViewerWidget::commitSelection()
 {
 	qDebug() << "Comitting selection to core";
 
-	resetTextureData(_overlayTextureData);
+	resetTextureData("overlay");
 	
 	_imageViewerPlugin->setSelection(_selection);
 }
 
-void ImageViewerWidget::resetTextureData(TextureData& textureData)
+void ImageViewerWidget::resetTextureData(const QString& textureName)
 {
-	textureData = TextureData();
+	TextureData& data = textureData(textureName);
 
-	textureData.clear();
-	textureData.resize(_imageViewerPlugin->noPixels() * 4);
+	data.resize(_imageViewerPlugin->noPixels() * 4);
+
+	std::fill(data.begin(), data.end(), 0);
 }
 
-void ImageViewerWidget::applyTextureData(QOpenGLTexture& texture, TextureData& textureData)
+void ImageViewerWidget::applyTextureData(const QString& name)
 {
-	texture.setData(QOpenGLTexture::PixelFormat::RGBA, QOpenGLTexture::PixelType::UInt8, static_cast<void*>(&textureData[0]));
+	texture(name).setData(QOpenGLTexture::PixelFormat::RGBA, QOpenGLTexture::PixelType::UInt8, static_cast<void*>(&textureData(name)[0]));
 }
 
 void ImageViewerWidget::createActions()
@@ -841,7 +847,12 @@ QMenu* ImageViewerWidget::contextMenu() const
 	return _contextMenu;
 }
 
-QOpenGLTexture & ImageViewerWidget::texture(const QString& name)
+QOpenGLTexture& ImageViewerWidget::texture(const QString& name)
 {
-	return _textures.at(name);
+	return _textureMap.at(name);
+}
+
+TextureData& ImageViewerWidget::textureData(const QString& textureName)
+{
+	return _textureDataMap.at(textureName);
 }
