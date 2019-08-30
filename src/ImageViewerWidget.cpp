@@ -11,6 +11,7 @@
 #include <QMenu>
 #include <QList>
 #include <QtMath>
+#include <QPainter>
 #include <QGuiApplication>
 
 // Panning and zooming inspired by: https://community.khronos.org/t/opengl-compound-zoom-and-pan-effect/72565/7
@@ -387,11 +388,15 @@ void ImageViewerWidget::resizeGL(int w, int h)
 
 void ImageViewerWidget::paintGL() {
 
-	if (!imageInitialized())
-		return;
+	auto painter = new QPainter(this);
+
+	painter->beginNativePainting();
 
 	glClearColor(0.1, 0.1, 0.1, 1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	if (!imageInitialized())
+		return;
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -414,6 +419,8 @@ void ImageViewerWidget::paintGL() {
 	glLoadIdentity();
 
 	drawSelectionGeometry();
+
+	painter->endNativePainting();
 }
 
 void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent) 
