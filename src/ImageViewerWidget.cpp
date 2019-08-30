@@ -20,6 +20,7 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_imageViewerPlugin(imageViewerPlugin),
 	_textureDataMap(),
 	_textureMap(),
+	_interactionMode(InteractionMode::Selection),
 	_initialMousePosition(),
 	_mousePosition(),
 	_zoom(1.f),
@@ -70,6 +71,18 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_textureMap.emplace("image", QOpenGLTexture::Target2D);
 	_textureMap.emplace("overlay", QOpenGLTexture::Target2D);
 	_textureMap.emplace("selection", QOpenGLTexture::Target2D);
+}
+
+ImageViewerWidget::InteractionMode ImageViewerWidget::interactionMode() const
+{
+	return _interactionMode;
+}
+
+void ImageViewerWidget::setInteractionMode(const InteractionMode& interactionMode)
+{
+	qDebug() << "Set interaction mode" << interactionMode;
+
+	_interactionMode = interactionMode;
 }
 
 ImageViewerWidget::SelectionType ImageViewerWidget::selectionType() const
@@ -360,6 +373,35 @@ void ImageViewerWidget::drawSelectionGeometry()
 	}
 }
 
+void ImageViewerWidget::drawInfo(QPainter* painter)
+{
+	QFont font = painter->font();
+	font.setFamily("courier");
+	font.setPixelSize(16);
+	
+	painter->setFont(font);
+
+	const QRect rectangle = QRect(0, 0, 1000, 500);
+	QRect boundingRect;
+
+	auto infoLines = QStringList();
+
+	infoLines << "ALT: Navigation mode";
+
+	if (QGuiApplication::queryKeyboardModifiers().testFlag(Qt::AltModifier))
+	{
+		infoLines << "ALT + LMB: Pan";
+		infoLines << "ALT + MWL: Zoom";
+	}
+	else {
+		infoLines << "R: Rectangle selection";
+		infoLines << "B: Brush selection";
+	}
+
+	painter->setPen(Qt::white);
+	painter->drawText(rectangle, 0, infoLines.join("\n"), &boundingRect);
+}
+
 void ImageViewerWidget::initializeGL()
 {
 	qDebug() << "Initializing OpenGL";
@@ -421,6 +463,8 @@ void ImageViewerWidget::paintGL() {
 	drawSelectionGeometry();
 
 	painter->endNativePainting();
+
+	drawInfo(painter);
 }
 
 void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent) 

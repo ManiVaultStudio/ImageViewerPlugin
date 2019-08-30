@@ -21,6 +21,12 @@ class ImageViewerWidget : public QOpenGLWidget
 public:
 	ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin);
 
+	enum InteractionMode
+	{
+		Navigation,
+		Selection
+	};
+
 	enum SelectionType
 	{
 		Rectangle,
@@ -35,6 +41,8 @@ public:
 		Remove
 	};
 
+	InteractionMode interactionMode() const;
+	void setInteractionMode(const InteractionMode& interactionMode);
 	SelectionType selectionType() const;
 	void setSelectionType(const SelectionType& selectionType);
 	SelectionModifier selectionModifier() const;
@@ -70,6 +78,7 @@ private:
 	void drawSelectionBrush();
 	void drawTextureQuad(QOpenGLTexture& texture, const float& z);
 	void drawSelectionGeometry();
+	void drawInfo(QPainter* painter);
 	void pan(const QPointF& delta);
 	void zoom(const float& factor);
 	void zoomAt(const QPointF & position, const float & factor);
@@ -96,6 +105,7 @@ private:
 	ImageViewerPlugin*	_imageViewerPlugin;
 	TextureDataMap		_textureDataMap;
 	TextureMap			_textureMap;
+	InteractionMode		_interactionMode;
 	QPoint				_initialMousePosition;
 	QPoint				_mousePosition;
 	QPointF				_pan;
