@@ -126,8 +126,10 @@ QSize ImageViewerPlugin::imageSize() const
 {
 	PointsPlugin& points = pointsData();
 
-	if (points.hasProperty("imageSize")) {
-		return points.getProperty("imageSize").toSize();
+	if (isSequence() || isStack()) {
+		if (points.hasProperty("imageSizes")) {
+			return points.getProperty("imageSizes").toMap()["0"].toSize();
+		}
 	}
 
 	return QSize();
