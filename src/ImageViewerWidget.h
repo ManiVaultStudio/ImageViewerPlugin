@@ -66,8 +66,8 @@ protected:
 
 	void mousePressEvent(QMouseEvent* mouseEvent) Q_DECL_OVERRIDE;
 	void mouseMoveEvent(QMouseEvent* mouseEvent) Q_DECL_OVERRIDE;
-	void wheelEvent(QWheelEvent* wheelEvent) Q_DECL_OVERRIDE;
 	void mouseReleaseEvent(QMouseEvent* mouseEvent) Q_DECL_OVERRIDE;
+	void wheelEvent(QWheelEvent* wheelEvent) Q_DECL_OVERRIDE;
 
 private:
 	void setupTexture(QOpenGLTexture& texture);

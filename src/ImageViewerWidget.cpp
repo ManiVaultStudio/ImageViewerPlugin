@@ -82,6 +82,20 @@ void ImageViewerWidget::setInteractionMode(const InteractionMode& interactionMod
 {
 	qDebug() << "Set interaction mode" << interactionMode;
 
+	switch (interactionMode)
+	{
+		case InteractionMode::Navigation:
+			QWidget::setCursor(Qt::OpenHandCursor);
+			break;
+
+		case InteractionMode::Selection:
+			QWidget::setCursor(Qt::ArrowCursor);
+			break;
+
+		default:
+			break;
+	}
+
 	_interactionMode = interactionMode;
 }
 
@@ -139,6 +153,9 @@ void ImageViewerWidget::setBrushRadius(const float& brushRadius)
 
 void ImageViewerWidget::onDisplayImageIdsChanged()
 {
+	if (!isValid())
+		return;
+
 	const auto imageSize			= _imageViewerPlugin->imageSize();
 	const auto noPixels				= _imageViewerPlugin->noPixels();
 	const auto imageCollectionType	= _imageViewerPlugin->imageCollectionType();
@@ -430,9 +447,9 @@ void ImageViewerWidget::resizeGL(int w, int h)
 
 void ImageViewerWidget::paintGL() {
 
-	auto painter = new QPainter(this);
+	//auto painter = new QPainter(this);
 
-	painter->beginNativePainting();
+	//painter->beginNativePainting();
 
 	glClearColor(0.1, 0.1, 0.1, 1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -460,11 +477,13 @@ void ImageViewerWidget::paintGL() {
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	drawSelectionGeometry();
+	if (_interactionMode == InteractionMode::Selection) {
+		drawSelectionGeometry();
+	}
 
-	painter->endNativePainting();
+	//painter->endNativePainting();
 
-	drawInfo(painter);
+	//drawInfo(painter);
 }
 
 void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent) 
@@ -505,6 +524,10 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 	//qDebug() << "Mouse move event" << event->pos();
 
 	if (mouseEvent->buttons() == Qt::LeftButton) {
+		if (_interactionMode == InteractionMode::Navigation) {
+			QWidget::setCursor(Qt::ClosedHandCursor);
+		}
+
 		if (mouseEvent->modifiers() & Qt::AltModifier) {
 			pan(QPointF(mouseEvent->pos().x() - _mousePosition.x(), -(mouseEvent->pos().y() - _mousePosition.y())));
 		}
@@ -512,9 +535,6 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 			if (_imageViewerPlugin->isStack()) {
 				_selecting = true;
 				updateSelection();
-
-				if (_selectionRealtime || _selectionType == SelectionType::Brush) {	
-				}
 			}
 		}
 
@@ -526,6 +546,42 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 		if (_selectionType == SelectionType::Brush) 
 			update();
 	}
+}
+
+void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
+
+	if (!imageInitialized())
+		return;
+
+	//qDebug() << "Mouse release event";
+
+	if (_interactionMode == InteractionMode::Navigation) {
+		QWidget::setCursor(Qt::OpenHandCursor);
+	}
+
+	if (mouseEvent->button() == Qt::RightButton)
+	{
+		contextMenu()->exec(mapToGlobal(mouseEvent->pos()));
+	}
+
+	if (mouseEvent->modifiers() & Qt::AltModifier) {
+
+	}
+	else {
+		if (_selecting) {
+			if (_imageViewerPlugin->isStack()) {
+				_selecting = false;
+
+				updateSelection();
+			}
+
+			commitSelection();
+		}
+	}
+
+	update();
+
+	QOpenGLWidget::mouseReleaseEvent(mouseEvent);
 }
 
 void ImageViewerWidget::wheelEvent(QWheelEvent* wheelEvent) {
@@ -562,38 +618,6 @@ void ImageViewerWidget::wheelEvent(QWheelEvent* wheelEvent) {
 			}
 		}
 	}
-}
-
-void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
-
-	if (!imageInitialized())
-		return;
-
-	//qDebug() << "Mouse release event";
-
-	if (mouseEvent->button() == Qt::RightButton)
-	{
-		contextMenu()->exec(mapToGlobal(mouseEvent->pos()));
-	}
-
-	if (mouseEvent->modifiers() & Qt::AltModifier) {
-
-	}
-	else {
-		if (_selecting) {
-			if (_imageViewerPlugin->isStack()) {
-				_selecting = false;
-
-				updateSelection();
-			}
-
-			commitSelection();
-		}
-	}
-
-	update();
-
-	QOpenGLWidget::mouseReleaseEvent(mouseEvent);
 }
 
 void ImageViewerWidget::pan(const QPointF& delta) {
@@ -842,9 +866,8 @@ void ImageViewerWidget::commitSelection()
 
 void ImageViewerWidget::resetTexture(const QString & textureName)
 {
-	resetTextureData(textureName);
-
 	if (texture(textureName).isCreated()) {
+		resetTextureData(textureName);
 		applyTextureData(textureName);
 	}
 }

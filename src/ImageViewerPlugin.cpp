@@ -304,6 +304,12 @@ void ImageViewerPlugin::keyPressEvent(QKeyEvent* keyEvent)
 			break;
 		}
 
+		case Qt::Key::Key_Alt:
+		{
+			_imageViewerWidget->setInteractionMode(ImageViewerWidget::InteractionMode::Navigation);
+			break;
+		}
+
 		default:
 			break;
 	}
@@ -327,6 +333,12 @@ void ImageViewerPlugin::keyReleaseEvent(QKeyEvent* keyEvent)
 			break;
 		}
 
+		case Qt::Key::Key_Alt:
+		{
+			_imageViewerWidget->setInteractionMode(ImageViewerWidget::InteractionMode::Selection);
+			break;
+
+		}
 		default:
 			break;
 	}
