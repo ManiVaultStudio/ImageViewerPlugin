@@ -38,14 +38,18 @@ public:
 	bool isSequence() const;
 	bool isStack() const;
 	QStringList dimensionNames() const;
+	QStringList imageFileNames() const;
 	int noImages() const;
 	QSize imageSize() const;
-	QString currentDataSetName() const;
-	void setCurrentDataSetName(const QString& name);
-	bool averageImages() const;
-	void setAverageImages(const bool& averageImages);
-	Index currentImageId() const;
+	
+	QString currentDatasetName() const;
+	void setCurrentDatasetName(const QString& currentDatasetName);
+	int currentImageId() const;
 	void setCurrentImageId(const int& currentImageId);
+	int currentDimensionId() const;
+	void setCurrentDimensionId(const int& currentDimensionId);
+	bool averageImages() const;
+	void setAverageImages(const bool& average);
 	Indices displayImageIds() const;
 	long noPixels() const;
 
@@ -56,17 +60,20 @@ private:
 	void keyReleaseEvent(QKeyEvent* keyEvent) Q_DECL_OVERRIDE;
 
 signals:
-	void currentDataSetNameChanged(const QString& currentDataSetName);
-	void selectedPointsChanged();
+	void currentDatasetNameChanged(const QString&);
+	void currentImageIdChanged(const int&);
+	void currentDimensionIdChanged(const int&);
 	void averageImagesChanged(const bool& averageImages);
 	void displayImageIdsChanged();
+	void selectedPointsChanged();
 
 private:
 	ImageViewerWidget*		_imageViewerWidget;
 	SettingsWidget*			_settingsWidget;
-	QString					_currentDataSetName;
-	bool					_averageImages;
+	QString					_currentDatasetName;
 	int						_currentImageId;
+	int						_currentDimensionId;
+	bool					_averageImages;
 	Indices					_displayImageIds;
 };
 

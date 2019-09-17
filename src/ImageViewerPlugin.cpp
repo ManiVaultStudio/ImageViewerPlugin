@@ -18,15 +18,21 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	ViewPlugin("Image Viewer"),
 	_imageViewerWidget(nullptr),
 	_settingsWidget(nullptr),
-	_currentDataSetName(""),
-	_averageImages(false),
+	_currentDatasetName(),
 	_currentImageId(-1),
+	_currentDimensionId(),
+	_averageImages(false),
 	_displayImageIds()
 {
 	setFocusPolicy(Qt::FocusPolicy::StrongFocus);
 
 	_imageViewerWidget	= new ImageViewerWidget(this);
 	_settingsWidget		= new SettingsWidget(this);
+
+	connect(this, &ImageViewerPlugin::currentDatasetNameChanged, this, &ImageViewerPlugin::updateDisplayImageIds);
+	connect(this, &ImageViewerPlugin::currentImageIdChanged, this, &ImageViewerPlugin::updateDisplayImageIds);
+	connect(this, &ImageViewerPlugin::currentDimensionIdChanged, this, &ImageViewerPlugin::updateDisplayImageIds);
+	connect(this, &ImageViewerPlugin::averageImagesChanged, this, &ImageViewerPlugin::updateDisplayImageIds);
 }
 
 ImageViewerPlugin::~ImageViewerPlugin()
@@ -45,7 +51,7 @@ void ImageViewerPlugin::init()
 
 PointsPlugin& ImageViewerPlugin::pointsData() const
 {
-	const IndexSet& set = dynamic_cast<const IndexSet&>(_core->requestSet(_currentDataSetName));
+	const IndexSet& set = dynamic_cast<const IndexSet&>(_core->requestSet(_currentDatasetName));
 
 	return set.getData();
 }
@@ -73,7 +79,7 @@ bool ImageViewerPlugin::hasSelection() const
 
 QString ImageViewerPlugin::imageCollectionType() const
 {
-	if (_currentDataSetName.isEmpty())
+	if (_currentDatasetName.isEmpty())
 		return "";
 
 	PointsPlugin& points = pointsData();
@@ -111,15 +117,20 @@ QStringList ImageViewerPlugin::dimensionNames() const
 	return dimensionNames;
 }
 
-int ImageViewerPlugin::noImages() const
+QStringList ImageViewerPlugin::imageFileNames() const
 {
 	PointsPlugin& points = pointsData();
 
-	if (points.hasProperty("noImages")) {
-		return points.getProperty("noImages").toInt();
+	if (points.hasProperty("imageFileNames")) {
+		return points.getProperty("imageFileNames").toStringList();
 	}
 
-	return 0;
+	return QStringList();
+}
+
+int ImageViewerPlugin::noImages() const
+{
+	return imageFileNames().size();
 }
 
 QSize ImageViewerPlugin::imageSize() const
@@ -135,37 +146,21 @@ QSize ImageViewerPlugin::imageSize() const
 	return QSize();
 }
 
-QString ImageViewerPlugin::currentDataSetName() const
+QString ImageViewerPlugin::currentDatasetName() const
 {
-	return _currentDataSetName;
+	return _currentDatasetName;
 }
 
-void ImageViewerPlugin::setCurrentDataSetName(const QString& currentDataSetName)
+void ImageViewerPlugin::setCurrentDatasetName(const QString& currentDatasetName)
 {
-	qDebug() << "Set current data set name: " << currentDataSetName;
+	qDebug() << "Set current data set name: " << currentDatasetName;
 
-	_currentDataSetName = currentDataSetName;
+	_currentDatasetName = currentDatasetName;
 
-	emit currentDataSetNameChanged(_currentDataSetName);
+	emit currentDatasetNameChanged(_currentDatasetName);
 }
 
-bool ImageViewerPlugin::averageImages() const
-{
-	return _averageImages;
-}
-
-void ImageViewerPlugin::setAverageImages(const bool& averageImages)
-{
-	qDebug() << "Set average images: " << averageImages;
-
-	_averageImages = averageImages;
-
-	updateDisplayImageIds();
-
-	emit averageImagesChanged(_averageImages);
-}
-
-Index ImageViewerPlugin::currentImageId() const
+int ImageViewerPlugin::currentImageId() const
 {
 	return _currentImageId;
 }
@@ -179,7 +174,38 @@ void ImageViewerPlugin::setCurrentImageId(const int& currentImageId)
 
 	_currentImageId = currentImageId;
 
-	updateDisplayImageIds();
+	emit currentImageIdChanged(_currentImageId);
+}
+
+int ImageViewerPlugin::currentDimensionId() const
+{
+	return _currentDimensionId;
+}
+
+void ImageViewerPlugin::setCurrentDimensionId(const int& currentDimensionId)
+{
+	if (currentDimensionId < 0)
+		return;
+
+	qDebug() << "Set current dimension to:" << currentDimensionId;
+
+	_currentDimensionId = currentDimensionId;
+
+	emit currentDimensionIdChanged(_currentDimensionId);
+}
+
+bool ImageViewerPlugin::averageImages() const
+{
+	return _averageImages;
+}
+
+void ImageViewerPlugin::setAverageImages(const bool& averageImages)
+{
+	qDebug() << "Set average images: " << averageImages;
+
+	_averageImages = averageImages;
+
+	emit averageImagesChanged(_averageImages);
 }
 
 Indices ImageViewerPlugin::displayImageIds() const
@@ -223,16 +249,6 @@ void ImageViewerPlugin::updateDisplayImageIds()
 	}
 
 	emit displayImageIdsChanged();
-
-	/*
-	auto imageIds = QStringList();
-
-	for (auto displayImageId : _displayImageIds) {
-		imageIds << QString::number(displayImageId);
-	}
-	
-	qDebug() << imageIds.size();
-	*/
 }
 
 void ImageViewerPlugin::dataAdded(const QString name)
@@ -244,7 +260,7 @@ void ImageViewerPlugin::dataAdded(const QString name)
 	if (points.hasProperty("type")) {
 		const auto type = points.getProperty("type");
 		
-		if (type == "SEQUENCE" || type == "STACK") {
+		if (type == "SEQUENCE" || type == "STACK" || type == "MULTIPART") {
 			_settingsWidget->addDataSet(name);
 		}
 	}

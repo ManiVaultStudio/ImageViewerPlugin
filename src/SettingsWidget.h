@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include <QStackedWidget.h>
 
 class ImageViewerPlugin;
@@ -7,6 +9,10 @@ class ImageViewerPlugin;
 class QComboBox;
 class QCheckBox;
 class QLabel;
+
+namespace Ui {
+	class SettingsWidget;
+}
 
 class SettingsWidget : public QWidget
 {
@@ -22,16 +28,12 @@ public:
 	void onSelectedPointsChanged();
 
 protected:
-	void onCurrentDataSetNameChanged(const QString& name);
 	void onAverageImagesChanged(const bool& averageImages);
 
 private:
 	void update();
 
 private:
-	ImageViewerPlugin*	_imageViewerPlugin;
-	QComboBox*			_dataSetsComboBox;
-	QLabel*				_imagesLabel;
-	QComboBox*			_imagesComboBox;
-	QCheckBox*			_imagesAverageCheckBox;
+	ImageViewerPlugin*					_imageViewerPlugin;
+	std::unique_ptr<Ui::SettingsWidget>	_ui;
 };

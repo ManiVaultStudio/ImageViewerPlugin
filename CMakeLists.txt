@@ -31,7 +31,9 @@ set(SOURCES
     src/Common.h
 )
 
-set(UIS)
+set(UIS 
+	src/SettingsWidget.ui
+)
 
 set(AUX src/ImageViewerPlugin.json)
 

@@ -48,9 +48,11 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	
 	setMouseTracking(true);
 
+	/*
 	connect(_imageViewerPlugin, &ImageViewerPlugin::displayImageIdsChanged, this, &ImageViewerWidget::onDisplayImageIdsChanged);
-	connect(_imageViewerPlugin, QOverload<const QString&>::of(&ImageViewerPlugin::currentDataSetNameChanged), this, &ImageViewerWidget::onCurrentDataSetNameChanged);
+	connect(_imageViewerPlugin, QOverload<const QString&>::of(&ImageViewerPlugin::currentDatasetNameChanged), this, &ImageViewerWidget::onCurrentDataSetNameChanged);
 	connect(_imageViewerPlugin, &ImageViewerPlugin::selectedPointsChanged, this, &ImageViewerWidget::onSelectedPointsChanged);
+	*/
 
 	createActions();
 	createMenus();
@@ -649,7 +651,7 @@ void ImageViewerWidget::zoomAt(const QPointF& screenPosition, const float& facto
 
 void ImageViewerWidget::zoomExtents()
 {
-	if (_imageViewerPlugin->currentDataSetName().isEmpty())
+	if (_imageViewerPlugin->currentDatasetName().isEmpty())
 		return;
 
 	qDebug() << "Zoom extents";
