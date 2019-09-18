@@ -25,7 +25,7 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	_dimensionNames(),
 	_currentDimension(),
 	_averageImages(false),
-	_displayImageIds()
+	_displayImages()
 {
 	setFocusPolicy(Qt::FocusPolicy::StrongFocus);
 
@@ -154,11 +154,6 @@ QSize ImageViewerPlugin::imageSize() const
 	return QSize();
 }
 
-Indices ImageViewerPlugin::displayImageIds() const
-{
-	return _displayImageIds;
-}
-
 long ImageViewerPlugin::noPixels() const
 {
 	return imageSize().width() * imageSize().height();
@@ -205,47 +200,54 @@ void ImageViewerPlugin::update()
 		setImageNames(NameSet::fromList(imageNames));
 		setDimensionNames(NameSet());
 		setAverageImages(hasSelection());
+
+		auto displayImages = Indices();
+
+		if (_averageImages) {
+			if (hasSelection()) {
+				displayImages = selection();
+			}
+			else {
+				displayImages.resize(noImages());
+				std::iota(std::begin(displayImages), std::end(displayImages), 0);
+			}
+		} else {
+			if (_currentImage >= 0) {
+				displayImages = Indices({ static_cast<unsigned int>(_currentImage) });
+			}
+			else {
+				displayImages = Indices();
+			}
+		}
+
+		setDisplayImages(displayImages);
 	}
 
 	if (imageCollectionType() == ImageCollectionType::Stack) {
 		setImageNames(NameSet());
 		setDimensionNames(NameSet::fromList(dimensionNames()));
-		//setAverageImages(_dimensionNames.size() > 0);
+
+		auto displayImages = Indices();
+
+		if (_averageImages) {
+			displayImages.resize(noImages());
+			std::iota(std::begin(displayImages), std::end(displayImages), 0);
+		}
+		else {
+			if (_currentImage >= 0) {
+				displayImages = Indices({ static_cast<unsigned int>(_currentImage) });
+			}
+			else {
+				displayImages = Indices();
+			}
+		}
+
+		setDisplayImages(displayImages);
 	}
 
 	if (imageCollectionType() == ImageCollectionType::MultiPartSequence) {
 		setDimensionNames(NameSet::fromList(dimensionNames()));
 	}
-
-	/*
-	const auto type = imageCollectionType();
-
-	if (_averageImages) {
-		if (type == "SEQUENCE") {
-			if (hasSelection()) {
-				_displayImageIds = selection();
-			} else {
-				_displayImageIds.resize(noImages());
-				std::iota(std::begin(_displayImageIds), std::end(_displayImageIds), 0);
-			}
-		}
-		
-		if (type == "STACK") {
-			_displayImageIds.resize(noImages());
-			std::iota(std::begin(_displayImageIds), std::end(_displayImageIds), 0);
-		}
-	} else {
-		if (_currentImage >= 0) {
-			_displayImageIds = Indices({ static_cast<unsigned int>(_currentImage) });
-		}
-		else {
-			_displayImageIds = Indices();
-		}
-		
-	}
-	*/
-
-	emit displayImagesChanged();
 }
 
 QString ImageViewerPlugin::currentDataset() const
@@ -255,6 +257,9 @@ QString ImageViewerPlugin::currentDataset() const
 
 void ImageViewerPlugin::setCurrentDataset(const QString& currentDataset)
 {
+	if (currentDataset == _currentDataset)
+		return;
+
 	_currentDataset = currentDataset;
 
 	emit currentDatasetChanged(_currentDataset);
@@ -269,12 +274,17 @@ auto ImageViewerPlugin::currentImage() const
 
 void ImageViewerPlugin::setCurrentImage(const int& currentImage)
 {
+	if (currentImage == _currentImage)
+		return;
+
 	if (currentImage < 0)
 		return;
 
 	_currentImage = currentImage;
 
 	emit currentImageChanged(_currentImage);
+
+	update();
 }
 
 auto ImageViewerPlugin::currentDimension() const
@@ -284,12 +294,17 @@ auto ImageViewerPlugin::currentDimension() const
 
 void ImageViewerPlugin::setCurrentDimension(const int& currentDimension)
 {
+	if (currentDimension == _currentDimension)
+		return;
+
 	if (currentDimension < 0)
 		return;
 
 	_currentDimension = currentDimension;
 
 	emit currentDimensionChanged(_currentDimension);
+
+	update();
 }
 
 auto ImageViewerPlugin::averageImages() const
@@ -299,9 +314,26 @@ auto ImageViewerPlugin::averageImages() const
 
 void ImageViewerPlugin::setAverageImages(const bool& averageImages)
 {
+	if (averageImages == _averageImages)
+		return;
+
 	_averageImages = averageImages;
 
 	emit averageImagesChanged(_averageImages);
+
+	update();
+}
+
+Indices ImageViewerPlugin::displayImages() const
+{
+	return _displayImages;
+}
+
+void ImageViewerPlugin::setDisplayImages(const Indices& displayImages)
+{
+	_displayImages = displayImages;
+
+	emit displayImagesChanged(_displayImages);
 }
 
 void ImageViewerPlugin::setDatasetNames(const NameSet& datasetNames)

@@ -42,8 +42,6 @@ public:
 	int noImages() const;
 	QSize imageSize() const;
 	
-	
-	Indices displayImageIds() const;
 	long noPixels() const;
 
 private:
@@ -61,6 +59,8 @@ public:
 	void setCurrentDimension(const int& currentDimension);
 	auto averageImages() const;
 	void setAverageImages(const bool& averageImages);
+	Indices displayImages() const;
+	void setDisplayImages(const Indices& displayImages);
 
 private:
 	void setDatasetNames(const NameSet& datasetNames);
@@ -75,7 +75,7 @@ signals:
 	void dimensionNamesChanged(const NameSet& dimensionNames);
 	void currentDimensionChanged(const int& currentDimension);
 	void averageImagesChanged(const bool& averageImages);
-	void displayImagesChanged();
+	void displayImagesChanged(const Indices& displayImages);
 
 private:
 	ImageViewerWidget*	_imageViewerWidget;
@@ -87,7 +87,7 @@ private:
 	NameSet				_dimensionNames;
 	int					_currentDimension;
 	bool				_averageImages;
-	Indices				_displayImageIds;
+	Indices				_displayImages;
 };
 
 class ImageViewerPluginFactory : public ViewPluginFactory

@@ -161,8 +161,8 @@ void ImageViewerWidget::onDisplayImageIdsChanged()
 	const auto imageSize			= _imageViewerPlugin->imageSize();
 	const auto noPixels				= _imageViewerPlugin->noPixels();
 	const auto imageCollectionType	= _imageViewerPlugin->imageCollectionType();
-	const auto displayImageIds		= _imageViewerPlugin->displayImageIds();
-	const auto noDisplayImages		= displayImageIds.size();
+	const auto displayImages		= _imageViewerPlugin->displayImages();
+	const auto noDisplayImages		= displayImages.size();
 	const auto noImages				= _imageViewerPlugin->noImages();
 	const auto width				= imageSize.width();
 	const auto height				= imageSize.height();
@@ -182,7 +182,7 @@ void ImageViewerWidget::onDisplayImageIdsChanged()
 				
 				float pixelValue = 0.f;
 
-				for (unsigned int displayImageId : displayImageIds) {
+				for (unsigned int displayImageId : displayImages) {
 					const auto imageOffset	= displayImageId * noPixels;
 					const auto pointId		= imageOffset + pixelId;
 
@@ -208,7 +208,7 @@ void ImageViewerWidget::onDisplayImageIdsChanged()
 
 				float pixelValue = 0.f;
 
-				for (unsigned int displayImageId : displayImageIds) {
+				for (unsigned int displayImageId : displayImages) {
 					const auto pointId = (pixelId * noImages) + displayImageId;
 
 					pixelValue += pointsData.data[pointId];
