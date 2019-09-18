@@ -1,14 +1,12 @@
 #pragma once
 
+#include "Common.h"
+
 #include <memory>
 
 #include <QStackedWidget.h>
 
 class ImageViewerPlugin;
-
-class QComboBox;
-class QCheckBox;
-class QLabel;
 
 namespace Ui {
 	class SettingsWidget;
@@ -21,13 +19,13 @@ class SettingsWidget : public QWidget
 public:
 	SettingsWidget(ImageViewerPlugin* imageViewerPlugin);
 
-	void addDataSet(const QString& name);
-	void removeDataSet(const QString& name);
-
-public:
-	void onSelectedPointsChanged();
-
-protected:
+private:
+	void onDatasetNamesChanged(const NameSet& datasetNames);
+	void onCurrentDatasetChanged(const QString& currentDataset);
+	void onImageNamesChanged(const NameSet& imageNames);
+	void onCurrentImageChanged(const int& currentImage);
+	void onDimensionNamesChanged(const NameSet& dimensionNames);
+	void onCurrentDimensionChanged(const int& currentDimension);
 	void onAverageImagesChanged(const bool& averageImages);
 
 private:

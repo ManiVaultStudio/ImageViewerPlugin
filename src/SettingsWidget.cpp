@@ -14,50 +14,103 @@ SettingsWidget::SettingsWidget(ImageViewerPlugin* imageViewerPlugin) :
 {
 	_ui->setupUi(this);
 	
-	connect(_ui->datasetsComboBox, QOverload<const QString&>::of(&QComboBox::currentTextChanged), _imageViewerPlugin, &ImageViewerPlugin::setCurrentDatasetName);
-	connect(_imageViewerPlugin, QOverload<const QString&>::of(&ImageViewerPlugin::currentDatasetNameChanged), this, &SettingsWidget::update);
+	connect(_ui->datasetsComboBox, QOverload<const QString&>::of(&QComboBox::currentTextChanged), _imageViewerPlugin, &ImageViewerPlugin::setCurrentDataset);
+	connect(_ui->imagesComboBox, QOverload<const int>::of(&QComboBox::currentIndexChanged), _imageViewerPlugin, &ImageViewerPlugin::setCurrentImage);
+	connect(_ui->dimensionsComboBox, QOverload<const int>::of(&QComboBox::currentIndexChanged), _imageViewerPlugin, &ImageViewerPlugin::setCurrentDimension);
 
-	/*
-	connect(_ui->imagesComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), _imageViewerPlugin, &ImageViewerPlugin::setCurrentImageId);
 	
-	
-	
-	connect(_imageViewerPlugin, &ImageViewerPlugin::selectedPointsChanged, this, &SettingsWidget::onSelectedPointsChanged);
-	connect(_imageViewerPlugin, QOverload<const bool&>::of(&ImageViewerPlugin::averageImagesChanged), this, &SettingsWidget::onAverageImagesChanged);
-	connect(_ui->averageCheckBox, &QCheckBox::stateChanged, _imageViewerPlugin, QOverload<const bool&>::of(&ImageViewerPlugin::setAverageImages));
-	*/
+	connect(_imageViewerPlugin, &ImageViewerPlugin::datasetNamesChanged, this, &SettingsWidget::onDatasetNamesChanged);
+	connect(_imageViewerPlugin, &ImageViewerPlugin::currentDatasetChanged, this, &SettingsWidget::onCurrentDatasetChanged);
+	connect(_imageViewerPlugin, &ImageViewerPlugin::imageNamesChanged, this, &SettingsWidget::onImageNamesChanged);
+	connect(_imageViewerPlugin, &ImageViewerPlugin::currentImageChanged, this, &SettingsWidget::onCurrentImageChanged);
+	connect(_imageViewerPlugin, &ImageViewerPlugin::dimensionNamesChanged, this, &SettingsWidget::onDimensionNamesChanged);
+	connect(_imageViewerPlugin, &ImageViewerPlugin::currentDimensionChanged, this, &SettingsWidget::onCurrentDimensionChanged);
+	connect(_imageViewerPlugin, &ImageViewerPlugin::averageImagesChanged, this, &SettingsWidget::onAverageImagesChanged);
+
 
 	update();
 }
 
-void SettingsWidget::addDataSet(const QString & name)
+void SettingsWidget::onDatasetNamesChanged(const NameSet& datasetNames)
 {
-	qDebug() << "addDataSet";
-	_ui->datasetsComboBox->addItem(name);
+	_ui->datasetsComboBox->blockSignals(true);
 
-	update();
+	_ui->datasetsComboBox->clear();
+	_ui->datasetsComboBox->addItems(datasetNames.toList());
+	
+	const auto datasetAvailable = datasetNames.size() > 0;
+
+	_ui->currentDatasetLabel->setEnabled(datasetAvailable);
+	_ui->datasetsComboBox->setEnabled(datasetAvailable);
+	_ui->averageImagesCheckBox->setEnabled(datasetAvailable);
+
+	_ui->datasetsComboBox->blockSignals(false);
 }
 
-void SettingsWidget::removeDataSet(const QString & name)
+void SettingsWidget::onCurrentDatasetChanged(const QString& currentDataset)
 {
-	qDebug() << "Removing data set:" << name;
+	_ui->datasetsComboBox->blockSignals(true);
 
-	const auto index = _ui->datasetsComboBox->findText(name);
+	_ui->datasetsComboBox->setCurrentText(currentDataset);
 
-	if (index >= 0)
-		_ui->datasetsComboBox->removeItem(index);
+	_ui->datasetsComboBox->blockSignals(false);
+}
+
+void SettingsWidget::onImageNamesChanged(const NameSet& imageNames)
+{
+	_ui->imagesComboBox->blockSignals(true);
+
+	_ui->imagesComboBox->clear();
+	_ui->imagesComboBox->addItems(imageNames.toList());
+
+	const auto enable = imageNames.size() > 0;
+
+	_ui->currentImageLabel->setEnabled(enable);
+	_ui->imagesComboBox->setEnabled(enable);
+
+	_ui->imagesComboBox->blockSignals(false);
+}
+
+void SettingsWidget::onCurrentImageChanged(const int& currentImage)
+{
+	_ui->imagesComboBox->blockSignals(true);
+
+	_ui->imagesComboBox->setCurrentIndex(currentImage);
+
+	_ui->imagesComboBox->blockSignals(false);
+}
+
+void SettingsWidget::onDimensionNamesChanged(const NameSet& dimensionNames)
+{
+	_ui->dimensionsComboBox->blockSignals(true);
+
+	_ui->dimensionsComboBox->clear();
+	_ui->dimensionsComboBox->addItems(dimensionNames.toList());
+
+	const auto enable = dimensionNames.size() > 0;
+
+	_ui->currentDimensionLabel->setEnabled(enable);
+	_ui->dimensionsComboBox->setEnabled(enable);
+
+	_ui->dimensionsComboBox->blockSignals(false);
+}
+
+void SettingsWidget::onCurrentDimensionChanged(const int& currentDimension)
+{
+	_ui->dimensionsComboBox->blockSignals(true);
+
+	_ui->dimensionsComboBox->setCurrentIndex(currentDimension);
+
+	_ui->dimensionsComboBox->blockSignals(false);
 }
 
 void SettingsWidget::onAverageImagesChanged(const bool& averageImages)
 {
-	//_ui->averageCheckBox->setChecked(averageImages);
-	
-	//update();
-}
+	_ui->averageImagesCheckBox->blockSignals(true);
 
-void SettingsWidget::onSelectedPointsChanged()
-{
-	update();
+	_ui->averageImagesCheckBox->setChecked(averageImages);
+
+	_ui->averageImagesCheckBox->blockSignals(false);
 }
 
 void SettingsWidget::update()
@@ -76,32 +129,24 @@ void SettingsWidget::update()
 		return;
 	}
 
+	//_ui->averageImagesCheckBox->setEnabled(_imageViewerPlugin->noImages() > 1);
+
+	/*
 	_ui->currentDatasetLabel->setEnabled(true);
 	_ui->datasetsComboBox->setEnabled(true);
 
-	/*
-	_imagesAverageCheckBox->setChecked(_imageViewerPlugin->averageImages());
-	
-	_imagesComboBox->clear();
-	_imagesComboBox->setEnabled(!_imageViewerPlugin->averageImages());
-	_imagesComboBox->setToolTip("");
-	*/
 
-	const auto imageCollectionType = _imageViewerPlugin->imageCollectionType();
-	
-	/*
-	const auto imageFileNames = _imageViewerPlugin->imageFileNames();
-	*/
+	const auto imageCollectionType	= _imageViewerPlugin->imageCollectionType();
+	const auto imageFileNames		= _imageViewerPlugin->imageFileNames();
 
 	if (imageCollectionType == "SEQUENCE") {
+		/*
 		_ui->currentImageLabel->setEnabled(true);
 		_ui->imagesComboBox->setEnabled(true);
 		_ui->averageImagesCheckBox->setEnabled(_imageViewerPlugin->noImages() > 1);
 		_ui->currentDimensionLabel->setEnabled(false);
 		_ui->dimensionsComboBox->setEnabled(false);
 	
-
-		/*
 		auto imageList = QStringList();
 
 		if (_imageViewerPlugin->hasSelection()) {
@@ -109,14 +154,14 @@ void SettingsWidget::update()
 
 			for (unsigned int index : _imageViewerPlugin->selection())
 			{
-				images << QString("%1").arg(images[index]);
+				images << QString("%1").arg(imageFileNames[index]);
 			}
 
 			const auto imagesString = images.join(", ");
 
 			imageList << imagesString;
 
-			_imagesComboBox->setToolTip(imagesString);
+			_ui->imagesComboBox->setToolTip(imagesString);
 		}
 		else {
 			if (_imageViewerPlugin->averageImages()) {
@@ -130,7 +175,7 @@ void SettingsWidget::update()
 
 				imageList << imagesString;
 
-				_imagesComboBox->setToolTip(imagesString);
+				_ui->imagesComboBox->setToolTip(imagesString);
 			}
 			else {
 				for (int i = 0; i < _imageViewerPlugin->noImages(); i++) {
@@ -139,42 +184,7 @@ void SettingsWidget::update()
 			}
 		}
 
-		_imagesComboBox->addItems(imageList);
-		*/
-	}
-	
-	if (imageCollectionType == "STACK") {
-		_ui->currentImageLabel->setEnabled(false);
-		_ui->imagesComboBox->setEnabled(false);
-		_ui->averageImagesCheckBox->setEnabled(_imageViewerPlugin->noImages() > 1);
-		_ui->currentDimensionLabel->setEnabled(true);
-		_ui->dimensionsComboBox->setEnabled(true);
-
-		/*
-		const auto dataSetDimensionNames = _imageViewerPlugin->dimensionNames();
-
-		_imagesAverageCheckBox->setEnabled(dataSetDimensionNames.size() > 1);
-
-		auto imageList = QStringList();
-
-		if (_imageViewerPlugin->averageImages()) {
-			const auto imagesString = _imageViewerPlugin->imageFileNames().join(", ");
-
-			imageList << imagesString;
-
-			_imagesComboBox->setToolTip(imagesString);
-		}
-		else {
-			imageList = imageFileNames;
-		}
-
-		_imagesComboBox->blockSignals(true);
-
-		_imagesComboBox->addItems(imageList);
-		_imagesComboBox->setCurrentIndex(_imageViewerPlugin->currentImageId());
-
-		_imagesComboBox->blockSignals(false);
-		*/
+		_ui->imagesComboBox->addItems(imageList);
 	}
 	
 
@@ -185,7 +195,6 @@ void SettingsWidget::update()
 		_ui->currentDimensionLabel->setEnabled(true);
 		_ui->dimensionsComboBox->setEnabled(true);
 
-		/*
 		_imagesAverageCheckBox->setToolTip("Average channels");
 
 		const auto dataSetDimensionNames = _imageViewerPlugin->dimensionNames();
@@ -211,6 +220,6 @@ void SettingsWidget::update()
 		_imagesComboBox->setCurrentIndex(_imageViewerPlugin->currentImageId());
 
 		_imagesComboBox->blockSignals(false);
-		*/
 	}
+	*/
 }

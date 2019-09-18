@@ -18,9 +18,12 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	ViewPlugin("Image Viewer"),
 	_imageViewerWidget(nullptr),
 	_settingsWidget(nullptr),
-	_currentDatasetName(),
-	_currentImageId(-1),
-	_currentDimensionId(),
+	_datasetNames(),
+	_currentDataset(),
+	_imageNames(),
+	_currentImage(-1),
+	_dimensionNames(),
+	_currentDimension(),
 	_averageImages(false),
 	_displayImageIds()
 {
@@ -29,10 +32,10 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	_imageViewerWidget	= new ImageViewerWidget(this);
 	_settingsWidget		= new SettingsWidget(this);
 
-	connect(this, &ImageViewerPlugin::currentDatasetNameChanged, this, &ImageViewerPlugin::updateDisplayImageIds);
-	connect(this, &ImageViewerPlugin::currentImageIdChanged, this, &ImageViewerPlugin::updateDisplayImageIds);
-	connect(this, &ImageViewerPlugin::currentDimensionIdChanged, this, &ImageViewerPlugin::updateDisplayImageIds);
-	connect(this, &ImageViewerPlugin::averageImagesChanged, this, &ImageViewerPlugin::updateDisplayImageIds);
+	//connect(this, &ImageViewerPlugin::currentDatasetChanged, this, &ImageViewerPlugin::update);
+	//connect(this, &ImageViewerPlugin::currentImageChanged, this, &ImageViewerPlugin::update);
+	//connect(this, &ImageViewerPlugin::currentDimensionChanged, this, &ImageViewerPlugin::update);
+	//connect(this, &ImageViewerPlugin::averageImagesChanged, this, &ImageViewerPlugin::update);
 }
 
 ImageViewerPlugin::~ImageViewerPlugin()
@@ -51,7 +54,7 @@ void ImageViewerPlugin::init()
 
 PointsPlugin& ImageViewerPlugin::pointsData() const
 {
-	const IndexSet& set = dynamic_cast<const IndexSet&>(_core->requestSet(_currentDatasetName));
+	const IndexSet& set = dynamic_cast<const IndexSet&>(_core->requestSet(_currentDataset));
 
 	return set.getData();
 }
@@ -77,28 +80,27 @@ bool ImageViewerPlugin::hasSelection() const
 	return selection().size() > 0;
 }
 
-QString ImageViewerPlugin::imageCollectionType() const
+ImageCollectionType ImageViewerPlugin::imageCollectionType() const
 {
-	if (_currentDatasetName.isEmpty())
-		return "";
+	if (_currentDataset.isEmpty())
+		return ImageCollectionType::Undefined;
 
 	PointsPlugin& points = pointsData();
 
 	if (points.hasProperty("type")) {
-		return points.getProperty("type").toString();
+		const auto type = points.getProperty("type").toString();
+
+		if (type == "STACK")
+			return ImageCollectionType::Stack;
+
+		if (type == "SEQUENCE")
+			return ImageCollectionType::Sequence;
+
+		if (type == "MULTIPART")
+			return ImageCollectionType::MultiPartSequence;
 	}
 
-	return "";
-}
-
-bool ImageViewerPlugin::isSequence() const
-{
-	return imageCollectionType() == "SEQUENCE";
-}
-
-bool ImageViewerPlugin::isStack() const
-{
-	return imageCollectionType() == "STACK";
+	return ImageCollectionType::Undefined;
 }
 
 QStringList ImageViewerPlugin::dimensionNames() const
@@ -111,13 +113,13 @@ QStringList ImageViewerPlugin::dimensionNames() const
 
 	dimensionNames.reserve(noDimensions);
 
-	for (size_t i = 0, l = noDimensions; i < l; ++i)
+	for (size_t i = 0; i < noDimensions; ++i)
 		dimensionNames << points.dimNames[i];
 
 	return dimensionNames;
 }
 
-QStringList ImageViewerPlugin::imageFileNames() const
+auto ImageViewerPlugin::imageFileNames() const
 {
 	PointsPlugin& points = pointsData();
 
@@ -137,75 +139,19 @@ QSize ImageViewerPlugin::imageSize() const
 {
 	PointsPlugin& points = pointsData();
 
-	if (isSequence() || isStack()) {
-		if (points.hasProperty("imageSizes")) {
+	if (points.hasProperty("imageSizes")) {
+		if (imageCollectionType() == ImageCollectionType::Stack || imageCollectionType() == ImageCollectionType::Sequence) {
 			return points.getProperty("imageSizes").toMap()["0"].toSize();
 		}
+
+		/*
+		if (imageCollectionType() == "MULTIPART") {
+			return points.getProperty("imageSizes").toMap()["0"].toSize();
+		}
+		*/
 	}
 
 	return QSize();
-}
-
-QString ImageViewerPlugin::currentDatasetName() const
-{
-	return _currentDatasetName;
-}
-
-void ImageViewerPlugin::setCurrentDatasetName(const QString& currentDatasetName)
-{
-	qDebug() << "Set current data set name: " << currentDatasetName;
-
-	_currentDatasetName = currentDatasetName;
-
-	emit currentDatasetNameChanged(_currentDatasetName);
-}
-
-int ImageViewerPlugin::currentImageId() const
-{
-	return _currentImageId;
-}
-
-void ImageViewerPlugin::setCurrentImageId(const int& currentImageId)
-{
-	if (currentImageId < 0)
-		return;
-
-	qDebug() << "Set current image index to:" << currentImageId;
-
-	_currentImageId = currentImageId;
-
-	emit currentImageIdChanged(_currentImageId);
-}
-
-int ImageViewerPlugin::currentDimensionId() const
-{
-	return _currentDimensionId;
-}
-
-void ImageViewerPlugin::setCurrentDimensionId(const int& currentDimensionId)
-{
-	if (currentDimensionId < 0)
-		return;
-
-	qDebug() << "Set current dimension to:" << currentDimensionId;
-
-	_currentDimensionId = currentDimensionId;
-
-	emit currentDimensionIdChanged(_currentDimensionId);
-}
-
-bool ImageViewerPlugin::averageImages() const
-{
-	return _averageImages;
-}
-
-void ImageViewerPlugin::setAverageImages(const bool& averageImages)
-{
-	qDebug() << "Set average images: " << averageImages;
-
-	_averageImages = averageImages;
-
-	emit averageImagesChanged(_averageImages);
 }
 
 Indices ImageViewerPlugin::displayImageIds() const
@@ -218,10 +164,60 @@ long ImageViewerPlugin::noPixels() const
 	return imageSize().width() * imageSize().height();
 }
 
-void ImageViewerPlugin::updateDisplayImageIds()
+void ImageViewerPlugin::update()
 {
-	// qDebug() << "Update display image IDs";
+	qDebug() << "update";
 
+	if (imageCollectionType() == ImageCollectionType::Sequence) {
+		auto imageNames = QStringList();
+
+		if (hasSelection()) {
+			auto images = QStringList();
+
+			for (unsigned int index : selection())
+			{
+				images << QString("%1").arg(imageFileNames()[index]);
+			}
+
+			const auto imagesString = images.join(", ");
+
+			imageNames << imagesString;
+		}
+		else {
+			if (_averageImages) {
+				auto images = QStringList();
+
+				for (int i = 0; i < noImages(); i++) {
+					images << QString("%1").arg(imageFileNames()[i]);
+				}
+
+				const auto imagesString = images.join(", ");
+
+				imageNames << imagesString;
+			}
+			else {
+				for (int i = 0; i < noImages(); i++) {
+					imageNames << QString("%1").arg(imageFileNames()[i]);
+				}
+			}
+		}
+
+		setImageNames(NameSet::fromList(imageNames));
+		setDimensionNames(NameSet());
+		setAverageImages(hasSelection());
+	}
+
+	if (imageCollectionType() == ImageCollectionType::Stack) {
+		setImageNames(NameSet());
+		setDimensionNames(NameSet::fromList(dimensionNames()));
+		//setAverageImages(_dimensionNames.size() > 0);
+	}
+
+	if (imageCollectionType() == ImageCollectionType::MultiPartSequence) {
+		setDimensionNames(NameSet::fromList(dimensionNames()));
+	}
+
+	/*
 	const auto type = imageCollectionType();
 
 	if (_averageImages) {
@@ -239,16 +235,94 @@ void ImageViewerPlugin::updateDisplayImageIds()
 			std::iota(std::begin(_displayImageIds), std::end(_displayImageIds), 0);
 		}
 	} else {
-		if (_currentImageId >= 0) {
-			_displayImageIds = Indices({ static_cast<unsigned int>(_currentImageId) });
+		if (_currentImage >= 0) {
+			_displayImageIds = Indices({ static_cast<unsigned int>(_currentImage) });
 		}
 		else {
 			_displayImageIds = Indices();
 		}
 		
 	}
+	*/
 
-	emit displayImageIdsChanged();
+	emit displayImagesChanged();
+}
+
+QString ImageViewerPlugin::currentDataset() const
+{
+	return _currentDataset;
+}
+
+void ImageViewerPlugin::setCurrentDataset(const QString& currentDataset)
+{
+	_currentDataset = currentDataset;
+
+	emit currentDatasetChanged(_currentDataset);
+
+	update();
+}
+
+auto ImageViewerPlugin::currentImage() const
+{
+	return _currentImage;
+}
+
+void ImageViewerPlugin::setCurrentImage(const int& currentImage)
+{
+	if (currentImage < 0)
+		return;
+
+	_currentImage = currentImage;
+
+	emit currentImageChanged(_currentImage);
+}
+
+auto ImageViewerPlugin::currentDimension() const
+{
+	return _currentDimension;
+}
+
+void ImageViewerPlugin::setCurrentDimension(const int& currentDimension)
+{
+	if (currentDimension < 0)
+		return;
+
+	_currentDimension = currentDimension;
+
+	emit currentDimensionChanged(_currentDimension);
+}
+
+auto ImageViewerPlugin::averageImages() const
+{
+	return _averageImages;
+}
+
+void ImageViewerPlugin::setAverageImages(const bool& averageImages)
+{
+	_averageImages = averageImages;
+
+	emit averageImagesChanged(_averageImages);
+}
+
+void ImageViewerPlugin::setDatasetNames(const NameSet& datasetNames)
+{
+	_datasetNames = datasetNames;
+
+	emit datasetNamesChanged(_datasetNames);
+}
+
+void ImageViewerPlugin::setImageNames(const NameSet& imageNames)
+{
+	_imageNames = imageNames;
+
+	emit imageNamesChanged(_imageNames);
+}
+
+void ImageViewerPlugin::setDimensionNames(const NameSet& dimensionNames)
+{
+	_dimensionNames = dimensionNames;
+
+	emit dimensionNamesChanged(_dimensionNames);
 }
 
 void ImageViewerPlugin::dataAdded(const QString name)
@@ -261,7 +335,8 @@ void ImageViewerPlugin::dataAdded(const QString name)
 		const auto type = points.getProperty("type");
 		
 		if (type == "SEQUENCE" || type == "STACK" || type == "MULTIPART") {
-			_settingsWidget->addDataSet(name);
+			setDatasetNames(_datasetNames << name);
+			setCurrentDataset(name);
 		}
 	}
 }
@@ -272,16 +347,14 @@ void ImageViewerPlugin::dataChanged(const QString name)
 
 void ImageViewerPlugin::dataRemoved(const QString name)
 {
-	_settingsWidget->removeDataSet(name);
+	_datasetNames.remove(name);
+
+	emit datasetNamesChanged(_datasetNames);
 }
 
 void ImageViewerPlugin::selectionChanged(const QString dataName)
 {
-	if (imageCollectionType() == "SEQUENCE") {
-		setAverageImages(hasSelection());
-	}
-
-	emit selectedPointsChanged();
+	update();
 }
 
 void ImageViewerPlugin::keyPressEvent(QKeyEvent* keyEvent)

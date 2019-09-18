@@ -175,7 +175,7 @@ void ImageViewerWidget::onDisplayImageIdsChanged()
 	
 	TextureData& imageTextureData = textureData("image");
 
-	if (imageCollectionType == "SEQUENCE") {
+	if (imageCollectionType == ImageCollectionType::Stack) {
 		for (int x = 0; x < width; x++) {
 			for (int y = 0; y < height; y++) {
 				const auto pixelId = y * width + x;
@@ -201,7 +201,7 @@ void ImageViewerWidget::onDisplayImageIdsChanged()
 		}
 	}
 
-	if (imageCollectionType == "STACK") {
+	if (imageCollectionType == ImageCollectionType::Stack) {
 		for (int x = 0; x < width; x++) {
 			for (int y = 0; y < height; y++) {
 				const auto pixelId = y * width + x;
@@ -246,7 +246,7 @@ void ImageViewerWidget::onSelectedPointsChanged()
 
 	TextureData& selectionTextureData = textureData("selection");
 
-	if (imageCollectionType == "STACK") {
+	if (imageCollectionType == ImageCollectionType::Stack) {
 		if (_imageViewerPlugin->hasSelection()) {
 			for (unsigned int index : _imageViewerPlugin->selection())
 			{
@@ -471,7 +471,7 @@ void ImageViewerWidget::paintGL() {
 
 	drawTextureQuad(texture("image"), 1.0f);
 
-	if (_imageViewerPlugin->imageCollectionType() == "STACK") {
+	if (_imageViewerPlugin->imageCollectionType() == ImageCollectionType::Stack) {
 		drawTextureQuad(texture("overlay"), 0.5f);
 		drawTextureQuad(texture("selection"), 0.0f);
 	}
@@ -502,7 +502,7 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 
 		}
 		else {
-			if (_imageViewerPlugin->isStack()) {
+			if (_imageViewerPlugin->imageCollectionType() == ImageCollectionType::Stack) {
 				/*
 				if (_selectionModifier == SelectionModifier::Replace) {
 					qDebug() << "Reset selection";
@@ -534,7 +534,7 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 			pan(QPointF(mouseEvent->pos().x() - _mousePosition.x(), -(mouseEvent->pos().y() - _mousePosition.y())));
 		}
 		else {
-			if (_imageViewerPlugin->isStack()) {
+			if (_imageViewerPlugin->imageCollectionType() == ImageCollectionType::Stack) {
 				_selecting = true;
 				updateSelection();
 			}
@@ -571,7 +571,7 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 	}
 	else {
 		if (_selecting) {
-			if (_imageViewerPlugin->isStack()) {
+			if (_imageViewerPlugin->imageCollectionType() == ImageCollectionType::Stack) {
 				_selecting = false;
 
 				updateSelection();
@@ -651,7 +651,7 @@ void ImageViewerWidget::zoomAt(const QPointF& screenPosition, const float& facto
 
 void ImageViewerWidget::zoomExtents()
 {
-	if (_imageViewerPlugin->currentDatasetName().isEmpty())
+	if (_imageViewerPlugin->currentDataset().isEmpty())
 		return;
 
 	qDebug() << "Zoom extents";
@@ -923,7 +923,7 @@ QMenu* ImageViewerWidget::contextMenu() const
 {
 	_contextMenu->addAction(_zoomToExtentsAction);
 
-	if (_imageViewerPlugin->imageCollectionType() == "STACK") {
+	if (_imageViewerPlugin->imageCollectionType() == ImageCollectionType::Stack) {
 		_contextMenu->addSeparator();
 		_contextMenu->addMenu(_selectionMenu);
 	}
