@@ -49,9 +49,11 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	setMouseTracking(true);
 
 	connect(_imageViewerPlugin, &ImageViewerPlugin::displayImagesChanged, this, &ImageViewerWidget::onDisplayImagesChanged);
-	/*
-	connect(_imageViewerPlugin, QOverload<const QString&>::of(&ImageViewerPlugin::currentDatasetNameChanged), this, &ImageViewerWidget::onCurrentDataSetNameChanged);
-	connect(_imageViewerPlugin, &ImageViewerPlugin::selectedPointsChanged, this, &ImageViewerWidget::onSelectedPointsChanged);
+	//connect(_imageViewerPlugin, &ImageViewerPlugin::displayImagesChanged, this, &ImageViewerWidget::onDisplayImagesChanged);
+	
+	connect(_imageViewerPlugin, &ImageViewerPlugin::currentDatasetChanged, this, &ImageViewerWidget::onCurrentDatasetChanged);
+	
+	/*connect(_imageViewerPlugin, &ImageViewerPlugin::selectedPointsChanged, this, &ImageViewerWidget::onSelectedPointsChanged);
 	*/
 
 	createActions();
@@ -153,7 +155,7 @@ void ImageViewerWidget::setBrushRadius(const float& brushRadius)
 	emit brushRadiusChanged();
 }
 
-void ImageViewerWidget::onDisplayImagesChanged()
+void ImageViewerWidget::onDisplayImagesChanged(const Indices& displayImages)
 {
 	if (!isValid())
 		return;
@@ -161,7 +163,6 @@ void ImageViewerWidget::onDisplayImagesChanged()
 	const auto imageSize			= _imageViewerPlugin->imageSize();
 	const auto noPixels				= _imageViewerPlugin->noPixels();
 	const auto imageCollectionType	= _imageViewerPlugin->imageCollectionType();
-	const auto displayImages		= _imageViewerPlugin->displayImages();
 	const auto noDisplayImages		= displayImages.size();
 	const auto noImages				= _imageViewerPlugin->noImages();
 	const auto width				= imageSize.width();
@@ -171,11 +172,10 @@ void ImageViewerWidget::onDisplayImagesChanged()
 		setupTextures();
 	}
 
-	PointsPlugin& pointsData = _imageViewerPlugin->pointsData();
-	
-	TextureData& imageTextureData = textureData("image");
+	auto& pointsData		= _imageViewerPlugin->pointsData();
+	auto& imageTextureData	= textureData("image");
 
-	if (imageCollectionType == ImageCollectionType::Stack) {
+	if (imageCollectionType == ImageCollectionType::Sequence) {
 		for (int x = 0; x < width; x++) {
 			for (int y = 0; y < height; y++) {
 				const auto pixelId = y * width + x;
@@ -265,7 +265,7 @@ void ImageViewerWidget::onSelectedPointsChanged()
 	update();
 }
 
-void ImageViewerWidget::onCurrentDataSetNameChanged()
+void ImageViewerWidget::onCurrentDatasetChanged(const QString& currentDataset)
 {
 	_selecting = false;
 
@@ -449,10 +449,6 @@ void ImageViewerWidget::resizeGL(int w, int h)
 
 void ImageViewerWidget::paintGL() {
 
-	//auto painter = new QPainter(this);
-
-	//painter->beginNativePainting();
-
 	glClearColor(0.1, 0.1, 0.1, 1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -482,10 +478,6 @@ void ImageViewerWidget::paintGL() {
 	if (_interactionMode == InteractionMode::Selection) {
 		drawSelectionGeometry();
 	}
-
-	//painter->endNativePainting();
-
-	//drawInfo(painter);
 }
 
 void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent) 

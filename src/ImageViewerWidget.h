@@ -55,9 +55,9 @@ signals:
 	void brushRadiusChanged();
 
 public:
-	void onDisplayImagesChanged();
+	void onDisplayImagesChanged(const Indices& displayImages);
 	void onSelectedPointsChanged();
-	void onCurrentDataSetNameChanged();
+	void onCurrentDatasetChanged(const QString& currentDataset);
 
 protected:
 	void initializeGL() Q_DECL_OVERRIDE;

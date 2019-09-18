@@ -58,7 +58,7 @@ public:
 	void setCurrentImage(const int& currentImage);
 	auto currentDimension() const;
 	void setCurrentDimension(const int& currentDimension);
-	auto averageImages() const;
+	bool averageImages() const;
 	void setAverageImages(const bool& averageImages);
 	Indices displayImages() const;
 	void setDisplayImages(const Indices& displayImages);

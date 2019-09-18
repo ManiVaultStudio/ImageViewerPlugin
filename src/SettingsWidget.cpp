@@ -17,7 +17,7 @@ SettingsWidget::SettingsWidget(ImageViewerPlugin* imageViewerPlugin) :
 	connect(_ui->datasetsComboBox, QOverload<const QString&>::of(&QComboBox::currentTextChanged), _imageViewerPlugin, &ImageViewerPlugin::setCurrentDataset);
 	connect(_ui->imagesComboBox, QOverload<const int>::of(&QComboBox::currentIndexChanged), _imageViewerPlugin, &ImageViewerPlugin::setCurrentImage);
 	connect(_ui->dimensionsComboBox, QOverload<const int>::of(&QComboBox::currentIndexChanged), _imageViewerPlugin, &ImageViewerPlugin::setCurrentDimension);
-	connect(_ui->averageImagesCheckBox, &QCheckBox::stateChanged, _imageViewerPlugin, [=](int state) { _imageViewerPlugin->setAverageImages(static_cast<bool>(state)); });
+	connect(_ui->averageImagesCheckBox, &QCheckBox::stateChanged, _imageViewerPlugin, [=](int state) { qDebug() << state;  _imageViewerPlugin->setAverageImages(static_cast<bool>(state)); });
 	
 	connect(_imageViewerPlugin, &ImageViewerPlugin::datasetNamesChanged, this, &SettingsWidget::onDatasetNamesChanged);
 	connect(_imageViewerPlugin, &ImageViewerPlugin::currentDatasetChanged, this, &SettingsWidget::onCurrentDatasetChanged);
@@ -62,7 +62,7 @@ void SettingsWidget::onImageNamesChanged(const NameSet& imageNames)
 	_ui->imagesComboBox->clear();
 	_ui->imagesComboBox->addItems(imageNames.toList());
 
-	const auto enable = imageNames.size() > 0;
+	const auto enable = imageNames.size() > 0 && !_imageViewerPlugin->averageImages();
 
 	_ui->currentImageLabel->setEnabled(enable);
 	_ui->imagesComboBox->setEnabled(enable);

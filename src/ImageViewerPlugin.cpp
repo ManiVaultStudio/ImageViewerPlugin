@@ -32,11 +32,9 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	_imageViewerWidget	= new ImageViewerWidget(this);
 	_settingsWidget		= new SettingsWidget(this);
 
-	//connect(this, &ImageViewerPlugin::currentDatasetChanged, this, &ImageViewerPlugin::update);
-	//connect(this, &ImageViewerPlugin::currentImageChanged, this, &ImageViewerPlugin::update);
-	//connect(this, &ImageViewerPlugin::currentDimensionChanged, this, &ImageViewerPlugin::update);
-	//connect(this, &ImageViewerPlugin::averageImagesChanged, this, &ImageViewerPlugin::update);
-	
+	connect(this, &ImageViewerPlugin::currentDatasetChanged, this, &ImageViewerPlugin::updateDisplayImages);
+	connect(this, &ImageViewerPlugin::currentImageChanged, this, &ImageViewerPlugin::updateDisplayImages);
+	connect(this, &ImageViewerPlugin::currentDimensionChanged, this, &ImageViewerPlugin::updateDisplayImages);
 	connect(this, &ImageViewerPlugin::averageImagesChanged, this, &ImageViewerPlugin::updateDisplayImages);
 }
 
@@ -201,50 +199,12 @@ void ImageViewerPlugin::update()
 
 		setImageNames(NameSet::fromList(imageNames));
 		setDimensionNames(NameSet());
-		setAverageImages(hasSelection());
-
-		auto displayImages = Indices();
-
-		if (_averageImages) {
-			if (hasSelection()) {
-				displayImages = selection();
-			}
-			else {
-				displayImages.resize(noImages());
-				std::iota(std::begin(displayImages), std::end(displayImages), 0);
-			}
-		} else {
-			if (_currentImage >= 0) {
-				displayImages = Indices({ static_cast<unsigned int>(_currentImage) });
-			}
-			else {
-				displayImages = Indices();
-			}
-		}
-
-		setDisplayImages(displayImages);
+		//setAverageImages(hasSelection());
 	}
 
 	if (imageCollectionType() == ImageCollectionType::Stack) {
 		setImageNames(NameSet());
 		setDimensionNames(NameSet::fromList(dimensionNames()));
-
-		auto displayImages = Indices();
-
-		if (_averageImages) {
-			displayImages.resize(noImages());
-			std::iota(std::begin(displayImages), std::end(displayImages), 0);
-		}
-		else {
-			if (_currentImage >= 0) {
-				displayImages = Indices({ static_cast<unsigned int>(_currentImage) });
-			}
-			else {
-				displayImages = Indices();
-			}
-		}
-
-		setDisplayImages(displayImages);
 	}
 
 	if (imageCollectionType() == ImageCollectionType::MultiPartSequence) {
@@ -254,7 +214,7 @@ void ImageViewerPlugin::update()
 
 void ImageViewerPlugin::updateDisplayImages()
 {
-	qDebug() << "Update disply images";
+	qDebug() << "Update display images";
 
 	auto displayImages = Indices();
 
@@ -284,8 +244,8 @@ void ImageViewerPlugin::updateDisplayImages()
 			std::iota(std::begin(displayImages), std::end(displayImages), 0);
 		}
 		else {
-			if (_currentImage >= 0) {
-				displayImages = Indices({ static_cast<unsigned int>(_currentImage) });
+			if (_currentDimension >= 0) {
+				displayImages = Indices({ static_cast<unsigned int>(_currentDimension) });
 			}
 			else {
 				displayImages = Indices();
@@ -316,6 +276,9 @@ void ImageViewerPlugin::setCurrentDataset(const QString& currentDataset)
 	emit currentDatasetChanged(_currentDataset);
 
 	update();
+
+	setCurrentImage(0);
+	setCurrentDimension(0);
 }
 
 auto ImageViewerPlugin::currentImage() const
@@ -360,7 +323,7 @@ void ImageViewerPlugin::setCurrentDimension(const int& currentDimension)
 	update();
 }
 
-auto ImageViewerPlugin::averageImages() const
+bool ImageViewerPlugin::averageImages() const
 {
 	return _averageImages;
 }
@@ -370,7 +333,7 @@ void ImageViewerPlugin::setAverageImages(const bool& averageImages)
 	if (averageImages == _averageImages)
 		return;
 
-	qDebug() << "Set average images";
+	qDebug() << "Set average images" << averageImages;
 
 	_averageImages = averageImages;
 
@@ -420,18 +383,18 @@ void ImageViewerPlugin::setDimensionNames(const NameSet& dimensionNames)
 	if (dimensionNames == _dimensionNames)
 		return;
 
-	qDebug() << "Set current data set";
+	qDebug() << "Set dimension names";
 
 	_dimensionNames = dimensionNames;
 
 	emit dimensionNamesChanged(_dimensionNames);
 }
 
-void ImageViewerPlugin::dataAdded(const QString name)
+void ImageViewerPlugin::dataAdded(const QString dataset)
 {
-	qDebug() << "Data added";
+	qDebug() << "Data added" << dataset;
 
-	const IndexSet& set = dynamic_cast<const IndexSet&>(_core->requestSet(name));
+	const IndexSet& set = dynamic_cast<const IndexSet&>(_core->requestSet(dataset));
 
 	PointsPlugin& points = set.getData();
 
@@ -439,31 +402,31 @@ void ImageViewerPlugin::dataAdded(const QString name)
 		const auto type = points.getProperty("type");
 		
 		if (type == "SEQUENCE" || type == "STACK" || type == "MULTIPART") {
-			setDatasetNames(_datasetNames << name);
-			setCurrentDataset(name);
+			setDatasetNames(_datasetNames << dataset);
+			setCurrentDataset(dataset);
 		}
 	}
 }
 
-void ImageViewerPlugin::dataChanged(const QString name)
+void ImageViewerPlugin::dataChanged(const QString dataset)
 {
-	qDebug() << "Data changed";
+	qDebug() << "Data changed" << dataset;
 }
 
-void ImageViewerPlugin::dataRemoved(const QString name)
+void ImageViewerPlugin::dataRemoved(const QString dataset)
 {
-	qDebug() << "Data removed";
+	qDebug() << "Data removed" << dataset;
 	
-	_datasetNames.remove(name);
+	_datasetNames.remove(dataset);
 
 	emit datasetNamesChanged(_datasetNames);
 }
 
-void ImageViewerPlugin::selectionChanged(const QString dataName)
+void ImageViewerPlugin::selectionChanged(const QString dataset)
 {
-	qDebug() << "Selection changed";
+	qDebug() << "Selection changed" << dataset;
 
-	update();
+	updateDisplayImages();
 }
 
 void ImageViewerPlugin::keyPressEvent(QKeyEvent* keyEvent)
