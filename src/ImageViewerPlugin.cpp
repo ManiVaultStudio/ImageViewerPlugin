@@ -36,6 +36,8 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	//connect(this, &ImageViewerPlugin::currentImageChanged, this, &ImageViewerPlugin::update);
 	//connect(this, &ImageViewerPlugin::currentDimensionChanged, this, &ImageViewerPlugin::update);
 	//connect(this, &ImageViewerPlugin::averageImagesChanged, this, &ImageViewerPlugin::update);
+	
+	connect(this, &ImageViewerPlugin::averageImagesChanged, this, &ImageViewerPlugin::updateDisplayImages);
 }
 
 ImageViewerPlugin::~ImageViewerPlugin()
@@ -161,7 +163,7 @@ long ImageViewerPlugin::noPixels() const
 
 void ImageViewerPlugin::update()
 {
-	qDebug() << "update";
+	qDebug() << "Update";
 
 	if (imageCollectionType() == ImageCollectionType::Sequence) {
 		auto imageNames = QStringList();
@@ -250,6 +252,53 @@ void ImageViewerPlugin::update()
 	}
 }
 
+void ImageViewerPlugin::updateDisplayImages()
+{
+	qDebug() << "Update disply images";
+
+	auto displayImages = Indices();
+
+	if (imageCollectionType() == ImageCollectionType::Sequence) {
+		if (_averageImages) {
+			if (hasSelection()) {
+				displayImages = selection();
+			}
+			else {
+				displayImages.resize(noImages());
+				std::iota(std::begin(displayImages), std::end(displayImages), 0);
+			}
+		}
+		else {
+			if (_currentImage >= 0) {
+				displayImages = Indices({ static_cast<unsigned int>(_currentImage) });
+			}
+			else {
+				displayImages = Indices();
+			}
+		}
+	}
+
+	if (imageCollectionType() == ImageCollectionType::Stack) {
+		if (_averageImages) {
+			displayImages.resize(noImages());
+			std::iota(std::begin(displayImages), std::end(displayImages), 0);
+		}
+		else {
+			if (_currentImage >= 0) {
+				displayImages = Indices({ static_cast<unsigned int>(_currentImage) });
+			}
+			else {
+				displayImages = Indices();
+			}
+		}
+	}
+
+	if (imageCollectionType() == ImageCollectionType::MultiPartSequence) {
+	}
+
+	setDisplayImages(displayImages);
+}
+
 QString ImageViewerPlugin::currentDataset() const
 {
 	return _currentDataset;
@@ -259,6 +308,8 @@ void ImageViewerPlugin::setCurrentDataset(const QString& currentDataset)
 {
 	if (currentDataset == _currentDataset)
 		return;
+
+	qDebug() << "Set current data set";
 
 	_currentDataset = currentDataset;
 
@@ -280,11 +331,11 @@ void ImageViewerPlugin::setCurrentImage(const int& currentImage)
 	if (currentImage < 0)
 		return;
 
+	qDebug() << "Set current data image";
+
 	_currentImage = currentImage;
 
 	emit currentImageChanged(_currentImage);
-
-	update();
 }
 
 auto ImageViewerPlugin::currentDimension() const
@@ -299,6 +350,8 @@ void ImageViewerPlugin::setCurrentDimension(const int& currentDimension)
 
 	if (currentDimension < 0)
 		return;
+
+	qDebug() << "Set current dimension";
 
 	_currentDimension = currentDimension;
 
@@ -317,6 +370,8 @@ void ImageViewerPlugin::setAverageImages(const bool& averageImages)
 	if (averageImages == _averageImages)
 		return;
 
+	qDebug() << "Set average images";
+
 	_averageImages = averageImages;
 
 	emit averageImagesChanged(_averageImages);
@@ -331,6 +386,11 @@ Indices ImageViewerPlugin::displayImages() const
 
 void ImageViewerPlugin::setDisplayImages(const Indices& displayImages)
 {
+	if (displayImages == _displayImages)
+		return;
+
+	qDebug() << "Set display images";
+
 	_displayImages = displayImages;
 
 	emit displayImagesChanged(_displayImages);
@@ -345,6 +405,11 @@ void ImageViewerPlugin::setDatasetNames(const NameSet& datasetNames)
 
 void ImageViewerPlugin::setImageNames(const NameSet& imageNames)
 {
+	if (imageNames == _imageNames)
+		return;
+
+	qDebug() << "Set image names";
+
 	_imageNames = imageNames;
 
 	emit imageNamesChanged(_imageNames);
@@ -352,6 +417,11 @@ void ImageViewerPlugin::setImageNames(const NameSet& imageNames)
 
 void ImageViewerPlugin::setDimensionNames(const NameSet& dimensionNames)
 {
+	if (dimensionNames == _dimensionNames)
+		return;
+
+	qDebug() << "Set current data set";
+
 	_dimensionNames = dimensionNames;
 
 	emit dimensionNamesChanged(_dimensionNames);
@@ -359,6 +429,8 @@ void ImageViewerPlugin::setDimensionNames(const NameSet& dimensionNames)
 
 void ImageViewerPlugin::dataAdded(const QString name)
 {
+	qDebug() << "Data added";
+
 	const IndexSet& set = dynamic_cast<const IndexSet&>(_core->requestSet(name));
 
 	PointsPlugin& points = set.getData();
@@ -375,10 +447,13 @@ void ImageViewerPlugin::dataAdded(const QString name)
 
 void ImageViewerPlugin::dataChanged(const QString name)
 {
+	qDebug() << "Data changed";
 }
 
 void ImageViewerPlugin::dataRemoved(const QString name)
 {
+	qDebug() << "Data removed";
+	
 	_datasetNames.remove(name);
 
 	emit datasetNamesChanged(_datasetNames);
@@ -386,6 +461,8 @@ void ImageViewerPlugin::dataRemoved(const QString name)
 
 void ImageViewerPlugin::selectionChanged(const QString dataName)
 {
+	qDebug() << "Selection changed";
+
 	update();
 }
 

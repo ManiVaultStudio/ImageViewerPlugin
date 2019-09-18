@@ -55,7 +55,7 @@ signals:
 	void brushRadiusChanged();
 
 public:
-	void onDisplayImageIdsChanged();
+	void onDisplayImagesChanged();
 	void onSelectedPointsChanged();
 	void onCurrentDataSetNameChanged();
 

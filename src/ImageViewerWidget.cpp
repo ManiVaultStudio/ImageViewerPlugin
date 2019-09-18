@@ -48,8 +48,8 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	
 	setMouseTracking(true);
 
+	connect(_imageViewerPlugin, &ImageViewerPlugin::displayImagesChanged, this, &ImageViewerWidget::onDisplayImagesChanged);
 	/*
-	connect(_imageViewerPlugin, &ImageViewerPlugin::displayImageIdsChanged, this, &ImageViewerWidget::onDisplayImageIdsChanged);
 	connect(_imageViewerPlugin, QOverload<const QString&>::of(&ImageViewerPlugin::currentDatasetNameChanged), this, &ImageViewerWidget::onCurrentDataSetNameChanged);
 	connect(_imageViewerPlugin, &ImageViewerPlugin::selectedPointsChanged, this, &ImageViewerWidget::onSelectedPointsChanged);
 	*/
@@ -153,7 +153,7 @@ void ImageViewerWidget::setBrushRadius(const float& brushRadius)
 	emit brushRadiusChanged();
 }
 
-void ImageViewerWidget::onDisplayImageIdsChanged()
+void ImageViewerWidget::onDisplayImagesChanged()
 {
 	if (!isValid())
 		return;
