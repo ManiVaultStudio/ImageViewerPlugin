@@ -204,7 +204,17 @@ void ImageViewerPlugin::update()
 
 	if (imageCollectionType() == ImageCollectionType::Stack) {
 		setImageNames(NameSet());
-		setDimensionNames(NameSet::fromList(dimensionNames()));
+
+		auto dimensionNames = QStringList();
+
+		if (_averageImages) {
+			dimensionNames << imageFileNames().join(", ");
+		}
+		else {
+			dimensionNames = imageFileNames();
+		}
+
+		setDimensionNames(NameSet::fromList(dimensionNames));
 	}
 
 	if (imageCollectionType() == ImageCollectionType::MultiPartSequence) {

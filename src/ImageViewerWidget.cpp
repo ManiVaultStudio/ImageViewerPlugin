@@ -226,6 +226,31 @@ void ImageViewerWidget::onDisplayImagesChanged(const Indices& displayImages)
 		}
 	}
 
+	if (imageCollectionType == ImageCollectionType::MultiPartSequence) {
+		for (int x = 0; x < width; x++) {
+			for (int y = 0; y < height; y++) {
+				const auto pixelId = y * width + x;
+
+				float pixelValue = 0.f;
+
+				for (unsigned int displayImageId : displayImages) {
+					const auto pointId = (pixelId * noImages) + displayImageId;
+
+					pixelValue += pointsData.data[pointId];
+				}
+
+				pixelValue /= static_cast<float>(noDisplayImages);
+
+				const auto offset = pixelId * 4;
+
+				imageTextureData[offset + 0] = pixelValue;
+				imageTextureData[offset + 1] = pixelValue;
+				imageTextureData[offset + 2] = pixelValue;
+				imageTextureData[offset + 3] = 255;
+			}
+		}
+	}
+
 	applyTextureData("image");
 
 	update();

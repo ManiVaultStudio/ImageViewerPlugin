@@ -86,7 +86,7 @@ void SettingsWidget::onDimensionNamesChanged(const NameSet& dimensionNames)
 	_ui->dimensionsComboBox->clear();
 	_ui->dimensionsComboBox->addItems(dimensionNames.toList());
 
-	const auto enable = dimensionNames.size() > 0;
+	const auto enable = dimensionNames.size() > 0 && !_imageViewerPlugin->averageImages();
 
 	_ui->currentDimensionLabel->setEnabled(enable);
 	_ui->dimensionsComboBox->setEnabled(enable);
