@@ -36,9 +36,11 @@ public:
 	bool hasSelection() const;
 
 	ImageCollectionType imageCollectionType() const;
-	
+	QString currentImageName() const;
+
 	QStringList dimensionNames() const;
-	auto imageFileNames() const;
+	QStringList imageFilePaths() const;
+
 	int noImages() const;
 	QSize imageSize() const;
 	
@@ -46,7 +48,7 @@ public:
 
 private:
 	void update();
-	void updateDisplayImages();
+	void computeDisplayImage();
 
 	void keyPressEvent(QKeyEvent* keyEvent) Q_DECL_OVERRIDE;
 	void keyReleaseEvent(QKeyEvent* keyEvent) Q_DECL_OVERRIDE;
@@ -61,34 +63,32 @@ public:
 	bool averageImages() const;
 	void setAverageImages(const bool& averageImages);
 	Indices displayImages() const;
-	void setDisplayImages(const Indices& displayImages);
 
 private:
-	void setDatasetNames(const NameSet& datasetNames);
-	void setImageNames(const NameSet& imageNames);
-	void setDimensionNames(const NameSet& dimensionNames);
+	void setDatasetNames(const QStringList& datasetNames);
+	void setImageNames(const QStringList& imageNames);
+	void setDimensionNames(const QStringList& dimensionNames);
 
 signals:
-	void datasetNamesChanged(const NameSet& datasetNames);
+	void datasetNamesChanged(const QStringList& datasetNames);
 	void currentDatasetChanged(const QString& currentDataset);
-	void imageNamesChanged(const NameSet& imageNames);
+	void imageNamesChanged(const QStringList& imageNames);
 	void currentImageChanged(const int& currentImage);
-	void dimensionNamesChanged(const NameSet& dimensionNames);
+	void dimensionNamesChanged(const QStringList& dimensionNames);
 	void currentDimensionChanged(const int& currentDimension);
 	void averageImagesChanged(const bool& averageImages);
-	void displayImagesChanged(const Indices& displayImages);
+	void displayImageChanged(const TextureData& displayImage);
 
 private:
 	ImageViewerWidget*	_imageViewerWidget;
 	SettingsWidget*		_settingsWidget;
-	NameSet				_datasetNames;
+	QStringList			_datasetNames;
 	QString				_currentDataset;
-	NameSet				_imageNames;
+	QStringList			_imageNames;
 	int					_currentImage;
-	NameSet				_dimensionNames;
+	QStringList			_dimensionNames;
 	int					_currentDimension;
 	bool				_averageImages;
-	Indices				_displayImages;
 };
 
 class ImageViewerPluginFactory : public ViewPluginFactory

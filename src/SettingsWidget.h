@@ -20,11 +20,11 @@ public:
 	SettingsWidget(ImageViewerPlugin* imageViewerPlugin);
 
 private:
-	void onDatasetNamesChanged(const NameSet& datasetNames);
+	void onDatasetNamesChanged(const QStringList& datasetNames);
 	void onCurrentDatasetChanged(const QString& currentDataset);
-	void onImageNamesChanged(const NameSet& imageNames);
+	void onImageNamesChanged(const QStringList& imageNames);
 	void onCurrentImageChanged(const int& currentImage);
-	void onDimensionNamesChanged(const NameSet& dimensionNames);
+	void onDimensionNamesChanged(const QStringList& dimensionNames);
 	void onCurrentDimensionChanged(const int& currentDimension);
 	void onAverageImagesChanged(const bool& averageImages);
 
@@ -32,6 +32,6 @@ private:
 	void update();
 
 private:
-	ImageViewerPlugin*					_imageViewerPlugin;
-	std::unique_ptr<Ui::SettingsWidget>	_ui;
+	ImageViewerPlugin*						_imageViewerPlugin;
+	std::unique_ptr<Ui::SettingsWidget>		_ui;
 };

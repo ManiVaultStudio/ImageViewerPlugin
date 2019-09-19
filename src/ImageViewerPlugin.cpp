@@ -24,18 +24,17 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	_currentImage(-1),
 	_dimensionNames(),
 	_currentDimension(),
-	_averageImages(false),
-	_displayImages()
+	_averageImages(false)
 {
 	setFocusPolicy(Qt::FocusPolicy::StrongFocus);
 
 	_imageViewerWidget	= new ImageViewerWidget(this);
 	_settingsWidget		= new SettingsWidget(this);
 
-	connect(this, &ImageViewerPlugin::currentDatasetChanged, this, &ImageViewerPlugin::updateDisplayImages);
-	connect(this, &ImageViewerPlugin::currentImageChanged, this, &ImageViewerPlugin::updateDisplayImages);
-	connect(this, &ImageViewerPlugin::currentDimensionChanged, this, &ImageViewerPlugin::updateDisplayImages);
-	connect(this, &ImageViewerPlugin::averageImagesChanged, this, &ImageViewerPlugin::updateDisplayImages);
+	connect(this, &ImageViewerPlugin::currentDatasetChanged, this, &ImageViewerPlugin::computeDisplayImage);
+	connect(this, &ImageViewerPlugin::currentImageChanged, this, &ImageViewerPlugin::computeDisplayImage);
+	connect(this, &ImageViewerPlugin::currentDimensionChanged, this, &ImageViewerPlugin::computeDisplayImage);
+	connect(this, &ImageViewerPlugin::averageImagesChanged, this, &ImageViewerPlugin::computeDisplayImage);
 }
 
 ImageViewerPlugin::~ImageViewerPlugin()
@@ -103,6 +102,14 @@ ImageCollectionType ImageViewerPlugin::imageCollectionType() const
 	return ImageCollectionType::Undefined;
 }
 
+QString ImageViewerPlugin::currentImageName() const
+{
+	if (_currentImage >= 0)
+		return imageFilePaths()[_currentImage];
+	else
+		return "";
+}
+
 QStringList ImageViewerPlugin::dimensionNames() const
 {
 	PointsPlugin& points = pointsData();
@@ -119,12 +126,12 @@ QStringList ImageViewerPlugin::dimensionNames() const
 	return dimensionNames;
 }
 
-auto ImageViewerPlugin::imageFileNames() const
+QStringList ImageViewerPlugin::imageFilePaths() const
 {
 	PointsPlugin& points = pointsData();
 
-	if (points.hasProperty("imageFileNames")) {
-		return points.getProperty("imageFileNames").toStringList();
+	if (points.hasProperty("imageFilePaths")) {
+		return points.getProperty("imageFilePaths").toStringList();
 	}
 
 	return QStringList();
@@ -132,7 +139,7 @@ auto ImageViewerPlugin::imageFileNames() const
 
 int ImageViewerPlugin::noImages() const
 {
-	return imageFileNames().size();
+	return imageFilePaths().size();
 }
 
 QSize ImageViewerPlugin::imageSize() const
@@ -163,6 +170,13 @@ void ImageViewerPlugin::update()
 {
 	qDebug() << "Update";
 
+	auto imageFileNames = QStringList();
+
+	foreach(const QString& imageFilePath, imageFilePaths())
+	{
+		imageFileNames << QFileInfo(imageFilePath).fileName();
+	}
+
 	if (imageCollectionType() == ImageCollectionType::Sequence) {
 		auto imageNames = QStringList();
 
@@ -171,7 +185,7 @@ void ImageViewerPlugin::update()
 
 			for (unsigned int index : selection())
 			{
-				images << QString("%1").arg(imageFileNames()[index]);
+				images << QString("%1").arg(imageFileNames[index]);
 			}
 
 			const auto imagesString = images.join(", ");
@@ -183,7 +197,7 @@ void ImageViewerPlugin::update()
 				auto images = QStringList();
 
 				for (int i = 0; i < noImages(); i++) {
-					images << QString("%1").arg(imageFileNames()[i]);
+					images << QString("%1").arg(imageFileNames[i]);
 				}
 
 				const auto imagesString = images.join(", ");
@@ -192,81 +206,132 @@ void ImageViewerPlugin::update()
 			}
 			else {
 				for (int i = 0; i < noImages(); i++) {
-					imageNames << QString("%1").arg(imageFileNames()[i]);
+					imageNames << QString("%1").arg(imageFileNames[i]);
 				}
 			}
 		}
 
-		setImageNames(NameSet::fromList(imageNames));
-		setDimensionNames(NameSet());
-		//setAverageImages(hasSelection());
+		setImageNames(imageNames);
+		setDimensionNames(QStringList());
 	}
 
 	if (imageCollectionType() == ImageCollectionType::Stack) {
-		setImageNames(NameSet());
+		setImageNames(QStringList());
 
 		auto dimensionNames = QStringList();
 
 		if (_averageImages) {
-			dimensionNames << imageFileNames().join(", ");
+			dimensionNames << imageFileNames.join(", ");
 		}
 		else {
-			dimensionNames = imageFileNames();
+			dimensionNames = imageFileNames;
 		}
 
-		setDimensionNames(NameSet::fromList(dimensionNames));
+		setDimensionNames(dimensionNames);
 	}
 
 	if (imageCollectionType() == ImageCollectionType::MultiPartSequence) {
-		setDimensionNames(NameSet::fromList(dimensionNames()));
+		setDimensionNames(dimensionNames());
 	}
 }
 
-void ImageViewerPlugin::updateDisplayImages()
+void ImageViewerPlugin::computeDisplayImage()
 {
-	qDebug() << "Update display images";
+	qDebug() << "Compute display image" << currentImageName();
 
-	auto displayImages = Indices();
 
-	if (imageCollectionType() == ImageCollectionType::Sequence) {
-		if (_averageImages) {
-			if (hasSelection()) {
-				displayImages = selection();
-			}
-			else {
-				displayImages.resize(noImages());
-				std::iota(std::begin(displayImages), std::end(displayImages), 0);
-			}
-		}
-		else {
-			if (_currentImage >= 0) {
-				displayImages = Indices({ static_cast<unsigned int>(_currentImage) });
-			}
-			else {
-				displayImages = Indices();
+	/*
+	const auto imageSize			= imageSize();
+	const auto noPixels				= noPixels();
+	const auto imageCollectionType	= imageCollectionType();
+	const auto noDisplayImages		= displayImages().size();
+	const auto width				= imageSize().width();
+	const auto height				= imageSize().height();
+
+	
+	if (QSize(texture("image").width(), texture("image").height()) != imageSize) {
+		setupTextures();
+	}
+
+	auto& pointsData = _imageViewerPlugin->pointsData();
+	auto& imageTextureData = textureData("image");
+
+	if (imageCollectionType == ImageCollectionType::Sequence) {
+		for (int x = 0; x < width; x++) {
+			for (int y = 0; y < height; y++) {
+				const auto pixelId = y * width + x;
+
+				float pixelValue = 0.f;
+
+				for (unsigned int displayImageId : displayImages) {
+					const auto imageOffset = displayImageId * noPixels;
+					const auto pointId = imageOffset + pixelId;
+
+					pixelValue += pointsData.data[pointId];
+				}
+
+				pixelValue /= static_cast<float>(noDisplayImages);
+
+				const auto offset = pixelId * 4;
+
+				imageTextureData[offset + 0] = pixelValue;
+				imageTextureData[offset + 1] = pixelValue;
+				imageTextureData[offset + 2] = pixelValue;
+				imageTextureData[offset + 3] = 255;
 			}
 		}
 	}
 
-	if (imageCollectionType() == ImageCollectionType::Stack) {
-		if (_averageImages) {
-			displayImages.resize(noImages());
-			std::iota(std::begin(displayImages), std::end(displayImages), 0);
-		}
-		else {
-			if (_currentDimension >= 0) {
-				displayImages = Indices({ static_cast<unsigned int>(_currentDimension) });
-			}
-			else {
-				displayImages = Indices();
+	if (imageCollectionType == ImageCollectionType::Stack) {
+		for (int x = 0; x < width; x++) {
+			for (int y = 0; y < height; y++) {
+				const auto pixelId = y * width + x;
+
+				float pixelValue = 0.f;
+
+				for (unsigned int displayImageId : displayImages) {
+					const auto pointId = (pixelId * noImages) + displayImageId;
+
+					pixelValue += pointsData.data[pointId];
+				}
+
+				pixelValue /= static_cast<float>(noDisplayImages);
+
+				const auto offset = pixelId * 4;
+
+				imageTextureData[offset + 0] = pixelValue;
+				imageTextureData[offset + 1] = pixelValue;
+				imageTextureData[offset + 2] = pixelValue;
+				imageTextureData[offset + 3] = 255;
 			}
 		}
 	}
 
-	if (imageCollectionType() == ImageCollectionType::MultiPartSequence) {
-	}
+	if (imageCollectionType == ImageCollectionType::MultiPartSequence) {
+		for (int x = 0; x < width; x++) {
+			for (int y = 0; y < height; y++) {
+				const auto pixelId = y * width + x;
 
-	setDisplayImages(displayImages);
+				float pixelValue = 0.f;
+
+				for (unsigned int displayImageId : displayImages) {
+					const auto pointId = (pixelId * noImages) + displayImageId;
+
+					pixelValue += pointsData.data[pointId];
+				}
+
+				pixelValue /= static_cast<float>(noDisplayImages);
+
+				const auto offset = pixelId * 4;
+
+				imageTextureData[offset + 0] = pixelValue;
+				imageTextureData[offset + 1] = pixelValue;
+				imageTextureData[offset + 2] = pixelValue;
+				imageTextureData[offset + 3] = 255;
+			}
+		}
+	}
+	*/
 }
 
 QString ImageViewerPlugin::currentDataset() const
@@ -354,29 +419,57 @@ void ImageViewerPlugin::setAverageImages(const bool& averageImages)
 
 Indices ImageViewerPlugin::displayImages() const
 {
-	return _displayImages;
+	auto displayImages = Indices();
+
+	if (imageCollectionType() == ImageCollectionType::Sequence) {
+		if (_averageImages) {
+			if (hasSelection()) {
+				displayImages = selection();
+			}
+			else {
+				displayImages.resize(noImages());
+				std::iota(std::begin(displayImages), std::end(displayImages), 0);
+			}
+		}
+		else {
+			if (_currentImage >= 0) {
+				displayImages = Indices({ static_cast<unsigned int>(_currentImage) });
+			}
+			else {
+				displayImages = Indices();
+			}
+		}
+	}
+
+	if (imageCollectionType() == ImageCollectionType::Stack) {
+		if (_averageImages) {
+			displayImages.resize(noImages());
+			std::iota(std::begin(displayImages), std::end(displayImages), 0);
+		}
+		else {
+			if (_currentDimension >= 0) {
+				displayImages = Indices({ static_cast<unsigned int>(_currentDimension) });
+			}
+			else {
+				displayImages = Indices();
+			}
+		}
+	}
+
+	if (imageCollectionType() == ImageCollectionType::MultiPartSequence) {
+	}
+
+	return displayImages;
 }
 
-void ImageViewerPlugin::setDisplayImages(const Indices& displayImages)
-{
-	if (displayImages == _displayImages)
-		return;
-
-	qDebug() << "Set display images";
-
-	_displayImages = displayImages;
-
-	emit displayImagesChanged(_displayImages);
-}
-
-void ImageViewerPlugin::setDatasetNames(const NameSet& datasetNames)
+void ImageViewerPlugin::setDatasetNames(const QStringList& datasetNames)
 {
 	_datasetNames = datasetNames;
 
 	emit datasetNamesChanged(_datasetNames);
 }
 
-void ImageViewerPlugin::setImageNames(const NameSet& imageNames)
+void ImageViewerPlugin::setImageNames(const QStringList& imageNames)
 {
 	if (imageNames == _imageNames)
 		return;
@@ -388,7 +481,7 @@ void ImageViewerPlugin::setImageNames(const NameSet& imageNames)
 	emit imageNamesChanged(_imageNames);
 }
 
-void ImageViewerPlugin::setDimensionNames(const NameSet& dimensionNames)
+void ImageViewerPlugin::setDimensionNames(const QStringList& dimensionNames)
 {
 	if (dimensionNames == _dimensionNames)
 		return;
@@ -427,7 +520,7 @@ void ImageViewerPlugin::dataRemoved(const QString dataset)
 {
 	qDebug() << "Data removed" << dataset;
 	
-	_datasetNames.remove(dataset);
+	_datasetNames.removeAt(_datasetNames.indexOf(dataset));
 
 	emit datasetNamesChanged(_datasetNames);
 }
@@ -436,7 +529,7 @@ void ImageViewerPlugin::selectionChanged(const QString dataset)
 {
 	qDebug() << "Selection changed" << dataset;
 
-	updateDisplayImages();
+	computeDisplayImage();
 }
 
 void ImageViewerPlugin::keyPressEvent(QKeyEvent* keyEvent)

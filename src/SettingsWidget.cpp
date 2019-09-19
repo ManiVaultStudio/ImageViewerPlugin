@@ -30,12 +30,12 @@ SettingsWidget::SettingsWidget(ImageViewerPlugin* imageViewerPlugin) :
 	update();
 }
 
-void SettingsWidget::onDatasetNamesChanged(const NameSet& datasetNames)
+void SettingsWidget::onDatasetNamesChanged(const QStringList& datasetNames)
 {
 	_ui->datasetsComboBox->blockSignals(true);
 
 	_ui->datasetsComboBox->clear();
-	_ui->datasetsComboBox->addItems(datasetNames.toList());
+	_ui->datasetsComboBox->addItems(datasetNames);
 	
 	const auto datasetAvailable = datasetNames.size() > 0;
 
@@ -55,12 +55,12 @@ void SettingsWidget::onCurrentDatasetChanged(const QString& currentDataset)
 	_ui->datasetsComboBox->blockSignals(false);
 }
 
-void SettingsWidget::onImageNamesChanged(const NameSet& imageNames)
+void SettingsWidget::onImageNamesChanged(const QStringList& imageNames)
 {
 	_ui->imagesComboBox->blockSignals(true);
 
 	_ui->imagesComboBox->clear();
-	_ui->imagesComboBox->addItems(imageNames.toList());
+	_ui->imagesComboBox->addItems(imageNames);
 
 	const auto enable = imageNames.size() > 0 && !_imageViewerPlugin->averageImages();
 
@@ -79,12 +79,12 @@ void SettingsWidget::onCurrentImageChanged(const int& currentImage)
 	_ui->imagesComboBox->blockSignals(false);
 }
 
-void SettingsWidget::onDimensionNamesChanged(const NameSet& dimensionNames)
+void SettingsWidget::onDimensionNamesChanged(const QStringList& dimensionNames)
 {
 	_ui->dimensionsComboBox->blockSignals(true);
 
 	_ui->dimensionsComboBox->clear();
-	_ui->dimensionsComboBox->addItems(dimensionNames.toList());
+	_ui->dimensionsComboBox->addItems(dimensionNames);
 
 	const auto enable = dimensionNames.size() > 0 && !_imageViewerPlugin->averageImages();
 

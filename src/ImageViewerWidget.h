@@ -55,7 +55,7 @@ signals:
 	void brushRadiusChanged();
 
 public:
-	void onDisplayImagesChanged(const Indices& displayImages);
+	void onDisplayImageChanged(const TextureData& displayImage);
 	void onSelectedPointsChanged();
 	void onCurrentDatasetChanged(const QString& currentDataset);
 

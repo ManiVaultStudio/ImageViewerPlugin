@@ -48,7 +48,7 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	
 	setMouseTracking(true);
 
-	connect(_imageViewerPlugin, &ImageViewerPlugin::displayImagesChanged, this, &ImageViewerWidget::onDisplayImagesChanged);
+	connect(_imageViewerPlugin, &ImageViewerPlugin::displayImageChanged, this, &ImageViewerWidget::onDisplayImageChanged);
 	//connect(_imageViewerPlugin, &ImageViewerPlugin::displayImagesChanged, this, &ImageViewerWidget::onDisplayImagesChanged);
 	
 	connect(_imageViewerPlugin, &ImageViewerPlugin::currentDatasetChanged, this, &ImageViewerWidget::onCurrentDatasetChanged);
@@ -155,11 +155,12 @@ void ImageViewerWidget::setBrushRadius(const float& brushRadius)
 	emit brushRadiusChanged();
 }
 
-void ImageViewerWidget::onDisplayImagesChanged(const Indices& displayImages)
+void ImageViewerWidget::onDisplayImageChanged(const TextureData& displayImage)
 {
 	if (!isValid())
 		return;
 
+	/*
 	const auto imageSize			= _imageViewerPlugin->imageSize();
 	const auto noPixels				= _imageViewerPlugin->noPixels();
 	const auto imageCollectionType	= _imageViewerPlugin->imageCollectionType();
@@ -250,6 +251,7 @@ void ImageViewerWidget::onDisplayImagesChanged(const Indices& displayImages)
 			}
 		}
 	}
+	*/
 
 	applyTextureData("image");
 
