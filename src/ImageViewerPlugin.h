@@ -35,18 +35,20 @@ public:
 	void setSelection(Indices& indices);
 	bool hasSelection() const;
 
+	int noDimensions() const;
+
 	ImageCollectionType imageCollectionType() const;
-	QString currentImageName() const;
+	QString currentImageFilePath() const;
+	QString currentImageFileName() const;
+	QString currentDimensionName() const;
 
 	QStringList dimensionNames() const;
 	QStringList imageFilePaths() const;
 
 	int noImages() const;
-	QSize imageSize() const;
-	
-	long noPixels() const;
 
 private:
+	QSize imageSize() const;
 	void update();
 	void computeDisplayImage();
 
@@ -62,7 +64,6 @@ public:
 	void setCurrentDimension(const int& currentDimension);
 	bool averageImages() const;
 	void setAverageImages(const bool& averageImages);
-	Indices displayImages() const;
 
 private:
 	void setDatasetNames(const QStringList& datasetNames);
@@ -77,7 +78,8 @@ signals:
 	void dimensionNamesChanged(const QStringList& dimensionNames);
 	void currentDimensionChanged(const int& currentDimension);
 	void averageImagesChanged(const bool& averageImages);
-	void displayImageChanged(const TextureData& displayImage);
+	void displayImageChanged(const QSize& imageSize, const TextureData& displayImage);
+	void selectedPointsChanged();
 
 private:
 	ImageViewerWidget*	_imageViewerWidget;

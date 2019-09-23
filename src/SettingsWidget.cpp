@@ -75,6 +75,7 @@ void SettingsWidget::onCurrentImageChanged(const int& currentImage)
 	_ui->imagesComboBox->blockSignals(true);
 
 	_ui->imagesComboBox->setCurrentIndex(currentImage);
+	_ui->imagesComboBox->setToolTip(_imageViewerPlugin->currentImageFilePath());
 
 	_ui->imagesComboBox->blockSignals(false);
 }
@@ -99,6 +100,7 @@ void SettingsWidget::onCurrentDimensionChanged(const int& currentDimension)
 	_ui->dimensionsComboBox->blockSignals(true);
 
 	_ui->dimensionsComboBox->setCurrentIndex(currentDimension);
+	_ui->dimensionsComboBox->setToolTip(_imageViewerPlugin->currentDimensionName());
 
 	_ui->dimensionsComboBox->blockSignals(false);
 }

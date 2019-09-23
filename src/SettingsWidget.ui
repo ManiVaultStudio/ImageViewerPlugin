@@ -54,7 +54,7 @@
       </sizepolicy>
      </property>
      <property name="toolTip">
-      <string>The type of resampling filter to use</string>
+      <string>The name of the image data set to display</string>
      </property>
     </widget>
    </item>
@@ -100,7 +100,7 @@
       </sizepolicy>
      </property>
      <property name="toolTip">
-      <string>Subsampling ratio</string>
+      <string>Dataset name</string>
      </property>
      <property name="text">
       <string>Dataset</string>
