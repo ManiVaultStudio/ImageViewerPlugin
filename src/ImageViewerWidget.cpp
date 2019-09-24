@@ -464,13 +464,14 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 		QWidget::setCursor(Qt::OpenHandCursor);
 	}
 
-	if (mouseEvent->button() == Qt::RightButton)
-	{
-		contextMenu()->exec(mapToGlobal(mouseEvent->pos()));
+	if (_imageViewerPlugin->imageCollectionType() == ImageCollectionType::Stack || _imageViewerPlugin->imageCollectionType() == ImageCollectionType::MultiPartSequence) {
+		if (mouseEvent->button() == Qt::RightButton)
+		{
+			contextMenu()->exec(mapToGlobal(mouseEvent->pos()));
+		}
 	}
 
 	if (mouseEvent->modifiers() & Qt::AltModifier) {
-
 	}
 	else {
 		if (_selecting) {

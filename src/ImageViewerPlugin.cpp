@@ -11,8 +11,11 @@
 #include <QInputDialog>
 
 #include <vector>
+#include <limits>
 
 Q_PLUGIN_METADATA(IID "nl.tudelft.ImageViewerPlugin")
+
+using PixelCoordToPointIndex = std::function<int(int, int)>;
 
 ImageViewerPlugin::ImageViewerPlugin() : 
 	ViewPlugin("Image Viewer"),
@@ -283,18 +286,51 @@ void ImageViewerPlugin::update()
 
 void ImageViewerPlugin::computeDisplayImage()
 {
+	qDebug() << "Compute display image";
+
 	const auto imageSize	= this->imageSize();
 	const auto width		= imageSize.width();
 	const auto height		= imageSize.height();
 	const auto noPixels		= width * height;
-
-	qDebug() << "Compute display image" << imageSize;
+	const auto noImages		= this->noImages();
 
 	auto& pointsData = this->pointsData();
-	
+
+	PointsPlugin& points = this->pointsData();
+
+	const auto imageSizes = points.getProperty("imageSizes").toMap();
+
+	int noPointsPerDimension = 0;
+
+	foreach(const QString& key, imageSizes.keys()) {
+		const auto size = imageSizes[key].toSize();
+
+		noPointsPerDimension += size.width() * size.height();
+	}
+
+	const auto getPixelId = [width](int x, int y) {
+		return y * width + x;
+	};
+
+	const auto getOffset = [width, getPixelId](int x, int y) {
+		return getPixelId(x, y) * 4;
+	};
+
+	const auto sequencePointId = [width, height, noPixels, getPixelId](int imageId, int x, int y) {
+		const auto imageOffset = imageId * noPixels;
+		return imageOffset + getPixelId(x, y);
+	};
+
+	const auto stackPointId = [width, height, noImages, getPixelId](int imageId, int x, int y) {
+		return getPixelId(x, y) * noImages + imageId;
+	};
+
 	auto imageTextureData = TextureData();
 
 	imageTextureData.resize(noPixels * 4);
+
+	auto min = std::numeric_limits<int>::max();
+	auto max = std::numeric_limits<int>::min();
 
 	switch (imageCollectionType()) {
 		case ImageCollectionType::Sequence: {
@@ -305,7 +341,7 @@ void ImageViewerPlugin::computeDisplayImage()
 					displayImages = selection();
 				}
 				else {
-					displayImages.resize(noImages());
+					displayImages.resize(noImages);
 					std::iota(std::begin(displayImages), std::end(displayImages), 0);
 				}
 			}
@@ -322,20 +358,15 @@ void ImageViewerPlugin::computeDisplayImage()
 
 			for (int x = 0; x < width; x++) {
 				for (int y = 0; y < height; y++) {
-					const auto pixelId = y * width + x;
-
 					auto pixelValue = 0.f;
 
 					for (unsigned int displayImageId : displayImages) {
-						const auto imageOffset = displayImageId * noPixels;
-						const auto pointId = imageOffset + pixelId;
-
-						pixelValue += pointsData.data[pointId];
+						pixelValue += pointsData.data[sequencePointId(displayImageId, x, y)];
 					}
 
 					pixelValue /= static_cast<float>(noDisplayImages);
 
-					const auto offset = pixelId * 4;
+					const auto offset = getOffset(x, y);
 
 					imageTextureData[offset + 0] = pixelValue;
 					imageTextureData[offset + 1] = pixelValue;
@@ -360,25 +391,18 @@ void ImageViewerPlugin::computeDisplayImage()
 			}
 
 			const auto noDisplayDimensions	= displayDimensions.size();
-			const auto noImages				= this->noImages();
-
-			qDebug() << noImages << width << height;
 
 			for (int x = 0; x < width; x++) {
 				for (int y = 0; y < height; y++) {
-					const auto pixelId = y * width + x;
-
 					auto pixelValue = 0.f;
 
 					for (unsigned int displayDimensionId : displayDimensions) {
-						const auto pointId = (pixelId * noImages) + displayDimensionId;
-
-						pixelValue += pointsData.data[pointId];
+						pixelValue += pointsData.data[stackPointId(displayDimensionId, x, y)];
 					}
 
 					pixelValue /= static_cast<float>(noDisplayDimensions);
 
-					const auto offset = pixelId * 4;
+					const auto offset = getOffset(x, y);
 
 					imageTextureData[offset + 0] = pixelValue;
 					imageTextureData[offset + 1] = pixelValue;
@@ -388,8 +412,6 @@ void ImageViewerPlugin::computeDisplayImage()
 			}
 
 			auto image = QImage((uchar*)&imageTextureData[0], width, height, QImage::Format::Format_RGBA8888);
-
-			qDebug() << image.save("test.jpg");
 
 			break;
 		}
@@ -406,18 +428,6 @@ void ImageViewerPlugin::computeDisplayImage()
 				displayDimensions = Indices({ static_cast<unsigned int>(_currentDimension) });
 			}
 
-			PointsPlugin& points = this->pointsData();
-
-			const auto imageSizes = points.getProperty("imageSizes").toMap();
-			
-			int noPointsPerDimension = 0;
-
-			foreach(const QString& key, imageSizes.keys()) {
-				const auto size = imageSizes[key].toSize();
-
-				noPointsPerDimension += size.width() * size.height();
-			}
-
 			int imageOffset = 0;
 
 			for (int i = 0; i < _currentImage; i++) {
@@ -427,28 +437,25 @@ void ImageViewerPlugin::computeDisplayImage()
 				imageOffset += size.width() * size.height();
 			}
 
-			qDebug() << "VIEWER::noPointsPerDimension" << noPointsPerDimension;
-			qDebug() << "VIEWER::imageOffset" << imageOffset;
+			const auto currentDimension = this->_currentDimension;
 
-			const auto noDisplayDimensions = displayDimensions.size();
-			const auto noImages = this->noImages();
+			const auto multipartSequencePointId = [width, height, currentDimension, noPointsPerDimension, imageOffset, getPixelId](int x, int y) {
+				return  (currentDimension * noPointsPerDimension) + imageOffset + getPixelId(x, y);
+			};
+
+			const auto noDisplayDimensions	= displayDimensions.size();
 
 			for (int x = 0; x < width; x++) {
 				for (int y = 0; y < height; y++) {
-					const auto pixelId = y * width + x;
-
 					auto pixelValue = 0.f;
 
 					for (unsigned int displayDimensionId : displayDimensions) {
-						//const auto pointId = (pixelId * noImages) + imageOffset;
-						auto pointId = (_currentDimension * noPointsPerDimension) + imageOffset + pixelId;
-
-						pixelValue += pointsData.data[pointId];
+						pixelValue += pointsData.data[multipartSequencePointId(x, y)];
 					}
 
 					pixelValue /= static_cast<float>(noDisplayDimensions);
 
-					const auto offset = pixelId * 4;
+					const auto offset = getOffset(x, y);
 
 					imageTextureData[offset + 0] = pixelValue;
 					imageTextureData[offset + 1] = pixelValue;
@@ -456,36 +463,10 @@ void ImageViewerPlugin::computeDisplayImage()
 					imageTextureData[offset + 3] = 255;
 				}
 			}
-
+			
 			break;
 		}
 	}
-	/*
-	if (imageCollectionType == ImageCollectionType::MultiPartSequence) {
-		for (int x = 0; x < width; x++) {
-			for (int y = 0; y < height; y++) {
-				const auto pixelId = y * width + x;
-
-				float pixelValue = 0.f;
-
-				for (unsigned int displayImageId : displayImages) {
-					const auto pointId = (pixelId * noImages) + displayImageId;
-
-					pixelValue += pointsData.data[pointId];
-				}
-
-				pixelValue /= static_cast<float>(noDisplayImages);
-
-				const auto offset = pixelId * 4;
-
-				imageTextureData[offset + 0] = pixelValue;
-				imageTextureData[offset + 1] = pixelValue;
-				imageTextureData[offset + 2] = pixelValue;
-				imageTextureData[offset + 3] = 255;
-			}
-		}
-	}
-	*/
 
 	emit displayImageChanged(imageSize, imageTextureData);
 }
