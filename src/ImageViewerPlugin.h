@@ -34,40 +34,63 @@ public:
 	Indices selection() const;
 	void setSelection(Indices& indices);
 	bool hasSelection() const;
-	QString imageCollectionType() const;
-	bool isSequence() const;
-	bool isStack() const;
+
+	int noDimensions() const;
+
+	ImageCollectionType imageCollectionType() const;
+	QString currentImageFilePath() const;
+	QString currentImageFileName() const;
+	QString currentDimensionName() const;
+
 	QStringList dimensionNames() const;
+	QStringList imageFilePaths() const;
+
 	int noImages() const;
-	QSize imageSize() const;
-	QString currentDataSetName() const;
-	void setCurrentDataSetName(const QString& name);
-	bool averageImages() const;
-	void setAverageImages(const bool& averageImages);
-	Index currentImageId() const;
-	void setCurrentImageId(const int& currentImageId);
-	Indices displayImageIds() const;
-	long noPixels() const;
 
 private:
-	void updateDisplayImageIds();
-	
+	QSize imageSize() const;
+	void update();
+	void computeDisplayImage();
+
 	void keyPressEvent(QKeyEvent* keyEvent) Q_DECL_OVERRIDE;
 	void keyReleaseEvent(QKeyEvent* keyEvent) Q_DECL_OVERRIDE;
 
-signals:
-	void currentDataSetNameChanged(const QString& currentDataSetName);
-	void selectedPointsChanged();
-	void averageImagesChanged(const bool& averageImages);
-	void displayImageIdsChanged();
+public:
+	QString currentDataset() const;
+	void setCurrentDataset(const QString& currentDataset);
+	auto currentImage() const;
+	void setCurrentImage(const int& currentImage);
+	auto currentDimension() const;
+	void setCurrentDimension(const int& currentDimension);
+	bool averageImages() const;
+	void setAverageImages(const bool& averageImages);
 
 private:
-	ImageViewerWidget*		_imageViewerWidget;
-	SettingsWidget*			_settingsWidget;
-	QString					_currentDataSetName;
-	bool					_averageImages;
-	int						_currentImageId;
-	Indices					_displayImageIds;
+	void setDatasetNames(const QStringList& datasetNames);
+	void setImageNames(const QStringList& imageNames);
+	void setDimensionNames(const QStringList& dimensionNames);
+
+signals:
+	void datasetNamesChanged(const QStringList& datasetNames);
+	void currentDatasetChanged(const QString& currentDataset);
+	void imageNamesChanged(const QStringList& imageNames);
+	void currentImageChanged(const int& currentImage);
+	void dimensionNamesChanged(const QStringList& dimensionNames);
+	void currentDimensionChanged(const int& currentDimension);
+	void averageImagesChanged(const bool& averageImages);
+	void displayImageChanged(const QSize& imageSize, const TextureData& displayImage);
+	void selectedPointsChanged();
+
+private:
+	ImageViewerWidget*	_imageViewerWidget;
+	SettingsWidget*		_settingsWidget;
+	QStringList			_datasetNames;
+	QString				_currentDataset;
+	QStringList			_imageNames;
+	int					_currentImage;
+	QStringList			_dimensionNames;
+	int					_currentDimension;
+	bool				_averageImages;
 };
 
 class ImageViewerPluginFactory : public ViewPluginFactory

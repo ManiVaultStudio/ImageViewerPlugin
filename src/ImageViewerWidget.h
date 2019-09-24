@@ -49,15 +49,18 @@ public:
 	void setSelectionModifier(const SelectionModifier& selectionModifier);
 	void setBrushRadius(const float& brushRadius);
 
+	void modifySelection(std::vector<unsigned int>& indices);
+	void clearSelection();
+
 signals:
 	void selectionTypeChanged();
 	void selectionModifierChanged();
 	void brushRadiusChanged();
 
 public:
-	void onDisplayImageIdsChanged();
+	void onDisplayImageChanged(const QSize& imageSize, const TextureData& displayImage);
 	void onSelectedPointsChanged();
-	void onCurrentDataSetNameChanged();
+	void onCurrentDatasetChanged(const QString& currentDataset);
 
 protected:
 	void initializeGL() Q_DECL_OVERRIDE;
@@ -70,8 +73,6 @@ protected:
 	void wheelEvent(QWheelEvent* wheelEvent) Q_DECL_OVERRIDE;
 
 private:
-	void setupTexture(QOpenGLTexture& texture);
-	void setupTextures();
 	void drawQuad(const float& z);
 	void drawCircle(const QPointF & center, const float & radius, const int & noSegments = 30);
 	void drawSelectionRectangle(const QPoint& start, const QPoint& end);
@@ -79,25 +80,30 @@ private:
 	void drawTextureQuad(QOpenGLTexture& texture, const float& z);
 	void drawSelectionGeometry();
 	void drawInfo(QPainter* painter);
+	
 	void pan(const QPointF& delta);
 	void zoom(const float& factor);
 	void zoomAt(const QPointF & position, const float & factor);
 	void zoomExtents();
 	void resetView();
+	
 	bool imageInitialized();
+	void updateSelection();
+	void commitSelection();
+	void applyTextureData(const QString& name);
+
+	QMenu* contextMenu();
+	QMenu* viewMenu();
+	QMenu* selectionMenu();
+
 	QPoint screenToWorld(const QPoint& screen) const;
 	QPoint worldToScreen(const QPoint& world) const;
-	void updateSelection();
-	void modifySelection(std::vector<unsigned int>& indices);
-	void commitSelection();
+	
+private:
+	void setupTextures();
+	void setupTexture(QOpenGLTexture& openGltexture);
 	void resetTexture(const QString& textureName);
 	void resetTextureData(const QString& textureName);
-	void applyTextureData(const QString& name);
-	void createActions();
-	void createMenus();
-
-	QMenu* contextMenu() const;
-	
 	QOpenGLTexture& texture(const QString& name);
 	TextureData& textureData(const QString& textureName);
 
@@ -123,10 +129,5 @@ private:
 	QColor				_selectionGeometryColor;
 	Indices				_selection;
 	QAction*			_zoomToExtentsAction;
-	QAction*			_rectangleSelectionAction;
-	QAction*			_brushSelectionAction;
-	QAction*			_freehandSelectionAction;
-	QAction*			_clearSelectionAction;
-	QMenu*				_contextMenu;
-	QMenu*				_selectionMenu;
+	QSize				_imageSize;
 };

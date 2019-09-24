@@ -37,24 +37,16 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_selectionGeometryColor(255, 0, 0, 255),
 	_selection(),
 	_zoomToExtentsAction(nullptr),
-	_rectangleSelectionAction(nullptr),
-	_brushSelectionAction(nullptr),
-	_freehandSelectionAction(nullptr),
-	_clearSelectionAction(nullptr),
-	_contextMenu(nullptr),
-	_selectionMenu(nullptr)
+	_imageSize()
 {
 	setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
 	
 	setMouseTracking(true);
 
-	connect(_imageViewerPlugin, &ImageViewerPlugin::displayImageIdsChanged, this, &ImageViewerWidget::onDisplayImageIdsChanged);
-	connect(_imageViewerPlugin, QOverload<const QString&>::of(&ImageViewerPlugin::currentDataSetNameChanged), this, &ImageViewerWidget::onCurrentDataSetNameChanged);
+	connect(_imageViewerPlugin, &ImageViewerPlugin::displayImageChanged, this, &ImageViewerWidget::onDisplayImageChanged);
+	connect(_imageViewerPlugin, &ImageViewerPlugin::currentDatasetChanged, this, &ImageViewerWidget::onCurrentDatasetChanged);
 	connect(_imageViewerPlugin, &ImageViewerPlugin::selectedPointsChanged, this, &ImageViewerWidget::onSelectedPointsChanged);
-
-	createActions();
-	createMenus();
-
+	
 	QSurfaceFormat surfaceFormat;
 	
 	surfaceFormat.setRenderableType(QSurfaceFormat::OpenGL);
@@ -151,39 +143,19 @@ void ImageViewerWidget::setBrushRadius(const float& brushRadius)
 	emit brushRadiusChanged();
 }
 
-void ImageViewerWidget::onDisplayImageIdsChanged()
+void ImageViewerWidget::onDisplayImageChanged(const QSize& imageSize, const TextureData& displayImage)
 {
 	if (!isValid())
 		return;
 
-	const auto imageSize			= _imageViewerPlugin->imageSize();
-	const auto noPixels				= _imageViewerPlugin->noPixels();
-	const auto imageCollectionType	= _imageViewerPlugin->imageCollectionType();
-	const auto displayImageIds		= _imageViewerPlugin->displayImageIds();
-	const auto noDisplayImages		= displayImageIds.size();
-	const auto noImages				= _imageViewerPlugin->noImages();
-	const auto width				= imageSize.width();
-	const auto height				= imageSize.height();
-	
-	if (QSize(texture("image").width(), texture("image").height()) != imageSize) {
-		setupTextures();
-	}
+	qDebug() << "Display image changed";
 
-	PointsPlugin& pointsData = _imageViewerPlugin->pointsData();
-	
-	TextureData& imageTextureData = textureData("image");
+	auto shouldZoomExtents = false;
 
-	if (imageCollectionType == "SEQUENCE") {
-		for (int x = 0; x < width; x++) {
-			for (int y = 0; y < height; y++) {
-				const auto pixelId = y * width + x;
-				
-				float pixelValue = 0.f;
+	if (imageSize != _imageSize) {
+		_imageSize = imageSize;
 
-				for (unsigned int displayImageId : displayImageIds) {
-					const auto imageOffset	= displayImageId * noPixels;
-					const auto pointId		= imageOffset + pixelId;
-
+<<<<<<< HEAD
 					pixelValue += pointsData[pointId];
 				}
 				
@@ -215,18 +187,21 @@ void ImageViewerWidget::onDisplayImageIdsChanged()
 				pixelValue /= static_cast<float>(noDisplayImages);
 
 				const auto offset = pixelId * 4;
+=======
+		setupTextures();
+>>>>>>> feature/multi_part_image_sequence
 
-				imageTextureData[offset + 0] = pixelValue;
-				imageTextureData[offset + 1] = pixelValue;
-				imageTextureData[offset + 2] = pixelValue;
-				imageTextureData[offset + 3] = 255;
-			}
-		}
+		shouldZoomExtents = true;
 	}
+	
+	textureData("image") = displayImage;
 
 	applyTextureData("image");
 
 	update();
+
+	if (shouldZoomExtents)
+		zoomExtents();
 }
 
 void ImageViewerWidget::onSelectedPointsChanged()
@@ -234,17 +209,14 @@ void ImageViewerWidget::onSelectedPointsChanged()
 	qDebug() << "Selected points changed";
 
 	const auto imageCollectionType	= _imageViewerPlugin->imageCollectionType();
-	const auto imageSize			= _imageViewerPlugin->imageSize();
-	const auto noPixels				= imageSize.width() * imageSize.height();
-
-	auto missed = QList<int>();
+	const auto noPixels				= _imageSize.width() * _imageSize.height();
 
 	resetTextureData("selection");
 	resetTexture("overlay");
 
 	TextureData& selectionTextureData = textureData("selection");
 
-	if (imageCollectionType == "STACK") {
+	if (imageCollectionType == ImageCollectionType::Stack) {
 		if (_imageViewerPlugin->hasSelection()) {
 			for (unsigned int index : _imageViewerPlugin->selection())
 			{
@@ -255,6 +227,8 @@ void ImageViewerWidget::onSelectedPointsChanged()
 				selectionTextureData[offset + 2] = _selectionColor.blue();
 				selectionTextureData[offset + 3] = _selectionColor.alpha();
 			}
+
+			_selection = static_cast<Indices>(_imageViewerPlugin->selection());
 		}
 
 		applyTextureData("selection");
@@ -263,42 +237,15 @@ void ImageViewerWidget::onSelectedPointsChanged()
 	update();
 }
 
-void ImageViewerWidget::onCurrentDataSetNameChanged()
+void ImageViewerWidget::onCurrentDatasetChanged(const QString& currentDataset)
 {
 	_selecting = false;
 
 	resetTexture("overlay");
-
-	zoomExtents();
-}
-
-void ImageViewerWidget::setupTexture(QOpenGLTexture& texture)
-{
-	texture.destroy();
-	texture.create();
-	texture.setSize(_imageViewerPlugin->imageSize().width(), _imageViewerPlugin->imageSize().height(), 1);
-	texture.setFormat(QOpenGLTexture::RGBA8_UNorm);
-	texture.allocateStorage();
-}
-
-void ImageViewerWidget::setupTextures()
-{
-	if (_imageViewerPlugin->noPixels() == 0)
-		return;
-	
-	qDebug() << "Setup textures";
-
-	resetTextureData("image");
-	resetTextureData("overlay");
-	resetTextureData("selection");
-
-	setupTexture(texture("image"));
-	setupTexture(texture("overlay"));
-	setupTexture(texture("selection"));
 }
 
 void ImageViewerWidget::drawQuad(const float& z) {
-	const auto halfImageSize = _imageViewerPlugin->imageSize() / 2;
+	const auto halfImageSize = _imageSize / 2;
 
 	glBegin(GL_QUADS);
 	{
@@ -447,10 +394,6 @@ void ImageViewerWidget::resizeGL(int w, int h)
 
 void ImageViewerWidget::paintGL() {
 
-	//auto painter = new QPainter(this);
-
-	//painter->beginNativePainting();
-
 	glClearColor(0.1, 0.1, 0.1, 1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -469,7 +412,7 @@ void ImageViewerWidget::paintGL() {
 
 	drawTextureQuad(texture("image"), 1.0f);
 
-	if (_imageViewerPlugin->imageCollectionType() == "STACK") {
+	if (_imageViewerPlugin->imageCollectionType() == ImageCollectionType::Stack) {
 		drawTextureQuad(texture("overlay"), 0.5f);
 		drawTextureQuad(texture("selection"), 0.0f);
 	}
@@ -480,10 +423,6 @@ void ImageViewerWidget::paintGL() {
 	if (_interactionMode == InteractionMode::Selection) {
 		drawSelectionGeometry();
 	}
-
-	//painter->endNativePainting();
-
-	//drawInfo(painter);
 }
 
 void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent) 
@@ -500,7 +439,7 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 
 		}
 		else {
-			if (_imageViewerPlugin->isStack()) {
+			if (_imageViewerPlugin->imageCollectionType() == ImageCollectionType::Stack) {
 				/*
 				if (_selectionModifier == SelectionModifier::Replace) {
 					qDebug() << "Reset selection";
@@ -532,7 +471,7 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 			pan(QPointF(mouseEvent->pos().x() - _mousePosition.x(), -(mouseEvent->pos().y() - _mousePosition.y())));
 		}
 		else {
-			if (_imageViewerPlugin->isStack()) {
+			if (_imageViewerPlugin->imageCollectionType() == ImageCollectionType::Stack) {
 				_selecting = true;
 				updateSelection();
 			}
@@ -559,17 +498,18 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 		QWidget::setCursor(Qt::OpenHandCursor);
 	}
 
-	if (mouseEvent->button() == Qt::RightButton)
-	{
-		contextMenu()->exec(mapToGlobal(mouseEvent->pos()));
+	if (_imageViewerPlugin->imageCollectionType() == ImageCollectionType::Stack || _imageViewerPlugin->imageCollectionType() == ImageCollectionType::MultiPartSequence) {
+		if (mouseEvent->button() == Qt::RightButton)
+		{
+			contextMenu()->exec(mapToGlobal(mouseEvent->pos()));
+		}
 	}
 
 	if (mouseEvent->modifiers() & Qt::AltModifier) {
-
 	}
 	else {
 		if (_selecting) {
-			if (_imageViewerPlugin->isStack()) {
+			if (_imageViewerPlugin->imageCollectionType() == ImageCollectionType::Stack) {
 				_selecting = false;
 
 				updateSelection();
@@ -649,17 +589,15 @@ void ImageViewerWidget::zoomAt(const QPointF& screenPosition, const float& facto
 
 void ImageViewerWidget::zoomExtents()
 {
-	if (_imageViewerPlugin->currentDataSetName().isEmpty())
+	if (_imageViewerPlugin->currentDataset().isEmpty())
 		return;
 
 	qDebug() << "Zoom extents";
 
-	const auto imageSize = _imageViewerPlugin->imageSize();
-
 	resetView();
 	
-	const auto factorX = (width() - _margin) / static_cast<float>(imageSize.width());
-	const auto factorY = (height() - _margin) / static_cast<float>(imageSize.height());
+	const auto factorX = (width() - _margin) / static_cast<float>(_imageSize.width());
+	const auto factorY = (height() - _margin) / static_cast<float>(_imageSize.height());
 	
 	zoom(factorX < factorY ? factorX : factorY);
 	pan(QPointF(width() / 2, height() / 2));
@@ -698,9 +636,8 @@ void ImageViewerWidget::updateSelection()
 {
 	//qDebug() << "Update selection" << _selectionType;
 
-	const auto imageSize		= _imageViewerPlugin->imageSize();
-	const auto halfImageSize	= _imageViewerPlugin->imageSize() / 2;
-	const auto imageRect		= QRect(-halfImageSize.width(), -halfImageSize.height(), imageSize.width(), imageSize.height());
+	const auto halfImageSize	= _imageSize / 2;
+	const auto imageRect		= QRect(-halfImageSize.width(), -halfImageSize.height(), _imageSize.width(), _imageSize.height());
 
 	switch (_selectionType)
 	{
@@ -721,8 +658,8 @@ void ImageViewerWidget::updateSelection()
 
 				selection.resize(noSelectedPixels);
 
-				const auto imageWidth			= imageSize.width();
-				const auto imageHeight			= imageSize.height();
+				const auto imageWidth			= _imageSize.width();
+				const auto imageHeight			= _imageSize.height();
 				const auto imageSelectionWidth	= imageSelection.width();
 				const auto imageSelectionHeight	= imageSelection.height();
 
@@ -761,8 +698,8 @@ void ImageViewerWidget::updateSelection()
 
 				selection.reserve(noSelectedPixels);
 
-				const auto imageWidth			= imageSize.width();
-				const auto imageHeight			= imageSize.height();
+				const auto imageWidth			= _imageSize.width();
+				const auto imageHeight			= _imageSize.height();
 				const auto imageSelectionWidth	= imageSelection.width();
 				const auto imageSelectionHeight = imageSelection.height();
 				const auto center				= QVector2D(currentMouseWorldPos);
@@ -793,6 +730,8 @@ void ImageViewerWidget::updateSelection()
 
 void ImageViewerWidget::modifySelection(Indices& indices)
 {
+	qDebug() << "Modify selection";
+
 	if (indices.size() > 0) {
 		switch (_selectionModifier) {
 			case SelectionModifier::Replace:
@@ -803,7 +742,6 @@ void ImageViewerWidget::modifySelection(Indices& indices)
 
 				break;
 			}
-
 			
 			case SelectionModifier::Add:
 			{
@@ -835,33 +773,130 @@ void ImageViewerWidget::modifySelection(Indices& indices)
 				break;
 			}
 		}
-
-		resetTextureData("overlay");
-
-		TextureData& overlayTextureData = textureData("overlay");
-
-		for (Index index : _selection) {
-			const auto offset = index * 4;
-
-			overlayTextureData[offset + 0] = _selectionProxyColor.red();
-			overlayTextureData[offset + 1] = _selectionProxyColor.green();
-			overlayTextureData[offset + 2] = _selectionProxyColor.blue();
-			overlayTextureData[offset + 3] = _selectionProxyColor.alpha();
-		}
-
-		applyTextureData("overlay");
-
-		update();
+	} 
+	else
+	{
+		_selection = Indices();
 	}
+
+	resetTextureData("overlay");
+
+	TextureData& overlayTextureData = textureData("overlay");
+
+	for (Index index : _selection) {
+		const auto offset = index * 4;
+
+		overlayTextureData[offset + 0] = _selectionProxyColor.red();
+		overlayTextureData[offset + 1] = _selectionProxyColor.green();
+		overlayTextureData[offset + 2] = _selectionProxyColor.blue();
+		overlayTextureData[offset + 3] = _selectionProxyColor.alpha();
+	}
+
+	applyTextureData("overlay");
+
+	update();
+}
+
+void ImageViewerWidget::clearSelection()
+{
+	qDebug() << "Clear selection";
+
+	modifySelection(Indices());
+	commitSelection();
 }
 
 void ImageViewerWidget::commitSelection()
 {
-	qDebug() << "Comitting selection to core";
+	qDebug() << "Commit selection to core";
 
 	resetTextureData("overlay");
 	
 	_imageViewerPlugin->setSelection(_selection);
+}
+
+void ImageViewerWidget::applyTextureData(const QString& name)
+{
+	texture(name).setData(QOpenGLTexture::PixelFormat::RGBA, QOpenGLTexture::PixelType::UInt8, static_cast<void*>(&textureData(name)[0]));
+}
+
+QMenu* ImageViewerWidget::contextMenu()
+{
+	auto* contextMenu = new QMenu();
+
+	if (_imageViewerPlugin->imageCollectionType() == ImageCollectionType::Stack) {
+		contextMenu->addMenu(viewMenu());
+		contextMenu->addSeparator();
+		contextMenu->addMenu(selectionMenu());
+	}
+
+	return contextMenu;
+}
+
+QMenu* ImageViewerWidget::viewMenu()
+{
+	auto* viewMenu = new QMenu("View");
+
+	auto* zoomToExtentsAction = new QAction("Zoom extents");
+	
+	zoomToExtentsAction->setToolTip("Zoom to the boundaries of the image");
+
+	connect(zoomToExtentsAction, &QAction::triggered, this, &ImageViewerWidget::zoomExtents);
+
+	viewMenu->addAction(zoomToExtentsAction);
+
+	return viewMenu;
+}
+
+QMenu* ImageViewerWidget::selectionMenu()
+{
+	auto* selectionMenu = new QMenu("Selection");
+
+	auto* rectangleSelectionAction	= new QAction("Rectangle");
+	auto* brushSelectionAction		= new QAction("Brush");
+	auto* freehandSelectionAction	= new QAction("Freehand", this);
+	auto* clearSelectionAction		= new QAction("Clear");
+
+	connect(rectangleSelectionAction, &QAction::triggered, [this]() { setSelectionType(SelectionType::Rectangle);  });
+	connect(brushSelectionAction, &QAction::triggered, [this]() { setSelectionType(SelectionType::Brush);  });
+	connect(freehandSelectionAction, &QAction::triggered, [this]() { setSelectionType(SelectionType::Freehand);  });
+	connect(clearSelectionAction, &QAction::triggered, [this]() { clearSelection(); });
+
+	rectangleSelectionAction->setCheckable(true);
+	brushSelectionAction->setCheckable(true);
+
+	rectangleSelectionAction->setChecked(_selectionType == SelectionType::Rectangle);
+	brushSelectionAction->setChecked(_selectionType == SelectionType::Brush);
+	
+	freehandSelectionAction->setEnabled(false);
+
+	selectionMenu->addAction(rectangleSelectionAction);
+	selectionMenu->addAction(brushSelectionAction);
+	selectionMenu->addSeparator();
+	selectionMenu->addAction(clearSelectionAction);
+
+	return selectionMenu;
+}
+
+void ImageViewerWidget::setupTextures()
+{
+	qDebug() << "Setup textures" << _imageSize;
+
+	resetTextureData("image");
+	resetTextureData("overlay");
+	resetTextureData("selection");
+
+	setupTexture(texture("image"));
+	setupTexture(texture("overlay"));
+	setupTexture(texture("selection"));
+}
+
+void ImageViewerWidget::setupTexture(QOpenGLTexture& openGltexture)
+{
+	openGltexture.destroy();
+	openGltexture.create();
+	openGltexture.setSize(_imageSize.width(), _imageSize.height(), 1);
+	openGltexture.setFormat(QOpenGLTexture::RGBA8_UNorm);
+	openGltexture.allocateStorage();
 }
 
 void ImageViewerWidget::resetTexture(const QString & textureName)
@@ -876,57 +911,9 @@ void ImageViewerWidget::resetTextureData(const QString& textureName)
 {
 	TextureData& data = textureData(textureName);
 
-	data.resize(_imageViewerPlugin->noPixels() * 4);
+	data.resize(_imageSize.width() * _imageSize.height() * 4);
 
 	std::fill(data.begin(), data.end(), 0);
-}
-
-void ImageViewerWidget::applyTextureData(const QString& name)
-{
-	texture(name).setData(QOpenGLTexture::PixelFormat::RGBA, QOpenGLTexture::PixelType::UInt8, static_cast<void*>(&textureData(name)[0]));
-}
-
-void ImageViewerWidget::createActions()
-{
-	_zoomToExtentsAction = new QAction("Zoom extents", this);
-	_zoomToExtentsAction->setToolTip("Zoom to the boundaries of the image");
-
-	connect(_zoomToExtentsAction, &QAction::triggered, this, &ImageViewerWidget::zoomExtents);
-
-	_rectangleSelectionAction = new QAction("Rectangle", this);
-
-	_brushSelectionAction = new QAction("Brush", this);
-	_brushSelectionAction->setEnabled(false);
-
-	_freehandSelectionAction = new QAction("Freehand", this);
-	_freehandSelectionAction->setEnabled(false);
-
-	_clearSelectionAction = new QAction("Clear", this);
-}
-
-void ImageViewerWidget::createMenus()
-{
-	_contextMenu = new QMenu();
-
-	_selectionMenu = new QMenu("Selection");
-
-	_selectionMenu->addAction(_rectangleSelectionAction);
-	_selectionMenu->addAction(_brushSelectionAction);
-	_selectionMenu->addAction(_freehandSelectionAction);
-	_selectionMenu->addSeparator();
-	_selectionMenu->addAction(_clearSelectionAction);
-}
-
-QMenu* ImageViewerWidget::contextMenu() const
-{
-	_contextMenu->addAction(_zoomToExtentsAction);
-
-	if (_imageViewerPlugin->imageCollectionType() == "STACK") {
-		_contextMenu->addSeparator();
-		_contextMenu->addMenu(_selectionMenu);
-	}
-
-	return _contextMenu;
 }
 
 QOpenGLTexture& ImageViewerWidget::texture(const QString& name)
