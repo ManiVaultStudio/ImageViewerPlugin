@@ -137,21 +137,10 @@ QStringList ImageViewerPlugin::dimensionNames() const
 {
 	PointsPlugin& points = pointsData();
 
-<<<<<<< HEAD
 	QStringList dimensionNames;
 	
 	dimensionNames.reserve(points.getDimensionNames().size());
 	std::copy(points.getDimensionNames().begin(), points.getDimensionNames().end(), std::back_inserter(dimensionNames));
-=======
-	const auto noDimensions = points.dimNames.size();
-
-	auto dimensionNames = QStringList();
-
-	dimensionNames.reserve(noDimensions);
-
-	for (size_t i = 0; i < noDimensions; ++i)
-		dimensionNames << points.dimNames[i];
->>>>>>> feature/multi_part_image_sequence
 
 	return dimensionNames;
 }
@@ -299,9 +288,9 @@ void ImageViewerPlugin::computeDisplayImage()
 	const auto noPixels		= width * height;
 	const auto noImages		= this->noImages();
 
-	qDebug() << "Compute display image" << imageSize;
-
 	auto& pointsData = this->pointsData();
+
+	qDebug() << "Compute display image" << imageSize << pointsData.getData().size();
 
 	PointsPlugin& points = this->pointsData();
 
@@ -365,7 +354,7 @@ void ImageViewerPlugin::computeDisplayImage()
 					auto pixelValue = 0.f;
 
 					for (unsigned int displayImageId : displayImages) {
-						pixelValue += pointsData.data[sequencePointId(displayImageId, x, y)];
+						pixelValue += pointsData.getData()[sequencePointId(displayImageId, x, y)];
 					}
 
 					pixelValue /= static_cast<float>(noDisplayImages);
@@ -402,7 +391,7 @@ void ImageViewerPlugin::computeDisplayImage()
 			for (int x = 0; x < width; x++) {
 				for (int y = 0; y < height; y++) {
 					for (unsigned int displayDimensionId : displayDimensions) {
-						const auto value = pointsData.data[stackPointId(displayDimensionId, x, y)];
+						const auto value = pointsData.getData()[stackPointId(displayDimensionId, x, y)];
 
 						if (value < min)
 							min = value;
@@ -420,7 +409,7 @@ void ImageViewerPlugin::computeDisplayImage()
 					auto pixelValue = 0.f;
 
 					for (unsigned int displayDimensionId : displayDimensions) {
-						pixelValue += (pointsData.data[stackPointId(displayDimensionId, x, y)] - min) / range;
+						pixelValue += (pointsData.getData()[stackPointId(displayDimensionId, x, y)] - min) / range;
 					}
 
 					pixelValue /= static_cast<float>(noDisplayDimensions);
@@ -475,7 +464,7 @@ void ImageViewerPlugin::computeDisplayImage()
 			for (int x = 0; x < width; x++) {
 				for (int y = 0; y < height; y++) {
 					for (unsigned int displayDimensionId : displayDimensions) {
-						const auto value = pointsData.data[multipartSequencePointId(displayDimensionId, x, y)];
+						const auto value = pointsData.getData()[multipartSequencePointId(displayDimensionId, x, y)];
 
 						if (value < min)
 							min = value;
@@ -493,7 +482,7 @@ void ImageViewerPlugin::computeDisplayImage()
 					auto pixelValue = 0.f;
 
 					for (unsigned int displayDimensionId : displayDimensions) {
-						pixelValue += (pointsData.data[multipartSequencePointId(displayDimensionId, x, y)] - min) / range;
+						pixelValue += (pointsData.getData()[multipartSequencePointId(displayDimensionId, x, y)] - min) / range;
 					}
 
 					pixelValue /= static_cast<float>(noDisplayDimensions);

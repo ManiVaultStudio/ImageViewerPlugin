@@ -155,41 +155,7 @@ void ImageViewerWidget::onDisplayImageChanged(const QSize& imageSize, const Text
 	if (imageSize != _imageSize) {
 		_imageSize = imageSize;
 
-<<<<<<< HEAD
-					pixelValue += pointsData[pointId];
-				}
-				
-				pixelValue /= static_cast<float>(noDisplayImages);
-
-				const auto offset = pixelId * 4;
-
-				imageTextureData[offset + 0] = pixelValue;
-				imageTextureData[offset + 1] = pixelValue;
-				imageTextureData[offset + 2] = pixelValue;
-				imageTextureData[offset + 3] = 255;
-			}
-		}
-	}
-
-	if (imageCollectionType == "STACK") {
-		for (int x = 0; x < width; x++) {
-			for (int y = 0; y < height; y++) {
-				const auto pixelId = y * width + x;
-
-				float pixelValue = 0.f;
-
-				for (unsigned int displayImageId : displayImageIds) {
-					const auto pointId = (pixelId * noImages) + displayImageId;
-
-					pixelValue += pointsData[pointId];
-				}
-
-				pixelValue /= static_cast<float>(noDisplayImages);
-
-				const auto offset = pixelId * 4;
-=======
 		setupTextures();
->>>>>>> feature/multi_part_image_sequence
 
 		shouldZoomExtents = true;
 	}
