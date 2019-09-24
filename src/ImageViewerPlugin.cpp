@@ -286,13 +286,13 @@ void ImageViewerPlugin::update()
 
 void ImageViewerPlugin::computeDisplayImage()
 {
-	qDebug() << "Compute display image";
-
 	const auto imageSize	= this->imageSize();
 	const auto width		= imageSize.width();
 	const auto height		= imageSize.height();
 	const auto noPixels		= width * height;
 	const auto noImages		= this->noImages();
+
+	qDebug() << "Compute display image" << imageSize;
 
 	auto& pointsData = this->pointsData();
 
