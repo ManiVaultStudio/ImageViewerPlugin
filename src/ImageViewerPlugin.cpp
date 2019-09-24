@@ -99,14 +99,10 @@ QStringList ImageViewerPlugin::dimensionNames() const
 {
 	PointsPlugin& points = pointsData();
 
-	const auto noDimensions = points.dimNames.size();
-
-	auto dimensionNames = QStringList();
-
-	dimensionNames.reserve(noDimensions);
-
-	for (size_t i = 0, l = noDimensions; i < l; ++i)
-		dimensionNames << points.dimNames[i];
+	QStringList dimensionNames;
+	
+	dimensionNames.reserve(points.getDimensionNames().size());
+	std::copy(points.getDimensionNames().begin(), points.getDimensionNames().end(), std::back_inserter(dimensionNames));
 
 	return dimensionNames;
 }

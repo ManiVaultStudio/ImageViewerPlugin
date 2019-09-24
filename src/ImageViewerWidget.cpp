@@ -184,7 +184,7 @@ void ImageViewerWidget::onDisplayImageIdsChanged()
 					const auto imageOffset	= displayImageId * noPixels;
 					const auto pointId		= imageOffset + pixelId;
 
-					pixelValue += pointsData.data[pointId];
+					pixelValue += pointsData[pointId];
 				}
 				
 				pixelValue /= static_cast<float>(noDisplayImages);
@@ -209,7 +209,7 @@ void ImageViewerWidget::onDisplayImageIdsChanged()
 				for (unsigned int displayImageId : displayImageIds) {
 					const auto pointId = (pixelId * noImages) + displayImageId;
 
-					pixelValue += pointsData.data[pointId];
+					pixelValue += pointsData[pointId];
 				}
 
 				pixelValue /= static_cast<float>(noDisplayImages);
