@@ -329,9 +329,6 @@ void ImageViewerPlugin::computeDisplayImage()
 
 	imageTextureData.resize(noPixels * 4);
 
-	auto min = std::numeric_limits<int>::max();
-	auto max = std::numeric_limits<int>::min();
-
 	switch (imageCollectionType()) {
 		case ImageCollectionType::Sequence: {
 			auto displayImages = Indices();
@@ -392,15 +389,35 @@ void ImageViewerPlugin::computeDisplayImage()
 
 			const auto noDisplayDimensions	= displayDimensions.size();
 
+			auto min = std::numeric_limits<int>::max();
+			auto max = std::numeric_limits<int>::min();
+
+			for (int x = 0; x < width; x++) {
+				for (int y = 0; y < height; y++) {
+					for (unsigned int displayDimensionId : displayDimensions) {
+						const auto value = pointsData.data[stackPointId(displayDimensionId, x, y)];
+
+						if (value < min)
+							min = value;
+
+						if (value > max)
+							max = value;
+					}
+				}
+			}
+
+			const auto range = max - min;
+
 			for (int x = 0; x < width; x++) {
 				for (int y = 0; y < height; y++) {
 					auto pixelValue = 0.f;
 
 					for (unsigned int displayDimensionId : displayDimensions) {
-						pixelValue += pointsData.data[stackPointId(displayDimensionId, x, y)];
+						pixelValue += (pointsData.data[stackPointId(displayDimensionId, x, y)] - min) / range;
 					}
 
 					pixelValue /= static_cast<float>(noDisplayDimensions);
+					pixelValue *= 255.f;
 
 					const auto offset = getOffset(x, y);
 
@@ -439,21 +456,41 @@ void ImageViewerPlugin::computeDisplayImage()
 
 			const auto currentDimension = this->_currentDimension;
 
-			const auto multipartSequencePointId = [width, height, currentDimension, noPointsPerDimension, imageOffset, getPixelId](int x, int y) {
+			const auto multipartSequencePointId = [width, height, noPointsPerDimension, imageOffset, getPixelId](int currentDimension, int x, int y) {
 				return  (currentDimension * noPointsPerDimension) + imageOffset + getPixelId(x, y);
 			};
 
-			const auto noDisplayDimensions	= displayDimensions.size();
+			const auto noDisplayDimensions = displayDimensions.size();
+
+			auto min = std::numeric_limits<int>::max();
+			auto max = std::numeric_limits<int>::min();
+
+			for (int x = 0; x < width; x++) {
+				for (int y = 0; y < height; y++) {
+					for (unsigned int displayDimensionId : displayDimensions) {
+						const auto value = pointsData.data[multipartSequencePointId(displayDimensionId, x, y)];
+
+						if (value < min)
+							min = value;
+
+						if (value > max)
+							max = value;
+					}
+				}
+			}
+
+			const auto range = max - min;
 
 			for (int x = 0; x < width; x++) {
 				for (int y = 0; y < height; y++) {
 					auto pixelValue = 0.f;
 
 					for (unsigned int displayDimensionId : displayDimensions) {
-						pixelValue += pointsData.data[multipartSequencePointId(x, y)];
+						pixelValue += (pointsData.data[multipartSequencePointId(displayDimensionId, x, y)] - min) / range;
 					}
 
 					pixelValue /= static_cast<float>(noDisplayDimensions);
+					pixelValue *= 255.f;
 
 					const auto offset = getOffset(x, y);
 
