@@ -45,7 +45,13 @@ public:
 	QStringList dimensionNames() const;
 	QStringList imageFilePaths() const;
 
-	int noImages() const;
+	std::size_t noImages() const;
+
+	static std::size_t pixelId(const QSize& imageSize, const int& x, const int& y);
+	static std::size_t pixelBufferOffset(const QSize& imageSize, const int& x, const int& y);
+	static std::size_t sequenceCoordinateToPointId(const QSize& imageSize, const std::int32_t& imageId, const std::int32_t& noPixels, const std::int32_t& x, const std::int32_t& y);
+	static std::size_t stackCoordinateToPointId(const QSize& imageSize, const std::int32_t& noImages, const std::int32_t& imageId, const std::int32_t& x, const std::int32_t& y);
+	static std::size_t multipartSequenceCoordinateToPointId(const QSize& imageSize, const std::int32_t& noPointsPerDimension, const std::int32_t& imageOffset, const std::int32_t& currentDimensionId, const std::int32_t& x, const std::int32_t& y);
 
 private:
 	QSize imageSize() const;
