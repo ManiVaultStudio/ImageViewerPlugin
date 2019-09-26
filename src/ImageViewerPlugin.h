@@ -64,10 +64,10 @@ private:
 public:
 	QString currentDataset() const;
 	void setCurrentDataset(const QString& currentDataset);
-	auto currentImage() const;
-	void setCurrentImage(const int& currentImage);
-	auto currentDimension() const;
-	void setCurrentDimension(const int& currentDimension);
+	auto currentImageId() const;
+	void setCurrentImageId(const std::int32_t& currentImageId);
+	auto currentDimensionId() const;
+	void setCurrentDimensionId(const std::int32_t& currentDimensionId);
 	bool averageImages() const;
 	void setAverageImages(const bool& averageImages);
 
@@ -80,9 +80,9 @@ signals:
 	void datasetNamesChanged(const QStringList& datasetNames);
 	void currentDatasetChanged(const QString& currentDataset);
 	void imageNamesChanged(const QStringList& imageNames);
-	void currentImageChanged(const int& currentImage);
+	void currentImageIdChanged(const int& currentImageId);
 	void dimensionNamesChanged(const QStringList& dimensionNames);
-	void currentDimensionChanged(const int& currentDimension);
+	void currentDimensionIdChanged(const int& currentDimensionId);
 	void averageImagesChanged(const bool& averageImages);
 	void displayImageChanged(const QSize& imageSize, const TextureData& displayImage);
 	void selectedPointsChanged();
@@ -93,9 +93,9 @@ private:
 	QStringList			_datasetNames;
 	QString				_currentDataset;
 	QStringList			_imageNames;
-	int					_currentImage;
+	std::int32_t		_currentImageId;
 	QStringList			_dimensionNames;
-	int					_currentDimension;
+	std::int32_t		_currentDimensionId;
 	bool				_averageImages;
 };
 

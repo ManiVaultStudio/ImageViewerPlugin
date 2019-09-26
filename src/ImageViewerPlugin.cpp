@@ -24,9 +24,9 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	_datasetNames(),
 	_currentDataset(),
 	_imageNames(),
-	_currentImage(0),
+	_currentImageId(0),
 	_dimensionNames(),
-	_currentDimension(0),
+	_currentDimensionId(0),
 	_averageImages(false)
 {
 	setFocusPolicy(Qt::FocusPolicy::StrongFocus);
@@ -35,8 +35,8 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	_settingsWidget		= new SettingsWidget(this);
 
 	connect(this, &ImageViewerPlugin::currentDatasetChanged, this, &ImageViewerPlugin::computeDisplayImage);
-	connect(this, &ImageViewerPlugin::currentImageChanged, this, &ImageViewerPlugin::computeDisplayImage);
-	connect(this, &ImageViewerPlugin::currentDimensionChanged, this, &ImageViewerPlugin::computeDisplayImage);
+	connect(this, &ImageViewerPlugin::currentImageIdChanged, this, &ImageViewerPlugin::computeDisplayImage);
+	connect(this, &ImageViewerPlugin::currentDimensionIdChanged, this, &ImageViewerPlugin::computeDisplayImage);
 	connect(this, &ImageViewerPlugin::averageImagesChanged, this, &ImageViewerPlugin::computeDisplayImage);
 }
 
@@ -114,8 +114,8 @@ ImageCollectionType ImageViewerPlugin::imageCollectionType() const
 
 QString ImageViewerPlugin::currentImageFilePath() const
 {
-	if (_currentImage >= 0)
-		return imageFilePaths()[_currentImage];
+	if (_currentImageId >= 0)
+		return imageFilePaths()[_currentImageId];
 	else
 		return "";
 }
@@ -127,8 +127,8 @@ QString ImageViewerPlugin::currentImageFileName() const
 
 QString ImageViewerPlugin::currentDimensionName() const
 {
-	if (_currentDimension < _dimensionNames.size())
-		return _dimensionNames[_currentDimension];
+	if (_currentDimensionId < _dimensionNames.size())
+		return _dimensionNames[_currentDimensionId];
 	else
 		return "";
 }
@@ -352,8 +352,8 @@ void ImageViewerPlugin::computeDisplayImage()
 				}
 			}
 			else {
-				if (_currentImage >= 0) {
-					displayImages = Indices({ static_cast<unsigned int>(_currentImage) });
+				if (_currentImageId >= 0) {
+					displayImages = Indices({ static_cast<unsigned int>(_currentImageId) });
 				}
 				else {
 					displayImages = Indices();
@@ -395,7 +395,7 @@ void ImageViewerPlugin::computeDisplayImage()
 			}
 			else
 			{
-				displayDimensions = Indices({ static_cast<unsigned int>(_currentDimension) });
+				displayDimensions = Indices({ static_cast<unsigned int>(_currentDimensionId) });
 			}
 
 			const auto noDisplayDimensions	= displayDimensions.size();
@@ -456,27 +456,27 @@ void ImageViewerPlugin::computeDisplayImage()
 			}
 			else
 			{
-				displayDimensions = Indices({ static_cast<unsigned int>(_currentDimension) });
+				displayDimensions = Indices({ static_cast<unsigned int>(_currentDimensionId) });
 			}
 
 			int imageOffset = 0;
 
-			for (int i = 0; i < _currentImage; i++) {
+			for (std::int32_t i = 0; i < _currentImageId; i++) {
 				const auto key = imageSizes.keys().at(i);
 				const auto size = imageSizes[key].toSize();
 
 				imageOffset += size.width() * size.height();
 			}
 
-			const auto currentDimension = this->_currentDimension;
+			const auto currentDimension = this->_currentDimensionId;
 
 			const auto noDisplayDimensions = displayDimensions.size();
 
 			auto min = std::numeric_limits<int>::max();
 			auto max = std::numeric_limits<int>::min();
 
-			for (int x = 0; x < width; x++) {
-				for (int y = 0; y < height; y++) {
+			for (std::int32_t x = 0; x < width; x++) {
+				for (std::int32_t y = 0; y < height; y++) {
 					for (unsigned int displayDimensionId : displayDimensions) {
 						const auto pointId	= ImageViewerPlugin::multipartSequenceCoordinateToPointId(imageSize, noPointsPerDimension, imageOffset, displayDimensionId, x, y);
 						const auto value	= pointsData.getData()[pointId];
@@ -492,8 +492,8 @@ void ImageViewerPlugin::computeDisplayImage()
 
 			const auto range = max - min;
 
-			for (int x = 0; x < width; x++) {
-				for (int y = 0; y < height; y++) {
+			for (std::int32_t x = 0; x < width; x++) {
+				for (std::int32_t y = 0; y < height; y++) {
 					auto pixelValue = 0.f;
 
 					for (unsigned int displayDimensionId : displayDimensions) {
@@ -539,48 +539,48 @@ void ImageViewerPlugin::setCurrentDataset(const QString& currentDataset)
 
 	update();
 
-	setCurrentImage(0);
-	setCurrentDimension(0);
+	setCurrentImageId(0);
+	setCurrentDimensionId(0);
 }
 
-auto ImageViewerPlugin::currentImage() const
+auto ImageViewerPlugin::currentImageId() const
 {
-	return _currentImage;
+	return _currentImageId;
 }
 
-void ImageViewerPlugin::setCurrentImage(const int& currentImage)
+void ImageViewerPlugin::setCurrentImageId(const std::int32_t& currentImageId)
 {
-	if (currentImage == _currentImage)
+	if (currentImageId == _currentImageId)
 		return;
 
-	if (currentImage < 0)
+	if (currentImageId < 0)
 		return;
 
-	qDebug() << "Set current data image";
+	qDebug() << "Set current image ID";
 
-	_currentImage = currentImage;
+	_currentImageId = currentImageId;
 
-	emit currentImageChanged(_currentImage);
+	emit currentImageIdChanged(_currentImageId);
 }
 
-auto ImageViewerPlugin::currentDimension() const
+auto ImageViewerPlugin::currentDimensionId() const
 {
-	return _currentDimension;
+	return _currentDimensionId;
 }
 
-void ImageViewerPlugin::setCurrentDimension(const int& currentDimension)
+void ImageViewerPlugin::setCurrentDimensionId(const std::int32_t& currentDimensionId)
 {
-	if (currentDimension == _currentDimension)
+	if (currentDimensionId == _currentDimensionId)
 		return;
 
-	if (currentDimension < 0)
+	if (currentDimensionId < 0)
 		return;
 
-	qDebug() << "Set current dimension";
+	qDebug() << "Set current dimension ID";
 
-	_currentDimension = currentDimension;
+	_currentDimensionId = currentDimensionId;
 
-	emit currentDimensionChanged(_currentDimension);
+	emit currentDimensionIdChanged(_currentDimensionId);
 
 	update();
 }

@@ -15,16 +15,16 @@ SettingsWidget::SettingsWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_ui->setupUi(this);
 	
 	connect(_ui->datasetsComboBox, QOverload<const QString&>::of(&QComboBox::currentTextChanged), _imageViewerPlugin, &ImageViewerPlugin::setCurrentDataset);
-	connect(_ui->imagesComboBox, QOverload<const int>::of(&QComboBox::currentIndexChanged), _imageViewerPlugin, &ImageViewerPlugin::setCurrentImage);
-	connect(_ui->dimensionsComboBox, QOverload<const int>::of(&QComboBox::currentIndexChanged), _imageViewerPlugin, &ImageViewerPlugin::setCurrentDimension);
+	connect(_ui->imagesComboBox, QOverload<const int>::of(&QComboBox::currentIndexChanged), _imageViewerPlugin, &ImageViewerPlugin::setCurrentImageId);
+	connect(_ui->dimensionsComboBox, QOverload<const int>::of(&QComboBox::currentIndexChanged), _imageViewerPlugin, &ImageViewerPlugin::setCurrentDimensionId);
 	connect(_ui->averageImagesCheckBox, &QCheckBox::stateChanged, _imageViewerPlugin, [=](int state) { qDebug() << state;  _imageViewerPlugin->setAverageImages(static_cast<bool>(state)); });
 	
 	connect(_imageViewerPlugin, &ImageViewerPlugin::datasetNamesChanged, this, &SettingsWidget::onDatasetNamesChanged);
 	connect(_imageViewerPlugin, &ImageViewerPlugin::currentDatasetChanged, this, &SettingsWidget::onCurrentDatasetChanged);
 	connect(_imageViewerPlugin, &ImageViewerPlugin::imageNamesChanged, this, &SettingsWidget::onImageNamesChanged);
-	connect(_imageViewerPlugin, &ImageViewerPlugin::currentImageChanged, this, &SettingsWidget::onCurrentImageChanged);
+	connect(_imageViewerPlugin, &ImageViewerPlugin::currentImageIdChanged, this, &SettingsWidget::onCurrentImageChanged);
 	connect(_imageViewerPlugin, &ImageViewerPlugin::dimensionNamesChanged, this, &SettingsWidget::onDimensionNamesChanged);
-	connect(_imageViewerPlugin, &ImageViewerPlugin::currentDimensionChanged, this, &SettingsWidget::onCurrentDimensionChanged);
+	connect(_imageViewerPlugin, &ImageViewerPlugin::currentDimensionIdChanged, this, &SettingsWidget::onCurrentDimensionChanged);
 	connect(_imageViewerPlugin, &ImageViewerPlugin::averageImagesChanged, this, &SettingsWidget::onAverageImagesChanged);
 
 	update();
