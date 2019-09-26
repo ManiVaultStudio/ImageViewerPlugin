@@ -101,7 +101,7 @@ private:
 	
 private:
 	void setupTextures();
-	void setupTexture(QOpenGLTexture& openGltexture);
+	void setupTexture(QOpenGLTexture& openGltexture, const QOpenGLTexture::Filter& filter = QOpenGLTexture::Filter::Linear);
 	void resetTexture(const QString& textureName);
 	void resetTextureData(const QString& textureName);
 	QOpenGLTexture& texture(const QString& name);

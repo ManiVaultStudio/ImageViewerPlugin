@@ -852,17 +852,18 @@ void ImageViewerWidget::setupTextures()
 	resetTextureData("selection");
 
 	setupTexture(texture("image"));
-	setupTexture(texture("overlay"));
-	setupTexture(texture("selection"));
+	setupTexture(texture("overlay"), QOpenGLTexture::Filter::Nearest);
+	setupTexture(texture("selection"), QOpenGLTexture::Filter::Nearest);
 }
 
-void ImageViewerWidget::setupTexture(QOpenGLTexture& openGltexture)
+void ImageViewerWidget::setupTexture(QOpenGLTexture& openGltexture, const QOpenGLTexture::Filter& filter)
 {
 	openGltexture.destroy();
 	openGltexture.create();
 	openGltexture.setSize(_imageSize.width(), _imageSize.height(), 1);
 	openGltexture.setFormat(QOpenGLTexture::RGBA8_UNorm);
 	openGltexture.allocateStorage();
+	openGltexture.setMinMagFilters(filter, filter);
 }
 
 void ImageViewerWidget::resetTexture(const QString & textureName)
