@@ -56,21 +56,21 @@ void ImageViewerPlugin::init()
 
 PointsPlugin& ImageViewerPlugin::pointsData() const
 {
-	const IndexSet& set = dynamic_cast<const IndexSet&>(_core->requestSet(_currentDataset));
+	const auto& set = dynamic_cast<const IndexSet&>(_core->requestSet(_currentDataset));
 
 	return set.getData();
 }
 
 Indices ImageViewerPlugin::selection() const
 {
-	const IndexSet& selection = dynamic_cast<const IndexSet&>(pointsData().getSelection());
+	const auto& selection = dynamic_cast<const IndexSet&>(pointsData().getSelection());
 
 	return selection.indices;
 }
 
 void ImageViewerPlugin::setSelection(Indices& indices)
 {
-	IndexSet& selection = dynamic_cast<IndexSet&>(pointsData().getSelection());
+	auto& selection = dynamic_cast<IndexSet&>(pointsData().getSelection());
 
 	selection.indices = indices;
 
@@ -84,7 +84,7 @@ bool ImageViewerPlugin::hasSelection() const
 
 int ImageViewerPlugin::noDimensions() const
 {
-	PointsPlugin& points = pointsData();
+	auto& points = pointsData();
 
 	return points.getNumDimensions();
 }
@@ -94,7 +94,7 @@ ImageCollectionType ImageViewerPlugin::imageCollectionType() const
 	if (_currentDataset.isEmpty())
 		return ImageCollectionType::Undefined;
 
-	PointsPlugin& points = pointsData();
+	auto& points = pointsData();
 
 	if (points.hasProperty("type")) {
 		const auto type = points.getProperty("type").toString();
@@ -135,7 +135,7 @@ QString ImageViewerPlugin::currentDimensionName() const
 
 QStringList ImageViewerPlugin::dimensionNames() const
 {
-	PointsPlugin& points = pointsData();
+	auto& points = pointsData();
 
 	QStringList dimensionNames;
 	
@@ -147,7 +147,7 @@ QStringList ImageViewerPlugin::dimensionNames() const
 
 QStringList ImageViewerPlugin::imageFilePaths() const
 {
-	PointsPlugin& points = pointsData();
+	auto& points = pointsData();
 
 	if (points.hasProperty("imageFilePaths")) {
 		return points.getProperty("imageFilePaths").toStringList();
@@ -159,6 +159,44 @@ QStringList ImageViewerPlugin::imageFilePaths() const
 std::size_t ImageViewerPlugin::noImages() const
 {
 	return imageFilePaths().size();
+}
+
+std::size_t ImageViewerPlugin::noPointsPerDimension() const
+{
+	const auto& points = pointsData();
+
+	const auto imageSizes = points.getProperty("imageSizes").toMap();
+
+	std::size_t noPointsPerDimension = 0;
+
+	foreach(const QString& key, imageSizes.keys()) {
+		const auto size = imageSizes[key].toSize();
+
+		noPointsPerDimension += size.width() * size.height();
+	}
+
+	return noPointsPerDimension;
+}
+
+std::size_t ImageViewerPlugin::pixelOffset() const
+{
+	PointsPlugin& points = pointsData();
+
+	if (!points.hasProperty("imageSizes"))
+		return 0;
+
+	auto imageSizes = points.getProperty("imageSizes").toMap();
+
+	std::size_t pixelOffset = 0;
+
+	for (std::int32_t i = 0; i < _currentImageId; i++) {
+		const auto key	= imageSizes.keys().at(i);
+		const auto size = imageSizes[key].toSize();
+
+		pixelOffset += size.width() * size.height();
+	}
+
+	return pixelOffset;
 }
 
 std::size_t ImageViewerPlugin::pixelId(const QSize& imageSize, const int& x, const int& y)
@@ -182,9 +220,9 @@ std::size_t ImageViewerPlugin::stackPixelCoordinateToPointId(const QSize& imageS
 	return ImageViewerPlugin::pixelId(imageSize, x, y) * noDimensions + dimensionId;
 }
 
-std::size_t ImageViewerPlugin::multipartSequencePixelCoordinateToPointId(const QSize& imageSize, const std::int32_t& noPointsPerDimension, const std::int32_t& imageOffset, const std::int32_t& currentDimension, const std::int32_t& x, const std::int32_t& y)
+std::size_t ImageViewerPlugin::multipartSequencePixelCoordinateToPointId(const QSize& imageSize, const std::int32_t& noPointsPerDimension, const std::int32_t& pixelOffset, const std::int32_t& currentDimension, const std::int32_t& x, const std::int32_t& y)
 {
-	return  (currentDimension * noPointsPerDimension) + imageOffset + ImageViewerPlugin::pixelId(imageSize, x, y);
+	return  (currentDimension * noPointsPerDimension) + pixelOffset + ImageViewerPlugin::pixelId(imageSize, x, y);
 }
 
 QSize ImageViewerPlugin::imageSize() const
@@ -314,25 +352,11 @@ void ImageViewerPlugin::computeDisplayImage()
 	const auto noPixels		= width * height;
 	const auto noImages		= this->noImages();
 
-	auto& pointsData = this->pointsData();
+	auto& pointsData = this->pointsData().getData();
 
-	qDebug() << "Compute display image" << imageSize << pointsData.getData().size();
+	qDebug() << "Compute display image" << imageSize << pointsData.size();
 
-	PointsPlugin& points = this->pointsData();
-
-	const auto imageSizes = points.getProperty("imageSizes").toMap();
-
-	int noPointsPerDimension = 0;
-
-	foreach(const QString& key, imageSizes.keys()) {
-		const auto size = imageSizes[key].toSize();
-
-		noPointsPerDimension += size.width() * size.height();
-	}
-
-	const auto getPixelId = [width](int x, int y) {
-		return y * width + x;
-	};
+	const auto noPointsPerDimension = this->noPointsPerDimension();
 
 	auto imageTextureData = TextureData();
 
@@ -369,7 +393,7 @@ void ImageViewerPlugin::computeDisplayImage()
 					for (unsigned int displayImageId : displayImages) {
 						const auto pointId = ImageViewerPlugin::sequencePixelCoordinateToPointId(imageSize, displayImageId, noPixels, x, y);
 
-						pixelValue += pointsData.getData()[pointId];
+						pixelValue += pointsData[pointId];
 					}
 
 					pixelValue /= static_cast<float>(noDisplayImages);
@@ -407,7 +431,7 @@ void ImageViewerPlugin::computeDisplayImage()
 				for (std::int32_t y = 0; y < height; y++) {
 					for (unsigned int displayDimensionId : displayDimensions) {
 						const auto pointId	= stackPixelCoordinateToPointId(imageSize, noImages, displayDimensionId, x, y);
-						const auto value	= pointsData.getData()[pointId];
+						const auto value	= pointsData[pointId];
 
 						if (value < min)
 							min = value;
@@ -427,7 +451,7 @@ void ImageViewerPlugin::computeDisplayImage()
 					for (unsigned int displayDimensionId : displayDimensions) {
 						const auto pointId = stackPixelCoordinateToPointId(imageSize, noImages, displayDimensionId, x, y);
 
-						pixelValue += (pointsData.getData()[pointId] - min) / range;
+						pixelValue += (pointsData[pointId] - min) / range;
 					}
 
 					pixelValue /= static_cast<float>(noDisplayDimensions);
@@ -459,18 +483,9 @@ void ImageViewerPlugin::computeDisplayImage()
 				displayDimensions = Indices({ static_cast<unsigned int>(_currentDimensionId) });
 			}
 
-			int imageOffset = 0;
-
-			for (std::int32_t i = 0; i < _currentImageId; i++) {
-				const auto key = imageSizes.keys().at(i);
-				const auto size = imageSizes[key].toSize();
-
-				imageOffset += size.width() * size.height();
-			}
-
-			const auto currentDimension = this->_currentDimensionId;
-
-			const auto noDisplayDimensions = displayDimensions.size();
+			const auto pixelOffset			= this->pixelOffset();
+			const auto currentDimension		= this->_currentDimensionId;
+			const auto noDisplayDimensions	= displayDimensions.size();
 
 			auto min = std::numeric_limits<int>::max();
 			auto max = std::numeric_limits<int>::min();
@@ -478,8 +493,8 @@ void ImageViewerPlugin::computeDisplayImage()
 			for (std::int32_t x = 0; x < width; x++) {
 				for (std::int32_t y = 0; y < height; y++) {
 					for (unsigned int displayDimensionId : displayDimensions) {
-						const auto pointId	= ImageViewerPlugin::multipartSequencePixelCoordinateToPointId(imageSize, noPointsPerDimension, imageOffset, displayDimensionId, x, y);
-						const auto value	= pointsData.getData()[pointId];
+						const auto pointId	= ImageViewerPlugin::multipartSequencePixelCoordinateToPointId(imageSize, noPointsPerDimension, pixelOffset, displayDimensionId, x, y);
+						const auto value	= pointsData[pointId];
 
 						if (value < min)
 							min = value;
@@ -497,9 +512,9 @@ void ImageViewerPlugin::computeDisplayImage()
 					auto pixelValue = 0.f;
 
 					for (unsigned int displayDimensionId : displayDimensions) {
-						const auto pointId = ImageViewerPlugin::multipartSequencePixelCoordinateToPointId(imageSize, noPointsPerDimension, imageOffset, displayDimensionId, x, y);
+						const auto pointId = ImageViewerPlugin::multipartSequencePixelCoordinateToPointId(imageSize, noPointsPerDimension, pixelOffset, displayDimensionId, x, y);
 
-						pixelValue += (pointsData.getData()[pointId] - min) / range;
+						pixelValue += (pointsData[pointId] - min) / range;
 					}
 
 					pixelValue /= static_cast<float>(noDisplayDimensions);
