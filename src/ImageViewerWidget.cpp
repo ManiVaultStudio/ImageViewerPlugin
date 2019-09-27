@@ -605,10 +605,6 @@ void ImageViewerWidget::updateSelection()
 	const auto halfImageSize	= _imageSize / 2;
 	const auto imageRect		= QRect(-halfImageSize.width(), -halfImageSize.height(), _imageSize.width(), _imageSize.height());
 
-	resetTextureData("overlay");
-
-	auto& overlayTextureData = textureData("overlay");
-
 	switch (_selectionType)
 	{
 		case SelectionType::Rectangle: {
@@ -618,8 +614,6 @@ void ImageViewerWidget::updateSelection()
 			const auto selectionBottomRight = QPoint(qMax(initialMouseWorldPos.x(), currentMouseWorldPos.x()), qMax(initialMouseWorldPos.y(), currentMouseWorldPos.y()));
 			const auto selectionRect		= QRect(selectionTopLeft, selectionBottomRight);
 			
-			//qDebug() << imageRect << selectionRect;
-
 			if (imageRect.intersects(selectionRect)) {
 				const auto imageSelection		= selectionRect.intersected(imageRect);
 				const auto noSelectedPixels		= imageSelection.width() * imageSelection.height();
@@ -628,8 +622,6 @@ void ImageViewerWidget::updateSelection()
 
 				selectedPixelCoordinates.reserve(noSelectedPixels);
 
-				auto selectionIndex = 0;
-				
 				const auto left		= imageSelection.x() + halfImageSize.width();
 				const auto right	= (imageSelection.x() + imageSelection.width()) + halfImageSize.width();
 				const auto top		= imageSelection.y() + halfImageSize.height();
@@ -637,62 +629,60 @@ void ImageViewerWidget::updateSelection()
 
 				for (std::int32_t x = left; x < right; x++) {
 					for (std::int32_t y = top; y < bottom; y++) {
-						const auto pixelCoordinate = PixelCoordinate(x, _imageSize.height() - y);
-
-						selectedPixelCoordinates.push_back(pixelCoordinate);
+						selectedPixelCoordinates.push_back(PixelCoordinate(x, _imageSize.height() - y));
 					}
 				}
 
-				applyTextureData("overlay");
 				modifySelection(selectedPixelCoordinates);
 			}
 
 			break;
 		}
 
-		/*
+		
 		case SelectionType::Brush: {
 			const auto currentMouseWorldPos = screenToWorld(QPoint(_mousePosition.x(), _mousePosition.y()));
 			const auto brushRadius			= _brushRadius / _zoom;
 			const auto offset				= QPoint(qCeil(brushRadius), qCeil(brushRadius));
 			const auto selectionRect		= QRect(currentMouseWorldPos - offset, currentMouseWorldPos + offset);
 
+			auto selectedPixelCoordinates = PixelCoordinates();
+
 			if (imageRect.intersects(selectionRect)) {
-				//qDebug() << "Intersects";
-				
-				auto imageSelection = selectionRect.intersected(imageRect);
-
+				const auto imageSelection	= selectionRect.intersected(imageRect);
 				const auto noSelectedPixels = imageSelection.width() * imageSelection.height();
+				
+				auto selectedPixelCoordinates = PixelCoordinates();
 
-				auto selection = Indices();
-
-				selection.reserve(noSelectedPixels);
+				selectedPixelCoordinates.reserve(noSelectedPixels);
 
 				const auto imageWidth			= _imageSize.width();
 				const auto imageHeight			= _imageSize.height();
 				const auto imageSelectionWidth	= imageSelection.width();
 				const auto imageSelectionHeight = imageSelection.height();
-				const auto center				= QVector2D(currentMouseWorldPos);
+				
 
-				for (int x = imageSelection.x(); x < (imageSelection.x() + imageSelection.width()); x++) {
-					for (int y = imageSelection.y(); y < (imageSelection.y() + imageSelection.height()); y++) {
-						const auto imageY = imageHeight - (y + (imageHeight / 2)) - 1;
-
-						const auto pos = QVector2D(x, y) - QVector2D(selectionRect.center());
-						//qDebug() << pos.length();
-
-						if (pos.length() < (_brushRadius / _zoom)) {
-							selection.push_back(imageY * imageWidth + (x + (imageWidth / 2)));
+				const auto left		= imageSelection.x() + halfImageSize.width();
+				const auto right	= (imageSelection.x() + imageSelection.width()) + halfImageSize.width();
+				const auto top		= imageSelection.y() + halfImageSize.height();
+				const auto bottom	= (imageSelection.y() + imageSelection.height()) + halfImageSize.height();
+				const auto center	= currentMouseWorldPos - imageRect.topLeft() + QPointF(0.5f, 0.5f);
+				
+				for (std::int32_t x = left; x < right; x++) {
+					for (std::int32_t y = top; y < bottom; y++) {
+						const auto pixelCenter = QVector2D(x + 0.5f, y + 0.5f);
+						
+						if ((pixelCenter - QVector2D(center)).length() < (_brushRadius / _zoom)) {
+							selectedPixelCoordinates.push_back(PixelCoordinate(x, _imageSize.height() - y));
 						}
 					}
 				}
 
-				modifySelection(selection);
+				modifySelection(selectedPixelCoordinates);
 			}
 
 			break;
 		}
-		*/
 
 		default:
 			break;
