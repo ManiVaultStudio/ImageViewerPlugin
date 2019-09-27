@@ -45,6 +45,7 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 
 	connect(_imageViewerPlugin, &ImageViewerPlugin::displayImageChanged, this, &ImageViewerWidget::onDisplayImageChanged);
 	connect(_imageViewerPlugin, &ImageViewerPlugin::currentDatasetChanged, this, &ImageViewerWidget::onCurrentDatasetChanged);
+	connect(_imageViewerPlugin, &ImageViewerPlugin::currentImageIdChanged, this, &ImageViewerWidget::onCurrentImageIdChanged);
 	connect(_imageViewerPlugin, &ImageViewerPlugin::selectedPointsChanged, this, &ImageViewerWidget::onSelectedPointsChanged);
 	
 	QSurfaceFormat surfaceFormat;
@@ -203,9 +204,16 @@ void ImageViewerWidget::onSelectedPointsChanged()
 
 void ImageViewerWidget::onCurrentDatasetChanged(const QString& currentDataset)
 {
-	_selecting = false;
+	enableSelection(false);
 
 	resetTexture("overlay");
+}
+
+void ImageViewerWidget::onCurrentImageIdChanged(const std::int32_t& currentImageId)
+{
+	enableSelection(false);
+
+	update();
 }
 
 void ImageViewerWidget::drawQuad(const float& z) {
@@ -330,6 +338,13 @@ void ImageViewerWidget::drawInfo(QPainter* painter)
 	painter->drawText(rectangle, 0, infoLines.join("\n"), &boundingRect);
 }
 
+void ImageViewerWidget::enableSelection(const bool& enable)
+{
+	_selecting = enable;
+
+	update();
+}
+
 void ImageViewerWidget::initializeGL()
 {
 	qDebug() << "Initializing OpenGL";
@@ -403,7 +418,7 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 
 		}
 		else {
-			if (_imageViewerPlugin->imageCollectionType() == ImageCollectionType::Stack) {
+			if (_imageViewerPlugin->imageCollectionType() == ImageCollectionType::Stack || _imageViewerPlugin->imageCollectionType() == ImageCollectionType::MultiPartSequence) {
 				/*
 				if (_selectionModifier == SelectionModifier::Replace) {
 					qDebug() << "Reset selection";
@@ -413,7 +428,8 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 				*/
 
 				_initialMousePosition = _mousePosition;
-				_selecting = true;
+
+				enableSelection(true);
 			}
 		}
 	}
@@ -435,8 +451,7 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 			pan(QPointF(mouseEvent->pos().x() - _mousePosition.x(), -(mouseEvent->pos().y() - _mousePosition.y())));
 		}
 		else {
-			if (_imageViewerPlugin->imageCollectionType() == ImageCollectionType::Stack) {
-				_selecting = true;
+			if (_imageViewerPlugin->imageCollectionType() == ImageCollectionType::Stack || _imageViewerPlugin->imageCollectionType() == ImageCollectionType::MultiPartSequence) {
 				updateSelection();
 			}
 		}
@@ -622,12 +637,11 @@ void ImageViewerWidget::updateSelection()
 
 				selectedPointIds.reserve(noSelectedPixels);
 
-				const auto left		= imageSelection.x() + halfImageSize.width();
-				const auto right	= (imageSelection.x() + imageSelection.width()) + halfImageSize.width();
-				const auto top		= imageSelection.y() + halfImageSize.height();
-				const auto bottom	= (imageSelection.y() + imageSelection.height()) + halfImageSize.height();
-
-				auto pixelOffset = 0;
+				const auto left			= imageSelection.x() + halfImageSize.width();
+				const auto right		= (imageSelection.x() + imageSelection.width()) + halfImageSize.width();
+				const auto top			= imageSelection.y() + halfImageSize.height();
+				const auto bottom		= (imageSelection.y() + imageSelection.height()) + halfImageSize.height();
+				const auto pixelOffset	= _imageViewerPlugin->pixelOffset();
 
 				for (std::int32_t x = left; x < right; x++) {
 					for (std::int32_t y = top; y < bottom; y++) {
@@ -658,13 +672,12 @@ void ImageViewerWidget::updateSelection()
 
 				selectedPointIds.reserve(noSelectedPixels);
 
-				const auto left		= imageSelection.x() + halfImageSize.width();
-				const auto right	= (imageSelection.x() + imageSelection.width()) + halfImageSize.width();
-				const auto top		= imageSelection.y() + halfImageSize.height();
-				const auto bottom	= (imageSelection.y() + imageSelection.height()) + halfImageSize.height();
-				const auto center	= currentMouseWorldPos - imageRect.topLeft() + QPointF(0.5f, 0.5f);
-				
-				auto pixelOffset = 0;
+				const auto left			= imageSelection.x() + halfImageSize.width();
+				const auto right		= (imageSelection.x() + imageSelection.width()) + halfImageSize.width();
+				const auto top			= imageSelection.y() + halfImageSize.height();
+				const auto bottom		= (imageSelection.y() + imageSelection.height()) + halfImageSize.height();
+				const auto center		= currentMouseWorldPos - imageRect.topLeft() + QPointF(0.5f, 0.5f);
+				const auto pixelOffset	= _imageViewerPlugin->pixelOffset();
 
 				for (std::int32_t x = left; x < right; x++) {
 					for (std::int32_t y = top; y < bottom; y++) {

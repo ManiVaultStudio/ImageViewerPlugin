@@ -50,7 +50,7 @@ public:
 	std::size_t noPointsPerDimension() const;
 	std::size_t pixelOffset() const;
 
-
+	
 
 	static std::size_t pixelId(const QSize& imageSize, const int& x, const int& y);
 	static std::size_t pixelBufferOffset(const QSize& imageSize, const int& x, const int& y);
@@ -85,9 +85,9 @@ signals:
 	void datasetNamesChanged(const QStringList& datasetNames);
 	void currentDatasetChanged(const QString& currentDataset);
 	void imageNamesChanged(const QStringList& imageNames);
-	void currentImageIdChanged(const int& currentImageId);
+	void currentImageIdChanged(const std::int32_t& currentImageId);
 	void dimensionNamesChanged(const QStringList& dimensionNames);
-	void currentDimensionIdChanged(const int& currentDimensionId);
+	void currentDimensionIdChanged(const std::int32_t& currentDimensionId);
 	void averageImagesChanged(const bool& averageImages);
 	void displayImageChanged(const QSize& imageSize, const TextureData& displayImage);
 	void selectedPointsChanged();

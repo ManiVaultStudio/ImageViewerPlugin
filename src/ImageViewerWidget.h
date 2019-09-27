@@ -61,6 +61,7 @@ public:
 	void onDisplayImageChanged(const QSize& imageSize, const TextureData& displayImage);
 	void onSelectedPointsChanged();
 	void onCurrentDatasetChanged(const QString& currentDataset);
+	void onCurrentImageIdChanged(const std::int32_t& currentImageId);
 
 protected:
 	void initializeGL() Q_DECL_OVERRIDE;
@@ -81,6 +82,8 @@ private:
 	void drawSelectionGeometry();
 	void drawInfo(QPainter* painter);
 	
+	void enableSelection(const bool& enable);
+
 	void pan(const QPointF& delta);
 	void zoom(const float& factor);
 	void zoomAt(const QPointF & position, const float & factor);
