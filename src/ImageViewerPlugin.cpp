@@ -177,9 +177,9 @@ std::size_t ImageViewerPlugin::sequenceCoordinateToPointId(const QSize& imageSiz
 	return imageOffset + ImageViewerPlugin::pixelId(imageSize, x, y);
 }
 
-std::size_t ImageViewerPlugin::stackCoordinateToPointId(const QSize& imageSize, const std::int32_t& noImages, const std::int32_t& imageId, const std::int32_t& x, const std::int32_t& y)
+std::size_t ImageViewerPlugin::stackCoordinateToPointId(const QSize& imageSize, const std::int32_t& noDimensions, const std::int32_t& dimensionId, const std::int32_t& x, const std::int32_t& y)
 {
-	return ImageViewerPlugin::pixelId(imageSize, x, y) * noImages + imageId;
+	return ImageViewerPlugin::pixelId(imageSize, x, y) * noDimensions + dimensionId;
 }
 
 std::size_t ImageViewerPlugin::multipartSequenceCoordinateToPointId(const QSize& imageSize, const std::int32_t& noPointsPerDimension, const std::int32_t& imageOffset, const std::int32_t& currentDimension, const std::int32_t& x, const std::int32_t& y)

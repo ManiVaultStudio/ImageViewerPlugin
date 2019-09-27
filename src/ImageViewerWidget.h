@@ -49,7 +49,7 @@ public:
 	void setSelectionModifier(const SelectionModifier& selectionModifier);
 	void setBrushRadius(const float& brushRadius);
 
-	void modifySelection(std::vector<unsigned int>& indices);
+	void modifySelection(const PixelCoordinates& selectedPixelCoordinates);
 	void clearSelection();
 
 signals:
@@ -127,7 +127,7 @@ private:
 	QColor				_selectionColor;
 	QColor				_selectionProxyColor;
 	QColor				_selectionGeometryColor;
-	Indices				_selection;
+	PixelCoordinates	_selectedPixelCoordinates;
 	QAction*			_zoomToExtentsAction;
 	QSize				_imageSize;
 };
