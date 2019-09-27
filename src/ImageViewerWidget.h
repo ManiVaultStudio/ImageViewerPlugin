@@ -59,7 +59,7 @@ signals:
 
 public:
 	void onDisplayImageChanged(const QSize& imageSize, const TextureData& displayImage);
-	void onSelectedPointsChanged();
+	void onSelectionImageChanged(const QSize& imageSize, const TextureData& selectionImage);
 	void onCurrentDatasetChanged(const QString& currentDataset);
 	void onCurrentImageIdChanged(const std::int32_t& currentImageId);
 

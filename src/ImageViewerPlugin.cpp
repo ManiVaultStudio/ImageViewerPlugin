@@ -536,6 +536,62 @@ void ImageViewerPlugin::computeDisplayImage()
 	emit displayImageChanged(imageSize, imageTextureData);
 }
 
+void ImageViewerPlugin::computeSelectionImage()
+{
+	const auto imageSize = this->imageSize();
+	const auto width	= imageSize.width();
+	const auto height	= imageSize.height();
+	const auto noPixels		= width * height;
+
+	auto& pointsData = this->pointsData().getData();
+
+	qDebug() << "Compute selection image" << imageSize << pointsData.size();
+
+	auto selectionTextureData = TextureData();
+
+	selectionTextureData.resize(noPixels * 4);
+
+	if (hasSelection()) {
+		switch (imageCollectionType())
+		{
+		case ImageCollectionType::Stack: {
+			for (auto& index : selection())
+			{
+				const auto offset = index * 4;
+
+				selectionTextureData[offset + 0] = 255;
+				selectionTextureData[offset + 1] = 0;
+				selectionTextureData[offset + 2] = 0;
+				selectionTextureData[offset + 3] = 100;
+			}
+		}
+
+		case ImageCollectionType::MultiPartSequence: {
+			const auto imageSize = this->imageSize();
+			const auto pointIndexStart = pixelOffset();
+			const auto pointIndexEnd = pointIndexStart + imageSize.width() * imageSize.height();
+			
+			//qDebug() << pointIndexStart << imageSize;
+			
+			for (auto& selectionId : selection())
+			{
+				if (selectionId < pointIndexStart || selectionId >= pointIndexEnd)
+					continue;
+
+				const auto offset = (selectionId - pointIndexStart) * 4;
+
+				selectionTextureData[offset + 0] = 255;
+				selectionTextureData[offset + 1] = 0;
+				selectionTextureData[offset + 2] = 0;
+				selectionTextureData[offset + 3] = 100;
+			}
+		}
+		}
+	}
+
+	emit selectionImageChanged(imageSize, selectionTextureData);
+}
+
 QString ImageViewerPlugin::currentDataset() const
 {
 	return _currentDataset;
@@ -576,6 +632,8 @@ void ImageViewerPlugin::setCurrentImageId(const std::int32_t& currentImageId)
 	_currentImageId = currentImageId;
 
 	emit currentImageIdChanged(_currentImageId);
+
+	computeSelectionImage();
 }
 
 auto ImageViewerPlugin::currentDimensionId() const
@@ -687,9 +745,11 @@ void ImageViewerPlugin::selectionChanged(const QString dataset)
 	qDebug() << "Selection changed" << dataset;
 
 	update();
-	computeDisplayImage();
 
-	emit selectedPointsChanged();
+	if (imageCollectionType() == ImageCollectionType::Sequence)
+		computeDisplayImage();
+
+	computeSelectionImage();
 }
 
 void ImageViewerPlugin::keyPressEvent(QKeyEvent* keyEvent)

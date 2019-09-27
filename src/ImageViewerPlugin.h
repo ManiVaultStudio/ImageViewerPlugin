@@ -50,7 +50,7 @@ public:
 	std::size_t noPointsPerDimension() const;
 	std::size_t pixelOffset() const;
 
-	
+	QSize imageSize() const;
 
 	static std::size_t pixelId(const QSize& imageSize, const int& x, const int& y);
 	static std::size_t pixelBufferOffset(const QSize& imageSize, const int& x, const int& y);
@@ -59,9 +59,9 @@ public:
 	static std::size_t multipartSequencePixelCoordinateToPointId(const QSize& imageSize, const std::int32_t& noPointsPerDimension, const std::int32_t& pixelOffset, const std::int32_t& currentDimensionId, const std::int32_t& x, const std::int32_t& y);
 
 private:
-	QSize imageSize() const;
 	void update();
 	void computeDisplayImage();
+	void computeSelectionImage();
 
 	void keyPressEvent(QKeyEvent* keyEvent) Q_DECL_OVERRIDE;
 	void keyReleaseEvent(QKeyEvent* keyEvent) Q_DECL_OVERRIDE;
@@ -90,7 +90,7 @@ signals:
 	void currentDimensionIdChanged(const std::int32_t& currentDimensionId);
 	void averageImagesChanged(const bool& averageImages);
 	void displayImageChanged(const QSize& imageSize, const TextureData& displayImage);
-	void selectedPointsChanged();
+	void selectionImageChanged(const QSize& imageSize, const TextureData& selectionImage);
 
 private:
 	ImageViewerWidget*	_imageViewerWidget;

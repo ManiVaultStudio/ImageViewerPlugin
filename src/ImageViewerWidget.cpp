@@ -46,7 +46,7 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	connect(_imageViewerPlugin, &ImageViewerPlugin::displayImageChanged, this, &ImageViewerWidget::onDisplayImageChanged);
 	connect(_imageViewerPlugin, &ImageViewerPlugin::currentDatasetChanged, this, &ImageViewerWidget::onCurrentDatasetChanged);
 	connect(_imageViewerPlugin, &ImageViewerPlugin::currentImageIdChanged, this, &ImageViewerWidget::onCurrentImageIdChanged);
-	connect(_imageViewerPlugin, &ImageViewerPlugin::selectedPointsChanged, this, &ImageViewerWidget::onSelectedPointsChanged);
+	connect(_imageViewerPlugin, &ImageViewerPlugin::selectionImageChanged, this, &ImageViewerWidget::onSelectionImageChanged);
 	
 	QSurfaceFormat surfaceFormat;
 	
@@ -171,33 +171,18 @@ void ImageViewerWidget::onDisplayImageChanged(const QSize& imageSize, const Text
 		zoomExtents();
 }
 
-void ImageViewerWidget::onSelectedPointsChanged()
+void ImageViewerWidget::onSelectionImageChanged(const QSize& imageSize, const TextureData& selectionImage)
 {
-	qDebug() << "Selected points changed";
+	if (!isValid())
+		return;
 
-	const auto imageCollectionType	= _imageViewerPlugin->imageCollectionType();
-	const auto noPixels				= _imageSize.width() * _imageSize.height();
+	qDebug() << "On selection image changed";
 
-	resetTextureData("selection");
+	textureData("selection") = selectionImage;
+
+	applyTextureData("selection");
+
 	resetTexture("overlay");
-
-	TextureData& selectionTextureData = textureData("selection");
-
-	if (imageCollectionType == ImageCollectionType::Stack) {
-		if (_imageViewerPlugin->hasSelection()) {
-			for (unsigned int index : _imageViewerPlugin->selection())
-			{
-				const auto offset = index * 4;
-
-				selectionTextureData[offset + 0] = _selectionColor.red();
-				selectionTextureData[offset + 1] = _selectionColor.green();
-				selectionTextureData[offset + 2] = _selectionColor.blue();
-				selectionTextureData[offset + 3] = _selectionColor.alpha();
-			}
-		}
-
-		applyTextureData("selection");
-	}
 
 	update();
 }
@@ -391,7 +376,7 @@ void ImageViewerWidget::paintGL() {
 
 	drawTextureQuad(texture("image"), 1.0f);
 
-	if (_imageViewerPlugin->imageCollectionType() == ImageCollectionType::Stack) {
+	if (_imageViewerPlugin->imageCollectionType() == ImageCollectionType::Stack || _imageViewerPlugin->imageCollectionType() == ImageCollectionType::MultiPartSequence) {
 		drawTextureQuad(texture("overlay"), 0.5f);
 		drawTextureQuad(texture("selection"), 0.0f);
 	}
@@ -488,8 +473,8 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 	}
 	else {
 		if (_selecting) {
-			if (_imageViewerPlugin->imageCollectionType() == ImageCollectionType::Stack) {
-				_selecting = false;
+			if (_imageViewerPlugin->imageCollectionType() == ImageCollectionType::Stack || _imageViewerPlugin->imageCollectionType() == ImageCollectionType::MultiPartSequence) {
+				enableSelection(false);
 
 				updateSelection();
 			}
