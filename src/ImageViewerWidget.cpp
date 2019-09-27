@@ -35,7 +35,7 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_selectionColor(255, 0, 0, 200),
 	_selectionProxyColor(245, 184, 17, 100),
 	_selectionGeometryColor(255, 0, 0, 255),
-	_selectedPixelCoordinates(),
+	_selectedPointIds(),
 	_zoomToExtentsAction(nullptr),
 	_imageSize()
 {
@@ -193,8 +193,6 @@ void ImageViewerWidget::onSelectedPointsChanged()
 				selectionTextureData[offset + 2] = _selectionColor.blue();
 				selectionTextureData[offset + 3] = _selectionColor.alpha();
 			}
-
-			//_selectedPixelCoordinates = static_cast<Indices>(_imageViewerPlugin->selection());
 		}
 
 		applyTextureData("selection");
@@ -605,6 +603,8 @@ void ImageViewerWidget::updateSelection()
 	const auto halfImageSize	= _imageSize / 2;
 	const auto imageRect		= QRect(-halfImageSize.width(), -halfImageSize.height(), _imageSize.width(), _imageSize.height());
 
+	auto& overlayTextureData = textureData("overlay");
+
 	switch (_selectionType)
 	{
 		case SelectionType::Rectangle: {
@@ -618,49 +618,45 @@ void ImageViewerWidget::updateSelection()
 				const auto imageSelection		= selectionRect.intersected(imageRect);
 				const auto noSelectedPixels		= imageSelection.width() * imageSelection.height();
 				
-				auto selectedPixelCoordinates = PixelCoordinates();
+				auto selectedPointIds = Indices();
 
-				selectedPixelCoordinates.reserve(noSelectedPixels);
+				selectedPointIds.reserve(noSelectedPixels);
 
 				const auto left		= imageSelection.x() + halfImageSize.width();
 				const auto right	= (imageSelection.x() + imageSelection.width()) + halfImageSize.width();
 				const auto top		= imageSelection.y() + halfImageSize.height();
 				const auto bottom	= (imageSelection.y() + imageSelection.height()) + halfImageSize.height();
 
+				auto pixelOffset = 0;
+
 				for (std::int32_t x = left; x < right; x++) {
 					for (std::int32_t y = top; y < bottom; y++) {
-						selectedPixelCoordinates.push_back(PixelCoordinate(x, _imageSize.height() - y));
+						const auto imageY = _imageSize.height() - y;
+						const auto pointId = imageY * _imageSize.width() + x;
+
+						selectedPointIds.push_back(pointId);
 					}
 				}
 
-				modifySelection(selectedPixelCoordinates);
+				modifySelection(selectedPointIds, pixelOffset);
 			}
 
 			break;
 		}
 
-		
 		case SelectionType::Brush: {
 			const auto currentMouseWorldPos = screenToWorld(QPoint(_mousePosition.x(), _mousePosition.y()));
 			const auto brushRadius			= _brushRadius / _zoom;
 			const auto offset				= QPoint(qCeil(brushRadius), qCeil(brushRadius));
 			const auto selectionRect		= QRect(currentMouseWorldPos - offset, currentMouseWorldPos + offset);
 
-			auto selectedPixelCoordinates = PixelCoordinates();
-
 			if (imageRect.intersects(selectionRect)) {
 				const auto imageSelection	= selectionRect.intersected(imageRect);
 				const auto noSelectedPixels = imageSelection.width() * imageSelection.height();
 				
-				auto selectedPixelCoordinates = PixelCoordinates();
+				auto selectedPointIds = Indices();
 
-				selectedPixelCoordinates.reserve(noSelectedPixels);
-
-				const auto imageWidth			= _imageSize.width();
-				const auto imageHeight			= _imageSize.height();
-				const auto imageSelectionWidth	= imageSelection.width();
-				const auto imageSelectionHeight = imageSelection.height();
-				
+				selectedPointIds.reserve(noSelectedPixels);
 
 				const auto left		= imageSelection.x() + halfImageSize.width();
 				const auto right	= (imageSelection.x() + imageSelection.width()) + halfImageSize.width();
@@ -668,17 +664,22 @@ void ImageViewerWidget::updateSelection()
 				const auto bottom	= (imageSelection.y() + imageSelection.height()) + halfImageSize.height();
 				const auto center	= currentMouseWorldPos - imageRect.topLeft() + QPointF(0.5f, 0.5f);
 				
+				auto pixelOffset = 0;
+
 				for (std::int32_t x = left; x < right; x++) {
 					for (std::int32_t y = top; y < bottom; y++) {
 						const auto pixelCenter = QVector2D(x + 0.5f, y + 0.5f);
 						
 						if ((pixelCenter - QVector2D(center)).length() < (_brushRadius / _zoom)) {
-							selectedPixelCoordinates.push_back(PixelCoordinate(x, _imageSize.height() - y));
+							const auto imageY = _imageSize.height() - y;
+							const auto pointId = imageY * _imageSize.width() + x;
+
+							selectedPointIds.push_back(pointId);
 						}
 					}
 				}
 
-				modifySelection(selectedPixelCoordinates);
+				modifySelection(selectedPointIds, pixelOffset);
 			}
 
 			break;
@@ -687,65 +688,68 @@ void ImageViewerWidget::updateSelection()
 		default:
 			break;
 	}
+
+	applyTextureData("overlay");
 }
 
-void ImageViewerWidget::modifySelection(const PixelCoordinates& selectedPixelCoordinates)
+void ImageViewerWidget::modifySelection(const Indices& selectedPointIds, const std::int32_t& pixelOffset /*= 0*/)
 {
 	qDebug() << "Modify selection";
 
-	if (selectedPixelCoordinates.size() > 0) {
+	if (selectedPointIds.size() > 0) {
 		switch (_selectionModifier) {
-			case SelectionModifier::Replace:
-			{
-				//qDebug() << "Replace selection";
-				
-				_selectedPixelCoordinates = selectedPixelCoordinates;
+		case SelectionModifier::Replace:
+		{
+			//qDebug() << "Replace selection";
 
-				break;
-			}
-			
-			case SelectionModifier::Add:
-			{
-				//qDebug() << "Add to selection";
+			_selectedPointIds = selectedPointIds;
 
-				auto selectionSet = std::set<PixelCoordinate>(_selectedPixelCoordinates.begin(), _selectedPixelCoordinates.end());
-
-				for (PixelCoordinate pixelCoordinate : selectedPixelCoordinates) {
-					selectionSet.insert(pixelCoordinate);
-				}
-
-				_selectedPixelCoordinates = PixelCoordinates(selectionSet.begin(), selectionSet.end());
-				
-				break;
-			}
-
-			case SelectionModifier::Remove:
-			{
-				//qDebug() << "Remove from selection";
-
-				auto selectionSet = std::set<PixelCoordinate>(_selectedPixelCoordinates.begin(), _selectedPixelCoordinates.end());
-
-				for (PixelCoordinate pixelCoordinate : selectedPixelCoordinates) {
-					selectionSet.erase(pixelCoordinate);
-				}
-
-				_selectedPixelCoordinates = PixelCoordinates(selectionSet.begin(), selectionSet.end());
-
-				break;
-			}
+			break;
 		}
-	} 
+
+		case SelectionModifier::Add:
+		{
+			//qDebug() << "Add to selection";
+
+			auto selectionSet = std::set<Index>(_selectedPointIds.begin(), _selectedPointIds.end());
+
+			for (auto& pixelId : selectedPointIds) {
+				selectionSet.insert(pixelId);
+			}
+
+			_selectedPointIds = Indices(selectionSet.begin(), selectionSet.end());
+
+			break;
+		}
+
+		case SelectionModifier::Remove:
+		{
+			//qDebug() << "Remove from selection";
+
+			auto selectionSet = std::set<Index>(_selectedPointIds.begin(), _selectedPointIds.end());
+
+			for (auto& pixelId : selectedPointIds) {
+				selectionSet.erase(pixelId);
+			}
+
+			_selectedPointIds = Indices(selectionSet.begin(), selectionSet.end());
+
+			break;
+		}
+		}
+	}
 	else
 	{
-		_selectedPixelCoordinates = PixelCoordinates();
+		_selectedPointIds = Indices();
 	}
 
 	resetTextureData("overlay");
 
 	TextureData& overlayTextureData = textureData("overlay");
 
-	for (PixelCoordinate pixelCoordinate : _selectedPixelCoordinates) {
-		const auto offset = ImageViewerPlugin::pixelBufferOffset(_imageSize, pixelCoordinate.first, pixelCoordinate.second);
+	for (auto& selectedPointId : _selectedPointIds) {
+
+		const auto offset = (selectedPointId * 4) - pixelOffset;
 
 		overlayTextureData[offset + 0] = _selectionProxyColor.red();
 		overlayTextureData[offset + 1] = _selectionProxyColor.green();
@@ -762,7 +766,7 @@ void ImageViewerWidget::clearSelection()
 {
 	qDebug() << "Clear selection";
 
-	modifySelection(PixelCoordinates());
+	modifySelection(Indices());
 	commitSelection();
 }
 
@@ -771,27 +775,8 @@ void ImageViewerWidget::commitSelection()
 	qDebug() << "Commit selection to core";
 
 	resetTextureData("overlay");
-	
-	/*
-	for (std::int32_t d = 0; d < noDimensions; d++) {
-		switch (_imageViewerPlugin->imageCollectionType())
-		{
-		case ImageCollectionType::Stack:
-		{
-			const auto pointId = ImageViewerPlugin::stackCoordinateToPointId(_imageSize, noDimensions, d, imageX, imageY);
-			selection[selectionIndex] = pointId;
-			break;
-		}
 
-		default:
-			break;
-		}
-
-		selectionIndex++;
-	}
-	*/
-
-	// _imageViewerPlugin->setSelection(_selectedPixelCoordinates);
+	_imageViewerPlugin->setSelection(_selectedPointIds);
 }
 
 void ImageViewerWidget::applyTextureData(const QString& name)
