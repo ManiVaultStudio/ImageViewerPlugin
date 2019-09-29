@@ -340,11 +340,18 @@ void ImageViewerWidget::enableSelection(const bool& enable)
 	update();
 }
 
-static const char *fragmentShaderSource =
-"varying vec4 col;\n"
+static const char* fragmentShaderSource =
+"uniform sampler2D image;\n"
+"uniform float minGrayValue;\n"
+"uniform float maxGrayValue;\n"
+"uniform float window;\n"
+"uniform float level;\n"
 "void main() {\n"
-"   gl_FragColor = col;\n"
+"	float maxWindow = maxGreyValue - minGrayValue;\n"
+"   gl_FragColor = texture2D(image, gl_TexCoord[0].st);\n"
 "}\n";
+
+//"   gl_FragColor = texture2D(imageTexture, textureCoordinates);\n"
 
 void ImageViewerWidget::initializeGL()
 {
@@ -352,8 +359,6 @@ void ImageViewerWidget::initializeGL()
 
 	_shaderProgram = new QOpenGLShaderProgram(this);
 	_shaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSource);
-	//_shaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSource);
-	//_shaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSource);
 	_shaderProgram->link();
 
 	glEnable(GL_BLEND);
@@ -396,22 +401,30 @@ void ImageViewerWidget::paintGL() {
 	
 	glColor4f(1.f, 1.f, 1.f, 1.f);
 
-	auto colAttr = _shaderProgram->attributeLocation("col");
-
-	GLfloat array[4] = { 1, 0, 0, 1 };
-
+	/*
 	_shaderProgram->bind();
 
-	_shaderProgram->setUniformValue(colAttr, &array);
+	glEnable(GL_TEXTURE_2D);
+	texture("image").bind();
 
-	drawTextureQuad(texture("image"), 1.0f);
+	_shaderProgram->setUniformValue("image", 0);
+	_shaderProgram->setUniformValue("window", _imageViewerPlugin->window());
+	_shaderProgram->setUniformValue("level", _imageViewerPlugin->level());
+
+	drawQuad(1.0f);
+
+	texture("image").release();
+	glDisable(GL_TEXTURE_2D);
 
 	_shaderProgram->release();
+	*/
 
+	/*
 	if (_imageViewerPlugin->selectable()) {
 		drawTextureQuad(texture("overlay"), 0.5f);
 		drawTextureQuad(texture("selection"), 0.0f);
 	}
+	*/
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -512,8 +525,6 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 			break;
 		}
 
-		_mousePosition = mouseEvent->pos();
-
 		update();
 
 		break;
@@ -521,9 +532,10 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 
 	case Qt::RightButton:
 	{
-		const auto delta	= QPointF(mouseEvent->pos().x() - _mousePosition.x(), -(mouseEvent->pos().y() - _mousePosition.y()));
-		const auto window	= _imageViewerPlugin->window() + delta.x();
-		const auto level	= _imageViewerPlugin->level() + delta.y();
+		const auto deltaWindow	= (mouseEvent->pos().x() - _mousePosition.x()) / static_cast<double>(_imageSize.width());
+		const auto deltaLevel	= (mouseEvent->pos().y() - _mousePosition.y()) / static_cast<double>(_imageSize.height());
+		const auto window		= std::max<double>(0, std::min<double>(_imageViewerPlugin->window() + deltaWindow, 1.0f));
+		const auto level		= std::max<double>(0, std::min<double>(_imageViewerPlugin->level() + deltaLevel, 1.0f));
 
 		_imageViewerPlugin->setWindowLevel(window, level);
 
@@ -533,6 +545,8 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 	default:
 		break;
 	}
+
+	_mousePosition = mouseEvent->pos();
 }
 
 void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {

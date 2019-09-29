@@ -77,9 +77,9 @@ public:
 	void setCurrentDimensionId(const std::int32_t& currentDimensionId);
 	bool averageImages() const;
 	void setAverageImages(const bool& averageImages);
-	float window() const;
-	float level() const;
-	void setWindowLevel(const float& window, const float& level);
+	double window() const;
+	double level() const;
+	void setWindowLevel(const double& window, const double& level);
 
 private:
 	void setDatasetNames(const QStringList& datasetNames);
@@ -109,8 +109,8 @@ private:
 	QStringList			_dimensionNames;
 	std::int32_t		_currentDimensionId;
 	bool				_averageImages;
-	float				_window;
-	float				_level;
+	double				_window;
+	double				_level;
 };
 
 class ImageViewerPluginFactory : public ViewPluginFactory

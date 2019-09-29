@@ -414,6 +414,9 @@ void ImageViewerPlugin::computeDisplayImage()
 				}
 			}
 
+			_window = 256;
+			_level	= 127;
+
 			break;
 		}
 
@@ -449,8 +452,6 @@ void ImageViewerPlugin::computeDisplayImage()
 				}
 			}
 
-			const auto range = max - min;
-
 			for (std::int32_t x = 0; x < width; x++) {
 				for (std::int32_t y = 0; y < height; y++) {
 					auto pixelValue = 0.f;
@@ -458,7 +459,7 @@ void ImageViewerPlugin::computeDisplayImage()
 					for (unsigned int displayDimensionId : displayDimensions) {
 						const auto pointId = stackPixelCoordinateToPointId(imageSize, noImages, displayDimensionId, x, y);
 
-						pixelValue += (pointsData[pointId] - min) / range;
+						pixelValue += (pointsData[pointId] - min);
 					}
 
 					pixelValue /= static_cast<float>(noDisplayDimensions);
@@ -472,6 +473,8 @@ void ImageViewerPlugin::computeDisplayImage()
 					imageTextureData[offset + 3] = 255;
 				}
 			}
+
+			//const auto range = max - min;
 
 			auto image = QImage((uchar*)&imageTextureData[0], width, height, QImage::Format::Format_RGBA8888);
 
@@ -684,12 +687,12 @@ void ImageViewerPlugin::setAverageImages(const bool& averageImages)
 	update();
 }
 
-float ImageViewerPlugin::window() const
+double ImageViewerPlugin::window() const
 {
 	return _window;
 }
 
-void ImageViewerPlugin::setWindowLevel(const float& window, const float& level)
+void ImageViewerPlugin::setWindowLevel(const double& window, const double& level)
 {
 	if (window == _window && level == _level)
 		return;
@@ -702,7 +705,7 @@ void ImageViewerPlugin::setWindowLevel(const float& window, const float& level)
 	emit windowLevelChanged(_window, _level);
 }
 
-float ImageViewerPlugin::level() const
+double ImageViewerPlugin::level() const
 {
 	return _level;
 }
