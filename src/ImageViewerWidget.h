@@ -24,7 +24,8 @@ public:
 	enum InteractionMode
 	{
 		Navigation,
-		Selection
+		Selection,
+		WindowLevel
 	};
 
 	enum SelectionType

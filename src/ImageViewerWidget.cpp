@@ -394,9 +394,12 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 	if (!imageInitialized())
 		return;
 
-	//qDebug() << "Mouse press event" << event->pos();
+	qDebug() << "Mouse press event";
 
-	if (mouseEvent->button() == Qt::LeftButton) {
+	switch (mouseEvent->button())
+	{
+	case Qt::LeftButton: 
+	{
 		_mousePosition = mouseEvent->pos();
 
 		if (mouseEvent->modifiers() & Qt::AltModifier) {
@@ -417,6 +420,17 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 				enableSelection(true);
 			}
 		}
+		break;
+	}
+
+	case Qt::RightButton:
+	{
+		setInteractionMode(InteractionMode::WindowLevel);
+		break;
+	}
+
+	default:
+		break;
 	}
 }
 
@@ -425,29 +439,51 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 	if (!imageInitialized())
 		return;
 
-	//qDebug() << "Mouse move event" << event->pos();
+	qDebug() << "Mouse move event";
 
-	if (mouseEvent->buttons() == Qt::LeftButton) {
-		if (_interactionMode == InteractionMode::Navigation) {
-			QWidget::setCursor(Qt::ClosedHandCursor);
-		}
-
-		if (mouseEvent->modifiers() & Qt::AltModifier) {
+	switch (mouseEvent->buttons())
+	{
+	case Qt::LeftButton:
+	{
+		switch (_interactionMode)
+		{
+		case ImageViewerWidget::Navigation:
+		{
 			pan(QPointF(mouseEvent->pos().x() - _mousePosition.x(), -(mouseEvent->pos().y() - _mousePosition.y())));
+			break;
 		}
-		else {
+
+		case ImageViewerWidget::Selection:
+		{
 			if (_imageViewerPlugin->selectable()) {
 				updateSelection();
 			}
+			break;
+		}
+
+		case ImageViewerWidget::WindowLevel:
+		{
+			break;
+		}
+
+		default:
+			break;
 		}
 
 		_mousePosition = mouseEvent->pos();
 
 		update();
+
+		break;
 	}
-	else {
-		if (_selectionType == SelectionType::Brush) 
-			update();
+
+	case Qt::RightButton:
+	{
+		break;
+	}
+
+	default:
+		break;
 	}
 }
 
@@ -456,30 +492,45 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 	if (!imageInitialized())
 		return;
 
-	//qDebug() << "Mouse release event";
+	qDebug() << "Mouse release event";
 
-	if (_interactionMode == InteractionMode::Navigation) {
+	switch (_interactionMode)
+	{
+	case ImageViewerWidget::Navigation:
+	{
 		QWidget::setCursor(Qt::OpenHandCursor);
+		break;
+	}
+
+	case ImageViewerWidget::Selection:
+	{
+		if (_imageViewerPlugin->selectable()) {
+			if (_selecting) {
+				if (_imageViewerPlugin->selectable()) {
+					enableSelection(false);
+					updateSelection();
+				}
+
+				commitSelection();
+			}
+		}
+		break;
+	}
+
+	case ImageViewerWidget::WindowLevel:
+	{
+		setInteractionMode(InteractionMode::Selection);
+		break;
+	}
+
+	default:
+		break;
 	}
 
 	if (_imageViewerPlugin->selectable()) {
 		if (mouseEvent->button() == Qt::RightButton)
 		{
 			contextMenu()->exec(mapToGlobal(mouseEvent->pos()));
-		}
-	}
-
-	if (mouseEvent->modifiers() & Qt::AltModifier) {
-	}
-	else {
-		if (_selecting) {
-			if (_imageViewerPlugin->selectable()) {
-				enableSelection(false);
-
-				updateSelection();
-			}
-
-			commitSelection();
 		}
 	}
 
@@ -493,7 +544,7 @@ void ImageViewerWidget::wheelEvent(QWheelEvent* wheelEvent) {
 	if (!imageInitialized())
 		return;
 
-	//qDebug() << "Mouse wheel event" << event->delta();
+	qDebug() << "Mouse wheel event";
 
 	if (wheelEvent->modifiers() & Qt::AltModifier) {
 		const auto world_x = (wheelEvent->posF().x() - _pan.x()) / _zoom;
