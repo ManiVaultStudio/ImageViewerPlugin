@@ -21,13 +21,6 @@ class ImageViewerWidget : public QOpenGLWidget
 public:
 	ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin);
 
-	enum SelectionType
-	{
-		Rectangle,
-		Brush,
-		Freehand
-	};
-
 	enum SelectionModifier
 	{
 		Replace,

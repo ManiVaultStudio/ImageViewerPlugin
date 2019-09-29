@@ -95,14 +95,14 @@ void ImageViewerWidget::setInteractionMode(const InteractionMode& interactionMod
 	_interactionMode = interactionMode;
 }
 
-ImageViewerWidget::SelectionType ImageViewerWidget::selectionType() const
+SelectionType ImageViewerWidget::selectionType() const
 {
 	return _selectionType;
 }
 
 void ImageViewerWidget::setSelectionType(const SelectionType& selectionType)
 {
-	qDebug() << "Set selection type" << selectionType;
+	qDebug() << "Set selection type to" << selectionTypeTypeName(selectionType);
 
 	_selectionType = selectionType;
 

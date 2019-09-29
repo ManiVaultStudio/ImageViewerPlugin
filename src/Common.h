@@ -45,3 +45,30 @@ inline QString interactionModeTypeName(const InteractionMode& interactionMode)
 
 	return "";
 }
+
+enum class SelectionType
+{
+	Rectangle,
+	Brush,
+	Freehand
+};
+
+inline QString selectionTypeTypeName(const SelectionType& selectionType)
+{
+	switch (selectionType)
+	{
+	case SelectionType::Rectangle:
+		return "Rectangle";
+
+	case SelectionType::Brush:
+		return "Brush";
+
+	case SelectionType::Freehand:
+		return "Freehand";
+
+	default:
+		break;
+	}
+
+	return "";
+}

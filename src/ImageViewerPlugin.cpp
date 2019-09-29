@@ -796,19 +796,19 @@ void ImageViewerPlugin::keyPressEvent(QKeyEvent* keyEvent)
 		{
 		case Qt::Key::Key_R:
 		{
-			_imageViewerWidget->setSelectionType(ImageViewerWidget::SelectionType::Rectangle);
+			_imageViewerWidget->setSelectionType(SelectionType::Rectangle);
 			break;
 		}
 
 		case Qt::Key::Key_B:
 		{
-			_imageViewerWidget->setSelectionType(ImageViewerWidget::SelectionType::Brush);
+			_imageViewerWidget->setSelectionType(SelectionType::Brush);
 			break;
 		}
 
 		case Qt::Key::Key_F:
 		{
-			_imageViewerWidget->setSelectionType(ImageViewerWidget::SelectionType::Freehand);
+			_imageViewerWidget->setSelectionType(SelectionType::Freehand);
 			break;
 		}
 
@@ -855,7 +855,7 @@ void ImageViewerPlugin::keyReleaseEvent(QKeyEvent* keyEvent)
 		case Qt::Key::Key_Shift:
 		case Qt::Key::Key_Control:
 		{
-			if (_imageViewerWidget->selectionType() != ImageViewerWidget::SelectionType::Brush) {
+			if (_imageViewerWidget->selectionType() != SelectionType::Brush) {
 				_imageViewerWidget->setSelectionModifier(ImageViewerWidget::SelectionModifier::Replace);
 			}
 
