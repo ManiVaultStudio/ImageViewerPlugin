@@ -72,3 +72,30 @@ inline QString selectionTypeTypeName(const SelectionType& selectionType)
 
 	return "";
 }
+
+enum class SelectionModifier
+{
+	Replace,
+	Add,
+	Remove
+};
+
+inline QString selectionModifierName(const SelectionModifier& selectionModifier)
+{
+	switch (selectionModifier)
+	{
+	case SelectionModifier::Replace:
+		return "Replace";
+
+	case SelectionModifier::Add:
+		return "Add";
+
+	case SelectionModifier::Remove:
+		return "Remove";
+
+	default:
+		break;
+	}
+
+	return "";
+}

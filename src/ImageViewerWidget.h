@@ -21,13 +21,6 @@ class ImageViewerWidget : public QOpenGLWidget
 public:
 	ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin);
 
-	enum SelectionModifier
-	{
-		Replace,
-		Add,
-		Remove
-	};
-
 	InteractionMode interactionMode() const;
 	void setInteractionMode(const InteractionMode& interactionMode);
 	SelectionType selectionType() const;

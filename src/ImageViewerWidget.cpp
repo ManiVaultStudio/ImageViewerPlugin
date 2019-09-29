@@ -102,6 +102,9 @@ SelectionType ImageViewerWidget::selectionType() const
 
 void ImageViewerWidget::setSelectionType(const SelectionType& selectionType)
 {
+	if (selectionType == _selectionType)
+		return;
+
 	qDebug() << "Set selection type to" << selectionTypeTypeName(selectionType);
 
 	_selectionType = selectionType;
@@ -118,14 +121,17 @@ void ImageViewerWidget::setSelectionType(const SelectionType& selectionType)
 	emit selectionTypeChanged();
 }
 
-ImageViewerWidget::SelectionModifier ImageViewerWidget::selectionModifier() const
+SelectionModifier ImageViewerWidget::selectionModifier() const
 {
 	return _selectionModifier;
 }
 
 void ImageViewerWidget::setSelectionModifier(const SelectionModifier& selectionModifier)
 {
-	qDebug() << "Set selection modifier" << selectionModifier;
+	if (selectionModifier == _selectionModifier)
+		return;
+
+	qDebug() << "Set selection modifier to" << selectionModifierName(selectionModifier);
 
 	if (selectionType() == SelectionType::Brush && selectionModifier == SelectionModifier::Replace) {
 	}

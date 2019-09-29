@@ -814,15 +814,15 @@ void ImageViewerPlugin::keyPressEvent(QKeyEvent* keyEvent)
 
 		case Qt::Key::Key_Shift:
 		{
-			//if (_imageViewerWidget->selectionModifier() != ImageViewerWidget::SelectionModifier::Remove)
-			_imageViewerWidget->setSelectionModifier(ImageViewerWidget::SelectionModifier::Add);
+			//if (_imageViewerWidget->selectionModifier() != SelectionModifier::Remove)
+			_imageViewerWidget->setSelectionModifier(SelectionModifier::Add);
 			break;
 		}
 
 		case Qt::Key::Key_Control:
 		{
-			//if (_imageViewerWidget->selectionModifier() != ImageViewerWidget::SelectionModifier::Add)
-			_imageViewerWidget->setSelectionModifier(ImageViewerWidget::SelectionModifier::Remove);
+			//if (_imageViewerWidget->selectionModifier() != SelectionModifier::Add)
+			_imageViewerWidget->setSelectionModifier(SelectionModifier::Remove);
 			break;
 		}
 
@@ -856,7 +856,7 @@ void ImageViewerPlugin::keyReleaseEvent(QKeyEvent* keyEvent)
 		case Qt::Key::Key_Control:
 		{
 			if (_imageViewerWidget->selectionType() != SelectionType::Brush) {
-				_imageViewerWidget->setSelectionModifier(ImageViewerWidget::SelectionModifier::Replace);
+				_imageViewerWidget->setSelectionModifier(SelectionModifier::Replace);
 			}
 
 			break;
