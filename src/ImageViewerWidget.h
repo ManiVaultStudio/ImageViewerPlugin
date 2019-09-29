@@ -13,6 +13,7 @@
 #include "Common.h"
 
 class ImageViewerPlugin;
+class QOpenGLShaderProgram;
 
 class ImageViewerWidget : public QOpenGLWidget
 {
@@ -91,26 +92,27 @@ private:
 	TextureData& textureData(const QString& textureName);
 
 private:
-	ImageViewerPlugin*	_imageViewerPlugin;
-	TextureDataMap		_textureDataMap;
-	TextureMap			_textureMap;
-	InteractionMode		_interactionMode;
-	QPoint				_initialMousePosition;
-	QPoint				_mousePosition;
-	QPointF				_pan;
-	float				_zoom;
-	float				_zoomSensitivity;
-	int					_margin;
-	bool				_selecting;
-	SelectionType		_selectionType;
-	SelectionModifier	_selectionModifier;
-	bool				_selectionRealtime;
-	float				_brushRadius;
-	float				_brushRadiusDelta;
-	QColor				_selectionColor;
-	QColor				_selectionProxyColor;
-	QColor				_selectionGeometryColor;
-	Indices				_selectedPointIds;
-	QAction*			_zoomToExtentsAction;
-	QSize				_imageSize;
+	ImageViewerPlugin*		_imageViewerPlugin;
+	TextureDataMap			_textureDataMap;
+	TextureMap				_textureMap;
+	QOpenGLShaderProgram*	_shaderProgram;
+	InteractionMode			_interactionMode;
+	QPoint					_initialMousePosition;
+	QPoint					_mousePosition;
+	QPointF					_pan;
+	float					_zoom;
+	float					_zoomSensitivity;
+	int						_margin;
+	bool					_selecting;
+	SelectionType			_selectionType;
+	SelectionModifier		_selectionModifier;
+	bool					_selectionRealtime;
+	float					_brushRadius;
+	float					_brushRadiusDelta;
+	QColor					_selectionColor;
+	QColor					_selectionProxyColor;
+	QColor					_selectionGeometryColor;
+	Indices					_selectedPointIds;
+	QAction*				_zoomToExtentsAction;
+	QSize					_imageSize;
 };

@@ -31,13 +31,21 @@ set(SOURCES
     src/Common.h
 )
 
-set(UIS 
+set(UIS
 	src/SettingsWidget.ui
 )
 
-set(AUX src/ImageViewerPlugin.json)
+set(AUX
+	src/ImageViewerPlugin.json
+)
+
+set(SHADERS
+	src/Image.frag
+)
 
 source_group(Plugin FILES ${SOURCES} ${AUX})
+source_group(UI FILES ${UIS})
+source_group(Shaders FILES ${SHADERS})
 
 include_directories("$ENV{HDPS_INSTALL_DIR}/$<CONFIGURATION>/include/")
 

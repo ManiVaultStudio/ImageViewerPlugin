@@ -13,6 +13,7 @@
 #include <QtMath>
 #include <QPainter>
 #include <QGuiApplication>
+#include <QOpenGLShaderProgram>
 
 // Panning and zooming inspired by: https://community.khronos.org/t/opengl-compound-zoom-and-pan-effect/72565/7
 
@@ -339,9 +340,21 @@ void ImageViewerWidget::enableSelection(const bool& enable)
 	update();
 }
 
+static const char *fragmentShaderSource =
+"varying vec4 col;\n"
+"void main() {\n"
+"   gl_FragColor = col;\n"
+"}\n";
+
 void ImageViewerWidget::initializeGL()
 {
 	qDebug() << "Initializing OpenGL";
+
+	_shaderProgram = new QOpenGLShaderProgram(this);
+	_shaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSource);
+	//_shaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSource);
+	//_shaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSource);
+	_shaderProgram->link();
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -383,7 +396,17 @@ void ImageViewerWidget::paintGL() {
 	
 	glColor4f(1.f, 1.f, 1.f, 1.f);
 
+	auto colAttr = _shaderProgram->attributeLocation("col");
+
+	GLfloat array[4] = { 1, 0, 0, 1 };
+
+	_shaderProgram->bind();
+
+	_shaderProgram->setUniformValue(colAttr, &array);
+
 	drawTextureQuad(texture("image"), 1.0f);
+
+	_shaderProgram->release();
 
 	if (_imageViewerPlugin->selectable()) {
 		drawTextureQuad(texture("overlay"), 0.5f);
@@ -500,7 +523,7 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 	{
 		const auto delta	= QPointF(mouseEvent->pos().x() - _mousePosition.x(), -(mouseEvent->pos().y() - _mousePosition.y()));
 		const auto window	= _imageViewerPlugin->window() + delta.x();
-		const auto level	= _imageViewerPlugin->level() + delta.x();
+		const auto level	= _imageViewerPlugin->level() + delta.y();
 
 		_imageViewerPlugin->setWindowLevel(window, level);
 
@@ -518,6 +541,15 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 		return;
 
 	qDebug() << "Mouse release event";
+
+	if (_interactionMode != InteractionMode::WindowLevel) {
+		if (_imageViewerPlugin->selectable()) {
+			if (mouseEvent->button() == Qt::RightButton)
+			{
+				contextMenu()->exec(mapToGlobal(mouseEvent->pos()));
+			}
+		}
+	}
 
 	switch (_interactionMode)
 	{
@@ -550,13 +582,6 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 
 	default:
 		break;
-	}
-
-	if (_imageViewerPlugin->selectable()) {
-		if (mouseEvent->button() == Qt::RightButton)
-		{
-			contextMenu()->exec(mapToGlobal(mouseEvent->pos()));
-		}
 	}
 
 	update();
