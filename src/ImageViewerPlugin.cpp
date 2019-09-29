@@ -27,7 +27,9 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	_currentImageId(0),
 	_dimensionNames(),
 	_currentDimensionId(0),
-	_averageImages(false)
+	_averageImages(false),
+	_window(0.f),
+	_level(0.f)
 {
 	setFocusPolicy(Qt::FocusPolicy::StrongFocus);
 
@@ -680,6 +682,40 @@ void ImageViewerPlugin::setAverageImages(const bool& averageImages)
 	emit averageImagesChanged(_averageImages);
 
 	update();
+}
+
+float ImageViewerPlugin::window() const
+{
+	return _window;
+}
+
+void ImageViewerPlugin::setWindow(const float& window)
+{
+	if (window == _window)
+		return;
+
+	qDebug() << "Set window" << window;
+
+	_window = window;
+
+	emit windowChanged(_window);
+}
+
+float ImageViewerPlugin::level() const
+{
+	return _level;
+}
+
+void ImageViewerPlugin::setLevel(const float& level)
+{
+	if (level == _level)
+		return;
+
+	qDebug() << "Set level" << level;
+
+	_level = level;
+
+	emit levelChanged(_level);
 }
 
 void ImageViewerPlugin::setDatasetNames(const QStringList& datasetNames)
