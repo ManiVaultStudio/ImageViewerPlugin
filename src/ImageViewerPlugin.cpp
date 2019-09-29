@@ -112,6 +112,11 @@ ImageCollectionType ImageViewerPlugin::imageCollectionType() const
 	return ImageCollectionType::Undefined;
 }
 
+bool ImageViewerPlugin::selectable() const
+{
+	return imageCollectionType() == ImageCollectionType::Stack;// || imageCollectionType() == ImageCollectionType::MultiPartSequence
+}
+
 QString ImageViewerPlugin::currentImageFilePath() const
 {
 	if (_currentImageId >= 0)

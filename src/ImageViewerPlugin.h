@@ -38,6 +38,8 @@ public:
 	int noDimensions() const;
 
 	ImageCollectionType imageCollectionType() const;
+	bool selectable() const;
+
 	QString currentImageFilePath() const;
 	QString currentImageFileName() const;
 	QString currentDimensionName() const;

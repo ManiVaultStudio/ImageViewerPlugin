@@ -376,7 +376,7 @@ void ImageViewerWidget::paintGL() {
 
 	drawTextureQuad(texture("image"), 1.0f);
 
-	if (_imageViewerPlugin->imageCollectionType() == ImageCollectionType::Stack || _imageViewerPlugin->imageCollectionType() == ImageCollectionType::MultiPartSequence) {
+	if (_imageViewerPlugin->selectable()) {
 		drawTextureQuad(texture("overlay"), 0.5f);
 		drawTextureQuad(texture("selection"), 0.0f);
 	}
@@ -403,7 +403,7 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 
 		}
 		else {
-			if (_imageViewerPlugin->imageCollectionType() == ImageCollectionType::Stack || _imageViewerPlugin->imageCollectionType() == ImageCollectionType::MultiPartSequence) {
+			if (_imageViewerPlugin->selectable()) {
 				/*
 				if (_selectionModifier == SelectionModifier::Replace) {
 					qDebug() << "Reset selection";
@@ -436,7 +436,7 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 			pan(QPointF(mouseEvent->pos().x() - _mousePosition.x(), -(mouseEvent->pos().y() - _mousePosition.y())));
 		}
 		else {
-			if (_imageViewerPlugin->imageCollectionType() == ImageCollectionType::Stack || _imageViewerPlugin->imageCollectionType() == ImageCollectionType::MultiPartSequence) {
+			if (_imageViewerPlugin->selectable()) {
 				updateSelection();
 			}
 		}
@@ -462,7 +462,7 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 		QWidget::setCursor(Qt::OpenHandCursor);
 	}
 
-	if (_imageViewerPlugin->imageCollectionType() == ImageCollectionType::Stack || _imageViewerPlugin->imageCollectionType() == ImageCollectionType::MultiPartSequence) {
+	if (_imageViewerPlugin->selectable()) {
 		if (mouseEvent->button() == Qt::RightButton)
 		{
 			contextMenu()->exec(mapToGlobal(mouseEvent->pos()));
@@ -473,7 +473,7 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 	}
 	else {
 		if (_selecting) {
-			if (_imageViewerPlugin->imageCollectionType() == ImageCollectionType::Stack || _imageViewerPlugin->imageCollectionType() == ImageCollectionType::MultiPartSequence) {
+			if (_imageViewerPlugin->selectable()) {
 				enableSelection(false);
 
 				updateSelection();
