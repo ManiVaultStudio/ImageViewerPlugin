@@ -66,14 +66,17 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_textureMap.emplace("selection", QOpenGLTexture::Target2D);
 }
 
-ImageViewerWidget::InteractionMode ImageViewerWidget::interactionMode() const
+InteractionMode ImageViewerWidget::interactionMode() const
 {
 	return _interactionMode;
 }
 
 void ImageViewerWidget::setInteractionMode(const InteractionMode& interactionMode)
 {
-	qDebug() << "Set interaction mode" << interactionMode;
+	if (interactionMode == _interactionMode)
+		return;
+
+	qDebug() << "Set interaction mode to" << interactionModeTypeName(interactionMode);
 
 	switch (interactionMode)
 	{
@@ -402,10 +405,12 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 	{
 		_mousePosition = mouseEvent->pos();
 
-		if (mouseEvent->modifiers() & Qt::AltModifier) {
-
-		}
-		else {
+		switch (_interactionMode)
+		{
+		case InteractionMode::Navigation:
+			break;
+		case InteractionMode::Selection:
+		{
 			if (_imageViewerPlugin->selectable()) {
 				/*
 				if (_selectionModifier == SelectionModifier::Replace) {
@@ -419,7 +424,15 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 
 				enableSelection(true);
 			}
+
+			break;
 		}
+		case InteractionMode::WindowLevel:
+			break;
+		default:
+			break;
+		}
+		
 		break;
 	}
 
@@ -439,7 +452,7 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 	if (!imageInitialized())
 		return;
 
-	qDebug() << "Mouse move event";
+	//qDebug() << "Mouse move event";
 
 	switch (mouseEvent->buttons())
 	{
@@ -447,13 +460,13 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 	{
 		switch (_interactionMode)
 		{
-		case ImageViewerWidget::Navigation:
+		case InteractionMode::Navigation:
 		{
 			pan(QPointF(mouseEvent->pos().x() - _mousePosition.x(), -(mouseEvent->pos().y() - _mousePosition.y())));
 			break;
 		}
 
-		case ImageViewerWidget::Selection:
+		case InteractionMode::Selection:
 		{
 			if (_imageViewerPlugin->selectable()) {
 				updateSelection();
@@ -461,7 +474,7 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 			break;
 		}
 
-		case ImageViewerWidget::WindowLevel:
+		case InteractionMode::WindowLevel:
 		{
 			break;
 		}
@@ -479,6 +492,12 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 
 	case Qt::RightButton:
 	{
+		const auto delta	= QPointF(mouseEvent->pos().x() - _mousePosition.x(), -(mouseEvent->pos().y() - _mousePosition.y()));
+		const auto window	= _imageViewerPlugin->window() + delta.x();
+		const auto level	= _imageViewerPlugin->level() + delta.x();
+
+		_imageViewerPlugin->setWindowLevel(window, level);
+
 		break;
 	}
 
@@ -496,13 +515,13 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 
 	switch (_interactionMode)
 	{
-	case ImageViewerWidget::Navigation:
+	case InteractionMode::Navigation:
 	{
 		QWidget::setCursor(Qt::OpenHandCursor);
 		break;
 	}
 
-	case ImageViewerWidget::Selection:
+	case InteractionMode::Selection:
 	{
 		if (_imageViewerPlugin->selectable()) {
 			if (_selecting) {
@@ -517,7 +536,7 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 		break;
 	}
 
-	case ImageViewerWidget::WindowLevel:
+	case InteractionMode::WindowLevel:
 	{
 		setInteractionMode(InteractionMode::Selection);
 		break;
@@ -546,7 +565,10 @@ void ImageViewerWidget::wheelEvent(QWheelEvent* wheelEvent) {
 
 	qDebug() << "Mouse wheel event";
 
-	if (wheelEvent->modifiers() & Qt::AltModifier) {
+	switch (_interactionMode)
+	{
+	case InteractionMode::Navigation:
+		{
 		const auto world_x = (wheelEvent->posF().x() - _pan.x()) / _zoom;
 		const auto world_y = (wheelEvent->posF().y() - _pan.y()) / _zoom;
 
@@ -562,8 +584,10 @@ void ImageViewerWidget::wheelEvent(QWheelEvent* wheelEvent) {
 		}
 
 		update();
+		break;
 	}
-	else {
+	case InteractionMode::Selection:
+	{
 		if (_selectionType == SelectionType::Brush) {
 			if (wheelEvent->delta() > 0) {
 				setBrushRadius(_brushRadius + _brushRadiusDelta);
@@ -572,6 +596,13 @@ void ImageViewerWidget::wheelEvent(QWheelEvent* wheelEvent) {
 				setBrushRadius(_brushRadius - _brushRadiusDelta);
 			}
 		}
+
+		break;
+	}
+	case InteractionMode::WindowLevel:
+		break;
+	default:
+		break;
 	}
 }
 

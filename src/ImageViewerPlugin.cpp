@@ -689,33 +689,22 @@ float ImageViewerPlugin::window() const
 	return _window;
 }
 
-void ImageViewerPlugin::setWindow(const float& window)
+void ImageViewerPlugin::setWindowLevel(const float& window, const float& level)
 {
-	if (window == _window)
+	if (window == _window && level == _level)
 		return;
 
-	qDebug() << "Set window" << window;
+	qDebug() << "Set window/level" << window << level;
 
 	_window = window;
+	_level	= level;
 
-	emit windowChanged(_window);
+	emit windowLevelChanged(_window, _level);
 }
 
 float ImageViewerPlugin::level() const
 {
 	return _level;
-}
-
-void ImageViewerPlugin::setLevel(const float& level)
-{
-	if (level == _level)
-		return;
-
-	qDebug() << "Set level" << level;
-
-	_level = level;
-
-	emit levelChanged(_level);
 }
 
 void ImageViewerPlugin::setDatasetNames(const QStringList& datasetNames)
@@ -797,8 +786,14 @@ void ImageViewerPlugin::keyPressEvent(QKeyEvent* keyEvent)
 {
 	//qDebug() << "Key press event" << keyEvent->key();
 
-	switch (keyEvent->key())
+	if (keyEvent->isAutoRepeat())
 	{
+		keyEvent->ignore();
+	}
+	else
+	{
+		switch (keyEvent->key())
+		{
 		case Qt::Key::Key_R:
 		{
 			_imageViewerWidget->setSelectionType(ImageViewerWidget::SelectionType::Rectangle);
@@ -831,14 +826,15 @@ void ImageViewerPlugin::keyPressEvent(QKeyEvent* keyEvent)
 			break;
 		}
 
-		case Qt::Key::Key_Alt:
+		case Qt::Key::Key_Space:
 		{
-			_imageViewerWidget->setInteractionMode(ImageViewerWidget::InteractionMode::Navigation);
+			_imageViewerWidget->setInteractionMode(InteractionMode::Navigation);
 			break;
 		}
 
 		default:
 			break;
+		}
 	}
 
 	QWidget::keyPressEvent(keyEvent);
@@ -848,26 +844,33 @@ void ImageViewerPlugin::keyReleaseEvent(QKeyEvent* keyEvent)
 {
 	//qDebug() << "Key release event" << keyEvent->key();
 
-	switch (keyEvent->key())
+	if (keyEvent->isAutoRepeat())
 	{
+		keyEvent->ignore();
+	}
+	else
+	{
+		switch (keyEvent->key())
+		{
 		case Qt::Key::Key_Shift:
 		case Qt::Key::Key_Control:
 		{
 			if (_imageViewerWidget->selectionType() != ImageViewerWidget::SelectionType::Brush) {
 				_imageViewerWidget->setSelectionModifier(ImageViewerWidget::SelectionModifier::Replace);
 			}
-			
+
 			break;
 		}
 
-		case Qt::Key::Key_Alt:
+		case Qt::Key::Key_Space:
 		{
-			_imageViewerWidget->setInteractionMode(ImageViewerWidget::InteractionMode::Selection);
+			_imageViewerWidget->setInteractionMode(InteractionMode::Selection);
 			break;
 
 		}
 		default:
 			break;
+		}
 	}
 
 	QWidget::keyReleaseEvent(keyEvent);

@@ -18,3 +18,30 @@ enum class ImageCollectionType
 	Stack,
 	MultiPartSequence
 };
+
+enum class InteractionMode
+{
+	Navigation,
+	Selection,
+	WindowLevel
+};
+
+inline QString interactionModeTypeName(const InteractionMode& interactionMode)
+{
+	switch (interactionMode)
+	{
+	case InteractionMode::Navigation:
+		return "Navigation";
+
+	case InteractionMode::Selection:
+		return "Selection";
+
+	case InteractionMode::WindowLevel:
+		return "WindowLevel";
+
+	default:
+		break;
+	}
+
+	return "";
+}

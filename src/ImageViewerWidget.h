@@ -21,13 +21,6 @@ class ImageViewerWidget : public QOpenGLWidget
 public:
 	ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin);
 
-	enum InteractionMode
-	{
-		Navigation,
-		Selection,
-		WindowLevel
-	};
-
 	enum SelectionType
 	{
 		Rectangle,
