@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QOpenGLWidget>
+#include <QOpenGLFunctions>
 #include <QOpenGLTexture>
 
 #include <QMouseEvent>
@@ -15,7 +16,7 @@
 class ImageViewerPlugin;
 class QOpenGLShaderProgram;
 
-class ImageViewerWidget : public QOpenGLWidget
+class ImageViewerWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
 	Q_OBJECT
 
@@ -39,8 +40,8 @@ signals:
 	void brushRadiusChanged();
 
 public:
-	void onDisplayImageChanged(const QSize& imageSize, const TextureData& displayImage);
-	void onSelectionImageChanged(const QSize& imageSize, const TextureData& selectionImage);
+	void onDisplayImageChanged(const QSize& imageSize, TextureData& displayImage);
+	void onSelectionImageChanged(const QSize& imageSize, TextureData& selectionImage);
 	void onCurrentDatasetChanged(const QString& currentDataset);
 	void onCurrentImageIdChanged(const std::int32_t& currentImageId);
 
@@ -83,9 +84,11 @@ private:
 	QPoint screenToWorld(const QPoint& screen) const;
 	QPoint worldToScreen(const QPoint& world) const;
 	
+	void computeWindowLevel(double& window, double& level);
+
 private:
 	void setupTextures();
-	void setupTexture(QOpenGLTexture& openGltexture, const QOpenGLTexture::Filter& filter = QOpenGLTexture::Filter::Linear);
+	void setupTexture(QOpenGLTexture& openGltexture, const QOpenGLTexture::TextureFormat& textureFormat, const QOpenGLTexture::Filter& filter = QOpenGLTexture::Filter::Linear);
 	void resetTexture(const QString& textureName);
 	void resetTextureData(const QString& textureName);
 	QOpenGLTexture& texture(const QString& name);

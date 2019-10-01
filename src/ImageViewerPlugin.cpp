@@ -29,7 +29,9 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	_currentDimensionId(0),
 	_averageImages(false),
 	_window(0.f),
-	_level(0.f)
+	_level(0.f),
+	_imageMin(0),
+	_imageMax(0)
 {
 	setFocusPolicy(Qt::FocusPolicy::StrongFocus);
 
@@ -213,7 +215,7 @@ std::size_t ImageViewerPlugin::pixelId(const QSize& imageSize, const int& x, con
 
 std::size_t ImageViewerPlugin::pixelBufferOffset(const QSize& imageSize, const int& x, const int& y)
 {
-	return ImageViewerPlugin::pixelId(imageSize, x, y) * 4;
+	return ImageViewerPlugin::pixelId(imageSize, x, y);
 }
 
 std::size_t ImageViewerPlugin::sequencePixelCoordinateToPointId(const QSize& imageSize, const std::int32_t& imageId, const std::int32_t& noPixels, const std::int32_t& x, const std::int32_t& y)
@@ -367,7 +369,7 @@ void ImageViewerPlugin::computeDisplayImage()
 
 	auto imageTextureData = TextureData();
 
-	imageTextureData.resize(noPixels * 4);
+	imageTextureData.resize(noPixels);
 
 	switch (imageCollectionType()) {
 		case ImageCollectionType::Sequence: {
@@ -393,9 +395,27 @@ void ImageViewerPlugin::computeDisplayImage()
 
 			const auto noDisplayImages = displayImages.size();
 
+			_imageMin = std::numeric_limits<std::uint16_t>::max();
+			_imageMax = std::numeric_limits<std::uint16_t>::min();
+
 			for (std::int32_t x = 0; x < width; x++) {
 				for (std::int32_t y = 0; y < height; y++) {
-					auto pixelValue = 0.f;
+					for (unsigned int displayImageId : displayImages) {
+						const auto pointId	= ImageViewerPlugin::sequencePixelCoordinateToPointId(imageSize, displayImageId, noPixels, x, y);
+						const auto value	= pointsData[pointId];
+
+						if (value < _imageMin)
+							_imageMin = value;
+
+						if (value > _imageMax)
+							_imageMax = value;
+					}
+				}
+			}
+
+			for (std::int32_t x = 0; x < width; x++) {
+				for (std::int32_t y = 0; y < height; y++) {
+					auto pixelValue = 0.0;
 
 					for (unsigned int displayImageId : displayImages) {
 						const auto pointId = ImageViewerPlugin::sequencePixelCoordinateToPointId(imageSize, displayImageId, noPixels, x, y);
@@ -405,17 +425,11 @@ void ImageViewerPlugin::computeDisplayImage()
 
 					pixelValue /= static_cast<float>(noDisplayImages);
 
-					const auto offset = ImageViewerPlugin::pixelBufferOffset(imageSize, x, y);
-
-					imageTextureData[offset + 0] = pixelValue;
-					imageTextureData[offset + 1] = pixelValue;
-					imageTextureData[offset + 2] = pixelValue;
-					imageTextureData[offset + 3] = 255;
+					imageTextureData[y * imageSize.width() + x] = static_cast<std::uint16_t>(pixelValue);
 				}
 			}
 
-			_window = 256;
-			_level	= 127;
+			resetWindowLevel();
 
 			break;
 		}
@@ -434,8 +448,8 @@ void ImageViewerPlugin::computeDisplayImage()
 
 			const auto noDisplayDimensions	= displayDimensions.size();
 
-			auto min = std::numeric_limits<int>::max();
-			auto max = std::numeric_limits<int>::min();
+			_imageMin = std::numeric_limits<std::uint16_t>::max();
+			_imageMax = std::numeric_limits<std::uint16_t>::min();
 
 			for (std::int32_t x = 0; x < width; x++) {
 				for (std::int32_t y = 0; y < height; y++) {
@@ -443,11 +457,11 @@ void ImageViewerPlugin::computeDisplayImage()
 						const auto pointId	= stackPixelCoordinateToPointId(imageSize, noImages, displayDimensionId, x, y);
 						const auto value	= pointsData[pointId];
 
-						if (value < min)
-							min = value;
+						if (value < _imageMin)
+							_imageMin = value;
 
-						if (value > max)
-							max = value;
+						if (value > _imageMax)
+							_imageMax = value;
 					}
 				}
 			}
@@ -459,24 +473,16 @@ void ImageViewerPlugin::computeDisplayImage()
 					for (unsigned int displayDimensionId : displayDimensions) {
 						const auto pointId = stackPixelCoordinateToPointId(imageSize, noImages, displayDimensionId, x, y);
 
-						pixelValue += (pointsData[pointId] - min);
+						pixelValue += pointsData[pointId];
 					}
 
 					pixelValue /= static_cast<float>(noDisplayDimensions);
-					pixelValue *= 255.f;
 
-					const auto offset = ImageViewerPlugin::pixelBufferOffset(imageSize, x, y);
-
-					imageTextureData[offset + 0] = pixelValue;
-					imageTextureData[offset + 1] = pixelValue;
-					imageTextureData[offset + 2] = pixelValue;
-					imageTextureData[offset + 3] = 255;
+					imageTextureData[y * imageSize.width() + x] = static_cast<std::uint16_t>(pixelValue);
 				}
 			}
 
-			//const auto range = max - min;
-
-			auto image = QImage((uchar*)&imageTextureData[0], width, height, QImage::Format::Format_RGBA8888);
+			resetWindowLevel();
 
 			break;
 		}
@@ -497,8 +503,8 @@ void ImageViewerPlugin::computeDisplayImage()
 			const auto currentDimension		= this->_currentDimensionId;
 			const auto noDisplayDimensions	= displayDimensions.size();
 
-			auto min = std::numeric_limits<int>::max();
-			auto max = std::numeric_limits<int>::min();
+			_imageMin = std::numeric_limits<std::uint16_t>::max();
+			_imageMax = std::numeric_limits<std::uint16_t>::min();
 
 			for (std::int32_t x = 0; x < width; x++) {
 				for (std::int32_t y = 0; y < height; y++) {
@@ -506,16 +512,14 @@ void ImageViewerPlugin::computeDisplayImage()
 						const auto pointId	= ImageViewerPlugin::multipartSequencePixelCoordinateToPointId(imageSize, noPointsPerDimension, pixelOffset, displayDimensionId, x, y);
 						const auto value	= pointsData[pointId];
 
-						if (value < min)
-							min = value;
+						if (value < _imageMin)
+							_imageMin = value;
 
-						if (value > max)
-							max = value;
+						if (value > _imageMax)
+							_imageMax = value;
 					}
 				}
 			}
-
-			const auto range = max - min;
 
 			for (std::int32_t x = 0; x < width; x++) {
 				for (std::int32_t y = 0; y < height; y++) {
@@ -524,21 +528,19 @@ void ImageViewerPlugin::computeDisplayImage()
 					for (unsigned int displayDimensionId : displayDimensions) {
 						const auto pointId = ImageViewerPlugin::multipartSequencePixelCoordinateToPointId(imageSize, noPointsPerDimension, pixelOffset, displayDimensionId, x, y);
 
-						pixelValue += (pointsData[pointId] - min) / range;
+						pixelValue += pointsData[pointId];
 					}
 
 					pixelValue /= static_cast<float>(noDisplayDimensions);
-					pixelValue *= 255.f;
 
-					const auto offset = ImageViewerPlugin::pixelBufferOffset(imageSize, x, y);
-
-					imageTextureData[offset + 0] = pixelValue;
-					imageTextureData[offset + 1] = pixelValue;
-					imageTextureData[offset + 2] = pixelValue;
-					imageTextureData[offset + 3] = 255;
+					imageTextureData[y * imageSize.width() + x] = static_cast<std::uint16_t>(pixelValue);
 				}
 			}
 			
+			//qDebug() << imageTextureData;
+
+			resetWindowLevel();
+
 			break;
 		}
 	}
@@ -548,6 +550,7 @@ void ImageViewerPlugin::computeDisplayImage()
 
 void ImageViewerPlugin::computeSelectionImage()
 {
+	/*
 	const auto imageSize = this->imageSize();
 	const auto width	= imageSize.width();
 	const auto height	= imageSize.height();
@@ -559,7 +562,7 @@ void ImageViewerPlugin::computeSelectionImage()
 
 	auto selectionTextureData = TextureData();
 
-	selectionTextureData.resize(noPixels * 4);
+	selectionTextureData.resize(noPixels);
 
 	if (hasSelection()) {
 		switch (imageCollectionType())
@@ -569,10 +572,7 @@ void ImageViewerPlugin::computeSelectionImage()
 			{
 				const auto offset = index * 4;
 
-				selectionTextureData[offset + 0] = 255;
-				selectionTextureData[offset + 1] = 0;
-				selectionTextureData[offset + 2] = 0;
-				selectionTextureData[offset + 3] = 100;
+				selectionTextureData[index] = 255;
 			}
 		}
 
@@ -600,6 +600,7 @@ void ImageViewerPlugin::computeSelectionImage()
 	}
 
 	emit selectionImageChanged(imageSize, selectionTextureData);
+	*/
 }
 
 QString ImageViewerPlugin::currentDataset() const
@@ -687,6 +688,16 @@ void ImageViewerPlugin::setAverageImages(const bool& averageImages)
 	update();
 }
 
+double ImageViewerPlugin::imageMin() const
+{
+	return _imageMin;
+}
+
+double ImageViewerPlugin::imageMax() const
+{
+	return _imageMax;
+}
+
 double ImageViewerPlugin::window() const
 {
 	return _window;
@@ -701,6 +712,14 @@ void ImageViewerPlugin::setWindowLevel(const double& window, const double& level
 
 	_window = window;
 	_level	= level;
+
+	emit windowLevelChanged(_window, _level);
+}
+
+void ImageViewerPlugin::resetWindowLevel()
+{
+	_window = 1.0;
+	_level	= 0.5;
 
 	emit windowLevelChanged(_window, _level);
 }

@@ -3,7 +3,7 @@
 #include <QSet>
 #include <QOpenGLTexture>
 
-using TextureData		= std::vector<unsigned char>;
+using TextureData		= std::vector<std::uint16_t>;
 using TextureDataMap	= std::map<QString, TextureData>;
 using Index				= unsigned int;
 using Indices			= std::vector<Index>;
