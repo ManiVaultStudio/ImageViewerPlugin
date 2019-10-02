@@ -343,16 +343,16 @@ void ImageViewerWidget::enableSelection(const bool& enable)
 	update();
 }
 
-static const char* fragmentShaderSource =
+static const char* imageFragmentShader =
 "uniform sampler2D image;\n"
 "uniform float minPixelValue;\n"
 "uniform float maxPixelValue;\n"
 "void main() {\n"
-"	float channelValue	= texture2D(image, gl_TexCoord[0].st).r * 65535.0;"
-"	float fraction		= channelValue - minPixelValue;\n"
-"	float range			= maxPixelValue - minPixelValue;\n"
-"	float value			= clamp(fraction / range, 0.0, 1.0);\n"
-"   gl_FragColor		= vec4(value, value, value, 1.0);\n"
+"	float value		= texture2D(image, gl_TexCoord[0].st).r * 65535.0;"
+"	float fraction	= value - minPixelValue;\n"
+"	float range		= maxPixelValue - minPixelValue;\n"
+"	float clamped	= clamp(fraction / range, 0.0, 1.0);\n"
+"   gl_FragColor	= vec4(clamped, clamped, clamped, 1.0);\n"
 "}\n";
 
 void ImageViewerWidget::initializeGL()
@@ -362,7 +362,7 @@ void ImageViewerWidget::initializeGL()
 	initializeOpenGLFunctions();
 
 	_shaderProgram = new QOpenGLShaderProgram(this);
-	_shaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSource);
+	_shaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, imageFragmentShader);
 	_shaderProgram->link();
 
 	glEnable(GL_BLEND);
@@ -414,6 +414,10 @@ void ImageViewerWidget::paintGL() {
 
 	const auto minPixelValue = std::clamp(_imageViewerPlugin->imageMin(), level - (window / 2.0), _imageViewerPlugin->imageMax());
 	const auto maxPixelValue = std::clamp(_imageViewerPlugin->imageMin(), level + (window / 2.0), _imageViewerPlugin->imageMax());
+
+	qDebug() << "======" << window << level << _imageViewerPlugin->imageMin() << _imageViewerPlugin->imageMax() << minPixelValue << maxPixelValue;
+	//qDebug() << static_cast<GLfloat>(minPixelValue);
+	//qDebug() << static_cast<GLfloat>(maxPixelValue);
 
 	_shaderProgram->bind();
 
