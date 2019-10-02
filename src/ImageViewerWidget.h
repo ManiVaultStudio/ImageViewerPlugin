@@ -14,7 +14,6 @@
 #include "Common.h"
 
 class ImageViewerPlugin;
-class QOpenGLShaderProgram;
 
 class ImageViewerWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
@@ -75,7 +74,6 @@ private:
 	bool imageInitialized();
 	void updateSelection();
 	void commitSelection();
-	void applyTextureData(const QString& name);
 
 	QMenu* contextMenu();
 	QMenu* viewMenu();
@@ -88,17 +86,13 @@ private:
 
 private:
 	void setupTextures();
-	void setupTexture(QOpenGLTexture& openGltexture, const QOpenGLTexture::TextureFormat& textureFormat, const QOpenGLTexture::Filter& filter = QOpenGLTexture::Filter::Linear);
+	void setupTexture(QOpenGLTexture* openGltexture, const QOpenGLTexture::TextureFormat& textureFormat, const QOpenGLTexture::Filter& filter = QOpenGLTexture::Filter::Linear);
 	void resetTexture(const QString& textureName);
-	void resetTextureData(const QString& textureName);
-	QOpenGLTexture& texture(const QString& name);
-	TextureData& textureData(const QString& textureName);
 
 private:
 	ImageViewerPlugin*		_imageViewerPlugin;
-	TextureDataMap			_textureDataMap;
-	TextureMap				_textureMap;
-	QOpenGLShaderProgram*	_shaderProgram;
+	TextureMap				_textures;
+	ShaderMap				_shaders;
 	InteractionMode			_interactionMode;
 	QPoint					_initialMousePosition;
 	QPoint					_mousePosition;

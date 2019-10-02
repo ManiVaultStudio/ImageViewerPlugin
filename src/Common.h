@@ -1,13 +1,19 @@
 #pragma once
 
+#include <vector>
+#include <map>
+
 #include <QSet>
-#include <QOpenGLTexture>
+
+class QOpenGLTexture;
+class QOpenGLShaderProgram;
 
 using TextureData		= std::vector<std::uint16_t>;
 using TextureDataMap	= std::map<QString, TextureData>;
 using Index				= unsigned int;
 using Indices			= std::vector<Index>;
-using TextureMap		= std::map<QString, QOpenGLTexture>;
+using TextureMap		= std::map<QString, QOpenGLTexture*>;
+using ShaderMap			= std::map<QString, QOpenGLShaderProgram*>;
 using PixelCoordinate	= std::pair<std::int32_t, std::int32_t>;
 using PixelCoordinates	= std::vector<PixelCoordinate>;
 

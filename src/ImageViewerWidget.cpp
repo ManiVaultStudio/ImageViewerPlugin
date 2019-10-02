@@ -14,15 +14,44 @@
 #include <QtMath>
 #include <QPainter>
 #include <QGuiApplication>
+#include <QOpenGLTexture>
 #include <QOpenGLShaderProgram>
 
 // Panning and zooming inspired by: https://community.khronos.org/t/opengl-compound-zoom-and-pan-effect/72565/7
 
+static const char* imageFragmentShader =
+"uniform sampler2D image;\n"
+"uniform float minPixelValue;\n"
+"uniform float maxPixelValue;\n"
+"void main() {\n"
+"	float value		= texture2D(image, gl_TexCoord[0].st).r * 65535.0;"
+"	float fraction	= value - minPixelValue;\n"
+"	float range		= maxPixelValue - minPixelValue;\n"
+"	float clamped	= clamp(fraction / range, 0.0, 1.0);\n"
+"   gl_FragColor	= vec4(clamped, clamped, clamped, 1.0);\n"
+"}\n";
+
+static const char* overlayFragmentShader =
+"uniform sampler2D overlay;\n"
+"uniform vec4 selectionColor;\n"
+"void main() {\n"
+"	float value		= texture2D(overlay, gl_TexCoord[0].st).r * 255.0;"
+"   gl_FragColor	= value > 0 ? selectionColor : vec4(0);\n"
+"}\n";
+
+static const char* selectionFragmentShader =
+"uniform sampler2D overlay;\n"
+"uniform vec4 selectionColor;\n"
+"void main() {\n"
+"	float value		= texture2D(overlay, gl_TexCoord[0].st).r * 255.0;"
+"   gl_FragColor	= value > 0 ? selectionColor : vec4(0);\n"
+"}\n";
+
 ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	QOpenGLFunctions(),
 	_imageViewerPlugin(imageViewerPlugin),
-	_textureDataMap(),
-	_textureMap(),
+	_textures(),
+	_shaders(),
 	_interactionMode(InteractionMode::Selection),
 	_initialMousePosition(),
 	_mousePosition(),
@@ -63,13 +92,13 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 
 	setFormat(surfaceFormat);
 
-	_textureDataMap.insert(std::make_pair("image", TextureData()));
-	_textureDataMap.insert(std::make_pair("overlay", TextureData()));
-	_textureDataMap.insert(std::make_pair("selection", TextureData()));
+	_textures.insert(std::pair<QString, QOpenGLTexture*>("image", new QOpenGLTexture(QOpenGLTexture::Target2D)));
+	_textures.insert(std::pair<QString, QOpenGLTexture*>("overlay", new QOpenGLTexture(QOpenGLTexture::Target2D)));
+	_textures.insert(std::pair<QString, QOpenGLTexture*>("selection", new QOpenGLTexture(QOpenGLTexture::Target2D)));
 
-	_textureMap.emplace("image", QOpenGLTexture::Target2D);
-	_textureMap.emplace("overlay", QOpenGLTexture::Target2D);
-	_textureMap.emplace("selection", QOpenGLTexture::Target2D);
+	_shaders.insert(std::pair<QString, QOpenGLShaderProgram*>("image", new QOpenGLShaderProgram()));
+	_shaders.insert(std::pair<QString, QOpenGLShaderProgram*>("overlay", new QOpenGLShaderProgram()));
+	_shaders.insert(std::pair<QString, QOpenGLShaderProgram*>("selection", new QOpenGLShaderProgram()));
 }
 
 InteractionMode ImageViewerWidget::interactionMode() const
@@ -176,7 +205,7 @@ void ImageViewerWidget::onDisplayImageChanged(const QSize& imageSize, TextureDat
 		shouldZoomExtents = true;
 	}
 	
-	texture("image").setData(QOpenGLTexture::PixelFormat::Red, QOpenGLTexture::PixelType::UInt16, static_cast<void*>(displayImage.data()));
+	_textures["image"]->setData(QOpenGLTexture::PixelFormat::Red, QOpenGLTexture::PixelType::UInt16, static_cast<void*>(displayImage.data()));
 
 	update();
 
@@ -191,9 +220,9 @@ void ImageViewerWidget::onSelectionImageChanged(const QSize& imageSize, TextureD
 
 	qDebug() << "On selection image changed";
 
-	textureData("selection") = selectionImage;
+	//textureData("selection") = selectionImage;
 
-	applyTextureData("selection");
+	//applyTextureData("selection");
 
 	resetTexture("overlay");
 
@@ -343,27 +372,20 @@ void ImageViewerWidget::enableSelection(const bool& enable)
 	update();
 }
 
-static const char* imageFragmentShader =
-"uniform sampler2D image;\n"
-"uniform float minPixelValue;\n"
-"uniform float maxPixelValue;\n"
-"void main() {\n"
-"	float value		= texture2D(image, gl_TexCoord[0].st).r * 65535.0;"
-"	float fraction	= value - minPixelValue;\n"
-"	float range		= maxPixelValue - minPixelValue;\n"
-"	float clamped	= clamp(fraction / range, 0.0, 1.0);\n"
-"   gl_FragColor	= vec4(clamped, clamped, clamped, 1.0);\n"
-"}\n";
-
 void ImageViewerWidget::initializeGL()
 {
 	qDebug() << "Initializing OpenGL";
 
 	initializeOpenGLFunctions();
 
-	_shaderProgram = new QOpenGLShaderProgram(this);
-	_shaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, imageFragmentShader);
-	_shaderProgram->link();
+	_shaders["image"]->addShaderFromSourceCode(QOpenGLShader::Fragment, imageFragmentShader);
+	_shaders["image"]->link();
+
+	_shaders["overlay"]->addShaderFromSourceCode(QOpenGLShader::Fragment, overlayFragmentShader);
+	_shaders["overlay"]->link();
+
+	_shaders["selection"]->addShaderFromSourceCode(QOpenGLShader::Fragment, selectionFragmentShader);
+	_shaders["selection"]->link();
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -407,6 +429,8 @@ void ImageViewerWidget::paintGL() {
 	
 	glColor4f(1.f, 1.f, 1.f, 1.f);
 
+	glEnable(GL_TEXTURE_2D);
+
 	double window	= 0.0;
 	double level	= 0.0;
 
@@ -416,25 +440,33 @@ void ImageViewerWidget::paintGL() {
 	const auto maxPixelValue = std::clamp(_imageViewerPlugin->imageMin(), level + (window / 2.0), _imageViewerPlugin->imageMax());
 
 	qDebug() << "======" << window << level << _imageViewerPlugin->imageMin() << _imageViewerPlugin->imageMax() << minPixelValue << maxPixelValue;
-	//qDebug() << static_cast<GLfloat>(minPixelValue);
-	//qDebug() << static_cast<GLfloat>(maxPixelValue);
 
-	_shaderProgram->bind();
+	_shaders["image"]->bind();
+	_textures["image"]->bind();
 
-	glEnable(GL_TEXTURE_2D);
-	texture("image").bind();
-
-	_shaderProgram->setUniformValue("image", 0);
-	_shaderProgram->setUniformValue("minPixelValue", static_cast<GLfloat>(minPixelValue));
-	_shaderProgram->setUniformValue("maxPixelValue", static_cast<GLfloat>(maxPixelValue));
+	_shaders["image"]->setUniformValue("image", 0);
+	_shaders["image"]->setUniformValue("minPixelValue", static_cast<GLfloat>(minPixelValue));
+	_shaders["image"]->setUniformValue("maxPixelValue", static_cast<GLfloat>(maxPixelValue));
 
 	drawQuad(1.0f);
 
-	texture("image").release();
-	glDisable(GL_TEXTURE_2D);
+	_textures["image"]->release();
+	_shaders["image"]->release();
 
-	_shaderProgram->release();
-	/**/
+
+
+
+	_shaders["overlay"]->bind();
+	_textures["overlay"]->bind();
+
+	_shaders["overlay"]->setUniformValue("image", 0);
+	_shaders["overlay"]->setUniformValue("selectionColor", 1, 0, 0, 1);
+
+	drawQuad(0.5f);
+
+	_textures["overlay"]->release();
+	_shaders["overlay"]->release();
+
 
 	/*
 	if (_imageViewerPlugin->selectable()) {
@@ -442,6 +474,8 @@ void ImageViewerWidget::paintGL() {
 		drawTextureQuad(texture("selection"), 0.0f);
 	}
 	*/
+
+	glDisable(GL_TEXTURE_2D);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -727,7 +761,7 @@ void ImageViewerWidget::resetView()
 
 bool ImageViewerWidget::imageInitialized()
 {
-	return texture("image").isCreated();
+	return _textures["image"]->isCreated();
 }
 
 QPoint ImageViewerWidget::screenToWorld(const QPoint& screen) const
@@ -757,7 +791,9 @@ void ImageViewerWidget::updateSelection()
 	const auto halfImageSize	= _imageSize / 2;
 	const auto imageRect		= QRect(-halfImageSize.width(), -halfImageSize.height(), _imageSize.width(), _imageSize.height());
 
-	auto& overlayTextureData = textureData("overlay");
+	auto overlayTextureData = TextureData();
+
+	overlayTextureData.resize(_imageSize.width() * _imageSize.height());
 
 	switch (_selectionType)
 	{
@@ -841,14 +877,15 @@ void ImageViewerWidget::updateSelection()
 			break;
 	}
 
-	applyTextureData("overlay");
+	_textures["overlay"]->setData(QOpenGLTexture::PixelFormat::Red, QOpenGLTexture::PixelType::UInt8, static_cast<void*>(overlayTextureData.data()));
+
+	update();
 }
 
 void ImageViewerWidget::modifySelection(const Indices& selectedPointIds, const std::int32_t& pixelOffset /*= 0*/)
 {
 	qDebug() << "Modify selection";
 
-	/*
 	if (selectedPointIds.size() > 0) {
 		switch (_selectionModifier) {
 		case SelectionModifier::Replace:
@@ -896,24 +933,18 @@ void ImageViewerWidget::modifySelection(const Indices& selectedPointIds, const s
 		_selectedPointIds = Indices();
 	}
 
-	resetTextureData("overlay");
+	/*
+	auto overlayTextureData = TextureData();
 
-	TextureData& overlayTextureData = textureData("overlay");
+	overlayTextureData.resize(_imageSize.width() * _imageSize.height());
 
 	for (auto& selectedPointId : _selectedPointIds) {
-
-		const auto offset = (selectedPointId * 4) - pixelOffset;
-
-		overlayTextureData[offset + 0] = _selectionProxyColor.red();
-		overlayTextureData[offset + 1] = _selectionProxyColor.green();
-		overlayTextureData[offset + 2] = _selectionProxyColor.blue();
-		overlayTextureData[offset + 3] = _selectionProxyColor.alpha();
+		overlayTextureData[selectedPointId - pixelOffset] = 1;
 	}
 
-	applyTextureData("overlay");
-
-	update();
+	texture("image").setData(QOpenGLTexture::PixelFormat::Red, QOpenGLTexture::PixelType::UInt8, static_cast<void*>(overlayTextureData.data()));
 	*/
+	update();
 }
 
 void ImageViewerWidget::clearSelection()
@@ -928,14 +959,9 @@ void ImageViewerWidget::commitSelection()
 {
 	qDebug() << "Commit selection to core";
 
-	resetTextureData("overlay");
+	// resetTextureData("overlay");
 
 	_imageViewerPlugin->setSelection(_selectedPointIds);
-}
-
-void ImageViewerWidget::applyTextureData(const QString& name)
-{
-	texture(name).setData(QOpenGLTexture::PixelFormat::RGBA, QOpenGLTexture::PixelType::UInt8, static_cast<void*>(&textureData(name)[0]));
 }
 
 QMenu* ImageViewerWidget::contextMenu()
@@ -1000,48 +1026,25 @@ void ImageViewerWidget::setupTextures()
 {
 	qDebug() << "Setup textures" << _imageSize;
 
-	//resetTextureData("image");
-	resetTextureData("overlay");
-	resetTextureData("selection");
-
-	setupTexture(texture("image"), QOpenGLTexture::TextureFormat::R16_UNorm);
-	//setupTexture(texture("overlay"), QOpenGLTexture::TextureFormat::RGBA8_UNorm, QOpenGLTexture::Filter::Nearest);
-	//setupTexture(texture("selection"), QOpenGLTexture::TextureFormat::RGBA8_UNorm, QOpenGLTexture::Filter::Nearest);
+	setupTexture(_textures["image"], QOpenGLTexture::TextureFormat::R16_UNorm);
+	setupTexture(_textures["overlay"], QOpenGLTexture::TextureFormat::R8_UNorm, QOpenGLTexture::Filter::Nearest);
+	setupTexture(_textures["selection"], QOpenGLTexture::TextureFormat::R8_UNorm, QOpenGLTexture::Filter::Nearest);
 }
 
-void ImageViewerWidget::setupTexture(QOpenGLTexture& openGltexture, const QOpenGLTexture::TextureFormat& textureFormat, const QOpenGLTexture::Filter& filter /*= QOpenGLTexture::Filter::Linear*/)
+void ImageViewerWidget::setupTexture(QOpenGLTexture* openGltexture, const QOpenGLTexture::TextureFormat& textureFormat, const QOpenGLTexture::Filter& filter /*= QOpenGLTexture::Filter::Linear*/)
 {
-	openGltexture.destroy();
-	openGltexture.create();
-	openGltexture.setSize(_imageSize.width(), _imageSize.height(), 1);
-	openGltexture.setFormat(textureFormat);
-	openGltexture.allocateStorage();
-	openGltexture.setMinMagFilters(filter, filter);
+	openGltexture->destroy();
+	openGltexture->create();
+	openGltexture->setSize(_imageSize.width(), _imageSize.height(), 1);
+	openGltexture->setFormat(textureFormat);
+	openGltexture->allocateStorage();
+	openGltexture->setMinMagFilters(filter, filter);
 }
 
 void ImageViewerWidget::resetTexture(const QString & textureName)
 {
-	if (texture(textureName).isCreated()) {
-		resetTextureData(textureName);
-		applyTextureData(textureName);
+	if (_textures[textureName]->isCreated()) {
+		// resetTextureData(textureName);
+		// applyTextureData(textureName);
 	}
-}
-
-void ImageViewerWidget::resetTextureData(const QString& textureName)
-{
-	TextureData& data = textureData(textureName);
-
-	data.resize(_imageSize.width() * _imageSize.height() * 4);
-
-	std::fill(data.begin(), data.end(), 0);
-}
-
-QOpenGLTexture& ImageViewerWidget::texture(const QString& name)
-{
-	return _textureMap.at(name);
-}
-
-TextureData& ImageViewerWidget::textureData(const QString& textureName)
-{
-	return _textureDataMap.at(textureName);
 }
