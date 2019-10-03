@@ -19,7 +19,16 @@
 
 // Panning and zooming inspired by: https://community.khronos.org/t/opengl-compound-zoom-and-pan-effect/72565/7
 
-static const char* imageFragmentShader =
+const std::string imageFragmentShaderSource =
+#include "Image.frag"
+;
+
+const std::string imageVertexShaderSource =
+#include "Image.vert"
+;
+
+/*
+static const char* imageFragmentShaderSource =
 "uniform sampler2D image;\n"
 "uniform float minPixelValue;\n"
 "uniform float maxPixelValue;\n"
@@ -30,13 +39,13 @@ static const char* imageFragmentShader =
 "	float clamped	= clamp(fraction / range, 0.0, 1.0);\n"
 "   gl_FragColor	= vec4(clamped, clamped, clamped, 1.0);\n"
 "}\n";
-
+*/
+/*
 static const char* overlayFragmentShader =
-"uniform sampler2D overlay;\n"
-"uniform vec4 selectionColor;\n"
+"uniform sampler2D texture;\n"
 "void main() {\n"
-"	float value		= texture2D(overlay, gl_TexCoord[0].st).r * 255.0;"
-"   gl_FragColor	= value > 0 ? selectionColor : vec4(0);\n"
+"	float value		= texture2D(texture, gl_TexCoord[0].st).r * 255.0\n;"
+"   gl_FragColor	= value > 0 ? vec4(1) : vec4(0);\n"
 "}\n";
 
 static const char* selectionFragmentShader =
@@ -46,6 +55,25 @@ static const char* selectionFragmentShader =
 "	float value		= texture2D(overlay, gl_TexCoord[0].st).r * 255.0;"
 "   gl_FragColor	= value > 0 ? selectionColor : vec4(0);\n"
 "}\n";
+
+
+#version 420 core
+
+uniform sampler2D image;
+uniform float minPixelValue;
+uniform float maxPixelValue;
+
+in vec2 vertexUV;
+out vec4 fragmentColor;
+
+void main() {
+	float value = texture(image, vertexUV).r * 65535.0;
+	float fraction = value - minPixelValue;
+	float range = maxPixelValue - minPixelValue;
+	float clamped = clamp(fraction / range, 0.0, 1.0);
+	fragmentColor = vec4(clamped, clamped, clamped, 1.0);
+};
+*/
 
 ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	QOpenGLFunctions(),
@@ -69,7 +97,8 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_selectionGeometryColor(255, 0, 0, 255),
 	_selectedPointIds(),
 	_zoomToExtentsAction(nullptr),
-	_imageSize()
+	_imageSize(),
+	_vertexBuffer(QOpenGLBuffer::VertexBuffer)
 {
 	setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
 	
@@ -84,17 +113,17 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	QSurfaceFormat surfaceFormat;
 	
 	surfaceFormat.setRenderableType(QSurfaceFormat::OpenGL);
-	surfaceFormat.setProfile(QSurfaceFormat::CoreProfile);
-	//surfaceFormat.setVersion(3, 2);
+	//surfaceFormat.setProfile(QSurfaceFormat::CoreProfile);
+	//surfaceFormat.setVersion(4, 3);
 	surfaceFormat.setSamples(16);
 	//surfaceFormat.setDepthBufferSize(24);
 	//surfaceFormat.setStencilBufferSize(8);
 
 	setFormat(surfaceFormat);
 
-	_textures.insert(std::pair<QString, QOpenGLTexture*>("image", new QOpenGLTexture(QOpenGLTexture::Target2D)));
-	_textures.insert(std::pair<QString, QOpenGLTexture*>("overlay", new QOpenGLTexture(QOpenGLTexture::Target2D)));
-	_textures.insert(std::pair<QString, QOpenGLTexture*>("selection", new QOpenGLTexture(QOpenGLTexture::Target2D)));
+	_textures.insert(std::pair<QString, std::unique_ptr<QOpenGLTexture>>("image", std::make_unique<QOpenGLTexture>(QOpenGLTexture::Target2D)));
+	_textures.insert(std::pair<QString, std::unique_ptr<QOpenGLTexture>>("overlay", std::make_unique<QOpenGLTexture>(QOpenGLTexture::Target2D)));
+	_textures.insert(std::pair<QString, std::unique_ptr<QOpenGLTexture>>("selection", std::make_unique<QOpenGLTexture>(QOpenGLTexture::Target2D)));
 
 	_shaders.insert(std::pair<QString, QOpenGLShaderProgram*>("image", new QOpenGLShaderProgram()));
 	_shaders.insert(std::pair<QString, QOpenGLShaderProgram*>("overlay", new QOpenGLShaderProgram()));
@@ -378,14 +407,42 @@ void ImageViewerWidget::initializeGL()
 
 	initializeOpenGLFunctions();
 
-	_shaders["image"]->addShaderFromSourceCode(QOpenGLShader::Fragment, imageFragmentShader);
+	//_shaders["image"]->addShaderFromSourceCode(QOpenGLShader::Vertex, imageVertexShaderSource.c_str());
+	_shaders["image"]->addShaderFromSourceCode(QOpenGLShader::Fragment, imageFragmentShaderSource.c_str());
+	
 	_shaders["image"]->link();
+	/*
+	const auto scale = 1000.f;
 
+	float points[] = { -scale, -scale, 0.0f, 1.0f,
+		scale, -scale, 0.0f, 1.0f,
+		scale, scale, 0.0f, 1.0f,
+		-scale,scale, 0.0f, 1.0f
+	};
+
+	_vertexBuffer.create();
+	_vertexBuffer.setUsagePattern(QOpenGLBuffer::StaticDraw);
+
+	if (!_vertexBuffer.bind())
+	{
+		qWarning() << "Could not bind vertex buffer to the context";
+		return;
+	}
+
+	_vertexBuffer.allocate(points, 4 * 4 * sizeof(float));
+
+	//_shaders["image"]->setAttributeBuffer("vertex", GL_FLOAT, 0, 4);
+	//_shaders["image"]->enableAttributeArray("vertex");
+
+	
+
+	
 	_shaders["overlay"]->addShaderFromSourceCode(QOpenGLShader::Fragment, overlayFragmentShader);
 	_shaders["overlay"]->link();
 
 	_shaders["selection"]->addShaderFromSourceCode(QOpenGLShader::Fragment, selectionFragmentShader);
 	_shaders["selection"]->link();
+	*/
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -439,39 +496,82 @@ void ImageViewerWidget::paintGL() {
 	const auto minPixelValue = std::clamp(_imageViewerPlugin->imageMin(), level - (window / 2.0), _imageViewerPlugin->imageMax());
 	const auto maxPixelValue = std::clamp(_imageViewerPlugin->imageMin(), level + (window / 2.0), _imageViewerPlugin->imageMax());
 
-	qDebug() << "======" << window << level << _imageViewerPlugin->imageMin() << _imageViewerPlugin->imageMax() << minPixelValue << maxPixelValue;
+	//qDebug() << "======" << window << level << _imageViewerPlugin->imageMin() << _imageViewerPlugin->imageMax() << minPixelValue << maxPixelValue;
 
+	
 	_shaders["image"]->bind();
-	_textures["image"]->bind();
+	//_textures["image"]->bind();
 
-	_shaders["image"]->setUniformValue("image", 0);
-	_shaders["image"]->setUniformValue("minPixelValue", static_cast<GLfloat>(minPixelValue));
-	_shaders["image"]->setUniformValue("maxPixelValue", static_cast<GLfloat>(maxPixelValue));
+	//qDebug() << "Bound texture ID" << _textures["image"]->boundTextureId(QOpenGLTexture::BindingTarget2D);
+	//qDebug() << "Texture ID" << _textures["image"]->textureId();
 
-	drawQuad(1.0f);
+	//_shaders["image"]->setUniformValue("image", 0);
+	//_shaders["image"]->setUniformValue("minPixelValue", static_cast<GLfloat>(minPixelValue));
+	//_shaders["image"]->setUniformValue("maxPixelValue", static_cast<GLfloat>(maxPixelValue));
 
-	_textures["image"]->release();
+	const auto scale = 10.f;
+
+	float points[] = { -scale, -scale, 0.0f,
+		-scale, scale, 0.0f,
+		scale, -scale, 0.0f,
+		scale,scale, 0.0f
+	};
+
+	//glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+	// This will identify our vertex buffer
+	GLuint vertexbuffer;
+	// Generate 1 buffer, put the resulting identifier in vertexbuffer
+	glGenBuffers(1, &vertexbuffer);
+	// The following commands will talk about our 'vertexbuffer' buffer
+	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+	// Give our vertices to OpenGL.
+	glBufferData(GL_ARRAY_BUFFER, sizeof(points), points, GL_STATIC_DRAW);
+
+	glEnableVertexAttribArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+	glVertexAttribPointer(
+		0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+		3,                  // size
+		GL_FLOAT,           // type
+		GL_FALSE,           // normalized?
+		0,                  // stride
+		(void*)0            // array buffer offset
+	);
+	// Draw the triangle !
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4); // Starting from vertex 0; 3 vertices total -> 1 triangle
+	glDisableVertexAttribArray(0);
+
+	//drawQuad(1.0f);
+	//glVertexPointer(4, GL_FLOAT, 0, points);
+	//glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+	//_textures["image"]->release();
 	_shaders["image"]->release();
 
+	
+	/*
+	if (_imageViewerPlugin->selectable()) {
+		if (_shaders["overlay"]->bind()) {
+			_textures["overlay"]->bind();
 
+			//qDebug() << _textures["overlay"]->textureId();
 
+			_shaders["overlay"]->setUniformValue("texture", 0);
+			//_shaders["overlay"]->setUniformValue("selectionColor", 1, 0, 0, 1);
 
-	_shaders["overlay"]->bind();
-	_textures["overlay"]->bind();
+			drawQuad(0.5f);
 
-	_shaders["overlay"]->setUniformValue("image", 0);
-	_shaders["overlay"]->setUniformValue("selectionColor", 1, 0, 0, 1);
-
-	drawQuad(0.5f);
-
-	_textures["overlay"]->release();
-	_shaders["overlay"]->release();
+			_textures["overlay"]->release();
+			_shaders["overlay"]->release();
+		}
+	}
+	*/
 
 
 	/*
-	if (_imageViewerPlugin->selectable()) {
-		drawTextureQuad(texture("overlay"), 0.5f);
-		drawTextureQuad(texture("selection"), 0.0f);
+	drawTextureQuad(texture("overlay"), 0.5f);
+	drawTextureQuad(texture("selection"), 0.0f);
 	}
 	*/
 
@@ -933,8 +1033,7 @@ void ImageViewerWidget::modifySelection(const Indices& selectedPointIds, const s
 		_selectedPointIds = Indices();
 	}
 
-	/*
-	auto overlayTextureData = TextureData();
+	auto overlayTextureData = std::vector<std::uint16_t>();
 
 	overlayTextureData.resize(_imageSize.width() * _imageSize.height());
 
@@ -942,8 +1041,10 @@ void ImageViewerWidget::modifySelection(const Indices& selectedPointIds, const s
 		overlayTextureData[selectedPointId - pixelOffset] = 1;
 	}
 
-	texture("image").setData(QOpenGLTexture::PixelFormat::Red, QOpenGLTexture::PixelType::UInt8, static_cast<void*>(overlayTextureData.data()));
-	*/
+	qDebug() << overlayTextureData;
+
+	_textures["overlay"]->setData(QOpenGLTexture::PixelFormat::Red, QOpenGLTexture::PixelType::UInt16, static_cast<void*>(overlayTextureData.data()));
+	
 	update();
 }
 
@@ -1026,9 +1127,9 @@ void ImageViewerWidget::setupTextures()
 {
 	qDebug() << "Setup textures" << _imageSize;
 
-	setupTexture(_textures["image"], QOpenGLTexture::TextureFormat::R16_UNorm);
-	setupTexture(_textures["overlay"], QOpenGLTexture::TextureFormat::R8_UNorm, QOpenGLTexture::Filter::Nearest);
-	setupTexture(_textures["selection"], QOpenGLTexture::TextureFormat::R8_UNorm, QOpenGLTexture::Filter::Nearest);
+	setupTexture(_textures["image"].get(), QOpenGLTexture::TextureFormat::R16_UNorm);
+	setupTexture(_textures["overlay"].get(), QOpenGLTexture::TextureFormat::R16_UNorm);// , QOpenGLTexture::Filter::Nearest);
+	setupTexture(_textures["selection"].get(), QOpenGLTexture::TextureFormat::R8U, QOpenGLTexture::Filter::Nearest);
 }
 
 void ImageViewerWidget::setupTexture(QOpenGLTexture* openGltexture, const QOpenGLTexture::TextureFormat& textureFormat, const QOpenGLTexture::Filter& filter /*= QOpenGLTexture::Filter::Linear*/)

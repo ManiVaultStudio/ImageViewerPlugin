@@ -31,25 +31,20 @@ set(SOURCES
     src/Common.h
 )
 
-set(UIS
-	src/SettingsWidget.ui
-)
+file(GLOB UIS src/*.ui)
+file(GLOB FRAGMENT_SHADERS src/*.frag)
+file(GLOB VERTEX_SHADERS src/*.vert)
 
-set(AUX
-	src/ImageViewerPlugin.json
-)
+set(AUX src/ImageViewerPlugin.json)
 
-set(SHADERS
-	src/Image.frag
-)
-
-source_group(Plugin FILES ${SOURCES} ${AUX})
+source_group(Plugin FILES ${SOURCES})
 source_group(UI FILES ${UIS})
-source_group(Shaders FILES ${SHADERS})
+source_group(Shaders FILES ${FRAGMENT_SHADERS} ${VERTEX_SHADERS})
+source_group(Aux FILES ${AUX})
 
 include_directories("$ENV{HDPS_INSTALL_DIR}/$<CONFIGURATION>/include/")
 
-add_library(${PROJECT} SHARED ${SOURCES} ${UIS})
+add_library(${PROJECT} SHARED ${SOURCES} ${UIS} ${FRAGMENT_SHADERS} ${VERTEX_SHADERS} ${AUX})
 
 target_compile_features(${PROJECT} PRIVATE cxx_std_17)
 

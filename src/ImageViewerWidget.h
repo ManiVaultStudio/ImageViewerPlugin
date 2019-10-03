@@ -3,6 +3,7 @@
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions>
 #include <QOpenGLTexture>
+#include <QOpenGLBuffer>
 
 #include <QMouseEvent>
 #include <QColor>
@@ -112,4 +113,5 @@ private:
 	Indices					_selectedPointIds;
 	QAction*				_zoomToExtentsAction;
 	QSize					_imageSize;
+	QOpenGLBuffer			_vertexBuffer;
 };
