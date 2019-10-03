@@ -11,6 +11,7 @@
 
 class ImageView;
 class ImageViewerPlugin;
+class ImageCanvasWidget;
 
 class ImageViewWidget : public QWidget
 {
@@ -19,14 +20,9 @@ class ImageViewWidget : public QWidget
 public:
 	ImageViewWidget(ImageViewerPlugin* imageViewerPlugin);
 
-	void SetTestImage();
-
-public:
-	void onDisplayImageChanged(const QSize& imageSize, TextureData& displayImage);
-
 private:
 	ImageViewerPlugin*	_imageViewerPlugin;
 	ImageView*			_imageView;
 	QGraphicsScene*		_scene;
-	QWidget*			myGLWidget;
+	ImageCanvasWidget*			myGLWidget;
 };

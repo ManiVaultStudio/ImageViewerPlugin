@@ -110,7 +110,6 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	connect(_imageViewerPlugin, &ImageViewerPlugin::currentImageIdChanged, this, &ImageViewerWidget::onCurrentImageIdChanged);
 	connect(_imageViewerPlugin, &ImageViewerPlugin::displayImageChanged, this, &ImageViewerWidget::onDisplayImageChanged);
 	connect(_imageViewerPlugin, &ImageViewerPlugin::selectionImageChanged, this, &ImageViewerWidget::onSelectionImageChanged);
-	connect(_imageViewerPlugin, &ImageViewerPlugin::windowLevelChanged, [this]() { update(); });
 	
 	QSurfaceFormat surfaceFormat;
 	
@@ -224,7 +223,7 @@ void ImageViewerWidget::onDisplayImageChanged(const QSize& imageSize, TextureDat
 	if (!isValid())
 		return;
 
-	qDebug() << "Display image changed";
+	qDebug() << "Display image changedasdasdasdasdsad";
 
 	auto shouldZoomExtents = false;
 
@@ -490,6 +489,7 @@ void ImageViewerWidget::paintGL() {
 
 	glEnable(GL_TEXTURE_2D);
 
+	/*
 	double window	= 0.0;
 	double level	= 0.0;
 
@@ -497,6 +497,7 @@ void ImageViewerWidget::paintGL() {
 
 	const auto minPixelValue = std::clamp(_imageViewerPlugin->imageMin(), level - (window / 2.0), _imageViewerPlugin->imageMax());
 	const auto maxPixelValue = std::clamp(_imageViewerPlugin->imageMin(), level + (window / 2.0), _imageViewerPlugin->imageMax());
+	*/
 
 	//qDebug() << "======" << window << level << _imageViewerPlugin->imageMin() << _imageViewerPlugin->imageMax() << minPixelValue << maxPixelValue;
 
@@ -685,12 +686,14 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 
 	case Qt::RightButton:
 	{
+		/*
 		const auto deltaWindow	= (mouseEvent->pos().x() - _mousePosition.x()) / static_cast<double>(_imageSize.width());
 		const auto deltaLevel	= (mouseEvent->pos().y() - _mousePosition.y()) / static_cast<double>(_imageSize.height());
 		const auto window		= std::max<double>(0, std::min<double>(_imageViewerPlugin->window() + deltaWindow, 1.0f));
 		const auto level		= std::max<double>(0, std::min<double>(_imageViewerPlugin->level() + deltaLevel, 1.0f));
 
 		_imageViewerPlugin->setWindowLevel(window, level);
+		*/
 
 		break;
 	}
@@ -874,16 +877,6 @@ QPoint ImageViewerWidget::screenToWorld(const QPoint& screen) const
 QPoint ImageViewerWidget::worldToScreen(const QPoint& world) const
 {
 	return QPoint();
-}
-
-void ImageViewerWidget::computeWindowLevel(double& window, double& level)
-{
-	const double min		= _imageViewerPlugin->imageMin();
-	const double max		= _imageViewerPlugin->imageMax();
-	const double maxWindow	= _imageViewerPlugin->imageMax() - _imageViewerPlugin->imageMin();
-
-	level	= std::clamp(min, min + _imageViewerPlugin->level() * maxWindow, max);
-	window	= std::clamp(min, _imageViewerPlugin->window() * maxWindow, max);
 }
 
 void ImageViewerWidget::updateSelection()

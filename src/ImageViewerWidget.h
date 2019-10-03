@@ -82,8 +82,7 @@ private:
 
 	QPoint screenToWorld(const QPoint& screen) const;
 	QPoint worldToScreen(const QPoint& world) const;
-	
-	void computeWindowLevel(double& window, double& level);
+
 
 private:
 	void setupTextures();

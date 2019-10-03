@@ -30,11 +30,7 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	_currentImageId(0),
 	_dimensionNames(),
 	_currentDimensionId(0),
-	_averageImages(false),
-	_window(0.f),
-	_level(0.f),
-	_imageMin(0),
-	_imageMax(0)
+	_averageImages(false)
 {
 	//setFocusPolicy(Qt::FocusPolicy::StrongFocus);
 
@@ -59,8 +55,6 @@ void ImageViewerPlugin::init()
 	//addWidget(_imageViewerWidget);
 	addWidget(_windowWidget);
 	addWidget(_settingsWidget);
-
-	_windowWidget->SetTestImage();
 
 	setLayout(layout);
 }
@@ -370,13 +364,16 @@ void ImageViewerPlugin::computeDisplayImage()
 
 	auto& pointsData = this->pointsData().getData();
 
-	qDebug() << "Compute display image" << imageSize << pointsData.size();
+	qDebug() << "Compute display image" << imageSize;
 
 	const auto noPointsPerDimension = this->noPointsPerDimension();
 
 	auto imageTextureData = TextureData();
 
 	imageTextureData.resize(noPixels);
+
+	double imageMin = std::numeric_limits<std::uint16_t>::max();
+	double imageMax = std::numeric_limits<std::uint16_t>::min();
 
 	switch (imageCollectionType()) {
 		case ImageCollectionType::Sequence: {
@@ -402,20 +399,17 @@ void ImageViewerPlugin::computeDisplayImage()
 
 			const auto noDisplayImages = displayImages.size();
 
-			_imageMin = std::numeric_limits<std::uint16_t>::max();
-			_imageMax = std::numeric_limits<std::uint16_t>::min();
-
 			for (std::int32_t x = 0; x < width; x++) {
 				for (std::int32_t y = 0; y < height; y++) {
 					for (unsigned int displayImageId : displayImages) {
 						const auto pointId	= ImageViewerPlugin::sequencePixelCoordinateToPointId(imageSize, displayImageId, noPixels, x, y);
 						const auto value	= pointsData[pointId];
 
-						if (value < _imageMin)
-							_imageMin = value;
+						if (value < imageMin)
+							imageMin = value;
 
-						if (value > _imageMax)
-							_imageMax = value;
+						if (value > imageMax)
+							imageMax = value;
 					}
 				}
 			}
@@ -436,8 +430,6 @@ void ImageViewerPlugin::computeDisplayImage()
 				}
 			}
 
-			resetWindowLevel();
-
 			break;
 		}
 
@@ -455,20 +447,17 @@ void ImageViewerPlugin::computeDisplayImage()
 
 			const auto noDisplayDimensions	= displayDimensions.size();
 
-			_imageMin = std::numeric_limits<std::uint16_t>::max();
-			_imageMax = std::numeric_limits<std::uint16_t>::min();
-
 			for (std::int32_t x = 0; x < width; x++) {
 				for (std::int32_t y = 0; y < height; y++) {
 					for (unsigned int displayDimensionId : displayDimensions) {
 						const auto pointId	= stackPixelCoordinateToPointId(imageSize, noImages, displayDimensionId, x, y);
 						const auto value	= pointsData[pointId];
 
-						if (value < _imageMin)
-							_imageMin = value;
+						if (value < imageMin)
+							imageMin = value;
 
-						if (value > _imageMax)
-							_imageMax = value;
+						if (value > imageMax)
+							imageMax = value;
 					}
 				}
 			}
@@ -489,8 +478,6 @@ void ImageViewerPlugin::computeDisplayImage()
 				}
 			}
 
-			resetWindowLevel();
-
 			break;
 		}
 
@@ -510,20 +497,17 @@ void ImageViewerPlugin::computeDisplayImage()
 			const auto currentDimension		= this->_currentDimensionId;
 			const auto noDisplayDimensions	= displayDimensions.size();
 
-			_imageMin = std::numeric_limits<std::uint16_t>::max();
-			_imageMax = std::numeric_limits<std::uint16_t>::min();
-
 			for (std::int32_t x = 0; x < width; x++) {
 				for (std::int32_t y = 0; y < height; y++) {
 					for (unsigned int displayDimensionId : displayDimensions) {
 						const auto pointId	= ImageViewerPlugin::multipartSequencePixelCoordinateToPointId(imageSize, noPointsPerDimension, pixelOffset, displayDimensionId, x, y);
 						const auto value	= pointsData[pointId];
 
-						if (value < _imageMin)
-							_imageMin = value;
+						if (value < imageMin)
+							imageMin = value;
 
-						if (value > _imageMax)
-							_imageMax = value;
+						if (value > imageMax)
+							imageMax = value;
 					}
 				}
 			}
@@ -546,13 +530,11 @@ void ImageViewerPlugin::computeDisplayImage()
 			
 			//qDebug() << imageTextureData;
 
-			resetWindowLevel();
-
 			break;
 		}
 	}
 
-	emit displayImageChanged(imageSize, imageTextureData);
+	emit displayImageChanged(imageSize, imageTextureData, imageMin, imageMax);
 }
 
 void ImageViewerPlugin::computeSelectionImage()
@@ -693,47 +675,6 @@ void ImageViewerPlugin::setAverageImages(const bool& averageImages)
 	emit averageImagesChanged(_averageImages);
 
 	update();
-}
-
-double ImageViewerPlugin::imageMin() const
-{
-	return _imageMin;
-}
-
-double ImageViewerPlugin::imageMax() const
-{
-	return _imageMax;
-}
-
-double ImageViewerPlugin::window() const
-{
-	return _window;
-}
-
-void ImageViewerPlugin::setWindowLevel(const double& window, const double& level)
-{
-	if (window == _window && level == _level)
-		return;
-
-	qDebug() << "Set window/level" << window << level;
-
-	_window = window;
-	_level	= level;
-
-	emit windowLevelChanged(_window, _level);
-}
-
-void ImageViewerPlugin::resetWindowLevel()
-{
-	_window = 1.0;
-	_level	= 0.5;
-
-	emit windowLevelChanged(_window, _level);
-}
-
-double ImageViewerPlugin::level() const
-{
-	return _level;
 }
 
 void ImageViewerPlugin::setDatasetNames(const QStringList& datasetNames)

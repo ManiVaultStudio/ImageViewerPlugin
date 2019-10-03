@@ -79,12 +79,6 @@ public:
 	void setCurrentDimensionId(const std::int32_t& currentDimensionId);
 	bool averageImages() const;
 	void setAverageImages(const bool& averageImages);
-	double imageMin() const;
-	double imageMax() const;
-	double window() const;
-	double level() const;
-	void setWindowLevel(const double& window, const double& level);
-	void resetWindowLevel();
 
 private:
 	void setDatasetNames(const QStringList& datasetNames);
@@ -99,15 +93,13 @@ signals:
 	void dimensionNamesChanged(const QStringList& dimensionNames);
 	void currentDimensionIdChanged(const std::int32_t& currentDimensionId);
 	void averageImagesChanged(const bool& averageImages);
-	void windowLevelChanged(const float& window, const float& level);
-	
-	void displayImageChanged(const QSize& imageSize, TextureData& displayImage);
+	void displayImageChanged(const QSize& imageSize, TextureData& displayImage, const double& imageMin, const double& imageMax);
 	void selectionImageChanged(const QSize& imageSize, TextureData& selectionImage);
 
 private:
 	ImageViewerWidget*	_imageViewerWidget;
 	SettingsWidget*		_settingsWidget;
-	ImageViewWidget*				_windowWidget;
+	ImageViewWidget*	_windowWidget;
 	QStringList			_datasetNames;
 	QString				_currentDataset;
 	QStringList			_imageNames;
@@ -115,10 +107,6 @@ private:
 	QStringList			_dimensionNames;
 	std::int32_t		_currentDimensionId;
 	bool				_averageImages;
-	double				_imageMin;
-	double				_imageMax;
-	double				_window;
-	double				_level;
 };
 
 class ImageViewerPluginFactory : public ViewPluginFactory
