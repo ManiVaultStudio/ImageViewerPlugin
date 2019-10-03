@@ -13,6 +13,8 @@ using hdps::plugin::ViewPlugin;
 class ImageViewerWidget;
 class SettingsWidget;
 
+class ImageViewWidget;
+
 class ImageViewerPlugin : public ViewPlugin
 {
 	Q_OBJECT
@@ -105,6 +107,7 @@ signals:
 private:
 	ImageViewerWidget*	_imageViewerWidget;
 	SettingsWidget*		_settingsWidget;
+	ImageViewWidget*				_windowWidget;
 	QStringList			_datasetNames;
 	QString				_currentDataset;
 	QStringList			_imageNames;

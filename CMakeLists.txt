@@ -28,23 +28,30 @@ set(SOURCES
     src/ImageViewerWidget.cpp
 	src/SettingsWidget.h
     src/SettingsWidget.cpp
+	src/ImageCanvasWidget.h
+    src/ImageCanvasWidget.cpp
+	src/ImageViewWidget.h
+    src/ImageViewWidget.cpp
+	src/ImageView.h
+	src/ImageView.h
+    src/ImageView.cpp
+    src/ImageView.cpp
     src/Common.h
 )
 
 file(GLOB UIS src/*.ui)
-file(GLOB FRAGMENT_SHADERS src/*.frag)
-file(GLOB VERTEX_SHADERS src/*.vert)
+file(GLOB SHADERS src/*.glsl)
 
 set(AUX src/ImageViewerPlugin.json)
 
 source_group(Plugin FILES ${SOURCES})
 source_group(UI FILES ${UIS})
-source_group(Shaders FILES ${FRAGMENT_SHADERS} ${VERTEX_SHADERS})
+source_group(Shaders FILES ${SHADERS})
 source_group(Aux FILES ${AUX})
 
 include_directories("$ENV{HDPS_INSTALL_DIR}/$<CONFIGURATION>/include/")
 
-add_library(${PROJECT} SHARED ${SOURCES} ${UIS} ${FRAGMENT_SHADERS} ${VERTEX_SHADERS} ${AUX})
+add_library(${PROJECT} SHARED ${SOURCES} ${UIS} ${SHADERS} ${AUX})
 
 target_compile_features(${PROJECT} PRIVATE cxx_std_17)
 

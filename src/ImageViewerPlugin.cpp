@@ -13,6 +13,8 @@
 #include <vector>
 #include <limits>
 
+#include "ImageViewWidget.h"
+
 Q_PLUGIN_METADATA(IID "nl.tudelft.ImageViewerPlugin")
 
 using PixelCoordToPointIndex = std::function<int(int, int)>;
@@ -21,6 +23,7 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	ViewPlugin("Image Viewer"),
 	_imageViewerWidget(nullptr),
 	_settingsWidget(nullptr),
+	_windowWidget(nullptr),
 	_datasetNames(),
 	_currentDataset(),
 	_imageNames(),
@@ -33,10 +36,11 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	_imageMin(0),
 	_imageMax(0)
 {
-	setFocusPolicy(Qt::FocusPolicy::StrongFocus);
+	//setFocusPolicy(Qt::FocusPolicy::StrongFocus);
 
 	_imageViewerWidget	= new ImageViewerWidget(this);
 	_settingsWidget		= new SettingsWidget(this);
+	_windowWidget		= new ImageViewWidget(this);
 
 	connect(this, &ImageViewerPlugin::currentDatasetChanged, this, &ImageViewerPlugin::computeDisplayImage);
 	connect(this, &ImageViewerPlugin::currentImageIdChanged, this, &ImageViewerPlugin::computeDisplayImage);
@@ -52,8 +56,11 @@ void ImageViewerPlugin::init()
 {
 	auto layout = new QVBoxLayout();
 
-	addWidget(_imageViewerWidget);
+	//addWidget(_imageViewerWidget);
+	addWidget(_windowWidget);
 	addWidget(_settingsWidget);
+
+	_windowWidget->SetTestImage();
 
 	setLayout(layout);
 }

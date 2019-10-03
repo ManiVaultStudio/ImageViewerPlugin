@@ -19,13 +19,15 @@
 
 // Panning and zooming inspired by: https://community.khronos.org/t/opengl-compound-zoom-and-pan-effect/72565/7
 
-const std::string imageFragmentShaderSource =
-#include "Image.frag"
+const std::string imageQuadVertexShaderSource =
+#include "ImageQuadVertex.glsl"
 ;
 
-const std::string imageVertexShaderSource =
-#include "Image.vert"
+const std::string imageQuadFragmentShaderSource =
+#include "ImageQuadFragment.glsl"
 ;
+
+
 
 /*
 static const char* imageFragmentShaderSource =
@@ -407,8 +409,8 @@ void ImageViewerWidget::initializeGL()
 
 	initializeOpenGLFunctions();
 
-	//_shaders["image"]->addShaderFromSourceCode(QOpenGLShader::Vertex, imageVertexShaderSource.c_str());
-	_shaders["image"]->addShaderFromSourceCode(QOpenGLShader::Fragment, imageFragmentShaderSource.c_str());
+	_shaders["image"]->addShaderFromSourceCode(QOpenGLShader::Vertex, imageQuadVertexShaderSource.c_str());
+	_shaders["image"]->addShaderFromSourceCode(QOpenGLShader::Fragment, imageQuadFragmentShaderSource.c_str());
 	
 	_shaders["image"]->link();
 	/*
@@ -505,7 +507,7 @@ void ImageViewerWidget::paintGL() {
 	//qDebug() << "Bound texture ID" << _textures["image"]->boundTextureId(QOpenGLTexture::BindingTarget2D);
 	//qDebug() << "Texture ID" << _textures["image"]->textureId();
 
-	//_shaders["image"]->setUniformValue("image", 0);
+	_shaders["image"]->setUniformValue("image", 0);
 	//_shaders["image"]->setUniformValue("minPixelValue", static_cast<GLfloat>(minPixelValue));
 	//_shaders["image"]->setUniformValue("maxPixelValue", static_cast<GLfloat>(maxPixelValue));
 
