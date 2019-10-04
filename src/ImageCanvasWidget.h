@@ -19,7 +19,7 @@ public:
 	explicit ImageCanvasWidget(QWidget *parent = 0);
 	~ImageCanvasWidget();
 
-	void setImage(std::vector<std::uint16_t>& image, const QSize& size);
+	void setImage(std::vector<std::uint16_t>& image, const QSize& size, const double& imageMin, const double& imageMax);
 	void setClearColor(const QColor &color);
 
 protected:
@@ -27,10 +27,8 @@ protected:
 	void paintGL() Q_DECL_OVERRIDE;
 	void resizeGL(int width, int height) Q_DECL_OVERRIDE;
 
-	void mouseMoveEvent(QMouseEvent* mouseEvent) Q_DECL_OVERRIDE;
-
 public:
-	void onDisplayImageChanged(const QSize& imageSize, TextureData& displayImage, const double& imageMin, const double& imageMax);
+	
 
 public:
 	double window() const;
@@ -38,14 +36,32 @@ public:
 	void setWindowLevel(const double& window, const double& level);
 	void resetWindowLevel();
 
-signals:
-	void windowLevelChanged(const float& window, const float& level);
-
 private:
 	void makeObject();
 	void setView(int w, int h);
 	
 	void computeWindowLevel(double& window, double& level);
+
+public:
+	InteractionMode interactionMode() const;
+	void setInteractionMode(const InteractionMode& interactionMode);
+	SelectionType selectionType() const;
+	void setSelectionType(const SelectionType& selectionType);
+	SelectionModifier selectionModifier() const;
+	void setSelectionModifier(const SelectionModifier& selectionModifier);
+	void setBrushRadius(const float& brushRadius);
+
+private:
+	void mousePressEvent(QMouseEvent* mouseEvent) Q_DECL_OVERRIDE;
+	void mouseMoveEvent(QMouseEvent* mouseEvent) Q_DECL_OVERRIDE;
+	void mouseReleaseEvent(QMouseEvent* mouseEvent) Q_DECL_OVERRIDE;
+	void wheelEvent(QWheelEvent* wheelEvent) Q_DECL_OVERRIDE;
+
+signals:
+	void selectionTypeChanged();
+	void selectionModifierChanged();
+	void brushRadiusChanged();
+	void windowLevelChanged(const float& window, const float& level);
 
 private:
 	QColor clearColour;
@@ -58,9 +74,17 @@ private:
 	QOpenGLTexture _imageTexture;
 	bool hasTexture;
 	float _aspectRatio;
-	QPoint				_mousePosition;
-	double				_window;
-	double				_level;
-	double				_imageMin;
-	double				_imageMax;
+
+	InteractionMode			_interactionMode;
+	QPoint					_initialMousePosition;
+	bool					_selecting;
+	SelectionType			_selectionType;
+	SelectionModifier		_selectionModifier;
+	float					_brushRadius;
+	float					_brushRadiusDelta;
+	QPoint					_mousePosition;
+	double					_window;
+	double					_level;
+	double					_imageMin;
+	double					_imageMax;
 };

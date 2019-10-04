@@ -12,6 +12,11 @@ class ImageView : public QGraphicsView
 public:
 	explicit ImageView(QWidget *parent = 0);
 
+	void zoomToFit()
+	{
+		fitInView(scene()->sceneRect(), Qt::KeepAspectRatio);
+	}
+
 protected Q_SLOTS:
 	void wheelEvent(QWheelEvent *event)
 	{

@@ -67,9 +67,6 @@ private:
 	void computeDisplayImage();
 	void computeSelectionImage();
 
-	void keyPressEvent(QKeyEvent* keyEvent) Q_DECL_OVERRIDE;
-	void keyReleaseEvent(QKeyEvent* keyEvent) Q_DECL_OVERRIDE;
-
 public:
 	QString currentDataset() const;
 	void setCurrentDataset(const QString& currentDataset);

@@ -10,6 +10,14 @@ ImageCanvasWidget::ImageCanvasWidget(QWidget *parent)
 	program(0),
 	_imageTexture(QOpenGLTexture::Target2D),
 	_aspectRatio(1.0),
+	_interactionMode(InteractionMode::Selection),
+	_initialMousePosition(),
+	_selecting(false),
+	_selectionType(SelectionType::Rectangle),
+	_selectionModifier(SelectionModifier::Replace),
+	_brushRadius(10.f),
+	_brushRadiusDelta(2.0f),
+	_mousePosition(),
 	_window(1.0f),
 	_level(0.5f),
 	_imageMin(0.f),
@@ -35,17 +43,17 @@ ImageCanvasWidget::~ImageCanvasWidget()
 	doneCurrent();
 }
 
-void ImageCanvasWidget::setImage(std::vector<std::uint16_t>& image, const QSize& imageSize)
+void ImageCanvasWidget::setImage(std::vector<std::uint16_t>& image, const QSize& size, const double& imageMin, const double& imageMax)
 {
 	makeCurrent();
 
-	if (width() != imageSize.width() || height() != imageSize.height()) {
-		setFixedWidth(imageSize.width());
-		setFixedHeight(imageSize.height());
+	if (width() != size.width() || height() != size.height()) {
+		setFixedWidth(size.width());
+		setFixedHeight(size.height());
 
 		_imageTexture.destroy();
 		_imageTexture.create();
-		_imageTexture.setSize(imageSize.width(), imageSize.height(), 1);
+		_imageTexture.setSize(size.width(), size.height(), 1);
 		_imageTexture.setFormat(QOpenGLTexture::TextureFormat::R16_UNorm);
 		_imageTexture.allocateStorage();
 		_imageTexture.setMinMagFilters(QOpenGLTexture::Filter::Linear, QOpenGLTexture::Filter::Linear);
@@ -54,7 +62,7 @@ void ImageCanvasWidget::setImage(std::vector<std::uint16_t>& image, const QSize&
 	_imageTexture.setData(QOpenGLTexture::PixelFormat::Red, QOpenGLTexture::PixelType::UInt16, static_cast<void*>(image.data()));
 
 	hasTexture = true;
-	_aspectRatio = (float)(imageSize.height()) / imageSize.width();
+	_aspectRatio = (float)(size.height()) / size.width();
 
 	
 
@@ -191,43 +199,6 @@ void ImageCanvasWidget::makeObject()
 	vbo.allocate(vertData.constData(), vertData.count() * sizeof(GLfloat));
 }
 
-void ImageCanvasWidget::onDisplayImageChanged(const QSize& imageSize, TextureData& displayImage, const double& imageMin, const double& imageMax)
-{
-	qDebug() << "Display image changed";
-
-	auto shouldZoomExtents = false;
-
-	/*
-	if (imageSize != _imageSize) {
-		_imageSize = imageSize;
-
-		setupTextures();
-
-		shouldZoomExtents = true;
-	}
-
-	_textures["image"]->setData(QOpenGLTexture::PixelFormat::Red, QOpenGLTexture::PixelType::UInt16, static_cast<void*>(displayImage.data()));
-	*/
-
-	setImage(displayImage, imageSize);
-
-	/*
-	_imageView->update();
-	const auto size = 10000;
-
-	_scene->update(-size / 2, -size / 2, size, size);
-
-	update();
-	*/
-	/*
-	if (shouldZoomExtents)
-		zoomExtents();
-	*/
-
-	_imageMin = imageMin;
-	_imageMax = imageMax;
-}
-
 double ImageCanvasWidget::window() const
 {
 	return _window;
@@ -269,8 +240,150 @@ void ImageCanvasWidget::computeWindowLevel(double& window, double& level)
 	window	= std::clamp(min, _window * maxWindow, max);
 }
 
-void ImageCanvasWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
+InteractionMode ImageCanvasWidget::interactionMode() const
+{
+	return _interactionMode;
+}
 
+void ImageCanvasWidget::setInteractionMode(const InteractionMode& interactionMode)
+{
+	if (interactionMode == _interactionMode)
+		return;
+
+	qDebug() << "Set interaction mode to" << interactionModeTypeName(interactionMode);
+
+	switch (interactionMode)
+	{
+	case InteractionMode::Navigation:
+		QWidget::setCursor(Qt::OpenHandCursor);
+		break;
+
+	case InteractionMode::Selection:
+		QWidget::setCursor(Qt::ArrowCursor);
+		break;
+
+	default:
+		break;
+	}
+
+	_interactionMode = interactionMode;
+}
+
+SelectionType ImageCanvasWidget::selectionType() const
+{
+	return _selectionType;
+}
+
+void ImageCanvasWidget::setSelectionType(const SelectionType& selectionType)
+{
+	if (selectionType == _selectionType)
+		return;
+
+	qDebug() << "Set selection type to" << selectionTypeTypeName(selectionType);
+
+	_selectionType = selectionType;
+
+	if (selectionType == SelectionType::Brush) {
+		_selectionModifier = SelectionModifier::Add;
+	}
+	else {
+		_selectionModifier = SelectionModifier::Replace;
+	}
+
+	update();
+
+	emit selectionTypeChanged();
+}
+
+SelectionModifier ImageCanvasWidget::selectionModifier() const
+{
+	return _selectionModifier;
+}
+
+void ImageCanvasWidget::setSelectionModifier(const SelectionModifier& selectionModifier)
+{
+	if (selectionModifier == _selectionModifier)
+		return;
+
+	qDebug() << "Set selection modifier to" << selectionModifierName(selectionModifier);
+
+	if (selectionType() == SelectionType::Brush && selectionModifier == SelectionModifier::Replace) {
+	}
+	else {
+		_selectionModifier = selectionModifier;
+
+		emit selectionModifierChanged();
+	}
+}
+
+void ImageCanvasWidget::setBrushRadius(const float& brushRadius)
+{
+	qDebug() << "Set brush radius" << brushRadius;
+
+	_brushRadius = qBound(0.01f, 10000.f, brushRadius);
+
+	update();
+
+	emit brushRadiusChanged();
+}
+
+void ImageCanvasWidget::mousePressEvent(QMouseEvent* mouseEvent)
+{
+	//if (!imageInitialized())
+	//	return;
+
+	/*
+	qDebug() << "Mouse press event";
+
+	switch (mouseEvent->button())
+	{
+	case Qt::LeftButton:
+	{
+		_mousePosition = mouseEvent->pos();
+
+		switch (_interactionMode)
+		{
+		case InteractionMode::Navigation:
+			break;
+		case InteractionMode::Selection:
+		{
+			if (_imageViewerPlugin->selectable()) {
+				if (_selectionModifier == SelectionModifier::Replace) {
+					qDebug() << "Reset selection";
+
+					_imageViewerPlugin->setSelection(Indices());
+				}
+
+	_initialMousePosition = _mousePosition;
+
+	enableSelection(true);
+}
+
+break;
+		}
+		case InteractionMode::WindowLevel:
+			break;
+		default:
+			break;
+		}
+
+		break;
+	}
+
+	case Qt::RightButton:
+	{
+		setInteractionMode(InteractionMode::WindowLevel);
+		break;
+	}
+
+	default:
+		break;
+	}*/
+}
+
+void ImageCanvasWidget::mouseMoveEvent(QMouseEvent* mouseEvent)
+{
+	/*
 	qDebug() << "mouseMoveEvent";
 
 	const auto deltaWindow = (mouseEvent->pos().x() - _mousePosition.x()) / 100.0;
@@ -281,4 +394,168 @@ void ImageCanvasWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 	setWindowLevel(window, level);
 
 	_mousePosition = mouseEvent->pos();
+
+	if (!imageInitialized())
+		return;
+
+	//qDebug() << "Mouse move event";
+
+	switch (mouseEvent->buttons())
+	{
+	case Qt::LeftButton:
+	{
+		switch (_interactionMode)
+		{
+		case InteractionMode::Navigation:
+		{
+			pan(QPointF(mouseEvent->pos().x() - _mousePosition.x(), -(mouseEvent->pos().y() - _mousePosition.y())));
+			break;
+		}
+
+		case InteractionMode::Selection:
+		{
+			if (_imageViewerPlugin->selectable()) {
+				updateSelection();
+			}
+			break;
+		}
+
+		case InteractionMode::WindowLevel:
+		{
+			break;
+		}
+
+		default:
+			break;
+		}
+
+		update();
+
+		break;
+	}
+
+	case Qt::RightButton:
+	{
+		const auto deltaWindow	= (mouseEvent->pos().x() - _mousePosition.x()) / static_cast<double>(_imageSize.width());
+		const auto deltaLevel	= (mouseEvent->pos().y() - _mousePosition.y()) / static_cast<double>(_imageSize.height());
+		const auto window		= std::max<double>(0, std::min<double>(_imageViewerPlugin->window() + deltaWindow, 1.0f));
+		const auto level		= std::max<double>(0, std::min<double>(_imageViewerPlugin->level() + deltaLevel, 1.0f));
+
+		_imageViewerPlugin->setWindowLevel(window, level);
+
+		break;
+	}
+
+	default:
+		break;
+	}
+
+	_mousePosition = mouseEvent->pos();
+	*/
+}
+
+void ImageCanvasWidget::mouseReleaseEvent(QMouseEvent* mouseEvent)
+{
+	/*
+	if (!imageInitialized())
+		return;
+
+	qDebug() << "Mouse release event";
+
+	if (_interactionMode != InteractionMode::WindowLevel) {
+		if (_imageViewerPlugin->selectable()) {
+			if (mouseEvent->button() == Qt::RightButton)
+			{
+				contextMenu()->exec(mapToGlobal(mouseEvent->pos()));
+			}
+		}
+	}
+
+	switch (_interactionMode)
+	{
+	case InteractionMode::Navigation:
+	{
+		QWidget::setCursor(Qt::OpenHandCursor);
+		break;
+	}
+
+	case InteractionMode::Selection:
+	{
+		if (_imageViewerPlugin->selectable()) {
+			if (_selecting) {
+				if (_imageViewerPlugin->selectable()) {
+					enableSelection(false);
+					updateSelection();
+				}
+
+				commitSelection();
+			}
+		}
+		break;
+	}
+
+	case InteractionMode::WindowLevel:
+	{
+		setInteractionMode(InteractionMode::Selection);
+		break;
+	}
+
+	default:
+		break;
+	}
+
+	update();
+
+	QOpenGLWidget::mouseReleaseEvent(mouseEvent);
+	*/
+}
+
+void ImageCanvasWidget::wheelEvent(QWheelEvent* wheelEvent)
+{
+	/*
+	if (!imageInitialized())
+		return;
+
+	qDebug() << "Mouse wheel event";
+
+	switch (_interactionMode)
+	{
+	case InteractionMode::Navigation:
+	{
+		const auto world_x = (wheelEvent->posF().x() - _pan.x()) / _zoom;
+		const auto world_y = (wheelEvent->posF().y() - _pan.y()) / _zoom;
+
+		auto zoomCenter = wheelEvent->posF();
+
+		zoomCenter.setY(height() - wheelEvent->posF().y());
+
+		if (wheelEvent->delta() > 0) {
+			zoomAt(zoomCenter, 1.f - _zoomSensitivity);
+		}
+		else {
+			zoomAt(zoomCenter, 1.f + _zoomSensitivity);
+		}
+
+		update();
+		break;
+	}
+	case InteractionMode::Selection:
+	{
+		if (_selectionType == SelectionType::Brush) {
+			if (wheelEvent->delta() > 0) {
+				setBrushRadius(_brushRadius + _brushRadiusDelta);
+			}
+			else {
+				setBrushRadius(_brushRadius - _brushRadiusDelta);
+			}
+		}
+
+		break;
+	}
+	case InteractionMode::WindowLevel:
+		break;
+	default:
+		break;
+	}
+	*/
 }

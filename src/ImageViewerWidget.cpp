@@ -82,18 +82,11 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_imageViewerPlugin(imageViewerPlugin),
 	_textures(),
 	_shaders(),
-	_interactionMode(InteractionMode::Selection),
-	_initialMousePosition(),
 	_mousePosition(),
 	_zoom(1.f),
 	_zoomSensitivity(0.05f),
 	_margin(25),
-	_selecting(false),
-	_selectionType(SelectionType::Rectangle),
-	_selectionModifier(SelectionModifier::Replace),
 	_selectionRealtime(false),
-	_brushRadius(10.f),
-	_brushRadiusDelta(2.0f),
 	_selectionColor(255, 0, 0, 200),
 	_selectionProxyColor(245, 184, 17, 100),
 	_selectionGeometryColor(255, 0, 0, 255),
@@ -131,92 +124,7 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_shaders.insert(std::pair<QString, QOpenGLShaderProgram*>("selection", new QOpenGLShaderProgram()));
 }
 
-InteractionMode ImageViewerWidget::interactionMode() const
-{
-	return _interactionMode;
-}
 
-void ImageViewerWidget::setInteractionMode(const InteractionMode& interactionMode)
-{
-	if (interactionMode == _interactionMode)
-		return;
-
-	qDebug() << "Set interaction mode to" << interactionModeTypeName(interactionMode);
-
-	switch (interactionMode)
-	{
-		case InteractionMode::Navigation:
-			QWidget::setCursor(Qt::OpenHandCursor);
-			break;
-
-		case InteractionMode::Selection:
-			QWidget::setCursor(Qt::ArrowCursor);
-			break;
-
-		default:
-			break;
-	}
-
-	_interactionMode = interactionMode;
-}
-
-SelectionType ImageViewerWidget::selectionType() const
-{
-	return _selectionType;
-}
-
-void ImageViewerWidget::setSelectionType(const SelectionType& selectionType)
-{
-	if (selectionType == _selectionType)
-		return;
-
-	qDebug() << "Set selection type to" << selectionTypeTypeName(selectionType);
-
-	_selectionType = selectionType;
-
-	if (selectionType == SelectionType::Brush) {
-		_selectionModifier = SelectionModifier::Add;
-	}
-	else {
-		_selectionModifier = SelectionModifier::Replace;
-	}
-
-	update();
-
-	emit selectionTypeChanged();
-}
-
-SelectionModifier ImageViewerWidget::selectionModifier() const
-{
-	return _selectionModifier;
-}
-
-void ImageViewerWidget::setSelectionModifier(const SelectionModifier& selectionModifier)
-{
-	if (selectionModifier == _selectionModifier)
-		return;
-
-	qDebug() << "Set selection modifier to" << selectionModifierName(selectionModifier);
-
-	if (selectionType() == SelectionType::Brush && selectionModifier == SelectionModifier::Replace) {
-	}
-	else {
-		_selectionModifier = selectionModifier;
-
-		emit selectionModifierChanged();
-	}
-}
-
-void ImageViewerWidget::setBrushRadius(const float& brushRadius)
-{
-	qDebug() << "Set brush radius" << brushRadius;
-
-	_brushRadius = qBound(0.01f, 10000.f, brushRadius);
-
-	update();
-
-	emit brushRadiusChanged();
-}
 
 void ImageViewerWidget::onDisplayImageChanged(const QSize& imageSize, TextureData& displayImage)
 {
@@ -325,7 +233,7 @@ void ImageViewerWidget::drawSelectionBrush()
 
 	glColor4f(_selectionGeometryColor.red(), _selectionGeometryColor.green(), _selectionGeometryColor.blue(), 1.f);
 
-	drawCircle(brushCenter, _brushRadius, 20);
+//	drawCircle(brushCenter, _brushRadius, 20);
 }
 
 void ImageViewerWidget::drawTextureQuad(QOpenGLTexture& texture, const float& z)
@@ -343,6 +251,7 @@ void ImageViewerWidget::drawTextureQuad(QOpenGLTexture& texture, const float& z)
 
 void ImageViewerWidget::drawSelectionGeometry()
 {
+	/*
 	switch (_selectionType)
 	{
 		case SelectionType::Rectangle:
@@ -364,6 +273,7 @@ void ImageViewerWidget::drawSelectionGeometry()
 		default:
 			break;
 	}
+	*/
 }
 
 void ImageViewerWidget::drawInfo(QPainter* painter)
@@ -397,7 +307,7 @@ void ImageViewerWidget::drawInfo(QPainter* painter)
 
 void ImageViewerWidget::enableSelection(const bool& enable)
 {
-	_selecting = enable;
+	//_selecting = enable;
 
 	update();
 }
@@ -583,286 +493,15 @@ void ImageViewerWidget::paintGL() {
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
+	/*
 	if (_interactionMode == InteractionMode::Selection) {
 		drawSelectionGeometry();
 	}
+	*/
 }
 
-void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent) 
-{
-	if (!imageInitialized())
-		return;
 
-	qDebug() << "Mouse press event";
 
-	switch (mouseEvent->button())
-	{
-	case Qt::LeftButton: 
-	{
-		_mousePosition = mouseEvent->pos();
-
-		switch (_interactionMode)
-		{
-		case InteractionMode::Navigation:
-			break;
-		case InteractionMode::Selection:
-		{
-			if (_imageViewerPlugin->selectable()) {
-				/*
-				if (_selectionModifier == SelectionModifier::Replace) {
-					qDebug() << "Reset selection";
-
-					_imageViewerPlugin->setSelection(Indices());
-				}
-				*/
-
-				_initialMousePosition = _mousePosition;
-
-				enableSelection(true);
-			}
-
-			break;
-		}
-		case InteractionMode::WindowLevel:
-			break;
-		default:
-			break;
-		}
-		
-		break;
-	}
-
-	case Qt::RightButton:
-	{
-		setInteractionMode(InteractionMode::WindowLevel);
-		break;
-	}
-
-	default:
-		break;
-	}
-}
-
-void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
-
-	if (!imageInitialized())
-		return;
-
-	//qDebug() << "Mouse move event";
-
-	switch (mouseEvent->buttons())
-	{
-	case Qt::LeftButton:
-	{
-		switch (_interactionMode)
-		{
-		case InteractionMode::Navigation:
-		{
-			pan(QPointF(mouseEvent->pos().x() - _mousePosition.x(), -(mouseEvent->pos().y() - _mousePosition.y())));
-			break;
-		}
-
-		case InteractionMode::Selection:
-		{
-			if (_imageViewerPlugin->selectable()) {
-				updateSelection();
-			}
-			break;
-		}
-
-		case InteractionMode::WindowLevel:
-		{
-			break;
-		}
-
-		default:
-			break;
-		}
-
-		update();
-
-		break;
-	}
-
-	case Qt::RightButton:
-	{
-		/*
-		const auto deltaWindow	= (mouseEvent->pos().x() - _mousePosition.x()) / static_cast<double>(_imageSize.width());
-		const auto deltaLevel	= (mouseEvent->pos().y() - _mousePosition.y()) / static_cast<double>(_imageSize.height());
-		const auto window		= std::max<double>(0, std::min<double>(_imageViewerPlugin->window() + deltaWindow, 1.0f));
-		const auto level		= std::max<double>(0, std::min<double>(_imageViewerPlugin->level() + deltaLevel, 1.0f));
-
-		_imageViewerPlugin->setWindowLevel(window, level);
-		*/
-
-		break;
-	}
-
-	default:
-		break;
-	}
-
-	_mousePosition = mouseEvent->pos();
-}
-
-void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
-
-	if (!imageInitialized())
-		return;
-
-	qDebug() << "Mouse release event";
-
-	if (_interactionMode != InteractionMode::WindowLevel) {
-		if (_imageViewerPlugin->selectable()) {
-			if (mouseEvent->button() == Qt::RightButton)
-			{
-				contextMenu()->exec(mapToGlobal(mouseEvent->pos()));
-			}
-		}
-	}
-
-	switch (_interactionMode)
-	{
-	case InteractionMode::Navigation:
-	{
-		QWidget::setCursor(Qt::OpenHandCursor);
-		break;
-	}
-
-	case InteractionMode::Selection:
-	{
-		if (_imageViewerPlugin->selectable()) {
-			if (_selecting) {
-				if (_imageViewerPlugin->selectable()) {
-					enableSelection(false);
-					updateSelection();
-				}
-
-				commitSelection();
-			}
-		}
-		break;
-	}
-
-	case InteractionMode::WindowLevel:
-	{
-		setInteractionMode(InteractionMode::Selection);
-		break;
-	}
-
-	default:
-		break;
-	}
-
-	update();
-
-	QOpenGLWidget::mouseReleaseEvent(mouseEvent);
-}
-
-void ImageViewerWidget::wheelEvent(QWheelEvent* wheelEvent) {
-
-	if (!imageInitialized())
-		return;
-
-	qDebug() << "Mouse wheel event";
-
-	switch (_interactionMode)
-	{
-	case InteractionMode::Navigation:
-		{
-		const auto world_x = (wheelEvent->posF().x() - _pan.x()) / _zoom;
-		const auto world_y = (wheelEvent->posF().y() - _pan.y()) / _zoom;
-
-		auto zoomCenter = wheelEvent->posF();
-
-		zoomCenter.setY(height() - wheelEvent->posF().y());
-
-		if (wheelEvent->delta() > 0) {
-			zoomAt(zoomCenter, 1.f - _zoomSensitivity);
-		}
-		else {
-			zoomAt(zoomCenter, 1.f + _zoomSensitivity);
-		}
-
-		update();
-		break;
-	}
-	case InteractionMode::Selection:
-	{
-		if (_selectionType == SelectionType::Brush) {
-			if (wheelEvent->delta() > 0) {
-				setBrushRadius(_brushRadius + _brushRadiusDelta);
-			}
-			else {
-				setBrushRadius(_brushRadius - _brushRadiusDelta);
-			}
-		}
-
-		break;
-	}
-	case InteractionMode::WindowLevel:
-		break;
-	default:
-		break;
-	}
-}
-
-void ImageViewerWidget::pan(const QPointF& delta) {
-
-	qDebug() << "Pan" << delta;
-
-	_pan.setX(_pan.x() + (delta.x() / _zoom));
-	_pan.setY(_pan.y() + (delta.y() / _zoom));
-}
-
-void ImageViewerWidget::zoom(const float& factor) {
-
-	qDebug() << "Zoom" << factor;
-
-	_zoom *= factor;
-	
-	_pan.setX(_pan.x() * factor);
-	_pan.setY(_pan.y() * factor);
-}
-
-void ImageViewerWidget::zoomAt(const QPointF& screenPosition, const float& factor) {
-
-	qDebug() << "Zoom at" << screenPosition << factor;
-
-	pan(QPointF(-screenPosition.x(), -screenPosition.y()));
-	zoom(factor);
-	pan(QPointF(screenPosition.x(), screenPosition.y()));
-}
-
-void ImageViewerWidget::zoomExtents()
-{
-	if (_imageViewerPlugin->currentDataset().isEmpty())
-		return;
-
-	qDebug() << "Zoom extents";
-
-	resetView();
-	
-	const auto factorX = (width() - _margin) / static_cast<float>(_imageSize.width());
-	const auto factorY = (height() - _margin) / static_cast<float>(_imageSize.height());
-	
-	zoom(factorX < factorY ? factorX : factorY);
-	pan(QPointF(width() / 2, height() / 2));
-
-	update();
-}
-
-void ImageViewerWidget::resetView()
-{
-	qDebug() << "Reset view";
-
-	_pan.setX(0);
-	_pan.setY(0);
-	
-	_zoom = 1.f;
-
-	update();
-}
 
 bool ImageViewerWidget::imageInitialized()
 {
@@ -1060,63 +699,7 @@ void ImageViewerWidget::commitSelection()
 	_imageViewerPlugin->setSelection(_selectedPointIds);
 }
 
-QMenu* ImageViewerWidget::contextMenu()
-{
-	auto* contextMenu = new QMenu();
 
-	if (_imageViewerPlugin->imageCollectionType() == ImageCollectionType::Stack) {
-		contextMenu->addMenu(viewMenu());
-		contextMenu->addSeparator();
-		contextMenu->addMenu(selectionMenu());
-	}
-
-	return contextMenu;
-}
-
-QMenu* ImageViewerWidget::viewMenu()
-{
-	auto* viewMenu = new QMenu("View");
-
-	auto* zoomToExtentsAction = new QAction("Zoom extents");
-	
-	zoomToExtentsAction->setToolTip("Zoom to the boundaries of the image");
-
-	connect(zoomToExtentsAction, &QAction::triggered, this, &ImageViewerWidget::zoomExtents);
-
-	viewMenu->addAction(zoomToExtentsAction);
-
-	return viewMenu;
-}
-
-QMenu* ImageViewerWidget::selectionMenu()
-{
-	auto* selectionMenu = new QMenu("Selection");
-
-	auto* rectangleSelectionAction	= new QAction("Rectangle");
-	auto* brushSelectionAction		= new QAction("Brush");
-	auto* freehandSelectionAction	= new QAction("Freehand", this);
-	auto* clearSelectionAction		= new QAction("Clear");
-
-	connect(rectangleSelectionAction, &QAction::triggered, [this]() { setSelectionType(SelectionType::Rectangle);  });
-	connect(brushSelectionAction, &QAction::triggered, [this]() { setSelectionType(SelectionType::Brush);  });
-	connect(freehandSelectionAction, &QAction::triggered, [this]() { setSelectionType(SelectionType::Freehand);  });
-	connect(clearSelectionAction, &QAction::triggered, [this]() { clearSelection(); });
-
-	rectangleSelectionAction->setCheckable(true);
-	brushSelectionAction->setCheckable(true);
-
-	rectangleSelectionAction->setChecked(_selectionType == SelectionType::Rectangle);
-	brushSelectionAction->setChecked(_selectionType == SelectionType::Brush);
-	
-	freehandSelectionAction->setEnabled(false);
-
-	selectionMenu->addAction(rectangleSelectionAction);
-	selectionMenu->addAction(brushSelectionAction);
-	selectionMenu->addSeparator();
-	selectionMenu->addAction(clearSelectionAction);
-
-	return selectionMenu;
-}
 
 void ImageViewerWidget::setupTextures()
 {
