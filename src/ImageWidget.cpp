@@ -30,6 +30,9 @@ ImageWidget::ImageWidget(QWidget *parent)
 
 	setFixedWidth(0);
 	setFixedHeight(0);
+
+	//setWindowFlag(Qt::WA_PaintOnScreen, false);
+	//setWindowFlags(windowFlags() & (~Qt::WA_PaintOnScreen));
 }
 
 ImageWidget::~ImageWidget()
@@ -125,9 +128,6 @@ void ImageWidget::paintGL()
 	const auto minPixelValue = std::clamp(_imageMin, level - (window / 2.0), _imageMax);
 	const auto maxPixelValue = std::clamp(_imageMin, level + (window / 2.0), _imageMax);
 
-	qDebug() << "WL:" << _window << _level;
-	qDebug() << "Min/max:" << minPixelValue << maxPixelValue;
-
 	program = new QOpenGLShaderProgram;
 	program->addShader(vshader);
 	program->addShader(fshader);
@@ -219,6 +219,11 @@ void ImageWidget::resetWindowLevel()
 	update();
 }
 
+void ImageWidget::update()
+{
+	emit rendered();
+}
+
 double ImageWidget::level() const
 {
 	return _level;
@@ -229,7 +234,7 @@ void ImageWidget::computeWindowLevel(double& window, double& level)
 	const double min		= _imageMin;
 	const double max		= _imageMax;
 	const double maxWindow	= _imageMax - _imageMin;
-	qDebug() << "maxWindow" << maxWindow;
+
 	level	= std::clamp(min, min + _level * maxWindow, max);
 	window	= std::clamp(min, _window * maxWindow, max);
 }

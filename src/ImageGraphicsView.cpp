@@ -33,10 +33,11 @@ ImageGraphicsView::ImageGraphicsView(ImageViewerPlugin* imageViewerPlugin, QWidg
 
 	_graphicsScene->addItem(graphicsProxyWidget);
 
-	setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
+	setViewportUpdateMode(QGraphicsView::MinimalViewportUpdate);
 	setScene(_graphicsScene);
 
 	connect(_imageViewerPlugin, &ImageViewerPlugin::displayImageChanged, this, &ImageGraphicsView::onDisplayImageChanged);
+	connect(_imageWidget, &ImageWidget::rendered, this, &ImageGraphicsView::onImageWidgetRendered);
 }
 
 InteractionMode ImageGraphicsView::interactionMode() const
@@ -163,8 +164,11 @@ void ImageGraphicsView::onDisplayImageChanged(const QSize& imageSize, TextureDat
 		zoomToExtents();
 		_imageWidget->resetWindowLevel();
 	}
-		
-	_graphicsScene->update(_imageWidget->rect());
+}
+
+void ImageGraphicsView::onImageWidgetRendered()
+{
+	viewport()->update();
 }
 
 void ImageGraphicsView::keyPressEvent(QKeyEvent* keyEvent)
@@ -283,8 +287,6 @@ void ImageGraphicsView::mouseMoveEvent(QMouseEvent* mouseEvent)
 		_imageWidget->setWindowLevel(window, level);
 
 		_mousePosition = mouseEvent->pos();
-
-		_graphicsScene->update(_imageWidget->rect());
 	}
 
 	QGraphicsView::mouseMoveEvent(mouseEvent);
@@ -359,4 +361,11 @@ void ImageGraphicsView::wheelEvent(QWheelEvent* wheelEvent)
 		scale(1.25, 1.25);
 	else
 		scale(0.8, 0.8);
+}
+
+void ImageGraphicsView::resizeEvent(QResizeEvent* resizeEvent)
+{
+	zoomToExtents();
+
+	QGraphicsView::resizeEvent(resizeEvent);
 }

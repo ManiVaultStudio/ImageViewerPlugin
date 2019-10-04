@@ -27,13 +27,12 @@ protected:
 	void resizeGL(int width, int height) Q_DECL_OVERRIDE;
 
 public:
-	
-
-public:
 	double window() const;
 	double level() const;
 	void setWindowLevel(const double& window, const double& level);
 	void resetWindowLevel();
+
+	void update();
 
 private:
 	void makeObject();
@@ -57,6 +56,7 @@ private:
 signals:
 	void selectionTypeChanged();
 	void selectionModifierChanged();
+	void rendered();
 
 private:
 	QColor clearColour;

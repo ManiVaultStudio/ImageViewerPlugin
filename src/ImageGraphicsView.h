@@ -12,6 +12,7 @@ QT_FORWARD_DECLARE_CLASS(QContextMenuEvent)
 QT_FORWARD_DECLARE_CLASS(QKeyEvent)
 QT_FORWARD_DECLARE_CLASS(QMouseEvent)
 QT_FORWARD_DECLARE_CLASS(QWheelEvent)
+QT_FORWARD_DECLARE_CLASS(QResizeEvent)
 QT_FORWARD_DECLARE_CLASS(QGraphicsScene)
 
 class ImageGraphicsView : public QGraphicsView
@@ -32,7 +33,9 @@ private:
 
 	void contextMenuEvent(QContextMenuEvent* contextMenuEvent) Q_DECL_OVERRIDE;
 
+private:
 	void onDisplayImageChanged(const QSize& imageSize, TextureData& displayImage, const double& imageMin, const double& imageMax);
+	void onImageWidgetRendered();
 
 private:
 	void keyPressEvent(QKeyEvent* keyEvent) Q_DECL_OVERRIDE;
@@ -40,7 +43,8 @@ private:
 	void mousePressEvent(QMouseEvent* mouseEvent) Q_DECL_OVERRIDE;
 	void mouseMoveEvent(QMouseEvent* mouseEvent) Q_DECL_OVERRIDE;
 	void mouseReleaseEvent(QMouseEvent* mouseEvent) Q_DECL_OVERRIDE;
-	void wheelEvent(QWheelEvent* wheelEvent);
+	void wheelEvent(QWheelEvent* wheelEvent) Q_DECL_OVERRIDE;
+	void resizeEvent(QResizeEvent* resizeEvent) Q_DECL_OVERRIDE;
 
 private:
 	ImageViewerPlugin*	_imageViewerPlugin;
