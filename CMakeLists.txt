@@ -21,23 +21,10 @@ endif(MSVC)
 find_package(OpenGL REQUIRED)
 find_package(Qt5 COMPONENTS Widgets WebEngineWidgets REQUIRED)
 
-set(SOURCES
-    src/ImageViewerPlugin.h
-    src/ImageViewerPlugin.cpp
-	src/ImageViewerWidget.h
-    src/ImageViewerWidget.cpp
-	src/SettingsWidget.h
-    src/SettingsWidget.cpp
-	src/ImageCanvasWidget.h
-    src/ImageCanvasWidget.cpp
-	src/ImageViewWidget.h
-    src/ImageViewWidget.cpp
-	src/ImageView.h
-	src/ImageView.h
-    src/ImageView.cpp
-    src/ImageView.cpp
-    src/Common.h
-)
+file(GLOB H src/*.h)
+file(GLOB CPP src/*.cpp)
+
+set(SOURCES ${H} ${CPP})
 
 file(GLOB UIS src/*.ui)
 file(GLOB SHADERS src/*.glsl)

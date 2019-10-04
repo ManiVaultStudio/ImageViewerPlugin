@@ -1,23 +1,21 @@
-#include "ImageCanvasWidget.h"
+#include "ImageWidget.h"
 
 #include <QOpenGLShaderProgram>
 #include <QOpenGLTexture>
 #include <QMouseEvent>
 
-ImageCanvasWidget::ImageCanvasWidget(QWidget *parent)
+ImageWidget::ImageWidget(QWidget *parent)
 	: QOpenGLWidget(parent),
 	clearColour(Qt::black),
 	program(0),
 	_imageTexture(QOpenGLTexture::Target2D),
 	_aspectRatio(1.0),
-	_interactionMode(InteractionMode::Selection),
 	_initialMousePosition(),
 	_selecting(false),
 	_selectionType(SelectionType::Rectangle),
 	_selectionModifier(SelectionModifier::Replace),
 	_brushRadius(10.f),
 	_brushRadiusDelta(2.0f),
-	_mousePosition(),
 	_window(1.0f),
 	_level(0.5f),
 	_imageMin(0.f),
@@ -25,10 +23,16 @@ ImageCanvasWidget::ImageCanvasWidget(QWidget *parent)
 {
 	hasTexture = false;
 
-	connect(this, &ImageCanvasWidget::windowLevelChanged, [this]() { update(); });
+	QSurfaceFormat surfaceFormat;
+	surfaceFormat.setSamples(8);
+
+	setFormat(surfaceFormat);
+
+	setFixedWidth(0);
+	setFixedHeight(0);
 }
 
-ImageCanvasWidget::~ImageCanvasWidget()
+ImageWidget::~ImageWidget()
 {
 	makeCurrent();
 
@@ -43,13 +47,16 @@ ImageCanvasWidget::~ImageCanvasWidget()
 	doneCurrent();
 }
 
-void ImageCanvasWidget::setImage(std::vector<std::uint16_t>& image, const QSize& size, const double& imageMin, const double& imageMax)
+void ImageWidget::setImage(std::vector<std::uint16_t>& image, const QSize& size, const double& imageMin, const double& imageMax)
 {
 	makeCurrent();
 
 	if (width() != size.width() || height() != size.height()) {
 		setFixedWidth(size.width());
 		setFixedHeight(size.height());
+
+		_imageMin = imageMin;
+		_imageMax = imageMax;
 
 		_imageTexture.destroy();
 		_imageTexture.create();
@@ -64,23 +71,14 @@ void ImageCanvasWidget::setImage(std::vector<std::uint16_t>& image, const QSize&
 	hasTexture = true;
 	_aspectRatio = (float)(size.height()) / size.width();
 
-	
-
 	makeObject();
 	doneCurrent();
-
 	
-	update();
-}
-
-void ImageCanvasWidget::setClearColor(const QColor &color)
-{
-	clearColour = color;
 	update();
 }
 
 // Run once when widget is set up
-void ImageCanvasWidget::initializeGL()
+void ImageWidget::initializeGL()
 {
 	initializeOpenGLFunctions();
 
@@ -97,7 +95,7 @@ const std::string imageQuadFragmentShaderSource =
 #include "ImageQuadFragment.glsl"
 ;
 
-void ImageCanvasWidget::paintGL()
+void ImageWidget::paintGL()
 {
 	glClearColor(clearColour.redF(), clearColour.greenF(), clearColour.blueF(), clearColour.alphaF());
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -116,14 +114,7 @@ void ImageCanvasWidget::paintGL()
 	vshader->compileSourceCode(vsrc);
 
 	QOpenGLShader *fshader = new QOpenGLShader(QOpenGLShader::Fragment, this);
-	const char *fsrc =
-		"uniform sampler2D texture;\n"
-		"varying mediump vec4 texc;\n"
-		"void main(void)\n"
-		"{\n"
-			" float value = texture2D(texture, texc.st).r;\n"
-		"    gl_FragColor = vec4(vec3(value), 1);\n"
-		"}\n";
+	
 	fshader->compileSourceCode(imageQuadFragmentShaderSource.c_str());
 
 	double window = 0.0;
@@ -133,6 +124,9 @@ void ImageCanvasWidget::paintGL()
 
 	const auto minPixelValue = std::clamp(_imageMin, level - (window / 2.0), _imageMax);
 	const auto maxPixelValue = std::clamp(_imageMin, level + (window / 2.0), _imageMax);
+
+	qDebug() << "WL:" << _window << _level;
+	qDebug() << "Min/max:" << minPixelValue << maxPixelValue;
 
 	program = new QOpenGLShaderProgram;
 	program->addShader(vshader);
@@ -167,12 +161,12 @@ void ImageCanvasWidget::paintGL()
 	}
 }
 
-void ImageCanvasWidget::resizeGL(int width, int height)
+void ImageWidget::resizeGL(int width, int height)
 {
 	glViewport(0, 0, width, height);
 }
 
-void ImageCanvasWidget::makeObject()
+void ImageWidget::makeObject()
 {
 	static const float coords[4][3] = {
 	  { 1.0f, _aspectRatio, 0.0f },
@@ -199,12 +193,12 @@ void ImageCanvasWidget::makeObject()
 	vbo.allocate(vertData.constData(), vertData.count() * sizeof(GLfloat));
 }
 
-double ImageCanvasWidget::window() const
+double ImageWidget::window() const
 {
 	return _window;
 }
 
-void ImageCanvasWidget::setWindowLevel(const double& window, const double& level)
+void ImageWidget::setWindowLevel(const double& window, const double& level)
 {
 	if (window == _window && level == _level)
 		return;
@@ -214,67 +208,38 @@ void ImageCanvasWidget::setWindowLevel(const double& window, const double& level
 	_window = window;
 	_level = level;
 
-	emit windowLevelChanged(_window, _level);
+	update();
 }
 
-void ImageCanvasWidget::resetWindowLevel()
+void ImageWidget::resetWindowLevel()
 {
 	_window = 1.0;
 	_level = 0.5;
 
-	emit windowLevelChanged(_window, _level);
+	update();
 }
 
-double ImageCanvasWidget::level() const
+double ImageWidget::level() const
 {
 	return _level;
 }
 
-void ImageCanvasWidget::computeWindowLevel(double& window, double& level)
+void ImageWidget::computeWindowLevel(double& window, double& level)
 {
 	const double min		= _imageMin;
 	const double max		= _imageMax;
 	const double maxWindow	= _imageMax - _imageMin;
-
+	qDebug() << "maxWindow" << maxWindow;
 	level	= std::clamp(min, min + _level * maxWindow, max);
 	window	= std::clamp(min, _window * maxWindow, max);
 }
 
-InteractionMode ImageCanvasWidget::interactionMode() const
-{
-	return _interactionMode;
-}
-
-void ImageCanvasWidget::setInteractionMode(const InteractionMode& interactionMode)
-{
-	if (interactionMode == _interactionMode)
-		return;
-
-	qDebug() << "Set interaction mode to" << interactionModeTypeName(interactionMode);
-
-	switch (interactionMode)
-	{
-	case InteractionMode::Navigation:
-		QWidget::setCursor(Qt::OpenHandCursor);
-		break;
-
-	case InteractionMode::Selection:
-		QWidget::setCursor(Qt::ArrowCursor);
-		break;
-
-	default:
-		break;
-	}
-
-	_interactionMode = interactionMode;
-}
-
-SelectionType ImageCanvasWidget::selectionType() const
+SelectionType ImageWidget::selectionType() const
 {
 	return _selectionType;
 }
 
-void ImageCanvasWidget::setSelectionType(const SelectionType& selectionType)
+void ImageWidget::setSelectionType(const SelectionType& selectionType)
 {
 	if (selectionType == _selectionType)
 		return;
@@ -295,12 +260,12 @@ void ImageCanvasWidget::setSelectionType(const SelectionType& selectionType)
 	emit selectionTypeChanged();
 }
 
-SelectionModifier ImageCanvasWidget::selectionModifier() const
+SelectionModifier ImageWidget::selectionModifier() const
 {
 	return _selectionModifier;
 }
 
-void ImageCanvasWidget::setSelectionModifier(const SelectionModifier& selectionModifier)
+void ImageWidget::setSelectionModifier(const SelectionModifier& selectionModifier)
 {
 	if (selectionModifier == _selectionModifier)
 		return;
@@ -316,18 +281,16 @@ void ImageCanvasWidget::setSelectionModifier(const SelectionModifier& selectionM
 	}
 }
 
-void ImageCanvasWidget::setBrushRadius(const float& brushRadius)
+void ImageWidget::setBrushRadius(const float& brushRadius)
 {
 	qDebug() << "Set brush radius" << brushRadius;
 
 	_brushRadius = qBound(0.01f, 10000.f, brushRadius);
 
 	update();
-
-	emit brushRadiusChanged();
 }
 
-void ImageCanvasWidget::mousePressEvent(QMouseEvent* mouseEvent)
+void ImageWidget::mousePressEvent(QMouseEvent* mouseEvent)
 {
 	//if (!imageInitialized())
 	//	return;
@@ -381,9 +344,11 @@ break;
 	}*/
 }
 
-void ImageCanvasWidget::mouseMoveEvent(QMouseEvent* mouseEvent)
+/*
+void ImageWidget::mouseMoveEvent(QMouseEvent* mouseEvent)
 {
-	/*
+	qDebug() << "mouseMoveEvent";
+	
 	qDebug() << "mouseMoveEvent";
 
 	const auto deltaWindow = (mouseEvent->pos().x() - _mousePosition.x()) / 100.0;
@@ -451,10 +416,10 @@ void ImageCanvasWidget::mouseMoveEvent(QMouseEvent* mouseEvent)
 	}
 
 	_mousePosition = mouseEvent->pos();
-	*/
+	
 }
-
-void ImageCanvasWidget::mouseReleaseEvent(QMouseEvent* mouseEvent)
+*/
+void ImageWidget::mouseReleaseEvent(QMouseEvent* mouseEvent)
 {
 	/*
 	if (!imageInitialized())
@@ -510,7 +475,7 @@ void ImageCanvasWidget::mouseReleaseEvent(QMouseEvent* mouseEvent)
 	*/
 }
 
-void ImageCanvasWidget::wheelEvent(QWheelEvent* wheelEvent)
+void ImageWidget::wheelEvent(QWheelEvent* wheelEvent)
 {
 	/*
 	if (!imageInitialized())

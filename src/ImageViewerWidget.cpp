@@ -101,7 +101,6 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 
 	connect(_imageViewerPlugin, &ImageViewerPlugin::currentDatasetChanged, this, &ImageViewerWidget::onCurrentDatasetChanged);
 	connect(_imageViewerPlugin, &ImageViewerPlugin::currentImageIdChanged, this, &ImageViewerWidget::onCurrentImageIdChanged);
-	connect(_imageViewerPlugin, &ImageViewerPlugin::displayImageChanged, this, &ImageViewerWidget::onDisplayImageChanged);
 	connect(_imageViewerPlugin, &ImageViewerPlugin::selectionImageChanged, this, &ImageViewerWidget::onSelectionImageChanged);
 	
 	QSurfaceFormat surfaceFormat;
@@ -126,30 +125,6 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 
 
 
-void ImageViewerWidget::onDisplayImageChanged(const QSize& imageSize, TextureData& displayImage)
-{
-	if (!isValid())
-		return;
-
-	qDebug() << "Display image changedasdasdasdasdsad";
-
-	auto shouldZoomExtents = false;
-
-	if (imageSize != _imageSize) {
-		_imageSize = imageSize;
-
-		setupTextures();
-
-		shouldZoomExtents = true;
-	}
-	
-	_textures["image"]->setData(QOpenGLTexture::PixelFormat::Red, QOpenGLTexture::PixelType::UInt16, static_cast<void*>(displayImage.data()));
-
-	update();
-
-	if (shouldZoomExtents)
-		zoomExtents();
-}
 
 void ImageViewerWidget::onSelectionImageChanged(const QSize& imageSize, TextureData& selectionImage)
 {
@@ -374,7 +349,7 @@ void ImageViewerWidget::resizeGL(int w, int h)
 	glLoadIdentity();
 	glOrtho(0, w, 0, h, -100, 100);
 
-	zoomExtents();
+//	zoomExtents();
 }
 
 void ImageViewerWidget::paintGL() {
@@ -521,7 +496,7 @@ QPoint ImageViewerWidget::worldToScreen(const QPoint& world) const
 void ImageViewerWidget::updateSelection()
 {
 	//qDebug() << "Update selection" << _selectionType;
-
+	/*
 	const auto halfImageSize	= _imageSize / 2;
 	const auto imageRect		= QRect(-halfImageSize.width(), -halfImageSize.height(), _imageSize.width(), _imageSize.height());
 
@@ -614,10 +589,12 @@ void ImageViewerWidget::updateSelection()
 	_textures["overlay"]->setData(QOpenGLTexture::PixelFormat::Red, QOpenGLTexture::PixelType::UInt8, static_cast<void*>(overlayTextureData.data()));
 
 	update();
+	*/
 }
 
 void ImageViewerWidget::modifySelection(const Indices& selectedPointIds, const std::int32_t& pixelOffset /*= 0*/)
 {
+	/*
 	qDebug() << "Modify selection";
 
 	if (selectedPointIds.size() > 0) {
@@ -680,6 +657,7 @@ void ImageViewerWidget::modifySelection(const Indices& selectedPointIds, const s
 	_textures["overlay"]->setData(QOpenGLTexture::PixelFormat::Red, QOpenGLTexture::PixelType::UInt16, static_cast<void*>(overlayTextureData.data()));
 	
 	update();
+	*/
 }
 
 void ImageViewerWidget::clearSelection()

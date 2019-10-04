@@ -9,9 +9,9 @@
 
 #include "Common.h"
 
-class ImageView;
+class ImageGraphicsView;
 class ImageViewerPlugin;
-class ImageCanvasWidget;
+class ImageWidget;
 
 QT_FORWARD_DECLARE_CLASS(QMenu)
 
@@ -22,20 +22,6 @@ class ImageViewWidget : public QWidget
 public:
 	ImageViewWidget(ImageViewerPlugin* imageViewerPlugin);
 
-public:
-	void onDisplayImageChanged(const QSize& imageSize, TextureData& displayImage, const double& imageMin, const double& imageMax);
-
 private:
-	void keyPressEvent(QKeyEvent* keyEvent) Q_DECL_OVERRIDE;
-	void keyReleaseEvent(QKeyEvent* keyEvent) Q_DECL_OVERRIDE;
-
-	QMenu* contextMenu();
-	QMenu* viewMenu();
-	QMenu* selectionMenu();
-
-private:
-	ImageViewerPlugin*		_imageViewerPlugin;
-	ImageView*				_imageView;
-	QGraphicsScene*			_scene;
-	ImageCanvasWidget*		_imageWidget;
+	ImageGraphicsView*	_imageGraphicsView;
 };

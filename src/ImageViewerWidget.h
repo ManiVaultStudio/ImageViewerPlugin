@@ -31,7 +31,6 @@ public:
 
 
 public:
-	void onDisplayImageChanged(const QSize& imageSize, TextureData& displayImage);
 	void onSelectionImageChanged(const QSize& imageSize, TextureData& selectionImage);
 	void onCurrentDatasetChanged(const QString& currentDataset);
 	void onCurrentImageIdChanged(const std::int32_t& currentImageId);
@@ -40,8 +39,6 @@ protected:
 	void initializeGL() Q_DECL_OVERRIDE;
 	void resizeGL(int w, int h) Q_DECL_OVERRIDE;
 	void paintGL() Q_DECL_OVERRIDE;
-
-	
 
 private:
 	void drawQuad(const float& z);
