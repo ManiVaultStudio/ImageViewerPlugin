@@ -63,7 +63,7 @@ private:
 
 	QPoint lastPos;
 
-	QOpenGLShaderProgram *program;
+	QOpenGLShaderProgram *imageShaderProgram;
 	QOpenGLBuffer vbo;
 
 	QOpenGLTexture _imageTexture;

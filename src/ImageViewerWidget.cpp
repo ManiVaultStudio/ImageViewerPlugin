@@ -19,9 +19,6 @@
 
 // Panning and zooming inspired by: https://community.khronos.org/t/opengl-compound-zoom-and-pan-effect/72565/7
 
-const std::string imageQuadVertexShaderSource =
-#include "ImageQuadVertex.glsl"
-;
 
 const std::string imageQuadFragmentShaderSource =
 #include "ImageQuadFragment.glsl"
@@ -293,7 +290,7 @@ void ImageViewerWidget::initializeGL()
 
 	initializeOpenGLFunctions();
 
-	_shaders["image"]->addShaderFromSourceCode(QOpenGLShader::Vertex, imageQuadVertexShaderSource.c_str());
+//	_shaders["image"]->addShaderFromSourceCode(QOpenGLShader::Vertex, imageQuadVertexShaderSource.c_str());
 	_shaders["image"]->addShaderFromSourceCode(QOpenGLShader::Fragment, imageQuadFragmentShaderSource.c_str());
 	
 	_shaders["image"]->link();

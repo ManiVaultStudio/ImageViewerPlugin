@@ -539,10 +539,9 @@ void ImageViewerPlugin::computeDisplayImage()
 
 void ImageViewerPlugin::computeSelectionImage()
 {
-	/*
-	const auto imageSize = this->imageSize();
-	const auto width	= imageSize.width();
-	const auto height	= imageSize.height();
+	const auto imageSize	= this->imageSize();
+	const auto width		= imageSize.width();
+	const auto height		= imageSize.height();
 	const auto noPixels		= width * height;
 
 	auto& pointsData = this->pointsData().getData();
@@ -589,7 +588,6 @@ void ImageViewerPlugin::computeSelectionImage()
 	}
 
 	emit selectionImageChanged(imageSize, selectionTextureData);
-	*/
 }
 
 QString ImageViewerPlugin::currentDataset() const

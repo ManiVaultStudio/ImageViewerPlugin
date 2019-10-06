@@ -4,10 +4,18 @@
 #include <QOpenGLTexture>
 #include <QMouseEvent>
 
+const std::string vertexShaderSource =
+#include "Vertex.glsl"
+;
+
+const std::string imageQuadFragmentShaderSource =
+#include "ImageQuadFragment.glsl"
+;
+
 ImageWidget::ImageWidget(QWidget *parent)
 	: QOpenGLWidget(parent),
 	clearColour(Qt::black),
-	program(0),
+	imageShaderProgram(0),
 	_imageTexture(QOpenGLTexture::Target2D),
 	_aspectRatio(1.0),
 	_initialMousePosition(),
@@ -45,7 +53,7 @@ ImageWidget::~ImageWidget()
 	if (_imageTexture.isCreated())
 		_imageTexture.destroy();
 
-	delete program;
+	delete imageShaderProgram;
 
 	doneCurrent();
 }
@@ -91,34 +99,27 @@ void ImageWidget::initializeGL()
 #define PROGRAM_VERTEX_ATTRIBUTE 0
 #define PROGRAM_TEXCOORD_ATTRIBUTE 1
 
-	
-}
+	QOpenGLShader* vertexShader				= new QOpenGLShader(QOpenGLShader::Vertex, this);
+	QOpenGLShader* imageFragmentShader		= new QOpenGLShader(QOpenGLShader::Fragment, this);
+	QOpenGLShader* overlayFragmentShader	= new QOpenGLShader(QOpenGLShader::Fragment, this);
+	QOpenGLShader* selectionFragmentShader	= new QOpenGLShader(QOpenGLShader::Fragment, this);
 
-const std::string imageQuadFragmentShaderSource =
-#include "ImageQuadFragment.glsl"
-;
+	vertexShader->compileSourceCode(vertexShaderSource.c_str());
+	imageFragmentShader->compileSourceCode(imageQuadFragmentShaderSource.c_str());
+
+	imageShaderProgram = new QOpenGLShaderProgram;
+
+	imageShaderProgram->addShader(vertexShader);
+	imageShaderProgram->addShader(imageFragmentShader);
+	imageShaderProgram->bindAttributeLocation("vertex", PROGRAM_VERTEX_ATTRIBUTE);
+	imageShaderProgram->bindAttributeLocation("texCoord", PROGRAM_TEXCOORD_ATTRIBUTE);
+	imageShaderProgram->link();
+}
 
 void ImageWidget::paintGL()
 {
 	glClearColor(clearColour.redF(), clearColour.greenF(), clearColour.blueF(), clearColour.alphaF());
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	QOpenGLShader *vshader = new QOpenGLShader(QOpenGLShader::Vertex, this);
-	const char *vsrc =
-		"attribute highp vec4 vertex;\n"
-		"attribute mediump vec4 texCoord;\n"
-		"varying mediump vec4 texc;\n"
-		"uniform mediump mat4 matrix;\n"
-		"void main(void)\n"
-		"{\n"
-		"    gl_Position = matrix * vertex;\n"
-		"    texc = texCoord;\n"
-		"}\n";
-	vshader->compileSourceCode(vsrc);
-
-	QOpenGLShader *fshader = new QOpenGLShader(QOpenGLShader::Fragment, this);
-	
-	fshader->compileSourceCode(imageQuadFragmentShaderSource.c_str());
 
 	double window = 0.0;
 	double level = 0.0;
@@ -128,30 +129,22 @@ void ImageWidget::paintGL()
 	const auto minPixelValue = std::clamp(_imageMin, level - (window / 2.0), _imageMax);
 	const auto maxPixelValue = std::clamp(_imageMin, level + (window / 2.0), _imageMax);
 
-	program = new QOpenGLShaderProgram;
-	program->addShader(vshader);
-	program->addShader(fshader);
-	program->bindAttributeLocation("vertex", PROGRAM_VERTEX_ATTRIBUTE);
-	program->bindAttributeLocation("texCoord", PROGRAM_TEXCOORD_ATTRIBUTE);
-	program->link();
+	imageShaderProgram->bind();
+	imageShaderProgram->setUniformValue("texture", 0);
 
-	program->bind();
-	program->setUniformValue("texture", 0);
-
-	program->setUniformValue("minPixelValue", static_cast<GLfloat>(minPixelValue));
-	program->setUniformValue("maxPixelValue", static_cast<GLfloat>(maxPixelValue));
-
+	imageShaderProgram->setUniformValue("minPixelValue", static_cast<GLfloat>(minPixelValue));
+	imageShaderProgram->setUniformValue("maxPixelValue", static_cast<GLfloat>(maxPixelValue));
 
 	QMatrix4x4 m;
 
 	m.ortho(0.0f, +1.0f, _aspectRatio, 0.0f, 4.0f, 15.0f);
 	m.translate(0.0f, 0.0f, -5.0f);
 
-	program->setUniformValue("matrix", m);
-	program->enableAttributeArray(PROGRAM_VERTEX_ATTRIBUTE);
-	program->enableAttributeArray(PROGRAM_TEXCOORD_ATTRIBUTE);
-	program->setAttributeBuffer(PROGRAM_VERTEX_ATTRIBUTE, GL_FLOAT, 0, 3, 5 * sizeof(GLfloat));
-	program->setAttributeBuffer(PROGRAM_TEXCOORD_ATTRIBUTE, GL_FLOAT, 3 * sizeof(GLfloat), 2, 5 * sizeof(GLfloat));
+	imageShaderProgram->setUniformValue("matrix", m);
+	imageShaderProgram->enableAttributeArray(PROGRAM_VERTEX_ATTRIBUTE);
+	imageShaderProgram->enableAttributeArray(PROGRAM_TEXCOORD_ATTRIBUTE);
+	imageShaderProgram->setAttributeBuffer(PROGRAM_VERTEX_ATTRIBUTE, GL_FLOAT, 0, 3, 5 * sizeof(GLfloat));
+	imageShaderProgram->setAttributeBuffer(PROGRAM_TEXCOORD_ATTRIBUTE, GL_FLOAT, 3 * sizeof(GLfloat), 2, 5 * sizeof(GLfloat));
 
 	if (hasTexture)
 	{
