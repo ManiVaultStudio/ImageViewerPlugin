@@ -1,4 +1,6 @@
 R"(
+//#version 330
+
 uniform sampler2D texture;
 varying mediump vec4 texc;
 uniform float minPixelValue;

@@ -8,8 +8,16 @@ const std::string vertexShaderSource =
 #include "Vertex.glsl"
 ;
 
-const std::string imageQuadFragmentShaderSource =
-#include "ImageQuadFragment.glsl"
+const std::string imageFragmentShaderSource =
+#include "ImageFragment.glsl"
+;
+
+const std::string overlayFragmentShaderSource =
+#include "OverlayFragment.glsl"
+;
+
+const std::string selectionFragmentShaderSource =
+#include "SelectionFragment.glsl"
 ;
 
 ImageWidget::ImageWidget(QWidget *parent)
@@ -42,6 +50,10 @@ ImageWidget::ImageWidget(QWidget *parent)
 
 	setFixedWidth(0);
 	setFixedHeight(0);
+
+	_imageShaderProgram		= new QOpenGLShaderProgram(this);
+	_overlayShaderProgram	= new QOpenGLShaderProgram(this);
+	_selectionShaderProgram	= new QOpenGLShaderProgram(this);
 }
 
 ImageWidget::~ImageWidget()
@@ -54,7 +66,15 @@ ImageWidget::~ImageWidget()
 	if (_imageTexture.isCreated())
 		_imageTexture.destroy();
 
+	if (_overlayTexture.isCreated())
+		_overlayTexture.destroy();
+
+	if (_selectionTexture.isCreated())
+		_selectionTexture.destroy();
+
 	delete _imageShaderProgram;
+	delete _overlayShaderProgram;
+	delete _selectionShaderProgram;
 
 	doneCurrent();
 }
@@ -76,6 +96,20 @@ void ImageWidget::setImage(std::vector<std::uint16_t>& image, const QSize& size,
 		_imageTexture.setFormat(QOpenGLTexture::TextureFormat::R16_UNorm);
 		_imageTexture.allocateStorage();
 		_imageTexture.setMinMagFilters(QOpenGLTexture::Filter::Linear, QOpenGLTexture::Filter::Linear);
+
+		_overlayTexture.destroy();
+		_overlayTexture.create();
+		_overlayTexture.setSize(size.width(), size.height(), 1);
+		_overlayTexture.setFormat(QOpenGLTexture::TextureFormat::R8_UNorm);
+		_overlayTexture.allocateStorage();
+		_overlayTexture.setMinMagFilters(QOpenGLTexture::Filter::Linear, QOpenGLTexture::Filter::Linear);
+
+		_selectionTexture.destroy();
+		_selectionTexture.create();
+		_selectionTexture.setSize(size.width(), size.height(), 1);
+		_selectionTexture.setFormat(QOpenGLTexture::TextureFormat::R8_UNorm);
+		_selectionTexture.allocateStorage();
+		_selectionTexture.setMinMagFilters(QOpenGLTexture::Filter::Linear, QOpenGLTexture::Filter::Linear);
 	}
 
 	_imageTexture.setData(QOpenGLTexture::PixelFormat::Red, QOpenGLTexture::PixelType::UInt16, static_cast<void*>(image.data()));
@@ -104,16 +138,31 @@ void ImageWidget::initializeGL()
 	QOpenGLShader* overlayFragmentShader	= new QOpenGLShader(QOpenGLShader::Fragment, this);
 	QOpenGLShader* selectionFragmentShader	= new QOpenGLShader(QOpenGLShader::Fragment, this);
 
-	vertexShader->compileSourceCode(vertexShaderSource.c_str());
-	imageFragmentShader->compileSourceCode(imageQuadFragmentShaderSource.c_str());
+	if (vertexShader->compileSourceCode(vertexShaderSource.c_str())) {
+		if (imageFragmentShader->compileSourceCode(imageFragmentShaderSource.c_str())) {
+			_imageShaderProgram->addShader(vertexShader);
+			_imageShaderProgram->addShader(imageFragmentShader);
+			_imageShaderProgram->bindAttributeLocation("vertex", PROGRAM_VERTEX_ATTRIBUTE);
+			_imageShaderProgram->bindAttributeLocation("texCoord", PROGRAM_TEXCOORD_ATTRIBUTE);
+			_imageShaderProgram->link();
+		}
 
-	_imageShaderProgram = new QOpenGLShaderProgram;
+		if (overlayFragmentShader->compileSourceCode(overlayFragmentShaderSource.c_str())) {
+			_overlayShaderProgram->addShader(vertexShader);
+			_overlayShaderProgram->addShader(overlayFragmentShader);
+			_overlayShaderProgram->bindAttributeLocation("vertex", PROGRAM_VERTEX_ATTRIBUTE);
+			_overlayShaderProgram->bindAttributeLocation("texCoord", PROGRAM_TEXCOORD_ATTRIBUTE);
+			_overlayShaderProgram->link();
+		}
 
-	_imageShaderProgram->addShader(vertexShader);
-	_imageShaderProgram->addShader(imageFragmentShader);
-	_imageShaderProgram->bindAttributeLocation("vertex", PROGRAM_VERTEX_ATTRIBUTE);
-	_imageShaderProgram->bindAttributeLocation("texCoord", PROGRAM_TEXCOORD_ATTRIBUTE);
-	_imageShaderProgram->link();
+		if (selectionFragmentShader->compileSourceCode(selectionFragmentShaderSource.c_str())) {
+			_selectionShaderProgram->addShader(vertexShader);
+			_selectionShaderProgram->addShader(selectionFragmentShader);
+			_selectionShaderProgram->bindAttributeLocation("vertex", PROGRAM_VERTEX_ATTRIBUTE);
+			_selectionShaderProgram->bindAttributeLocation("texCoord", PROGRAM_TEXCOORD_ATTRIBUTE);
+			_selectionShaderProgram->link();
+		}
+	}
 }
 
 void ImageWidget::paintGL()
