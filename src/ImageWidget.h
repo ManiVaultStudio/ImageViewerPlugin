@@ -59,25 +59,22 @@ signals:
 	void rendered();
 
 private:
-	QColor clearColour;
-
-	QPoint lastPos;
-
-	QOpenGLShaderProgram *imageShaderProgram;
-	QOpenGLBuffer vbo;
-
-	QOpenGLTexture _imageTexture;
-	bool hasTexture;
-	float _aspectRatio;
-
-	
+	QColor					_clearColour;
 	QPoint					_initialMousePosition;
+	QPoint					_lastMousePosition;
+	QOpenGLShaderProgram*	_imageShaderProgram;
+	QOpenGLShaderProgram*	_overlayShaderProgram;
+	QOpenGLShaderProgram*	_selectionShaderProgram;
+	QOpenGLBuffer			_vbo;
+	QOpenGLTexture			_imageTexture;
+	QOpenGLTexture			_overlayTexture;
+	QOpenGLTexture			_selectionTexture;
+	float					_aspectRatio;
 	bool					_selecting;
 	SelectionType			_selectionType;
 	SelectionModifier		_selectionModifier;
 	float					_brushRadius;
 	float					_brushRadiusDelta;
-	
 	double					_window;
 	double					_level;
 	double					_imageMin;

@@ -14,11 +14,16 @@ const std::string imageQuadFragmentShaderSource =
 
 ImageWidget::ImageWidget(QWidget *parent)
 	: QOpenGLWidget(parent),
-	clearColour(Qt::black),
-	imageShaderProgram(0),
-	_imageTexture(QOpenGLTexture::Target2D),
-	_aspectRatio(1.0),
+	_clearColour(Qt::black),
 	_initialMousePosition(),
+	_lastMousePosition(),
+	_imageShaderProgram(nullptr),
+	_overlayShaderProgram(nullptr),
+	_selectionShaderProgram(nullptr),
+	_imageTexture(QOpenGLTexture::Target2D),
+	_overlayTexture(QOpenGLTexture::Target2D),
+	_selectionTexture(QOpenGLTexture::Target2D),
+	_aspectRatio(1.0),
 	_selecting(false),
 	_selectionType(SelectionType::Rectangle),
 	_selectionModifier(SelectionModifier::Replace),
@@ -29,31 +34,27 @@ ImageWidget::ImageWidget(QWidget *parent)
 	_imageMin(0.f),
 	_imageMax(0.f)
 {
-	hasTexture = false;
-
 	QSurfaceFormat surfaceFormat;
+
 	surfaceFormat.setSamples(8);
 
 	setFormat(surfaceFormat);
 
 	setFixedWidth(0);
 	setFixedHeight(0);
-
-	//setWindowFlag(Qt::WA_PaintOnScreen, false);
-	//setWindowFlags(windowFlags() & (~Qt::WA_PaintOnScreen));
 }
 
 ImageWidget::~ImageWidget()
 {
 	makeCurrent();
 
-	if (vbo.isCreated())
-		vbo.destroy();
+	if (_vbo.isCreated())
+		_vbo.destroy();
 	
 	if (_imageTexture.isCreated())
 		_imageTexture.destroy();
 
-	delete imageShaderProgram;
+	delete _imageShaderProgram;
 
 	doneCurrent();
 }
@@ -79,7 +80,6 @@ void ImageWidget::setImage(std::vector<std::uint16_t>& image, const QSize& size,
 
 	_imageTexture.setData(QOpenGLTexture::PixelFormat::Red, QOpenGLTexture::PixelType::UInt16, static_cast<void*>(image.data()));
 
-	hasTexture = true;
 	_aspectRatio = (float)(size.height()) / size.width();
 
 	makeObject();
@@ -107,18 +107,18 @@ void ImageWidget::initializeGL()
 	vertexShader->compileSourceCode(vertexShaderSource.c_str());
 	imageFragmentShader->compileSourceCode(imageQuadFragmentShaderSource.c_str());
 
-	imageShaderProgram = new QOpenGLShaderProgram;
+	_imageShaderProgram = new QOpenGLShaderProgram;
 
-	imageShaderProgram->addShader(vertexShader);
-	imageShaderProgram->addShader(imageFragmentShader);
-	imageShaderProgram->bindAttributeLocation("vertex", PROGRAM_VERTEX_ATTRIBUTE);
-	imageShaderProgram->bindAttributeLocation("texCoord", PROGRAM_TEXCOORD_ATTRIBUTE);
-	imageShaderProgram->link();
+	_imageShaderProgram->addShader(vertexShader);
+	_imageShaderProgram->addShader(imageFragmentShader);
+	_imageShaderProgram->bindAttributeLocation("vertex", PROGRAM_VERTEX_ATTRIBUTE);
+	_imageShaderProgram->bindAttributeLocation("texCoord", PROGRAM_TEXCOORD_ATTRIBUTE);
+	_imageShaderProgram->link();
 }
 
 void ImageWidget::paintGL()
 {
-	glClearColor(clearColour.redF(), clearColour.greenF(), clearColour.blueF(), clearColour.alphaF());
+	glClearColor(_clearColour.redF(), _clearColour.greenF(), _clearColour.blueF(), _clearColour.alphaF());
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	double window = 0.0;
@@ -129,28 +129,31 @@ void ImageWidget::paintGL()
 	const auto minPixelValue = std::clamp(_imageMin, level - (window / 2.0), _imageMax);
 	const auto maxPixelValue = std::clamp(_imageMin, level + (window / 2.0), _imageMax);
 
-	imageShaderProgram->bind();
-	imageShaderProgram->setUniformValue("texture", 0);
+	if (_imageShaderProgram->isLinked()) {
+		_imageShaderProgram->bind();
+		_imageShaderProgram->setUniformValue("texture", 0);
 
-	imageShaderProgram->setUniformValue("minPixelValue", static_cast<GLfloat>(minPixelValue));
-	imageShaderProgram->setUniformValue("maxPixelValue", static_cast<GLfloat>(maxPixelValue));
+		_imageShaderProgram->setUniformValue("minPixelValue", static_cast<GLfloat>(minPixelValue));
+		_imageShaderProgram->setUniformValue("maxPixelValue", static_cast<GLfloat>(maxPixelValue));
 
-	QMatrix4x4 m;
+		QMatrix4x4 transform;
 
-	m.ortho(0.0f, +1.0f, _aspectRatio, 0.0f, 4.0f, 15.0f);
-	m.translate(0.0f, 0.0f, -5.0f);
+		transform.ortho(0.0f, +1.0f, _aspectRatio, 0.0f, 4.0f, 15.0f);
+		transform.translate(0.0f, 0.0f, -5.0f);
 
-	imageShaderProgram->setUniformValue("matrix", m);
-	imageShaderProgram->enableAttributeArray(PROGRAM_VERTEX_ATTRIBUTE);
-	imageShaderProgram->enableAttributeArray(PROGRAM_TEXCOORD_ATTRIBUTE);
-	imageShaderProgram->setAttributeBuffer(PROGRAM_VERTEX_ATTRIBUTE, GL_FLOAT, 0, 3, 5 * sizeof(GLfloat));
-	imageShaderProgram->setAttributeBuffer(PROGRAM_TEXCOORD_ATTRIBUTE, GL_FLOAT, 3 * sizeof(GLfloat), 2, 5 * sizeof(GLfloat));
+		_imageShaderProgram->setUniformValue("matrix", transform);
+		_imageShaderProgram->enableAttributeArray(PROGRAM_VERTEX_ATTRIBUTE);
+		_imageShaderProgram->enableAttributeArray(PROGRAM_TEXCOORD_ATTRIBUTE);
+		_imageShaderProgram->setAttributeBuffer(PROGRAM_VERTEX_ATTRIBUTE, GL_FLOAT, 0, 3, 5 * sizeof(GLfloat));
+		_imageShaderProgram->setAttributeBuffer(PROGRAM_TEXCOORD_ATTRIBUTE, GL_FLOAT, 3 * sizeof(GLfloat), 2, 5 * sizeof(GLfloat));
 
-	if (hasTexture)
-	{
-		_imageTexture.bind();
-		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-		_imageTexture.release();
+		if (_imageTexture.isCreated()) {
+			_imageTexture.bind();
+
+			glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+			_imageTexture.release();
+		}
 	}
 }
 
@@ -181,9 +184,9 @@ void ImageWidget::makeObject()
 		vertData.append(j == 2 || j == 3);
 	}
 
-	vbo.create();
-	vbo.bind();
-	vbo.allocate(vertData.constData(), vertData.count() * sizeof(GLfloat));
+	_vbo.create();
+	_vbo.bind();
+	_vbo.allocate(vertData.constData(), vertData.count() * sizeof(GLfloat));
 }
 
 double ImageWidget::window() const
