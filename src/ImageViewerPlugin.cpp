@@ -368,7 +368,7 @@ void ImageViewerPlugin::computeDisplayImage()
 
 	const auto noPointsPerDimension = this->noPointsPerDimension();
 
-	auto imageTextureData = TextureData();
+	auto imageTextureData = std::vector<std::uint16_t>();
 
 	imageTextureData.resize(noPixels);
 
@@ -534,7 +534,7 @@ void ImageViewerPlugin::computeDisplayImage()
 		}
 	}
 
-	emit displayImageChanged(imageSize, imageTextureData, imageMin, imageMax);
+	emit displayImageChanged(imageTextureData, imageSize, imageMin, imageMax);
 }
 
 void ImageViewerPlugin::computeSelectionImage()
@@ -548,7 +548,7 @@ void ImageViewerPlugin::computeSelectionImage()
 
 	qDebug() << "Compute selection image" << imageSize << pointsData.size();
 
-	auto selectionTextureData = TextureData();
+	auto selectionTextureData = std::vector<std::uint8_t>();
 
 	selectionTextureData.resize(noPixels);
 
@@ -576,18 +576,13 @@ void ImageViewerPlugin::computeSelectionImage()
 				if (selectionId < pointIndexStart || selectionId >= pointIndexEnd)
 					continue;
 
-				const auto offset = (selectionId - pointIndexStart) * 4;
-
-				selectionTextureData[offset + 0] = 255;
-				selectionTextureData[offset + 1] = 0;
-				selectionTextureData[offset + 2] = 0;
-				selectionTextureData[offset + 3] = 100;
+				selectionTextureData[selectionId - pointIndexStart] = 255;
 			}
 		}
 		}
 	}
 
-	emit selectionImageChanged(imageSize, selectionTextureData);
+	emit selectionImageChanged(selectionTextureData, imageSize);
 }
 
 QString ImageViewerPlugin::currentDataset() const

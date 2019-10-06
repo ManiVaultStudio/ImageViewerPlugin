@@ -34,7 +34,9 @@ private:
 	void contextMenuEvent(QContextMenuEvent* contextMenuEvent) Q_DECL_OVERRIDE;
 
 private:
-	void onDisplayImageChanged(const QSize& imageSize, TextureData& displayImage, const double& imageMin, const double& imageMax);
+	void onCurrentDatasetChanged(const QString& currentDataset);
+	void onDisplayImageChanged(std::vector<std::uint16_t>& displayImage, const QSize& imageSize, const double& imageMin, const double& imageMax);
+	void onSelectionImageChanged(std::vector<std::uint8_t>& selectionImage, const QSize& imageSize);
 	void onImageWidgetRendered();
 
 private:

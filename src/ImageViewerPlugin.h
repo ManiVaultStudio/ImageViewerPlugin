@@ -90,8 +90,8 @@ signals:
 	void dimensionNamesChanged(const QStringList& dimensionNames);
 	void currentDimensionIdChanged(const std::int32_t& currentDimensionId);
 	void averageImagesChanged(const bool& averageImages);
-	void displayImageChanged(const QSize& imageSize, TextureData& displayImage, const double& imageMin, const double& imageMax);
-	void selectionImageChanged(const QSize& imageSize, TextureData& selectionImage);
+	void displayImageChanged(std::vector<std::uint16_t>& displayImage, const QSize& imageSize, const double& imageMin, const double& imageMax);
+	void selectionImageChanged(std::vector<std::uint8_t>& selectionImage, const QSize& imageSize);
 
 private:
 	ImageViewerWidget*	_imageViewerWidget;

@@ -36,7 +36,9 @@ ImageGraphicsView::ImageGraphicsView(ImageViewerPlugin* imageViewerPlugin, QWidg
 	setViewportUpdateMode(QGraphicsView::MinimalViewportUpdate);
 	setScene(_graphicsScene);
 
+	connect(_imageViewerPlugin, &ImageViewerPlugin::currentDatasetChanged, this, &ImageGraphicsView::onCurrentDatasetChanged);
 	connect(_imageViewerPlugin, &ImageViewerPlugin::displayImageChanged, this, &ImageGraphicsView::onDisplayImageChanged);
+	connect(_imageViewerPlugin, &ImageViewerPlugin::selectionImageChanged, this, &ImageGraphicsView::onSelectionImageChanged);
 	connect(_imageWidget, &ImageWidget::rendered, this, &ImageGraphicsView::onImageWidgetRendered);
 }
 
@@ -148,7 +150,12 @@ void ImageGraphicsView::contextMenuEvent(QContextMenuEvent* contextMenuEvent)
 	contextMenu->exec(mapToGlobal(contextMenuEvent->pos()));
 }
 
-void ImageGraphicsView::onDisplayImageChanged(const QSize& imageSize, TextureData& displayImage, const double& imageMin, const double& imageMax)
+void ImageGraphicsView::onCurrentDatasetChanged(const QString& currentDataset)
+{
+	_imageWidget->setSelectionImage(std::vector<std::uint8_t>({ 0 }), QSize(1, 1));
+}
+
+void ImageGraphicsView::onDisplayImageChanged(std::vector<std::uint16_t>& displayImage, const QSize& imageSize, const double& imageMin, const double& imageMax)
 {
 	qDebug() << "Display image changed";
 
@@ -158,12 +165,17 @@ void ImageGraphicsView::onDisplayImageChanged(const QSize& imageSize, TextureDat
 		reset = true;
 	}
 
-	_imageWidget->setImage(displayImage, imageSize, imageMin, imageMax);
+	_imageWidget->setDisplayImage(displayImage, imageSize, imageMin, imageMax);
 
 	if (reset) {
 		zoomToExtents();
 		_imageWidget->resetWindowLevel();
 	}
+}
+
+void ImageGraphicsView::onSelectionImageChanged(std::vector<std::uint8_t>& selectionImage, const QSize& imageSize)
+{
+	_imageWidget->setSelectionImage(selectionImage, imageSize);
 }
 
 void ImageGraphicsView::onImageWidgetRendered()

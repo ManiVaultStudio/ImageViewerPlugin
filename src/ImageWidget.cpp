@@ -79,7 +79,7 @@ ImageWidget::~ImageWidget()
 	doneCurrent();
 }
 
-void ImageWidget::setImage(std::vector<std::uint16_t>& image, const QSize& size, const double& imageMin, const double& imageMax)
+void ImageWidget::setDisplayImage(std::vector<std::uint16_t>& displayImage, const QSize& size, const double& imageMin, const double& imageMax)
 {
 	makeCurrent();
 
@@ -103,22 +103,36 @@ void ImageWidget::setImage(std::vector<std::uint16_t>& image, const QSize& size,
 		_overlayTexture.setFormat(QOpenGLTexture::TextureFormat::R8_UNorm);
 		_overlayTexture.allocateStorage();
 		_overlayTexture.setMinMagFilters(QOpenGLTexture::Filter::Linear, QOpenGLTexture::Filter::Linear);
-
-		_selectionTexture.destroy();
-		_selectionTexture.create();
-		_selectionTexture.setSize(size.width(), size.height(), 1);
-		_selectionTexture.setFormat(QOpenGLTexture::TextureFormat::R8_UNorm);
-		_selectionTexture.allocateStorage();
-		_selectionTexture.setMinMagFilters(QOpenGLTexture::Filter::Linear, QOpenGLTexture::Filter::Linear);
 	}
 
-	_imageTexture.setData(QOpenGLTexture::PixelFormat::Red, QOpenGLTexture::PixelType::UInt16, static_cast<void*>(image.data()));
+	_imageTexture.setData(QOpenGLTexture::PixelFormat::Red, QOpenGLTexture::PixelType::UInt16, static_cast<void*>(displayImage.data()));
 
 	_aspectRatio = (float)(size.height()) / size.width();
 
 	makeObject();
 	doneCurrent();
 	
+	update();
+}
+
+void ImageWidget::setSelectionImage(std::vector<std::uint8_t>& selectionImage, const QSize& size)
+{
+	if (!isValid())
+		return;
+
+	if (size.width() != _selectionTexture.width() || size.height() != _selectionTexture.height()) {
+		_selectionTexture.destroy();
+		_selectionTexture.create();
+		_selectionTexture.setSize(size.width(), size.height(), 1);
+		_selectionTexture.setFormat(QOpenGLTexture::TextureFormat::R8U);
+		_selectionTexture.allocateStorage();
+		_selectionTexture.setMinMagFilters(QOpenGLTexture::Filter::Nearest, QOpenGLTexture::Filter::Nearest);
+	}
+
+	//qDebug() << "setSelectionImage" << size << selectionImage;
+
+	_selectionTexture.setData(QOpenGLTexture::PixelFormat::Red, QOpenGLTexture::PixelType::UInt8, static_cast<void*>(selectionImage.data()));
+
 	update();
 }
 
@@ -139,6 +153,7 @@ void ImageWidget::initializeGL()
 	QOpenGLShader* selectionFragmentShader	= new QOpenGLShader(QOpenGLShader::Fragment, this);
 
 	if (vertexShader->compileSourceCode(vertexShaderSource.c_str())) {
+		/*
 		if (imageFragmentShader->compileSourceCode(imageFragmentShaderSource.c_str())) {
 			_imageShaderProgram->addShader(vertexShader);
 			_imageShaderProgram->addShader(imageFragmentShader);
@@ -154,6 +169,7 @@ void ImageWidget::initializeGL()
 			_overlayShaderProgram->bindAttributeLocation("texCoord", PROGRAM_TEXCOORD_ATTRIBUTE);
 			_overlayShaderProgram->link();
 		}
+		*/
 
 		if (selectionFragmentShader->compileSourceCode(selectionFragmentShaderSource.c_str())) {
 			_selectionShaderProgram->addShader(vertexShader);
@@ -178,21 +194,24 @@ void ImageWidget::paintGL()
 	const auto minPixelValue = std::clamp(_imageMin, level - (window / 2.0), _imageMax);
 	const auto maxPixelValue = std::clamp(_imageMin, level + (window / 2.0), _imageMax);
 
-	if (_imageShaderProgram->isLinked()) {
-		_imageShaderProgram->bind();
-		_imageShaderProgram->setUniformValue("texture", 0);
+	QMatrix4x4 transform;
 
+	transform.ortho(0.0f, +1.0f, _aspectRatio, 0.0f, -10.0f, +10.0f);
+	
+	
+	if (_imageShaderProgram->isLinked()) {
+		transform.translate(0.0f, 0.0f, 0.0f);
+
+		_imageShaderProgram->bind();
+		
+		_imageShaderProgram->setUniformValue("texture", 0);
 		_imageShaderProgram->setUniformValue("minPixelValue", static_cast<GLfloat>(minPixelValue));
 		_imageShaderProgram->setUniformValue("maxPixelValue", static_cast<GLfloat>(maxPixelValue));
-
-		QMatrix4x4 transform;
-
-		transform.ortho(0.0f, +1.0f, _aspectRatio, 0.0f, 4.0f, 15.0f);
-		transform.translate(0.0f, 0.0f, -5.0f);
-
 		_imageShaderProgram->setUniformValue("matrix", transform);
+
 		_imageShaderProgram->enableAttributeArray(PROGRAM_VERTEX_ATTRIBUTE);
 		_imageShaderProgram->enableAttributeArray(PROGRAM_TEXCOORD_ATTRIBUTE);
+		
 		_imageShaderProgram->setAttributeBuffer(PROGRAM_VERTEX_ATTRIBUTE, GL_FLOAT, 0, 3, 5 * sizeof(GLfloat));
 		_imageShaderProgram->setAttributeBuffer(PROGRAM_TEXCOORD_ATTRIBUTE, GL_FLOAT, 3 * sizeof(GLfloat), 2, 5 * sizeof(GLfloat));
 
@@ -202,6 +221,30 @@ void ImageWidget::paintGL()
 			glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 			_imageTexture.release();
+		}
+	}
+	/**/
+
+	if (_selectionShaderProgram->isLinked()) {
+		transform.translate(0.0f, 0.0f, 0.0f);
+
+		_selectionShaderProgram->bind();
+
+		_selectionShaderProgram->setUniformValue("texture", 0);
+		_selectionShaderProgram->setUniformValue("matrix", transform);
+
+		_selectionShaderProgram->enableAttributeArray(PROGRAM_VERTEX_ATTRIBUTE);
+		_selectionShaderProgram->enableAttributeArray(PROGRAM_TEXCOORD_ATTRIBUTE);
+
+		_selectionShaderProgram->setAttributeBuffer(PROGRAM_VERTEX_ATTRIBUTE, GL_FLOAT, 0, 3, 5 * sizeof(GLfloat));
+		_selectionShaderProgram->setAttributeBuffer(PROGRAM_TEXCOORD_ATTRIBUTE, GL_FLOAT, 3 * sizeof(GLfloat), 2, 5 * sizeof(GLfloat));
+
+		if (_selectionTexture.isCreated()) {
+			_selectionTexture.bind();
+
+			glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+			_selectionTexture.release();
 		}
 	}
 }

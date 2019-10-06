@@ -19,8 +19,8 @@ public:
 	explicit ImageWidget(QWidget *parent = 0);
 	~ImageWidget();
 
-	void setImage(std::vector<std::uint16_t>& image, const QSize& size, const double& imageMin, const double& imageMax);
-	//void setSelectionImage(std::vector<std::uint8_t>& image, const QSize& size);
+	void setDisplayImage(std::vector<std::uint16_t>& image, const QSize& size, const double& imageMin, const double& imageMax);
+	void setSelectionImage(std::vector<std::uint8_t>& selectionImage, const QSize& size);
 
 protected:
 	void initializeGL() Q_DECL_OVERRIDE;
