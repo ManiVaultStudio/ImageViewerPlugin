@@ -60,7 +60,6 @@ signals:
 	void rendered();
 
 private:
-	QColor					_clearColour;
 	QPoint					_initialMousePosition;
 	QPoint					_lastMousePosition;
 	QOpenGLShaderProgram*	_imageShaderProgram;

@@ -22,7 +22,6 @@ const std::string selectionFragmentShaderSource =
 
 ImageWidget::ImageWidget(QWidget *parent)
 	: QOpenGLWidget(parent),
-	_clearColour(Qt::black),
 	_initialMousePosition(),
 	_lastMousePosition(),
 	_imageShaderProgram(nullptr),
@@ -97,6 +96,13 @@ void ImageWidget::setDisplayImage(std::vector<std::uint16_t>& displayImage, cons
 		_imageTexture.allocateStorage();
 		_imageTexture.setMinMagFilters(QOpenGLTexture::Filter::Linear, QOpenGLTexture::Filter::Linear);
 
+		_selectionTexture.destroy();
+		_selectionTexture.create();
+		_selectionTexture.setSize(size.width(), size.height(), 1);
+		_selectionTexture.setFormat(QOpenGLTexture::TextureFormat::R8_UNorm);
+		_selectionTexture.allocateStorage();
+		_selectionTexture.setMinMagFilters(QOpenGLTexture::Filter::Linear, QOpenGLTexture::Filter::Linear);
+
 		_overlayTexture.destroy();
 		_overlayTexture.create();
 		_overlayTexture.setSize(size.width(), size.height(), 1);
@@ -142,7 +148,7 @@ void ImageWidget::initializeGL()
 	initializeOpenGLFunctions();
 
 	glEnable(GL_DEPTH_TEST);
-	// glEnable(GL_CULL_FACE);
+	//glEnable(GL_CULL_FACE);
 
 #define PROGRAM_VERTEX_ATTRIBUTE 0
 #define PROGRAM_TEXCOORD_ATTRIBUTE 1
@@ -179,12 +185,18 @@ void ImageWidget::initializeGL()
 			_selectionShaderProgram->link();
 		}
 	}
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 void ImageWidget::paintGL()
 {
-	glClearColor(_clearColour.redF(), _clearColour.greenF(), _clearColour.blueF(), _clearColour.alphaF());
+	glClearColor(0, 0, 0, 1);
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	glDisable(GL_LIGHTING);
 
 	double window = 0.0;
 	double level = 0.0;
@@ -198,7 +210,7 @@ void ImageWidget::paintGL()
 
 	transform.ortho(0.0f, +1.0f, _aspectRatio, 0.0f, -10.0f, +10.0f);
 	
-	
+	/*
 	if (_imageShaderProgram->isLinked()) {
 		transform.translate(0.0f, 0.0f, 0.0f);
 
@@ -223,10 +235,10 @@ void ImageWidget::paintGL()
 			_imageTexture.release();
 		}
 	}
-	/**/
+	*/
 
 	if (_selectionShaderProgram->isLinked()) {
-		transform.translate(0.0f, 0.0f, 0.0f);
+		transform.translate(0.0f, 0.0f, -1.0f);
 
 		_selectionShaderProgram->bind();
 
@@ -241,6 +253,8 @@ void ImageWidget::paintGL()
 
 		if (_selectionTexture.isCreated()) {
 			_selectionTexture.bind();
+
+			qDebug() << "-------------------";
 
 			glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
