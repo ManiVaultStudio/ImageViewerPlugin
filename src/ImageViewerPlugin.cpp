@@ -53,7 +53,7 @@ void ImageViewerPlugin::init()
 	auto layout = new QVBoxLayout();
 
 	//addWidget(_imageViewerWidget);
-	addWidget(_windowWidget);
+	addWidget(_imageViewerWidget);
 	addWidget(_settingsWidget);
 
 	setLayout(layout);

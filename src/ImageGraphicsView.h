@@ -48,10 +48,19 @@ private:
 	void wheelEvent(QWheelEvent* wheelEvent) Q_DECL_OVERRIDE;
 	void resizeEvent(QResizeEvent* resizeEvent) Q_DECL_OVERRIDE;
 
+	void pan(QPointF delta);
+	void zoom(const float& scaleFactor);
+	void zoomIn();
+	void zoomOut();
+
 private:
 	ImageViewerPlugin*	_imageViewerPlugin;
 	QGraphicsScene*		_graphicsScene;
 	ImageWidget*		_imageWidget;
 	InteractionMode		_interactionMode;
-	QPoint				_mousePosition;
+	QPoint				_interactionStartMousePosition;
+	QPoint				_lastMousePosition;
+	bool				_panning;
+	float				_scale;
+	float				_zoomSensitivity;
 };

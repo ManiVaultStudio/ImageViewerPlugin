@@ -4,20 +4,25 @@
 
 #include <QGraphicsProxyWidget>
 #include <QMenu>
+#include <QScrollBar>
 
 ImageGraphicsView::ImageGraphicsView(ImageViewerPlugin* imageViewerPlugin, QWidget *parent /*= 0*/) :
 	QGraphicsView(parent),
 	_imageViewerPlugin(imageViewerPlugin),
 	_graphicsScene(nullptr),
 	_interactionMode(InteractionMode::Selection),
-	_mousePosition()
+	_interactionStartMousePosition(),
+	_lastMousePosition(),
+	_panning(false),
+	_scale(1),
+	_zoomSensitivity(0.1)
 {
-	setDragMode(QGraphicsView::ScrollHandDrag);
+	//setDragMode(QGraphicsView::ScrollHandDrag);
 	setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform | QPainter::HighQualityAntialiasing);
 
 	setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 	setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-
+	
 	_graphicsScene = new QGraphicsScene(this);
 
 	_graphicsScene->setBackgroundBrush(Qt::darkGray);
@@ -52,23 +57,23 @@ void ImageGraphicsView::setInteractionMode(const InteractionMode& interactionMod
 	if (interactionMode == _interactionMode)
 		return;
 
-	qDebug() << "Set interaction mode to" << interactionModeTypeName(interactionMode);
-
-	switch (interactionMode)
-	{
-	case InteractionMode::Navigation:
-		QWidget::setCursor(Qt::OpenHandCursor);
-		break;
-
-	case InteractionMode::Selection:
-		QWidget::setCursor(Qt::ArrowCursor);
-		break;
-
-	default:
-		break;
-	}
-
 	_interactionMode = interactionMode;
+
+	qDebug() << "Set interaction mode to" << interactionModeTypeName(_interactionMode);
+
+	switch (_interactionMode)
+	{
+		case InteractionMode::Navigation:
+			viewport()->setCursor(Qt::OpenHandCursor);
+			break;
+
+		case InteractionMode::Selection:
+			viewport()->setCursor(Qt::ArrowCursor);
+			break;
+
+		default:
+			break;
+	}
 }
 
 void ImageGraphicsView::zoomToExtents()
@@ -180,7 +185,7 @@ void ImageGraphicsView::onSelectionImageChanged(std::vector<std::uint8_t>& selec
 
 void ImageGraphicsView::onImageWidgetRendered()
 {
-	viewport()->update();
+	
 }
 
 void ImageGraphicsView::keyPressEvent(QKeyEvent* keyEvent)
@@ -193,48 +198,50 @@ void ImageGraphicsView::keyPressEvent(QKeyEvent* keyEvent)
 	}
 	else
 	{
-		switch (keyEvent->key())
-		{
-		case Qt::Key::Key_R:
-		{
-			_imageWidget->setSelectionType(SelectionType::Rectangle);
-			break;
-		}
+		if (_interactionMode == InteractionMode::Selection) {
+			switch (keyEvent->key())
+			{
+			case Qt::Key::Key_R:
+			{
+				_imageWidget->setSelectionType(SelectionType::Rectangle);
+				break;
+			}
 
-		case Qt::Key::Key_B:
-		{
-			_imageWidget->setSelectionType(SelectionType::Brush);
-			break;
-		}
+			case Qt::Key::Key_B:
+			{
+				_imageWidget->setSelectionType(SelectionType::Brush);
+				break;
+			}
 
-		case Qt::Key::Key_F:
-		{
-			_imageWidget->setSelectionType(SelectionType::Freehand);
-			break;
-		}
+			case Qt::Key::Key_F:
+			{
+				_imageWidget->setSelectionType(SelectionType::Freehand);
+				break;
+			}
 
-		case Qt::Key::Key_Shift:
-		{
-			//if (myGLWidget->selectionModifier() != SelectionModifier::Remove)
-			_imageWidget->setSelectionModifier(SelectionModifier::Add);
-			break;
-		}
+			case Qt::Key::Key_Shift:
+			{
+				//if (myGLWidget->selectionModifier() != SelectionModifier::Remove)
+				_imageWidget->setSelectionModifier(SelectionModifier::Add);
+				break;
+			}
 
-		case Qt::Key::Key_Control:
-		{
-			//if (myGLWidget->selectionModifier() != SelectionModifier::Add)
-			_imageWidget->setSelectionModifier(SelectionModifier::Remove);
-			break;
-		}
+			case Qt::Key::Key_Control:
+			{
+				//if (myGLWidget->selectionModifier() != SelectionModifier::Add)
+				_imageWidget->setSelectionModifier(SelectionModifier::Remove);
+				break;
+			}
 
-		case Qt::Key::Key_Space:
-		{
-			setInteractionMode(InteractionMode::Navigation);
-			break;
-		}
+			case Qt::Key::Key_Space:
+			{
+				setInteractionMode(InteractionMode::Navigation);
+				break;
+			}
 
-		default:
-			break;
+			default:
+				break;
+			}
 		}
 	}
 
@@ -253,24 +260,24 @@ void ImageGraphicsView::keyReleaseEvent(QKeyEvent* keyEvent)
 	{
 		switch (keyEvent->key())
 		{
-		case Qt::Key::Key_Shift:
-		case Qt::Key::Key_Control:
-		{
-			if (_imageWidget->selectionType() != SelectionType::Brush) {
-				_imageWidget->setSelectionModifier(SelectionModifier::Replace);
+			case Qt::Key::Key_Shift:
+			case Qt::Key::Key_Control:
+			{
+				if (_imageWidget->selectionType() != SelectionType::Brush) {
+					_imageWidget->setSelectionModifier(SelectionModifier::Replace);
+				}
+
+				break;
 			}
 
-			break;
-		}
+			case Qt::Key::Key_Space:
+			{
+				setInteractionMode(InteractionMode::Selection);
+				break;
 
-		case Qt::Key::Key_Space:
-		{
-			setInteractionMode(InteractionMode::Selection);
-			break;
-
-		}
-		default:
-			break;
+			}
+			default:
+				break;
 		}
 	}
 
@@ -279,40 +286,200 @@ void ImageGraphicsView::keyReleaseEvent(QKeyEvent* keyEvent)
 
 void ImageGraphicsView::mousePressEvent(QMouseEvent* mouseEvent)
 {
-	if (mouseEvent->button() == Qt::RightButton)
+	switch (mouseEvent->button())
 	{
-		setInteractionMode(InteractionMode::WindowLevel);
+		case Qt::LeftButton:
+		{
+			switch (_interactionMode)
+			{
+				case InteractionMode::Navigation:
+				{
+					_panning = true;
+
+					viewport()->setCursor(Qt::ClosedHandCursor);
+					
+					mouseEvent->accept();
+					break;
+				}
+
+				case InteractionMode::Selection:
+				{
+					break;
+				}
+
+				case InteractionMode::WindowLevel:
+					break;
+				default:
+					break;
+			}
+			break;
+		}
+
+		case Qt::RightButton:
+		{
+			setInteractionMode(InteractionMode::WindowLevel);
+			break;
+		}
+
+		default:
+			break;
 	}
 
-	_mousePosition = mouseEvent->pos();
+	_interactionStartMousePosition = mouseEvent->pos();
 
 	QGraphicsView::mousePressEvent(mouseEvent);
 }
 
 void ImageGraphicsView::mouseMoveEvent(QMouseEvent* mouseEvent)
 {
-	if (_interactionMode == InteractionMode::WindowLevel)
+	switch (_interactionMode)
 	{
-		const auto deltaWindow	= (mouseEvent->pos().x() - _mousePosition.x()) / 200.0;
-		const auto deltaLevel	= -(mouseEvent->pos().y() - _mousePosition.y()) / 200.0;
-		const auto window		= std::max<double>(0, std::min<double>(_imageWidget->window() + deltaWindow, 1.0f));
-		const auto level		= std::max<double>(0, std::min<double>(_imageWidget->level() + deltaLevel, 1.0f));
+		case InteractionMode::Navigation:
+		{
+			if (mouseEvent->button() == Qt::LeftButton) {
+				//QPointF mouseDelta = mapToScene(mouseEvent->pos()) - mapToScene(_lastMousePosition);
+				//pan(mouseDelta);
 
-		_imageWidget->setWindowLevel(window, level);
+				//horizontalScrollBar()->setValue(horizontalScrollBar()->value() - (mouseEvent->x() - _lastMousePosition.x()));
+				//verticalScrollBar()->setValue(verticalScrollBar()->value() - (mouseEvent->y() - _lastMousePosition.y()));
+				
+				mouseEvent->accept();
+			}
 
-		_mousePosition = mouseEvent->pos();
+			break;
+		}
+		
+		case InteractionMode::Selection:
+			break;
+
+		case InteractionMode::WindowLevel:
+		{
+			const auto deltaWindow	= (mouseEvent->pos().x() - _lastMousePosition.x()) / 200.0;
+			const auto deltaLevel	= -(mouseEvent->pos().y() - _lastMousePosition.y()) / 200.0;
+			const auto window		= std::max<double>(0, std::min<double>(_imageWidget->window() + deltaWindow, 1.0f));
+			const auto level		= std::max<double>(0, std::min<double>(_imageWidget->level() + deltaLevel, 1.0f));
+
+			_imageWidget->setWindowLevel(window, level);
+
+			break;
+		}
+
+		default:
+			break;
 	}
+
+	_lastMousePosition = mouseEvent->pos();
 
 	QGraphicsView::mouseMoveEvent(mouseEvent);
 }
 
-
 void ImageGraphicsView::mouseReleaseEvent(QMouseEvent* mouseEvent)
 {
-	if (mouseEvent->button() == Qt::RightButton)
+	switch (mouseEvent->button())
 	{
-		setInteractionMode(InteractionMode::Selection);
+		case Qt::LeftButton:
+		{
+			switch (_interactionMode)
+			{
+				case InteractionMode::Navigation:
+				{
+					_panning = false;
+
+					viewport()->setCursor(Qt::OpenHandCursor);
+
+					mouseEvent->accept();
+					break;
+				}
+
+				case InteractionMode::Selection:
+				{
+					break;
+				}
+
+				case InteractionMode::WindowLevel:
+					break;
+				default:
+					break;
+			}
+			break;
+		}
+
+		case Qt::RightButton:
+		{
+			setInteractionMode(InteractionMode::WindowLevel);
+			break;
+		}
+
+		default:
+			break;
 	}
+
+	QGraphicsView::mouseReleaseEvent(mouseEvent);
+}
+
+void ImageGraphicsView::wheelEvent(QWheelEvent* wheelEvent)
+{
+	switch (_interactionMode)
+	{
+		case InteractionMode::Navigation:
+		{
+			wheelEvent->angleDelta().y() > 0 ? zoomIn() : zoomOut();
+			break;
+		}
+
+		case InteractionMode::Selection:
+			break;
+
+		case InteractionMode::WindowLevel:
+			break;
+
+		default:
+			break;
+	}
+
+	QGraphicsView::wheelEvent(wheelEvent);
+}
+
+void ImageGraphicsView::resizeEvent(QResizeEvent* resizeEvent)
+{
+	zoomToExtents();
+
+	QGraphicsView::resizeEvent(resizeEvent);
+}
+
+void ImageGraphicsView::pan(QPointF delta)
+{
+	// Scale the pan amount by the current zoom.
+	delta *= _scale;
+	delta *= 4;
+
+	// Have panning be anchored from the mouse.
+	setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
+	QPoint newCenter(viewport()->rect().width() / 2 - delta.x(), viewport()->rect().height() / 2 - delta.y());
+	centerOn(mapToScene(newCenter));
+
+	// For zooming to anchor from the view center.
+	setTransformationAnchor(QGraphicsView::AnchorViewCenter);
+}
+
+void ImageGraphicsView::zoom(const float& scaleFactor)
+{
+	scale(scaleFactor, scaleFactor);
+	_scale *= scaleFactor;
+}
+
+void ImageGraphicsView::zoomIn()
+{
+	zoom(1 + _zoomSensitivity);
+}
+
+void ImageGraphicsView::zoomOut()
+{
+	zoom(1 - _zoomSensitivity);
+}
+
+
+//setInteractionMode(InteractionMode::Selection);
 
 	/*
 	//if (!imageInitialized())
@@ -324,7 +491,7 @@ void ImageGraphicsView::mouseReleaseEvent(QMouseEvent* mouseEvent)
 	if (_imageViewerPlugin->selectable()) {
 		if (mouseEvent->button() == Qt::RightButton)
 		{
-			
+
 		}
 	}
 	//}
@@ -364,21 +531,3 @@ void ImageGraphicsView::mouseReleaseEvent(QMouseEvent* mouseEvent)
 
 	update();
 	*/
-
-	QGraphicsView::mouseReleaseEvent(mouseEvent);
-}
-
-void ImageGraphicsView::wheelEvent(QWheelEvent* wheelEvent)
-{
-	if (wheelEvent->delta() > 0)
-		scale(1.25, 1.25);
-	else
-		scale(0.8, 0.8);
-}
-
-void ImageGraphicsView::resizeEvent(QResizeEvent* resizeEvent)
-{
-	zoomToExtents();
-
-	QGraphicsView::resizeEvent(resizeEvent);
-}
