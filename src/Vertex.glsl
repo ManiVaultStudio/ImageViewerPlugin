@@ -1,14 +1,15 @@
 R"(
 #version 330
 
-attribute highp vec4 vertex;
-attribute mediump vec4 texCoord;
-varying mediump vec4 texc;
-uniform mediump mat4 matrix;
+in vec4 vertex;
+in vec4	texCoord;
+out vec2 uv;
+
+uniform mat4 matrix;
 
 void main(void)
 {
     gl_Position = matrix * vertex;
-    texc = texCoord;
+    uv = vertex.xy;
 }
 )" 
