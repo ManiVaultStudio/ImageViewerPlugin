@@ -96,19 +96,19 @@ void ImageWidget::setDisplayImage(std::vector<std::uint16_t>& displayImage, cons
 		_imageTexture.allocateStorage();
 		_imageTexture.setMinMagFilters(QOpenGLTexture::Filter::Linear, QOpenGLTexture::Filter::Linear);
 
-		_selectionTexture.destroy();
-		_selectionTexture.create();
-		_selectionTexture.setSize(size.width(), size.height(), 1);
-		_selectionTexture.setFormat(QOpenGLTexture::TextureFormat::R8_UNorm);
-		_selectionTexture.allocateStorage();
-		_selectionTexture.setMinMagFilters(QOpenGLTexture::Filter::Linear, QOpenGLTexture::Filter::Linear);
-
 		_overlayTexture.destroy();
 		_overlayTexture.create();
 		_overlayTexture.setSize(size.width(), size.height(), 1);
 		_overlayTexture.setFormat(QOpenGLTexture::TextureFormat::R8_UNorm);
 		_overlayTexture.allocateStorage();
 		_overlayTexture.setMinMagFilters(QOpenGLTexture::Filter::Linear, QOpenGLTexture::Filter::Linear);
+
+		_selectionTexture.destroy();
+		_selectionTexture.create();
+		_selectionTexture.setSize(size.width(), size.height(), 1);
+		_selectionTexture.setFormat(QOpenGLTexture::TextureFormat::R8_UNorm);
+		_selectionTexture.allocateStorage();
+		_selectionTexture.setMinMagFilters(QOpenGLTexture::Filter::Nearest, QOpenGLTexture::Filter::Nearest);
 	}
 
 	_imageTexture.setData(QOpenGLTexture::PixelFormat::Red, QOpenGLTexture::PixelType::UInt16, static_cast<void*>(displayImage.data()));
@@ -125,17 +125,6 @@ void ImageWidget::setSelectionImage(std::vector<std::uint8_t>& selectionImage, c
 {
 	if (!isValid())
 		return;
-
-	if (size.width() != _selectionTexture.width() || size.height() != _selectionTexture.height()) {
-		_selectionTexture.destroy();
-		_selectionTexture.create();
-		_selectionTexture.setSize(size.width(), size.height(), 1);
-		_selectionTexture.setFormat(QOpenGLTexture::TextureFormat::R8U);
-		_selectionTexture.allocateStorage();
-		_selectionTexture.setMinMagFilters(QOpenGLTexture::Filter::Nearest, QOpenGLTexture::Filter::Nearest);
-	}
-
-	//qDebug() << "setSelectionImage" << size << selectionImage;
 
 	_selectionTexture.setData(QOpenGLTexture::PixelFormat::Red, QOpenGLTexture::PixelType::UInt8, static_cast<void*>(selectionImage.data()));
 
@@ -159,7 +148,6 @@ void ImageWidget::initializeGL()
 	QOpenGLShader* selectionFragmentShader	= new QOpenGLShader(QOpenGLShader::Fragment, this);
 
 	if (vertexShader->compileSourceCode(vertexShaderSource.c_str())) {
-		/*
 		if (imageFragmentShader->compileSourceCode(imageFragmentShaderSource.c_str())) {
 			_imageShaderProgram->addShader(vertexShader);
 			_imageShaderProgram->addShader(imageFragmentShader);
@@ -167,7 +155,7 @@ void ImageWidget::initializeGL()
 			_imageShaderProgram->bindAttributeLocation("texCoord", PROGRAM_TEXCOORD_ATTRIBUTE);
 			_imageShaderProgram->link();
 		}
-
+		/*
 		if (overlayFragmentShader->compileSourceCode(overlayFragmentShaderSource.c_str())) {
 			_overlayShaderProgram->addShader(vertexShader);
 			_overlayShaderProgram->addShader(overlayFragmentShader);
@@ -210,7 +198,6 @@ void ImageWidget::paintGL()
 
 	transform.ortho(0.0f, +1.0f, _aspectRatio, 0.0f, -10.0f, +10.0f);
 	
-	/*
 	if (_imageShaderProgram->isLinked()) {
 		transform.translate(0.0f, 0.0f, 0.0f);
 
@@ -235,10 +222,9 @@ void ImageWidget::paintGL()
 			_imageTexture.release();
 		}
 	}
-	*/
 
 	if (_selectionShaderProgram->isLinked()) {
-		transform.translate(0.0f, 0.0f, -1.0f);
+		transform.translate(0.0f, 0.0f, 1.0f);
 
 		_selectionShaderProgram->bind();
 
@@ -253,8 +239,6 @@ void ImageWidget::paintGL()
 
 		if (_selectionTexture.isCreated()) {
 			_selectionTexture.bind();
-
-			qDebug() << "-------------------";
 
 			glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
@@ -449,6 +433,8 @@ break;
 	default:
 		break;
 	}*/
+
+	mouseEvent->ignore();
 }
 
 /*
@@ -580,6 +566,8 @@ void ImageWidget::mouseReleaseEvent(QMouseEvent* mouseEvent)
 
 	QOpenGLWidget::mouseReleaseEvent(mouseEvent);
 	*/
+
+	mouseEvent->ignore();
 }
 
 void ImageWidget::wheelEvent(QWheelEvent* wheelEvent)

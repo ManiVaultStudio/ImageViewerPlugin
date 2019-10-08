@@ -152,7 +152,7 @@ void ImageGraphicsView::contextMenuEvent(QContextMenuEvent* contextMenuEvent)
 
 void ImageGraphicsView::onCurrentDatasetChanged(const QString& currentDataset)
 {
-	_imageWidget->setSelectionImage(std::vector<std::uint8_t>({ 0 }), QSize(1, 1));
+//	_imageWidget->setSelectionImage(std::vector<std::uint8_t>({ 0 }), QSize(1, 1));
 }
 
 void ImageGraphicsView::onDisplayImageChanged(std::vector<std::uint16_t>& displayImage, const QSize& imageSize, const double& imageMin, const double& imageMax)
@@ -285,6 +285,8 @@ void ImageGraphicsView::mousePressEvent(QMouseEvent* mouseEvent)
 	}
 
 	_mousePosition = mouseEvent->pos();
+
+	QGraphicsView::mousePressEvent(mouseEvent);
 }
 
 void ImageGraphicsView::mouseMoveEvent(QMouseEvent* mouseEvent)
@@ -361,10 +363,9 @@ void ImageGraphicsView::mouseReleaseEvent(QMouseEvent* mouseEvent)
 	}
 
 	update();
-
-
-	//QGraphicsView::mouseReleaseEvent(mouseEvent);
 	*/
+
+	QGraphicsView::mouseReleaseEvent(mouseEvent);
 }
 
 void ImageGraphicsView::wheelEvent(QWheelEvent* wheelEvent)
