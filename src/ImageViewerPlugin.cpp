@@ -13,7 +13,7 @@
 #include <vector>
 #include <limits>
 
-#include "ImageViewWidget.h"
+//#include "ImageViewWidget.h"
 
 Q_PLUGIN_METADATA(IID "nl.tudelft.ImageViewerPlugin")
 
@@ -23,7 +23,7 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	ViewPlugin("Image Viewer"),
 	_imageViewerWidget(nullptr),
 	_settingsWidget(nullptr),
-	_windowWidget(nullptr),
+//	_windowWidget(nullptr),
 	_datasetNames(),
 	_currentDataset(),
 	_imageNames(),
@@ -36,7 +36,7 @@ ImageViewerPlugin::ImageViewerPlugin() :
 
 	_imageViewerWidget	= new ImageViewerWidget(this);
 	_settingsWidget		= new SettingsWidget(this);
-	_windowWidget		= new ImageViewWidget(this);
+	//_windowWidget		= new ImageViewWidget(this);
 
 	connect(this, &ImageViewerPlugin::currentDatasetChanged, this, &ImageViewerPlugin::computeDisplayImage);
 	connect(this, &ImageViewerPlugin::currentImageIdChanged, this, &ImageViewerPlugin::computeDisplayImage);
@@ -368,12 +368,7 @@ void ImageViewerPlugin::computeDisplayImage()
 
 	const auto noPointsPerDimension = this->noPointsPerDimension();
 
-	auto imageTextureData = std::vector<std::uint16_t>();
-
-	imageTextureData.resize(noPixels);
-
-	double imageMin = std::numeric_limits<std::uint16_t>::max();
-	double imageMax = std::numeric_limits<std::uint16_t>::min();
+	auto image = std::make_unique<Image<std::uint16_t>>(imageSize.width(), imageSize.height());
 
 	switch (imageCollectionType()) {
 		case ImageCollectionType::Sequence: {
@@ -401,21 +396,6 @@ void ImageViewerPlugin::computeDisplayImage()
 
 			for (std::int32_t x = 0; x < width; x++) {
 				for (std::int32_t y = 0; y < height; y++) {
-					for (unsigned int displayImageId : displayImages) {
-						const auto pointId	= ImageViewerPlugin::sequencePixelCoordinateToPointId(imageSize, displayImageId, noPixels, x, y);
-						const auto value	= pointsData[pointId];
-
-						if (value < imageMin)
-							imageMin = value;
-
-						if (value > imageMax)
-							imageMax = value;
-					}
-				}
-			}
-
-			for (std::int32_t x = 0; x < width; x++) {
-				for (std::int32_t y = 0; y < height; y++) {
 					auto pixelValue = 0.0;
 
 					for (unsigned int displayImageId : displayImages) {
@@ -426,7 +406,7 @@ void ImageViewerPlugin::computeDisplayImage()
 
 					pixelValue /= static_cast<float>(noDisplayImages);
 
-					imageTextureData[y * imageSize.width() + x] = static_cast<std::uint16_t>(pixelValue);
+					image->setPixel(x, y, static_cast<std::uint16_t>(pixelValue));
 				}
 			}
 
@@ -449,21 +429,6 @@ void ImageViewerPlugin::computeDisplayImage()
 
 			for (std::int32_t x = 0; x < width; x++) {
 				for (std::int32_t y = 0; y < height; y++) {
-					for (unsigned int displayDimensionId : displayDimensions) {
-						const auto pointId	= stackPixelCoordinateToPointId(imageSize, noImages, displayDimensionId, x, y);
-						const auto value	= pointsData[pointId];
-
-						if (value < imageMin)
-							imageMin = value;
-
-						if (value > imageMax)
-							imageMax = value;
-					}
-				}
-			}
-
-			for (std::int32_t x = 0; x < width; x++) {
-				for (std::int32_t y = 0; y < height; y++) {
 					auto pixelValue = 0.f;
 
 					for (unsigned int displayDimensionId : displayDimensions) {
@@ -474,7 +439,7 @@ void ImageViewerPlugin::computeDisplayImage()
 
 					pixelValue /= static_cast<float>(noDisplayDimensions);
 
-					imageTextureData[y * imageSize.width() + x] = static_cast<std::uint16_t>(pixelValue);
+					image->setPixel(x, y, static_cast<std::uint16_t>(pixelValue));
 				}
 			}
 
@@ -499,21 +464,6 @@ void ImageViewerPlugin::computeDisplayImage()
 
 			for (std::int32_t x = 0; x < width; x++) {
 				for (std::int32_t y = 0; y < height; y++) {
-					for (unsigned int displayDimensionId : displayDimensions) {
-						const auto pointId	= ImageViewerPlugin::multipartSequencePixelCoordinateToPointId(imageSize, noPointsPerDimension, pixelOffset, displayDimensionId, x, y);
-						const auto value	= pointsData[pointId];
-
-						if (value < imageMin)
-							imageMin = value;
-
-						if (value > imageMax)
-							imageMax = value;
-					}
-				}
-			}
-
-			for (std::int32_t x = 0; x < width; x++) {
-				for (std::int32_t y = 0; y < height; y++) {
 					auto pixelValue = 0.f;
 
 					for (unsigned int displayDimensionId : displayDimensions) {
@@ -524,7 +474,7 @@ void ImageViewerPlugin::computeDisplayImage()
 
 					pixelValue /= static_cast<float>(noDisplayDimensions);
 
-					imageTextureData[y * imageSize.width() + x] = static_cast<std::uint16_t>(pixelValue);
+					image->setPixel(x, y, static_cast<std::uint16_t>(pixelValue));
 				}
 			}
 			
@@ -534,11 +484,14 @@ void ImageViewerPlugin::computeDisplayImage()
 		}
 	}
 
-	emit displayImageChanged(imageTextureData, imageSize, imageMin, imageMax);
+	image->computeMinMax();
+
+	emit displayImageChanged(image);
 }
 
 void ImageViewerPlugin::computeSelectionImage()
 {
+	/*
 	const auto imageSize	= this->imageSize();
 	const auto width		= imageSize.width();
 	const auto height		= imageSize.height();
@@ -583,6 +536,7 @@ void ImageViewerPlugin::computeSelectionImage()
 	}
 
 	emit selectionImageChanged(selectionTextureData, imageSize);
+	*/
 }
 
 QString ImageViewerPlugin::currentDataset() const

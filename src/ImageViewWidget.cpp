@@ -15,9 +15,9 @@ ImageViewWidget::ImageViewWidget(ImageViewerPlugin* imageViewerPlugin) :
 	mainLayout->setSpacing(0);
 	mainLayout->setMargin(0);
 
-	_imageGraphicsView = new ImageGraphicsView(imageViewerPlugin);
+//	_imageGraphicsView = new ImageGraphicsView(imageViewerPlugin);
 	
-	mainLayout->addWidget(_imageGraphicsView);
+	//mainLayout->addWidget(_imageGraphicsView);
 	setLayout(mainLayout);
 
 	setWindowTitle(tr("GraphicsView + OpenGL Test Unit"));

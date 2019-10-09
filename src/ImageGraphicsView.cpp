@@ -1,3 +1,4 @@
+/*
 #include "ImageGraphicsView.h"
 #include "ImageWidget.h"
 #include "ImageViewerPlugin.h"
@@ -6,7 +7,7 @@
 #include <QMenu>
 #include <QScrollBar>
 
-ImageGraphicsView::ImageGraphicsView(ImageViewerPlugin* imageViewerPlugin, QWidget *parent /*= 0*/) :
+ImageGraphicsView::ImageGraphicsView(ImageViewerPlugin* imageViewerPlugin, QWidget *parent ) :
 	QGraphicsView(parent),
 	_imageViewerPlugin(imageViewerPlugin),
 	_graphicsScene(nullptr),
@@ -477,7 +478,7 @@ void ImageGraphicsView::zoomOut()
 {
 	zoom(1 - _zoomSensitivity);
 }
-
+*/
 
 //setInteractionMode(InteractionMode::Selection);
 

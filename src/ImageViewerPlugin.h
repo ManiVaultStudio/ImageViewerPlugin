@@ -3,6 +3,7 @@
 #include <ViewPlugin.h>
 
 #include "PointsPlugin.h"
+#include "Image.h"
 #include "Common.h"
 
 #include <QComboBox>
@@ -90,13 +91,13 @@ signals:
 	void dimensionNamesChanged(const QStringList& dimensionNames);
 	void currentDimensionIdChanged(const std::int32_t& currentDimensionId);
 	void averageImagesChanged(const bool& averageImages);
-	void displayImageChanged(std::vector<std::uint16_t>& displayImage, const QSize& imageSize, const double& imageMin, const double& imageMax);
-	void selectionImageChanged(std::vector<std::uint8_t>& selectionImage, const QSize& imageSize);
+	void displayImageChanged(std::unique_ptr<Image<std::uint16_t>>& displayImage);
+	void selectionImageChanged(std::unique_ptr<Image<std::uint8_t>>& selectionImage);
 
 private:
 	ImageViewerWidget*	_imageViewerWidget;
 	SettingsWidget*		_settingsWidget;
-	ImageViewWidget*	_windowWidget;
+	//ImageViewWidget*	_windowWidget;
 	QStringList			_datasetNames;
 	QString				_currentDataset;
 	QStringList			_imageNames;

@@ -1,5 +1,5 @@
 #pragma once
-
+/*
 #include "Common.h"
 
 #include <QOpenGLWidget>
@@ -80,3 +80,4 @@ private:
 	double					_imageMin;
 	double					_imageMax;
 };
+*/

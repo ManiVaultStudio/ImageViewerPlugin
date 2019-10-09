@@ -1,5 +1,6 @@
 #pragma once
 
+/*
 #include "Common.h"
 
 #include <QGraphicsView>
@@ -64,3 +65,4 @@ private:
 	float				_scale;
 	float				_zoomSensitivity;
 };
+*/

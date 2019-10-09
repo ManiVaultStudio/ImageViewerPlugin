@@ -1,82 +1,115 @@
 #pragma once
 
-#include "Common.h"
+#include <vector>
+#include <map>
 
-#include <QOpenGLWidget>
-#include <QOpenGLFunctions>
-#include <QOpenGLBuffer>
-#include <QOpenGLTexture>
-#include <QMatrix4x4>
+#include <QDebug>
 
-QT_FORWARD_DECLARE_CLASS(QOpenGLShaderProgram);
-QT_FORWARD_DECLARE_CLASS(QOpenGLTexture)
-
-class ImageWidget : public QOpenGLWidget, protected QOpenGLFunctions
+template<class PixelType>
+class Image
 {
-	Q_OBJECT
-
 public:
-	explicit ImageWidget(QWidget *parent = 0);
-	~ImageWidget();
+	Image() :
+		_width(0),
+		_height(0),
+		_pixels(),
+		_min(std::numeric_limits<double>::min()),
+		_max(std::numeric_limits<double>::max())
+	{
+	}
 
-	void setDisplayImage(std::vector<std::uint16_t>& image, const QSize& size, const double& imageMin, const double& imageMax);
-	void setSelectionImage(std::vector<std::uint8_t>& selectionImage, const QSize& size);
+	Image(const std::uint32_t& width, const std::uint32_t& height) :
+		_width(0),
+		_height(0),
+		_pixels(),
+		_min(std::numeric_limits<double>::min()),
+		_max(std::numeric_limits<double>::max())
+	{
+		create(width, height);
+	}
 
-protected:
-	void initializeGL() Q_DECL_OVERRIDE;
-	void paintGL() Q_DECL_OVERRIDE;
-	void resizeGL(int width, int height) Q_DECL_OVERRIDE;
+	void create(const std::uint32_t& width, const std::uint32_t& height)
+	{
+		if (width == _width && height == _height)
+			return;
 
-public:
-	double window() const;
-	double level() const;
-	void setWindowLevel(const double& window, const double& level);
-	void resetWindowLevel();
+		_width	= width;
+		_height = height;
 
-	void update();
+		_pixels.clear();
+		_pixels.resize(noPixels());
+	}
+
+	void computeMinMax()
+	{
+		const auto[min, max] = std::minmax_element(begin(_pixels), end(_pixels));
+
+		_min = static_cast<PixelType>(*min);
+		_max = static_cast<PixelType>(*max);
+	}
+
+	void setPixel(const std::uint32_t& x, const std::uint32_t& y, const PixelType& pixel)
+	{
+		_pixels[y * _width + x] = pixel;
+	}
+
+	void computeWindowLevel(const double& windowNorm, const double& levelNorm, double& window, double& level)
+	{
+		const double min = _min;
+		const double max = _max;
+		const double maxWindow = max - min;
+
+		level = std::clamp(min, min + (levelNorm * maxWindow), max);
+		window = std::clamp(min, windowNorm * maxWindow, max);
+
+		/*
+		double window = 0.0;
+		double level = 0.0;
+
+		computeWindowLevel(window, level);
+
+		const auto minPixelValue = std::clamp(_imageViewerPlugin->imageMin(), level - (window / 2.0), _imageViewerPlugin->imageMax());
+		const auto maxPixelValue = std::clamp(_imageViewerPlugin->imageMin(), level + (window / 2.0), _imageViewerPlugin->imageMax());
+		*/
+	}
+
+	std::uint32_t width() const
+	{
+		return _width;
+	}
+
+	std::uint32_t height() const
+	{
+		return _height;
+	}
+
+	std::uint32_t noPixels() const
+	{
+		return _width * _height;
+	}
+
+	bool isCreated() const
+	{
+		return noPixels() > 0;
+	}
+
+	std::vector<PixelType>& pixels()
+	{
+		return _pixels;
+	}
 
 private:
-	void makeObject();
-	void setView(int w, int h);
-	
-	void computeWindowLevel(double& window, double& level);
-
-public:
-	SelectionType selectionType() const;
-	void setSelectionType(const SelectionType& selectionType);
-	SelectionModifier selectionModifier() const;
-	void setSelectionModifier(const SelectionModifier& selectionModifier);
-	void setBrushRadius(const float& brushRadius);
-
-private:
-	void mousePressEvent(QMouseEvent* mouseEvent) Q_DECL_OVERRIDE;
-	//void mouseMoveEvent(QMouseEvent* mouseEvent) Q_DECL_OVERRIDE;
-	void mouseReleaseEvent(QMouseEvent* mouseEvent) Q_DECL_OVERRIDE;
-	void wheelEvent(QWheelEvent* wheelEvent) Q_DECL_OVERRIDE;
-
-signals:
-	void selectionTypeChanged();
-	void selectionModifierChanged();
-	void rendered();
-
-private:
-	QPoint					_initialMousePosition;
-	QPoint					_lastMousePosition;
-	QOpenGLShaderProgram*	_imageShaderProgram;
-	QOpenGLShaderProgram*	_overlayShaderProgram;
-	QOpenGLShaderProgram*	_selectionShaderProgram;
-	QOpenGLBuffer			_vbo;
-	QOpenGLTexture			_imageTexture;
-	QOpenGLTexture			_overlayTexture;
-	QOpenGLTexture			_selectionTexture;
-	float					_aspectRatio;
-	bool					_selecting;
-	SelectionType			_selectionType;
-	SelectionModifier		_selectionModifier;
-	float					_brushRadius;
-	float					_brushRadiusDelta;
-	double					_window;
-	double					_level;
-	double					_imageMin;
-	double					_imageMax;
+	std::uint32_t			_width;
+	std::uint32_t			_height;
+	std::vector<PixelType>	_pixels;
+	PixelType				_min;
+	PixelType				_max;
 };
+
+template<class PixelType>
+QDebug operator<<(QDebug dbg, const Image<PixelType>& image)
+{
+	dbg << QString("%1x%2").arg(QString::number(image.width()), QString::number(image.height()));
+
+	return dbg;
+}

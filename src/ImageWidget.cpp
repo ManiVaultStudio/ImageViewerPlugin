@@ -1,3 +1,4 @@
+/*
 #include "ImageWidget.h"
 
 #include <QOpenGLShaderProgram>
@@ -163,7 +164,7 @@ void ImageWidget::initializeGL()
 			_imageShaderProgram->bindAttributeLocation("texCoord", PROGRAM_TEXCOORD_ATTRIBUTE);
 			_imageShaderProgram->link();
 		}
-		/*
+		
 		if (overlayFragmentShader->compileSourceCode(overlayFragmentShaderSource.c_str())) {
 			_overlayShaderProgram->addShader(vertexShader);
 			_overlayShaderProgram->addShader(overlayFragmentShader);
@@ -171,7 +172,7 @@ void ImageWidget::initializeGL()
 			_overlayShaderProgram->bindAttributeLocation("texCoord", PROGRAM_TEXCOORD_ATTRIBUTE);
 			_overlayShaderProgram->link();
 		}
-		*/
+		
 
 		if (selectionFragmentShader->compileSourceCode(selectionFragmentShaderSource.c_str())) {
 			_selectionShaderProgram->addShader(vertexShader);
@@ -396,7 +397,6 @@ void ImageWidget::mousePressEvent(QMouseEvent* mouseEvent)
 	//if (!imageInitialized())
 	//	return;
 
-	/*
 	qDebug() << "Mouse press event";
 
 	switch (mouseEvent->button())
@@ -442,7 +442,7 @@ break;
 
 	default:
 		break;
-	}*/
+	}
 
 	mouseEvent->ignore();
 }
@@ -521,7 +521,7 @@ void ImageWidget::mouseMoveEvent(QMouseEvent* mouseEvent)
 	_mousePosition = mouseEvent->pos();
 	
 }
-*/
+
 void ImageWidget::mouseReleaseEvent(QMouseEvent* mouseEvent)
 {
 	/*
@@ -575,14 +575,13 @@ void ImageWidget::mouseReleaseEvent(QMouseEvent* mouseEvent)
 	update();
 
 	QOpenGLWidget::mouseReleaseEvent(mouseEvent);
-	*/
+	
 
 	mouseEvent->ignore();
 }
 
 void ImageWidget::wheelEvent(QWheelEvent* wheelEvent)
 {
-	/*
 	if (!imageInitialized())
 		return;
 
@@ -627,5 +626,5 @@ void ImageWidget::wheelEvent(QWheelEvent* wheelEvent)
 	default:
 		break;
 	}
-	*/
 }
+*/
