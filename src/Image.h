@@ -98,6 +98,16 @@ public:
 		return _pixels;
 	}
 
+	PixelType min() const
+	{
+		return _min;
+	}
+
+	PixelType max() const
+	{
+		return _max;
+	}
+
 private:
 	std::uint32_t			_width;
 	std::uint32_t			_height;

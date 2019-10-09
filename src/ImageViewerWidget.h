@@ -52,6 +52,8 @@ protected:
 	void resizeGL(int w, int h) Q_DECL_OVERRIDE;
 	void paintGL() Q_DECL_OVERRIDE;
 
+	void keyPressEvent(QKeyEvent* keyEvent) Q_DECL_OVERRIDE;
+	void keyReleaseEvent(QKeyEvent* keyEvent) Q_DECL_OVERRIDE;
 	void mousePressEvent(QMouseEvent* mouseEvent) Q_DECL_OVERRIDE;
 	void mouseMoveEvent(QMouseEvent* mouseEvent) Q_DECL_OVERRIDE;
 	void mouseReleaseEvent(QMouseEvent* mouseEvent) Q_DECL_OVERRIDE;
