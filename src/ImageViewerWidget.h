@@ -25,6 +25,7 @@ class ImageViewerWidget : public QOpenGLWidget, protected QOpenGLFunctions
 public:
 	ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin);
 
+public:
 	InteractionMode interactionMode() const;
 	void setInteractionMode(const InteractionMode& interactionMode);
 	SelectionType selectionType() const;
@@ -36,22 +37,18 @@ public:
 	void modifySelection(const Indices& selectedPointIds, const std::int32_t& pixelOffset = 0);
 	void clearSelection();
 
-signals:
-	void selectionTypeChanged();
-	void selectionModifierChanged();
-	void brushRadiusChanged();
-
 public:
 	void onDisplayImageChanged(std::unique_ptr<Image<std::uint16_t>>& displayImage);
 	void onSelectionImageChanged(std::unique_ptr<Image<std::uint8_t>>& selectionImage);
 	void onCurrentDatasetChanged(const QString& currentDataset);
 	void onCurrentImageIdChanged(const std::int32_t& currentImageId);
 
-protected:
+private:
 	void initializeGL() Q_DECL_OVERRIDE;
 	void resizeGL(int w, int h) Q_DECL_OVERRIDE;
 	void paintGL() Q_DECL_OVERRIDE;
 
+private:
 	void keyPressEvent(QKeyEvent* keyEvent) Q_DECL_OVERRIDE;
 	void keyReleaseEvent(QKeyEvent* keyEvent) Q_DECL_OVERRIDE;
 	void mousePressEvent(QMouseEvent* mouseEvent) Q_DECL_OVERRIDE;
@@ -73,7 +70,7 @@ private:
 	void zoomExtents();
 	void resetView();
 
-	bool imageInitialized();
+	bool initialized();
 	void updateSelection();
 	void commitSelection();
 
@@ -88,7 +85,11 @@ private:
 	void createImageQuad();
 	void setupTextures();
 	void setupTexture(QOpenGLTexture* openGltexture, const QOpenGLTexture::TextureFormat& textureFormat, const QOpenGLTexture::Filter& filter = QOpenGLTexture::Filter::Linear);
-	void resetTexture(const QString& textureName);
+
+signals:
+	void selectionTypeChanged();
+	void selectionModifierChanged();
+	void brushRadiusChanged();
 
 private:
 	ImageViewerPlugin*						_imageViewerPlugin;
@@ -115,5 +116,6 @@ private:
 	Indices									_selectedPointIds;
 	QAction*								_zoomToExtentsAction;
 	QOpenGLShaderProgram					_imageShaderProgram;
+	QOpenGLShaderProgram					_selectionShaderProgram;
 	QOpenGLBuffer							_vertexBuffer;
 };

@@ -491,7 +491,6 @@ void ImageViewerPlugin::computeDisplayImage()
 
 void ImageViewerPlugin::computeSelectionImage()
 {
-	/*
 	const auto imageSize	= this->imageSize();
 	const auto width		= imageSize.width();
 	const auto height		= imageSize.height();
@@ -501,9 +500,7 @@ void ImageViewerPlugin::computeSelectionImage()
 
 	qDebug() << "Compute selection image" << imageSize << pointsData.size();
 
-	auto selectionTextureData = std::vector<std::uint8_t>();
-
-	selectionTextureData.resize(noPixels);
+	auto image = std::make_unique<Image<std::uint8_t>>(imageSize.width(), imageSize.height());
 
 	if (hasSelection()) {
 		switch (imageCollectionType())
@@ -513,7 +510,7 @@ void ImageViewerPlugin::computeSelectionImage()
 			{
 				const auto offset = index * 4;
 
-				selectionTextureData[index] = 255;
+				image->pixels()[index] = 255;
 			}
 		}
 
@@ -529,14 +526,13 @@ void ImageViewerPlugin::computeSelectionImage()
 				if (selectionId < pointIndexStart || selectionId >= pointIndexEnd)
 					continue;
 
-				selectionTextureData[selectionId - pointIndexStart] = 255;
+				image->pixels()[selectionId - pointIndexStart] = 255;
 			}
 		}
 		}
 	}
 
-	emit selectionImageChanged(selectionTextureData, imageSize);
-	*/
+	emit selectionImageChanged(image);
 }
 
 QString ImageViewerPlugin::currentDataset() const

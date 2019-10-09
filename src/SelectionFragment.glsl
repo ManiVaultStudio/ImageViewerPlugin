@@ -9,6 +9,6 @@ out vec4 fragmentColor;
 void main(void)
 {
 	float value = float(texture(selectionTexture, uv).r);
-	fragmentColor = vec4(1);//value > 0 ? vec4(1, 0, 0, 1) : vec4(0);
+	fragmentColor = value > 0 ? vec4(1, 0, 0, 1) : vec4(0);
 }
 )"
