@@ -57,7 +57,8 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_selectionGeometryColor(255, 0, 0, 255),
 	_selectedPointIds(),
 	_zoomToExtentsAction(nullptr),
-	_vertexBuffer(QOpenGLBuffer::VertexBuffer)
+	_vertexBuffer(QOpenGLBuffer::VertexBuffer),
+	_ignorePaintGL(false)
 {
 	setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
 	setFocusPolicy(Qt::StrongFocus);
@@ -177,12 +178,40 @@ void ImageViewerWidget::setBrushRadius(const float& brushRadius)
 	emit brushRadiusChanged();
 }
 
+std::pair<double, double> ImageViewerWidget::windowLevel() const
+{
+	return std::make_pair(_window, _level);
+}
+
+void ImageViewerWidget::setWindowLevel(const double& window, const double& level)
+{
+	if (window == _window && level == _level)
+		return;
+
+	_window = window;
+	_level	= level;
+
+	qDebug() << "Set window/level" << _window << _level;
+
+	update();
+}
+
+void ImageViewerWidget::resetWindowLevel()
+{
+	_window = 1.0;
+	_level	= 0.5;
+
+	update();
+}
+
 void ImageViewerWidget::onDisplayImageChanged(std::unique_ptr<Image<std::uint16_t>>& displayImage)
 {
 	if (!isValid())
 		return;
 
 	makeCurrent();
+
+	_ignorePaintGL = true;
 
 	qDebug() << "Display image changed" << *displayImage.get();
 
@@ -201,10 +230,13 @@ void ImageViewerWidget::onDisplayImageChanged(std::unique_ptr<Image<std::uint16_
 	_textures["image"]->setData(QOpenGLTexture::PixelFormat::Red, QOpenGLTexture::PixelType::UInt16, static_cast<void*>(_displayImage->pixels().data()));
 
 	if (imageSizeChanged) {
-		qDebug() << "Reset view";
 		createImageQuad();
 		zoomExtents();
 	}
+
+	resetWindowLevel();
+
+	_ignorePaintGL = false;
 
 	doneCurrent();
 
@@ -376,6 +408,9 @@ void ImageViewerWidget::resizeGL(int w, int h)
 
 void ImageViewerWidget::paintGL() {
 
+	if (_ignorePaintGL)
+		return;
+
 	glClearColor(0.1, 0.1, 0.1, 1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -399,11 +434,18 @@ void ImageViewerWidget::paintGL() {
 	if (_imageShaderProgram.isLinked()) {
 		_imageShaderProgram.bind();
 
+		double window, level;
+
+		_displayImage->computeWindowLevel(_window, _level, window, level);
+
+		const auto minPixelValue = std::clamp(static_cast<float>(_displayImage->min()), static_cast<float>(level - (window / 2.0)), static_cast<float>(_displayImage->max()));
+		const auto maxPixelValue = std::clamp(static_cast<float>(_displayImage->min()), static_cast<float>(level + (window / 2.0)), static_cast<float>(_displayImage->max()));
+
 		_imageShaderProgram.setUniformValue("imageTexture", 0);
-		//_imageShaderProgram.setUniformValue("minPixelValue", static_cast<GLfloat>(minPixelValue));
-		//_imageShaderProgram.setUniformValue("maxPixelValue", static_cast<GLfloat>(maxPixelValue));
-		_imageShaderProgram.setUniformValue("minPixelValue", static_cast<float>(_displayImage->min()));
-		_imageShaderProgram.setUniformValue("maxPixelValue", static_cast<float>(_displayImage->max()));
+		_imageShaderProgram.setUniformValue("minPixelValue", static_cast<GLfloat>(minPixelValue));
+		_imageShaderProgram.setUniformValue("maxPixelValue", static_cast<GLfloat>(maxPixelValue));
+		//_imageShaderProgram.setUniformValue("minPixelValue", static_cast<float>(_displayImage->min()));
+		//_imageShaderProgram.setUniformValue("maxPixelValue", static_cast<float>(_displayImage->max()));
 		_imageShaderProgram.setUniformValue("matrix", transform);
 		_imageShaderProgram.enableAttributeArray(PROGRAM_VERTEX_ATTRIBUTE);
 		_imageShaderProgram.enableAttributeArray(PROGRAM_TEXCOORD_ATTRIBUTE);
@@ -627,12 +669,12 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 
 		case Qt::RightButton:
 		{
-			const auto deltaWindow = (mouseEvent->pos().x() - _mousePosition.x()) / static_cast<double>(_displayImage->width());
-			const auto deltaLevel = (mouseEvent->pos().y() - _mousePosition.y()) / static_cast<double>(_displayImage->height());
-			//const auto window = std::max<double>(0, std::min<double>(_imageViewerPlugin->window() + deltaWindow, 1.0f));
-			//const auto level = std::max<double>(0, std::min<double>(_imageViewerPlugin->level() + deltaLevel, 1.0f));
+			const auto deltaWindow	= (mouseEvent->pos().x() - _mousePosition.x()) / static_cast<double>(_displayImage->width());
+			const auto deltaLevel	= (mouseEvent->pos().y() - _mousePosition.y()) / static_cast<double>(_displayImage->height());
+			const auto window		= std::max<double>(0, std::min<double>(_window + deltaWindow, 1.0f));
+			const auto level		= std::max<double>(0, std::min<double>(_level + deltaLevel, 1.0f));
 
-			//_imageViewerPlugin->setWindowLevel(window, level);
+			setWindowLevel(window, level);
 
 			break;
 		}

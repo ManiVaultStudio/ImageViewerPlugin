@@ -33,6 +33,9 @@ public:
 	SelectionModifier selectionModifier() const;
 	void setSelectionModifier(const SelectionModifier& selectionModifier);
 	void setBrushRadius(const float& brushRadius);
+	std::pair<double, double> windowLevel() const;
+	void setWindowLevel(const double& window, const double& level);
+	void resetWindowLevel();
 
 	void modifySelection(const Indices& selectedPointIds, const std::int32_t& pixelOffset = 0);
 	void clearSelection();
@@ -118,4 +121,7 @@ private:
 	QOpenGLShaderProgram					_imageShaderProgram;
 	QOpenGLShaderProgram					_selectionShaderProgram;
 	QOpenGLBuffer							_vertexBuffer;
+	double									_window;
+	double									_level;
+	bool									_ignorePaintGL;
 };
