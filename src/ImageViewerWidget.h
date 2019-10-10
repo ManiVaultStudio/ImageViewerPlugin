@@ -3,6 +3,7 @@
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions>
 #include <QOpenGLTexture>
+#include <QOpenGLFramebufferObject>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLBuffer>
 
@@ -24,6 +25,7 @@ class ImageViewerWidget : public QOpenGLWidget, protected QOpenGLFunctions
 
 public:
 	ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin);
+	~ImageViewerWidget();
 
 public:
 	InteractionMode interactionMode() const;
@@ -98,8 +100,17 @@ private:
 	ImageViewerPlugin*						_imageViewerPlugin;
 	std::unique_ptr<Image<std::uint16_t>>	_displayImage;
 	std::unique_ptr<Image<std::uint8_t>>	_selectionImage;
-	TextureMap								_textures;
-	ShaderMap								_shaders;
+
+	// QT OpenGL
+	std::unique_ptr<QOpenGLTexture>			_imageTexture;
+	std::unique_ptr<QOpenGLTexture>			_selectionTexture;
+	std::unique_ptr<QOpenGLShader>			_vertexShader;
+	std::unique_ptr<QOpenGLShader>			_imageFragmentShader;
+	std::unique_ptr<QOpenGLShader>			_selectionFragmentShader;
+	std::unique_ptr<QOpenGLShaderProgram>	_imageShaderProgram;
+	std::unique_ptr<QOpenGLShaderProgram>	_selectionShaderProgram;
+	QOpenGLBuffer							_imageQuadVBO;
+
 	InteractionMode							_interactionMode;
 	QPoint									_initialMousePosition;
 	QPoint									_mousePosition;
@@ -118,9 +129,9 @@ private:
 	QColor									_selectionGeometryColor;
 	Indices									_selectedPointIds;
 	QAction*								_zoomToExtentsAction;
-	QOpenGLShaderProgram					_imageShaderProgram;
-	QOpenGLShaderProgram					_selectionShaderProgram;
-	QOpenGLBuffer							_vertexBuffer;
+	//QOpenGLFramebufferObject				_overlayFrameBufferObject;
+	
+	
 	double									_window;
 	double									_level;
 	bool									_ignorePaintGL;
