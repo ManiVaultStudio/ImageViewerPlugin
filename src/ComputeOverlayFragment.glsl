@@ -1,8 +1,6 @@
 R"(
 #version 330
 
-uniform sampler2D overlayTexture;
-
 in vec2 uv;
 out vec4 fragmentColor;
 

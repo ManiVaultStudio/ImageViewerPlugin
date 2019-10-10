@@ -97,42 +97,45 @@ signals:
 	void brushRadiusChanged();
 
 private:
-	ImageViewerPlugin*						_imageViewerPlugin;
-	std::unique_ptr<Image<std::uint16_t>>	_displayImage;
-	std::unique_ptr<Image<std::uint8_t>>	_selectionImage;
+	ImageViewerPlugin*							_imageViewerPlugin;
+	std::unique_ptr<Image<std::uint16_t>>		_displayImage;
+	std::unique_ptr<Image<std::uint8_t>>		_selectionImage;
 
 	// QT OpenGL
-	std::unique_ptr<QOpenGLTexture>			_imageTexture;
-	std::unique_ptr<QOpenGLTexture>			_selectionTexture;
-	std::unique_ptr<QOpenGLShader>			_vertexShader;
-	std::unique_ptr<QOpenGLShader>			_imageFragmentShader;
-	std::unique_ptr<QOpenGLShader>			_selectionFragmentShader;
-	std::unique_ptr<QOpenGLShaderProgram>	_imageShaderProgram;
-	std::unique_ptr<QOpenGLShaderProgram>	_selectionShaderProgram;
-	QOpenGLBuffer							_imageQuadVBO;
+	std::unique_ptr<QOpenGLTexture>				_imageTexture;
+	std::unique_ptr<QOpenGLTexture>				_selectionTexture;
+	std::unique_ptr<QOpenGLShader>				_vertexShader;
+	std::unique_ptr<QOpenGLShader>				_imageFragmentShader;
+	std::unique_ptr<QOpenGLShader>				_overlayFragmentShader;
+	std::unique_ptr<QOpenGLShader>				_selectionFragmentShader;
+	std::unique_ptr<QOpenGLShaderProgram>		_imageShaderProgram;
+	std::unique_ptr<QOpenGLShaderProgram>		_overlayShaderProgram;
+	std::unique_ptr<QOpenGLShaderProgram>		_selectionShaderProgram;
+	std::unique_ptr<QOpenGLFramebufferObject>	_overlayFBO;
+	QOpenGLBuffer								_imageQuadVBO;
 
-	InteractionMode							_interactionMode;
-	QPoint									_initialMousePosition;
-	QPoint									_mousePosition;
-	QPointF									_pan;
-	float									_zoom;
-	float									_zoomSensitivity;
-	int										_margin;
-	bool									_selecting;
-	SelectionType							_selectionType;
-	SelectionModifier						_selectionModifier;
-	bool									_selectionRealtime;
-	float									_brushRadius;
-	float									_brushRadiusDelta;
-	QColor									_selectionColor;
-	QColor									_selectionProxyColor;
-	QColor									_selectionGeometryColor;
-	Indices									_selectedPointIds;
-	QAction*								_zoomToExtentsAction;
-	//QOpenGLFramebufferObject				_overlayFrameBufferObject;
+	InteractionMode								_interactionMode;
+	QPoint										_initialMousePosition;
+	QPoint										_mousePosition;
+	QPointF										_pan;
+	float										_zoom;
+	float										_zoomSensitivity;
+	int											_margin;
+	bool										_selecting;
+	SelectionType								_selectionType;
+	SelectionModifier							_selectionModifier;
+	bool										_selectionRealtime;
+	float										_brushRadius;
+	float										_brushRadiusDelta;
+	QColor										_selectionColor;
+	QColor										_selectionProxyColor;
+	QColor										_selectionGeometryColor;
+	Indices										_selectedPointIds;
+	QAction*									_zoomToExtentsAction;
+	//QOpenGLFramebufferObject					_overlayFrameBufferObject;
 	
 	
-	double									_window;
-	double									_level;
-	bool									_ignorePaintGL;
+	double										_window;
+	double										_level;
+	bool										_ignorePaintGL;
 };

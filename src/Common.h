@@ -58,7 +58,7 @@ enum class SelectionType
 	Freehand
 };
 
-inline QString selectionTypeTypeName(const SelectionType& selectionType)
+inline QString selectionTypeName(const SelectionType& selectionType)
 {
 	switch (selectionType)
 	{
