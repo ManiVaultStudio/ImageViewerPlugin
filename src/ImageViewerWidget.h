@@ -83,8 +83,9 @@ private:
 	QMenu* viewMenu();
 	QMenu* selectionMenu();
 
-	QPoint screenToWorld(const QPoint& screen) const;
-	QPoint worldToScreen(const QPoint& world) const;
+	QMatrix4x4 modelView() const;
+	QMatrix4x4 projection() const;
+	QVector3D screenToWorld(const QPoint& screen) const;
 
 private:
 	void createImageQuad();

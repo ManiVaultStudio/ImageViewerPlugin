@@ -195,16 +195,7 @@ void ImageViewerWidget::paintGL() {
 		return;
 
 	if (_imageQuadVBO.bind()) {
-		const auto halfSize = size() / 2;
-
-		QMatrix4x4 projection, camera, model, transform;
-
-		projection.ortho(-halfSize.width(), halfSize.width(), -halfSize.height(), halfSize.height(), -10.0f, +10.0f);
-		camera.lookAt(QVector3D(0, 0, -1), QVector3D(0, 0, 0), QVector3D(0, -1, 0));
-		model.scale(_zoom, _zoom, 1.0f);
-		model.translate(_pan.x(), _pan.y());
-
-		transform = projection * camera * model;
+		auto modelViewProjection = projection() * modelView();
 
 		if (_imageShaderProgram->isLinked() && _imageTexture->isCreated()) {
 			if (_imageShaderProgram->bind()) {
@@ -218,7 +209,7 @@ void ImageViewerWidget::paintGL() {
 				_imageShaderProgram->setUniformValue("imageTexture", 0);
 				_imageShaderProgram->setUniformValue("minPixelValue", static_cast<GLfloat>(minPixelValue));
 				_imageShaderProgram->setUniformValue("maxPixelValue", static_cast<GLfloat>(maxPixelValue));
-				_imageShaderProgram->setUniformValue("matrix", transform);
+				_imageShaderProgram->setUniformValue("matrix", modelViewProjection);
 				_imageShaderProgram->enableAttributeArray(PROGRAM_VERTEX_ATTRIBUTE);
 				_imageShaderProgram->enableAttributeArray(PROGRAM_TEXCOORD_ATTRIBUTE);
 				_imageShaderProgram->setAttributeBuffer(PROGRAM_VERTEX_ATTRIBUTE, GL_FLOAT, 0, 3, 5 * sizeof(GLfloat));
@@ -235,11 +226,11 @@ void ImageViewerWidget::paintGL() {
 		}
 
 		if (_overlayShaderProgram->isLinked()) {
-			transform.translate(0.0f, 0.0f, 1.0f);
+			modelViewProjection.translate(0.0f, 0.0f, 1.0f);
 
 			if (_overlayShaderProgram->bind()) {
 				_overlayShaderProgram->setUniformValue("overlayTexture", 0);
-				_overlayShaderProgram->setUniformValue("matrix", transform);
+				_overlayShaderProgram->setUniformValue("matrix", modelViewProjection);
 				_overlayShaderProgram->enableAttributeArray(PROGRAM_VERTEX_ATTRIBUTE);
 				_overlayShaderProgram->enableAttributeArray(PROGRAM_TEXCOORD_ATTRIBUTE);
 				_overlayShaderProgram->setAttributeBuffer(PROGRAM_VERTEX_ATTRIBUTE, GL_FLOAT, 0, 3, 5 * sizeof(GLfloat));
@@ -254,11 +245,11 @@ void ImageViewerWidget::paintGL() {
 		}
 		
 		if (_selectionShaderProgram->isLinked() && _selectionTexture->isCreated()) {
-			transform.translate(0.0f, 0.0f, 2.0f);
+			modelViewProjection.translate(0.0f, 0.0f, 2.0f);
 
 			if (_selectionShaderProgram->bind()) {
 				_selectionShaderProgram->setUniformValue("selectionTexture", 0);
-				_selectionShaderProgram->setUniformValue("matrix", transform);
+				_selectionShaderProgram->setUniformValue("matrix", modelViewProjection);
 				_selectionShaderProgram->enableAttributeArray(PROGRAM_VERTEX_ATTRIBUTE);
 				_selectionShaderProgram->enableAttributeArray(PROGRAM_TEXCOORD_ATTRIBUTE);
 				_selectionShaderProgram->setAttributeBuffer(PROGRAM_VERTEX_ATTRIBUTE, GL_FLOAT, 0, 3, 5 * sizeof(GLfloat));
@@ -510,6 +501,7 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 					if (_imageViewerPlugin->selectable()) {
 						updateSelection();
 					}
+					
 					break;
 				}
 
@@ -648,19 +640,19 @@ void ImageViewerWidget::wheelEvent(QWheelEvent* wheelEvent) {
 	}
 }
 
-void ImageViewerWidget::pan(const QPointF& delta) {
-
+void ImageViewerWidget::pan(const QPointF& delta)
+{
 	qDebug() << "Pan" << delta;
 
 	_pan.setX(_pan.x() + (delta.x() / _zoom));
 	_pan.setY(_pan.y() + (delta.y() / _zoom));
 }
 
-void ImageViewerWidget::zoom(const float& factor) {
-
-	qDebug() << "Zoom" << factor;
-
+void ImageViewerWidget::zoom(const float& factor)
+{
 	_zoom *= factor;
+
+	qDebug() << "Zoom" << _zoom;
 
 	_pan.setX(_pan.x() * factor);
 	_pan.setY(_pan.y() * factor);
@@ -710,14 +702,63 @@ bool ImageViewerWidget::initialized()
 	return _displayImage.get() != nullptr;
 }
 
-QPoint ImageViewerWidget::screenToWorld(const QPoint& screen) const
+QVector3D ImageViewerWidget::screenToWorld(const QPoint& screenPoint) const
 {
-	return QPoint(((screen.x()) / _zoom) - _pan.x(), -((-(screen.y() - height()) / _zoom) - _pan.y()));
-}
+	//qDebug() << "Screen to world" << _pan << _zoom;
 
-QPoint ImageViewerWidget::worldToScreen(const QPoint& world) const
-{
-	return QPoint();
+	const auto halfSize = size() / 2.0;
+	//const auto halfSize = QSize(_displayImage->width() / 2, _displayImage->height() / 2);
+
+	QMatrix4x4 projection, camera, model, transform;
+
+	projection.ortho(-halfSize.width(), halfSize.width(), -halfSize.height(), halfSize.height(), -10.0f, +10.0f);
+	//camera.lookAt(QVector3D(0, 0, -1), QVector3D(0, 0, 0), QVector3D(0, -1, 0));
+	model.scale(_zoom, _zoom, 1.0f);
+	model.translate(_pan.x(), -_pan.y());
+
+	QVector3D worldPosition = QVector3D(_mousePosition.x(), _mousePosition.y(), 0).unproject(model, projection, QRect(0, 0, width(), height()));
+	qDebug() << worldPosition;
+	/*
+	QMatrix4x4 camera, model, transform, scale, translate;
+
+	
+	projection.ortho(-halfSize.width(), halfSize.width(), -halfSize.height(), halfSize.height(), -10.0f, +10.0f);
+	
+	camera.lookAt(QVector3D(_pan.x(), _pan.y(), -1), QVector3D(_pan.x(), _pan.y(), 0), QVector3D(0, -1, 0));
+	
+	scale.scale(_zoom, _zoom, _zoom);
+	translate.translate(_pan.x(), _pan.y(), 0);
+
+	transform = camera;
+	
+	auto test = QVector3D(_mousePosition.x() - halfSize.width(), _mousePosition.y() - halfSize.height(), 0) * translate;
+	
+
+	//test /= test.w();
+
+	QMatrix4x4 modelMatrix;
+	modelMatrix.setToIdentity();
+	modelMatrix.translate(_pan.x(), _pan.y(), 0.0f);
+	modelMatrix.scale(_zoom);
+
+	QMatrix4x4 viewMatrix;
+	viewMatrix.setToIdentity();
+	viewMatrix.lookAt(QVector3D(0, 0, -1), QVector3D(0, 0, 0), QVector3D(0, -1, 0));
+
+	QMatrix4x4 modelViewMatrix = viewMatrix * modelMatrix;
+
+ 	QMatrix4x4 projection;
+	projection.setToIdentity();
+	//projection.perspective(70.0, width() / height(), 0.1, 120.0);
+	projection.ortho(-halfSize.width(), halfSize.width(), -halfSize.height(), halfSize.height(), -1000, 0);
+	//projection.ortho(0, width(), 0, height(), -1.0f, +1.0f);
+
+	QVector3D worldPosition = QVector3D(_mousePosition.x(), _mousePosition.y(), 0).unproject(modelViewMatrix, projection, QRect(0, 0, width(), height()));
+	qDebug() << worldPosition;
+	*/
+	//qDebug() << "TEST:" << test << _zoom << _pan;
+
+	return (QVector4D(2.0 * _mousePosition.x() / width() - 1, -2.0 * _mousePosition.y() / height() + 1, 0, 1) * transform.inverted()).toVector3D();
 }
 
 void ImageViewerWidget::createImageQuad()
@@ -758,6 +799,10 @@ void ImageViewerWidget::updateSelection()
 	qDebug() << "Update selection" << selectionTypeName(_selectionType);
 
 	makeCurrent();
+	
+	const auto worldPosition = screenToWorld(_mousePosition);
+ 
+	qDebug() << worldPosition << _zoom;
 
 	if (_imageQuadVBO.bind()) {
 		if (_overlayFBO->bind()) {
@@ -1022,6 +1067,28 @@ QMenu* ImageViewerWidget::selectionMenu()
 	selectionMenu->addAction(clearSelectionAction);
 
 	return selectionMenu;
+}
+
+QMatrix4x4 ImageViewerWidget::modelView() const
+{
+	QMatrix4x4 model, view;
+
+	model.scale(_zoom, _zoom, 1.0f);
+	model.translate(_pan.x(), _pan.y());
+	view.lookAt(QVector3D(0, 0, -1), QVector3D(0, 0, 0), QVector3D(0, -1, 0));
+
+	return view * model;
+}
+
+QMatrix4x4 ImageViewerWidget::projection() const
+{
+	const auto halfSize = size() / 2;
+
+	QMatrix4x4 projection;
+
+	projection.ortho(-halfSize.width(), halfSize.width(), -halfSize.height(), halfSize.height(), -10.0f, +10.0f);
+
+	return projection;
 }
 
 void ImageViewerWidget::setupTextures()
