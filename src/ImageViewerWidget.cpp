@@ -45,7 +45,7 @@ const std::string selectionFragmentShaderSource =
 ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	QOpenGLFunctions(),
 	_imageViewerPlugin(imageViewerPlugin),
-	
+
 	// QT OpenGL
 	_imageTexture(),
 	_selectionTexture(),
@@ -53,8 +53,10 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_imageFragmentShader(),
 	_selectionFragmentShader(),
 	_imageShaderProgram(),
+	_pixelSelectionShaderProgram(),
+	_overlayShaderProgram(),
 	_selectionShaderProgram(),
-	_overlayFBO(),
+	_pixelSelectionFBO(),
 	_imageQuadVBO(),
 
 	_interactionMode(InteractionMode::Selection),
@@ -109,9 +111,10 @@ ImageViewerWidget::~ImageViewerWidget()
 	_overlayFragmentShader.reset();
 	_selectionFragmentShader.reset();
 	_imageShaderProgram.reset();
+	_pixelSelectionShaderProgram.reset();
 	_overlayShaderProgram.reset();
 	_selectionShaderProgram.reset();
-	_overlayFBO.reset();
+	_pixelSelectionFBO.reset();
 
 	if (_imageQuadVBO.isCreated())
 		_imageQuadVBO.destroy();
@@ -135,15 +138,17 @@ void ImageViewerWidget::initializeGL()
 	_imageQuadVBO.create();
 	_imageQuadVBO.setUsagePattern(QOpenGLBuffer::DynamicDraw);
 
-	_imageTexture				= std::make_unique<QOpenGLTexture>(QOpenGLTexture::Target2D);
-	_selectionTexture			= std::make_unique<QOpenGLTexture>(QOpenGLTexture::Target2D);
-	_vertexShader				= std::make_unique<QOpenGLShader>(QOpenGLShader::Vertex);
-	_imageFragmentShader		= std::make_unique<QOpenGLShader>(QOpenGLShader::Fragment);
-	_overlayFragmentShader		= std::make_unique<QOpenGLShader>(QOpenGLShader::Fragment);
-	_selectionFragmentShader	= std::make_unique<QOpenGLShader>(QOpenGLShader::Fragment);
-	_imageShaderProgram			= std::make_unique<QOpenGLShaderProgram>();
-	_overlayShaderProgram		= std::make_unique<QOpenGLShaderProgram>();
-	_selectionShaderProgram		= std::make_unique<QOpenGLShaderProgram>();
+	_imageTexture					= std::make_unique<QOpenGLTexture>(QOpenGLTexture::Target2D);
+	_selectionTexture				= std::make_unique<QOpenGLTexture>(QOpenGLTexture::Target2D);
+	_vertexShader					= std::make_unique<QOpenGLShader>(QOpenGLShader::Vertex);
+	_imageFragmentShader			= std::make_unique<QOpenGLShader>(QOpenGLShader::Fragment);
+	_computeOverlayFragmentShader	= std::make_unique<QOpenGLShader>(QOpenGLShader::Fragment);
+	_overlayFragmentShader			= std::make_unique<QOpenGLShader>(QOpenGLShader::Fragment);
+	_selectionFragmentShader		= std::make_unique<QOpenGLShader>(QOpenGLShader::Fragment);
+	_imageShaderProgram				= std::make_unique<QOpenGLShaderProgram>();
+	_overlayShaderProgram			= std::make_unique<QOpenGLShaderProgram>();
+	_pixelSelectionShaderProgram	= std::make_unique<QOpenGLShaderProgram>();
+	_selectionShaderProgram			= std::make_unique<QOpenGLShaderProgram>();
 
 	if (_vertexShader->compileSourceCode(vertexShaderSource.c_str())) {
 		if (_imageFragmentShader->compileSourceCode(imageFragmentShaderSource.c_str())) {
@@ -152,6 +157,14 @@ void ImageViewerWidget::initializeGL()
 			_imageShaderProgram->bindAttributeLocation("vertex", PROGRAM_VERTEX_ATTRIBUTE);
 			_imageShaderProgram->bindAttributeLocation("texCoord", PROGRAM_TEXCOORD_ATTRIBUTE);
 			_imageShaderProgram->link();
+		}
+
+		if (_computeOverlayFragmentShader->compileSourceCode(computeOverlayFragmentShaderSource.c_str())) {
+			_pixelSelectionShaderProgram->addShader(_vertexShader.get());
+			_pixelSelectionShaderProgram->addShader(_computeOverlayFragmentShader.get());
+			_pixelSelectionShaderProgram->bindAttributeLocation("vertex", PROGRAM_VERTEX_ATTRIBUTE);
+			_pixelSelectionShaderProgram->bindAttributeLocation("texCoord", PROGRAM_TEXCOORD_ATTRIBUTE);
+			_pixelSelectionShaderProgram->link();
 		}
 
 		if (_overlayFragmentShader->compileSourceCode(overlayFragmentShaderSource.c_str())) {
@@ -226,17 +239,23 @@ void ImageViewerWidget::paintGL() {
 		}
 
 		if (_overlayShaderProgram->isLinked()) {
-			modelViewProjection.translate(0.0f, 0.0f, 1.0f);
+			auto translate = QMatrix4x4();
+
+			translate.translate(0.0f, 0.0f, 1.0f);
 
 			if (_overlayShaderProgram->bind()) {
 				_overlayShaderProgram->setUniformValue("overlayTexture", 0);
-				_overlayShaderProgram->setUniformValue("matrix", modelViewProjection);
+				_overlayShaderProgram->setUniformValue("matrix", modelViewProjection * translate);
 				_overlayShaderProgram->enableAttributeArray(PROGRAM_VERTEX_ATTRIBUTE);
 				_overlayShaderProgram->enableAttributeArray(PROGRAM_TEXCOORD_ATTRIBUTE);
 				_overlayShaderProgram->setAttributeBuffer(PROGRAM_VERTEX_ATTRIBUTE, GL_FLOAT, 0, 3, 5 * sizeof(GLfloat));
 				_overlayShaderProgram->setAttributeBuffer(PROGRAM_TEXCOORD_ATTRIBUTE, GL_FLOAT, 3 * sizeof(GLfloat), 2, 5 * sizeof(GLfloat));
 
-				glBindTexture(GL_TEXTURE_2D, _overlayFBO->texture());
+				//qDebug() << _pixelSelectionSourceFBO->sizes();
+
+				//_pixelSelectionTargetFBO->toImage().save("testkje.jpg");
+
+				glBindTexture(GL_TEXTURE_2D, _pixelSelectionFBO->texture());
 				
 				glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
@@ -304,7 +323,7 @@ void ImageViewerWidget::onDisplayImageChanged(std::unique_ptr<Image<std::uint16_
 		createImageQuad();
 		zoomExtents();
 
-		_overlayFBO = std::make_unique<QOpenGLFramebufferObject>(_displayImage->width(), _displayImage->height());
+		_pixelSelectionFBO = std::make_unique<QOpenGLFramebufferObject>(_displayImage->width(), _displayImage->height());
 	}
 
 	resetWindowLevel();
@@ -704,75 +723,18 @@ bool ImageViewerWidget::initialized()
 
 QVector3D ImageViewerWidget::screenToWorld(const QPoint& screenPoint) const
 {
-	//qDebug() << "Screen to world" << _pan << _zoom;
-
-	const auto halfSize = size() / 2.0;
-	//const auto halfSize = QSize(_displayImage->width() / 2, _displayImage->height() / 2);
-
-	QMatrix4x4 projection, camera, model, transform;
-
-	projection.ortho(-halfSize.width(), halfSize.width(), -halfSize.height(), halfSize.height(), -10.0f, +10.0f);
-	//camera.lookAt(QVector3D(0, 0, -1), QVector3D(0, 0, 0), QVector3D(0, -1, 0));
-	model.scale(_zoom, _zoom, 1.0f);
-	model.translate(_pan.x(), -_pan.y());
-
-	QVector3D worldPosition = QVector3D(_mousePosition.x(), _mousePosition.y(), 0).unproject(model, projection, QRect(0, 0, width(), height()));
-	qDebug() << worldPosition;
-	/*
-	QMatrix4x4 camera, model, transform, scale, translate;
-
-	
-	projection.ortho(-halfSize.width(), halfSize.width(), -halfSize.height(), halfSize.height(), -10.0f, +10.0f);
-	
-	camera.lookAt(QVector3D(_pan.x(), _pan.y(), -1), QVector3D(_pan.x(), _pan.y(), 0), QVector3D(0, -1, 0));
-	
-	scale.scale(_zoom, _zoom, _zoom);
-	translate.translate(_pan.x(), _pan.y(), 0);
-
-	transform = camera;
-	
-	auto test = QVector3D(_mousePosition.x() - halfSize.width(), _mousePosition.y() - halfSize.height(), 0) * translate;
-	
-
-	//test /= test.w();
-
-	QMatrix4x4 modelMatrix;
-	modelMatrix.setToIdentity();
-	modelMatrix.translate(_pan.x(), _pan.y(), 0.0f);
-	modelMatrix.scale(_zoom);
-
-	QMatrix4x4 viewMatrix;
-	viewMatrix.setToIdentity();
-	viewMatrix.lookAt(QVector3D(0, 0, -1), QVector3D(0, 0, 0), QVector3D(0, -1, 0));
-
-	QMatrix4x4 modelViewMatrix = viewMatrix * modelMatrix;
-
- 	QMatrix4x4 projection;
-	projection.setToIdentity();
-	//projection.perspective(70.0, width() / height(), 0.1, 120.0);
-	projection.ortho(-halfSize.width(), halfSize.width(), -halfSize.height(), halfSize.height(), -1000, 0);
-	//projection.ortho(0, width(), 0, height(), -1.0f, +1.0f);
-
-	QVector3D worldPosition = QVector3D(_mousePosition.x(), _mousePosition.y(), 0).unproject(modelViewMatrix, projection, QRect(0, 0, width(), height()));
-	qDebug() << worldPosition;
-	*/
-	//qDebug() << "TEST:" << test << _zoom << _pan;
-
-	return (QVector4D(2.0 * _mousePosition.x() / width() - 1, -2.0 * _mousePosition.y() / height() + 1, 0, 1) * transform.inverted()).toVector3D();
+	return QVector3D(_mousePosition.x(), height() - _mousePosition.y(), 0).unproject(modelView(), projection(), QRect(0, 0, width(), height()));
 }
 
 void ImageViewerWidget::createImageQuad()
 {
 	qDebug() << "Create image quad" << *_displayImage.get();
 
-	const auto halfWidth	= _displayImage->width() / 2.0f;
-	const auto halfHeight	= _displayImage->height() / 2.0f;
-	
 	const float coordinates[4][3] = {
-	  { halfWidth, halfHeight, 0.0f },
-	  { -halfWidth, halfHeight, 0.0f },
-	  { -halfWidth, -halfHeight, 0.0f },
-	  { halfWidth, -halfHeight, 0.0f }
+	  { _displayImage->width(), _displayImage->height(), 0.0f },
+	  { 0.0f, _displayImage->height(), 0.0f },
+	  { 0.0f, 0.0f, 0.0f },
+	  { _displayImage->width(), 0.0f, 0.0f }
 	};
 	
 	QVector<GLfloat> vertexData;
@@ -796,41 +758,53 @@ void ImageViewerWidget::createImageQuad()
 
 void ImageViewerWidget::updateSelection()
 {
-	qDebug() << "Update selection" << selectionTypeName(_selectionType);
+	//qDebug() << "Update selection" << selectionTypeName(_selectionType);
 
 	makeCurrent();
 	
-	const auto worldPosition = screenToWorld(_mousePosition);
- 
-	qDebug() << worldPosition << _zoom;
-
 	if (_imageQuadVBO.bind()) {
-		if (_overlayFBO->bind()) {
-			if (_overlayShaderProgram->bind()) {
+		
+		if (_pixelSelectionFBO->bind()) {
+			if (_pixelSelectionShaderProgram->bind()) {
+				const auto worldPosition = screenToWorld(_mousePosition);
+				const auto brushCenter = QVector2D(worldPosition.x() / static_cast<float>(_displayImage->width()), worldPosition.y() / static_cast<float>(_displayImage->height()));
+				
+				glViewport(0, 0, _displayImage->width(), _displayImage->height());
+
 				QMatrix4x4 transform;
 
 				transform.ortho(0.0f, _displayImage->width(), 0.0f, _displayImage->height(), -1.0f, +1.0f);
 
-				_overlayShaderProgram->setUniformValue("matrix", transform);
-				_overlayShaderProgram->enableAttributeArray(PROGRAM_VERTEX_ATTRIBUTE);
-				_overlayShaderProgram->enableAttributeArray(PROGRAM_TEXCOORD_ATTRIBUTE);
-				_overlayShaderProgram->setAttributeBuffer(PROGRAM_VERTEX_ATTRIBUTE, GL_FLOAT, 0, 3, 5 * sizeof(GLfloat));
-				_overlayShaderProgram->setAttributeBuffer(PROGRAM_TEXCOORD_ATTRIBUTE, GL_FLOAT, 3 * sizeof(GLfloat), 2, 5 * sizeof(GLfloat));
+				glBindTexture(GL_TEXTURE_2D, _pixelSelectionFBO->texture());
+
+				_pixelSelectionShaderProgram->setUniformValue("pixelSelectionTexture", 0);
+				_pixelSelectionShaderProgram->setUniformValue("matrix", transform);
+				_pixelSelectionShaderProgram->setUniformValue("pixelSelectionTexture", 0);
+				_pixelSelectionShaderProgram->setUniformValue("brushCenter", brushCenter);
+				_pixelSelectionShaderProgram->setUniformValue("brushRadius", _brushRadius);
+				_pixelSelectionShaderProgram->enableAttributeArray(PROGRAM_VERTEX_ATTRIBUTE);
+				_pixelSelectionShaderProgram->enableAttributeArray(PROGRAM_TEXCOORD_ATTRIBUTE);
+				_pixelSelectionShaderProgram->setAttributeBuffer(PROGRAM_VERTEX_ATTRIBUTE, GL_FLOAT, 0, 3, 5 * sizeof(GLfloat));
+				_pixelSelectionShaderProgram->setAttributeBuffer(PROGRAM_TEXCOORD_ATTRIBUTE, GL_FLOAT, 3 * sizeof(GLfloat), 2, 5 * sizeof(GLfloat));
 
 				glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
-				_overlayShaderProgram->release();
+				_pixelSelectionShaderProgram->release();
 			}
 
-			_overlayFBO->release();
+			_pixelSelectionFBO->release();
 		}
 
 		_imageQuadVBO.release();
 	}
 
+	//_pixelSelectionFBO->blitFramebuffer(_pixelSelectionFBO.get(), _pixelSelectionFBO.get(), )
+
 	doneCurrent();
 
 	update();
+
+	
 
 	/*
 	const auto halfImageSize = _imageSize / 2;

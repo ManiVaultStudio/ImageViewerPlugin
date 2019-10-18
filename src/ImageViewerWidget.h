@@ -107,12 +107,16 @@ private:
 	std::unique_ptr<QOpenGLTexture>				_selectionTexture;
 	std::unique_ptr<QOpenGLShader>				_vertexShader;
 	std::unique_ptr<QOpenGLShader>				_imageFragmentShader;
+	std::unique_ptr<QOpenGLShader>				_computeOverlayFragmentShader;
 	std::unique_ptr<QOpenGLShader>				_overlayFragmentShader;
 	std::unique_ptr<QOpenGLShader>				_selectionFragmentShader;
 	std::unique_ptr<QOpenGLShaderProgram>		_imageShaderProgram;
+	
+	std::unique_ptr<QOpenGLShaderProgram>		_pixelSelectionShaderProgram;
+
 	std::unique_ptr<QOpenGLShaderProgram>		_overlayShaderProgram;
 	std::unique_ptr<QOpenGLShaderProgram>		_selectionShaderProgram;
-	std::unique_ptr<QOpenGLFramebufferObject>	_overlayFBO;
+	std::unique_ptr<QOpenGLFramebufferObject>	_pixelSelectionFBO;
 	QOpenGLBuffer								_imageQuadVBO;
 
 	InteractionMode								_interactionMode;
