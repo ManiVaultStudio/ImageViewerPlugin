@@ -69,7 +69,7 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_selectionType(SelectionType::Rectangle),
 	_selectionModifier(SelectionModifier::Replace),
 	_selectionRealtime(false),
-	_brushRadius(10.f),
+	_brushRadius(0.05f),
 	_brushRadiusDelta(2.0f),
 	_selectionColor(255, 0, 0, 200),
 	_selectionProxyColor(245, 184, 17, 100),
@@ -723,7 +723,7 @@ bool ImageViewerWidget::initialized()
 
 QVector3D ImageViewerWidget::screenToWorld(const QPoint& screenPoint) const
 {
-	return QVector3D(_mousePosition.x(), height() - _mousePosition.y(), 0).unproject(modelView(), projection(), QRect(0, 0, width(), height()));
+	return QVector3D(screenPoint.x(), height() - screenPoint.y(), 0).unproject(modelView(), projection(), QRect(0, 0, width(), height()));
 }
 
 void ImageViewerWidget::createImageQuad()
@@ -766,8 +766,6 @@ void ImageViewerWidget::updateSelection()
 		
 		if (_pixelSelectionFBO->bind()) {
 			if (_pixelSelectionShaderProgram->bind()) {
-				const auto worldPosition = screenToWorld(_mousePosition);
-				const auto brushCenter = QVector2D(worldPosition.x() / static_cast<float>(_displayImage->width()), worldPosition.y() / static_cast<float>(_displayImage->height()));
 				
 				glViewport(0, 0, _displayImage->width(), _displayImage->height());
 
@@ -779,9 +777,41 @@ void ImageViewerWidget::updateSelection()
 
 				_pixelSelectionShaderProgram->setUniformValue("pixelSelectionTexture", 0);
 				_pixelSelectionShaderProgram->setUniformValue("matrix", transform);
-				_pixelSelectionShaderProgram->setUniformValue("pixelSelectionTexture", 0);
-				_pixelSelectionShaderProgram->setUniformValue("brushCenter", brushCenter);
-				_pixelSelectionShaderProgram->setUniformValue("brushRadius", _brushRadius);
+				_pixelSelectionShaderProgram->setUniformValue("selectionType", static_cast<int>(_selectionType));
+
+				switch (_selectionType)
+				{
+					case SelectionType::Rectangle:
+					{
+						const auto rectangleTopLeft			= screenToWorld(_initialMousePosition);
+						const auto rectangleBottomRight		= screenToWorld(_mousePosition);
+						const auto rectangleTopLeftUV		= QVector2D(rectangleTopLeft.x() / static_cast<float>(_displayImage->width()), rectangleTopLeft.y() / static_cast<float>(_displayImage->height()));
+						const auto rectangleBottomRightUV	= QVector2D(rectangleBottomRight.x() / static_cast<float>(_displayImage->width()), rectangleBottomRight.y() / static_cast<float>(_displayImage->height()));
+						
+						_pixelSelectionShaderProgram->setUniformValue("rectangleTopLeft", rectangleTopLeftUV);
+						_pixelSelectionShaderProgram->setUniformValue("rectangleBottomRight", rectangleBottomRightUV);
+
+						break;
+					}
+
+					case SelectionType::Brush:
+					{
+						const auto brushCenter		= screenToWorld(_mousePosition);
+						const auto brushCenterUV	= QVector2D(brushCenter.x() / static_cast<float>(_displayImage->width()), brushCenter.y() / static_cast<float>(_displayImage->height()));
+						
+						_pixelSelectionShaderProgram->setUniformValue("brushCenter", brushCenterUV);
+						_pixelSelectionShaderProgram->setUniformValue("brushRadius", _brushRadius);
+
+						break;
+					}
+
+					case SelectionType::Freehand:
+						break;
+
+					default:
+						break;
+				}
+				
 				_pixelSelectionShaderProgram->enableAttributeArray(PROGRAM_VERTEX_ATTRIBUTE);
 				_pixelSelectionShaderProgram->enableAttributeArray(PROGRAM_TEXCOORD_ATTRIBUTE);
 				_pixelSelectionShaderProgram->setAttributeBuffer(PROGRAM_VERTEX_ATTRIBUTE, GL_FLOAT, 0, 3, 5 * sizeof(GLfloat));

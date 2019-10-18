@@ -1,24 +1,33 @@
 R"(
 #version 330
 
-#extension GL_ARB_separate_shader_objects : enable
-
-in vec2 uv;
-
 uniform sampler2D pixelSelectionTexture;
-
-//layout(location = 0) in vec4 vertex;
-//layout(location = 0) in vec4 pixelSelectionIn;
-//layout(location = 1) out vec4 pixelSelectionOut;
-
-out vec4 fragmentColor;
-
+uniform int selectionType;
 uniform vec2 brushCenter;
 uniform float brushRadius;
+uniform vec2 rectangleTopLeft;
+uniform vec2 rectangleBottomRight;
+
+in vec2 uv;
+out vec4 fragmentColor;
 
 void main(void)
 {
-	float distance = length(uv - brushCenter);
-	fragmentColor = (distance < 0.1f || texture(pixelSelectionTexture, vec2(uv.x, 1-uv.y)).r > 0) ? vec4(vec3(1, 0, 0), 1) : vec4(vec3(0, 1, 0), 1);
+	switch (selectionType) {
+		case 0:
+		{
+			bool inRectangle	= uv.x >= rectangleTopLeft.x && uv.x < rectangleBottomRight.x && uv.y >= rectangleTopLeft.y && uv.y < rectangleBottomRight.y;
+			fragmentColor		= inRectangle ? vec4(vec3(1, 0, 0), 1) : vec4(vec3(0, 1, 0), 1);
+			break;
+		}
+
+		case 1:
+		{
+			bool inBrush		= length(uv - brushCenter) < brushRadius;
+			bool prevInBrush	= texture(pixelSelectionTexture, vec2(uv.x, 1-uv.y)).r > 0;
+			fragmentColor		= (inBrush || prevInBrush) ? vec4(vec3(1, 0, 0), 1) : vec4(vec3(0, 1, 0), 1);
+			break;
+		}
+	}
 }
 )"
