@@ -39,7 +39,7 @@ public:
 	void setWindowLevel(const double& window, const double& level);
 	void resetWindowLevel();
 
-	void modifySelection(const Indices& selectedPointIds, const std::int32_t& pixelOffset = 0);
+	void modifySelection();
 	void clearSelection();
 
 public:
@@ -132,8 +132,8 @@ private:
 	bool										_selectionRealtime;
 	float										_brushRadius;
 	float										_brushRadiusDelta;
-	QColor										_selectionColor;
-	QColor										_selectionProxyColor;
+	QColor										_pointSelectionColor;
+	QColor										_pixelSelectionColor;
 	QColor										_selectionGeometryColor;
 	Indices										_selectedPointIds;
 	QAction*									_zoomToExtentsAction;

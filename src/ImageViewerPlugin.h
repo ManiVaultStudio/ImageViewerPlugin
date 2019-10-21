@@ -2,7 +2,7 @@
 
 #include <ViewPlugin.h>
 
-#include "PointsPlugin.h"
+#include "ImageData.h"
 #include "Image.h"
 #include "Common.h"
 
@@ -13,7 +13,6 @@ using hdps::plugin::ViewPlugin;
 
 class ImageViewerWidget;
 class SettingsWidget;
-
 class ImageViewWidget;
 
 class ImageViewerPlugin : public ViewPlugin
@@ -100,6 +99,7 @@ private:
 	//ImageViewWidget*	_windowWidget;
 	QStringList			_datasetNames;
 	QString				_currentDataset;
+	ImageDataSet*		_currentImageDataset;
 	QStringList			_imageNames;
 	std::int32_t		_currentImageId;
 	QStringList			_dimensionNames;

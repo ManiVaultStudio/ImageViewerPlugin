@@ -16,14 +16,6 @@ using TextureMap = std::map<QString, std::unique_ptr<QOpenGLTexture>>;
 using PixelCoordinate = std::pair<std::int32_t, std::int32_t>;
 using PixelCoordinates = std::vector<PixelCoordinate>;
 
-enum class ImageCollectionType
-{
-	Undefined,
-	Sequence,
-	Stack,
-	MultiPartSequence
-};
-
 enum class InteractionMode
 {
 	Navigation,

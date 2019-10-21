@@ -53,26 +53,6 @@ public:
 		_pixels[y * _width + x] = pixel;
 	}
 
-	void computeWindowLevel(const double& windowNorm, const double& levelNorm, double& window, double& level)
-	{
-		const double min = _min;
-		const double max = _max;
-		const double maxWindow = max - min;
-
-		level = std::clamp(min, min + (levelNorm * maxWindow), max);
-		window = std::clamp(min, windowNorm * maxWindow, max);
-
-		/*
-		double window = 0.0;
-		double level = 0.0;
-
-		computeWindowLevel(window, level);
-
-		const auto minPixelValue = std::clamp(_imageViewerPlugin->imageMin(), level - (window / 2.0), _imageViewerPlugin->imageMax());
-		const auto maxPixelValue = std::clamp(_imageViewerPlugin->imageMin(), level + (window / 2.0), _imageViewerPlugin->imageMax());
-		*/
-	}
-
 	std::uint32_t width() const
 	{
 		return _width;

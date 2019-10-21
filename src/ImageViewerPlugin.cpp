@@ -3,6 +3,7 @@
 #include "SettingsWidget.h"
 
 #include "Set.h"
+#include "ImageData.h"
 
 #include <QtCore>
 #include <QtDebug>
@@ -12,8 +13,6 @@
 
 #include <vector>
 #include <limits>
-
-//#include "ImageViewWidget.h"
 
 Q_PLUGIN_METADATA(IID "nl.tudelft.ImageViewerPlugin")
 
@@ -657,6 +656,13 @@ void ImageViewerPlugin::dataAdded(const QString dataset)
 
 	const IndexSet& set = dynamic_cast<const IndexSet&>(_core->requestSet(dataset));
 
+	auto* imageData = dynamic_cast<ImageData*>(&set.getData());
+
+	if (imageData != nullptr) {
+		qDebug() << "Found some image data!";
+	}
+
+	/*
 	PointsPlugin& points = set.getData();
 
 	if (points.hasProperty("type")) {
@@ -667,6 +673,7 @@ void ImageViewerPlugin::dataAdded(const QString dataset)
 			setCurrentDataset(dataset);
 		}
 	}
+	*/
 }
 
 void ImageViewerPlugin::dataChanged(const QString dataset)
