@@ -3,7 +3,6 @@
 #include <ViewPlugin.h>
 
 #include "ImageData.h"
-#include "Image.h"
 #include "Common.h"
 
 #include <QComboBox>
@@ -21,7 +20,7 @@ class ImageViewerPlugin : public ViewPlugin
 
 public:
 	ImageViewerPlugin();
-    ~ImageViewerPlugin(void);
+    ~ImageViewerPlugin() override;
 
 	void init() override;
 
@@ -32,7 +31,6 @@ public:
 	QStringList supportedDataKinds() Q_DECL_OVERRIDE;
 
 public:
-	PointsPlugin& pointsData() const;
 	Indices selection() const;
 	void setSelection(Indices& indices);
 	bool hasSelection() const;
@@ -51,16 +49,7 @@ public:
 
 	std::size_t noImages() const;
 	
-	std::size_t noPointsPerDimension() const;
-	std::size_t pixelOffset() const;
-
 	QSize imageSize() const;
-
-	static std::size_t pixelId(const QSize& imageSize, const int& x, const int& y);
-	static std::size_t pixelBufferOffset(const QSize& imageSize, const int& x, const int& y);
-	static std::size_t sequencePixelCoordinateToPointId(const QSize& imageSize, const std::int32_t& imageId, const std::int32_t& noPixels, const std::int32_t& x, const std::int32_t& y);
-	static std::size_t stackPixelCoordinateToPointId(const QSize& imageSize, const std::int32_t& noDimensions, const std::int32_t& dimensionId, const std::int32_t& x, const std::int32_t& y);
-	static std::size_t multipartSequencePixelCoordinateToPointId(const QSize& imageSize, const std::int32_t& noPointsPerDimension, const std::int32_t& pixelOffset, const std::int32_t& currentDimensionId, const std::int32_t& x, const std::int32_t& y);
 
 private:
 	void update();
@@ -90,16 +79,15 @@ signals:
 	void dimensionNamesChanged(const QStringList& dimensionNames);
 	void currentDimensionIdChanged(const std::int32_t& currentDimensionId);
 	void averageImagesChanged(const bool& averageImages);
-	void displayImageChanged(std::unique_ptr<Image<std::uint16_t>>& displayImage);
-	void selectionImageChanged(std::unique_ptr<Image<std::uint8_t>>& selectionImage);
+	void displayImageChanged(std::unique_ptr<Image>& displayImage);
+	void selectionImageChanged(std::unique_ptr<Image>& selectionImage);
 
 private:
 	ImageViewerWidget*	_imageViewerWidget;
 	SettingsWidget*		_settingsWidget;
-	//ImageViewWidget*	_windowWidget;
 	QStringList			_datasetNames;
-	QString				_currentDataset;
-	ImageDataSet*		_currentImageDataset;
+	QString				_currentDatasetName;
+	ImageData*			_currentImageDataset;
 	QStringList			_imageNames;
 	std::int32_t		_currentImageId;
 	QStringList			_dimensionNames;

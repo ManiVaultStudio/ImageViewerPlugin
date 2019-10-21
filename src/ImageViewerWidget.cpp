@@ -201,7 +201,7 @@ void ImageViewerWidget::paintGL() {
 	if (_ignorePaintGL)
 		return;
 
-	glClearColor(0.1, 0.1, 0.1, 1);
+	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	if (!initialized())
@@ -294,8 +294,9 @@ void ImageViewerWidget::paintGL() {
 	*/
 }
 
-void ImageViewerWidget::onDisplayImageChanged(std::unique_ptr<Image<std::uint16_t>>& displayImage)
+void ImageViewerWidget::onDisplayImageChanged(std::unique_ptr<Image>& displayImage)
 {
+	/*
 	if (!isValid())
 		return;
 
@@ -333,10 +334,12 @@ void ImageViewerWidget::onDisplayImageChanged(std::unique_ptr<Image<std::uint16_
 	doneCurrent();
 
 	update();
+	*/
 }
 
-void ImageViewerWidget::onSelectionImageChanged(std::unique_ptr<Image<std::uint8_t>>& selectionImage)
+void ImageViewerWidget::onSelectionImageChanged(std::unique_ptr<Image>& selectionImage)
 {
+	/*
 	if (!isValid())
 		return;
 
@@ -347,6 +350,7 @@ void ImageViewerWidget::onSelectionImageChanged(std::unique_ptr<Image<std::uint8
 	_selectionTexture->setData(QOpenGLTexture::PixelFormat::Red, QOpenGLTexture::PixelType::UInt8, static_cast<void*>(_selectionImage->pixels().data()));
 
 	update();
+	*/
 }
 
 void ImageViewerWidget::onCurrentDatasetChanged(const QString& currentDataset)
@@ -730,11 +734,14 @@ void ImageViewerWidget::createImageQuad()
 {
 	qDebug() << "Create image quad" << *_displayImage.get();
 
+	const float width	= static_cast<float>(_displayImage->width());
+	const float height	= static_cast<float>(_displayImage->height());
+
 	const float coordinates[4][3] = {
-	  { _displayImage->width(), _displayImage->height(), 0.0f },
-	  { 0.0f, _displayImage->height(), 0.0f },
+	  { width, height, 0.0f },
+	  { 0.0f, height, 0.0f },
 	  { 0.0f, 0.0f, 0.0f },
-	  { _displayImage->width(), 0.0f, 0.0f }
+	  { width, 0.0f, 0.0f }
 	};
 	
 	QVector<GLfloat> vertexData;

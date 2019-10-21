@@ -27,6 +27,7 @@ file(GLOB CPP src/*.cpp)
 set(SOURCES ${H} ${CPP})
 
 file(GLOB UIS src/*.ui)
+
 file(GLOB SHADERS src/*.glsl)
 
 set(AUX src/ImageViewerPlugin.json)

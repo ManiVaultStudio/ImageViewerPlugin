@@ -22,9 +22,9 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	ViewPlugin("Image Viewer"),
 	_imageViewerWidget(nullptr),
 	_settingsWidget(nullptr),
-//	_windowWidget(nullptr),
 	_datasetNames(),
-	_currentDataset(),
+	_currentDatasetName(),
+	_currentImageDataset(nullptr),
 	_imageNames(),
 	_currentImageId(0),
 	_dimensionNames(),
@@ -35,7 +35,6 @@ ImageViewerPlugin::ImageViewerPlugin() :
 
 	_imageViewerWidget	= new ImageViewerWidget(this);
 	_settingsWidget		= new SettingsWidget(this);
-	//_windowWidget		= new ImageViewWidget(this);
 
 	connect(this, &ImageViewerPlugin::currentDatasetChanged, this, &ImageViewerPlugin::computeDisplayImage);
 	connect(this, &ImageViewerPlugin::currentImageIdChanged, this, &ImageViewerPlugin::computeDisplayImage);
@@ -51,30 +50,28 @@ void ImageViewerPlugin::init()
 {
 	auto layout = new QVBoxLayout();
 
-	//addWidget(_imageViewerWidget);
 	addWidget(_imageViewerWidget);
 	addWidget(_settingsWidget);
 
 	setLayout(layout);
 }
 
-PointsPlugin& ImageViewerPlugin::pointsData() const
-{
-	const auto& set = dynamic_cast<const IndexSet&>(_core->requestSet(_currentDataset));
-
-	return set.getData();
-}
-
 Indices ImageViewerPlugin::selection() const
 {
-	const auto& selection = dynamic_cast<const IndexSet&>(pointsData().getSelection());
+	if (_currentImageDataset == nullptr)
+		return Indices();
+
+	const auto& selection = dynamic_cast<const IndexSet&>(_currentImageDataset->getSelection());
 
 	return selection.indices;
 }
 
 void ImageViewerPlugin::setSelection(Indices& indices)
 {
-	auto& selection = dynamic_cast<IndexSet&>(pointsData().getSelection());
+	if (_currentImageDataset == nullptr)
+		return;
+
+	auto& selection = dynamic_cast<IndexSet&>(_currentImageDataset->getSelection());
 
 	selection.indices = indices;
 
@@ -88,17 +85,22 @@ bool ImageViewerPlugin::hasSelection() const
 
 int ImageViewerPlugin::noDimensions() const
 {
-	auto& points = pointsData();
+	/*
+	auto& points = imageData();
 
 	return points.getNumDimensions();
+	*/
+
+	return 0;
 }
 
 ImageCollectionType ImageViewerPlugin::imageCollectionType() const
 {
+	/*
 	if (_currentDataset.isEmpty())
 		return ImageCollectionType::Undefined;
 
-	auto& points = pointsData();
+	auto& points = imageData();
 
 	if (points.hasProperty("type")) {
 		const auto type = points.getProperty("type").toString();
@@ -112,6 +114,7 @@ ImageCollectionType ImageViewerPlugin::imageCollectionType() const
 		if (type == "MULTI_PART_SEQUENCE")
 			return ImageCollectionType::MultiPartSequence;
 	}
+	*/
 
 	return ImageCollectionType::Undefined;
 }
@@ -144,23 +147,29 @@ QString ImageViewerPlugin::currentDimensionName() const
 
 QStringList ImageViewerPlugin::dimensionNames() const
 {
-	auto& points = pointsData();
+	/*
+	auto& points = imageData();
 
 	QStringList dimensionNames;
 	
-	dimensionNames.reserve(points.getDimensionNames().size());
+	dimensionNames.reserve(static_cast<int>(points.getDimensionNames().size()));
 	std::copy(points.getDimensionNames().begin(), points.getDimensionNames().end(), std::back_inserter(dimensionNames));
 
 	return dimensionNames;
+	*/
+
+	return QStringList();
 }
 
 QStringList ImageViewerPlugin::imageFilePaths() const
 {
-	auto& points = pointsData();
+	/*
+	auto& points = imageData();
 
 	if (points.hasProperty("imageFilePaths")) {
 		return points.getProperty("imageFilePaths").toStringList();
 	}
+	*/
 
 	return QStringList();
 }
@@ -170,73 +179,10 @@ std::size_t ImageViewerPlugin::noImages() const
 	return imageFilePaths().size();
 }
 
-std::size_t ImageViewerPlugin::noPointsPerDimension() const
-{
-	const auto& points = pointsData();
-
-	const auto imageSizes = points.getProperty("imageSizes").toMap();
-
-	std::size_t noPointsPerDimension = 0;
-
-	foreach(const QString& key, imageSizes.keys()) {
-		const auto size = imageSizes[key].toSize();
-
-		noPointsPerDimension += size.width() * size.height();
-	}
-
-	return noPointsPerDimension;
-}
-
-std::size_t ImageViewerPlugin::pixelOffset() const
-{
-	PointsPlugin& points = pointsData();
-
-	if (!points.hasProperty("imageSizes"))
-		return 0;
-
-	auto imageSizes = points.getProperty("imageSizes").toMap();
-
-	std::size_t pixelOffset = 0;
-
-	for (std::int32_t i = 0; i < _currentImageId; i++) {
-		const auto key	= imageSizes.keys().at(i);
-		const auto size = imageSizes[key].toSize();
-
-		pixelOffset += size.width() * size.height();
-	}
-
-	return pixelOffset;
-}
-
-std::size_t ImageViewerPlugin::pixelId(const QSize& imageSize, const int& x, const int& y)
-{
-	return y * imageSize.width() + x;
-}
-
-std::size_t ImageViewerPlugin::pixelBufferOffset(const QSize& imageSize, const int& x, const int& y)
-{
-	return ImageViewerPlugin::pixelId(imageSize, x, y);
-}
-
-std::size_t ImageViewerPlugin::sequencePixelCoordinateToPointId(const QSize& imageSize, const std::int32_t& imageId, const std::int32_t& noPixels, const std::int32_t& x, const std::int32_t& y)
-{
-	const auto imageOffset = imageId * (imageSize.width() * imageSize.height());
-	return imageOffset + ImageViewerPlugin::pixelId(imageSize, x, y);
-}
-
-std::size_t ImageViewerPlugin::stackPixelCoordinateToPointId(const QSize& imageSize, const std::int32_t& noDimensions, const std::int32_t& dimensionId, const std::int32_t& x, const std::int32_t& y)
-{
-	return ImageViewerPlugin::pixelId(imageSize, x, y) * noDimensions + dimensionId;
-}
-
-std::size_t ImageViewerPlugin::multipartSequencePixelCoordinateToPointId(const QSize& imageSize, const std::int32_t& noPointsPerDimension, const std::int32_t& pixelOffset, const std::int32_t& currentDimension, const std::int32_t& x, const std::int32_t& y)
-{
-	return  (currentDimension * noPointsPerDimension) + pixelOffset + ImageViewerPlugin::pixelId(imageSize, x, y);
-}
-
 QSize ImageViewerPlugin::imageSize() const
 {
-	PointsPlugin& points = pointsData();
+	/*
+	PointsPlugin& points = imageData();
 
 	if (points.hasProperty("imageSizes")) {
 		const auto imageSizes = points.getProperty("imageSizes").toMap();
@@ -260,12 +206,14 @@ QSize ImageViewerPlugin::imageSize() const
 				break;
 		}
 	}
+	*/
 
 	return QSize();
 }
 
 void ImageViewerPlugin::update()
 {
+	/*
 	qDebug() << "Update";
 
 	auto imageFileNames = QStringList();
@@ -351,10 +299,12 @@ void ImageViewerPlugin::update()
 		setImageNames(imageNames);
 		setDimensionNames(dimensionNames());
 	}
+	*/
 }
 
 void ImageViewerPlugin::computeDisplayImage()
 {
+	/*
 	const auto imageSize	= this->imageSize();
 	const auto width		= imageSize.width();
 	const auto height		= imageSize.height();
@@ -367,7 +317,7 @@ void ImageViewerPlugin::computeDisplayImage()
 
 	const auto noPointsPerDimension = this->noPointsPerDimension();
 
-	auto image = std::make_unique<Image<std::uint16_t>>(imageSize.width(), imageSize.height());
+	auto image = std::make_unique<Image>(imageSize.width(), imageSize.height());
 
 	switch (imageCollectionType()) {
 		case ImageCollectionType::Sequence: {
@@ -486,10 +436,12 @@ void ImageViewerPlugin::computeDisplayImage()
 	image->computeMinMax();
 
 	emit displayImageChanged(image);
+	*/
 }
 
 void ImageViewerPlugin::computeSelectionImage()
 {
+	/*
 	const auto imageSize	= this->imageSize();
 	const auto width		= imageSize.width();
 	const auto height		= imageSize.height();
@@ -499,7 +451,7 @@ void ImageViewerPlugin::computeSelectionImage()
 
 	qDebug() << "Compute selection image" << imageSize << pointsData.size();
 
-	auto image = std::make_unique<Image<std::uint8_t>>(imageSize.width(), imageSize.height());
+	auto image = std::make_unique<Image>(imageSize.width(), imageSize.height());
 
 	if (hasSelection()) {
 		switch (imageCollectionType())
@@ -532,23 +484,28 @@ void ImageViewerPlugin::computeSelectionImage()
 	}
 
 	emit selectionImageChanged(image);
+	*/
 }
 
 QString ImageViewerPlugin::currentDataset() const
 {
-	return _currentDataset;
+	return _currentDatasetName;
 }
 
 void ImageViewerPlugin::setCurrentDataset(const QString& currentDataset)
 {
-	if (currentDataset == _currentDataset)
+	if (currentDataset == _currentDatasetName)
 		return;
 
 	qDebug() << "Set current data set";
 
-	_currentDataset = currentDataset;
+	_currentDatasetName = currentDataset;
 
-	emit currentDatasetChanged(_currentDataset);
+	ImageDataSet& imageDataSet = dynamic_cast<ImageDataSet&>(_core->requestSet(_currentDatasetName));
+
+	_currentImageDataset = &imageDataSet.getData();
+
+	emit currentDatasetChanged(_currentDatasetName);
 
 	update();
 
@@ -654,26 +611,8 @@ void ImageViewerPlugin::dataAdded(const QString dataset)
 {
 	qDebug() << "Data added" << dataset;
 
-	const IndexSet& set = dynamic_cast<const IndexSet&>(_core->requestSet(dataset));
-
-	auto* imageData = dynamic_cast<ImageData*>(&set.getData());
-
-	if (imageData != nullptr) {
-		qDebug() << "Found some image data!";
-	}
-
-	/*
-	PointsPlugin& points = set.getData();
-
-	if (points.hasProperty("type")) {
-		const auto type = points.getProperty("type");
-		
-		if (type == "SEQUENCE" || type == "STACK" || type == "MULTI_PART_SEQUENCE") {
-			setDatasetNames(_datasetNames << dataset);
-			setCurrentDataset(dataset);
-		}
-	}
-	*/
+	setDatasetNames(_datasetNames << dataset);
+	setCurrentDataset(dataset);
 }
 
 void ImageViewerPlugin::dataChanged(const QString dataset)
@@ -706,7 +645,7 @@ QStringList ImageViewerPlugin::supportedDataKinds()
 {
 	QStringList supportedKinds;
 
-	supportedKinds << "Points";
+	supportedKinds << "Image Data";
 	
 	return supportedKinds;
 }

@@ -14,7 +14,7 @@
 
 #include <memory>
 
-#include "Image.h"
+#include "ImageData.h"
 #include "Common.h"
 
 class ImageViewerPlugin;
@@ -43,8 +43,8 @@ public:
 	void clearSelection();
 
 public:
-	void onDisplayImageChanged(std::unique_ptr<Image<std::uint16_t>>& displayImage);
-	void onSelectionImageChanged(std::unique_ptr<Image<std::uint8_t>>& selectionImage);
+	void onDisplayImageChanged(std::unique_ptr<Image>& displayImage);
+	void onSelectionImageChanged(std::unique_ptr<Image>& selectionImage);
 	void onCurrentDatasetChanged(const QString& currentDataset);
 	void onCurrentImageIdChanged(const std::int32_t& currentImageId);
 
@@ -99,8 +99,8 @@ signals:
 
 private:
 	ImageViewerPlugin*							_imageViewerPlugin;
-	std::unique_ptr<Image<std::uint16_t>>		_displayImage;
-	std::unique_ptr<Image<std::uint8_t>>		_selectionImage;
+	std::unique_ptr<Image>						_displayImage;
+	std::unique_ptr<Image>						_selectionImage;
 
 	// QT OpenGL
 	std::unique_ptr<QOpenGLTexture>				_imageTexture;
