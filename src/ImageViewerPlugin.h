@@ -2,7 +2,7 @@
 
 #include <ViewPlugin.h>
 
-#include "ImageData.h"
+#include "ImageData/ImageData.h"
 #include "Common.h"
 
 #include <QComboBox>

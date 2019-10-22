@@ -14,7 +14,7 @@
 
 #include <memory>
 
-#include "ImageData.h"
+#include "ImageData/ImageData.h"
 #include "Common.h"
 
 class ImageViewerPlugin;
@@ -25,7 +25,7 @@ class ImageViewerWidget : public QOpenGLWidget, protected QOpenGLFunctions
 
 public:
 	ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin);
-	~ImageViewerWidget();
+	~ImageViewerWidget() override;
 
 public:
 	InteractionMode interactionMode() const;

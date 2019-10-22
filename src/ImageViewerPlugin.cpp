@@ -3,7 +3,7 @@
 #include "SettingsWidget.h"
 
 #include "Set.h"
-#include "ImageData.h"
+#include "ImageData/ImageData.h"
 
 #include <QtCore>
 #include <QtDebug>
@@ -85,6 +85,10 @@ bool ImageViewerPlugin::hasSelection() const
 
 int ImageViewerPlugin::noDimensions() const
 {
+	if (_currentImageDataset == nullptr)
+		return 0;
+
+	//return _currentImageDataset->get
 	/*
 	auto& points = imageData();
 
@@ -96,6 +100,7 @@ int ImageViewerPlugin::noDimensions() const
 
 ImageCollectionType ImageViewerPlugin::imageCollectionType() const
 {
+	//return _currentImageDataset->get
 	/*
 	if (_currentDataset.isEmpty())
 		return ImageCollectionType::Undefined;
