@@ -40,15 +40,6 @@ public:
 	ImageCollectionType imageCollectionType() const;
 	bool selectable() const;
 
-	QString currentImageFilePath() const;
-	QString currentImageFileName() const;
-	QString currentDimensionName() const;
-
-	QStringList dimensionNames() const;
-	QStringList imageFilePaths() const;
-
-	std::size_t noImages() const;
-	
 	QSize imageSize() const;
 
 private:
@@ -57,8 +48,8 @@ private:
 	void computeSelectionImage();
 
 public:
-	QString currentDataset() const;
-	void setCurrentDataset(const QString& currentDataset);
+	QString currentDatasetName() const;
+	void setCurrentDatasetName(const QString& currentDatasetName);
 	auto currentImageId() const;
 	void setCurrentImageId(const std::int32_t& currentImageId);
 	auto currentDimensionId() const;
@@ -87,7 +78,7 @@ private:
 	SettingsWidget*		_settingsWidget;
 	QStringList			_datasetNames;
 	QString				_currentDatasetName;
-	ImageData*			_currentImageDataset;
+	ImageData*			_currentImageData;
 	QStringList			_imageNames;
 	std::int32_t		_currentImageId;
 	QStringList			_dimensionNames;

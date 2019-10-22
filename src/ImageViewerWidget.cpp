@@ -692,7 +692,7 @@ void ImageViewerWidget::zoomAt(const QPointF& screenPosition, const float& facto
 
 void ImageViewerWidget::zoomExtents()
 {
-	if (_imageViewerPlugin->currentDataset().isEmpty())
+	if (_imageViewerPlugin->currentDatasetName().isEmpty())
 		return;
 	
 	qDebug() << "Zoom extents";

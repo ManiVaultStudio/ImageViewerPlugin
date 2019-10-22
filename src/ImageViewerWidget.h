@@ -14,8 +14,9 @@
 
 #include <memory>
 
-#include "ImageData/ImageData.h"
 #include "Common.h"
+
+#include "ImageData/ImageData.h"
 
 class ImageViewerPlugin;
 
