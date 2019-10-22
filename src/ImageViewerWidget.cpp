@@ -296,7 +296,6 @@ void ImageViewerWidget::paintGL() {
 
 void ImageViewerWidget::onDisplayImageChanged(std::unique_ptr<Image>& displayImage)
 {
-	/*
 	if (!isValid())
 		return;
 
@@ -318,7 +317,7 @@ void ImageViewerWidget::onDisplayImageChanged(std::unique_ptr<Image>& displayIma
 	if (imageSizeChanged)
 		setupTextures();
 
-	_imageTexture->setData(QOpenGLTexture::PixelFormat::Red, QOpenGLTexture::PixelType::UInt16, static_cast<void*>(_displayImage->pixels().data()));
+	_imageTexture->setData(QOpenGLTexture::PixelFormat::Red, QOpenGLTexture::PixelType::UInt16, static_cast<void*>(_displayImage->data()));
 
 	if (imageSizeChanged) {
 		createImageQuad();
@@ -334,7 +333,6 @@ void ImageViewerWidget::onDisplayImageChanged(std::unique_ptr<Image>& displayIma
 	doneCurrent();
 
 	update();
-	*/
 }
 
 void ImageViewerWidget::onSelectionImageChanged(std::unique_ptr<Image>& selectionImage)

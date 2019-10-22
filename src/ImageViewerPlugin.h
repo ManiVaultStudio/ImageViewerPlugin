@@ -34,12 +34,9 @@ public:
 	Indices selection() const;
 	void setSelection(Indices& indices);
 	bool hasSelection() const;
-
 	int noDimensions() const;
-
 	ImageCollectionType imageCollectionType() const;
 	bool selectable() const;
-
 	QSize imageSize() const;
 
 private:
@@ -94,8 +91,8 @@ class ImageViewerPluginFactory : public ViewPluginFactory
                       FILE  "ImageViewerPlugin.json")
     
 public:
-	ImageViewerPluginFactory(void) {}
-    ~ImageViewerPluginFactory(void) {}
+	ImageViewerPluginFactory() {}
+    ~ImageViewerPluginFactory() {}
     
 	ImageViewerPlugin* produce();
 };

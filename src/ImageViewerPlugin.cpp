@@ -182,139 +182,24 @@ void ImageViewerPlugin::update()
 
 void ImageViewerPlugin::computeDisplayImage()
 {
-	/*
-	const auto imageSize	= this->imageSize();
-	const auto width		= imageSize.width();
-	const auto height		= imageSize.height();
-	const auto noPixels		= width * height;
-	const auto noImages		= this->noImages();
-
-	auto& pointsData = this->pointsData().getData();
-
-	qDebug() << "Compute display image" << imageSize;
-
-	const auto noPointsPerDimension = this->noPointsPerDimension();
-
-	auto image = std::make_unique<Image>(imageSize.width(), imageSize.height());
-
 	switch (imageCollectionType()) {
-		case ImageCollectionType::Sequence: {
-			auto displayImages = Indices();
-
-			if (_averageImages) {
-				if (hasSelection()) {
-					displayImages = selection();
-				}
-				else {
-					displayImages.resize(noImages);
-					std::iota(std::begin(displayImages), std::end(displayImages), 0);
-				}
-			}
-			else {
-				if (_currentImageId >= 0) {
-					displayImages = Indices({ static_cast<unsigned int>(_currentImageId) });
-				}
-				else {
-					displayImages = Indices();
-				}
-			}
-
-			const auto noDisplayImages = displayImages.size();
-
-			for (std::int32_t x = 0; x < width; x++) {
-				for (std::int32_t y = 0; y < height; y++) {
-					auto pixelValue = 0.0;
-
-					for (unsigned int displayImageId : displayImages) {
-						const auto pointId = ImageViewerPlugin::sequencePixelCoordinateToPointId(imageSize, displayImageId, noPixels, x, y);
-
-						pixelValue += pointsData[pointId];
-					}
-
-					pixelValue /= static_cast<float>(noDisplayImages);
-
-					image->setPixel(x, y, static_cast<std::uint16_t>(pixelValue));
-				}
-			}
-
+		case ImageCollectionType::Sequence:
+		{
 			break;
 		}
 
-		case ImageCollectionType::Stack: {
-			auto displayDimensions = Indices();
-
-			if (_averageImages) {
-				displayDimensions.resize(noDimensions());
-				std::iota(std::begin(displayDimensions), std::end(displayDimensions), 0);
-			}
-			else
-			{
-				displayDimensions = Indices({ static_cast<unsigned int>(_currentDimensionId) });
-			}
-
-			const auto noDisplayDimensions	= displayDimensions.size();
-
-			for (std::int32_t x = 0; x < width; x++) {
-				for (std::int32_t y = 0; y < height; y++) {
-					auto pixelValue = 0.f;
-
-					for (unsigned int displayDimensionId : displayDimensions) {
-						const auto pointId = stackPixelCoordinateToPointId(imageSize, noImages, displayDimensionId, x, y);
-
-						pixelValue += pointsData[pointId];
-					}
-
-					pixelValue /= static_cast<float>(noDisplayDimensions);
-
-					image->setPixel(x, y, static_cast<std::uint16_t>(pixelValue));
-				}
-			}
-
-			break;
-		}
-
-		case ImageCollectionType::MultiPartSequence: {
-			auto displayDimensions = Indices();
-
-			if (_averageImages) {
-				displayDimensions.resize(noDimensions());
-				std::iota(std::begin(displayDimensions), std::end(displayDimensions), 0);
-			}
-			else
-			{
-				displayDimensions = Indices({ static_cast<unsigned int>(_currentDimensionId) });
-			}
-
-			const auto pixelOffset			= this->pixelOffset();
-			const auto currentDimension		= this->_currentDimensionId;
-			const auto noDisplayDimensions	= displayDimensions.size();
-
-			for (std::int32_t x = 0; x < width; x++) {
-				for (std::int32_t y = 0; y < height; y++) {
-					auto pixelValue = 0.f;
-
-					for (unsigned int displayDimensionId : displayDimensions) {
-						const auto pointId = ImageViewerPlugin::multipartSequencePixelCoordinateToPointId(imageSize, noPointsPerDimension, pixelOffset, displayDimensionId, x, y);
-
-						pixelValue += pointsData[pointId];
-					}
-
-					pixelValue /= static_cast<float>(noDisplayDimensions);
-
-					image->setPixel(x, y, static_cast<std::uint16_t>(pixelValue));
-				}
-			}
+		case ImageCollectionType::Stack:
+		{
+			auto image = _currentImageData->stackImage(0);
 			
-			//qDebug() << imageTextureData;
+			emit displayImageChanged(image);
 
 			break;
 		}
+
+		default:
+			break;
 	}
-
-	image->computeMinMax();
-
-	emit displayImageChanged(image);
-	*/
 }
 
 void ImageViewerPlugin::computeSelectionImage()
