@@ -1130,8 +1130,8 @@ void ImageViewerWidget::setWindowLevel(const float& window, const float& level)
 	if (window == _window && level == _level)
 		return;
 
-	_window = window;
-	_level	= level;
+	_window = std::clamp(window, 0.01f, 1.0f);
+	_level	= std::clamp(level, 0.01f, 1.0f);
 
 	qDebug() << "Set window/level" << _window << _level;
 
