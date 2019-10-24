@@ -39,7 +39,7 @@ public:
 	bool selectable() const;
 	QSize imageSize() const;
 
-private:
+public:
 	void update();
 	void computeDisplayImage();
 	void computeSelectionImage();
@@ -67,7 +67,7 @@ signals:
 	void dimensionNamesChanged(const QStringList& dimensionNames);
 	void currentDimensionIdChanged(const std::int32_t& currentDimensionId);
 	void averageImagesChanged(const bool& averageImages);
-	void displayImageChanged(std::unique_ptr<Image>& displayImage);
+	void displayImageChanged(std::unique_ptr<QImage>& displayImage);
 	void selectionImageChanged(std::unique_ptr<Image>& selectionImage);
 
 private:

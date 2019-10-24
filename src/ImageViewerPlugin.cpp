@@ -182,6 +182,8 @@ void ImageViewerPlugin::update()
 
 void ImageViewerPlugin::computeDisplayImage()
 {
+	const auto windowLevel = _imageViewerWidget->windowLevel();
+
 	switch (imageCollectionType()) {
 		case ImageCollectionType::Sequence:
 		{
@@ -190,10 +192,8 @@ void ImageViewerPlugin::computeDisplayImage()
 
 		case ImageCollectionType::Stack:
 		{
-			auto image = _currentImageData->stackImage(0);
-			
+			auto image = _currentImageData->stackImage(_currentDimensionId, windowLevel.first, windowLevel.second);
 			emit displayImageChanged(image);
-
 			break;
 		}
 

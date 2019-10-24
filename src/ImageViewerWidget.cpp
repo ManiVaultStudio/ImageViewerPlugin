@@ -76,7 +76,9 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_selectionGeometryColor(255, 0, 0, 255),
 	_selectedPointIds(),
 	_zoomToExtentsAction(nullptr),
-	_ignorePaintGL(false)
+	_ignorePaintGL(false),
+	_window(1.0f),
+	_level(0.5f)
 {
 	setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
 	setFocusPolicy(Qt::StrongFocus);
@@ -206,22 +208,13 @@ void ImageViewerWidget::paintGL() {
 
 	if (!initialized())
 		return;
-
+	
 	if (_imageQuadVBO.bind()) {
 		auto modelViewProjection = projection() * modelView();
 
 		if (_imageShaderProgram->isLinked() && _imageTexture->isCreated()) {
 			if (_imageShaderProgram->bind()) {
-				double window, level;
-
-				_displayImage->computeWindowLevel(_window, _level, window, level);
-
-				const auto minPixelValue = std::clamp(static_cast<float>(_displayImage->min()), static_cast<float>(level - (window / 2.0)), static_cast<float>(_displayImage->max()));
-				const auto maxPixelValue = std::clamp(static_cast<float>(_displayImage->min()), static_cast<float>(level + (window / 2.0)), static_cast<float>(_displayImage->max()));
-
 				_imageShaderProgram->setUniformValue("imageTexture", 0);
-				_imageShaderProgram->setUniformValue("minPixelValue", static_cast<GLfloat>(minPixelValue));
-				_imageShaderProgram->setUniformValue("maxPixelValue", static_cast<GLfloat>(maxPixelValue));
 				_imageShaderProgram->setUniformValue("matrix", modelViewProjection);
 				_imageShaderProgram->enableAttributeArray(PROGRAM_VERTEX_ATTRIBUTE);
 				_imageShaderProgram->enableAttributeArray(PROGRAM_TEXCOORD_ATTRIBUTE);
@@ -237,7 +230,7 @@ void ImageViewerWidget::paintGL() {
 				_imageShaderProgram->release();
 			}
 		}
-
+		
 		if (_overlayShaderProgram->isLinked()) {
 			auto translate = QMatrix4x4();
 
@@ -262,7 +255,7 @@ void ImageViewerWidget::paintGL() {
 				_overlayShaderProgram->release();
 			}
 		}
-		
+		/*
 		if (_selectionShaderProgram->isLinked() && _selectionTexture->isCreated()) {
 			modelViewProjection.translate(0.0f, 0.0f, 2.0f);
 
@@ -283,7 +276,7 @@ void ImageViewerWidget::paintGL() {
 				_selectionShaderProgram->release();
 			}
 		}
-
+		*/
 		_imageQuadVBO.release();
 	}
 	
@@ -294,16 +287,16 @@ void ImageViewerWidget::paintGL() {
 	*/
 }
 
-void ImageViewerWidget::onDisplayImageChanged(std::unique_ptr<Image>& displayImage)
+void ImageViewerWidget::onDisplayImageChanged(std::unique_ptr<QImage>& displayImage)
 {
 	if (!isValid())
 		return;
-
+	
 	makeCurrent();
 
 	_ignorePaintGL = true;
 
-	qDebug() << "Display image changed" << *displayImage.get();
+	//qDebug() << "Display image changed" << *displayImage.get();
 
 	auto imageSizeChanged = false;
 
@@ -313,11 +306,15 @@ void ImageViewerWidget::onDisplayImageChanged(std::unique_ptr<Image>& displayIma
 		imageSizeChanged = displayImage->width() != _displayImage->width() || displayImage->height() != _displayImage->height();
 
 	_displayImage.swap(displayImage);
+	
+	//if (imageSizeChanged)
+	//	setupTextures();
+	_imageTexture.reset(new QOpenGLTexture(*_displayImage.get()));
 
-	if (imageSizeChanged)
-		setupTextures();
-
-	_imageTexture->setData(QOpenGLTexture::PixelFormat::Red, QOpenGLTexture::PixelType::UInt16, static_cast<void*>(_displayImage->data()));
+	_imageTexture->destroy();
+	_imageTexture->create();
+	
+	_imageTexture->setData(*_displayImage.get());
 
 	if (imageSizeChanged) {
 		createImageQuad();
@@ -326,7 +323,7 @@ void ImageViewerWidget::onDisplayImageChanged(std::unique_ptr<Image>& displayIma
 		_pixelSelectionFBO = std::make_unique<QOpenGLFramebufferObject>(_displayImage->width(), _displayImage->height());
 	}
 
-	resetWindowLevel();
+//	resetWindowLevel();
 
 	_ignorePaintGL = false;
 
@@ -542,10 +539,13 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 
 		case Qt::RightButton:
 		{
-			const auto deltaWindow	= (mouseEvent->pos().x() - _mousePosition.x()) / static_cast<double>(_displayImage->width());
-			const auto deltaLevel	= (mouseEvent->pos().y() - _mousePosition.y()) / static_cast<double>(_displayImage->height());
-			const auto window		= std::max<double>(0, std::min<double>(_window + deltaWindow, 1.0f));
-			const auto level		= std::max<double>(0, std::min<double>(_level + deltaLevel, 1.0f));
+			const auto mouseDelta	= (mouseEvent->pos() - _mousePosition);
+			const auto deltaWindow	= (mouseDelta.x() > 0 ? 1.0f : -1.0f) * 0.05f;// / static_cast<float>(0.2 * _displayImage->width());
+			const auto deltaLevel	= (mouseDelta.y() > 0 ? 1.0f : -1.0f) * 0.05f;// / static_cast<float>(0.2 * _displayImage->height());
+			const auto window		= std::clamp(0.0f, _window + deltaWindow, 1.0f);
+			const auto level		= std::clamp(0.0f, _level + deltaLevel, 1.0f);
+
+			qDebug() << _window << _level << deltaWindow << deltaLevel;
 
 			setWindowLevel(window, level);
 
@@ -1017,7 +1017,7 @@ void ImageViewerWidget::setupTextures()
 {
 	qDebug() << "Setup textures";
 
-	setupTexture(_imageTexture.get(), QOpenGLTexture::TextureFormat::R16_UNorm);
+	setupTexture(_imageTexture.get(), QOpenGLTexture::TextureFormat::RGB16_UNorm);
 	setupTexture(_selectionTexture.get(), QOpenGLTexture::TextureFormat::R8_UNorm, QOpenGLTexture::Filter::Nearest);
 }
 
@@ -1125,15 +1125,17 @@ std::pair<double, double> ImageViewerWidget::windowLevel() const
 	return std::make_pair(_window, _level);
 }
 
-void ImageViewerWidget::setWindowLevel(const double& window, const double& level)
+void ImageViewerWidget::setWindowLevel(const float& window, const float& level)
 {
 	if (window == _window && level == _level)
 		return;
 
 	_window = window;
-	_level = level;
+	_level	= level;
 
 	qDebug() << "Set window/level" << _window << _level;
+
+	_imageViewerPlugin->computeDisplayImage();
 
 	update();
 }

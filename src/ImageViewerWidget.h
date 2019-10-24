@@ -37,14 +37,14 @@ public:
 	void setSelectionModifier(const SelectionModifier& selectionModifier);
 	void setBrushRadius(const float& brushRadius);
 	std::pair<double, double> windowLevel() const;
-	void setWindowLevel(const double& window, const double& level);
+	void setWindowLevel(const float& window, const float& level);
 	void resetWindowLevel();
 
 	void modifySelection();
 	void clearSelection();
 
 public:
-	void onDisplayImageChanged(std::unique_ptr<Image>& displayImage);
+	void onDisplayImageChanged(std::unique_ptr<QImage>& displayImage);
 	void onSelectionImageChanged(std::unique_ptr<Image>& selectionImage);
 	void onCurrentDatasetChanged(const QString& currentDataset);
 	void onCurrentImageIdChanged(const std::int32_t& currentImageId);
@@ -100,8 +100,8 @@ signals:
 
 private:
 	ImageViewerPlugin*							_imageViewerPlugin;
-	std::unique_ptr<Image>						_displayImage;
-	std::unique_ptr<Image>						_selectionImage;
+	std::unique_ptr<QImage>						_displayImage;
+	std::unique_ptr<QImage>						_selectionImage;
 
 	// QT OpenGL
 	std::unique_ptr<QOpenGLTexture>				_imageTexture;
@@ -141,7 +141,7 @@ private:
 	//QOpenGLFramebufferObject					_overlayFrameBufferObject;
 	
 	
-	double										_window;
-	double										_level;
+	float										_window;
+	float										_level;
 	bool										_ignorePaintGL;
 };
