@@ -36,7 +36,7 @@ public:
 	SelectionModifier selectionModifier() const;
 	void setSelectionModifier(const SelectionModifier& selectionModifier);
 	void setBrushRadius(const float& brushRadius);
-	std::pair<double, double> windowLevel() const;
+	std::pair<float, float> windowLevel() const;
 	void setWindowLevel(const float& window, const float& level);
 	void resetWindowLevel();
 

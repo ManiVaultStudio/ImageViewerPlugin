@@ -539,13 +539,12 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 
 		case Qt::RightButton:
 		{
-			const auto mouseDelta	= (mouseEvent->pos() - _mousePosition);
-			const auto deltaWindow	= (mouseDelta.x() > 0 ? 1.0f : -1.0f) * 0.05f;// / static_cast<float>(0.2 * _displayImage->width());
-			const auto deltaLevel	= (mouseDelta.y() > 0 ? 1.0f : -1.0f) * 0.05f;// / static_cast<float>(0.2 * _displayImage->height());
-			const auto window		= std::clamp(0.0f, _window + deltaWindow, 1.0f);
-			const auto level		= std::clamp(0.0f, _level + deltaLevel, 1.0f);
-
-			qDebug() << _window << _level << deltaWindow << deltaLevel;
+			//const auto mouseDelta	= (mouseEvent->pos() - _mousePosition);
+			const auto worldPos		= screenToWorld(_mousePosition);
+			const auto deltaWindow	= (mouseEvent->pos().x() - _mousePosition.x()) / static_cast<float>(_displayImage->width());
+			const auto deltaLevel	= -(mouseEvent->pos().y() - _mousePosition.y()) / static_cast<float>(_displayImage->height());
+			const auto window		= std::clamp(_window + deltaWindow, 0.0f, 1.0f);
+			const auto level		= std::clamp(_level + deltaLevel, 0.0f, 1.0f);
 
 			setWindowLevel(window, level);
 
@@ -1120,7 +1119,7 @@ void ImageViewerWidget::setBrushRadius(const float& brushRadius)
 	emit brushRadiusChanged();
 }
 
-std::pair<double, double> ImageViewerWidget::windowLevel() const
+std::pair<float, float> ImageViewerWidget::windowLevel() const
 {
 	return std::make_pair(_window, _level);
 }

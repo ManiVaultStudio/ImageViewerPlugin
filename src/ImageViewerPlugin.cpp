@@ -187,6 +187,10 @@ void ImageViewerPlugin::computeDisplayImage()
 	switch (imageCollectionType()) {
 		case ImageCollectionType::Sequence:
 		{
+			const auto ids = std::vector<std::uint32_t>({ 0, 1, 2, 3 });
+
+			auto image = _currentImageData->sequenceImage(ids, windowLevel.first, windowLevel.second);
+			emit displayImageChanged(image);
 			break;
 		}
 
