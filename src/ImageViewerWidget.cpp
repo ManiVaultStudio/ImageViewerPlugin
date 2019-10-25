@@ -539,10 +539,9 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 
 		case Qt::RightButton:
 		{
-			//const auto mouseDelta	= (mouseEvent->pos() - _mousePosition);
 			const auto worldPos		= screenToWorld(_mousePosition);
-			const auto deltaWindow	= (mouseEvent->pos().x() - _mousePosition.x()) / static_cast<float>(_displayImage->width());
-			const auto deltaLevel	= -(mouseEvent->pos().y() - _mousePosition.y()) / static_cast<float>(_displayImage->height());
+			const auto deltaWindow	= (mouseEvent->pos().x() - _mousePosition.x()) / 150.f;
+			const auto deltaLevel	= -(mouseEvent->pos().y() - _mousePosition.y()) / 150.f;
 			const auto window		= std::clamp(_window + deltaWindow, 0.0f, 1.0f);
 			const auto level		= std::clamp(_level + deltaLevel, 0.0f, 1.0f);
 
