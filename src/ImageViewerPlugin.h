@@ -68,7 +68,7 @@ signals:
 	void currentDimensionIdChanged(const std::int32_t& currentDimensionId);
 	void averageImagesChanged(const bool& averageImages);
 	void displayImageChanged(std::unique_ptr<QImage>& displayImage);
-	void selectionImageChanged(std::unique_ptr<Image>& selectionImage);
+	void selectionImageChanged(std::unique_ptr<QImage>& selectionImage);
 
 private:
 	ImageViewerWidget*	_imageViewerWidget;

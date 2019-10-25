@@ -229,50 +229,14 @@ void ImageViewerPlugin::computeDisplayImage()
 
 void ImageViewerPlugin::computeSelectionImage()
 {
-	/*
-	const auto imageSize	= this->imageSize();
-	const auto width		= imageSize.width();
-	const auto height		= imageSize.height();
-	const auto noPixels		= width * height;
+	if (_currentImageData == nullptr)
+		return;
 
-	auto& pointsData = this->pointsData().getData();
+	if (imageCollectionType() == ImageCollectionType::Stack) {
+		auto image = _currentImageData->selectionImage();
 
-	qDebug() << "Compute selection image" << imageSize << pointsData.size();
-
-	auto image = std::make_unique<Image>(imageSize.width(), imageSize.height());
-
-	if (hasSelection()) {
-		switch (imageCollectionType())
-		{
-		case ImageCollectionType::Stack: {
-			for (auto& index : selection())
-			{
-				const auto offset = index * 4;
-
-				image->pixels()[index] = 255;
-			}
-		}
-
-		case ImageCollectionType::MultiPartSequence: {
-			const auto imageSize = this->imageSize();
-			const auto pointIndexStart = pixelOffset();
-			const auto pointIndexEnd = pointIndexStart + imageSize.width() * imageSize.height();
-			
-			//qDebug() << pointIndexStart << imageSize;
-			
-			for (auto& selectionId : selection())
-			{
-				if (selectionId < pointIndexStart || selectionId >= pointIndexEnd)
-					continue;
-
-				image->pixels()[selectionId - pointIndexStart] = 255;
-			}
-		}
-		}
+		emit selectionImageChanged(image);
 	}
-
-	emit selectionImageChanged(image);
-	*/
 }
 
 QString ImageViewerPlugin::currentDatasetName() const

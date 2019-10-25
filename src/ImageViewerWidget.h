@@ -45,7 +45,7 @@ public:
 
 public:
 	void onDisplayImageChanged(std::unique_ptr<QImage>& displayImage);
-	void onSelectionImageChanged(std::unique_ptr<Image>& selectionImage);
+	void onSelectionImageChanged(std::unique_ptr<QImage>& selectionImage);
 	void onCurrentDatasetChanged(const QString& currentDataset);
 	void onCurrentImageIdChanged(const std::int32_t& currentImageId);
 

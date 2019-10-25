@@ -255,7 +255,7 @@ void ImageViewerWidget::paintGL() {
 				_overlayShaderProgram->release();
 			}
 		}
-		/*
+		
 		if (_selectionShaderProgram->isLinked() && _selectionTexture->isCreated()) {
 			modelViewProjection.translate(0.0f, 0.0f, 2.0f);
 
@@ -276,7 +276,7 @@ void ImageViewerWidget::paintGL() {
 				_selectionShaderProgram->release();
 			}
 		}
-		*/
+		
 		_imageQuadVBO.release();
 	}
 	
@@ -309,12 +309,8 @@ void ImageViewerWidget::onDisplayImageChanged(std::unique_ptr<QImage>& displayIm
 	
 	//if (imageSizeChanged)
 	//	setupTextures();
-	_imageTexture.reset(new QOpenGLTexture(*_displayImage.get()));
 
-	_imageTexture->destroy();
-	_imageTexture->create();
-	
-	_imageTexture->setData(*_displayImage.get());
+	_imageTexture.reset(new QOpenGLTexture(*_displayImage.get()));
 
 	if (imageSizeChanged) {
 		createImageQuad();
@@ -332,9 +328,8 @@ void ImageViewerWidget::onDisplayImageChanged(std::unique_ptr<QImage>& displayIm
 	update();
 }
 
-void ImageViewerWidget::onSelectionImageChanged(std::unique_ptr<Image>& selectionImage)
+void ImageViewerWidget::onSelectionImageChanged(std::unique_ptr<QImage>& selectionImage)
 {
-	/*
 	if (!isValid())
 		return;
 
@@ -342,10 +337,10 @@ void ImageViewerWidget::onSelectionImageChanged(std::unique_ptr<Image>& selectio
 
 	_selectionImage.swap(selectionImage);
 
-	_selectionTexture->setData(QOpenGLTexture::PixelFormat::Red, QOpenGLTexture::PixelType::UInt8, static_cast<void*>(_selectionImage->pixels().data()));
+	_selectionTexture.reset(new QOpenGLTexture(*_selectionImage.get()));
+	_selectionTexture->setMinMagFilters(QOpenGLTexture::Filter::Nearest, QOpenGLTexture::Filter::Nearest);
 
 	update();
-	*/
 }
 
 void ImageViewerWidget::onCurrentDatasetChanged(const QString& currentDataset)
