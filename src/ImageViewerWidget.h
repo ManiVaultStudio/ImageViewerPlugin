@@ -136,7 +136,7 @@ private:
 	QColor										_pointSelectionColor;
 	QColor										_pixelSelectionColor;
 	QColor										_selectionGeometryColor;
-	Indices										_selectedPointIds;
+	std::vector<std::uint32_t>					_selectedPointIds;
 	QAction*									_zoomToExtentsAction;
 	//QOpenGLFramebufferObject					_overlayFrameBufferObject;
 	

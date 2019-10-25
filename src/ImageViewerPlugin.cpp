@@ -71,7 +71,7 @@ void ImageViewerPlugin::setSelection(Indices& indices)
 	if (_currentImageData == nullptr)
 		return;
 
-	auto& selection = dynamic_cast<ImageDataSet&>(_currentImageData->getSelection());
+	auto& selection = dynamic_cast<IndexSet&>(_currentImageData->source()->getSelection());
 
 	selection.indices = indices;
 

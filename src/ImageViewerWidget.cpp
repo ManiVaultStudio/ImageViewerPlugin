@@ -244,10 +244,6 @@ void ImageViewerWidget::paintGL() {
 				_overlayShaderProgram->setAttributeBuffer(PROGRAM_VERTEX_ATTRIBUTE, GL_FLOAT, 0, 3, 5 * sizeof(GLfloat));
 				_overlayShaderProgram->setAttributeBuffer(PROGRAM_TEXCOORD_ATTRIBUTE, GL_FLOAT, 3 * sizeof(GLfloat), 2, 5 * sizeof(GLfloat));
 
-				//qDebug() << _pixelSelectionSourceFBO->sizes();
-
-				//_pixelSelectionTargetFBO->toImage().save("testkje.jpg");
-
 				glBindTexture(GL_TEXTURE_2D, _pixelSelectionFBO->texture());
 				
 				glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
@@ -333,12 +329,16 @@ void ImageViewerWidget::onSelectionImageChanged(std::unique_ptr<QImage>& selecti
 	if (!isValid())
 		return;
 
+	makeCurrent();
+
 	qDebug() << "Selection image changed";
 
 	_selectionImage.swap(selectionImage);
 
 	_selectionTexture.reset(new QOpenGLTexture(*_selectionImage.get()));
 	_selectionTexture->setMinMagFilters(QOpenGLTexture::Filter::Nearest, QOpenGLTexture::Filter::Nearest);
+
+	doneCurrent();
 
 	update();
 }
@@ -580,11 +580,8 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 		{
 			if (_imageViewerPlugin->selectable()) {
 				if (_selecting) {
-					if (_imageViewerPlugin->selectable()) {
-						enableSelection(false);
-						modifySelection();
-					}
-
+					enableSelection(false);
+					modifySelection();
 					commitSelection();
 				}
 			}
@@ -839,19 +836,31 @@ void ImageViewerWidget::updateSelection()
 void ImageViewerWidget::modifySelection()
 {
 	qDebug() << "Modify selection";
+	
+	makeCurrent();
 
-	const auto pixelSelectionImage = _pixelSelectionFBO->toImage();
+	const auto image = _pixelSelectionFBO->toImage();
 
-	auto selectionSet = std::set<Index>();
+	doneCurrent();
 
-	/*
+	auto selectedPointIds = std::set<std::uint32_t>();
+
+	for (std::uint32_t y = 0; y < image.height(); y++) {
+		for (std::uint32_t x = 0; x < image.width(); x++) {
+			if (image.pixelColor(x, y).red() > 0)
+				selectedPointIds.insert((image.height() - y) * image.width() + x);
+		}
+	}
+
+	//qDebug() << std::vector<std::uint32_t>(selectedPointIds.begin(), selectedPointIds.end());
+	
 	if (selectedPointIds.size() > 0) {
 		switch (_selectionModifier) {
 			case SelectionModifier::Replace:
 			{
 				//qDebug() << "Replace selection";
 
-				_selectedPointIds = selectedPointIds;
+				_selectedPointIds = std::vector<std::uint32_t>(selectedPointIds.begin(), selectedPointIds.end());
 
 				break;
 			}
@@ -859,7 +868,7 @@ void ImageViewerWidget::modifySelection()
 			case SelectionModifier::Add:
 			{
 				//qDebug() << "Add to selection";
-
+				/*
 				auto selectionSet = std::set<Index>(_selectedPointIds.begin(), _selectedPointIds.end());
 
 				for (auto& pixelId : selectedPointIds) {
@@ -867,14 +876,14 @@ void ImageViewerWidget::modifySelection()
 				}
 
 				_selectedPointIds = Indices(selectionSet.begin(), selectionSet.end());
-
+				*/
 				break;
 			}
 
 			case SelectionModifier::Remove:
 			{
 				//qDebug() << "Remove from selection";
-
+				/*
 				auto selectionSet = std::set<Index>(_selectedPointIds.begin(), _selectedPointIds.end());
 
 				for (auto& pixelId : selectedPointIds) {
@@ -882,7 +891,7 @@ void ImageViewerWidget::modifySelection()
 				}
 
 				_selectedPointIds = Indices(selectionSet.begin(), selectionSet.end());
-
+				*/
 				break;
 			}
 		}
@@ -892,21 +901,7 @@ void ImageViewerWidget::modifySelection()
 		_selectedPointIds = Indices();
 	}
 
-	auto overlayTextureData = std::vector<std::uint16_t>();
-
-	overlayTextureData.resize(_displayImage->width() * _displayImage->height());
-
-	for (auto& selectedPointId : _selectedPointIds) {
-		overlayTextureData[selectedPointId - pixelOffset] = 1;
-	}
-
-	qDebug() << overlayTextureData;
-
-	//_textures["overlay"]->setData(QOpenGLTexture::PixelFormat::Red, QOpenGLTexture::PixelType::UInt16, static_cast<void*>(overlayTextureData.data()));
-
 	update();
-
-	*/
 }
 
 void ImageViewerWidget::clearSelection()
@@ -1070,7 +1065,7 @@ void ImageViewerWidget::setSelectionType(const SelectionType& selectionType)
 	_selectionType = selectionType;
 
 	if (selectionType == SelectionType::Brush) {
-		_selectionModifier = SelectionModifier::Add;
+		//_selectionModifier = SelectionModifier::Add;
 	}
 	else {
 		_selectionModifier = SelectionModifier::Replace;
