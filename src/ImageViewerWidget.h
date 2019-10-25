@@ -77,7 +77,8 @@ private:
 	void resetView();
 
 	bool initialized();
-	void updateSelection();
+	void updatePixelSelection();
+	void resetPixelSelection();
 	void commitSelection();
 
 	QMenu* contextMenu();

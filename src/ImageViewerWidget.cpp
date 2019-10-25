@@ -315,8 +315,6 @@ void ImageViewerWidget::onDisplayImageChanged(std::unique_ptr<QImage>& displayIm
 		_pixelSelectionFBO = std::make_unique<QOpenGLFramebufferObject>(_displayImage->width(), _displayImage->height());
 	}
 
-//	resetWindowLevel();
-
 	_ignorePaintGL = false;
 
 	doneCurrent();
@@ -463,6 +461,8 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 						}
 						*/
 
+						resetPixelSelection();
+
 						_initialMousePosition = _mousePosition;
 
 						enableSelection(true);
@@ -512,7 +512,7 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 				case InteractionMode::Selection:
 				{
 					if (_imageViewerPlugin->selectable()) {
-						updateSelection();
+						updatePixelSelection();
 					}
 					
 					break;
@@ -751,7 +751,7 @@ void ImageViewerWidget::createImageQuad()
 	_imageQuadVBO.release();
 }
 
-void ImageViewerWidget::updateSelection()
+void ImageViewerWidget::updatePixelSelection()
 {
 	//qDebug() << "Update selection" << selectionTypeName(_selectionType);
 
@@ -760,7 +760,6 @@ void ImageViewerWidget::updateSelection()
 	if (_imageQuadVBO.bind()) {
 		if (_pixelSelectionFBO->bind()) {
 			if (_pixelSelectionShaderProgram->bind()) {
-				//glClear(GL_COLOR);
 				glViewport(0, 0, _displayImage->width(), _displayImage->height());
 
 				QMatrix4x4 transform;
@@ -782,14 +781,23 @@ void ImageViewerWidget::updateSelection()
 						const auto rectangleBottomRight		= screenToWorld(_mousePosition);
 						const auto rectangleTopLeftUV		= QVector2D(rectangleTopLeft.x() / static_cast<float>(_displayImage->width()), rectangleTopLeft.y() / static_cast<float>(_displayImage->height()));
 						const auto rectangleBottomRightUV	= QVector2D(rectangleBottomRight.x() / static_cast<float>(_displayImage->width()), rectangleBottomRight.y() / static_cast<float>(_displayImage->height()));
-						
-						auto rectangleUV = std::make_pair(rectangleTopLeftUV, rectangleBottomRightUV);
 
-						if (rectangleBottomRightUV.x() < rectangleTopLeftUV.x() || rectangleBottomRightUV.x() < rectangleTopLeftUV.x())
-							std::swap(rectangleUV.first, rectangleUV.second);
+						auto rectangleUV	= std::make_pair(rectangleTopLeftUV, rectangleBottomRightUV);
+						auto topLeft		= QVector2D(rectangleTopLeftUV.x(), rectangleTopLeftUV.y());
+						auto bottomRight	= QVector2D(rectangleBottomRightUV.x(), rectangleBottomRightUV.y());
 
-						_pixelSelectionShaderProgram->setUniformValue("rectangleTopLeft", rectangleUV.first);
-						_pixelSelectionShaderProgram->setUniformValue("rectangleBottomRight", rectangleUV.second);
+						if (rectangleBottomRightUV.x() < rectangleTopLeftUV.x()) {
+							topLeft.setX(rectangleBottomRightUV.x());
+							bottomRight.setX(rectangleTopLeftUV.x());
+						}
+							
+						if (rectangleBottomRightUV.y() < rectangleTopLeftUV.y()) {
+							topLeft.setY(rectangleBottomRightUV.y());
+							bottomRight.setY(rectangleTopLeftUV.y());
+						}
+							
+						_pixelSelectionShaderProgram->setUniformValue("rectangleTopLeft", topLeft);
+						_pixelSelectionShaderProgram->setUniformValue("rectangleBottomRight", bottomRight);
 
 						break;
 					}
@@ -798,7 +806,7 @@ void ImageViewerWidget::updateSelection()
 					{
 						const auto brushCenter		= screenToWorld(_mousePosition);
 						const auto brushCenterUV	= QVector2D(brushCenter.x() / static_cast<float>(_displayImage->width()), brushCenter.y() / static_cast<float>(_displayImage->height()));
-						
+
 						_pixelSelectionShaderProgram->setUniformValue("brushCenter", brushCenterUV);
 						_pixelSelectionShaderProgram->setUniformValue("brushRadius", _brushRadius);
 
@@ -833,6 +841,21 @@ void ImageViewerWidget::updateSelection()
 	update();
 }
 
+void ImageViewerWidget::resetPixelSelection()
+{
+	makeCurrent();
+
+	if (_pixelSelectionFBO->bind()) {
+		glViewport(0, 0, _displayImage->width(), _displayImage->height());
+		glClearColor(0.f, 0.f, 0.f, 0.f);
+		glClear(GL_COLOR_BUFFER_BIT);
+	}
+
+	doneCurrent();
+
+	update();
+}
+
 void ImageViewerWidget::modifySelection()
 {
 	qDebug() << "Modify selection";
@@ -842,6 +865,8 @@ void ImageViewerWidget::modifySelection()
 	const auto image = _pixelSelectionFBO->toImage();
 
 	doneCurrent();
+
+	resetPixelSelection();
 
 	auto selectedPointIds = std::set<std::uint32_t>();
 
@@ -858,8 +883,6 @@ void ImageViewerWidget::modifySelection()
 		switch (_selectionModifier) {
 			case SelectionModifier::Replace:
 			{
-				//qDebug() << "Replace selection";
-
 				_selectedPointIds = std::vector<std::uint32_t>(selectedPointIds.begin(), selectedPointIds.end());
 
 				break;
@@ -867,23 +890,19 @@ void ImageViewerWidget::modifySelection()
 
 			case SelectionModifier::Add:
 			{
-				//qDebug() << "Add to selection";
-				/*
-				auto selectionSet = std::set<Index>(_selectedPointIds.begin(), _selectedPointIds.end());
+				auto selectionSet = std::set<std::uint32_t>(_selectedPointIds.begin(), _selectedPointIds.end());
 
 				for (auto& pixelId : selectedPointIds) {
 					selectionSet.insert(pixelId);
 				}
 
 				_selectedPointIds = Indices(selectionSet.begin(), selectionSet.end());
-				*/
+				
 				break;
 			}
 
 			case SelectionModifier::Remove:
 			{
-				//qDebug() << "Remove from selection";
-				/*
 				auto selectionSet = std::set<Index>(_selectedPointIds.begin(), _selectedPointIds.end());
 
 				for (auto& pixelId : selectedPointIds) {
@@ -891,7 +910,7 @@ void ImageViewerWidget::modifySelection()
 				}
 
 				_selectedPointIds = Indices(selectionSet.begin(), selectionSet.end());
-				*/
+				
 				break;
 			}
 		}
@@ -919,6 +938,8 @@ void ImageViewerWidget::commitSelection()
 	// resetTextureData("overlay");
 
 	_imageViewerPlugin->setSelection(_selectedPointIds);
+	
+	resetPixelSelection();
 }
 
 QMenu* ImageViewerWidget::contextMenu()
@@ -1068,7 +1089,7 @@ void ImageViewerWidget::setSelectionType(const SelectionType& selectionType)
 		//_selectionModifier = SelectionModifier::Add;
 	}
 	else {
-		_selectionModifier = SelectionModifier::Replace;
+		//_selectionModifier = SelectionModifier::Replace;
 	}
 
 	update();
