@@ -61,7 +61,7 @@ Indices ImageViewerPlugin::selection() const
 	if (_currentImageData == nullptr)
 		return Indices();
 
-	const auto& selection = dynamic_cast<const ImageDataSet&>(_currentImageData->getSelection());
+	const auto& selection = dynamic_cast<const IndexSet&>(_currentImageData->source()->getSelection());
 
 	return selection.indices;
 }
@@ -182,14 +182,34 @@ void ImageViewerPlugin::update()
 
 void ImageViewerPlugin::computeDisplayImage()
 {
+	if (_currentImageData == nullptr)
+		return;
+
 	const auto windowLevel = _imageViewerWidget->windowLevel();
 
 	switch (imageCollectionType()) {
 		case ImageCollectionType::Sequence:
 		{
-			const auto ids = std::vector<std::uint32_t>({ 0, 1, 2, 3 });
-
+			auto ids = std::vector<std::uint32_t>();
+			
+			if (hasSelection()) {
+				const auto pointSelection = selection();
+				ids = _averageImages ? pointSelection : std::vector<std::uint32_t>({ pointSelection.front() });
+			}
+			else
+			{
+				if (_averageImages) {
+					ids.resize(_currentImageData->noImages());
+					std::iota(ids.begin(), ids.end(), 0);
+				}
+				else
+				{
+					ids = std::vector<std::uint32_t>({ static_cast<std::uint32_t>(_currentImageId) });
+				}
+			}
+			
 			auto image = _currentImageData->sequenceImage(ids, windowLevel.first, windowLevel.second);
+
 			emit displayImageChanged(image);
 			break;
 		}
@@ -197,6 +217,7 @@ void ImageViewerPlugin::computeDisplayImage()
 		case ImageCollectionType::Stack:
 		{
 			auto image = _currentImageData->stackImage(_currentDimensionId, windowLevel.first, windowLevel.second);
+
 			emit displayImageChanged(image);
 			break;
 		}
@@ -340,6 +361,7 @@ void ImageViewerPlugin::setAverageImages(const bool& averageImages)
 
 	emit averageImagesChanged(_averageImages);
 
+	computeDisplayImage();
 	update();
 }
 
@@ -404,8 +426,8 @@ void ImageViewerPlugin::selectionChanged(const QString dataset)
 
 	if (imageCollectionType() == ImageCollectionType::Sequence)
 		computeDisplayImage();
-
-	computeSelectionImage();
+	else
+		computeSelectionImage();
 }
 
 QStringList ImageViewerPlugin::supportedDataKinds()
