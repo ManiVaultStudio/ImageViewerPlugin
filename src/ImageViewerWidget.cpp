@@ -699,7 +699,7 @@ void ImageViewerWidget::zoomExtents()
 	const auto factorY = (height() - _margin) / static_cast<float>(_displayImage->height());
 
 	zoom(factorX < factorY ? factorX : factorY);
-	pan(QPointF(0, 0));
+	pan(_zoom * -QPointF(_displayImage->width() / 2.0f, _displayImage->height() / 2.0f));
 
 	update();
 }
