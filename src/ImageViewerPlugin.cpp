@@ -112,6 +112,14 @@ QSize ImageViewerPlugin::imageSize() const
 	return _currentImageData->imageSize();
 }
 
+void ImageViewerPlugin::selectPixels(const std::vector<std::pair<std::uint32_t, std::uint32_t>>& pixelCoordinates, const SelectionModifier& selectionModifier)
+{
+	if (_currentImageData == nullptr)
+		return;
+
+	_currentImageData->selectPixels(pixelCoordinates, selectionModifier);
+}
+
 void ImageViewerPlugin::update()
 {
 	if (_currentImageData == nullptr)
@@ -231,6 +239,8 @@ void ImageViewerPlugin::computeSelectionImage()
 {
 	if (_currentImageData == nullptr)
 		return;
+
+	qDebug() << "Compute selection image";
 
 	if (imageCollectionType() == ImageCollectionType::Stack) {
 		auto image = _currentImageData->selectionImage();

@@ -63,7 +63,6 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_selectionShaderProgram(),
 	_pixelSelectionFBO(),
 	_imageQuadVBO(),
-
 	_interactionMode(InteractionMode::Selection),
 	_initialMousePosition(),
 	_mousePosition(),
@@ -74,7 +73,7 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_selectionType(SelectionType::Rectangle),
 	_selectionModifier(SelectionModifier::Replace),
 	_selectionRealtime(false),
-	_brushRadius(20.f),
+	_brushRadius(50.f),
 	_brushRadiusDelta(2.0f),
 	_pointSelectionColor(1.f, 0.f, 0.f, 0.8f),
 	_pixelSelectionColor(1.f, 0.6f, 0.f, 0.4f),
@@ -885,57 +884,19 @@ void ImageViewerWidget::modifySelection()
 
 	resetPixelSelection();
 
-	auto selectedPointIds = std::set<std::uint32_t>();
+	auto pixelCoordinates = std::vector<std::pair<std::uint32_t, std::uint32_t>>();
+
+	pixelCoordinates.reserve(image.width() * image.height());
 
 	for (std::uint32_t y = 0; y < image.height(); y++) {
 		for (std::uint32_t x = 0; x < image.width(); x++) {
 			if (image.pixelColor(x, y).red() > 0)
-				selectedPointIds.insert((image.height() - y - 1) * image.width() + x);
+				//(image.height() - y - 1) * image.width() + x
+				pixelCoordinates.push_back(std::make_pair(x, y));
 		}
 	}
 
-	//qDebug() << std::vector<std::uint32_t>(selectedPointIds.begin(), selectedPointIds.end());
-	
-	if (selectedPointIds.size() > 0) {
-		switch (_selectionModifier) {
-			case SelectionModifier::Replace:
-			{
-				_selectedPointIds = std::vector<std::uint32_t>(selectedPointIds.begin(), selectedPointIds.end());
-
-				break;
-			}
-
-			case SelectionModifier::Add:
-			{
-				auto selectionSet = std::set<std::uint32_t>(_selectedPointIds.begin(), _selectedPointIds.end());
-
-				for (auto& pixelId : selectedPointIds) {
-					selectionSet.insert(pixelId);
-				}
-
-				_selectedPointIds = Indices(selectionSet.begin(), selectionSet.end());
-				
-				break;
-			}
-
-			case SelectionModifier::Remove:
-			{
-				auto selectionSet = std::set<Index>(_selectedPointIds.begin(), _selectedPointIds.end());
-
-				for (auto& pixelId : selectedPointIds) {
-					selectionSet.erase(pixelId);
-				}
-
-				_selectedPointIds = Indices(selectionSet.begin(), selectionSet.end());
-				
-				break;
-			}
-		}
-	}
-	else
-	{
-		_selectedPointIds = Indices();
-	}
+	_imageViewerPlugin->selectPixels(pixelCoordinates, _selectionModifier);
 
 	update();
 }
@@ -952,10 +913,6 @@ void ImageViewerWidget::commitSelection()
 {
 	qDebug() << "Commit selection to core";
 
-	// resetTextureData("overlay");
-
-	_imageViewerPlugin->setSelection(_selectedPointIds);
-	
 	resetPixelSelection();
 }
 
