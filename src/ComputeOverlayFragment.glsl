@@ -4,7 +4,6 @@ R"(
 uniform sampler2D pixelSelectionTexture;
 uniform bool reset;
 uniform int selectionType;
-uniform vec4 selectionColor;
 uniform vec2 brushCenter;
 uniform float brushRadius;
 uniform vec2 rectangleTopLeft;

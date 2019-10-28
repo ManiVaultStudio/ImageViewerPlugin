@@ -39,6 +39,14 @@ const std::string selectionFragmentShaderSource =
 #include "SelectionFragment.glsl"
 ;
 
+const std::string selectionGeometryVertexShaderSource =
+#include "SelectionGeometryVertex.glsl"
+;
+
+const std::string selectionGeometryFragmentShaderSource =
+#include "SelectionGeometryFragment.glsl"
+;
+
 #define PROGRAM_VERTEX_ATTRIBUTE 0
 #define PROGRAM_TEXCOORD_ATTRIBUTE 1
 
@@ -49,9 +57,6 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	// QT OpenGL
 	_imageTexture(),
 	_selectionTexture(),
-	_vertexShader(),
-	_imageFragmentShader(),
-	_selectionFragmentShader(),
 	_imageShaderProgram(),
 	_pixelSelectionShaderProgram(),
 	_overlayShaderProgram(),
@@ -71,8 +76,8 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_selectionRealtime(false),
 	_brushRadius(0.05f),
 	_brushRadiusDelta(2.0f),
-	_pointSelectionColor(255, 0, 0, 255),
-	_pixelSelectionColor(255, 0, 0, 100),
+	_pointSelectionColor(1.f, 0.f, 0.f, 0.8f),
+	_pixelSelectionColor(1.f, 0.6f, 0.f, 0.4f),
 	_selectionGeometryColor(255, 0, 0, 255),
 	_selectedPointIds(),
 	_zoomToExtentsAction(nullptr),
@@ -108,15 +113,13 @@ ImageViewerWidget::~ImageViewerWidget()
 
 	_imageTexture.reset();
 	_selectionTexture.reset();
-	_vertexShader.reset();
-	_imageFragmentShader.reset();
-	_overlayFragmentShader.reset();
-	_selectionFragmentShader.reset();
 	_imageShaderProgram.reset();
 	_pixelSelectionShaderProgram.reset();
 	_overlayShaderProgram.reset();
 	_selectionShaderProgram.reset();
 	_pixelSelectionFBO.reset();
+
+	_selectionGeometryShaderProgram.reset();
 
 	if (_imageQuadVBO.isCreated())
 		_imageQuadVBO.destroy();
@@ -142,49 +145,40 @@ void ImageViewerWidget::initializeGL()
 
 	_imageTexture					= std::make_unique<QOpenGLTexture>(QOpenGLTexture::Target2D);
 	_selectionTexture				= std::make_unique<QOpenGLTexture>(QOpenGLTexture::Target2D);
-	_vertexShader					= std::make_unique<QOpenGLShader>(QOpenGLShader::Vertex);
-	_imageFragmentShader			= std::make_unique<QOpenGLShader>(QOpenGLShader::Fragment);
-	_computeOverlayFragmentShader	= std::make_unique<QOpenGLShader>(QOpenGLShader::Fragment);
-	_overlayFragmentShader			= std::make_unique<QOpenGLShader>(QOpenGLShader::Fragment);
-	_selectionFragmentShader		= std::make_unique<QOpenGLShader>(QOpenGLShader::Fragment);
 	_imageShaderProgram				= std::make_unique<QOpenGLShaderProgram>();
 	_overlayShaderProgram			= std::make_unique<QOpenGLShaderProgram>();
 	_pixelSelectionShaderProgram	= std::make_unique<QOpenGLShaderProgram>();
 	_selectionShaderProgram			= std::make_unique<QOpenGLShaderProgram>();
+	_selectionGeometryShaderProgram = std::make_unique<QOpenGLShaderProgram>();
 
-	if (_vertexShader->compileSourceCode(vertexShaderSource.c_str())) {
-		if (_imageFragmentShader->compileSourceCode(imageFragmentShaderSource.c_str())) {
-			_imageShaderProgram->addShader(_vertexShader.get());
-			_imageShaderProgram->addShader(_imageFragmentShader.get());
-			_imageShaderProgram->bindAttributeLocation("vertex", PROGRAM_VERTEX_ATTRIBUTE);
-			_imageShaderProgram->bindAttributeLocation("texCoord", PROGRAM_TEXCOORD_ATTRIBUTE);
-			_imageShaderProgram->link();
-		}
+	_imageShaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSource.c_str());
+	_imageShaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, imageFragmentShaderSource.c_str());
+	_imageShaderProgram->bindAttributeLocation("vertex", PROGRAM_VERTEX_ATTRIBUTE);
+	_imageShaderProgram->bindAttributeLocation("texCoord", PROGRAM_TEXCOORD_ATTRIBUTE);
+	_imageShaderProgram->link();
 
-		if (_computeOverlayFragmentShader->compileSourceCode(computeOverlayFragmentShaderSource.c_str())) {
-			_pixelSelectionShaderProgram->addShader(_vertexShader.get());
-			_pixelSelectionShaderProgram->addShader(_computeOverlayFragmentShader.get());
-			_pixelSelectionShaderProgram->bindAttributeLocation("vertex", PROGRAM_VERTEX_ATTRIBUTE);
-			_pixelSelectionShaderProgram->bindAttributeLocation("texCoord", PROGRAM_TEXCOORD_ATTRIBUTE);
-			_pixelSelectionShaderProgram->link();
-		}
+	_pixelSelectionShaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSource.c_str());
+	_pixelSelectionShaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, computeOverlayFragmentShaderSource.c_str());
+	_pixelSelectionShaderProgram->bindAttributeLocation("vertex", PROGRAM_VERTEX_ATTRIBUTE);
+	_pixelSelectionShaderProgram->bindAttributeLocation("texCoord", PROGRAM_TEXCOORD_ATTRIBUTE);
+	_pixelSelectionShaderProgram->link();
 
-		if (_overlayFragmentShader->compileSourceCode(overlayFragmentShaderSource.c_str())) {
-			_overlayShaderProgram->addShader(_vertexShader.get());
-			_overlayShaderProgram->addShader(_overlayFragmentShader.get());
-			_overlayShaderProgram->bindAttributeLocation("vertex", PROGRAM_VERTEX_ATTRIBUTE);
-			_overlayShaderProgram->bindAttributeLocation("texCoord", PROGRAM_TEXCOORD_ATTRIBUTE);
-			_overlayShaderProgram->link();
-		}
+	_overlayShaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSource.c_str());
+	_overlayShaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, overlayFragmentShaderSource.c_str());
+	_overlayShaderProgram->bindAttributeLocation("vertex", PROGRAM_VERTEX_ATTRIBUTE);
+	_overlayShaderProgram->bindAttributeLocation("texCoord", PROGRAM_TEXCOORD_ATTRIBUTE);
+	_overlayShaderProgram->link();
 
-		if (_selectionFragmentShader->compileSourceCode(selectionFragmentShaderSource.c_str())) {
-			_selectionShaderProgram->addShader(_vertexShader.get());
-			_selectionShaderProgram->addShader(_selectionFragmentShader.get());
-			_selectionShaderProgram->bindAttributeLocation("vertex", PROGRAM_VERTEX_ATTRIBUTE);
-			_selectionShaderProgram->bindAttributeLocation("texCoord", PROGRAM_TEXCOORD_ATTRIBUTE);
-			_selectionShaderProgram->link();
-		}
-	}
+	_selectionShaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSource.c_str());
+	_selectionShaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, selectionFragmentShaderSource.c_str());
+	_selectionShaderProgram->bindAttributeLocation("vertex", PROGRAM_VERTEX_ATTRIBUTE);
+	_selectionShaderProgram->bindAttributeLocation("texCoord", PROGRAM_TEXCOORD_ATTRIBUTE);
+	_selectionShaderProgram->link();
+
+	_selectionGeometryShaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, selectionGeometryVertexShaderSource.c_str());
+	_selectionGeometryShaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, selectionGeometryFragmentShaderSource.c_str());
+	_selectionGeometryShaderProgram->bindAttributeLocation("vertex", PROGRAM_VERTEX_ATTRIBUTE);
+	_selectionGeometryShaderProgram->link();
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -239,6 +233,7 @@ void ImageViewerWidget::paintGL() {
 			if (_overlayShaderProgram->bind()) {
 				_overlayShaderProgram->setUniformValue("overlayTexture", 0);
 				_overlayShaderProgram->setUniformValue("matrix", modelViewProjection * translate);
+				_overlayShaderProgram->setUniformValue("color", _pixelSelectionColor);
 				_overlayShaderProgram->enableAttributeArray(PROGRAM_VERTEX_ATTRIBUTE);
 				_overlayShaderProgram->enableAttributeArray(PROGRAM_TEXCOORD_ATTRIBUTE);
 				_overlayShaderProgram->setAttributeBuffer(PROGRAM_VERTEX_ATTRIBUTE, GL_FLOAT, 0, 3, 5 * sizeof(GLfloat));
@@ -258,6 +253,7 @@ void ImageViewerWidget::paintGL() {
 			if (_selectionShaderProgram->bind()) {
 				_selectionShaderProgram->setUniformValue("selectionTexture", 0);
 				_selectionShaderProgram->setUniformValue("matrix", modelViewProjection);
+				_selectionShaderProgram->setUniformValue("color", _pointSelectionColor);
 				_selectionShaderProgram->enableAttributeArray(PROGRAM_VERTEX_ATTRIBUTE);
 				_selectionShaderProgram->enableAttributeArray(PROGRAM_TEXCOORD_ATTRIBUTE);
 				_selectionShaderProgram->setAttributeBuffer(PROGRAM_VERTEX_ATTRIBUTE, GL_FLOAT, 0, 3, 5 * sizeof(GLfloat));
@@ -276,11 +272,23 @@ void ImageViewerWidget::paintGL() {
 		_imageQuadVBO.release();
 	}
 	
-	/*
-	if (_interactionMode == InteractionMode::Selection) {
-		drawSelectionGeometry();
+	if (_interactionMode == InteractionMode::Selection && _selecting) {
+		if (_selectionGeometryShaderProgram->isLinked() && _selectionGeometryShaderProgram->bind()) {
+			QMatrix4x4 projection;
+
+			projection.ortho(rect());
+
+			_selectionGeometryShaderProgram->setUniformValue("matrix", projection);
+
+			int vertexLocation = _selectionGeometryShaderProgram->attributeLocation("vertex");
+			
+			_selectionGeometryShaderProgram->enableAttributeArray(vertexLocation);
+
+			drawSelectionGeometry();
+		}
+		
+		_selectionGeometryShaderProgram->release();
 	}
-	*/
 }
 
 void ImageViewerWidget::onDisplayImageChanged(std::unique_ptr<QImage>& displayImage)
@@ -771,8 +779,7 @@ void ImageViewerWidget::updatePixelSelection()
 				_pixelSelectionShaderProgram->setUniformValue("pixelSelectionTexture", 0);
 				_pixelSelectionShaderProgram->setUniformValue("matrix", transform);
 				_pixelSelectionShaderProgram->setUniformValue("selectionType", static_cast<int>(_selectionType));
-				_pixelSelectionShaderProgram->setUniformValue("selectionColor", QVector4D(_pixelSelectionColor.redF(), _pixelSelectionColor.greenF(), _pixelSelectionColor.blueF(), _pixelSelectionColor.alphaF()));
-
+				
 				switch (_selectionType)
 				{
 					case SelectionType::Rectangle:
@@ -873,7 +880,7 @@ void ImageViewerWidget::modifySelection()
 	for (std::uint32_t y = 0; y < image.height(); y++) {
 		for (std::uint32_t x = 0; x < image.width(); x++) {
 			if (image.pixelColor(x, y).red() > 0)
-				selectedPointIds.insert((image.height() - y) * image.width() + x);
+				selectedPointIds.insert((image.height() - y - 1) * image.width() + x);
 		}
 	}
 
@@ -1174,18 +1181,20 @@ void ImageViewerWidget::drawCircle(const QPointF& center, const float& radius, c
 
 void ImageViewerWidget::drawSelectionRectangle(const QPoint& start, const QPoint& end)
 {
-	const auto z = -0.5;
+	const GLfloat vertexCoordinates[] = {
+	  start.x(), start.y(), 0.0f,
+	  end.x(), start.y(), 0.0f,
+	  end.x(), end.y(), 0.0f,
+	  start.x(), end.y(), 0.0f
+	};
 
-	glColor4f(_selectionGeometryColor.red(), _selectionGeometryColor.green(), _selectionGeometryColor.blue(), 1.f);
+	const auto vertexLocation = _selectionGeometryShaderProgram->attributeLocation("vertex");
 
-	glBegin(GL_LINE_LOOP);
+	_selectionGeometryShaderProgram->setAttributeArray(vertexLocation, vertexCoordinates, 3);
 
-	glVertex3f(start.x(), height() - start.y(), z);
-	glVertex3f(end.x(), height() - start.y(), z);
-	glVertex3f(end.x(), height() - end.y(), z);
-	glVertex3f(start.x(), height() - end.y(), z);
+	glDrawArrays(GL_LINE_LOOP, 0, 4);
 
-	glEnd();
+	_selectionGeometryShaderProgram->disableAttributeArray(vertexLocation);
 }
 
 void ImageViewerWidget::drawSelectionBrush()

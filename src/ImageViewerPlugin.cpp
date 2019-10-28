@@ -263,6 +263,8 @@ void ImageViewerPlugin::setCurrentDatasetName(const QString& currentDatasetName)
 
 	setCurrentImageId(0);
 	setCurrentDimensionId(0);
+
+	computeSelectionImage();
 }
 
 auto ImageViewerPlugin::currentImageId() const

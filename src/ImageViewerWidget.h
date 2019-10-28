@@ -107,18 +107,15 @@ private:
 	// QT OpenGL
 	std::unique_ptr<QOpenGLTexture>				_imageTexture;
 	std::unique_ptr<QOpenGLTexture>				_selectionTexture;
-	std::unique_ptr<QOpenGLShader>				_vertexShader;
-	std::unique_ptr<QOpenGLShader>				_imageFragmentShader;
-	std::unique_ptr<QOpenGLShader>				_computeOverlayFragmentShader;
-	std::unique_ptr<QOpenGLShader>				_overlayFragmentShader;
-	std::unique_ptr<QOpenGLShader>				_selectionFragmentShader;
-	std::unique_ptr<QOpenGLShaderProgram>		_imageShaderProgram;
-	
-	std::unique_ptr<QOpenGLShaderProgram>		_pixelSelectionShaderProgram;
 
+	std::unique_ptr<QOpenGLShaderProgram>		_imageShaderProgram;
+	std::unique_ptr<QOpenGLShaderProgram>		_selectionGeometryShaderProgram;
+	std::unique_ptr<QOpenGLShaderProgram>		_pixelSelectionShaderProgram;
 	std::unique_ptr<QOpenGLShaderProgram>		_overlayShaderProgram;
 	std::unique_ptr<QOpenGLShaderProgram>		_selectionShaderProgram;
+
 	std::unique_ptr<QOpenGLFramebufferObject>	_pixelSelectionFBO;
+
 	QOpenGLBuffer								_imageQuadVBO;
 
 	InteractionMode								_interactionMode;
@@ -134,8 +131,8 @@ private:
 	bool										_selectionRealtime;
 	float										_brushRadius;
 	float										_brushRadiusDelta;
-	QColor										_pointSelectionColor;
-	QColor										_pixelSelectionColor;
+	QVector4D									_pointSelectionColor;
+	QVector4D									_pixelSelectionColor;
 	QColor										_selectionGeometryColor;
 	std::vector<std::uint32_t>					_selectedPointIds;
 	QAction*									_zoomToExtentsAction;
