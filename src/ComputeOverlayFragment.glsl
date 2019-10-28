@@ -9,8 +9,6 @@ uniform float brushRadius;
 uniform vec2 rectangleTopLeft;
 uniform vec2 rectangleBottomRight;
 uniform vec2 imageSize;
-uniform vec2 previousPosition;
-uniform vec2 currentPosition;
 
 in vec2 uv;
 out vec4 fragmentColor;
@@ -27,25 +25,25 @@ void main(void)
 
 		case 1:
 		{
-			vec2 uvWorld			= uv * imageSize;
-			bool inBrush			= length(uvWorld - currentBrushCenter) < brushRadius;
-			bool prevInBrush		= texture(pixelSelectionTexture, vec2(uv.x, 1.f - uv.y)).r > 0;
+			vec2 P				= uv * imageSize;
+			bool inBrush		= length(P - currentBrushCenter) < brushRadius;
+			bool prevInBrush	= texture(pixelSelectionTexture, vec2(uv.x, 1.f - uv.y)).r > 0;
 			
 			if (currentBrushCenter != previousBrushCenter) {
-				vec2 a		= currentBrushCenter - previousBrushCenter;
-				vec2 b		= uvWorld - previousBrushCenter;
-				float dotAB = dot(b, normalize(a));
-				
+				vec2 A		= currentBrushCenter - previousBrushCenter;
+				vec2 AN		= normalize(A);
+				vec2 B		= P - previousBrushCenter;
+				float dotBA	= dot(B, normalize(A));
 
-				if (dotAB > 0 && dotAB < length(a)) {
-					vec2 c = previousBrushCenter + dotAB * normalize(a);
-					if (length(uvWorld - c) < brushRadius)
+				if (dotBA > 0 && dotBA < length(A)) {
+					vec2 C = previousBrushCenter + dotBA * AN;
+					
+					if (length(P - C) < brushRadius)
 						inBrush = true;
 				}
 			}
 
-			//float distanceToLine	= 	;			
-			fragmentColor			= (inBrush || prevInBrush) ? vec4(1) : vec4(vec3(0), 1);
+			fragmentColor = (inBrush || prevInBrush) ? vec4(1) : vec4(vec3(0), 1);
 			break;
 		}
 	}
