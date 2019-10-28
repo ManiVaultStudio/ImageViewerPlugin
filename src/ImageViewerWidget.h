@@ -109,10 +109,10 @@ private:
 	std::unique_ptr<QOpenGLTexture>				_selectionTexture;
 
 	std::unique_ptr<QOpenGLShaderProgram>		_imageShaderProgram;
-	std::unique_ptr<QOpenGLShaderProgram>		_selectionGeometryShaderProgram;
 	std::unique_ptr<QOpenGLShaderProgram>		_pixelSelectionShaderProgram;
 	std::unique_ptr<QOpenGLShaderProgram>		_overlayShaderProgram;
 	std::unique_ptr<QOpenGLShaderProgram>		_selectionShaderProgram;
+	std::unique_ptr<QOpenGLShaderProgram>		_selectionGeometryShaderProgram;
 
 	std::unique_ptr<QOpenGLFramebufferObject>	_pixelSelectionFBO;
 
@@ -121,6 +121,7 @@ private:
 	InteractionMode								_interactionMode;
 	QPoint										_initialMousePosition;
 	QPoint										_mousePosition;
+	std::vector<QPoint>							_mousePositions;
 	QPointF										_pan;
 	float										_zoom;
 	float										_zoomSensitivity;
@@ -136,8 +137,6 @@ private:
 	QColor										_selectionGeometryColor;
 	std::vector<std::uint32_t>					_selectedPointIds;
 	QAction*									_zoomToExtentsAction;
-	//QOpenGLFramebufferObject					_overlayFrameBufferObject;
-	
 	
 	float										_window;
 	float										_level;

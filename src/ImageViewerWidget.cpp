@@ -74,7 +74,7 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_selectionType(SelectionType::Rectangle),
 	_selectionModifier(SelectionModifier::Replace),
 	_selectionRealtime(false),
-	_brushRadius(0.05f),
+	_brushRadius(20.f),
 	_brushRadiusDelta(2.0f),
 	_pointSelectionColor(1.f, 0.f, 0.f, 0.8f),
 	_pixelSelectionColor(1.f, 0.6f, 0.f, 0.4f),
@@ -471,6 +471,8 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 
 						resetPixelSelection();
 
+						_mousePositions.clear();
+
 						_initialMousePosition = _mousePosition;
 
 						enableSelection(true);
@@ -520,6 +522,8 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 				case InteractionMode::Selection:
 				{
 					if (_imageViewerPlugin->selectable()) {
+						_mousePositions.push_back(_mousePosition);
+
 						updatePixelSelection();
 					}
 					
@@ -591,6 +595,8 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 					enableSelection(false);
 					modifySelection();
 					commitSelection();
+
+					_mousePositions.clear();
 				}
 			}
 			break;
@@ -779,6 +785,7 @@ void ImageViewerWidget::updatePixelSelection()
 				_pixelSelectionShaderProgram->setUniformValue("pixelSelectionTexture", 0);
 				_pixelSelectionShaderProgram->setUniformValue("matrix", transform);
 				_pixelSelectionShaderProgram->setUniformValue("selectionType", static_cast<int>(_selectionType));
+				_pixelSelectionShaderProgram->setUniformValue("imageSize", static_cast<float>(_displayImage->size().width()), static_cast<float>(_displayImage->size().height()));
 				
 				switch (_selectionType)
 				{
@@ -811,10 +818,13 @@ void ImageViewerWidget::updatePixelSelection()
 
 					case SelectionType::Brush:
 					{
-						const auto brushCenter		= screenToWorld(_mousePosition);
-						const auto brushCenterUV	= QVector2D(brushCenter.x() / static_cast<float>(_displayImage->width()), brushCenter.y() / static_cast<float>(_displayImage->height()));
+						const auto currentMousePosition		= _mousePositions[_mousePositions.size() - 1]; 
+						const auto previousMousePosition	= _mousePositions.size() > 1 ? _mousePositions[_mousePositions.size() - 2] : currentMousePosition;
+						const auto brushCenter				= screenToWorld(currentMousePosition);
+						const auto previousBrushCenter		= screenToWorld(previousMousePosition);
 
-						_pixelSelectionShaderProgram->setUniformValue("brushCenter", brushCenterUV);
+						_pixelSelectionShaderProgram->setUniformValue("previousBrushCenter", previousBrushCenter.x(), previousBrushCenter.y());
+						_pixelSelectionShaderProgram->setUniformValue("currentBrushCenter", brushCenter.x(), brushCenter.y());
 						_pixelSelectionShaderProgram->setUniformValue("brushRadius", _brushRadius);
 
 						break;

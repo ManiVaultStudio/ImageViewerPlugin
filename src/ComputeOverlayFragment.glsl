@@ -2,12 +2,15 @@ R"(
 #version 330
 
 uniform sampler2D pixelSelectionTexture;
-uniform bool reset;
 uniform int selectionType;
-uniform vec2 brushCenter;
+uniform vec2 previousBrushCenter;
+uniform vec2 currentBrushCenter;
 uniform float brushRadius;
 uniform vec2 rectangleTopLeft;
 uniform vec2 rectangleBottomRight;
+uniform vec2 imageSize;
+uniform vec2 previousPosition;
+uniform vec2 currentPosition;
 
 in vec2 uv;
 out vec4 fragmentColor;
@@ -24,9 +27,25 @@ void main(void)
 
 		case 1:
 		{
-			bool inBrush		= length(uv - brushCenter) < brushRadius;
-			bool prevInBrush	= texture(pixelSelectionTexture, vec2(uv.x, 1-uv.y)).r > 0;
-			fragmentColor		= (inBrush || prevInBrush) ? vec4(1) : vec4(vec3(0), 1);
+			vec2 uvWorld			= uv * imageSize;
+			bool inBrush			= length(uvWorld - currentBrushCenter) < brushRadius;
+			bool prevInBrush		= texture(pixelSelectionTexture, vec2(uv.x, 1.f - uv.y)).r > 0;
+			
+			if (currentBrushCenter != previousBrushCenter) {
+				vec2 a		= currentBrushCenter - previousBrushCenter;
+				vec2 b		= uvWorld - previousBrushCenter;
+				float dotAB = dot(b, normalize(a));
+				
+
+				if (dotAB > 0 && dotAB < length(a)) {
+					vec2 c = previousBrushCenter + dotAB * normalize(a);
+					if (length(uvWorld - c) < brushRadius)
+						inBrush = true;
+				}
+			}
+
+			//float distanceToLine	= 	;			
+			fragmentColor			= (inBrush || prevInBrush) ? vec4(1) : vec4(vec3(0), 1);
 			break;
 		}
 	}
