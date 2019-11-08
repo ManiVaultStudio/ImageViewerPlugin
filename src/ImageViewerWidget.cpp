@@ -365,6 +365,11 @@ void ImageViewerWidget::onDisplayImageChanged(std::unique_ptr<QImage>& displayIm
 		createImageQuad();
 		zoomExtents();
 
+		const auto brushRadius = 0.05f * static_cast<float>(std::min(_displayImage->size().width(), _displayImage->size().height()));
+		
+		setBrushRadius(brushRadius);
+		setBrushRadiusDelta(0.2f * brushRadius);
+
 		_pixelSelectionFBO = std::make_unique<QOpenGLFramebufferObject>(_displayImage->width(), _displayImage->height());
 	}
 
@@ -699,6 +704,8 @@ void ImageViewerWidget::wheelEvent(QWheelEvent* wheelEvent) {
 				else {
 					setBrushRadius(_brushRadius - _brushRadiusDelta);
 				}
+
+				update();
 			}
 
 			break;
@@ -1157,13 +1164,30 @@ void ImageViewerWidget::setSelectionModifier(const SelectionModifier& selectionM
 
 void ImageViewerWidget::setBrushRadius(const float& brushRadius)
 {
+	const auto boundBrushRadius = qBound(1.0f, 10000.f, brushRadius);
+
+	if (boundBrushRadius == _brushRadius)
+		return;
+
+	_brushRadius = boundBrushRadius;
+
 	qDebug() << "Set brush radius" << brushRadius;
 
-	_brushRadius = qBound(0.01f, 10000.f, brushRadius);
+	update();
+}
+
+void ImageViewerWidget::setBrushRadiusDelta(const float& brushRadiusDelta)
+{
+	const auto boundBrushRadiusDelta = qBound(0.001f, 10000.f, brushRadiusDelta);
+
+	if (boundBrushRadiusDelta == _brushRadiusDelta)
+		return;
+
+	_brushRadiusDelta = qBound(0.001f, 10000.f, brushRadiusDelta);
+
+	qDebug() << "Set brush radius delta" << _brushRadiusDelta;
 
 	update();
-
-	emit brushRadiusChanged();
 }
 
 std::pair<float, float> ImageViewerWidget::windowLevel() const

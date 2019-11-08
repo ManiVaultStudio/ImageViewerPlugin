@@ -36,6 +36,7 @@ public:
 	SelectionModifier selectionModifier() const;
 	void setSelectionModifier(const SelectionModifier& selectionModifier);
 	void setBrushRadius(const float& brushRadius);
+	void setBrushRadiusDelta(const float& brushRadiusDelta);
 	std::pair<float, float> windowLevel() const;
 	void setWindowLevel(const float& window, const float& level);
 	void resetWindowLevel();
@@ -99,7 +100,6 @@ private:
 signals:
 	void selectionTypeChanged();
 	void selectionModifierChanged();
-	void brushRadiusChanged();
 
 private:
 	ImageViewerPlugin*							_imageViewerPlugin;
