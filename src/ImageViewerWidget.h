@@ -76,6 +76,8 @@ private:
 	void zoomExtents();
 	void resetView();
 
+	std::uint16_t windowLevel(const float& min, const float& max, const float& levelNorm, const float& windowNorm, const float& pointValue);
+
 	bool initialized();
 	void updatePixelSelection();
 	void resetPixelSelection();
@@ -138,6 +140,8 @@ private:
 	std::vector<std::uint32_t>					_selectedPointIds;
 	QAction*									_zoomToExtentsAction;
 	
+	std::uint16_t								_imageMin;
+	std::uint16_t								_imageMax;
 	float										_window;
 	float										_level;
 	bool										_ignorePaintGL;

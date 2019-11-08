@@ -209,6 +209,18 @@ void ImageViewerWidget::paintGL() {
 			if (_imageShaderProgram->bind()) {
 				_imageShaderProgram->setUniformValue("imageTexture", 0);
 				_imageShaderProgram->setUniformValue("matrix", modelViewProjection);
+
+				const auto imageMin			= static_cast<float>(_imageMin);
+				const auto imageMax			= static_cast<float>(_imageMax);
+				const auto maxWindow		= static_cast<float>(imageMax - imageMin);
+				const auto level			= std::clamp(imageMin + (_level * maxWindow), imageMin, imageMax);
+				const auto window			= std::clamp(_window * maxWindow, imageMin, imageMax);
+				const auto minPixelValue	= std::clamp(level - (window / 2.0f), imageMin, imageMax);
+				const auto maxPixelValue	= std::clamp(level + (window / 2.0f), imageMin, imageMax);
+				
+				_imageShaderProgram->setUniformValue("minPixelValue", minPixelValue);
+				_imageShaderProgram->setUniformValue("maxPixelValue", maxPixelValue);
+
 				_imageShaderProgram->enableAttributeArray(PROGRAM_VERTEX_ATTRIBUTE);
 				_imageShaderProgram->enableAttributeArray(PROGRAM_TEXCOORD_ATTRIBUTE);
 				_imageShaderProgram->setAttributeBuffer(PROGRAM_VERTEX_ATTRIBUTE, GL_FLOAT, 0, 3, 5 * sizeof(GLfloat));
@@ -283,7 +295,7 @@ void ImageViewerWidget::paintGL() {
 			
 			_selectionGeometryShaderProgram->enableAttributeArray(vertexLocation);
 
-			drawSelectionGeometry();
+			// drawSelectionGeometry();
 		}
 		
 		_selectionGeometryShaderProgram->release();
@@ -299,7 +311,7 @@ void ImageViewerWidget::onDisplayImageChanged(std::unique_ptr<QImage>& displayIm
 
 	_ignorePaintGL = true;
 
-	//qDebug() << "Display image changed" << *displayImage.get();
+	qDebug() << "Display image changed" << *displayImage.get();
 
 	auto imageSizeChanged = false;
 
@@ -310,10 +322,44 @@ void ImageViewerWidget::onDisplayImageChanged(std::unique_ptr<QImage>& displayIm
 
 	_displayImage.swap(displayImage);
 	
-	//if (imageSizeChanged)
-	//	setupTextures();
+	std::uint16_t* pixels = (std::uint16_t*)_displayImage->bits();
 
-	_imageTexture.reset(new QOpenGLTexture(*_displayImage.get()));
+	const auto noPixels = _displayImage->width() * _displayImage->height();
+
+	auto test = std::vector<std::uint16_t>(pixels, pixels + noPixels * 4);
+
+	_imageMin = std::numeric_limits<std::uint16_t>::max();
+	_imageMax = std::numeric_limits<std::uint16_t>::min();
+
+	for (std::uint32_t y = 0; y < _displayImage->height(); y++)
+	{
+		for (std::uint32_t x = 0; x < _displayImage->width(); x++)
+		{
+			const auto pixelId = y * _displayImage->width() + x;
+
+			for (int c = 0; c < 3; c++)
+			{
+				const auto channel = reinterpret_cast<std::uint16_t*>(_displayImage->bits())[pixelId * 4 + c];
+
+				if (channel < _imageMin)
+					_imageMin = channel;
+
+				if (channel > _imageMax)
+					_imageMax = channel;
+			}
+		}
+	}
+
+	_imageTexture.reset(new QOpenGLTexture(QOpenGLTexture::Target2D));
+
+	//_imageTexture->create();
+	_imageTexture->setSize(_displayImage->size().width(), _displayImage->size().height());
+	_imageTexture->setFormat(QOpenGLTexture::RGBA16_UNorm);
+	_imageTexture->setWrapMode(QOpenGLTexture::ClampToEdge);
+	_imageTexture->allocateStorage();
+	_imageTexture->setData(QOpenGLTexture::PixelFormat::RGBA, QOpenGLTexture::PixelType::UInt16, _displayImage->bits());
+
+	resetWindowLevel();
 
 	if (imageSizeChanged) {
 		createImageQuad();
@@ -721,6 +767,23 @@ void ImageViewerWidget::resetView()
 	update();
 }
 
+std::uint16_t ImageViewerWidget::windowLevel(const float& min, const float& max, const float& windowNorm, const float& levelNorm, const float& pointValue)
+{
+	const auto maxWindow = max - min;
+
+	const auto level			= std::clamp(min + (levelNorm * maxWindow), min, max);
+	const auto window			= std::clamp(windowNorm * maxWindow, min, max);
+	const auto minPixelValue	= std::clamp(level - (window / 2.0f), min, max);
+	const auto maxPixelValue	= std::clamp(level + (window / 2.0f), min, max);
+	const auto fraction			= pointValue - minPixelValue;
+	const auto range			= maxPixelValue - minPixelValue;
+
+	if (range == 0)
+		return 0;
+
+	return static_cast<std::uint16_t>(std::clamp(fraction / range, 0.0f, 1.0f) * std::numeric_limits<std::uint16_t>::max());
+}
+
 bool ImageViewerWidget::initialized()
 {
 	return _displayImage.get() != nullptr;
@@ -1117,8 +1180,6 @@ void ImageViewerWidget::setWindowLevel(const float& window, const float& level)
 	_level	= std::clamp(level, 0.01f, 1.0f);
 
 	qDebug() << "Set window/level" << _window << _level;
-
-	_imageViewerPlugin->computeDisplayImage();
 
 	update();
 }
