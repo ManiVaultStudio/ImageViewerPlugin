@@ -283,7 +283,7 @@ void ImageViewerWidget::paintGL() {
 		_imageQuadVBO.release();
 	}
 	
-	if (_interactionMode == InteractionMode::Selection && _selecting) {
+	if (_interactionMode == InteractionMode::Selection) {
 		if (_selectionGeometryShaderProgram->isLinked() && _selectionGeometryShaderProgram->bind()) {
 			QMatrix4x4 projection;
 
@@ -291,11 +291,11 @@ void ImageViewerWidget::paintGL() {
 
 			_selectionGeometryShaderProgram->setUniformValue("matrix", projection);
 
-			int vertexLocation = _selectionGeometryShaderProgram->attributeLocation("vertex");
+			const auto vertexLocation = _selectionGeometryShaderProgram->attributeLocation("vertex");
 			
 			_selectionGeometryShaderProgram->enableAttributeArray(vertexLocation);
 
-			// drawSelectionGeometry();
+			drawSelectionGeometry();
 		}
 		
 		_selectionGeometryShaderProgram->release();
@@ -572,16 +572,11 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 				case InteractionMode::Selection:
 				{
 					if (_imageViewerPlugin->selectable()) {
-						_mousePositions.push_back(_mousePosition);
+						_mousePositions.push_back(mouseEvent->pos());
 
 						updatePixelSelection();
 					}
 					
-					break;
-				}
-
-				case InteractionMode::WindowLevel:
-				{
 					break;
 				}
 
@@ -604,6 +599,8 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 
 			setWindowLevel(window, level);
 
+			_mousePositions.push_back(_mousePosition);
+
 			break;
 		}
 
@@ -621,13 +618,9 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 
 	qDebug() << "Mouse release event";
 
-	if (_interactionMode != InteractionMode::WindowLevel) {
-		if (_imageViewerPlugin->selectable()) {
-			if (mouseEvent->button() == Qt::RightButton)
-			{
-				contextMenu()->exec(mapToGlobal(mouseEvent->pos()));
-			}
-		}
+	if (mouseEvent->button() == Qt::RightButton && _mousePositions.size() == 0)
+	{
+		contextMenu()->exec(mapToGlobal(mouseEvent->pos()));
 	}
 
 	switch (_interactionMode)
@@ -645,8 +638,6 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 					enableSelection(false);
 					modifySelection();
 					commitSelection();
-
-					_mousePositions.clear();
 				}
 			}
 			break;
@@ -661,6 +652,8 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 		default:
 			break;
 	}
+
+	_mousePositions.clear();
 
 	update();
 
@@ -860,8 +853,8 @@ void ImageViewerWidget::updatePixelSelection()
 				{
 					case SelectionType::Rectangle:
 					{
-						const auto rectangleTopLeft			= screenToWorld(_initialMousePosition);
-						const auto rectangleBottomRight		= screenToWorld(_mousePosition);
+						const auto rectangleTopLeft			= screenToWorld(_mousePositions.front());
+						const auto rectangleBottomRight		= screenToWorld(_mousePositions.back());
 						const auto rectangleTopLeftUV		= QVector2D(rectangleTopLeft.x() / static_cast<float>(_displayImage->width()), rectangleTopLeft.y() / static_cast<float>(_displayImage->height()));
 						const auto rectangleBottomRightUV	= QVector2D(rectangleBottomRight.x() / static_cast<float>(_displayImage->width()), rectangleBottomRight.y() / static_cast<float>(_displayImage->height()));
 
@@ -1004,12 +997,16 @@ QMenu* ImageViewerWidget::viewMenu()
 	auto* viewMenu = new QMenu("View");
 
 	auto* zoomToExtentsAction = new QAction("Zoom extents");
+	auto* resetWindowLevelAction = new QAction("Reset window/level");
 
 	zoomToExtentsAction->setToolTip("Zoom to the boundaries of the image");
+	resetWindowLevelAction->setToolTip("Reset window/level to default values");
 
 	connect(zoomToExtentsAction, &QAction::triggered, this, &ImageViewerWidget::zoomExtents);
+	connect(resetWindowLevelAction, &QAction::triggered, this, &ImageViewerWidget::resetWindowLevel);
 
 	viewMenu->addAction(zoomToExtentsAction);
+	viewMenu->addAction(resetWindowLevelAction);
 
 	return viewMenu;
 }
@@ -1216,21 +1213,6 @@ void ImageViewerWidget::resetWindowLevel()
 	update();
 }
 
-void ImageViewerWidget::drawCircle(const QPointF& center, const float& radius, const int& noSegments /*= 30*/)
-{
-	glBegin(GL_LINE_LOOP);
-
-	for (int ii = 0; ii < noSegments; ii++) {
-		float theta = 2.0f * 3.1415926f * float(ii) / float(noSegments);
-		float x = radius * cosf(theta);
-		float y = radius * sinf(theta);
-
-		glVertex2f(x + center.x(), y + center.y());
-	}
-
-	glEnd();
-}
-
 void ImageViewerWidget::drawSelectionRectangle(const QPoint& start, const QPoint& end)
 {
 	const GLfloat vertexCoordinates[] = {
@@ -1251,13 +1233,32 @@ void ImageViewerWidget::drawSelectionRectangle(const QPoint& start, const QPoint
 
 void ImageViewerWidget::drawSelectionBrush()
 {
-	auto brushCenter = QWidget::mapFromGlobal(QCursor::pos());
+	const auto brushCenter	= QWidget::mapFromGlobal(QCursor::pos());
+	const auto noSegments	= 64u;
 
-	brushCenter.setY(height() - brushCenter.y());
+	std::vector<GLfloat> vertexCoordinates;
 
-	glColor4f(_selectionGeometryColor.red(), _selectionGeometryColor.green(), _selectionGeometryColor.blue(), 1.f);
+	vertexCoordinates.resize(noSegments * 3);
 
-	drawCircle(brushCenter, _brushRadius, 20);
+	const auto brushRadius = _brushRadius * _zoom;
+
+	for (std::uint32_t s = 0; s < noSegments; s++) {
+		const auto theta	= 2.0f * M_PI * float(s) / float(noSegments);
+		const auto x		= brushRadius * cosf(theta);
+		const auto y		= brushRadius * sinf(theta);
+
+		vertexCoordinates[s * 3 + 0] = brushCenter.x() + x;
+		vertexCoordinates[s * 3 + 1] = brushCenter.y() + y;
+		vertexCoordinates[s * 3 + 2] = 0;
+	}
+
+	const auto vertexLocation = _selectionGeometryShaderProgram->attributeLocation("vertex");
+
+	_selectionGeometryShaderProgram->setAttributeArray(vertexLocation, vertexCoordinates.data(), 3);
+
+	glDrawArrays(GL_LINE_LOOP, 0, noSegments);
+
+	_selectionGeometryShaderProgram->disableAttributeArray(vertexLocation);
 }
 
 void ImageViewerWidget::drawSelectionGeometry()

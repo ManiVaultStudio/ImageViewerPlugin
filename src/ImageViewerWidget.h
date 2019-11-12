@@ -64,7 +64,6 @@ private:
 	void wheelEvent(QWheelEvent* wheelEvent) Q_DECL_OVERRIDE;
 
 private:
-	void drawCircle(const QPointF & center, const float & radius, const int & noSegments = 30);
 	void drawSelectionRectangle(const QPoint& start, const QPoint& end);
 	void drawSelectionBrush();
 	void drawSelectionGeometry();
