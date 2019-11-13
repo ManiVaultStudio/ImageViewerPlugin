@@ -295,7 +295,7 @@ void ImageViewerWidget::paintGL() {
 			
 			_selectionGeometryShaderProgram->enableAttributeArray(vertexLocation);
 
-			drawSelectionGeometry();
+			drawSelectionOutline();
 		}
 		
 		_selectionGeometryShaderProgram->release();
@@ -432,8 +432,8 @@ void ImageViewerWidget::keyPressEvent(QKeyEvent* keyEvent)
 					setSelectionType(SelectionType::Brush);
 					break;
 
-				case Qt::Key::Key_F:
-					setSelectionType(SelectionType::Freehand);
+				case Qt::Key::Key_L:
+					setSelectionType(SelectionType::Lasso);
 					break;
 
 				case Qt::Key::Key_Shift:
@@ -833,87 +833,115 @@ void ImageViewerWidget::updatePixelSelection()
 
 	makeCurrent();
 	
+	if (!_pixelSelectionFBO->bind())
+		return;
+
+	glViewport(0, 0, _displayImage->width(), _displayImage->height());
+
+	QMatrix4x4 transform;
+
+	transform.ortho(0.0f, _displayImage->width(), 0.0f, _displayImage->height(), -1.0f, +1.0f);
+
 	if (_imageQuadVBO.bind()) {
-		if (_pixelSelectionFBO->bind()) {
-			if (_pixelSelectionShaderProgram->bind()) {
-				glViewport(0, 0, _displayImage->width(), _displayImage->height());
+		if (_pixelSelectionShaderProgram->bind()) {
+			glBindTexture(GL_TEXTURE_2D, _pixelSelectionFBO->texture());
 
-				QMatrix4x4 transform;
-
-				transform.ortho(0.0f, _displayImage->width(), 0.0f, _displayImage->height(), -1.0f, +1.0f);
-
-				glBindTexture(GL_TEXTURE_2D, _pixelSelectionFBO->texture());
-
-				_pixelSelectionShaderProgram->setUniformValue("pixelSelectionTexture", 0);
-				_pixelSelectionShaderProgram->setUniformValue("matrix", transform);
-				_pixelSelectionShaderProgram->setUniformValue("selectionType", static_cast<int>(_selectionType));
-				_pixelSelectionShaderProgram->setUniformValue("imageSize", static_cast<float>(_displayImage->size().width()), static_cast<float>(_displayImage->size().height()));
+			_pixelSelectionShaderProgram->setUniformValue("pixelSelectionTexture", 0);
+			_pixelSelectionShaderProgram->setUniformValue("matrix", transform);
+			_pixelSelectionShaderProgram->setUniformValue("selectionType", static_cast<int>(_selectionType));
+			_pixelSelectionShaderProgram->setUniformValue("imageSize", static_cast<float>(_displayImage->size().width()), static_cast<float>(_displayImage->size().height()));
 				
-				switch (_selectionType)
+			switch (_selectionType)
+			{
+				case SelectionType::Rectangle:
 				{
-					case SelectionType::Rectangle:
-					{
-						const auto rectangleTopLeft			= screenToWorld(_mousePositions.front());
-						const auto rectangleBottomRight		= screenToWorld(_mousePositions.back());
-						const auto rectangleTopLeftUV		= QVector2D(rectangleTopLeft.x() / static_cast<float>(_displayImage->width()), rectangleTopLeft.y() / static_cast<float>(_displayImage->height()));
-						const auto rectangleBottomRightUV	= QVector2D(rectangleBottomRight.x() / static_cast<float>(_displayImage->width()), rectangleBottomRight.y() / static_cast<float>(_displayImage->height()));
+					const auto rectangleTopLeft			= screenToWorld(_mousePositions.front());
+					const auto rectangleBottomRight		= screenToWorld(_mousePositions.back());
+					const auto rectangleTopLeftUV		= QVector2D(rectangleTopLeft.x() / static_cast<float>(_displayImage->width()), rectangleTopLeft.y() / static_cast<float>(_displayImage->height()));
+					const auto rectangleBottomRightUV	= QVector2D(rectangleBottomRight.x() / static_cast<float>(_displayImage->width()), rectangleBottomRight.y() / static_cast<float>(_displayImage->height()));
 
-						auto rectangleUV	= std::make_pair(rectangleTopLeftUV, rectangleBottomRightUV);
-						auto topLeft		= QVector2D(rectangleTopLeftUV.x(), rectangleTopLeftUV.y());
-						auto bottomRight	= QVector2D(rectangleBottomRightUV.x(), rectangleBottomRightUV.y());
+					auto rectangleUV	= std::make_pair(rectangleTopLeftUV, rectangleBottomRightUV);
+					auto topLeft		= QVector2D(rectangleTopLeftUV.x(), rectangleTopLeftUV.y());
+					auto bottomRight	= QVector2D(rectangleBottomRightUV.x(), rectangleBottomRightUV.y());
 
-						if (rectangleBottomRightUV.x() < rectangleTopLeftUV.x()) {
-							topLeft.setX(rectangleBottomRightUV.x());
-							bottomRight.setX(rectangleTopLeftUV.x());
-						}
-							
-						if (rectangleBottomRightUV.y() < rectangleTopLeftUV.y()) {
-							topLeft.setY(rectangleBottomRightUV.y());
-							bottomRight.setY(rectangleTopLeftUV.y());
-						}
-							
-						_pixelSelectionShaderProgram->setUniformValue("rectangleTopLeft", topLeft);
-						_pixelSelectionShaderProgram->setUniformValue("rectangleBottomRight", bottomRight);
-
-						break;
+					if (rectangleBottomRightUV.x() < rectangleTopLeftUV.x()) {
+						topLeft.setX(rectangleBottomRightUV.x());
+						bottomRight.setX(rectangleTopLeftUV.x());
 					}
-
-					case SelectionType::Brush:
-					{
-						const auto currentMousePosition		= _mousePositions[_mousePositions.size() - 1]; 
-						const auto previousMousePosition	= _mousePositions.size() > 1 ? _mousePositions[_mousePositions.size() - 2] : currentMousePosition;
-						const auto brushCenter				= screenToWorld(currentMousePosition);
-						const auto previousBrushCenter		= screenToWorld(previousMousePosition);
-
-						_pixelSelectionShaderProgram->setUniformValue("previousBrushCenter", previousBrushCenter.x(), previousBrushCenter.y());
-						_pixelSelectionShaderProgram->setUniformValue("currentBrushCenter", brushCenter.x(), brushCenter.y());
-						_pixelSelectionShaderProgram->setUniformValue("brushRadius", _brushRadius);
-
-						break;
+							
+					if (rectangleBottomRightUV.y() < rectangleTopLeftUV.y()) {
+						topLeft.setY(rectangleBottomRightUV.y());
+						bottomRight.setY(rectangleTopLeftUV.y());
 					}
+							
+					_pixelSelectionShaderProgram->setUniformValue("rectangleTopLeft", topLeft);
+					_pixelSelectionShaderProgram->setUniformValue("rectangleBottomRight", bottomRight);
 
-					case SelectionType::Freehand:
-						break;
-
-					default:
-						break;
+					break;
 				}
-				
-				_pixelSelectionShaderProgram->enableAttributeArray(PROGRAM_VERTEX_ATTRIBUTE);
-				_pixelSelectionShaderProgram->enableAttributeArray(PROGRAM_TEXCOORD_ATTRIBUTE);
-				_pixelSelectionShaderProgram->setAttributeBuffer(PROGRAM_VERTEX_ATTRIBUTE, GL_FLOAT, 0, 3, 5 * sizeof(GLfloat));
-				_pixelSelectionShaderProgram->setAttributeBuffer(PROGRAM_TEXCOORD_ATTRIBUTE, GL_FLOAT, 3 * sizeof(GLfloat), 2, 5 * sizeof(GLfloat));
 
-				glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+				case SelectionType::Brush:
+				{
+					const auto currentMousePosition		= _mousePositions[_mousePositions.size() - 1]; 
+					const auto previousMousePosition	= _mousePositions.size() > 1 ? _mousePositions[_mousePositions.size() - 2] : currentMousePosition;
+					const auto brushCenter				= screenToWorld(currentMousePosition);
+					const auto previousBrushCenter		= screenToWorld(previousMousePosition);
 
-				_pixelSelectionShaderProgram->release();
+					_pixelSelectionShaderProgram->setUniformValue("previousBrushCenter", previousBrushCenter.x(), previousBrushCenter.y());
+					_pixelSelectionShaderProgram->setUniformValue("currentBrushCenter", brushCenter.x(), brushCenter.y());
+					_pixelSelectionShaderProgram->setUniformValue("brushRadius", _brushRadius);
+
+					break;
+				}
+
+				default:
+					break;
 			}
+				
+			_pixelSelectionShaderProgram->enableAttributeArray(PROGRAM_VERTEX_ATTRIBUTE);
+			_pixelSelectionShaderProgram->enableAttributeArray(PROGRAM_TEXCOORD_ATTRIBUTE);
+			_pixelSelectionShaderProgram->setAttributeBuffer(PROGRAM_VERTEX_ATTRIBUTE, GL_FLOAT, 0, 3, 5 * sizeof(GLfloat));
+			_pixelSelectionShaderProgram->setAttributeBuffer(PROGRAM_TEXCOORD_ATTRIBUTE, GL_FLOAT, 3 * sizeof(GLfloat), 2, 5 * sizeof(GLfloat));
 
-			_pixelSelectionFBO->release();
+			glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+			_pixelSelectionShaderProgram->release();
 		}
 
 		_imageQuadVBO.release();
 	}
+	
+	if (_selectionType == SelectionType::Lasso) {
+		std::vector<GLfloat> vertexCoordinates;
+
+		vertexCoordinates.resize(_mousePositions.size() * 3);
+
+		for (std::size_t p = 0; p < _mousePositions.size(); p++) {
+			const auto mousePosition		= _mousePositions[p];
+			const auto mouseWorldPosition	= screenToWorld(mousePosition);
+
+			vertexCoordinates[p * 3 + 0] = mouseWorldPosition.x();
+			vertexCoordinates[p * 3 + 1] = _displayImage->height() - mouseWorldPosition.y();
+			vertexCoordinates[p * 3 + 2] = -0.5f;
+		}
+
+		if (_selectionGeometryShaderProgram->bind()) {
+			_selectionGeometryShaderProgram->setUniformValue("matrix", transform);
+
+			const auto vertexLocation = _selectionGeometryShaderProgram->attributeLocation("vertex");
+
+			_selectionGeometryShaderProgram->enableAttributeArray(PROGRAM_VERTEX_ATTRIBUTE);
+			_selectionGeometryShaderProgram->setAttributeArray(vertexLocation, vertexCoordinates.data(), 3);
+
+			glDrawArrays(GL_TRIANGLE_FAN, 0, _mousePositions.size());
+
+			_selectionGeometryShaderProgram->disableAttributeArray(vertexLocation);
+
+			_selectionGeometryShaderProgram->release();
+		}
+	}
+
+	_pixelSelectionFBO->release();
 
 	doneCurrent();
 
@@ -1022,7 +1050,7 @@ QMenu* ImageViewerWidget::selectionMenu()
 
 	connect(rectangleSelectionAction, &QAction::triggered, [this]() { setSelectionType(SelectionType::Rectangle);  });
 	connect(brushSelectionAction, &QAction::triggered, [this]() { setSelectionType(SelectionType::Brush);  });
-	connect(freehandSelectionAction, &QAction::triggered, [this]() { setSelectionType(SelectionType::Freehand);  });
+	connect(freehandSelectionAction, &QAction::triggered, [this]() { setSelectionType(SelectionType::Lasso);  });
 	connect(clearSelectionAction, &QAction::triggered, [this]() { clearSelection(); });
 
 	rectangleSelectionAction->setCheckable(true);
@@ -1213,7 +1241,7 @@ void ImageViewerWidget::resetWindowLevel()
 	update();
 }
 
-void ImageViewerWidget::drawSelectionRectangle(const QPoint& start, const QPoint& end)
+void ImageViewerWidget::drawSelectionOutlineRectangle(const QPoint& start, const QPoint& end)
 {
 	const GLfloat vertexCoordinates[] = {
 	  start.x(), start.y(), 0.0f,
@@ -1231,7 +1259,7 @@ void ImageViewerWidget::drawSelectionRectangle(const QPoint& start, const QPoint
 	_selectionGeometryShaderProgram->disableAttributeArray(vertexLocation);
 }
 
-void ImageViewerWidget::drawSelectionBrush()
+void ImageViewerWidget::drawSelectionOutlineBrush()
 {
 	const auto brushCenter	= QWidget::mapFromGlobal(QCursor::pos());
 	const auto noSegments	= 64u;
@@ -1261,7 +1289,30 @@ void ImageViewerWidget::drawSelectionBrush()
 	_selectionGeometryShaderProgram->disableAttributeArray(vertexLocation);
 }
 
-void ImageViewerWidget::drawSelectionGeometry()
+void ImageViewerWidget::drawSelectionOutlineLasso()
+{
+	std::vector<GLfloat> vertexCoordinates;
+
+	vertexCoordinates.resize(_mousePositions.size() * 3);
+
+	for (std::size_t p = 0; p < _mousePositions.size(); p++) {
+		const auto mousePosition = _mousePositions[p];
+
+		vertexCoordinates[p * 3 + 0] = mousePosition.x();
+		vertexCoordinates[p * 3 + 1] = mousePosition.y();
+		vertexCoordinates[p * 3 + 2] = 0;
+	}
+
+	const auto vertexLocation = _selectionGeometryShaderProgram->attributeLocation("vertex");
+
+	_selectionGeometryShaderProgram->setAttributeArray(vertexLocation, vertexCoordinates.data(), 3);
+
+	glDrawArrays(GL_LINE_LOOP, 0, _mousePositions.size());
+
+	_selectionGeometryShaderProgram->disableAttributeArray(vertexLocation);
+}
+
+void ImageViewerWidget::drawSelectionOutline()
 {
 	switch (_selectionType)
 	{
@@ -1269,7 +1320,7 @@ void ImageViewerWidget::drawSelectionGeometry()
 		{
 			if (_selecting) {
 				const auto currentMouseWorldPos = QWidget::mapFromGlobal(QCursor::pos());
-				drawSelectionRectangle(_initialMousePosition, currentMouseWorldPos);
+				drawSelectionOutlineRectangle(_initialMousePosition, currentMouseWorldPos);
 			}
 
 			break;
@@ -1277,7 +1328,13 @@ void ImageViewerWidget::drawSelectionGeometry()
 
 		case SelectionType::Brush:
 		{
-			drawSelectionBrush();
+			drawSelectionOutlineBrush();
+			break;
+		}
+
+		case SelectionType::Lasso:
+		{
+			drawSelectionOutlineLasso();
 			break;
 		}
 

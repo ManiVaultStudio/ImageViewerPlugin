@@ -64,9 +64,10 @@ private:
 	void wheelEvent(QWheelEvent* wheelEvent) Q_DECL_OVERRIDE;
 
 private:
-	void drawSelectionRectangle(const QPoint& start, const QPoint& end);
-	void drawSelectionBrush();
-	void drawSelectionGeometry();
+	void drawSelectionOutlineRectangle(const QPoint& start, const QPoint& end);
+	void drawSelectionOutlineBrush();
+	void drawSelectionOutlineLasso();
+	void drawSelectionOutline();
 
 	void enableSelection(const bool& enable);
 
