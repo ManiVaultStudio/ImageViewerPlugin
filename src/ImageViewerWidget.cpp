@@ -896,19 +896,16 @@ void ImageViewerWidget::updatePixelSelection()
 
 				case SelectionType::Lasso:
 				{
-					QVector2D* mousePositions = new QVector2D[_mousePositions.size()];
+					QList<QVector2D> mousePositions;
 					
-					auto id = 0;
+					mousePositions.reserve(_mousePositions.size());
 
 					for (const auto p : _mousePositions) {
-						mousePositions[id] = QVector2D(screenToWorld(p).x(), screenToWorld(p).y());
-						id++;
+						mousePositions.push_back(QVector2D(screenToWorld(p).x(), screenToWorld(p).y()));
 					}
 
-					_pixelSelectionShaderProgram->setUniformValueArray("points", mousePositions, _mousePositions.size());
+					_pixelSelectionShaderProgram->setUniformValueArray("points", &mousePositions[0], _mousePositions.size());
 					_pixelSelectionShaderProgram->setUniformValue("noPoints", static_cast<int>(_mousePositions.size()));
-
-					delete[] mousePositions;
 
 					break;
 				}
@@ -929,38 +926,6 @@ void ImageViewerWidget::updatePixelSelection()
 
 		_imageQuadVBO.release();
 	}
-	
-	/*
-	if (_selectionType == SelectionType::Lasso) {
-		std::vector<GLfloat> vertexCoordinates;
-
-		vertexCoordinates.resize(_mousePositions.size() * 3);
-
-		for (std::size_t p = 0; p < _mousePositions.size(); p++) {
-			const auto mousePosition		= _mousePositions[p];
-			const auto mouseWorldPosition	= screenToWorld(mousePosition);
-
-			vertexCoordinates[p * 3 + 0] = mouseWorldPosition.x();
-			vertexCoordinates[p * 3 + 1] = _displayImage->height() - mouseWorldPosition.y();
-			vertexCoordinates[p * 3 + 2] = -0.5f;
-		}
-
-		if (_selectionGeometryShaderProgram->bind()) {
-			_selectionGeometryShaderProgram->setUniformValue("matrix", transform);
-
-			const auto vertexLocation = _selectionGeometryShaderProgram->attributeLocation("vertex");
-
-			_selectionGeometryShaderProgram->enableAttributeArray(PROGRAM_VERTEX_ATTRIBUTE);
-			_selectionGeometryShaderProgram->setAttributeArray(vertexLocation, vertexCoordinates.data(), 3);
-
-			glDrawArrays(GL_TRIANGLE_FAN, 0, _mousePositions.size());
-
-			_selectionGeometryShaderProgram->disableAttributeArray(vertexLocation);
-
-			_selectionGeometryShaderProgram->release();
-		}
-	}
-	*/
 
 	_pixelSelectionFBO->release();
 
