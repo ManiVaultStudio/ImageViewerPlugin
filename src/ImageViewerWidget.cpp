@@ -894,6 +894,25 @@ void ImageViewerWidget::updatePixelSelection()
 					break;
 				}
 
+				case SelectionType::Lasso:
+				{
+					QVector2D* mousePositions = new QVector2D[_mousePositions.size()];
+					
+					auto id = 0;
+
+					for (const auto p : _mousePositions) {
+						mousePositions[id] = QVector2D(screenToWorld(p).x(), screenToWorld(p).y());
+						id++;
+					}
+
+					_pixelSelectionShaderProgram->setUniformValueArray("points", mousePositions, _mousePositions.size());
+					_pixelSelectionShaderProgram->setUniformValue("noPoints", static_cast<int>(_mousePositions.size()));
+
+					delete[] mousePositions;
+
+					break;
+				}
+
 				default:
 					break;
 			}
@@ -911,6 +930,7 @@ void ImageViewerWidget::updatePixelSelection()
 		_imageQuadVBO.release();
 	}
 	
+	/*
 	if (_selectionType == SelectionType::Lasso) {
 		std::vector<GLfloat> vertexCoordinates;
 
@@ -940,6 +960,7 @@ void ImageViewerWidget::updatePixelSelection()
 			_selectionGeometryShaderProgram->release();
 		}
 	}
+	*/
 
 	_pixelSelectionFBO->release();
 
