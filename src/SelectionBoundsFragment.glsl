@@ -7,6 +7,6 @@ out vec4 fragmentColor;
 
 void main(void)
 {
-	fragmentColor = vec4(1);
+	fragmentColor = color;
 }
 )"

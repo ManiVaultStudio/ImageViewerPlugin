@@ -115,7 +115,7 @@ private:
 	std::unique_ptr<QOpenGLShaderProgram>		_pixelSelectionShaderProgram;
 	std::unique_ptr<QOpenGLShaderProgram>		_overlayShaderProgram;
 	std::unique_ptr<QOpenGLShaderProgram>		_selectionShaderProgram;
-	std::unique_ptr<QOpenGLShaderProgram>		_selectionGeometryShaderProgram;
+	std::unique_ptr<QOpenGLShaderProgram>		_selectionOutlineShaderProgram;
 	std::unique_ptr<QOpenGLShaderProgram>		_selectionBoundsShaderProgram;
 
 	std::unique_ptr<QOpenGLFramebufferObject>	_pixelSelectionFBO;

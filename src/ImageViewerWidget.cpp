@@ -39,12 +39,16 @@ const std::string selectionFragmentShaderSource =
 #include "SelectionFragment.glsl"
 ;
 
-const std::string selectionGeometryVertexShaderSource =
-#include "SelectionGeometryVertex.glsl"
+const std::string selectionOutlineVertexShaderSource =
+#include "SelectionOutlineVertex.glsl"
 ;
 
-const std::string selectionGeometryFragmentShaderSource =
-#include "SelectionGeometryFragment.glsl"
+const std::string selectionOutlineFragmentShaderSource =
+#include "SelectionOutlineFragment.glsl"
+;
+
+const std::string selectionBoundsVertexShaderSource =
+#include "SelectionBoundsVertex.glsl"
 ;
 
 const std::string selectionBoundsFragmentShaderSource =
@@ -80,8 +84,8 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_selectionRealtime(false),
 	_brushRadius(50.f),
 	_brushRadiusDelta(2.0f),
-	_pointSelectionColor(1.f, 0.f, 0.f, 0.8f),
-	_pixelSelectionColor(1.f, 0.6f, 0.f, 0.4f),
+	_pointSelectionColor(1.f, 0.f, 0.f, 0.6f),
+	_pixelSelectionColor(1.f, 0.6f, 0.f, 0.3f),
 	_selectionOutlineColor(255, 0, 0, 255),
 	_selectionBoundsColor(1.0f, 0.0f, 0.f, 1.0f),
 	_selectedPointIds(),
@@ -125,7 +129,7 @@ ImageViewerWidget::~ImageViewerWidget()
 	_selectionShaderProgram.reset();
 	_pixelSelectionFBO.reset();
 
-	_selectionGeometryShaderProgram.reset();
+	_selectionOutlineShaderProgram.reset();
 
 	if (_imageQuadVBO.isCreated())
 		_imageQuadVBO.destroy();
@@ -155,7 +159,7 @@ void ImageViewerWidget::initializeGL()
 	_overlayShaderProgram			= std::make_unique<QOpenGLShaderProgram>();
 	_pixelSelectionShaderProgram	= std::make_unique<QOpenGLShaderProgram>();
 	_selectionShaderProgram			= std::make_unique<QOpenGLShaderProgram>();
-	_selectionGeometryShaderProgram = std::make_unique<QOpenGLShaderProgram>();
+	_selectionOutlineShaderProgram = std::make_unique<QOpenGLShaderProgram>();
 	_selectionBoundsShaderProgram	= std::make_unique<QOpenGLShaderProgram>();
 
 	_imageShaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSource.c_str());
@@ -182,12 +186,12 @@ void ImageViewerWidget::initializeGL()
 	_selectionShaderProgram->bindAttributeLocation("texCoord", PROGRAM_TEXCOORD_ATTRIBUTE);
 	_selectionShaderProgram->link();
 
-	_selectionGeometryShaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, selectionGeometryVertexShaderSource.c_str());
-	_selectionGeometryShaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, selectionGeometryFragmentShaderSource.c_str());
-	_selectionGeometryShaderProgram->bindAttributeLocation("vertex", PROGRAM_VERTEX_ATTRIBUTE);
-	_selectionGeometryShaderProgram->link();
+	_selectionOutlineShaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, selectionOutlineVertexShaderSource.c_str());
+	_selectionOutlineShaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, selectionOutlineFragmentShaderSource.c_str());
+	_selectionOutlineShaderProgram->bindAttributeLocation("vertex", PROGRAM_VERTEX_ATTRIBUTE);
+	_selectionOutlineShaderProgram->link();
 
-	_selectionBoundsShaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, selectionGeometryVertexShaderSource.c_str());
+	_selectionBoundsShaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, selectionBoundsVertexShaderSource.c_str());
 	_selectionBoundsShaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, selectionBoundsFragmentShaderSource.c_str());
 	_selectionBoundsShaderProgram->bindAttributeLocation("vertex", PROGRAM_VERTEX_ATTRIBUTE);
 	_selectionBoundsShaderProgram->link();
@@ -296,35 +300,29 @@ void ImageViewerWidget::paintGL() {
 		_imageQuadVBO.release();
 	}
 	
-	if (_interactionMode == InteractionMode::Selection) {
-		if (_selectionGeometryShaderProgram->isLinked() && _selectionGeometryShaderProgram->bind()) {
-			QMatrix4x4 transform;
-
-			transform.ortho(rect());
-
-			_selectionGeometryShaderProgram->setUniformValue("matrix", transform);
-
-			const auto vertexLocation = _selectionGeometryShaderProgram->attributeLocation("vertex");
-			
-			_selectionGeometryShaderProgram->enableAttributeArray(vertexLocation);
-
-			drawSelectionOutline();
-
-			_selectionGeometryShaderProgram->disableAttributeArray(vertexLocation);
-		}
-		
-		_selectionGeometryShaderProgram->release();
-	}
-
 	if (_selectionBoundsShaderProgram->isLinked() && _selectionBoundsShaderProgram->bind()) {
-		const auto transform = projection() * modelView();
+		auto transform = projection() * modelView();
 
-		_selectionBoundsShaderProgram->setUniformValue("matrix", transform);
+		_selectionBoundsShaderProgram->setUniformValue("transform", transform);
 		_selectionBoundsShaderProgram->setUniformValue("color", _selectionBoundsColor);
 
 		drawSelectionBounds();
 
 		_selectionBoundsShaderProgram->release();
+	}
+
+	if (_interactionMode == InteractionMode::Selection) {
+		if (_selectionOutlineShaderProgram->isLinked() && _selectionOutlineShaderProgram->bind()) {
+			QMatrix4x4 transform;
+
+			transform.ortho(rect());
+
+			_selectionOutlineShaderProgram->setUniformValue("transform", transform);
+
+			drawSelectionOutline();
+
+			_selectionOutlineShaderProgram->release();
+		}
 	}
 }
 
@@ -1292,13 +1290,13 @@ void ImageViewerWidget::drawSelectionOutlineRectangle(const QPoint& start, const
 	  start.x(), end.y(), 0.0f
 	};
 
-	const auto vertexLocation = _selectionGeometryShaderProgram->attributeLocation("vertex");
+	const auto vertexLocation = _selectionOutlineShaderProgram->attributeLocation("vertex");
 
-	_selectionGeometryShaderProgram->setAttributeArray(vertexLocation, vertexCoordinates, 3);
+	_selectionOutlineShaderProgram->setAttributeArray(vertexLocation, vertexCoordinates, 3);
 
 	glDrawArrays(GL_LINE_LOOP, 0, 4);
 
-	_selectionGeometryShaderProgram->disableAttributeArray(vertexLocation);
+	_selectionOutlineShaderProgram->disableAttributeArray(vertexLocation);
 }
 
 void ImageViewerWidget::drawSelectionOutlineBrush()
@@ -1322,13 +1320,13 @@ void ImageViewerWidget::drawSelectionOutlineBrush()
 		vertexCoordinates[s * 3 + 2] = 0;
 	}
 
-	const auto vertexLocation = _selectionGeometryShaderProgram->attributeLocation("vertex");
+	const auto vertexLocation = _selectionOutlineShaderProgram->attributeLocation("vertex");
 
-	_selectionGeometryShaderProgram->setAttributeArray(vertexLocation, vertexCoordinates.data(), 3);
+	_selectionOutlineShaderProgram->setAttributeArray(vertexLocation, vertexCoordinates.data(), 3);
 
 	glDrawArrays(GL_LINE_LOOP, 0, noSegments);
 
-	_selectionGeometryShaderProgram->disableAttributeArray(vertexLocation);
+	_selectionOutlineShaderProgram->disableAttributeArray(vertexLocation);
 }
 
 void ImageViewerWidget::drawSelectionOutlineLasso()
@@ -1345,13 +1343,13 @@ void ImageViewerWidget::drawSelectionOutlineLasso()
 		vertexCoordinates[p * 3 + 2] = 0;
 	}
 
-	const auto vertexLocation = _selectionGeometryShaderProgram->attributeLocation("vertex");
+	const auto vertexLocation = _selectionOutlineShaderProgram->attributeLocation("vertex");
 
-	_selectionGeometryShaderProgram->setAttributeArray(vertexLocation, vertexCoordinates.data(), 3);
+	_selectionOutlineShaderProgram->setAttributeArray(vertexLocation, vertexCoordinates.data(), 3);
 
 	glDrawArrays(GL_LINE_LOOP, 0, _mousePositions.size());
 
-	_selectionGeometryShaderProgram->disableAttributeArray(vertexLocation);
+	_selectionOutlineShaderProgram->disableAttributeArray(vertexLocation);
 }
 
 void ImageViewerWidget::drawSelectionOutline()
@@ -1390,7 +1388,7 @@ void ImageViewerWidget::drawSelectionBounds()
 	if (_noSelectedPixels == 0)
 		return;
 
-	qDebug() << "Draw selection bounds";
+	//qDebug() << "Draw selection bounds";
 
 	const GLfloat boxScreen[4] = {
 		_selectionBounds[0], _selectionBounds[1],
