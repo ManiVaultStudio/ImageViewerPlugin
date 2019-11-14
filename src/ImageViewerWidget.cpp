@@ -47,6 +47,10 @@ const std::string selectionGeometryFragmentShaderSource =
 #include "SelectionGeometryFragment.glsl"
 ;
 
+const std::string selectionBoundsFragmentShaderSource =
+#include "SelectionBoundsFragment.glsl"
+;
+
 #define PROGRAM_VERTEX_ATTRIBUTE 0
 #define PROGRAM_TEXCOORD_ATTRIBUTE 1
 
@@ -61,6 +65,7 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_pixelSelectionShaderProgram(),
 	_overlayShaderProgram(),
 	_selectionShaderProgram(),
+	_selectionBoundsShaderProgram(),
 	_pixelSelectionFBO(),
 	_imageQuadVBO(),
 	_interactionMode(InteractionMode::Selection),
@@ -77,9 +82,11 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_brushRadiusDelta(2.0f),
 	_pointSelectionColor(1.f, 0.f, 0.f, 0.8f),
 	_pixelSelectionColor(1.f, 0.6f, 0.f, 0.4f),
-	_selectionGeometryColor(255, 0, 0, 255),
+	_selectionOutlineColor(255, 0, 0, 255),
+	_selectionBoundsColor(1.0f, 0.0f, 0.f, 1.0f),
 	_selectedPointIds(),
-	_zoomToExtentsAction(nullptr),
+	_selectionBounds{ 0, 0, 0, 0 },
+	_noSelectedPixels(0),
 	_ignorePaintGL(false),
 	_window(1.0f),
 	_level(0.5f)
@@ -149,6 +156,7 @@ void ImageViewerWidget::initializeGL()
 	_pixelSelectionShaderProgram	= std::make_unique<QOpenGLShaderProgram>();
 	_selectionShaderProgram			= std::make_unique<QOpenGLShaderProgram>();
 	_selectionGeometryShaderProgram = std::make_unique<QOpenGLShaderProgram>();
+	_selectionBoundsShaderProgram	= std::make_unique<QOpenGLShaderProgram>();
 
 	_imageShaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSource.c_str());
 	_imageShaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, imageFragmentShaderSource.c_str());
@@ -178,6 +186,11 @@ void ImageViewerWidget::initializeGL()
 	_selectionGeometryShaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, selectionGeometryFragmentShaderSource.c_str());
 	_selectionGeometryShaderProgram->bindAttributeLocation("vertex", PROGRAM_VERTEX_ATTRIBUTE);
 	_selectionGeometryShaderProgram->link();
+
+	_selectionBoundsShaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, selectionGeometryVertexShaderSource.c_str());
+	_selectionBoundsShaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, selectionBoundsFragmentShaderSource.c_str());
+	_selectionBoundsShaderProgram->bindAttributeLocation("vertex", PROGRAM_VERTEX_ATTRIBUTE);
+	_selectionBoundsShaderProgram->link();
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -285,20 +298,33 @@ void ImageViewerWidget::paintGL() {
 	
 	if (_interactionMode == InteractionMode::Selection) {
 		if (_selectionGeometryShaderProgram->isLinked() && _selectionGeometryShaderProgram->bind()) {
-			QMatrix4x4 projection;
+			QMatrix4x4 transform;
 
-			projection.ortho(rect());
+			transform.ortho(rect());
 
-			_selectionGeometryShaderProgram->setUniformValue("matrix", projection);
+			_selectionGeometryShaderProgram->setUniformValue("matrix", transform);
 
 			const auto vertexLocation = _selectionGeometryShaderProgram->attributeLocation("vertex");
 			
 			_selectionGeometryShaderProgram->enableAttributeArray(vertexLocation);
 
 			drawSelectionOutline();
+
+			_selectionGeometryShaderProgram->disableAttributeArray(vertexLocation);
 		}
 		
 		_selectionGeometryShaderProgram->release();
+	}
+
+	if (_selectionBoundsShaderProgram->isLinked() && _selectionBoundsShaderProgram->bind()) {
+		const auto transform = projection() * modelView();
+
+		_selectionBoundsShaderProgram->setUniformValue("matrix", transform);
+		_selectionBoundsShaderProgram->setUniformValue("color", _selectionBoundsColor);
+
+		drawSelectionBounds();
+
+		_selectionBoundsShaderProgram->release();
 	}
 }
 
@@ -393,6 +419,36 @@ void ImageViewerWidget::onSelectionImageChanged(std::unique_ptr<QImage>& selecti
 
 	_selectionTexture.reset(new QOpenGLTexture(*_selectionImage.get()));
 	_selectionTexture->setMinMagFilters(QOpenGLTexture::Filter::Nearest, QOpenGLTexture::Filter::Nearest);
+
+	const auto numericMin = std::numeric_limits<std::uint32_t>::min();
+	const auto numericMax = std::numeric_limits<std::uint32_t>::max();
+
+	_selectionBounds[0] = numericMax;
+	_selectionBounds[1] = numericMin;
+	_selectionBounds[2] = numericMax;
+	_selectionBounds[3] = numericMin;
+
+	_noSelectedPixels = 0;
+
+	for (std::uint32_t y = 0; y < _selectionImage->height(); y++) {
+		for (std::uint32_t x = 0; x < _selectionImage->width(); x++) {
+			if (_selectionImage->pixelColor(x, y).red() > 0) {
+				_noSelectedPixels++;
+
+				if (x < _selectionBounds[0])
+					_selectionBounds[0] = x;
+
+				if (x > _selectionBounds[1])
+					_selectionBounds[1] = x;
+
+				if (y < _selectionBounds[2])
+					_selectionBounds[2] = y;
+
+				if (y > _selectionBounds[3])
+					_selectionBounds[3] = y;
+			}
+		}
+	}
 
 	doneCurrent();
 
@@ -967,9 +1023,9 @@ void ImageViewerWidget::modifySelection()
 
 	for (std::uint32_t y = 0; y < image.height(); y++) {
 		for (std::uint32_t x = 0; x < image.width(); x++) {
-			if (image.pixelColor(x, y).red() > 0)
-				//(image.height() - y - 1) * image.width() + x
+			if (image.pixelColor(x, y).red() > 0) {
 				pixelCoordinates.push_back(std::make_pair(x, y));
+			}
 		}
 	}
 
@@ -1327,4 +1383,32 @@ void ImageViewerWidget::drawSelectionOutline()
 		default:
 			break;
 	}
+}
+
+void ImageViewerWidget::drawSelectionBounds()
+{
+	if (_noSelectedPixels == 0)
+		return;
+
+	qDebug() << "Draw selection bounds";
+
+	const GLfloat boxScreen[4] = {
+		_selectionBounds[0], _selectionBounds[1],
+		_displayImage->height() - _selectionBounds[2], _displayImage->height() - _selectionBounds[3]
+	};
+
+	const GLfloat vertexCoordinates[] = {
+		boxScreen[0], boxScreen[3], 0.0f,
+		boxScreen[1], boxScreen[3], 0.0f,
+		boxScreen[1], boxScreen[2], 0.0f,
+		boxScreen[0], boxScreen[2], 0.0f
+	};
+
+	const auto vertexLocation = _selectionBoundsShaderProgram->attributeLocation("vertex");
+
+	_selectionBoundsShaderProgram->setAttributeArray(vertexLocation, vertexCoordinates, 3);
+
+	glDrawArrays(GL_LINE_LOOP, 0, 4);
+
+	_selectionBoundsShaderProgram->disableAttributeArray(vertexLocation);
 }

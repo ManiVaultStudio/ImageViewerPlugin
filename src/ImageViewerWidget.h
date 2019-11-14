@@ -68,6 +68,7 @@ private:
 	void drawSelectionOutlineBrush();
 	void drawSelectionOutlineLasso();
 	void drawSelectionOutline();
+	void drawSelectionBounds();
 
 	void enableSelection(const bool& enable);
 
@@ -115,6 +116,7 @@ private:
 	std::unique_ptr<QOpenGLShaderProgram>		_overlayShaderProgram;
 	std::unique_ptr<QOpenGLShaderProgram>		_selectionShaderProgram;
 	std::unique_ptr<QOpenGLShaderProgram>		_selectionGeometryShaderProgram;
+	std::unique_ptr<QOpenGLShaderProgram>		_selectionBoundsShaderProgram;
 
 	std::unique_ptr<QOpenGLFramebufferObject>	_pixelSelectionFBO;
 
@@ -136,10 +138,12 @@ private:
 	float										_brushRadiusDelta;
 	QVector4D									_pointSelectionColor;
 	QVector4D									_pixelSelectionColor;
-	QColor										_selectionGeometryColor;
+	QColor										_selectionOutlineColor;
+	QVector4D									_selectionBoundsColor;
 	std::vector<std::uint32_t>					_selectedPointIds;
-	QAction*									_zoomToExtentsAction;
-	
+	std::uint32_t								_selectionBounds[4];
+	std::uint32_t								_noSelectedPixels;
+
 	std::uint16_t								_imageMin;
 	std::uint16_t								_imageMax;
 	float										_window;
