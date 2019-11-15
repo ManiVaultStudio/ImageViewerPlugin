@@ -110,7 +110,7 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	surfaceFormat.setRenderableType(QSurfaceFormat::OpenGL);
 	//surfaceFormat.setProfile(QSurfaceFormat::CoreProfile);
 	//surfaceFormat.setVersion(4, 3);
-	surfaceFormat.setSamples(16);
+	surfaceFormat.setSamples(4);
 	//surfaceFormat.setDepthBufferSize(24);
 	//surfaceFormat.setStencilBufferSize(8);
 
@@ -199,6 +199,9 @@ void ImageViewerWidget::initializeGL()
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_MULTISAMPLE);
+	glEnable(GL_LINE_SMOOTH);
+	glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+	glDepthMask(false);
 }
 
 void ImageViewerWidget::resizeGL(int w, int h)
@@ -563,19 +566,14 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 				case InteractionMode::Selection:
 				{
 					if (_imageViewerPlugin->selectable()) {
-						/*
-						if (_selectionModifier == SelectionModifier::Replace) {
-							qDebug() << "Reset selection";
-
-							_imageViewerPlugin->setSelection(Indices());
-						}
-						*/
-
 						resetPixelSelection();
 
 						_mousePositions.clear();
+						_mousePositions.push_back(_mousePosition);
 
 						_initialMousePosition = _mousePosition;
+
+						updatePixelSelection();
 
 						enableSelection(true);
 					}
@@ -1034,8 +1032,11 @@ void ImageViewerWidget::clearSelection()
 {
 	qDebug() << "Clear selection";
 
-	modifySelection();
-	commitSelection();
+	auto pixelCoordinates = std::vector<std::pair<std::uint32_t, std::uint32_t>>();
+
+	_imageViewerPlugin->selectPixels(pixelCoordinates, SelectionModifier::Replace);
+
+	update();
 }
 
 void ImageViewerWidget::commitSelection()
@@ -1349,6 +1350,10 @@ void ImageViewerWidget::drawSelectionOutlineLasso()
 
 void ImageViewerWidget::drawSelectionOutline()
 {
+	//glEnable(GL_LINE_STIPPLE);
+	//glLineStipple(1, 0x0101);
+	//glLineWidth(2.5f);
+
 	switch (_selectionType)
 	{
 		case SelectionType::Rectangle:
@@ -1376,6 +1381,8 @@ void ImageViewerWidget::drawSelectionOutline()
 		default:
 			break;
 	}
+
+	//glDisable(GL_LINE_STIPPLE);
 }
 
 void ImageViewerWidget::drawSelectionBounds()
