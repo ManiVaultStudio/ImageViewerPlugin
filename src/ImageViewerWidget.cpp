@@ -86,8 +86,8 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_brushRadiusDelta(2.0f),
 	_pointSelectionColor(1.f, 0.f, 0.f, 0.6f),
 	_pixelSelectionColor(1.f, 0.6f, 0.f, 0.3f),
-	_selectionOutlineColor(255, 0, 0, 255),
-	_selectionBoundsColor(1.0f, 0.0f, 0.f, 1.0f),
+	_selectionOutlineColor(1.0f, 0.6f, 0.f, 1.0f),
+	_selectionBoundsColor(1.0f, 0.6f, 0.f, 0.5f),
 	_selectedPointIds(),
 	_selectionBounds{ 0, 0, 0, 0 },
 	_noSelectedPixels(0),
@@ -300,8 +300,9 @@ void ImageViewerWidget::paintGL() {
 		_imageQuadVBO.release();
 	}
 	
-	if (_selectionBoundsShaderProgram->isLinked() && _selectionBoundsShaderProgram->bind()) {
-		auto transform = projection() * modelView();
+	/*
+	if (_selectionBoundsShaderProgram->bind()) {
+		QMatrix4x4 transform = projection() * modelView();
 
 		_selectionBoundsShaderProgram->setUniformValue("transform", transform);
 		_selectionBoundsShaderProgram->setUniformValue("color", _selectionBoundsColor);
@@ -310,19 +311,18 @@ void ImageViewerWidget::paintGL() {
 
 		_selectionBoundsShaderProgram->release();
 	}
+	*/
+	if (_interactionMode == InteractionMode::Selection && _selectionOutlineShaderProgram->bind()) {
+		QMatrix4x4 transform;
 
-	if (_interactionMode == InteractionMode::Selection) {
-		if (_selectionOutlineShaderProgram->isLinked() && _selectionOutlineShaderProgram->bind()) {
-			QMatrix4x4 transform;
+		transform.ortho(rect());
 
-			transform.ortho(rect());
+		_selectionOutlineShaderProgram->setUniformValue("transform", transform);
+		_selectionOutlineShaderProgram->setUniformValue("color", _selectionOutlineColor);
 
-			_selectionOutlineShaderProgram->setUniformValue("transform", transform);
+		drawSelectionOutline();
 
-			drawSelectionOutline();
-
-			_selectionOutlineShaderProgram->release();
-		}
+		_selectionOutlineShaderProgram->release();
 	}
 }
 
@@ -526,10 +526,7 @@ void ImageViewerWidget::keyReleaseEvent(QKeyEvent* keyEvent)
 			case Qt::Key::Key_Shift:
 			case Qt::Key::Key_Control:
 			{
-				if (selectionType() != SelectionType::Brush) {
-					setSelectionModifier(SelectionModifier::Replace);
-				}
-
+				setSelectionModifier(SelectionModifier::Replace);
 				break;
 			}
 
@@ -562,6 +559,7 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 			{
 				case InteractionMode::Navigation:
 					break;
+
 				case InteractionMode::Selection:
 				{
 					if (_imageViewerPlugin->selectable()) {
@@ -638,8 +636,6 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 					break;
 			}
 
-			update();
-
 			break;
 		}
 
@@ -661,6 +657,8 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 		default:
 			break;
 	}
+
+	update();
 
 	_mousePosition = mouseEvent->pos();
 }
@@ -1085,24 +1083,25 @@ QMenu* ImageViewerWidget::selectionMenu()
 
 	auto* rectangleSelectionAction = new QAction("Rectangle");
 	auto* brushSelectionAction = new QAction("Brush");
-	auto* freehandSelectionAction = new QAction("Freehand", this);
+	auto* lassoSelectionAction = new QAction("Lasso", this);
 	auto* clearSelectionAction = new QAction("Clear");
 
 	connect(rectangleSelectionAction, &QAction::triggered, [this]() { setSelectionType(SelectionType::Rectangle);  });
 	connect(brushSelectionAction, &QAction::triggered, [this]() { setSelectionType(SelectionType::Brush);  });
-	connect(freehandSelectionAction, &QAction::triggered, [this]() { setSelectionType(SelectionType::Lasso);  });
+	connect(lassoSelectionAction, &QAction::triggered, [this]() { setSelectionType(SelectionType::Lasso);  });
 	connect(clearSelectionAction, &QAction::triggered, [this]() { clearSelection(); });
 
 	rectangleSelectionAction->setCheckable(true);
 	brushSelectionAction->setCheckable(true);
+	lassoSelectionAction->setCheckable(true);
 
 	rectangleSelectionAction->setChecked(_selectionType == SelectionType::Rectangle);
 	brushSelectionAction->setChecked(_selectionType == SelectionType::Brush);
-
-	freehandSelectionAction->setEnabled(false);
+	lassoSelectionAction->setChecked(_selectionType == SelectionType::Lasso);
 
 	selectionMenu->addAction(rectangleSelectionAction);
 	selectionMenu->addAction(brushSelectionAction);
+	selectionMenu->addAction(lassoSelectionAction);
 	selectionMenu->addSeparator();
 	selectionMenu->addAction(clearSelectionAction);
 
@@ -1218,13 +1217,9 @@ void ImageViewerWidget::setSelectionModifier(const SelectionModifier& selectionM
 
 	qDebug() << "Set selection modifier to" << selectionModifierName(selectionModifier);
 
-	if (selectionType() == SelectionType::Brush && selectionModifier == SelectionModifier::Replace) {
-	}
-	else {
-		_selectionModifier = selectionModifier;
+	_selectionModifier = selectionModifier;
 
-		emit selectionModifierChanged();
-	}
+	emit selectionModifierChanged();
 }
 
 void ImageViewerWidget::setBrushRadius(const float& brushRadius)
@@ -1406,7 +1401,13 @@ void ImageViewerWidget::drawSelectionBounds()
 
 	_selectionBoundsShaderProgram->setAttributeArray(vertexLocation, vertexCoordinates, 3);
 
+	glEnable(GL_LINE_STIPPLE);
+	glLineStipple(1, 0x00FF);
+	glLineWidth(2.f);
+
 	glDrawArrays(GL_LINE_LOOP, 0, 4);
+
+	glDisable(GL_LINE_STIPPLE);
 
 	_selectionBoundsShaderProgram->disableAttributeArray(vertexLocation);
 }

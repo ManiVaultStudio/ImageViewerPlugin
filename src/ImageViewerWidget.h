@@ -138,7 +138,7 @@ private:
 	float										_brushRadiusDelta;
 	QVector4D									_pointSelectionColor;
 	QVector4D									_pixelSelectionColor;
-	QColor										_selectionOutlineColor;
+	QVector4D									_selectionOutlineColor;
 	QVector4D									_selectionBoundsColor;
 	std::vector<std::uint32_t>					_selectedPointIds;
 	std::uint32_t								_selectionBounds[4];
