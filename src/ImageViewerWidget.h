@@ -98,10 +98,6 @@ private:
 	void setupTextures();
 	void setupTexture(QOpenGLTexture* openGltexture, const QOpenGLTexture::TextureFormat& textureFormat, const QOpenGLTexture::Filter& filter = QOpenGLTexture::Filter::Linear);
 
-signals:
-	void selectionTypeChanged();
-	void selectionModifierChanged();
-
 private:
 	ImageViewerPlugin*							_imageViewerPlugin;
 	std::unique_ptr<QImage>						_displayImage;

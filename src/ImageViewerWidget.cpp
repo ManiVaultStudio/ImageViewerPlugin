@@ -259,7 +259,7 @@ void ImageViewerWidget::paintGL() {
 		if (_overlayShaderProgram->isLinked()) {
 			auto translate = QMatrix4x4();
 
-			translate.translate(0.0f, 0.0f, 1.0f);
+			translate.translate(0.0f, 0.0f, -1.0f);
 
 			if (_overlayShaderProgram->bind()) {
 				_overlayShaderProgram->setUniformValue("overlayTexture", 0);
@@ -303,9 +303,10 @@ void ImageViewerWidget::paintGL() {
 		_imageQuadVBO.release();
 	}
 	
-	/*
 	if (_selectionBoundsShaderProgram->bind()) {
 		QMatrix4x4 transform = projection() * modelView();
+		
+		//transform.translate(0.0f, 0.0f, -12.0f);
 
 		_selectionBoundsShaderProgram->setUniformValue("transform", transform);
 		_selectionBoundsShaderProgram->setUniformValue("color", _selectionBoundsColor);
@@ -314,7 +315,7 @@ void ImageViewerWidget::paintGL() {
 
 		_selectionBoundsShaderProgram->release();
 	}
-	*/
+
 	if (_interactionMode == InteractionMode::Selection && _selectionOutlineShaderProgram->bind()) {
 		QMatrix4x4 transform;
 
@@ -1194,16 +1195,7 @@ void ImageViewerWidget::setSelectionType(const SelectionType& selectionType)
 
 	_selectionType = selectionType;
 
-	if (selectionType == SelectionType::Brush) {
-		//_selectionModifier = SelectionModifier::Add;
-	}
-	else {
-		//_selectionModifier = SelectionModifier::Replace;
-	}
-
 	update();
-
-	emit selectionTypeChanged();
 }
 
 SelectionModifier ImageViewerWidget::selectionModifier() const
@@ -1219,8 +1211,6 @@ void ImageViewerWidget::setSelectionModifier(const SelectionModifier& selectionM
 	qDebug() << "Set selection modifier to" << selectionModifierName(selectionModifier);
 
 	_selectionModifier = selectionModifier;
-
-	emit selectionModifierChanged();
 }
 
 void ImageViewerWidget::setBrushRadius(const float& brushRadius)
@@ -1313,7 +1303,7 @@ void ImageViewerWidget::drawSelectionOutlineBrush()
 
 		vertexCoordinates[s * 3 + 0] = brushCenter.x() + x;
 		vertexCoordinates[s * 3 + 1] = brushCenter.y() + y;
-		vertexCoordinates[s * 3 + 2] = 0;
+		vertexCoordinates[s * 3 + 2] = 0.f;
 	}
 
 	const auto vertexLocation = _selectionOutlineShaderProgram->attributeLocation("vertex");
@@ -1336,7 +1326,7 @@ void ImageViewerWidget::drawSelectionOutlineLasso()
 
 		vertexCoordinates[p * 3 + 0] = mousePosition.x();
 		vertexCoordinates[p * 3 + 1] = mousePosition.y();
-		vertexCoordinates[p * 3 + 2] = 0;
+		vertexCoordinates[p * 3 + 2] = 0.f;
 	}
 
 	const auto vertexLocation = _selectionOutlineShaderProgram->attributeLocation("vertex");
@@ -1416,5 +1406,5 @@ void ImageViewerWidget::drawSelectionBounds()
 
 	glDisable(GL_LINE_STIPPLE);
 
-	_selectionBoundsShaderProgram->disableAttributeArray(vertexLocation);
+	//_selectionBoundsShaderProgram->disableAttributeArray(vertexLocation);
 }
