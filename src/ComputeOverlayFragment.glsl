@@ -105,7 +105,7 @@ bool isInside(vec2 p)
     } while (i != 0); 
 	
     // Return true if count is odd, false otherwise 
-    return (bool)(count & 1);  // Same as (count % 2 == 1) 
+    return bool(count & 1);  // Same as (count % 2 == 1) 
 
 	return true;
 }

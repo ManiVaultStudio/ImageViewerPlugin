@@ -1281,8 +1281,6 @@ void ImageViewerWidget::drawSelectionOutlineRectangle(const QPoint& start, const
 	_selectionOutlineShaderProgram->setAttributeArray(vertexLocation, vertexCoordinates, 3);
 
 	glDrawArrays(GL_LINE_LOOP, 0, 4);
-
-	_selectionOutlineShaderProgram->disableAttributeArray(vertexLocation);
 }
 
 void ImageViewerWidget::drawSelectionOutlineBrush()
@@ -1311,8 +1309,6 @@ void ImageViewerWidget::drawSelectionOutlineBrush()
 	_selectionOutlineShaderProgram->setAttributeArray(vertexLocation, vertexCoordinates.data(), 3);
 
 	glDrawArrays(GL_LINE_LOOP, 0, noSegments);
-
-	_selectionOutlineShaderProgram->disableAttributeArray(vertexLocation);
 }
 
 void ImageViewerWidget::drawSelectionOutlineLasso()
@@ -1334,8 +1330,6 @@ void ImageViewerWidget::drawSelectionOutlineLasso()
 	_selectionOutlineShaderProgram->setAttributeArray(vertexLocation, vertexCoordinates.data(), 3);
 
 	glDrawArrays(GL_LINE_LOOP, 0, _mousePositions.size());
-
-	_selectionOutlineShaderProgram->disableAttributeArray(vertexLocation);
 }
 
 void ImageViewerWidget::drawSelectionOutline()

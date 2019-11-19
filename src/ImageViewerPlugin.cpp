@@ -61,7 +61,7 @@ Indices ImageViewerPlugin::selection() const
 	if (_currentImageData == nullptr)
 		return Indices();
 
-	const auto& selection = dynamic_cast<const IndexSet&>(_currentImageData->source()->getSelection());
+	const auto& selection = dynamic_cast<const hdps::IndexSet&>(_currentImageData->source()->getSelection());
 
 	return selection.indices;
 }
@@ -71,7 +71,7 @@ void ImageViewerPlugin::setSelection(Indices& indices)
 	if (_currentImageData == nullptr)
 		return;
 
-	auto& selection = dynamic_cast<IndexSet&>(_currentImageData->source()->getSelection());
+	auto& selection = dynamic_cast<hdps::IndexSet&>(_currentImageData->source()->getSelection());
 
 	selection.indices = indices;
 
