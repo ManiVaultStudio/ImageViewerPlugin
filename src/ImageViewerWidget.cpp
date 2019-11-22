@@ -1,8 +1,6 @@
 #include "ImageViewerWidget.h"
 #include "ImageViewerPlugin.h"
 
-#include "PointsPlugin.h"
-
 #include <vector>
 #include <set>
 #include <algorithm>
@@ -1382,10 +1380,10 @@ void ImageViewerWidget::drawSelectionBounds()
 	};
 
 	const GLfloat vertexCoordinates[] = {
-		boxScreen[0], boxScreen[3], 0.0f,
-		boxScreen[1], boxScreen[3], 0.0f,
-		boxScreen[1], boxScreen[2], 0.0f,
-		boxScreen[0], boxScreen[2], 0.0f
+		boxScreen[0],		boxScreen[3] - 1.f, 0.0f,
+		boxScreen[1] + 1.f, boxScreen[3] - 1.f, 0.0f,
+		boxScreen[1] + 1.f,	boxScreen[2],		0.0f,
+		boxScreen[0],		boxScreen[2],		0.0f
 	};
 
 	const auto vertexLocation = _selectionBoundsShaderProgram->attributeLocation("vertex");

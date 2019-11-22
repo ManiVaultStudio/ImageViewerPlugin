@@ -2,7 +2,7 @@
 
 #include <ViewPlugin.h>
 
-#include "ImageData/ImageData.h"
+#include "ImageData/ImageDataSet.h"
 #include "Common.h"
 
 #include <QComboBox>
@@ -54,6 +54,7 @@ public:
 	void setCurrentDimensionId(const std::int32_t& currentDimensionId);
 	bool averageImages() const;
 	void setAverageImages(const bool& averageImages);
+	void createSubsetFromSelection();
 
 private:
 	void setDatasetNames(const QStringList& datasetNames);
@@ -76,7 +77,7 @@ private:
 	SettingsWidget*		_settingsWidget;
 	QStringList			_datasetNames;
 	QString				_currentDatasetName;
-	ImageData*			_currentImageData;
+	ImageDataSet*		_currentImageDataSet;
 	QStringList			_imageNames;
 	std::int32_t		_currentImageId;
 	QStringList			_dimensionNames;
