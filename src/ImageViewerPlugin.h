@@ -34,6 +34,7 @@ public:
 	bool selectable() const;
 	QSize imageSize() const;
 	void selectPixels(const std::vector<std::pair<std::uint32_t, std::uint32_t>>& pixelCoordinates, const SelectionModifier& selectionModifier);
+	std::uint32_t noSelectedPixels();
 
 public:
 	void update();

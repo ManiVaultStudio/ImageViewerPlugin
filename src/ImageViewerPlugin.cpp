@@ -89,6 +89,14 @@ void ImageViewerPlugin::selectPixels(const std::vector<std::pair<std::uint32_t, 
 	_currentImageDataSet->selectPixels(pixelCoordinates, selectionModifier);
 }
 
+std::uint32_t ImageViewerPlugin::noSelectedPixels()
+{
+	if (_currentImageDataSet == nullptr)
+		return 0;
+
+	return _currentImageDataSet->noSelectedPixels();
+}
+
 void ImageViewerPlugin::update()
 {
 	if (_currentImageDataSet == nullptr)

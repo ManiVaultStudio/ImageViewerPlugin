@@ -697,7 +697,7 @@ void ImageViewerWidget::wheelEvent(QWheelEvent* wheelEvent) {
 	if (!initialized())
 		return;
 
-	qDebug() << "Mouse wheel event";
+	qDebug() << "Mouse wheel event" << interactionModeTypeName(_interactionMode);
 
 	switch (_interactionMode)
 	{
@@ -720,6 +720,7 @@ void ImageViewerWidget::wheelEvent(QWheelEvent* wheelEvent) {
 			update();
 			break;
 		}
+
 		case InteractionMode::Selection:
 		{
 			if (_selectionType == SelectionType::Brush) {
@@ -735,8 +736,10 @@ void ImageViewerWidget::wheelEvent(QWheelEvent* wheelEvent) {
 
 			break;
 		}
+
 		case InteractionMode::WindowLevel:
 			break;
+
 		default:
 			break;
 	}
@@ -1059,6 +1062,18 @@ QMenu* ImageViewerWidget::contextMenu()
 		contextMenu->addMenu(viewMenu());
 		contextMenu->addSeparator();
 		contextMenu->addMenu(selectionMenu());
+
+		qDebug() << _imageViewerPlugin->noSelectedPixels();
+
+		if (_imageViewerPlugin->noSelectedPixels() > 0) {
+			contextMenu->addSeparator();
+
+			auto* createSubsetFromSelectionAction = new QAction("Create subset from selection");
+
+			connect(createSubsetFromSelectionAction, &QAction::triggered, _imageViewerPlugin, &ImageViewerPlugin::createSubsetFromSelection);
+
+			contextMenu->addAction(createSubsetFromSelectionAction);
+		}
 	}
 
 	return contextMenu;
