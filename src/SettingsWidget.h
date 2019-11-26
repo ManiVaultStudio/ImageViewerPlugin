@@ -27,9 +27,7 @@ private:
 	void onDimensionNamesChanged(const QStringList& dimensionNames);
 	void onCurrentDimensionChanged(const int& currentDimension);
 	void onAverageImagesChanged(const bool& averageImages);
-
-private:
-	void update();
+	void onSelectionImageChanged(std::shared_ptr<QImage> selectionImage, const QRect& selectionBounds);
 
 private:
 	ImageViewerPlugin*						_imageViewerPlugin;

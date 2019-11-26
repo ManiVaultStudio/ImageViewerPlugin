@@ -18,7 +18,6 @@ class ImageViewerPlugin : public ViewPlugin
 
 public:
 	ImageViewerPlugin();
-    ~ImageViewerPlugin() override;
 
 	void init() override;
 
@@ -51,6 +50,8 @@ public:
 	void setCurrentDimensionId(const std::int32_t& currentDimensionId);
 	bool averageImages() const;
 	void setAverageImages(const bool& averageImages);
+	float selectionOpacity() const;
+	void setSelectionOpacity(const float& selectionOpacity);
 	void createSubsetFromSelection();
 
 private:
@@ -66,6 +67,7 @@ signals:
 	void dimensionNamesChanged(const QStringList& dimensionNames);
 	void currentDimensionIdChanged(const std::int32_t& currentDimensionId);
 	void averageImagesChanged(const bool& averageImages);
+	void selectionOpacityChanged(const float& selectionOpacity);
 	void displayImageChanged(std::shared_ptr<QImage> displayImage);
 	void selectionImageChanged(std::shared_ptr<QImage> selectionImage, const QRect& selectionBounds);
 
@@ -80,6 +82,7 @@ private:
 	QStringList			_dimensionNames;
 	std::int32_t		_currentDimensionId;
 	bool				_averageImages;
+	float				_selectionOpacity;
 };
 
 class ImageViewerPluginFactory : public ViewPluginFactory

@@ -18,7 +18,8 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	_currentImageId(0),
 	_dimensionNames(),
 	_currentDimensionId(0),
-	_averageImages(false)
+	_averageImages(false),
+	_selectionOpacity(0.6f)
 {
 	//setFocusPolicy(Qt::FocusPolicy::StrongFocus);
 
@@ -29,10 +30,6 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	connect(this, &ImageViewerPlugin::currentImageIdChanged, this, &ImageViewerPlugin::computeDisplayImage);
 	connect(this, &ImageViewerPlugin::currentDimensionIdChanged, this, &ImageViewerPlugin::computeDisplayImage);
 	connect(this, &ImageViewerPlugin::averageImagesChanged, this, &ImageViewerPlugin::computeDisplayImage);
-}
-
-ImageViewerPlugin::~ImageViewerPlugin()
-{
 }
 
 void ImageViewerPlugin::init()
@@ -304,14 +301,31 @@ void ImageViewerPlugin::setAverageImages(const bool& averageImages)
 	if (averageImages == _averageImages)
 		return;
 
-	qDebug() << "Set average images" << averageImages;
-
 	_averageImages = averageImages;
+
+	qDebug() << "Set average images" << _averageImages;
 
 	emit averageImagesChanged(_averageImages);
 
 	computeDisplayImage();
 	update();
+}
+
+float ImageViewerPlugin::selectionOpacity() const
+{
+	return _selectionOpacity;
+}
+
+void ImageViewerPlugin::setSelectionOpacity(const float& selectionOpacity)
+{
+	if (selectionOpacity == _selectionOpacity)
+		return;
+
+	_selectionOpacity = selectionOpacity;
+
+	qDebug() << "Set selection opacity" << _selectionOpacity;
+
+	emit selectionOpacityChanged(_selectionOpacity);
 }
 
 void ImageViewerPlugin::createSubsetFromSelection()

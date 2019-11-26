@@ -21,19 +21,83 @@
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <property name="leftMargin">
-    <number>5</number>
+    <number>7</number>
    </property>
    <property name="topMargin">
-    <number>5</number>
+    <number>7</number>
    </property>
    <property name="rightMargin">
-    <number>5</number>
+    <number>7</number>
    </property>
    <property name="bottomMargin">
-    <number>5</number>
+    <number>7</number>
    </property>
-   <item row="1" column="0" colspan="3">
+   <item row="1" column="0" colspan="2">
     <layout class="QHBoxLayout" name="horizontalLayout2">
+     <item>
+      <widget class="QLabel" name="selectionOpacityLabel">
+       <property name="text">
+        <string>Selection opacity</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QSlider" name="selectionOpacitySlider">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="createSubsetFromSelectionPushButton">
+       <property name="text">
+        <string>Create Subset from selection</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="averageImagesCheckBox">
+       <property name="text">
+        <string>Average images</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="0" column="0" colspan="2">
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <item>
+      <widget class="QLabel" name="currentDatasetLabel">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="toolTip">
+        <string>Dataset name</string>
+       </property>
+       <property name="text">
+        <string>Image dataset</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="datasetsComboBox">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="toolTip">
+        <string>The name of the image data set to display</string>
+       </property>
+      </widget>
+     </item>
      <item>
       <widget class="QLabel" name="currentImageLabel">
        <property name="sizePolicy">
@@ -77,56 +141,6 @@
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QCheckBox" name="averageImagesCheckBox">
-       <property name="text">
-        <string>Average images</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item row="0" column="0" colspan="3">
-    <layout class="QHBoxLayout" name="horizontalLayout_3">
-     <property name="leftMargin">
-      <number>0</number>
-     </property>
-     <item>
-      <widget class="QLabel" name="currentDatasetLabel">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="toolTip">
-        <string>Dataset name</string>
-       </property>
-       <property name="text">
-        <string>Dataset</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QComboBox" name="datasetsComboBox">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="toolTip">
-        <string>The name of the image data set to display</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="createSubsetFromSelectionPushButton">
-       <property name="text">
-        <string>Create Subset from ROI</string>
        </property>
       </widget>
      </item>

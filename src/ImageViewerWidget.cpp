@@ -102,6 +102,7 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	connect(_imageViewerPlugin, &ImageViewerPlugin::currentImageIdChanged, this, &ImageViewerWidget::onCurrentImageIdChanged);
 	connect(_imageViewerPlugin, &ImageViewerPlugin::displayImageChanged, this, &ImageViewerWidget::onDisplayImageChanged);
 	connect(_imageViewerPlugin, &ImageViewerPlugin::selectionImageChanged, this, &ImageViewerWidget::onSelectionImageChanged);
+	connect(_imageViewerPlugin, &ImageViewerPlugin::selectionOpacityChanged, this, &ImageViewerWidget::onSelectionOpacityChanged);
 
 	QSurfaceFormat surfaceFormat;
 
@@ -426,6 +427,13 @@ void ImageViewerWidget::onSelectionImageChanged(std::shared_ptr<QImage> selectio
 	_selectionBounds = selectionBounds;
 
 	doneCurrent();
+
+	update();
+}
+
+void ImageViewerWidget::onSelectionOpacityChanged(const float& selectionOpacity)
+{
+	_pointSelectionColor.setW(selectionOpacity);
 
 	update();
 }
@@ -1372,12 +1380,10 @@ void ImageViewerWidget::drawSelectionOutline()
 
 void ImageViewerWidget::drawSelectionBounds()
 {
-	qDebug() << "Draw selection bounds" << _selectionBounds;
-
 	if (!_selectionBounds.isValid())
 		return;
 
-	qDebug() << "Draw selection bounds" << _selectionBounds;
+	//qDebug() << "Draw selection bounds" << _selectionBounds;
 
 	const GLfloat boxScreen[4] = {
 		_selectionBounds.left(), _selectionBounds.right(),

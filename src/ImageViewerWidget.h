@@ -47,9 +47,10 @@ public:
 public:
 	void onDisplayImageChanged(std::shared_ptr<QImage> displayImage);
 	void onSelectionImageChanged(std::shared_ptr<QImage> selectionImage, const QRect& selectionBounds);
+	void onSelectionOpacityChanged(const float& selectionOpacity);
 	void onCurrentDatasetChanged(const QString& currentDataset);
 	void onCurrentImageIdChanged(const std::int32_t& currentImageId);
-
+	
 private:
 	void initializeGL() Q_DECL_OVERRIDE;
 	void resizeGL(int w, int h) Q_DECL_OVERRIDE;
