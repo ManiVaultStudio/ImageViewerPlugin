@@ -158,7 +158,7 @@ void ImageViewerWidget::initializeGL()
 	_overlayShaderProgram			= std::make_unique<QOpenGLShaderProgram>();
 	_pixelSelectionShaderProgram	= std::make_unique<QOpenGLShaderProgram>();
 	_selectionShaderProgram			= std::make_unique<QOpenGLShaderProgram>();
-	_selectionOutlineShaderProgram = std::make_unique<QOpenGLShaderProgram>();
+	_selectionOutlineShaderProgram	= std::make_unique<QOpenGLShaderProgram>();
 	_selectionBoundsShaderProgram	= std::make_unique<QOpenGLShaderProgram>();
 
 	_imageShaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSource.c_str());
@@ -1036,13 +1036,29 @@ void ImageViewerWidget::modifySelection()
 	update();
 }
 
-void ImageViewerWidget::clearSelection()
+void ImageViewerWidget::selectAll()
 {
-	qDebug() << "Clear selection";
+	qDebug() << "Select all";
 
-	auto pixelCoordinates = std::vector<std::pair<std::uint32_t, std::uint32_t>>();
+	_imageViewerPlugin->selectPixels(std::vector<std::pair<std::uint32_t, std::uint32_t>>(), SelectionModifier::All);
 
-	_imageViewerPlugin->selectPixels(pixelCoordinates, SelectionModifier::Replace);
+	update();
+}
+
+void ImageViewerWidget::selectNone()
+{
+	qDebug() << "Select none";
+
+	_imageViewerPlugin->selectPixels(std::vector<std::pair<std::uint32_t, std::uint32_t>>(), SelectionModifier::None);
+
+	update();
+}
+
+void ImageViewerWidget::invertSelection()
+{
+	qDebug() << "Invert selection";
+
+	_imageViewerPlugin->selectPixels(std::vector<std::pair<std::uint32_t, std::uint32_t>>(), SelectionModifier::Invert);
 
 	update();
 }
@@ -1107,15 +1123,20 @@ QMenu* ImageViewerWidget::selectionMenu()
 {
 	auto* selectionMenu = new QMenu("Selection");
 
-	auto* rectangleSelectionAction = new QAction("Rectangle");
-	auto* brushSelectionAction = new QAction("Brush");
-	auto* lassoSelectionAction = new QAction("Lasso", this);
-	auto* clearSelectionAction = new QAction("Clear");
+	auto* rectangleSelectionAction	= new QAction("Rectangle");
+	auto* brushSelectionAction		= new QAction("Brush");
+	auto* lassoSelectionAction		= new QAction("Lasso", this);
+	auto* selectNoneAction			= new QAction("Select none");
+	auto* selectAllAction			= new QAction("Select all");
+	auto* invertSelectionAction		= new QAction("Invert");
 
 	connect(rectangleSelectionAction, &QAction::triggered, [this]() { setSelectionType(SelectionType::Rectangle);  });
 	connect(brushSelectionAction, &QAction::triggered, [this]() { setSelectionType(SelectionType::Brush);  });
 	connect(lassoSelectionAction, &QAction::triggered, [this]() { setSelectionType(SelectionType::Lasso);  });
-	connect(clearSelectionAction, &QAction::triggered, [this]() { clearSelection(); });
+
+	connect(selectAllAction, &QAction::triggered, [this]() { selectAll(); });
+	connect(selectNoneAction, &QAction::triggered, [this]() { selectNone(); });
+	connect(invertSelectionAction, &QAction::triggered, [this]() { invertSelection(); });
 
 	rectangleSelectionAction->setCheckable(true);
 	brushSelectionAction->setCheckable(true);
@@ -1129,7 +1150,9 @@ QMenu* ImageViewerWidget::selectionMenu()
 	selectionMenu->addAction(brushSelectionAction);
 	selectionMenu->addAction(lassoSelectionAction);
 	selectionMenu->addSeparator();
-	selectionMenu->addAction(clearSelectionAction);
+	selectionMenu->addAction(selectAllAction);
+	selectionMenu->addAction(selectNoneAction);
+	selectionMenu->addAction(invertSelectionAction);
 
 	return selectionMenu;
 }

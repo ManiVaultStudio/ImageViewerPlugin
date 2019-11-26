@@ -42,7 +42,10 @@ public:
 	void resetWindowLevel();
 
 	void modifySelection();
-	void clearSelection();
+
+	void selectAll();
+	void selectNone();
+	void invertSelection();
 
 public:
 	void onDisplayImageChanged(std::shared_ptr<QImage> displayImage);
