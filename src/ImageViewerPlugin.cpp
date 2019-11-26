@@ -219,6 +219,11 @@ void ImageViewerPlugin::computeSelectionImage()
 	}
 }
 
+ImageDataSet* ImageViewerPlugin::currentImageDataSet()
+{
+	return _currentImageDataSet;
+}
+
 QString ImageViewerPlugin::currentDatasetName() const
 {
 	return _currentDatasetName;

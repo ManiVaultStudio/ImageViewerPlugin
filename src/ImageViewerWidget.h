@@ -76,6 +76,7 @@ private:
 	void zoom(const float& factor);
 	void zoomAt(const QPointF & position, const float & factor);
 	void zoomExtents();
+	void zoomToRectangle(const QRectF& rectangle);
 	void zoomToSelection();
 	void resetView();
 

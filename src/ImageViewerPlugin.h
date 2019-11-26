@@ -42,6 +42,7 @@ public:
 	void computeSelectionImage();
 
 public:
+	ImageDataSet* currentImageDataSet();
 	QString currentDatasetName() const;
 	void setCurrentDatasetName(const QString& currentDatasetName);
 	auto currentImageId() const;

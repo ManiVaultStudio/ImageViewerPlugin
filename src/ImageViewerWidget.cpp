@@ -769,7 +769,7 @@ void ImageViewerWidget::zoomExtents()
 	if (_displayImage.get() == nullptr)
 		return;
 
-	qDebug() << "Zoom extents";
+	qDebug() << "Zoom extents" << _zoom;
 
 	resetView();
 
@@ -779,12 +779,37 @@ void ImageViewerWidget::zoomExtents()
 	zoom(factorX < factorY ? factorX : factorY);
 	pan(_zoom * -QPointF(_displayImage->width() / 2.0f, _displayImage->height() / 2.0f));
 
+	qDebug() << "Zoom extents" << _zoom;
+
 	update();
+}
+
+void ImageViewerWidget::zoomToRectangle(const QRectF& rectangle)
+{
+
 }
 
 void ImageViewerWidget::zoomToSelection()
 {
+	auto* currentImageDataSet = _imageViewerPlugin->currentImageDataSet();
 
+	if (currentImageDataSet == nullptr)
+		return;
+
+	qDebug() << "Zoom to selection";
+
+	resetView();
+
+	const auto selectionBounds = QRectF(currentImageDataSet->selectionBounds(true));
+	const auto selectionCenter = selectionBounds.center();
+
+	qDebug() << "Zoom to selection" << selectionBounds;
+
+	const auto factorX = (width() - 2 * _margin) / static_cast<float>(selectionBounds.width());
+	const auto factorY = (height() - 2 * _margin) / static_cast<float>(selectionBounds.height());
+
+	zoom(factorX < factorY ? factorX : factorY);
+	pan(_zoom * -QPointF(selectionCenter.x(), _displayImage->height() - selectionCenter.y()));
 }
 
 void ImageViewerWidget::resetView()
@@ -1046,16 +1071,20 @@ QMenu* ImageViewerWidget::viewMenu()
 	auto* viewMenu = new QMenu("View");
 
 	auto* zoomToExtentsAction = new QAction("Zoom extents");
+	auto* zoomToSelectionAction = new QAction("Zoom to selection");
 	auto* resetWindowLevelAction = new QAction("Reset window/level");
 
 	zoomToExtentsAction->setToolTip("Zoom to the boundaries of the image");
+	zoomToSelectionAction->setToolTip("Zoom to selection boundaries");
 	resetWindowLevelAction->setToolTip("Reset window/level to default values");
 
 	connect(zoomToExtentsAction, &QAction::triggered, this, &ImageViewerWidget::zoomExtents);
+	connect(zoomToSelectionAction, &QAction::triggered, this, &ImageViewerWidget::zoomToSelection);
 	connect(resetWindowLevelAction, &QAction::triggered, this, &ImageViewerWidget::resetWindowLevel);
 
 	viewMenu->addAction(zoomToExtentsAction);
 	viewMenu->addAction(resetWindowLevelAction);
+	viewMenu->addAction(zoomToSelectionAction);
 
 	return viewMenu;
 }
@@ -1352,10 +1381,12 @@ void ImageViewerWidget::drawSelectionOutline()
 
 void ImageViewerWidget::drawSelectionBounds()
 {
-	if (_selectionBounds.isEmpty())
+	qDebug() << "Draw selection bounds" << _selectionBounds;
+
+	if (!_selectionBounds.isValid())
 		return;
 
-	//qDebug() << "Draw selection bounds" << _selectionBounds;
+	qDebug() << "Draw selection bounds" << _selectionBounds;
 
 	const GLfloat boxScreen[4] = {
 		_selectionBounds.left(), _selectionBounds.right(),
@@ -1363,9 +1394,9 @@ void ImageViewerWidget::drawSelectionBounds()
 	};
 
 	const GLfloat vertexCoordinates[] = {
-		boxScreen[0],		boxScreen[3] - 2.f, 0.0f,
-		boxScreen[1] + 2.f, boxScreen[3] - 2.f, 0.0f,
-		boxScreen[1] + 2.f,	boxScreen[2],		0.0f,
+		boxScreen[0],		boxScreen[3] - 1.f, 0.0f,
+		boxScreen[1] + 1.f, boxScreen[3] - 1.f, 0.0f,
+		boxScreen[1] + 1.f,	boxScreen[2],		0.0f,
 		boxScreen[0],		boxScreen[2],		0.0f
 	};
 
