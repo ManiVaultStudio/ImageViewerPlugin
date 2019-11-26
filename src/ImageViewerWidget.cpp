@@ -771,22 +771,23 @@ void ImageViewerWidget::zoomExtents()
 
 	qDebug() << "Zoom extents" << _zoom;
 
-	resetView();
-
-	const auto factorX = (width() - _margin) / static_cast<float>(_displayImage->width());
-	const auto factorY = (height() - _margin) / static_cast<float>(_displayImage->height());
-
-	zoom(factorX < factorY ? factorX : factorY);
-	pan(_zoom * -QPointF(_displayImage->width() / 2.0f, _displayImage->height() / 2.0f));
-
-	qDebug() << "Zoom extents" << _zoom;
-
-	update();
+	zoomToRectangle(QRectF(QPointF(), QSizeF(_displayImage->width(), _displayImage->height())));
 }
 
 void ImageViewerWidget::zoomToRectangle(const QRectF& rectangle)
 {
+	qDebug() << "Zoom to rectangle" << rectangle;
 
+	resetView();
+	
+	const auto center	= rectangle.center();
+	const auto factorX	= (width() - 2 * _margin) / static_cast<float>(rectangle.width());
+	const auto factorY	= (height() - 2 * _margin) / static_cast<float>(rectangle.height());
+
+	zoom(factorX < factorY ? factorX : factorY);
+	pan(_zoom * -QPointF(center.x(), _displayImage->height() - center.y()));
+
+	update();
 }
 
 void ImageViewerWidget::zoomToSelection()
@@ -798,18 +799,7 @@ void ImageViewerWidget::zoomToSelection()
 
 	qDebug() << "Zoom to selection";
 
-	resetView();
-
-	const auto selectionBounds = QRectF(currentImageDataSet->selectionBounds(true));
-	const auto selectionCenter = selectionBounds.center();
-
-	qDebug() << "Zoom to selection" << selectionBounds;
-
-	const auto factorX = (width() - 2 * _margin) / static_cast<float>(selectionBounds.width());
-	const auto factorY = (height() - 2 * _margin) / static_cast<float>(selectionBounds.height());
-
-	zoom(factorX < factorY ? factorX : factorY);
-	pan(_zoom * -QPointF(selectionCenter.x(), _displayImage->height() - selectionCenter.y()));
+	zoomToRectangle(QRectF(currentImageDataSet->selectionBounds(true)));
 }
 
 void ImageViewerWidget::resetView()
