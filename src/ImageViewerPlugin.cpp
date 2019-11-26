@@ -2,16 +2,8 @@
 #include "ImageViewerWidget.h"
 #include "SettingsWidget.h"
 
-#include "Set.h"
-
-#include <QtCore>
-#include <QtDebug>
-
-#include <QImageReader>
-#include <QInputDialog>
-
-#include <vector>
-#include <limits>
+#include <QDebug>
+#include <QFileInfo>
 
 Q_PLUGIN_METADATA(IID "nl.tudelft.ImageViewerPlugin")
 
@@ -46,48 +38,29 @@ ImageViewerPlugin::~ImageViewerPlugin()
 void ImageViewerPlugin::init()
 {
 	auto layout = new QVBoxLayout();
+	
+	layout->setMargin(0);
+	layout->setSpacing(0);
+
+	setMainLayout(layout);
 
 	addWidget(_imageViewerWidget);
 	addWidget(_settingsWidget);
-
-	setLayout(layout);
 }
 
-Indices ImageViewerPlugin::selection() const
+std::vector<std::uint32_t> ImageViewerPlugin::selection() const
 {
 	if (_currentImageDataSet == nullptr)
-		return Indices();
+		return std::vector<std::uint32_t>();
 
 	const auto& selection = dynamic_cast<const hdps::IndexSet&>(_currentImageDataSet->imageData().selection());
 
 	return selection.indices;
 }
 
-void ImageViewerPlugin::setSelection(Indices& indices)
-{
-	/*
-	if (_currentImageDataSet == nullptr)
-		return;
-
-	auto& selection = dynamic_cast<hdps::IndexSet&>(_currentImageDataSet->source()->getSelection());
-
-	selection.indices = indices;
-
-	_core->notifySelectionChanged(selection.getDataName());
-	*/
-}
-
 bool ImageViewerPlugin::hasSelection() const
 {
 	return selection().size() > 0;
-}
-
-int ImageViewerPlugin::noDimensions() const
-{
-	if (_currentImageDataSet == nullptr)
-		return 0;
-
-	return _currentImageDataSet->imageData().noDimensions();
 }
 
 ImageCollectionType ImageViewerPlugin::imageCollectionType() const
@@ -139,7 +112,7 @@ void ImageViewerPlugin::update()
 		if (hasSelection()) {
 			auto images = QStringList();
 
-			for (unsigned int index : selection())
+			for (auto& index : selection())
 			{
 				images << QString("%1").arg(imageFileNames[index]);
 			}
@@ -152,7 +125,7 @@ void ImageViewerPlugin::update()
 			if (_averageImages) {
 				auto images = QStringList();
 
-				for (int i = 0; i < _currentImageDataSet->imageData().noImages(); i++) {
+				for (std::uint32_t i = 0; i < _currentImageDataSet->imageData().noImages(); i++) {
 					images << QString("%1").arg(imageFileNames[i]);
 				}
 
@@ -161,7 +134,7 @@ void ImageViewerPlugin::update()
 				imageNames << imagesString;
 			}
 			else {
-				for (int i = 0; i < _currentImageDataSet->imageData().noImages(); i++) {
+				for (std::uint32_t i = 0; i < _currentImageDataSet->imageData().noImages(); i++) {
 					imageNames << QString("%1").arg(imageFileNames[i]);
 				}
 			}
@@ -242,11 +215,7 @@ void ImageViewerPlugin::computeSelectionImage()
 	qDebug() << "Compute selection image";
 
 	if (imageCollectionType() == ImageCollectionType::Stack) {
-		auto image = _currentImageDataSet->selectionImage();
-
-		qDebug() << _currentImageDataSet->selectionBounds();
-
-		emit selectionImageChanged(image);
+		emit selectionImageChanged(_currentImageDataSet->selectionImage(), _currentImageDataSet->selectionBounds(true));
 	}
 }
 

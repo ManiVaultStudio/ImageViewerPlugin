@@ -3,16 +3,14 @@
 #include <ViewPlugin.h>
 
 #include "ImageData/ImageDataSet.h"
-#include "Common.h"
 
-#include <QComboBox>
+#include "Common.h"
 
 using hdps::plugin::ViewPluginFactory;
 using hdps::plugin::ViewPlugin;
 
 class ImageViewerWidget;
 class SettingsWidget;
-class ImageViewWidget;
 
 class ImageViewerPlugin : public ViewPlugin
 {
@@ -31,10 +29,8 @@ public:
 	QStringList supportedDataKinds() Q_DECL_OVERRIDE;
 
 public:
-	Indices selection() const;
-	void setSelection(Indices& indices);
+	std::vector<std::uint32_t> selection() const;
 	bool hasSelection() const;
-	int noDimensions() const;
 	ImageCollectionType imageCollectionType() const;
 	bool selectable() const;
 	QSize imageSize() const;
@@ -69,8 +65,8 @@ signals:
 	void dimensionNamesChanged(const QStringList& dimensionNames);
 	void currentDimensionIdChanged(const std::int32_t& currentDimensionId);
 	void averageImagesChanged(const bool& averageImages);
-	void displayImageChanged(std::unique_ptr<QImage>& displayImage);
-	void selectionImageChanged(std::unique_ptr<QImage>& selectionImage);
+	void displayImageChanged(std::shared_ptr<QImage> displayImage);
+	void selectionImageChanged(std::shared_ptr<QImage> selectionImage, const QRect& selectionBounds);
 
 private:
 	ImageViewerWidget*	_imageViewerWidget;

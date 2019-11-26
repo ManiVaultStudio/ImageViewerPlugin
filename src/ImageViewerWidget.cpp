@@ -87,7 +87,7 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_selectionOutlineColor(1.0f, 0.6f, 0.f, 1.0f),
 	_selectionBoundsColor(1.0f, 0.6f, 0.f, 0.5f),
 	_selectedPointIds(),
-	_selectionBounds{ 0, 0, 0, 0 },
+	_selectionBounds(),
 	_noSelectedPixels(0),
 	_ignorePaintGL(false),
 	_window(1.0f),
@@ -200,6 +200,9 @@ void ImageViewerWidget::initializeGL()
 	glEnable(GL_LINE_SMOOTH);
 	glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
 	glDepthMask(false);
+
+	_imageViewerPlugin->computeDisplayImage();
+	_imageViewerPlugin->computeSelectionImage();
 }
 
 void ImageViewerWidget::resizeGL(int w, int h)
@@ -328,7 +331,7 @@ void ImageViewerWidget::paintGL() {
 	}
 }
 
-void ImageViewerWidget::onDisplayImageChanged(std::unique_ptr<QImage>& displayImage)
+void ImageViewerWidget::onDisplayImageChanged(std::shared_ptr<QImage> displayImage)
 {
 	if (!isValid())
 		return;
@@ -346,7 +349,7 @@ void ImageViewerWidget::onDisplayImageChanged(std::unique_ptr<QImage>& displayIm
 	else
 		imageSizeChanged = displayImage->width() != _displayImage->width() || displayImage->height() != _displayImage->height();
 
-	_displayImage.swap(displayImage);
+	_displayImage = displayImage;
 	
 	std::uint16_t* pixels = (std::uint16_t*)_displayImage->bits();
 
@@ -357,9 +360,9 @@ void ImageViewerWidget::onDisplayImageChanged(std::unique_ptr<QImage>& displayIm
 	_imageMin = std::numeric_limits<std::uint16_t>::max();
 	_imageMax = std::numeric_limits<std::uint16_t>::min();
 
-	for (std::uint32_t y = 0; y < _displayImage->height(); y++)
+	for (std::int32_t y = 0; y < _displayImage->height(); y++)
 	{
-		for (std::uint32_t x = 0; x < _displayImage->width(); x++)
+		for (std::int32_t x = 0; x < _displayImage->width(); x++)
 		{
 			const auto pixelId = y * _displayImage->width() + x;
 
@@ -406,49 +409,21 @@ void ImageViewerWidget::onDisplayImageChanged(std::unique_ptr<QImage>& displayIm
 	update();
 }
 
-void ImageViewerWidget::onSelectionImageChanged(std::unique_ptr<QImage>& selectionImage)
+void ImageViewerWidget::onSelectionImageChanged(std::shared_ptr<QImage> selectionImage, const QRect& selectionBounds)
 {
 	if (!isValid())
 		return;
 
 	makeCurrent();
 
-	qDebug() << "Selection image changed";
+	qDebug() << "Selection image changed" << selectionBounds;
 
-	_selectionImage.swap(selectionImage);
+	_selectionImage = selectionImage;
 
 	_selectionTexture.reset(new QOpenGLTexture(*_selectionImage.get()));
 	_selectionTexture->setMinMagFilters(QOpenGLTexture::Filter::Nearest, QOpenGLTexture::Filter::Nearest);
 
-	const auto numericMin = std::numeric_limits<std::uint32_t>::min();
-	const auto numericMax = std::numeric_limits<std::uint32_t>::max();
-
-	_selectionBounds[0] = numericMax;
-	_selectionBounds[1] = numericMin;
-	_selectionBounds[2] = numericMax;
-	_selectionBounds[3] = numericMin;
-
-	_noSelectedPixels = 0;
-
-	for (std::uint32_t y = 0; y < _selectionImage->height(); y++) {
-		for (std::uint32_t x = 0; x < _selectionImage->width(); x++) {
-			if (_selectionImage->pixelColor(x, y).red() > 0) {
-				_noSelectedPixels++;
-
-				if (x < _selectionBounds[0])
-					_selectionBounds[0] = x;
-
-				if (x > _selectionBounds[1])
-					_selectionBounds[1] = x;
-
-				if (y < _selectionBounds[2])
-					_selectionBounds[2] = y;
-
-				if (y > _selectionBounds[3])
-					_selectionBounds[3] = y;
-			}
-		}
-	}
+	_selectionBounds = selectionBounds;
 
 	doneCurrent();
 
@@ -791,6 +766,9 @@ void ImageViewerWidget::zoomExtents()
 	if (_imageViewerPlugin->currentDatasetName().isEmpty())
 		return;
 	
+	if (_displayImage.get() == nullptr)
+		return;
+
 	qDebug() << "Zoom extents";
 
 	resetView();
@@ -802,6 +780,11 @@ void ImageViewerWidget::zoomExtents()
 	pan(_zoom * -QPointF(_displayImage->width() / 2.0f, _displayImage->height() / 2.0f));
 
 	update();
+}
+
+void ImageViewerWidget::zoomToSelection()
+{
+
 }
 
 void ImageViewerWidget::resetView()
@@ -947,13 +930,13 @@ void ImageViewerWidget::updatePixelSelection()
 				{
 					QList<QVector2D> mousePositions;
 					
-					mousePositions.reserve(_mousePositions.size());
+					mousePositions.reserve(static_cast<std::int32_t>(_mousePositions.size()));
 
 					for (const auto p : _mousePositions) {
 						mousePositions.push_back(QVector2D(screenToWorld(p).x(), screenToWorld(p).y()));
 					}
 
-					_pixelSelectionShaderProgram->setUniformValueArray("points", &mousePositions[0], _mousePositions.size());
+					_pixelSelectionShaderProgram->setUniformValueArray("points", &mousePositions[0], static_cast<std::int32_t>(_mousePositions.size()));
 					_pixelSelectionShaderProgram->setUniformValue("noPoints", static_cast<int>(_mousePositions.size()));
 
 					break;
@@ -1014,8 +997,8 @@ void ImageViewerWidget::modifySelection()
 
 	pixelCoordinates.reserve(image.width() * image.height());
 
-	for (std::uint32_t y = 0; y < image.height(); y++) {
-		for (std::uint32_t x = 0; x < image.width(); x++) {
+	for (std::int32_t y = 0; y < image.height(); y++) {
+		for (std::int32_t x = 0; x < image.width(); x++) {
 			if (image.pixelColor(x, y).red() > 0) {
 				pixelCoordinates.push_back(std::make_pair(x, y));
 			}
@@ -1326,8 +1309,8 @@ void ImageViewerWidget::drawSelectionOutlineLasso()
 	const auto vertexLocation = _selectionOutlineShaderProgram->attributeLocation("vertex");
 
 	_selectionOutlineShaderProgram->setAttributeArray(vertexLocation, vertexCoordinates.data(), 3);
-
-	glDrawArrays(GL_LINE_LOOP, 0, _mousePositions.size());
+	
+	glDrawArrays(GL_LINE_LOOP, 0, static_cast<std::int32_t>(_mousePositions.size()));
 }
 
 void ImageViewerWidget::drawSelectionOutline()
@@ -1369,20 +1352,20 @@ void ImageViewerWidget::drawSelectionOutline()
 
 void ImageViewerWidget::drawSelectionBounds()
 {
-	if (_noSelectedPixels == 0)
+	if (_selectionBounds.isEmpty())
 		return;
 
-	//qDebug() << "Draw selection bounds";
+	//qDebug() << "Draw selection bounds" << _selectionBounds;
 
 	const GLfloat boxScreen[4] = {
-		_selectionBounds[0], _selectionBounds[1],
-		_displayImage->height() - _selectionBounds[2], _displayImage->height() - _selectionBounds[3]
+		_selectionBounds.left(), _selectionBounds.right(),
+		_displayImage->height() - _selectionBounds.top(), _displayImage->height() - _selectionBounds.bottom()
 	};
 
 	const GLfloat vertexCoordinates[] = {
-		boxScreen[0],		boxScreen[3] - 1.f, 0.0f,
-		boxScreen[1] + 1.f, boxScreen[3] - 1.f, 0.0f,
-		boxScreen[1] + 1.f,	boxScreen[2],		0.0f,
+		boxScreen[0],		boxScreen[3] - 2.f, 0.0f,
+		boxScreen[1] + 2.f, boxScreen[3] - 2.f, 0.0f,
+		boxScreen[1] + 2.f,	boxScreen[2],		0.0f,
 		boxScreen[0],		boxScreen[2],		0.0f
 	};
 

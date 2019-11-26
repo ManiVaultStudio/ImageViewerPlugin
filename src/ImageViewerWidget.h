@@ -6,17 +6,17 @@
 #include <QOpenGLFramebufferObject>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLBuffer>
-
 #include <QMouseEvent>
 #include <QColor>
-#include <QAction>
-#include <QMenu>
+#include <QRect>
 
 #include <memory>
 
+#include "ImageData/ImageData.h"
+
 #include "Common.h"
 
-#include "ImageData/ImageData.h"
+class QMenu;
 
 class ImageViewerPlugin;
 
@@ -45,8 +45,8 @@ public:
 	void clearSelection();
 
 public:
-	void onDisplayImageChanged(std::unique_ptr<QImage>& displayImage);
-	void onSelectionImageChanged(std::unique_ptr<QImage>& selectionImage);
+	void onDisplayImageChanged(std::shared_ptr<QImage> displayImage);
+	void onSelectionImageChanged(std::shared_ptr<QImage> selectionImage, const QRect& selectionBounds);
 	void onCurrentDatasetChanged(const QString& currentDataset);
 	void onCurrentImageIdChanged(const std::int32_t& currentImageId);
 
@@ -76,6 +76,7 @@ private:
 	void zoom(const float& factor);
 	void zoomAt(const QPointF & position, const float & factor);
 	void zoomExtents();
+	void zoomToSelection();
 	void resetView();
 
 	std::uint16_t windowLevel(const float& min, const float& max, const float& levelNorm, const float& windowNorm, const float& pointValue);
@@ -100,8 +101,8 @@ private:
 
 private:
 	ImageViewerPlugin*							_imageViewerPlugin;
-	std::unique_ptr<QImage>						_displayImage;
-	std::unique_ptr<QImage>						_selectionImage;
+	std::shared_ptr<QImage>						_displayImage;
+	std::shared_ptr<QImage>						_selectionImage;
 
 	// QT OpenGL
 	std::unique_ptr<QOpenGLTexture>				_imageTexture;
@@ -137,7 +138,7 @@ private:
 	QVector4D									_selectionOutlineColor;
 	QVector4D									_selectionBoundsColor;
 	std::vector<std::uint32_t>					_selectedPointIds;
-	std::uint32_t								_selectionBounds[4];
+	QRect										_selectionBounds;
 	std::uint32_t								_noSelectedPixels;
 
 	std::uint16_t								_imageMin;
