@@ -146,6 +146,7 @@ void main(void)
 		}
 
 		case 2:
+		case 3:
 		{
 			fragmentColor = isInside(P) ? vec4(1) : vec4(vec3(0), 1);
 			break;

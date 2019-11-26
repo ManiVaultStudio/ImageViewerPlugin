@@ -39,7 +39,8 @@ enum class SelectionType
 {
 	Rectangle,
 	Brush,
-	Lasso
+	Lasso,
+	Polygon
 };
 
 inline QString selectionTypeName(const SelectionType& selectionType)
@@ -54,6 +55,9 @@ inline QString selectionTypeName(const SelectionType& selectionType)
 
 	case SelectionType::Lasso:
 		return "Lasso";
+
+	case SelectionType::Polygon:
+		return "Polygon";
 
 	default:
 		break;

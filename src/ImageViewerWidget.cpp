@@ -514,12 +514,13 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 				case InteractionMode::Selection:
 				{
 					if (_imageViewerPlugin->selectable()) {
-						resetPixelSelection();
-
-						_mousePositions.clear();
+						if (_selectionType != SelectionType::Polygon) {
+							resetPixelSelection();
+							_initialMousePosition = _mousePosition;
+							_mousePositions.clear();
+						}
+						
 						_mousePositions.push_back(_mousePosition);
-
-						_initialMousePosition = _mousePosition;
 
 						updatePixelSelection();
 
@@ -570,7 +571,9 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 				case InteractionMode::Selection:
 				{
 					if (_imageViewerPlugin->selectable()) {
-						_mousePositions.push_back(mouseEvent->pos());
+						if (_selectionType != SelectionType::Polygon) {
+							_mousePositions.push_back(mouseEvent->pos());
+						}
 
 						updatePixelSelection();
 					}
@@ -633,9 +636,14 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 		{
 			if (_imageViewerPlugin->selectable()) {
 				if (_selecting) {
-					enableSelection(false);
-					modifySelection();
-					commitSelection();
+					if (_selectionType != SelectionType::Polygon) {
+						_mousePositions.clear();
+						enableSelection(false);
+						modifySelection();
+						resetPixelSelection();
+					}
+
+					
 				}
 			}
 			break;
@@ -651,7 +659,12 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 			break;
 	}
 
-	_mousePositions.clear();
+	if (mouseEvent->button() == Qt::RightButton && _selectionType == SelectionType::Polygon && !_mousePositions.empty()) {
+		_mousePositions.clear();
+		enableSelection(false);
+		modifySelection();
+		resetPixelSelection();
+	}
 
 	update();
 
@@ -919,6 +932,7 @@ void ImageViewerWidget::updatePixelSelection()
 				}
 
 				case SelectionType::Lasso:
+				case SelectionType::Polygon:
 				{
 					QList<QVector2D> mousePositions;
 					
@@ -1029,13 +1043,6 @@ void ImageViewerWidget::invertSelection()
 	update();
 }
 
-void ImageViewerWidget::commitSelection()
-{
-	qDebug() << "Commit selection to core";
-
-	resetPixelSelection();
-}
-
 QMenu* ImageViewerWidget::contextMenu()
 {
 	auto* contextMenu = new QMenu();
@@ -1092,6 +1099,7 @@ QMenu* ImageViewerWidget::selectionMenu()
 	auto* rectangleSelectionAction	= new QAction("Rectangle");
 	auto* brushSelectionAction		= new QAction("Brush");
 	auto* lassoSelectionAction		= new QAction("Lasso", this);
+	auto* polygonSelectionAction	= new QAction("Polygon", this);
 	auto* selectNoneAction			= new QAction("Select none");
 	auto* selectAllAction			= new QAction("Select all");
 	auto* invertSelectionAction		= new QAction("Invert");
@@ -1099,6 +1107,7 @@ QMenu* ImageViewerWidget::selectionMenu()
 	connect(rectangleSelectionAction, &QAction::triggered, [this]() { setSelectionType(SelectionType::Rectangle);  });
 	connect(brushSelectionAction, &QAction::triggered, [this]() { setSelectionType(SelectionType::Brush);  });
 	connect(lassoSelectionAction, &QAction::triggered, [this]() { setSelectionType(SelectionType::Lasso);  });
+	connect(polygonSelectionAction, &QAction::triggered, [this]() { setSelectionType(SelectionType::Polygon);  });
 
 	connect(selectAllAction, &QAction::triggered, [this]() { selectAll(); });
 	connect(selectNoneAction, &QAction::triggered, [this]() { selectNone(); });
@@ -1107,14 +1116,17 @@ QMenu* ImageViewerWidget::selectionMenu()
 	rectangleSelectionAction->setCheckable(true);
 	brushSelectionAction->setCheckable(true);
 	lassoSelectionAction->setCheckable(true);
+	polygonSelectionAction->setCheckable(true);
 
 	rectangleSelectionAction->setChecked(_selectionType == SelectionType::Rectangle);
 	brushSelectionAction->setChecked(_selectionType == SelectionType::Brush);
 	lassoSelectionAction->setChecked(_selectionType == SelectionType::Lasso);
+	polygonSelectionAction->setChecked(_selectionType == SelectionType::Polygon);
 
 	selectionMenu->addAction(rectangleSelectionAction);
 	selectionMenu->addAction(brushSelectionAction);
 	selectionMenu->addAction(lassoSelectionAction);
+	selectionMenu->addAction(polygonSelectionAction);
 	selectionMenu->addSeparator();
 	selectionMenu->addAction(selectAllAction);
 	selectionMenu->addAction(selectNoneAction);
@@ -1345,6 +1357,27 @@ void ImageViewerWidget::drawSelectionOutlineLasso()
 	glDrawArrays(GL_LINE_LOOP, 0, static_cast<std::int32_t>(_mousePositions.size()));
 }
 
+void ImageViewerWidget::drawSelectionOutlinePolygon()
+{
+	std::vector<GLfloat> vertexCoordinates;
+
+	vertexCoordinates.resize(_mousePositions.size() * 3);
+
+	for (std::size_t p = 0; p < _mousePositions.size(); p++) {
+		const auto mousePosition = _mousePositions[p];
+
+		vertexCoordinates[p * 3 + 0] = mousePosition.x();
+		vertexCoordinates[p * 3 + 1] = mousePosition.y();
+		vertexCoordinates[p * 3 + 2] = 0.f;
+	}
+
+	const auto vertexLocation = _selectionOutlineShaderProgram->attributeLocation("vertex");
+
+	_selectionOutlineShaderProgram->setAttributeArray(vertexLocation, vertexCoordinates.data(), 3);
+
+	glDrawArrays(GL_LINE_LOOP, 0, static_cast<std::int32_t>(_mousePositions.size()));
+}
+
 void ImageViewerWidget::drawSelectionOutline()
 {
 	//glEnable(GL_LINE_STIPPLE);
@@ -1372,6 +1405,12 @@ void ImageViewerWidget::drawSelectionOutline()
 		case SelectionType::Lasso:
 		{
 			drawSelectionOutlineLasso();
+			break;
+		}
+
+		case SelectionType::Polygon:
+		{
+			drawSelectionOutlinePolygon();
 			break;
 		}
 

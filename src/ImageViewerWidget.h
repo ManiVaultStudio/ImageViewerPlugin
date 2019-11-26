@@ -71,6 +71,7 @@ private:
 	void drawSelectionOutlineRectangle(const QPoint& start, const QPoint& end);
 	void drawSelectionOutlineBrush();
 	void drawSelectionOutlineLasso();
+	void drawSelectionOutlinePolygon();
 	void drawSelectionOutline();
 	void drawSelectionBounds();
 
@@ -89,7 +90,6 @@ private:
 	bool initialized();
 	void updatePixelSelection();
 	void resetPixelSelection();
-	void commitSelection();
 
 	QMenu* contextMenu();
 	QMenu* viewMenu();
