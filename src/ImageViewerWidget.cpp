@@ -1073,8 +1073,9 @@ QMenu* ImageViewerWidget::viewMenu()
 	connect(resetWindowLevelAction, &QAction::triggered, this, &ImageViewerWidget::resetWindowLevel);
 
 	viewMenu->addAction(zoomToExtentsAction);
-	viewMenu->addAction(resetWindowLevelAction);
 	viewMenu->addAction(zoomToSelectionAction);
+	viewMenu->addSeparator();
+	viewMenu->addAction(resetWindowLevelAction);
 
 	return viewMenu;
 }
