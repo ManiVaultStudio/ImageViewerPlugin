@@ -15,43 +15,9 @@
 #include <QOpenGLTexture>
 #include <QOpenGLShaderProgram>
 
+#include "Shaders.h"
+
 // Panning and zooming inspired by: https://community.khronos.org/t/opengl-compound-zoom-and-pan-effect/72565/7
-
-const std::string vertexShaderSource =
-#include "Vertex.glsl"
-;
-
-const std::string imageFragmentShaderSource =
-#include "ImageFragment.glsl"
-;
-
-const std::string computeOverlayFragmentShaderSource =
-#include "ComputeOverlayFragment.glsl"
-;
-
-const std::string overlayFragmentShaderSource =
-#include "OverlayFragment.glsl"
-;
-
-const std::string selectionFragmentShaderSource =
-#include "SelectionFragment.glsl"
-;
-
-const std::string selectionOutlineVertexShaderSource =
-#include "SelectionOutlineVertex.glsl"
-;
-
-const std::string selectionOutlineFragmentShaderSource =
-#include "SelectionOutlineFragment.glsl"
-;
-
-const std::string selectionBoundsVertexShaderSource =
-#include "SelectionBoundsVertex.glsl"
-;
-
-const std::string selectionBoundsFragmentShaderSource =
-#include "SelectionBoundsFragment.glsl"
-;
 
 #define PROGRAM_VERTEX_ATTRIBUTE 0
 #define PROGRAM_TEXCOORD_ATTRIBUTE 1
@@ -161,7 +127,7 @@ void ImageViewerWidget::initializeGL()
 	_selectionOutlineShaderProgram	= std::make_unique<QOpenGLShaderProgram>();
 	_selectionBoundsShaderProgram	= std::make_unique<QOpenGLShaderProgram>();
 
-	_imageShaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSource.c_str());
+	_imageShaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, imageVertexShaderSource.c_str());
 	_imageShaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, imageFragmentShaderSource.c_str());
 	_imageShaderProgram->bindAttributeLocation("vertex", PROGRAM_VERTEX_ATTRIBUTE);
 	_imageShaderProgram->bindAttributeLocation("texCoord", PROGRAM_TEXCOORD_ATTRIBUTE);
@@ -173,7 +139,7 @@ void ImageViewerWidget::initializeGL()
 	_pixelSelectionShaderProgram->bindAttributeLocation("texCoord", PROGRAM_TEXCOORD_ATTRIBUTE);
 	_pixelSelectionShaderProgram->link();
 
-	_overlayShaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSource.c_str());
+	_overlayShaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, overlayVertexShaderSource.c_str());
 	_overlayShaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, overlayFragmentShaderSource.c_str());
 	_overlayShaderProgram->bindAttributeLocation("vertex", PROGRAM_VERTEX_ATTRIBUTE);
 	_overlayShaderProgram->bindAttributeLocation("texCoord", PROGRAM_TEXCOORD_ATTRIBUTE);
