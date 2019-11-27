@@ -25,8 +25,6 @@
 ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	QOpenGLFunctions(),
 	_imageViewerPlugin(imageViewerPlugin),
-
-	// QT OpenGL
 	_imageTexture(),
 	_selectionTexture(),
 	_imageShaderProgram(),
@@ -45,16 +43,13 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_selecting(false),
 	_selectionType(SelectionType::Rectangle),
 	_selectionModifier(SelectionModifier::Replace),
-	_selectionRealtime(false),
 	_brushRadius(50.f),
 	_brushRadiusDelta(2.0f),
 	_pointSelectionColor(1.f, 0.f, 0.f, 0.6f),
 	_pixelSelectionColor(1.f, 0.6f, 0.f, 0.3f),
 	_selectionOutlineColor(1.0f, 0.6f, 0.f, 1.0f),
 	_selectionBoundsColor(1.0f, 0.6f, 0.f, 0.5f),
-	_selectedPointIds(),
 	_selectionBounds(),
-	_noSelectedPixels(0),
 	_ignorePaintGL(false),
 	_window(1.0f),
 	_level(0.5f)
@@ -102,11 +97,21 @@ ImageViewerWidget::~ImageViewerWidget()
 	doneCurrent();
 }
 
-void ImageViewerWidget::enableSelection(const bool& enable)
+void ImageViewerWidget::startSelection()
 {
-	_selecting = enable;
+	_selecting = true;
 
 	update();
+}
+
+void ImageViewerWidget::endSelection()
+{
+	_selecting = false;
+
+	_mousePositions.clear();
+
+	modifySelection();
+	resetPixelSelection();
 }
 
 void ImageViewerWidget::initializeGL()
@@ -406,12 +411,12 @@ void ImageViewerWidget::onSelectionOpacityChanged(const float& selectionOpacity)
 
 void ImageViewerWidget::onCurrentDatasetChanged(const QString& currentDataset)
 {
-	enableSelection(false);
+	startSelection();
 }
 
 void ImageViewerWidget::onCurrentImageIdChanged(const std::int32_t& currentImageId)
 {
-	enableSelection(false);
+	startSelection();
 
 	update();
 }
@@ -439,6 +444,10 @@ void ImageViewerWidget::keyPressEvent(QKeyEvent* keyEvent)
 
 				case Qt::Key::Key_L:
 					setSelectionType(SelectionType::Lasso);
+					break;
+
+				case Qt::Key::Key_P:
+					setSelectionType(SelectionType::Polygon);
 					break;
 
 				case Qt::Key::Key_Shift:
@@ -524,7 +533,7 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 
 						updatePixelSelection();
 
-						enableSelection(true);
+						startSelection();
 					}
 
 					break;
@@ -635,15 +644,8 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 		case InteractionMode::Selection:
 		{
 			if (_imageViewerPlugin->selectable()) {
-				if (_selecting) {
-					if (_selectionType != SelectionType::Polygon) {
-						_mousePositions.clear();
-						enableSelection(false);
-						modifySelection();
-						resetPixelSelection();
-					}
-
-					
+				if (_selecting && _selectionType != SelectionType::Polygon) {
+					endSelection();
 				}
 			}
 			break;
@@ -660,10 +662,7 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 	}
 
 	if (mouseEvent->button() == Qt::RightButton && _selectionType == SelectionType::Polygon && !_mousePositions.empty()) {
-		_mousePositions.clear();
-		enableSelection(false);
-		modifySelection();
-		resetPixelSelection();
+		endSelection();
 	}
 
 	update();
@@ -1375,7 +1374,10 @@ void ImageViewerWidget::drawSelectionOutlinePolygon()
 
 	_selectionOutlineShaderProgram->setAttributeArray(vertexLocation, vertexCoordinates.data(), 3);
 
+	glPointSize(4.0f);
+
 	glDrawArrays(GL_LINE_LOOP, 0, static_cast<std::int32_t>(_mousePositions.size()));
+	glDrawArrays(GL_POINTS, 0, static_cast<std::int32_t>(_mousePositions.size()));
 }
 
 void ImageViewerWidget::drawSelectionOutline()

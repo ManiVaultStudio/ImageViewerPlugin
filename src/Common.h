@@ -10,6 +10,7 @@ class QOpenGLShaderProgram;
 
 enum class InteractionMode
 {
+	None,
 	Navigation,
 	Selection,
 	WindowLevel
@@ -19,17 +20,20 @@ inline QString interactionModeTypeName(const InteractionMode& interactionMode)
 {
 	switch (interactionMode)
 	{
-	case InteractionMode::Navigation:
-		return "Navigation";
+		case InteractionMode::None:
+			return "None";
 
-	case InteractionMode::Selection:
-		return "Selection";
+		case InteractionMode::Navigation:
+			return "Navigation";
 
-	case InteractionMode::WindowLevel:
-		return "WindowLevel";
+		case InteractionMode::Selection:
+			return "Selection";
 
-	default:
-		break;
+		case InteractionMode::WindowLevel:
+			return "WindowLevel";
+
+		default:
+			break;
 	}
 
 	return "";

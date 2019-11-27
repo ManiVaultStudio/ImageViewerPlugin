@@ -75,7 +75,8 @@ private:
 	void drawSelectionOutline();
 	void drawSelectionBounds();
 
-	void enableSelection(const bool& enable);
+	void startSelection();
+	void endSelection();
 
 	void pan(const QPointF& delta);
 	void zoom(const float& factor);
@@ -108,22 +109,16 @@ private:
 	ImageViewerPlugin*							_imageViewerPlugin;
 	std::shared_ptr<QImage>						_displayImage;
 	std::shared_ptr<QImage>						_selectionImage;
-
-	// QT OpenGL
 	std::unique_ptr<QOpenGLTexture>				_imageTexture;
 	std::unique_ptr<QOpenGLTexture>				_selectionTexture;
-
 	std::unique_ptr<QOpenGLShaderProgram>		_imageShaderProgram;
 	std::unique_ptr<QOpenGLShaderProgram>		_pixelSelectionShaderProgram;
 	std::unique_ptr<QOpenGLShaderProgram>		_overlayShaderProgram;
 	std::unique_ptr<QOpenGLShaderProgram>		_selectionShaderProgram;
 	std::unique_ptr<QOpenGLShaderProgram>		_selectionOutlineShaderProgram;
 	std::unique_ptr<QOpenGLShaderProgram>		_selectionBoundsShaderProgram;
-
 	std::unique_ptr<QOpenGLFramebufferObject>	_pixelSelectionFBO;
-
 	QOpenGLBuffer								_imageQuadVBO;
-
 	InteractionMode								_interactionMode;
 	QPoint										_initialMousePosition;
 	QPoint										_mousePosition;
@@ -135,17 +130,13 @@ private:
 	bool										_selecting;
 	SelectionType								_selectionType;
 	SelectionModifier							_selectionModifier;
-	bool										_selectionRealtime;
 	float										_brushRadius;
 	float										_brushRadiusDelta;
 	QVector4D									_pointSelectionColor;
 	QVector4D									_pixelSelectionColor;
 	QVector4D									_selectionOutlineColor;
 	QVector4D									_selectionBoundsColor;
-	std::vector<std::uint32_t>					_selectedPointIds;
 	QRect										_selectionBounds;
-	std::uint32_t								_noSelectedPixels;
-
 	std::uint16_t								_imageMin;
 	std::uint16_t								_imageMax;
 	float										_window;
