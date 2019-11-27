@@ -41,7 +41,7 @@ public:
 	void setWindowLevel(const float& window, const float& level);
 	void resetWindowLevel();
 
-	void modifySelection();
+	void publishSelection();
 
 	void selectAll();
 	void selectNone();

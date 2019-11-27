@@ -99,6 +99,8 @@ ImageViewerWidget::~ImageViewerWidget()
 
 void ImageViewerWidget::startSelection()
 {
+	qDebug() << "Start selection";
+
 	_selecting = true;
 
 	update();
@@ -106,12 +108,14 @@ void ImageViewerWidget::startSelection()
 
 void ImageViewerWidget::endSelection()
 {
+	qDebug() << "End selection";
+
 	_selecting = false;
 
 	_mousePositions.clear();
 
-	modifySelection();
-	resetPixelSelection();
+	publishSelection();
+	//resetPixelSelection();
 }
 
 void ImageViewerWidget::initializeGL()
@@ -411,14 +415,12 @@ void ImageViewerWidget::onSelectionOpacityChanged(const float& selectionOpacity)
 
 void ImageViewerWidget::onCurrentDatasetChanged(const QString& currentDataset)
 {
-	startSelection();
+//	endSelection();
 }
 
 void ImageViewerWidget::onCurrentImageIdChanged(const std::int32_t& currentImageId)
 {
-	startSelection();
-
-	update();
+//	endSelection();
 }
 
 void ImageViewerWidget::keyPressEvent(QKeyEvent* keyEvent)
@@ -986,9 +988,9 @@ void ImageViewerWidget::resetPixelSelection()
 	update();
 }
 
-void ImageViewerWidget::modifySelection()
+void ImageViewerWidget::publishSelection()
 {
-	qDebug() << "Modify selection";
+	qDebug() << "Publish selection";
 	
 	makeCurrent();
 
@@ -1382,6 +1384,8 @@ void ImageViewerWidget::drawSelectionOutlinePolygon()
 
 void ImageViewerWidget::drawSelectionOutline()
 {
+	qDebug() << "drawSelectionOutline";
+
 	//glEnable(GL_LINE_STIPPLE);
 	//glLineStipple(1, 0x0101);
 	//glLineWidth(2.5f);
