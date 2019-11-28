@@ -23,14 +23,12 @@ find_package(Qt5 COMPONENTS Widgets WebEngineWidgets REQUIRED)
 
 file(GLOB H src/*.h)
 file(GLOB CPP src/*.cpp)
+file(GLOB UIS src/*.ui)
+file(GLOB SHADERS src/*.glsl)
+file(GLOB JSON src/*.json)
 
 set(SOURCES ${H} ${CPP})
-
-file(GLOB UIS src/*.ui)
-
-file(GLOB SHADERS src/*.glsl)
-
-set(AUX src/ImageViewerPlugin.json)
+set(AUX ${JSON})
 
 source_group(Plugin FILES ${SOURCES})
 source_group(UI FILES ${UIS})

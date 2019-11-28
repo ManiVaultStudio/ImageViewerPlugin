@@ -343,7 +343,7 @@ void ImageViewerPlugin::createSubsetFromSelection()
 
 	qDebug() << "Create subset from selection";
 
-	_currentImageDataSet->createSubsetFromSelection("subset");
+	_currentImageDataSet->createSubset();
 }
 
 void ImageViewerPlugin::setDatasetNames(const QStringList& datasetNames)

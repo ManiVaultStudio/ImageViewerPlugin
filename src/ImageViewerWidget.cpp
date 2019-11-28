@@ -316,7 +316,7 @@ void ImageViewerWidget::onDisplayImageChanged(std::shared_ptr<QImage> displayIma
 
 	_ignorePaintGL = true;
 
-	qDebug() << "Display image changed" << *displayImage.get();
+	qDebug() << "Display image changed";
 
 	auto imageSizeChanged = false;
 
@@ -1384,7 +1384,7 @@ void ImageViewerWidget::drawSelectionOutlinePolygon()
 
 void ImageViewerWidget::drawSelectionOutline()
 {
-	qDebug() << "drawSelectionOutline";
+	//qDebug() << "Draw selection outline";
 
 	//glEnable(GL_LINE_STIPPLE);
 	//glLineStipple(1, 0x0101);
