@@ -5,6 +5,8 @@
 #include <QDebug>
 #include <QFileInfo>
 
+#include "IndexSet.h"
+
 Q_PLUGIN_METADATA(IID "nl.tudelft.ImageViewerPlugin")
 
 ImageViewerPlugin::ImageViewerPlugin() : 
@@ -50,7 +52,7 @@ std::vector<std::uint32_t> ImageViewerPlugin::selection() const
 	if (_currentImageDataSet == nullptr)
 		return std::vector<std::uint32_t>();
 
-	const auto& selection = dynamic_cast<const hdps::IndexSet&>(_currentImageDataSet->imageData().selection());
+	const auto& selection = dynamic_cast<const hdps::IndexSet&>(_currentImageDataSet->getSelection());
 
 	return selection.indices;
 }
@@ -243,7 +245,7 @@ void ImageViewerPlugin::setCurrentDatasetName(const QString& currentDatasetName)
 
 	_currentDatasetName = currentDatasetName;
 
-	_currentImageDataSet = &dynamic_cast<ImageDataSet&>(_core->requestSet(_currentDatasetName));
+	_currentImageDataSet = &_core->requestData<ImageDataSet>(_currentDatasetName);
 
 	emit currentDatasetChanged(_currentDatasetName);
 
