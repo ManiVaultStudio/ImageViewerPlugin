@@ -34,7 +34,7 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_selectionBoundsShaderProgram(),
 	_pixelSelectionFBO(),
 	_imageQuadVBO(),
-	_interactionMode(InteractionMode::None),
+	_interactionMode(InteractionMode::Selection),
 	_initialMousePosition(),
 	_mousePosition(),
 	_zoom(1.f),
@@ -133,48 +133,44 @@ void ImageViewerWidget::endNavigationMode()
 	setInteractionMode(InteractionMode::None);
 }
 
-void ImageViewerWidget::startSelectionMode()
+void ImageViewerWidget::startSelectionMode(const SelectionType& selectionType)
 {
 	qDebug() << "Start selection mode";
 
 	setInteractionMode(InteractionMode::Selection);
-
-	_selecting = true;
+	setSelectionType(selectionType);
 
 	startMouseInteraction();
-
-	//startSelection();
 }
 
 void ImageViewerWidget::endSelectionMode()
 {
 	qDebug() << "End selection mode";
 
-	_selecting = false;
-
 	endMouseInteraction();
-
-	//endSelection();
-
-	publishSelection();
 
 	setInteractionMode(InteractionMode::None);
 }
 
-/*
 void ImageViewerWidget::startSelection()
 {
 	qDebug() << "Start selection";
+
+	startMouseInteraction();
 
 	_selecting = true;
 }
 
 void ImageViewerWidget::endSelection()
 {
-	qDebug() << "Start selection";
-	
+	qDebug() << "End selection";
+
+	endMouseInteraction();
+
+	_selecting = false;
+
+	publishSelection();
 }
-*/
 
 void ImageViewerWidget::startWindowLevelMode()
 {
@@ -512,19 +508,19 @@ void ImageViewerWidget::keyPressEvent(QKeyEvent* keyEvent)
 		switch (keyEvent->key())
 		{
 			case Qt::Key::Key_R:
-				setSelectionType(SelectionType::Rectangle);
+				startSelectionMode(SelectionType::Rectangle);
 				break;
 
 			case Qt::Key::Key_B:
-				setSelectionType(SelectionType::Brush);
+				startSelectionMode(SelectionType::Brush);
 				break;
 
 			case Qt::Key::Key_L:
-				setSelectionType(SelectionType::Lasso);
+				startSelectionMode(SelectionType::Lasso);
 				break;
 
 			case Qt::Key::Key_P:
-				setSelectionType(SelectionType::Polygon);
+				startSelectionMode(SelectionType::Polygon);
 				break;
 
 			case Qt::Key::Key_Shift:
@@ -591,27 +587,18 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 		{
 			_mousePosition = mouseEvent->pos();
 
-			switch (_interactionMode)
-			{
-				case InteractionMode::None:
-				{
-					if (_imageViewerPlugin->selectable()) {
-						startSelectionMode();
-						
-						if (_selectionType != SelectionType::Polygon) {
-							resetPixelSelection();
-						}
-						
-						_mousePositions.push_back(_mousePosition);
+			if (_imageViewerPlugin->selectable()) {
+				if (_mousePositions.empty())
+					startSelection();
 
-						updatePixelSelection();
-					}
-
-					break;
+				if (_selectionType != SelectionType::Polygon) {
+					
+					resetPixelSelection();
 				}
 
-				default:
-					break;
+				_mousePositions.push_back(_mousePosition);
+
+				updatePixelSelection();
 			}
 
 			break;
@@ -619,7 +606,13 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 
 		case Qt::RightButton:
 		{
-			startWindowLevelMode();
+			if (_selectionType == SelectionType::Polygon && !_mousePositions.empty()) {
+				endSelection();
+			}
+			else {
+				startWindowLevelMode();
+			}
+			
 			break;
 		}
 
@@ -649,7 +642,7 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 
 				case InteractionMode::Selection:
 				{
-					if (_imageViewerPlugin->selectable()) {
+					if (_imageViewerPlugin->selectable() && _selecting) {
 						if (_selectionType != SelectionType::Polygon) {
 							_mousePositions.push_back(mouseEvent->pos());
 						}
@@ -669,15 +662,17 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 
 		case Qt::RightButton:
 		{
-			const auto worldPos		= screenToWorld(_mousePosition);
-			const auto deltaWindow	= (mouseEvent->pos().x() - _mousePosition.x()) / 150.f;
-			const auto deltaLevel	= -(mouseEvent->pos().y() - _mousePosition.y()) / 150.f;
-			const auto window		= std::clamp(_window + deltaWindow, 0.0f, 1.0f);
-			const auto level		= std::clamp(_level + deltaLevel, 0.0f, 1.0f);
+			if (_interactionMode == InteractionMode::WindowLevel) {
+				const auto worldPos = screenToWorld(_mousePosition);
+				const auto deltaWindow = (mouseEvent->pos().x() - _mousePosition.x()) / 150.f;
+				const auto deltaLevel = -(mouseEvent->pos().y() - _mousePosition.y()) / 150.f;
+				const auto window = std::clamp(_window + deltaWindow, 0.0f, 1.0f);
+				const auto level = std::clamp(_level + deltaLevel, 0.0f, 1.0f);
 
-			setWindowLevel(window, level);
+				setWindowLevel(window, level);
 
-			_mousePositions.push_back(_mousePosition);
+				_mousePositions.push_back(_mousePosition);
+			}
 
 			break;
 		}
@@ -696,7 +691,7 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 	if (!initialized())
 		return;
 
-	qDebug() << "Mouse release event" << _mousePositions;
+	qDebug() << "Mouse release event";
 
 	/*
 	if (mouseEvent->button() == Qt::RightButton && _mousePositions.size() == 0)
@@ -711,20 +706,15 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 	{
 		case Qt::LeftButton:
 		{
-			switch (_interactionMode)
+			if (_interactionMode == InteractionMode::Selection)
 			{
-				case InteractionMode::Selection:
-				{
-					if (_imageViewerPlugin->selectable()) {
-						if (_selecting && _selectionType != SelectionType::Polygon) {
-							endSelectionMode();
-						}
+				if (_imageViewerPlugin->selectable() && _selecting) {
+					if (_selectionType != SelectionType::Polygon) {
+						endSelection();
 					}
-					break;
 				}
 
-				default:
-					break;
+				break;
 			}
 		}
 
@@ -732,15 +722,6 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 		{
 			switch (_interactionMode)
 			{
-				case InteractionMode::Selection:
-				{
-					if (_selectionType == SelectionType::Polygon) {
-						endSelectionMode();
-					}
-
-					break;
-				}
-
 				case InteractionMode::WindowLevel:
 				{
 					endWindowLevelMode();
@@ -751,6 +732,7 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 					break;
 			}
 		
+			break;
 		}
 		
 		default:

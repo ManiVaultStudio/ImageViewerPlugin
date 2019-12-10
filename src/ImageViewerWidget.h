@@ -77,10 +77,10 @@ private:
 
 	void startMouseInteraction();
 	void endMouseInteraction();
-	void startSelectionMode();
+	void startSelectionMode(const SelectionType& selectionType);
 	void endSelectionMode();
-	//void startSelection();
-	//void endSelection();
+	void startSelection();
+	void endSelection();
 	void startNavigationMode();
 	void endNavigationMode();
 	void startWindowLevelMode();

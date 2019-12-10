@@ -40,7 +40,8 @@ SettingsWidget::SettingsWidget(ImageViewerPlugin* imageViewerPlugin) :
 		_ui->currentDimensionLabel->setEnabled(false);
 		_ui->dimensionsComboBox->setEnabled(false);
 		_ui->averageImagesCheckBox->setEnabled(false);
-		_ui->selectionOpacitySlider->setValue(_imageViewerPlugin->selectionOpacity() * 100.0f);
+
+		updateSelectionOpacityUI();
 	}
 }
 
@@ -57,6 +58,8 @@ void SettingsWidget::onDatasetNamesChanged(const QStringList& datasetNames)
 	_ui->datasetsComboBox->blockSignals(false);
 
 	_ui->currentDatasetLabel->setEnabled(datasetAvailable);
+
+	updateSelectionOpacityUI();
 }
 
 void SettingsWidget::onCurrentDatasetChanged(const QString& currentDataset)
@@ -103,7 +106,25 @@ void SettingsWidget::onDimensionNamesChanged(const QStringList& dimensionNames)
 	
 	_ui->dimensionsComboBox->clear();
 	_ui->dimensionsComboBox->addItems(dimensionNames);
-	_ui->dimensionsComboBox->setEnabled(enable);
+	
+	switch (_imageViewerPlugin->imageCollectionType())
+	{
+		case ImageCollectionType::Sequence:
+		{
+			_ui->dimensionsComboBox->setEnabled(dimensionNames.size() > 0 && !_imageViewerPlugin->averageImages());
+			break;
+		}
+
+		case ImageCollectionType::Stack:
+		case ImageCollectionType::MultiPartSequence:
+		{
+			_ui->dimensionsComboBox->setEnabled(dimensionNames.size() > 0);
+			break;
+		}
+
+		default:
+			break;
+	}
 	
 	_ui->dimensionsComboBox->blockSignals(false);
 
@@ -132,11 +153,30 @@ void SettingsWidget::onSelectionImageChanged(std::shared_ptr<QImage> selectionIm
 {
 	_ui->averageImagesCheckBox->blockSignals(true);
 
-	const auto hasSelection = selectionBounds.isValid();
-
-	_ui->createSubsetFromSelectionPushButton->setEnabled(hasSelection);
-	_ui->selectionOpacityLabel->setEnabled(hasSelection);
-	_ui->selectionOpacitySlider->setEnabled(hasSelection);
+		
 
 	_ui->averageImagesCheckBox->blockSignals(false);
+}
+
+void SettingsWidget::updateSelectionOpacityUI()
+{
+	const auto hasSelection = _imageViewerPlugin->hasSelection();
+
+	_ui->selectionOpacitySlider->setValue(_imageViewerPlugin->selectionOpacity() * 100.0f);
+
+	const auto imageCollectionType = _imageViewerPlugin->imageCollectionType();
+
+	if (_imageViewerPlugin->datasetNames().size() == 0 || imageCollectionType == ImageCollectionType::Sequence)
+	{
+		_ui->createSubsetFromSelectionPushButton->setEnabled(false);
+		_ui->selectionOpacityLabel->setEnabled(false);
+		_ui->selectionOpacitySlider->setEnabled(false);
+	}
+
+	if (imageCollectionType == ImageCollectionType::Stack || imageCollectionType == ImageCollectionType::MultiPartSequence)
+	{
+		_ui->createSubsetFromSelectionPushButton->setEnabled(hasSelection);
+		_ui->selectionOpacityLabel->setEnabled(hasSelection);
+		_ui->selectionOpacitySlider->setEnabled(hasSelection);
+	}
 }

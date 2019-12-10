@@ -28,6 +28,8 @@ private:
 	void onCurrentDimensionChanged(const int& currentDimension);
 	void onAverageImagesChanged(const bool& averageImages);
 	void onSelectionImageChanged(std::shared_ptr<QImage> selectionImage, const QRect& selectionBounds);
+	
+	void updateSelectionOpacityUI();
 
 private:
 	ImageViewerPlugin*						_imageViewerPlugin;

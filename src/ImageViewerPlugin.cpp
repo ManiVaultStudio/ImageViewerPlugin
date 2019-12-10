@@ -224,6 +224,11 @@ void ImageViewerPlugin::computeSelectionImage()
 	}
 }
 
+QStringList ImageViewerPlugin::datasetNames() const
+{
+	return _datasetNames;
+}
+
 ImageDataSet* ImageViewerPlugin::currentImageDataSet()
 {
 	return _currentImageDataSet;
