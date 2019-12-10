@@ -34,7 +34,7 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_selectionBoundsShaderProgram(),
 	_pixelSelectionFBO(),
 	_imageQuadVBO(),
-	_interactionMode(InteractionMode::Selection),
+	_interactionMode(InteractionMode::None),
 	_initialMousePosition(),
 	_mousePosition(),
 	_zoom(1.f),
@@ -97,25 +97,101 @@ ImageViewerWidget::~ImageViewerWidget()
 	doneCurrent();
 }
 
+void ImageViewerWidget::startMouseInteraction()
+{
+	qDebug() << "Start mouse interaction";
+
+	_initialMousePosition = _mousePosition;
+
+	_mousePositions.clear();
+}
+
+void ImageViewerWidget::endMouseInteraction()
+{
+	qDebug() << "End mouse interaction";
+
+	_mousePositions.clear();
+}
+
+void ImageViewerWidget::startNavigationMode()
+{
+	qDebug() << "Start navigation";
+
+	setInteractionMode(InteractionMode::Navigation);
+
+	startMouseInteraction();
+}
+
+void ImageViewerWidget::endNavigationMode()
+{
+	qDebug() << "End navigation";
+
+	endMouseInteraction();
+
+	QWidget::setCursor(Qt::OpenHandCursor);
+
+	setInteractionMode(InteractionMode::None);
+}
+
+void ImageViewerWidget::startSelectionMode()
+{
+	qDebug() << "Start selection mode";
+
+	setInteractionMode(InteractionMode::Selection);
+
+	_selecting = true;
+
+	startMouseInteraction();
+
+	//startSelection();
+}
+
+void ImageViewerWidget::endSelectionMode()
+{
+	qDebug() << "End selection mode";
+
+	_selecting = false;
+
+	endMouseInteraction();
+
+	//endSelection();
+
+	publishSelection();
+
+	setInteractionMode(InteractionMode::None);
+}
+
+/*
 void ImageViewerWidget::startSelection()
 {
 	qDebug() << "Start selection";
 
 	_selecting = true;
-
-	update();
 }
 
 void ImageViewerWidget::endSelection()
 {
-	qDebug() << "End selection";
+	qDebug() << "Start selection";
+	
+}
+*/
 
-	_selecting = false;
+void ImageViewerWidget::startWindowLevelMode()
+{
+	qDebug() << "Start window/level interaction";
 
-	_mousePositions.clear();
+	setInteractionMode(InteractionMode::WindowLevel);
 
-	publishSelection();
-	//resetPixelSelection();
+	startMouseInteraction();
+}
+
+void ImageViewerWidget::endWindowLevelMode()
+{
+	qDebug() << "End window/level interaction";
+
+	endMouseInteraction();
+
+	setInteractionMode(InteractionMode::None);
 }
 
 void ImageViewerWidget::initializeGL()
@@ -433,40 +509,38 @@ void ImageViewerWidget::keyPressEvent(QKeyEvent* keyEvent)
 	}
 	else
 	{
-		if (_interactionMode == InteractionMode::Selection) {
-			switch (keyEvent->key())
-			{
-				case Qt::Key::Key_R:
-					setSelectionType(SelectionType::Rectangle);
-					break;
+		switch (keyEvent->key())
+		{
+			case Qt::Key::Key_R:
+				setSelectionType(SelectionType::Rectangle);
+				break;
 
-				case Qt::Key::Key_B:
-					setSelectionType(SelectionType::Brush);
-					break;
+			case Qt::Key::Key_B:
+				setSelectionType(SelectionType::Brush);
+				break;
 
-				case Qt::Key::Key_L:
-					setSelectionType(SelectionType::Lasso);
-					break;
+			case Qt::Key::Key_L:
+				setSelectionType(SelectionType::Lasso);
+				break;
 
-				case Qt::Key::Key_P:
-					setSelectionType(SelectionType::Polygon);
-					break;
+			case Qt::Key::Key_P:
+				setSelectionType(SelectionType::Polygon);
+				break;
 
-				case Qt::Key::Key_Shift:
-					setSelectionModifier(SelectionModifier::Add);
-					break;
+			case Qt::Key::Key_Shift:
+				setSelectionModifier(SelectionModifier::Add);
+				break;
 
-				case Qt::Key::Key_Control:
-					setSelectionModifier(SelectionModifier::Remove);
-					break;
+			case Qt::Key::Key_Control:
+				setSelectionModifier(SelectionModifier::Remove);
+				break;
 
-				case Qt::Key::Key_Space:
-					setInteractionMode(InteractionMode::Navigation);
-					break;
+			case Qt::Key::Key_Space:
+				startNavigationMode();
+				break;
 
-				default:
-					break;
-			}
+			default:
+				break;
 		}
 	}
 
@@ -493,7 +567,7 @@ void ImageViewerWidget::keyReleaseEvent(QKeyEvent* keyEvent)
 			}
 
 			case Qt::Key::Key_Space:
-				setInteractionMode(InteractionMode::Selection);
+				endNavigationMode();
 				break;
 
 			default:
@@ -519,29 +593,23 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 
 			switch (_interactionMode)
 			{
-				case InteractionMode::Navigation:
-					break;
-
-				case InteractionMode::Selection:
+				case InteractionMode::None:
 				{
 					if (_imageViewerPlugin->selectable()) {
+						startSelectionMode();
+						
 						if (_selectionType != SelectionType::Polygon) {
 							resetPixelSelection();
-							_initialMousePosition = _mousePosition;
-							_mousePositions.clear();
 						}
 						
 						_mousePositions.push_back(_mousePosition);
 
 						updatePixelSelection();
-
-						startSelection();
 					}
 
 					break;
 				}
-				case InteractionMode::WindowLevel:
-					break;
+
 				default:
 					break;
 			}
@@ -551,7 +619,7 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 
 		case Qt::RightButton:
 		{
-			setInteractionMode(InteractionMode::WindowLevel);
+			startWindowLevelMode();
 			break;
 		}
 
@@ -628,13 +696,69 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 	if (!initialized())
 		return;
 
-	qDebug() << "Mouse release event";
+	qDebug() << "Mouse release event" << _mousePositions;
 
+	/*
 	if (mouseEvent->button() == Qt::RightButton && _mousePositions.size() == 0)
 	{
 		contextMenu()->exec(mapToGlobal(mouseEvent->pos()));
 	}
+	*/
 
+	update();
+
+	switch (mouseEvent->button())
+	{
+		case Qt::LeftButton:
+		{
+			switch (_interactionMode)
+			{
+				case InteractionMode::Selection:
+				{
+					if (_imageViewerPlugin->selectable()) {
+						if (_selecting && _selectionType != SelectionType::Polygon) {
+							endSelectionMode();
+						}
+					}
+					break;
+				}
+
+				default:
+					break;
+			}
+		}
+
+		case Qt::RightButton:
+		{
+			switch (_interactionMode)
+			{
+				case InteractionMode::Selection:
+				{
+					if (_selectionType == SelectionType::Polygon) {
+						endSelectionMode();
+					}
+
+					break;
+				}
+
+				case InteractionMode::WindowLevel:
+				{
+					endWindowLevelMode();
+					break;
+				}
+
+				default:
+					break;
+			}
+		
+		}
+		
+		default:
+			break;
+		
+	}
+	
+	/*
 	switch (_interactionMode)
 	{
 		case InteractionMode::Navigation:
@@ -656,6 +780,7 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 		case InteractionMode::WindowLevel:
 		{
 			setInteractionMode(InteractionMode::Selection);
+
 			break;
 		}
 
@@ -663,11 +788,13 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 			break;
 	}
 
+
 	if (mouseEvent->button() == Qt::RightButton && _selectionType == SelectionType::Polygon && !_mousePositions.empty()) {
 		endSelection();
+		endInteraction();
 	}
-
-	update();
+	*/
+	
 
 	QOpenGLWidget::mouseReleaseEvent(mouseEvent);
 }
@@ -1199,6 +1326,7 @@ void ImageViewerWidget::setInteractionMode(const InteractionMode& interactionMod
 			break;
 
 		case InteractionMode::Selection:
+		case InteractionMode::None:
 			QWidget::setCursor(Qt::ArrowCursor);
 			break;
 

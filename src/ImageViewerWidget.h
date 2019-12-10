@@ -75,8 +75,17 @@ private:
 	void drawSelectionOutline();
 	void drawSelectionBounds();
 
-	void startSelection();
-	void endSelection();
+	void startMouseInteraction();
+	void endMouseInteraction();
+	void startSelectionMode();
+	void endSelectionMode();
+	//void startSelection();
+	//void endSelection();
+	void startNavigationMode();
+	void endNavigationMode();
+	void startWindowLevelMode();
+	void endWindowLevelMode();
+	
 
 	void pan(const QPointF& delta);
 	void zoom(const float& factor);
