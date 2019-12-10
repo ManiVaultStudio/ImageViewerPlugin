@@ -52,9 +52,7 @@ std::vector<std::uint32_t> ImageViewerPlugin::selection() const
 	if (_currentImageDataSet == nullptr)
 		return std::vector<std::uint32_t>();
 
-	const auto& selection = dynamic_cast<const hdps::IndexSet&>(_currentImageDataSet->getSelection());
-
-	return selection.indices;
+	return _currentImageDataSet->indices();
 }
 
 bool ImageViewerPlugin::hasSelection() const
@@ -195,7 +193,7 @@ void ImageViewerPlugin::computeDisplayImage()
 				}
 			}
 			
-			auto image = _currentImageDataSet->sequenceImage(ids, windowLevel.first, windowLevel.second);
+			auto image = _currentImageDataSet->sequenceImage(ids);
 
 			emit displayImageChanged(image);
 			break;
@@ -203,7 +201,7 @@ void ImageViewerPlugin::computeDisplayImage()
 
 		case ImageCollectionType::Stack:
 		{
-			auto image = _currentImageDataSet->stackImage(_currentDimensionId, windowLevel.first, windowLevel.second);
+			auto image = _currentImageDataSet->stackImage(_currentDimensionId);
 
 			emit displayImageChanged(image);
 			break;

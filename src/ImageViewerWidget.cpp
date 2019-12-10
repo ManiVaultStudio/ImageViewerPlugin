@@ -1081,6 +1081,8 @@ QMenu* ImageViewerWidget::viewMenu()
 	zoomToSelectionAction->setToolTip("Zoom to selection boundaries");
 	resetWindowLevelAction->setToolTip("Reset window/level to default values");
 
+	zoomToSelectionAction->setEnabled(_imageViewerPlugin->noSelectedPixels() > 0);
+
 	connect(zoomToExtentsAction, &QAction::triggered, this, &ImageViewerWidget::zoomExtents);
 	connect(zoomToSelectionAction, &QAction::triggered, this, &ImageViewerWidget::zoomToSelection);
 	connect(resetWindowLevelAction, &QAction::triggered, this, &ImageViewerWidget::resetWindowLevel);
