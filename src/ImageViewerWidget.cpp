@@ -187,7 +187,7 @@ void ImageViewerWidget::endWindowLevelMode()
 
 	endMouseInteraction();
 
-	setInteractionMode(InteractionMode::None);
+	setInteractionMode(InteractionMode::Selection);
 }
 
 void ImageViewerWidget::initializeGL()
@@ -626,6 +626,9 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 	if (!initialized())
 		return;
 
+	if (!_mousePositions.empty() && mouseEvent->pos() == _mousePositions.back())
+		return;
+
 	//qDebug() << "Mouse move event";
 
 	switch (mouseEvent->buttons())
@@ -693,14 +696,10 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 
 	qDebug() << "Mouse release event";
 
-	/*
-	if (mouseEvent->button() == Qt::RightButton && _mousePositions.size() == 0)
+	if (mouseEvent->button() == Qt::RightButton && _mousePositions.size() == 1)
 	{
 		contextMenu()->exec(mapToGlobal(mouseEvent->pos()));
 	}
-	*/
-
-	update();
 
 	switch (mouseEvent->button())
 	{
@@ -740,43 +739,7 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 		
 	}
 	
-	/*
-	switch (_interactionMode)
-	{
-		case InteractionMode::Navigation:
-		{
-			QWidget::setCursor(Qt::OpenHandCursor);
-			break;
-		}
-
-		case InteractionMode::Selection:
-		{
-			if (_imageViewerPlugin->selectable()) {
-				if (_selecting && _selectionType != SelectionType::Polygon) {
-					endSelection();
-				}
-			}
-			break;
-		}
-
-		case InteractionMode::WindowLevel:
-		{
-			setInteractionMode(InteractionMode::Selection);
-
-			break;
-		}
-
-		default:
-			break;
-	}
-
-
-	if (mouseEvent->button() == Qt::RightButton && _selectionType == SelectionType::Polygon && !_mousePositions.empty()) {
-		endSelection();
-		endInteraction();
-	}
-	*/
-	
+	update();
 
 	QOpenGLWidget::mouseReleaseEvent(mouseEvent);
 }

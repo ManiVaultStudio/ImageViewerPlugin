@@ -153,7 +153,7 @@ void SettingsWidget::onSelectionImageChanged(std::shared_ptr<QImage> selectionIm
 {
 	_ui->averageImagesCheckBox->blockSignals(true);
 
-		
+	updateSelectionOpacityUI();
 
 	_ui->averageImagesCheckBox->blockSignals(false);
 }
