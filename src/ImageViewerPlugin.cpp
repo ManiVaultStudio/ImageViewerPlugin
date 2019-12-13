@@ -65,7 +65,7 @@ ImageCollectionType ImageViewerPlugin::imageCollectionType() const
 	if (_currentImageDataSet == nullptr)
 		return ImageCollectionType::Undefined;
 
-	return _currentImageDataSet->imageData().imageCollectionType();
+	return _currentImageDataSet->imageCollectionType();
 }
 
 bool ImageViewerPlugin::selectable() const
@@ -106,7 +106,7 @@ void ImageViewerPlugin::update()
 
 	auto imageFileNames = QStringList();
 
-	foreach(const QString& imageFilePath, _currentImageDataSet->imageData().imageFilePaths())
+	foreach(const QString& imageFilePath, _currentImageDataSet->imageFilePaths())
 	{
 		imageFileNames << QFileInfo(imageFilePath).fileName();
 	}
@@ -130,7 +130,7 @@ void ImageViewerPlugin::update()
 			if (_averageImages) {
 				auto images = QStringList();
 
-				for (std::uint32_t i = 0; i < _currentImageDataSet->imageData().noImages(); i++) {
+				for (std::uint32_t i = 0; i < _currentImageDataSet->noImages(); i++) {
 					images << QString("%1").arg(imageFileNames[i]);
 				}
 
@@ -139,7 +139,7 @@ void ImageViewerPlugin::update()
 				imageNames << imagesString;
 			}
 			else {
-				for (std::uint32_t i = 0; i < _currentImageDataSet->imageData().noImages(); i++) {
+				for (std::uint32_t i = 0; i < _currentImageDataSet->noImages(); i++) {
 					imageNames << QString("%1").arg(imageFileNames[i]);
 				}
 			}
@@ -184,7 +184,7 @@ void ImageViewerPlugin::computeDisplayImage()
 			else
 			{
 				if (_averageImages) {
-					ids.resize(_currentImageDataSet->imageData().noImages());
+					ids.resize(_currentImageDataSet->noImages());
 					std::iota(ids.begin(), ids.end(), 0);
 				}
 				else
@@ -416,13 +416,11 @@ void ImageViewerPlugin::selectionChanged(const QString dataset)
 		computeSelectionImage();
 }
 
-QStringList ImageViewerPlugin::supportedDataKinds()
+hdps::DataTypes ImageViewerPlugin::supportedDataTypes() const
 {
-	QStringList supportedKinds;
-
-	supportedKinds << "Image Data";
-	
-	return supportedKinds;
+	hdps::DataTypes supportedTypes;
+	supportedTypes.append(ImageType);
+	return supportedTypes;
 }
 
 ImageViewerPlugin* ImageViewerPluginFactory::produce()
