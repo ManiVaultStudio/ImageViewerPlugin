@@ -2,9 +2,9 @@
 
 #include "Common.h"
 
-#include <memory>
+#include <QWidget>
 
-#include <QStackedWidget.h>
+#include <memory>
 
 class ImageViewerPlugin;
 
@@ -14,11 +14,9 @@ namespace Ui {
 
 class SettingsWidget : public QWidget
 {
-	Q_OBJECT
-
 public:
 	SettingsWidget(ImageViewerPlugin* imageViewerPlugin);
-
+    ~SettingsWidget();
 private:
 	void onDatasetNamesChanged(const QStringList& datasetNames);
 	void onCurrentDatasetChanged(const QString& currentDataset);

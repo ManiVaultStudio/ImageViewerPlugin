@@ -45,6 +45,8 @@ SettingsWidget::SettingsWidget(ImageViewerPlugin* imageViewerPlugin) :
 	}
 }
 
+SettingsWidget::~SettingsWidget() = default;
+
 void SettingsWidget::onDatasetNamesChanged(const QStringList& datasetNames)
 {
 	const auto datasetAvailable = datasetNames.size() > 0;
