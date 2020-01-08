@@ -2,7 +2,7 @@
 
 #include <ViewPlugin.h>
 
-#include "ImageData/ImageDataSet.h"
+#include "ImageData/Images.h"
 
 #include "Common.h"
 
@@ -43,7 +43,7 @@ public:
 
 public:
 	QStringList datasetNames() const;
-	ImageDataSet* currentImageDataSet();
+	Images* currentImages();
 	QString currentDatasetName() const;
 	void setCurrentDatasetName(const QString& currentDatasetName);
 	auto currentImageId() const;
@@ -78,7 +78,7 @@ private:
 	SettingsWidget*		_settingsWidget;
 	QStringList			_datasetNames;
 	QString				_currentDatasetName;
-	ImageDataSet*		_currentImageDataSet;
+	Images*				_currentImages;
 	QStringList			_imageNames;
 	std::int32_t		_currentImageId;
 	QStringList			_dimensionNames;

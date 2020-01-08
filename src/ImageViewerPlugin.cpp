@@ -15,7 +15,7 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	_settingsWidget(nullptr),
 	_datasetNames(),
 	_currentDatasetName(),
-	_currentImageDataSet(nullptr),
+	_currentImages(nullptr),
 	_imageNames(),
 	_currentImageId(0),
 	_dimensionNames(),
@@ -49,10 +49,10 @@ void ImageViewerPlugin::init()
 
 std::vector<std::uint32_t> ImageViewerPlugin::selection() const
 {
-	if (_currentImageDataSet == nullptr)
+	if (_currentImages == nullptr)
 		return std::vector<std::uint32_t>();
 
-	return _currentImageDataSet->indices();
+	return _currentImages->indices();
 }
 
 bool ImageViewerPlugin::hasSelection() const
@@ -62,10 +62,10 @@ bool ImageViewerPlugin::hasSelection() const
 
 ImageCollectionType ImageViewerPlugin::imageCollectionType() const
 {
-	if (_currentImageDataSet == nullptr)
+	if (_currentImages == nullptr)
 		return ImageCollectionType::Undefined;
 
-	return _currentImageDataSet->imageCollectionType();
+	return _currentImages->imageCollectionType();
 }
 
 bool ImageViewerPlugin::selectable() const
@@ -75,38 +75,38 @@ bool ImageViewerPlugin::selectable() const
 
 QSize ImageViewerPlugin::imageSize() const
 {
-	if (_currentImageDataSet == nullptr)
+	if (_currentImages == nullptr)
 		return QSize();
 
-	return _currentImageDataSet->imageSize();
+	return _currentImages->imageSize();
 }
 
 void ImageViewerPlugin::selectPixels(const std::vector<std::pair<std::uint32_t, std::uint32_t>>& pixelCoordinates, const SelectionModifier& selectionModifier)
 {
-	if (_currentImageDataSet == nullptr)
+	if (_currentImages == nullptr)
 		return;
 
-	_currentImageDataSet->selectPixels(pixelCoordinates, selectionModifier);
+	_currentImages->selectPixels(pixelCoordinates, selectionModifier);
 }
 
 std::uint32_t ImageViewerPlugin::noSelectedPixels()
 {
-	if (_currentImageDataSet == nullptr)
+	if (_currentImages == nullptr)
 		return 0;
 
-	return _currentImageDataSet->noSelectedPixels();
+	return _currentImages->noSelectedPixels();
 }
 
 void ImageViewerPlugin::update()
 {
-	if (_currentImageDataSet == nullptr)
+	if (_currentImages == nullptr)
 		return;
 
 	qDebug() << "Update";
 
 	auto imageFileNames = QStringList();
 
-	foreach(const QString& imageFilePath, _currentImageDataSet->imageFilePaths())
+	foreach(const QString& imageFilePath, _currentImages->imageFilePaths())
 	{
 		imageFileNames << QFileInfo(imageFilePath).fileName();
 	}
@@ -130,7 +130,7 @@ void ImageViewerPlugin::update()
 			if (_averageImages) {
 				auto images = QStringList();
 
-				for (std::uint32_t i = 0; i < _currentImageDataSet->noImages(); i++) {
+				for (std::uint32_t i = 0; i < _currentImages->noImages(); i++) {
 					images << QString("%1").arg(imageFileNames[i]);
 				}
 
@@ -139,7 +139,7 @@ void ImageViewerPlugin::update()
 				imageNames << imagesString;
 			}
 			else {
-				for (std::uint32_t i = 0; i < _currentImageDataSet->noImages(); i++) {
+				for (std::uint32_t i = 0; i < _currentImages->noImages(); i++) {
 					imageNames << QString("%1").arg(imageFileNames[i]);
 				}
 			}
@@ -167,7 +167,7 @@ void ImageViewerPlugin::update()
 
 void ImageViewerPlugin::computeDisplayImage()
 {
-	if (_currentImageDataSet == nullptr)
+	if (_currentImages == nullptr)
 		return;
 
 	const auto windowLevel = _imageViewerWidget->windowLevel();
@@ -184,7 +184,7 @@ void ImageViewerPlugin::computeDisplayImage()
 			else
 			{
 				if (_averageImages) {
-					ids.resize(_currentImageDataSet->noImages());
+					ids.resize(_currentImages->noImages());
 					std::iota(ids.begin(), ids.end(), 0);
 				}
 				else
@@ -193,7 +193,7 @@ void ImageViewerPlugin::computeDisplayImage()
 				}
 			}
 			
-			auto image = _currentImageDataSet->sequenceImage(ids);
+			auto image = _currentImages->sequenceImage(ids);
 
 			emit displayImageChanged(image);
 			break;
@@ -201,7 +201,7 @@ void ImageViewerPlugin::computeDisplayImage()
 
 		case ImageCollectionType::Stack:
 		{
-			auto image = _currentImageDataSet->stackImage(_currentDimensionId);
+			auto image = _currentImages->stackImage(_currentDimensionId);
 
 			emit displayImageChanged(image);
 			break;
@@ -214,13 +214,13 @@ void ImageViewerPlugin::computeDisplayImage()
 
 void ImageViewerPlugin::computeSelectionImage()
 {
-	if (_currentImageDataSet == nullptr)
+	if (_currentImages == nullptr)
 		return;
 
 	qDebug() << "Compute selection image";
 
 	if (imageCollectionType() == ImageCollectionType::Stack) {
-		emit selectionImageChanged(_currentImageDataSet->selectionImage(), _currentImageDataSet->selectionBounds(true));
+		emit selectionImageChanged(_currentImages->selectionImage(), _currentImages->selectionBounds(true));
 	}
 }
 
@@ -229,9 +229,9 @@ QStringList ImageViewerPlugin::datasetNames() const
 	return _datasetNames;
 }
 
-ImageDataSet* ImageViewerPlugin::currentImageDataSet()
+Images* ImageViewerPlugin::currentImages()
 {
-	return _currentImageDataSet;
+	return _currentImages;
 }
 
 QString ImageViewerPlugin::currentDatasetName() const
@@ -248,7 +248,7 @@ void ImageViewerPlugin::setCurrentDatasetName(const QString& currentDatasetName)
 
 	_currentDatasetName = currentDatasetName;
 
-	_currentImageDataSet = &_core->requestData<ImageDataSet>(_currentDatasetName);
+	_currentImages = &_core->requestData<Images>(_currentDatasetName);
 
 	emit currentDatasetChanged(_currentDatasetName);
 
@@ -343,12 +343,12 @@ void ImageViewerPlugin::setSelectionOpacity(const float& selectionOpacity)
 
 void ImageViewerPlugin::createSubsetFromSelection()
 {
-	if (_currentImageDataSet == nullptr)
+	if (_currentImages == nullptr)
 		return;
 
 	qDebug() << "Create subset from selection";
 
-	_currentImageDataSet->createSubset();
+	_currentImages->createSubset();
 }
 
 void ImageViewerPlugin::setDatasetNames(const QStringList& datasetNames)

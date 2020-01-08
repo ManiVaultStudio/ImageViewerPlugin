@@ -855,7 +855,7 @@ void ImageViewerWidget::zoomToRectangle(const QRectF& rectangle)
 
 void ImageViewerWidget::zoomToSelection()
 {
-	auto* currentImageDataSet = _imageViewerPlugin->currentImageDataSet();
+	auto* currentImageDataSet = _imageViewerPlugin->currentImages();
 
 	if (currentImageDataSet == nullptr)
 		return;
