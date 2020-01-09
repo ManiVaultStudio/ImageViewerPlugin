@@ -6,15 +6,19 @@
 #include <QOpenGLFramebufferObject>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLBuffer>
+#include <QOpenGLVertexArrayObject>
 #include <QMouseEvent>
 #include <QColor>
 #include <QRect>
+#include <QOpenGLDebugLogger>
 
 #include <memory>
 
 #include "ImageData/ImageData.h"
 
 #include "Common.h"
+
+#include "ImageQuadRenderer.h"
 
 class QMenu;
 
@@ -37,9 +41,6 @@ public:
 	void setSelectionModifier(const SelectionModifier& selectionModifier);
 	void setBrushRadius(const float& brushRadius);
 	void setBrushRadiusDelta(const float& brushRadiusDelta);
-	std::pair<float, float> windowLevel() const;
-	void setWindowLevel(const float& window, const float& level);
-	void resetWindowLevel();
 
 	void publishSelection();
 
@@ -95,8 +96,6 @@ private:
 	void zoomToSelection();
 	void resetView();
 
-	std::uint16_t windowLevel(const float& min, const float& max, const float& levelNorm, const float& windowNorm, const float& pointValue);
-
 	bool initialized();
 	void updatePixelSelection();
 	void resetPixelSelection();
@@ -110,24 +109,23 @@ private:
 	QVector3D screenToWorld(const QPoint& screen) const;
 
 private:
-	void createImageQuad();
 	void setupTextures();
 	void setupTexture(QOpenGLTexture* openGltexture, const QOpenGLTexture::TextureFormat& textureFormat, const QOpenGLTexture::Filter& filter = QOpenGLTexture::Filter::Linear);
 
 private:
 	ImageViewerPlugin*							_imageViewerPlugin;
-	std::shared_ptr<QImage>						_displayImage;
 	std::shared_ptr<QImage>						_selectionImage;
-	std::unique_ptr<QOpenGLTexture>				_imageTexture;
-	std::unique_ptr<QOpenGLTexture>				_selectionTexture;
-	std::unique_ptr<QOpenGLShaderProgram>		_imageShaderProgram;
+	std::shared_ptr<QOpenGLTexture>				_imageTexture;
+	std::shared_ptr<QOpenGLTexture>				_selectionTexture;
+	std::unique_ptr<ImageQuadRenderer>			_imageQuadRenderer;
+	/*
 	std::unique_ptr<QOpenGLShaderProgram>		_pixelSelectionShaderProgram;
 	std::unique_ptr<QOpenGLShaderProgram>		_overlayShaderProgram;
 	std::unique_ptr<QOpenGLShaderProgram>		_selectionShaderProgram;
 	std::unique_ptr<QOpenGLShaderProgram>		_selectionOutlineShaderProgram;
 	std::unique_ptr<QOpenGLShaderProgram>		_selectionBoundsShaderProgram;
 	std::unique_ptr<QOpenGLFramebufferObject>	_pixelSelectionFBO;
-	QOpenGLBuffer								_imageQuadVBO;
+	*/
 	InteractionMode								_interactionMode;
 	QPoint										_initialMousePosition;
 	QPoint										_mousePosition;
@@ -146,9 +144,8 @@ private:
 	QVector4D									_selectionOutlineColor;
 	QVector4D									_selectionBoundsColor;
 	QRect										_selectionBounds;
-	std::uint16_t								_imageMin;
-	std::uint16_t								_imageMax;
-	float										_window;
-	float										_level;
+	
+	
 	bool										_ignorePaintGL;
+	std::unique_ptr < QOpenGLDebugLogger>		_openglDebugLogger;
 };
