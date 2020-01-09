@@ -14,26 +14,28 @@
 #include <QGuiApplication>
 #include <QOpenGLTexture>
 #include <QOpenGLShaderProgram>
+#include <QOpenGLDebugLogger>
 
 #include "Shaders.h"
 
 // Panning and zooming inspired by: https://community.khronos.org/t/opengl-compound-zoom-and-pan-effect/72565/7
 
-#define PROGRAM_VERTEX_ATTRIBUTE 0
-#define PROGRAM_TEXCOORD_ATTRIBUTE 1
+
 
 ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	QOpenGLFunctions(),
 	_imageViewerPlugin(imageViewerPlugin),
 	_imageTexture(),
 	_selectionTexture(),
+	_imageQuadRenderer(),
+	/*
 	_imageShaderProgram(),
 	_pixelSelectionShaderProgram(),
 	_overlayShaderProgram(),
 	_selectionShaderProgram(),
 	_selectionBoundsShaderProgram(),
 	_pixelSelectionFBO(),
-	_imageQuadVBO(),
+	*/
 	_interactionMode(InteractionMode::Selection),
 	_initialMousePosition(),
 	_mousePosition(),
@@ -51,8 +53,7 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_selectionBoundsColor(1.0f, 0.6f, 0.f, 0.5f),
 	_selectionBounds(),
 	_ignorePaintGL(false),
-	_window(1.0f),
-	_level(0.5f)
+	_openglDebugLogger(std::make_unique<QOpenGLDebugLogger>())
 {
 	setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
 	setFocusPolicy(Qt::StrongFocus);
@@ -68,31 +69,42 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	QSurfaceFormat surfaceFormat;
 
 	surfaceFormat.setRenderableType(QSurfaceFormat::OpenGL);
-	//surfaceFormat.setProfile(QSurfaceFormat::CoreProfile);
-	//surfaceFormat.setVersion(4, 3);
 	surfaceFormat.setSamples(4);
-	//surfaceFormat.setDepthBufferSize(24);
-	//surfaceFormat.setStencilBufferSize(8);
+
+#ifdef __APPLE__
+	surfaceFormat.setVersion(3, 3);
+	surfaceFormat.setProfile(QSurfaceFormat::CoreProfile);
+	surfaceFormat.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
+#else
+	surfaceFormat.setVersion(3, 3);
+	surfaceFormat.setProfile(QSurfaceFormat::CoreProfile);
+	surfaceFormat.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
+#endif
+
+#ifdef _DEBUG
+	surfaceFormat.setOption(QSurfaceFormat::DebugContext);
+#endif
 
 	setFormat(surfaceFormat);
+
+	_imageQuadRenderer = std::make_unique<ImageQuadRenderer>();
 }
 
 ImageViewerWidget::~ImageViewerWidget()
 {
 	makeCurrent();
 
-	_imageTexture.reset();
+	/*
 	_selectionTexture.reset();
 	_imageShaderProgram.reset();
 	_pixelSelectionShaderProgram.reset();
 	_overlayShaderProgram.reset();
 	_selectionShaderProgram.reset();
 	_pixelSelectionFBO.reset();
-
 	_selectionOutlineShaderProgram.reset();
+	*/
 
-	if (_imageQuadVBO.isCreated())
-		_imageQuadVBO.destroy();
+	_imageQuadRenderer->destroy();
 
 	doneCurrent();
 }
@@ -196,24 +208,20 @@ void ImageViewerWidget::initializeGL()
 
 	initializeOpenGLFunctions();
 
-	_imageQuadVBO.create();
-	_imageQuadVBO.setUsagePattern(QOpenGLBuffer::DynamicDraw);
+	_imageQuadRenderer->init();
+
+	/*
 
 	_imageTexture					= std::make_unique<QOpenGLTexture>(QOpenGLTexture::Target2D);
 	_selectionTexture				= std::make_unique<QOpenGLTexture>(QOpenGLTexture::Target2D);
-	_imageShaderProgram				= std::make_unique<QOpenGLShaderProgram>();
+	
 	_overlayShaderProgram			= std::make_unique<QOpenGLShaderProgram>();
 	_pixelSelectionShaderProgram	= std::make_unique<QOpenGLShaderProgram>();
 	_selectionShaderProgram			= std::make_unique<QOpenGLShaderProgram>();
 	_selectionOutlineShaderProgram	= std::make_unique<QOpenGLShaderProgram>();
 	_selectionBoundsShaderProgram	= std::make_unique<QOpenGLShaderProgram>();
 
-	_imageShaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, imageVertexShaderSource.c_str());
-	_imageShaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, imageFragmentShaderSource.c_str());
-	_imageShaderProgram->bindAttributeLocation("vertex", PROGRAM_VERTEX_ATTRIBUTE);
-	_imageShaderProgram->bindAttributeLocation("texCoord", PROGRAM_TEXCOORD_ATTRIBUTE);
-	_imageShaderProgram->link();
-
+	
 	_pixelSelectionShaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, pixelSelectionVertexShaderSource.c_str());
 	_pixelSelectionShaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, pixelSelectionFragmentShaderSource.c_str());
 	_pixelSelectionShaderProgram->bindAttributeLocation("vertex", PROGRAM_VERTEX_ATTRIBUTE);
@@ -241,6 +249,15 @@ void ImageViewerWidget::initializeGL()
 	_selectionBoundsShaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, selectionBoundsFragmentShaderSource.c_str());
 	_selectionBoundsShaderProgram->bindAttributeLocation("vertex", PROGRAM_VERTEX_ATTRIBUTE);
 	_selectionBoundsShaderProgram->link();
+	
+
+	
+	
+	// Release all
+	
+	_imageQuadVBO.release();
+	_imageShaderProgram->release();
+	*/
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -251,6 +268,10 @@ void ImageViewerWidget::initializeGL()
 
 	_imageViewerPlugin->computeDisplayImage();
 	_imageViewerPlugin->computeSelectionImage();
+	
+#ifdef _DEBUG
+	_openglDebugLogger->initialize();
+#endif
 }
 
 void ImageViewerWidget::resizeGL(int w, int h)
@@ -258,6 +279,8 @@ void ImageViewerWidget::resizeGL(int w, int h)
 	qDebug() << "Resizing image viewer";
 
 	zoomExtents();
+
+	_imageQuadRenderer->resize(QSize(w, h));
 }
 
 void ImageViewerWidget::paintGL() {
@@ -268,90 +291,59 @@ void ImageViewerWidget::paintGL() {
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	if (!initialized())
-		return;
-	
-	if (_imageQuadVBO.bind()) {
-		auto modelViewProjection = projection() * modelView();
+	auto modelViewProjection = projection() * modelView();
 
-		if (_imageShaderProgram->isLinked() && _imageTexture->isCreated()) {
-			if (_imageShaderProgram->bind()) {
-				_imageShaderProgram->setUniformValue("imageTexture", 0);
-				_imageShaderProgram->setUniformValue("matrix", modelViewProjection);
+		
+	/*
+	if (_overlayShaderProgram->isLinked()) {
+		auto translate = QMatrix4x4();
 
-				const auto imageMin			= static_cast<float>(_imageMin);
-				const auto imageMax			= static_cast<float>(_imageMax);
-				const auto maxWindow		= static_cast<float>(imageMax - imageMin);
-				const auto level			= std::clamp(imageMin + (_level * maxWindow), imageMin, imageMax);
-				const auto window			= std::clamp(_window * maxWindow, imageMin, imageMax);
-				const auto minPixelValue	= std::clamp(level - (window / 2.0f), imageMin, imageMax);
-				const auto maxPixelValue	= std::clamp(level + (window / 2.0f), imageMin, imageMax);
+		translate.translate(0.0f, 0.0f, -1.0f);
+
+		if (_overlayShaderProgram->bind()) {
+			_overlayShaderProgram->setUniformValue("overlayTexture", 0);
+			_overlayShaderProgram->setUniformValue("matrix", modelViewProjection * translate);
+			_overlayShaderProgram->setUniformValue("color", _pixelSelectionColor);
+			_overlayShaderProgram->enableAttributeArray(PROGRAM_VERTEX_ATTRIBUTE);
+			_overlayShaderProgram->enableAttributeArray(PROGRAM_TEXCOORD_ATTRIBUTE);
+			_overlayShaderProgram->setAttributeBuffer(PROGRAM_VERTEX_ATTRIBUTE, GL_FLOAT, 0, 3, 5 * sizeof(GLfloat));
+			_overlayShaderProgram->setAttributeBuffer(PROGRAM_TEXCOORD_ATTRIBUTE, GL_FLOAT, 3 * sizeof(GLfloat), 2, 5 * sizeof(GLfloat));
+
+			glBindTexture(GL_TEXTURE_2D, _pixelSelectionFBO->texture());
 				
-				_imageShaderProgram->setUniformValue("minPixelValue", minPixelValue);
-				_imageShaderProgram->setUniformValue("maxPixelValue", maxPixelValue);
+			glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
-				_imageShaderProgram->enableAttributeArray(PROGRAM_VERTEX_ATTRIBUTE);
-				_imageShaderProgram->enableAttributeArray(PROGRAM_TEXCOORD_ATTRIBUTE);
-				_imageShaderProgram->setAttributeBuffer(PROGRAM_VERTEX_ATTRIBUTE, GL_FLOAT, 0, 3, 5 * sizeof(GLfloat));
-				_imageShaderProgram->setAttributeBuffer(PROGRAM_TEXCOORD_ATTRIBUTE, GL_FLOAT, 3 * sizeof(GLfloat), 2, 5 * sizeof(GLfloat));
-
-				_imageTexture->bind();
-
-				glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
-				_imageTexture->release();
-
-				_imageShaderProgram->release();
-			}
+			_overlayShaderProgram->release();
 		}
-		
-		if (_overlayShaderProgram->isLinked()) {
-			auto translate = QMatrix4x4();
-
-			translate.translate(0.0f, 0.0f, -1.0f);
-
-			if (_overlayShaderProgram->bind()) {
-				_overlayShaderProgram->setUniformValue("overlayTexture", 0);
-				_overlayShaderProgram->setUniformValue("matrix", modelViewProjection * translate);
-				_overlayShaderProgram->setUniformValue("color", _pixelSelectionColor);
-				_overlayShaderProgram->enableAttributeArray(PROGRAM_VERTEX_ATTRIBUTE);
-				_overlayShaderProgram->enableAttributeArray(PROGRAM_TEXCOORD_ATTRIBUTE);
-				_overlayShaderProgram->setAttributeBuffer(PROGRAM_VERTEX_ATTRIBUTE, GL_FLOAT, 0, 3, 5 * sizeof(GLfloat));
-				_overlayShaderProgram->setAttributeBuffer(PROGRAM_TEXCOORD_ATTRIBUTE, GL_FLOAT, 3 * sizeof(GLfloat), 2, 5 * sizeof(GLfloat));
-
-				glBindTexture(GL_TEXTURE_2D, _pixelSelectionFBO->texture());
-				
-				glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
-				_overlayShaderProgram->release();
-			}
-		}
-		
-		if (_selectionShaderProgram->isLinked() && _selectionTexture->isCreated()) {
-			modelViewProjection.translate(0.0f, 0.0f, 2.0f);
-
-			if (_selectionShaderProgram->bind()) {
-				_selectionShaderProgram->setUniformValue("selectionTexture", 0);
-				_selectionShaderProgram->setUniformValue("matrix", modelViewProjection);
-				_selectionShaderProgram->setUniformValue("color", _pointSelectionColor);
-				_selectionShaderProgram->enableAttributeArray(PROGRAM_VERTEX_ATTRIBUTE);
-				_selectionShaderProgram->enableAttributeArray(PROGRAM_TEXCOORD_ATTRIBUTE);
-				_selectionShaderProgram->setAttributeBuffer(PROGRAM_VERTEX_ATTRIBUTE, GL_FLOAT, 0, 3, 5 * sizeof(GLfloat));
-				_selectionShaderProgram->setAttributeBuffer(PROGRAM_TEXCOORD_ATTRIBUTE, GL_FLOAT, 3 * sizeof(GLfloat), 2, 5 * sizeof(GLfloat));
-
-				_selectionTexture->bind();
-
-				glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
-				_selectionTexture->release();
-
-				_selectionShaderProgram->release();
-			}
-		}
-		
-		_imageQuadVBO.release();
 	}
+		
+	if (_selectionShaderProgram->isLinked() && _selectionTexture->isCreated()) {
+		modelViewProjection.translate(0.0f, 0.0f, 2.0f);
+
+		if (_selectionShaderProgram->bind()) {
+			_selectionShaderProgram->setUniformValue("selectionTexture", 0);
+			_selectionShaderProgram->setUniformValue("matrix", modelViewProjection);
+			_selectionShaderProgram->setUniformValue("color", _pointSelectionColor);
+			_selectionShaderProgram->enableAttributeArray(PROGRAM_VERTEX_ATTRIBUTE);
+			_selectionShaderProgram->enableAttributeArray(PROGRAM_TEXCOORD_ATTRIBUTE);
+			_selectionShaderProgram->setAttributeBuffer(PROGRAM_VERTEX_ATTRIBUTE, GL_FLOAT, 0, 3, 5 * sizeof(GLfloat));
+			_selectionShaderProgram->setAttributeBuffer(PROGRAM_TEXCOORD_ATTRIBUTE, GL_FLOAT, 3 * sizeof(GLfloat), 2, 5 * sizeof(GLfloat));
+
+			_selectionTexture->bind();
+
+			glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+			_selectionTexture->release();
+
+			_selectionShaderProgram->release();
+		}
+	}
+	*/
+
 	
+	
+	
+	/*
 	if (_selectionBoundsShaderProgram->bind()) {
 		QMatrix4x4 transform = projection() * modelView();
 		
@@ -377,10 +369,20 @@ void ImageViewerWidget::paintGL() {
 
 		_selectionOutlineShaderProgram->release();
 	}
+	*/
+
+	_imageQuadRenderer->setModelViewProjection(modelViewProjection);
+	_imageQuadRenderer->render();
+
+#ifdef _DEBUG
+	for (const QOpenGLDebugMessage& message : _openglDebugLogger->loggedMessages())
+		qDebug() << message;
+#endif
 }
 
 void ImageViewerWidget::onDisplayImageChanged(std::shared_ptr<QImage> displayImage)
 {
+	/*
 	if (!isValid())
 		return;
 	
@@ -451,6 +453,30 @@ void ImageViewerWidget::onDisplayImageChanged(std::shared_ptr<QImage> displayIma
 	}
 
 	_ignorePaintGL = false;
+
+	doneCurrent();
+
+	update();
+	*/
+
+	auto imageSizeChanged = _imageQuadRenderer->size() != displayImage->size();
+
+	makeCurrent();
+
+	_imageQuadRenderer->setImage(displayImage);
+
+	if (imageSizeChanged) {
+		zoomExtents();
+
+		/*
+		const auto brushRadius = 0.05f * static_cast<float>(std::min(_displayImage->size().width(), _displayImage->size().height()));
+
+		setBrushRadius(brushRadius);
+		setBrushRadiusDelta(0.2f * brushRadius);
+
+		_pixelSelectionFBO = std::make_unique<QOpenGLFramebufferObject>(_displayImage->width(), _displayImage->height());
+		*/
+	}
 
 	doneCurrent();
 
@@ -669,10 +695,10 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 				const auto worldPos = screenToWorld(_mousePosition);
 				const auto deltaWindow = (mouseEvent->pos().x() - _mousePosition.x()) / 150.f;
 				const auto deltaLevel = -(mouseEvent->pos().y() - _mousePosition.y()) / 150.f;
-				const auto window = std::clamp(_window + deltaWindow, 0.0f, 1.0f);
-				const auto level = std::clamp(_level + deltaLevel, 0.0f, 1.0f);
+				const auto window = std::clamp(_imageQuadRenderer->window() + deltaWindow, 0.0f, 1.0f);
+				const auto level = std::clamp(_imageQuadRenderer->level() + deltaLevel, 0.0f, 1.0f);
 
-				setWindowLevel(window, level);
+				_imageQuadRenderer->setWindowLevel(window, level);
 
 				_mousePositions.push_back(_mousePosition);
 			}
@@ -829,12 +855,9 @@ void ImageViewerWidget::zoomExtents()
 	if (_imageViewerPlugin->currentDatasetName().isEmpty())
 		return;
 	
-	if (_displayImage.get() == nullptr)
-		return;
-
 	qDebug() << "Zoom extents" << _zoom;
 
-	zoomToRectangle(QRectF(QPointF(), QSizeF(_displayImage->width(), _displayImage->height())));
+	zoomToRectangle(QRectF(QPointF(), QSizeF(_imageQuadRenderer->size().width(), _imageQuadRenderer->size().height())));
 }
 
 void ImageViewerWidget::zoomToRectangle(const QRectF& rectangle)
@@ -848,7 +871,7 @@ void ImageViewerWidget::zoomToRectangle(const QRectF& rectangle)
 	const auto factorY	= (height() - 2 * _margin) / static_cast<float>(rectangle.height());
 
 	zoom(factorX < factorY ? factorX : factorY);
-	pan(_zoom * -QPointF(center.x(), _displayImage->height() - center.y()));
+	pan(_zoom * -QPointF(center.x(), _imageQuadRenderer->size().height() - center.y()));
 
 	update();
 }
@@ -877,26 +900,10 @@ void ImageViewerWidget::resetView()
 	update();
 }
 
-std::uint16_t ImageViewerWidget::windowLevel(const float& min, const float& max, const float& windowNorm, const float& levelNorm, const float& pointValue)
-{
-	const auto maxWindow = max - min;
-
-	const auto level			= std::clamp(min + (levelNorm * maxWindow), min, max);
-	const auto window			= std::clamp(windowNorm * maxWindow, min, max);
-	const auto minPixelValue	= std::clamp(level - (window / 2.0f), min, max);
-	const auto maxPixelValue	= std::clamp(level + (window / 2.0f), min, max);
-	const auto fraction			= pointValue - minPixelValue;
-	const auto range			= maxPixelValue - minPixelValue;
-
-	if (range == 0)
-		return 0;
-
-	return static_cast<std::uint16_t>(std::clamp(fraction / range, 0.0f, 1.0f) * std::numeric_limits<std::uint16_t>::max());
-}
-
 bool ImageViewerWidget::initialized()
 {
-	return _displayImage.get() != nullptr;
+	return true;
+	//return _displayImage.get() != nullptr;
 }
 
 QVector3D ImageViewerWidget::screenToWorld(const QPoint& screenPoint) const
@@ -904,41 +911,9 @@ QVector3D ImageViewerWidget::screenToWorld(const QPoint& screenPoint) const
 	return QVector3D(screenPoint.x(), height() - screenPoint.y(), 0).unproject(modelView(), projection(), QRect(0, 0, width(), height()));
 }
 
-void ImageViewerWidget::createImageQuad()
-{
-	qDebug() << "Create image quad" << *_displayImage.get();
-
-	const float width	= static_cast<float>(_displayImage->width());
-	const float height	= static_cast<float>(_displayImage->height());
-
-	const float coordinates[4][3] = {
-	  { width, height, 0.0f },
-	  { 0.0f, height, 0.0f },
-	  { 0.0f, 0.0f, 0.0f },
-	  { width, 0.0f, 0.0f }
-	};
-	
-	QVector<GLfloat> vertexData;
-
-	for (int j = 0; j < 4; ++j)
-	{
-		// vertex position
-		vertexData.append(1.0 * coordinates[j][0]);
-		vertexData.append(1.0 * coordinates[j][1]);
-		vertexData.append(1.0 * coordinates[j][2]);
-
-		// texture coordinate
-		vertexData.append(j == 0 || j == 3);
-		vertexData.append(j == 2 || j == 3);
-	}
-
-	_imageQuadVBO.bind();
-	_imageQuadVBO.allocate(vertexData.constData(), vertexData.count() * sizeof(GLfloat));
-	_imageQuadVBO.release();
-}
-
 void ImageViewerWidget::updatePixelSelection()
 {
+	/*
 	//qDebug() << "Update selection" << selectionTypeName(_selectionType);
 
 	makeCurrent();
@@ -952,7 +927,8 @@ void ImageViewerWidget::updatePixelSelection()
 
 	transform.ortho(0.0f, _displayImage->width(), 0.0f, _displayImage->height(), -1.0f, +1.0f);
 
-	if (_imageQuadVBO.bind()) {
+	
+	if (_imageQuadVAO.bind()) {
 		if (_pixelSelectionShaderProgram->bind()) {
 			glBindTexture(GL_TEXTURE_2D, _pixelSelectionFBO->texture());
 
@@ -1035,18 +1011,20 @@ void ImageViewerWidget::updatePixelSelection()
 			_pixelSelectionShaderProgram->release();
 		}
 
-		_imageQuadVBO.release();
+		_imageQuadVAO.release();
 	}
-
+	
 	_pixelSelectionFBO->release();
 
 	doneCurrent();
 
 	update();
+	*/
 }
 
 void ImageViewerWidget::resetPixelSelection()
 {
+	/*
 	makeCurrent();
 
 	if (_pixelSelectionFBO->bind()) {
@@ -1058,10 +1036,12 @@ void ImageViewerWidget::resetPixelSelection()
 	doneCurrent();
 
 	update();
+	*/
 }
 
 void ImageViewerWidget::publishSelection()
 {
+	/*
 	qDebug() << "Publish selection";
 	
 	makeCurrent();
@@ -1087,6 +1067,7 @@ void ImageViewerWidget::publishSelection()
 	_imageViewerPlugin->selectPixels(pixelCoordinates, _selectionModifier);
 
 	update();
+	*/
 }
 
 void ImageViewerWidget::selectAll()
@@ -1157,7 +1138,7 @@ QMenu* ImageViewerWidget::viewMenu()
 
 	connect(zoomToExtentsAction, &QAction::triggered, this, &ImageViewerWidget::zoomExtents);
 	connect(zoomToSelectionAction, &QAction::triggered, this, &ImageViewerWidget::zoomToSelection);
-	connect(resetWindowLevelAction, &QAction::triggered, this, &ImageViewerWidget::resetWindowLevel);
+	//connect(resetWindowLevelAction, &QAction::triggered, _imageQuadRenderer.get(), &ImageQuadRenderer::resetWindowLevel);
 
 	viewMenu->addAction(zoomToExtentsAction);
 	viewMenu->addAction(zoomToSelectionAction);
@@ -1242,6 +1223,7 @@ void ImageViewerWidget::setupTextures()
 
 void ImageViewerWidget::setupTexture(QOpenGLTexture* openGltexture, const QOpenGLTexture::TextureFormat& textureFormat, const QOpenGLTexture::Filter& filter /*= QOpenGLTexture::Filter::Linear*/)
 {
+	/*
 	qDebug() << "Setup texture" << *_displayImage.get();
 
 	openGltexture->destroy();
@@ -1250,6 +1232,7 @@ void ImageViewerWidget::setupTexture(QOpenGLTexture* openGltexture, const QOpenG
 	openGltexture->setFormat(textureFormat);
 	openGltexture->allocateStorage();
 	openGltexture->setMinMagFilters(filter, filter);
+	*/
 }
 
 InteractionMode ImageViewerWidget::interactionMode() const
@@ -1342,34 +1325,9 @@ void ImageViewerWidget::setBrushRadiusDelta(const float& brushRadiusDelta)
 	update();
 }
 
-std::pair<float, float> ImageViewerWidget::windowLevel() const
-{
-	return std::make_pair(_window, _level);
-}
-
-void ImageViewerWidget::setWindowLevel(const float& window, const float& level)
-{
-	if (window == _window && level == _level)
-		return;
-
-	_window = std::clamp(window, 0.01f, 1.0f);
-	_level	= std::clamp(level, 0.01f, 1.0f);
-
-	qDebug() << "Set window/level" << _window << _level;
-
-	update();
-}
-
-void ImageViewerWidget::resetWindowLevel()
-{
-	_window = 1.0;
-	_level = 0.5;
-
-	update();
-}
-
 void ImageViewerWidget::drawSelectionOutlineRectangle(const QPoint& start, const QPoint& end)
 {
+	/*
 	const GLfloat vertexCoordinates[] = {
 	  start.x(), start.y(), 0.0f,
 	  end.x(), start.y(), 0.0f,
@@ -1382,10 +1340,12 @@ void ImageViewerWidget::drawSelectionOutlineRectangle(const QPoint& start, const
 	_selectionOutlineShaderProgram->setAttributeArray(vertexLocation, vertexCoordinates, 3);
 
 	glDrawArrays(GL_LINE_LOOP, 0, 4);
+	*/
 }
 
 void ImageViewerWidget::drawSelectionOutlineBrush()
 {
+	/*
 	const auto brushCenter	= QWidget::mapFromGlobal(QCursor::pos());
 	const auto noSegments	= 64u;
 
@@ -1410,10 +1370,12 @@ void ImageViewerWidget::drawSelectionOutlineBrush()
 	_selectionOutlineShaderProgram->setAttributeArray(vertexLocation, vertexCoordinates.data(), 3);
 
 	glDrawArrays(GL_LINE_LOOP, 0, noSegments);
+	*/
 }
 
 void ImageViewerWidget::drawSelectionOutlineLasso()
 {
+	/*
 	std::vector<GLfloat> vertexCoordinates;
 
 	vertexCoordinates.resize(_mousePositions.size() * 3);
@@ -1431,10 +1393,12 @@ void ImageViewerWidget::drawSelectionOutlineLasso()
 	_selectionOutlineShaderProgram->setAttributeArray(vertexLocation, vertexCoordinates.data(), 3);
 	
 	glDrawArrays(GL_LINE_LOOP, 0, static_cast<std::int32_t>(_mousePositions.size()));
+	*/
 }
 
 void ImageViewerWidget::drawSelectionOutlinePolygon()
 {
+	/*
 	std::vector<GLfloat> vertexCoordinates;
 
 	vertexCoordinates.resize(_mousePositions.size() * 3);
@@ -1455,6 +1419,7 @@ void ImageViewerWidget::drawSelectionOutlinePolygon()
 
 	glDrawArrays(GL_LINE_LOOP, 0, static_cast<std::int32_t>(_mousePositions.size()));
 	glDrawArrays(GL_POINTS, 0, static_cast<std::int32_t>(_mousePositions.size()));
+	*/
 }
 
 void ImageViewerWidget::drawSelectionOutline()
@@ -1504,6 +1469,7 @@ void ImageViewerWidget::drawSelectionOutline()
 
 void ImageViewerWidget::drawSelectionBounds()
 {
+	/*
 	if (!_selectionBounds.isValid())
 		return;
 
@@ -1525,13 +1491,14 @@ void ImageViewerWidget::drawSelectionBounds()
 
 	_selectionBoundsShaderProgram->setAttributeArray(vertexLocation, vertexCoordinates, 3);
 
-	glEnable(GL_LINE_STIPPLE);
-	glLineStipple(1, 0x00FF);
+	//glEnable(GL_LINE_STIPPLE);
+	//glLineStipple(1, 0x00FF);
 	glLineWidth(2.f);
 
 	glDrawArrays(GL_LINE_LOOP, 0, 4);
 
-	glDisable(GL_LINE_STIPPLE);
+	//glDisable(GL_LINE_STIPPLE);
 
 	//_selectionBoundsShaderProgram->disableAttributeArray(vertexLocation);
+	*/
 }

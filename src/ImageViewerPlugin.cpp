@@ -170,8 +170,6 @@ void ImageViewerPlugin::computeDisplayImage()
 	if (_currentImages == nullptr)
 		return;
 
-	const auto windowLevel = _imageViewerWidget->windowLevel();
-
 	switch (imageCollectionType()) {
 		case ImageCollectionType::Sequence:
 		{
