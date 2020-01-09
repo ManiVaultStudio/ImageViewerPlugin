@@ -77,15 +77,6 @@ void SelectionRenderer::setImage(std::shared_ptr<QImage> image)
 {
 	_texture.reset(new QOpenGLTexture(*image.get()));
 
-	/*
-	_texture->setSize(image->size().width(), image->size().height());
-	_texture->setFormat(QOpenGLTexture::R8_UNorm);
-	_texture->setWrapMode(QOpenGLTexture::ClampToEdge);
-	_texture->setMinMagFilters(QOpenGLTexture::Filter::Nearest, QOpenGLTexture::Filter::Nearest);
-	//_texture->allocateStorage();
-	//_texture->setData(QOpenGLTexture::PixelFormat::RGBA, QOpenGLTexture::PixelType::UInt16, image->bits());
-	*/
-
 	createQuad();
 }
 

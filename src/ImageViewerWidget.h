@@ -77,6 +77,7 @@ private:
 	void drawSelectionOutline();
 	void drawSelectionBounds();
 
+public:
 	void startMouseInteraction();
 	void endMouseInteraction();
 	void startSelectionMode(const SelectionType& selectionType);
@@ -88,7 +89,7 @@ private:
 	void startWindowLevelMode();
 	void endWindowLevelMode();
 	
-
+public:
 	void pan(const QPointF& delta);
 	void zoom(const float& factor);
 	void zoomAt(const QPointF & position, const float & factor);
@@ -101,30 +102,20 @@ private:
 	void updatePixelSelection();
 	void resetPixelSelection();
 
+protected:
 	QMenu* contextMenu();
 	QMenu* viewMenu();
 	QMenu* selectionMenu();
 
+protected:
 	QMatrix4x4 modelView() const;
 	QMatrix4x4 projection() const;
 	QVector3D screenToWorld(const QPoint& screen) const;
 
 private:
-	void setupTextures();
-	void setupTexture(QOpenGLTexture* openGltexture, const QOpenGLTexture::TextureFormat& textureFormat, const QOpenGLTexture::Filter& filter = QOpenGLTexture::Filter::Linear);
-
-private:
 	ImageViewerPlugin*							_imageViewerPlugin;
 	std::unique_ptr<ImageQuadRenderer>			_imageQuadRenderer;
 	std::unique_ptr<SelectionRenderer>			_selectionRenderer;
-	/*
-	std::unique_ptr<QOpenGLShaderProgram>		_pixelSelectionShaderProgram;
-	std::unique_ptr<QOpenGLShaderProgram>		_overlayShaderProgram;
-	std::unique_ptr<QOpenGLShaderProgram>		_selectionShaderProgram;
-	std::unique_ptr<QOpenGLShaderProgram>		_selectionOutlineShaderProgram;
-	std::unique_ptr<QOpenGLShaderProgram>		_selectionBoundsShaderProgram;
-	std::unique_ptr<QOpenGLFramebufferObject>	_pixelSelectionFBO;
-	*/
 	InteractionMode								_interactionMode;
 	QPoint										_initialMousePosition;
 	QPoint										_mousePosition;
@@ -138,13 +129,9 @@ private:
 	SelectionModifier							_selectionModifier;
 	float										_brushRadius;
 	float										_brushRadiusDelta;
-	
 	QVector4D									_pixelSelectionColor;
 	QVector4D									_selectionOutlineColor;
-	QVector4D									_selectionBoundsColor;
-	QRect										_selectionBounds;
-	
-	
+
 	bool										_ignorePaintGL;
 	std::unique_ptr < QOpenGLDebugLogger>		_openglDebugLogger;
 };

@@ -43,8 +43,6 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_brushRadiusDelta(2.0f),
 	_pixelSelectionColor(1.f, 0.6f, 0.f, 0.3f),
 	_selectionOutlineColor(1.0f, 0.6f, 0.f, 1.0f),
-	_selectionBoundsColor(1.0f, 0.6f, 0.f, 0.5f),
-	_selectionBounds(),
 	_ignorePaintGL(false),
 	_openglDebugLogger(std::make_unique<QOpenGLDebugLogger>())
 {
@@ -203,46 +201,15 @@ void ImageViewerWidget::initializeGL()
 
 	initializeOpenGLFunctions();
 
-	_imageQuadRenderer->init();
-	_selectionRenderer->init();
-
-	/*
-	_overlayShaderProgram			= std::make_unique<QOpenGLShaderProgram>();
-	_selectionShaderProgram			= std::make_unique<QOpenGLShaderProgram>();
-	_selectionOutlineShaderProgram	= std::make_unique<QOpenGLShaderProgram>();
-	_selectionBoundsShaderProgram	= std::make_unique<QOpenGLShaderProgram>();
-	
-	_overlayShaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, overlayVertexShaderSource.c_str());
-	_overlayShaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, overlayFragmentShaderSource.c_str());
-	_overlayShaderProgram->bindAttributeLocation("vertex", PROGRAM_VERTEX_ATTRIBUTE);
-	_overlayShaderProgram->bindAttributeLocation("texCoord", PROGRAM_TEXCOORD_ATTRIBUTE);
-	_overlayShaderProgram->link();
-
-	_selectionOutlineShaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, selectionOutlineVertexShaderSource.c_str());
-	_selectionOutlineShaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, selectionOutlineFragmentShaderSource.c_str());
-	_selectionOutlineShaderProgram->bindAttributeLocation("vertex", PROGRAM_VERTEX_ATTRIBUTE);
-	_selectionOutlineShaderProgram->link();
-
-	_selectionBoundsShaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, selectionBoundsVertexShaderSource.c_str());
-	_selectionBoundsShaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, selectionBoundsFragmentShaderSource.c_str());
-	_selectionBoundsShaderProgram->bindAttributeLocation("vertex", PROGRAM_VERTEX_ATTRIBUTE);
-	_selectionBoundsShaderProgram->link();
-	
-
-	
-	
-	// Release all
-	
-	_imageQuadVBO.release();
-	_imageShaderProgram->release();
-	*/
-
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_MULTISAMPLE);
 	glEnable(GL_LINE_SMOOTH);
 	glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
 	glDepthMask(false);
+
+	_imageQuadRenderer->init();
+	_selectionRenderer->init();
 
 	_imageViewerPlugin->computeDisplayImage();
 	_imageViewerPlugin->computeSelectionImage();
@@ -272,7 +239,6 @@ void ImageViewerWidget::paintGL() {
 
 	auto modelViewProjection = projection() * modelView();
 
-		
 	/*
 	if (_overlayShaderProgram->isLinked()) {
 		auto translate = QMatrix4x4();
@@ -372,7 +338,7 @@ void ImageViewerWidget::onSelectionImageChanged(std::shared_ptr<QImage> selectio
 
 	_selectionRenderer->setImage(selectionImage);
 
-	_selectionBounds = selectionBounds;
+	//_selectionBounds = selectionBounds;
 
 	doneCurrent();
 
@@ -1013,7 +979,7 @@ QMenu* ImageViewerWidget::viewMenu()
 
 	connect(zoomToExtentsAction, &QAction::triggered, this, &ImageViewerWidget::zoomExtents);
 	connect(zoomToSelectionAction, &QAction::triggered, this, &ImageViewerWidget::zoomToSelection);
-	//connect(resetWindowLevelAction, &QAction::triggered, _imageQuadRenderer.get(), &ImageQuadRenderer::resetWindowLevel);
+	connect(resetWindowLevelAction, &QAction::triggered, [&]() { _imageQuadRenderer->resetWindowLevel();  });
 
 	viewMenu->addAction(zoomToExtentsAction);
 	viewMenu->addAction(zoomToSelectionAction);
@@ -1086,27 +1052,6 @@ QMatrix4x4 ImageViewerWidget::projection() const
 	projection.ortho(-halfSize.width(), halfSize.width(), -halfSize.height(), halfSize.height(), -10.0f, +10.0f);
 
 	return projection;
-}
-
-void ImageViewerWidget::setupTextures()
-{
-	qDebug() << "Setup textures";
-
-	
-}
-
-void ImageViewerWidget::setupTexture(QOpenGLTexture* openGltexture, const QOpenGLTexture::TextureFormat& textureFormat, const QOpenGLTexture::Filter& filter /*= QOpenGLTexture::Filter::Linear*/)
-{
-	/*
-	qDebug() << "Setup texture" << *_displayImage.get();
-
-	openGltexture->destroy();
-	openGltexture->create();
-	openGltexture->setSize(_displayImage->width(), _displayImage->height(), 1);
-	openGltexture->setFormat(textureFormat);
-	openGltexture->allocateStorage();
-	openGltexture->setMinMagFilters(filter, filter);
-	*/
 }
 
 InteractionMode ImageViewerWidget::interactionMode() const
