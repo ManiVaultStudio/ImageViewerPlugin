@@ -10,20 +10,12 @@
 #define PROGRAM_TEXCOORD_ATTRIBUTE 1
 
 ImageQuadRenderer::ImageQuadRenderer() :
-	Renderer(),
-	_texture(),
-	_vertexData(),
-	_vbo(),
-	_vao(),
-	_program(),
-	_image(),
+	QuadRenderer(),
 	_imageMin(),
 	_imageMax(),
 	_window(),
-	_level(),
-	_modelViewProjection()
+	_level()
 {
-	_vertexData.resize(20);
 }
 
 ImageQuadRenderer::~ImageQuadRenderer()
@@ -32,8 +24,6 @@ ImageQuadRenderer::~ImageQuadRenderer()
 
 void ImageQuadRenderer::init()
 {
-	qDebug() << "ImageQuadRenderer::init";
-
 	initializeOpenGLFunctions();
 
 	_program = std::make_unique<QOpenGLShaderProgram>();
@@ -44,7 +34,6 @@ void ImageQuadRenderer::init()
 	
 	_program->link();
 	
-
 	// Vertex buffer object
 	_vbo.create();
 	_vbo.bind();
@@ -69,13 +58,6 @@ void ImageQuadRenderer::init()
 	_vao.release();
 	_vbo.release();
 	_program->release();
-
-
-}
-
-void ImageQuadRenderer::resize(QSize renderSize)
-{
-	qDebug() << "ImageQuadRenderer::resize";
 }
 
 void ImageQuadRenderer::render()
@@ -115,15 +97,6 @@ void ImageQuadRenderer::render()
 		_texture->release();
 	}
 	_program->release();
-}
-
-void ImageQuadRenderer::destroy()
-{
-	qDebug() << "ImageQuadRenderer::destroy";
-
-	_texture->destroy();
-	_vbo.destroy();
-	_vao.destroy();
 }
 
 void ImageQuadRenderer::setImage(std::shared_ptr<QImage> image)
@@ -167,15 +140,7 @@ void ImageQuadRenderer::setImage(std::shared_ptr<QImage> image)
 	_texture->setData(QOpenGLTexture::PixelFormat::RGBA, QOpenGLTexture::PixelType::UInt16, _image->bits());
 
 	createQuad();
-
 	resetWindowLevel();
-}
-
-void ImageQuadRenderer::setModelViewProjection(const QMatrix4x4& modelViewProjection)
-{
-	_modelViewProjection = modelViewProjection;
-
-	render();
 }
 
 float ImageQuadRenderer::window() const
@@ -200,49 +165,4 @@ void ImageQuadRenderer::resetWindowLevel()
 {
 	_window = 1.0;
 	_level	= 0.5;
-}
-
-QSize ImageQuadRenderer::size() const
-{
-	return _image.get() == nullptr ? QSize() : _image->size();
-}
-
-bool ImageQuadRenderer::initialized() const
-{
-	return _texture.get() != nullptr && _texture->isCreated();
-}
-
-void ImageQuadRenderer::createQuad()
-{
-	const float width	= initialized() ? static_cast<float>(_texture->width()) : 0;
-	const float height	= initialized() ? static_cast<float>(_texture->height()) : 0;
-
-	qDebug() << "Create quad" << width << height;
-
-	const float coordinates[4][3] = {
-	  { width, height, 0.0f },
-	  { 0.0f, height, 0.0f },
-	  { 0.0f, 0.0f, 0.0f },
-	  { width, 0.0f, 0.0f }
-	};
-
-	for (int j = 0; j < 4; ++j)
-	{
-		// Vertex position
-		_vertexData[j * 5 + 0] = 1.0 * coordinates[j][0];
-		_vertexData[j * 5 + 1] = 1.0 * coordinates[j][1];
-		_vertexData[j * 5 + 2] = 1.0 * coordinates[j][2];
-
-		// Texture coordinate
-		_vertexData[j * 5 + 3] = j == 0 || j == 3;
-		_vertexData[j * 5 + 4] = j == 2 || j == 3;
-	}
-
-	_vao.bind();
-	{
-		_vbo.bind();
-		_vbo.allocate(_vertexData.constData(), _vertexData.count() * sizeof(GLfloat));
-		_vbo.release();
-	}
-	_vao.release();
 }
