@@ -19,6 +19,7 @@
 #include "Common.h"
 
 #include "ImageQuadRenderer.h"
+#include "SelectionRenderer.h"
 
 class QMenu;
 
@@ -114,9 +115,8 @@ private:
 
 private:
 	ImageViewerPlugin*							_imageViewerPlugin;
-	std::shared_ptr<QImage>						_selectionImage;
-	std::shared_ptr<QOpenGLTexture>				_selectionTexture;
 	std::unique_ptr<ImageQuadRenderer>			_imageQuadRenderer;
+	std::unique_ptr<SelectionRenderer>			_selectionRenderer;
 	/*
 	std::unique_ptr<QOpenGLShaderProgram>		_pixelSelectionShaderProgram;
 	std::unique_ptr<QOpenGLShaderProgram>		_overlayShaderProgram;
@@ -138,7 +138,7 @@ private:
 	SelectionModifier							_selectionModifier;
 	float										_brushRadius;
 	float										_brushRadiusDelta;
-	QVector4D									_pointSelectionColor;
+	
 	QVector4D									_pixelSelectionColor;
 	QVector4D									_selectionOutlineColor;
 	QVector4D									_selectionBoundsColor;
