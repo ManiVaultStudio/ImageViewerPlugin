@@ -14,7 +14,7 @@ SelectionBoundsRenderer::SelectionBoundsRenderer() :
 	_vertexData(),
 	_vbo(),
 	_vao(),
-	_program(),
+	_program(std::make_unique<QOpenGLShaderProgram>()),
 	_modelViewProjection(),
 	_selectionBoundsColor(1.0f, 0.6f, 0.f, 0.5f),
 	_selectionBounds()
@@ -24,9 +24,10 @@ SelectionBoundsRenderer::SelectionBoundsRenderer() :
 
 void SelectionBoundsRenderer::init()
 {
-	/*
 	initializeOpenGLFunctions();
+	initializeProgram();
 
+	/*
 	_program = std::make_unique<QOpenGLShaderProgram>();
 
 	// Shader program
@@ -62,21 +63,40 @@ void SelectionBoundsRenderer::init()
 	*/
 }
 
+void SelectionBoundsRenderer::resize(QSize renderSize)
+{
+
+}
+
 void SelectionBoundsRenderer::render()
 {
-	/*
 	if (!initialized())
 		return;
 
-	_texture->bind();
-	{
-		_vao.bind();
-		{
-			glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-		}
-		_vao.release();
-	}
-	_texture->release();
+	//qDebug() << "Draw selection bounds" << _selectionBounds;
+
+	/*
+	const GLfloat boxScreen[4] = {
+		_selectionBounds.left(), _selectionBounds.right(),
+		_displayImage->height() - _selectionBounds.top(), _displayImage->height() - _selectionBounds.bottom()
+	};
+
+	const GLfloat vertexCoordinates[] = {
+		boxScreen[0],		boxScreen[3] - 1.f, 0.0f,
+		boxScreen[1] + 1.f, boxScreen[3] - 1.f, 0.0f,
+		boxScreen[1] + 1.f,	boxScreen[2],		0.0f,
+		boxScreen[0],		boxScreen[2],		0.0f
+	};
+
+	const auto vertexLocation = _program->attributeLocation("vertex");
+
+	_program->setAttributeArray(vertexLocation, vertexCoordinates, 3);
+
+	glLineWidth(2.f);
+
+	glDrawArrays(GL_LINE_LOOP, 0, 4);
+
+	_program->disableAttributeArray(vertexLocation);
 	*/
 }
 
@@ -87,7 +107,24 @@ void SelectionBoundsRenderer::destroy()
 	_vao.destroy();
 }
 
+void SelectionBoundsRenderer::initializeProgram()
+{
+	_program->addShaderFromSourceCode(QOpenGLShader::Vertex, selectionBoundsVertexShaderSource.c_str());
+	_program->addShaderFromSourceCode(QOpenGLShader::Fragment, selectionBoundsFragmentShaderSource.c_str());
+	_program->link();
+}
+
 void SelectionBoundsRenderer::setModelViewProjection(const QMatrix4x4& modelViewProjection)
 {
 	_modelViewProjection = modelViewProjection;
+}
+
+void SelectionBoundsRenderer::setSelectionBounds(const QRect& selectionBounds)
+{
+	_selectionBounds = selectionBounds;
+}
+
+bool SelectionBoundsRenderer::initialized() const
+{
+	return _selectionBounds.isValid();
 }

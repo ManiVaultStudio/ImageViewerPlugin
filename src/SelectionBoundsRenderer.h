@@ -19,13 +19,18 @@ public:
 
 public:
 	void init() override;
+	void resize(QSize renderSize) override;
 	void render() override;
 	void destroy() override;
 
+	void initializeProgram();
+
 public:
 	void setModelViewProjection(const QMatrix4x4& modelViewProjection);
+	void setSelectionBounds(const QRect& selectionBounds);
 
 protected:
+	bool initialized() const;
 
 protected:
 	QVector<GLfloat>						_vertexData;

@@ -10,8 +10,9 @@ public:
 	ImageQuadRenderer();
 
 public:
-	void init() override;
 	void render() override;
+
+	void initializeProgram();
 
 public:
 	void setImage(std::shared_ptr<QImage> image);

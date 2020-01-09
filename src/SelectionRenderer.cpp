@@ -15,44 +15,6 @@ SelectionRenderer::SelectionRenderer() :
 {
 }
 
-void SelectionRenderer::init()
-{
-	initializeOpenGLFunctions();
-
-	_program = std::make_unique<QOpenGLShaderProgram>();
-
-	// Shader program
-	_program->addShaderFromSourceCode(QOpenGLShader::Vertex, selectionVertexShaderSource.c_str());
-	_program->addShaderFromSourceCode(QOpenGLShader::Fragment, selectionFragmentShaderSource.c_str());
-	
-	_program->link();
-	
-	// Vertex buffer object
-	_vbo.create();
-	_vbo.bind();
-	_vbo.setUsagePattern(QOpenGLBuffer::DynamicDraw);
-	_vbo.allocate(_vertexData.constData(), _vertexData.count() * sizeof(GLfloat));
-	_vbo.release();
-
-	// Vertex array object
-	_vao.create();
-
-	_program->bind();
-
-	_vao.bind();
-	{
-		_vbo.bind();
-
-		_program->enableAttributeArray(PROGRAM_VERTEX_ATTRIBUTE);
-		_program->enableAttributeArray(PROGRAM_TEXCOORD_ATTRIBUTE);
-		_program->setAttributeBuffer(PROGRAM_VERTEX_ATTRIBUTE, GL_FLOAT, 0, 3, 5 * sizeof(GLfloat));
-		_program->setAttributeBuffer(PROGRAM_TEXCOORD_ATTRIBUTE, GL_FLOAT, 3 * sizeof(GLfloat), 2, 5 * sizeof(GLfloat));
-	}
-	_vao.release();
-	_vbo.release();
-	_program->release();
-}
-
 void SelectionRenderer::render()
 {
 	if (!initialized())
@@ -71,6 +33,13 @@ void SelectionRenderer::render()
 		QuadRenderer::render();
 	}
 	_program->release();
+}
+
+void SelectionRenderer::initializeProgram()
+{
+	_program->addShaderFromSourceCode(QOpenGLShader::Vertex, selectionVertexShaderSource.c_str());
+	_program->addShaderFromSourceCode(QOpenGLShader::Fragment, selectionFragmentShaderSource.c_str());
+	_program->link();
 }
 
 void SelectionRenderer::setImage(std::shared_ptr<QImage> image)
