@@ -4,20 +4,10 @@
 
 #include "QuadRenderer.h"
 
-#include <QOpenGLTexture>
-#include <QOpenGLBuffer>
-#include <QOpenGLVertexArrayObject>
-#include <QOpenGLShaderProgram>
-#include <QImage>
-#include <QVector>
-#include <QMatrix4x4>
-#include <QOpenGLDebugLogger>
-
 class ImageQuadRenderer : public QuadRenderer
 {
 public:
 	ImageQuadRenderer();
-    ~ImageQuadRenderer();
 
 public:
 	void init() override;

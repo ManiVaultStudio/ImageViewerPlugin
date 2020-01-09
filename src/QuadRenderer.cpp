@@ -16,7 +16,6 @@ QuadRenderer::QuadRenderer() :
 	_vbo(),
 	_vao(),
 	_program(),
-	_image(),
 	_modelViewProjection()
 {
 	_vertexData.resize(20);
@@ -33,10 +32,8 @@ void QuadRenderer::init()
 	// Shader program
 	_program->addShaderFromSourceCode(QOpenGLShader::Vertex, imageVertexShaderSource.c_str());
 	_program->addShaderFromSourceCode(QOpenGLShader::Fragment, imageFragmentShaderSource.c_str());
-	
 	_program->link();
 	
-
 	// Vertex buffer object
 	_vbo.create();
 	_vbo.bind();
@@ -60,6 +57,7 @@ void QuadRenderer::init()
 	}
 	_vao.release();
 	_vbo.release();
+
 	_program->release();
 }
 
@@ -70,24 +68,22 @@ void QuadRenderer::resize(QSize renderSize)
 
 void QuadRenderer::render()
 {
-	//qDebug() << "QuadRenderer::render" << _modelViewProjection;
-
 	if (!initialized())
 		return;
 
 	_texture->bind();
-	_vao.bind();
-
-	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
-	_vao.release();
+	{
+		_vao.bind();
+		{
+			glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+		}
+		_vao.release();
+	}
 	_texture->release();
 }
 
 void QuadRenderer::destroy()
 {
-	qDebug() << "QuadRenderer::destroy";
-
 	_texture->destroy();
 	_vbo.destroy();
 	_vao.destroy();
@@ -100,7 +96,7 @@ void QuadRenderer::setModelViewProjection(const QMatrix4x4& modelViewProjection)
 
 QSize QuadRenderer::size() const
 {
-	return _image.get() == nullptr ? QSize() : _image->size();
+	return _texture.get() == nullptr ? QSize() : QSize(_texture->width(), _texture->height());
 }
 
 bool QuadRenderer::initialized() const

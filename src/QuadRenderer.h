@@ -25,7 +25,6 @@ public:
 	void destroy() override;
 
 public:
-	void setImage(std::shared_ptr<QImage> image);
 	void setModelViewProjection(const QMatrix4x4& modelViewProjection);
 	QSize size() const;
 
@@ -39,6 +38,5 @@ protected:
 	QOpenGLBuffer							_vbo;
 	QOpenGLVertexArrayObject				_vao;
 	std::unique_ptr<QOpenGLShaderProgram>	_program;
-	std::shared_ptr<QImage>					_image;
 	QMatrix4x4								_modelViewProjection;
 };

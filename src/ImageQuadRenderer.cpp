@@ -18,10 +18,6 @@ ImageQuadRenderer::ImageQuadRenderer() :
 {
 }
 
-ImageQuadRenderer::~ImageQuadRenderer()
-{
-}
-
 void ImageQuadRenderer::init()
 {
 	initializeOpenGLFunctions();
@@ -62,8 +58,6 @@ void ImageQuadRenderer::init()
 
 void ImageQuadRenderer::render()
 {
-	//qDebug() << "ImageQuadRenderer::render" << _modelViewProjection;
-
 	if (!initialized())
 		return;
 
@@ -88,39 +82,31 @@ void ImageQuadRenderer::render()
 		_program->setAttributeBuffer(PROGRAM_VERTEX_ATTRIBUTE, GL_FLOAT, 0, 3, 5 * sizeof(GLfloat));
 		_program->setAttributeBuffer(PROGRAM_TEXCOORD_ATTRIBUTE, GL_FLOAT, 3 * sizeof(GLfloat), 2, 5 * sizeof(GLfloat));
 
-		_texture->bind();
-		_vao.bind();
-
-		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
-		_vao.release();
-		_texture->release();
+		QuadRenderer::render();
 	}
 	_program->release();
 }
 
 void ImageQuadRenderer::setImage(std::shared_ptr<QImage> image)
 {
-	_image = image;
+	std::uint16_t* pixels = (std::uint16_t*)image->bits();
 
-	std::uint16_t* pixels = (std::uint16_t*)_image->bits();
-
-	const auto noPixels = _image->width() * _image->height();
+	const auto noPixels = image->width() * image->height();
 
 	auto test = std::vector<std::uint16_t>(pixels, pixels + noPixels * 4);
 
 	_imageMin = std::numeric_limits<std::uint16_t>::max();
 	_imageMax = std::numeric_limits<std::uint16_t>::min();
 
-	for (std::int32_t y = 0; y < _image->height(); y++)
+	for (std::int32_t y = 0; y < image->height(); y++)
 	{
-		for (std::int32_t x = 0; x < _image->width(); x++)
+		for (std::int32_t x = 0; x < image->width(); x++)
 		{
-			const auto pixelId = y * _image->width() + x;
+			const auto pixelId = y * image->width() + x;
 
 			for (int c = 0; c < 3; c++)
 			{
-				const auto channel = reinterpret_cast<std::uint16_t*>(_image->bits())[pixelId * 4 + c];
+				const auto channel = reinterpret_cast<std::uint16_t*>(image->bits())[pixelId * 4 + c];
 
 				if (channel < _imageMin)
 					_imageMin = channel;
@@ -133,11 +119,11 @@ void ImageQuadRenderer::setImage(std::shared_ptr<QImage> image)
 
 	_texture.reset(new QOpenGLTexture(QOpenGLTexture::Target2D));
 
-	_texture->setSize(_image->size().width(), _image->size().height());
+	_texture->setSize(image->size().width(), image->size().height());
 	_texture->setFormat(QOpenGLTexture::RGBA16_UNorm);
 	_texture->setWrapMode(QOpenGLTexture::ClampToEdge);
 	_texture->allocateStorage();
-	_texture->setData(QOpenGLTexture::PixelFormat::RGBA, QOpenGLTexture::PixelType::UInt16, _image->bits());
+	_texture->setData(QOpenGLTexture::PixelFormat::RGBA, QOpenGLTexture::PixelType::UInt16, image->bits());
 
 	createQuad();
 	resetWindowLevel();
