@@ -20,12 +20,9 @@
 
 // Panning and zooming inspired by: https://community.khronos.org/t/opengl-compound-zoom-and-pan-effect/72565/7
 
-
-
 ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	QOpenGLFunctions(),
 	_imageViewerPlugin(imageViewerPlugin),
-	_imageTexture(),
 	_selectionTexture(),
 	_imageQuadRenderer(),
 	/*
@@ -1217,7 +1214,6 @@ void ImageViewerWidget::setupTextures()
 {
 	qDebug() << "Setup textures";
 
-	setupTexture(_imageTexture.get(), QOpenGLTexture::TextureFormat::RGB16_UNorm);
 	setupTexture(_selectionTexture.get(), QOpenGLTexture::TextureFormat::R8_UNorm, QOpenGLTexture::Filter::Nearest);
 }
 

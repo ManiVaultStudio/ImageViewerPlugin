@@ -115,7 +115,6 @@ private:
 private:
 	ImageViewerPlugin*							_imageViewerPlugin;
 	std::shared_ptr<QImage>						_selectionImage;
-	std::shared_ptr<QOpenGLTexture>				_imageTexture;
 	std::shared_ptr<QOpenGLTexture>				_selectionTexture;
 	std::unique_ptr<ImageQuadRenderer>			_imageQuadRenderer;
 	/*
