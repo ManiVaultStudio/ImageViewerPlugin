@@ -25,6 +25,7 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_imageViewerPlugin(imageViewerPlugin),
 	_imageQuadRenderer(),
 	_selectionRenderer(),
+	_selectionBoundsRenderer(),
 	/*
 	_overlayShaderProgram(),
 	_selectionBoundsShaderProgram(),
@@ -78,26 +79,18 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 
 	setFormat(surfaceFormat);
 
-	_imageQuadRenderer = std::make_unique<ImageQuadRenderer>();
-	_selectionRenderer = std::make_unique<SelectionRenderer>();
+	_imageQuadRenderer			= std::make_unique<ImageQuadRenderer>();
+	_selectionRenderer			= std::make_unique<SelectionRenderer>();
+	_selectionBoundsRenderer	= std::make_unique<SelectionBoundsRenderer>();
 }
 
 ImageViewerWidget::~ImageViewerWidget()
 {
 	makeCurrent();
 
-	/*
-	_selectionTexture.reset();
-	_imageShaderProgram.reset();
-	_pixelSelectionShaderProgram.reset();
-	_overlayShaderProgram.reset();
-	_selectionShaderProgram.reset();
-	_pixelSelectionFBO.reset();
-	_selectionOutlineShaderProgram.reset();
-	*/
-
 	_imageQuadRenderer->destroy();
 	_selectionRenderer->destroy();
+	_selectionBoundsRenderer->destroy();
 
 	doneCurrent();
 }
@@ -210,6 +203,7 @@ void ImageViewerWidget::initializeGL()
 
 	_imageQuadRenderer->init();
 	_selectionRenderer->init();
+	_selectionBoundsRenderer->init();
 
 	_imageViewerPlugin->computeDisplayImage();
 	_imageViewerPlugin->computeSelectionImage();
@@ -295,6 +289,9 @@ void ImageViewerWidget::paintGL() {
 	_selectionRenderer->setModelViewProjection(modelViewProjection);
 	_selectionRenderer->render();
 
+	_selectionBoundsRenderer->setModelViewProjection(modelViewProjection);
+	_selectionBoundsRenderer->render();
+
 #ifdef _DEBUG
 	for (const QOpenGLDebugMessage& message : _openglDebugLogger->loggedMessages())
 		qDebug() << message;
@@ -337,8 +334,7 @@ void ImageViewerWidget::onSelectionImageChanged(std::shared_ptr<QImage> selectio
 	makeCurrent();
 
 	_selectionRenderer->setImage(selectionImage);
-
-	//_selectionBounds = selectionBounds;
+	_selectionBoundsRenderer->setSelectionBounds(selectionBounds);
 
 	doneCurrent();
 
@@ -1288,36 +1284,5 @@ void ImageViewerWidget::drawSelectionOutline()
 
 void ImageViewerWidget::drawSelectionBounds()
 {
-	/*
-	if (!_selectionBounds.isValid())
-		return;
-
-	//qDebug() << "Draw selection bounds" << _selectionBounds;
-
-	const GLfloat boxScreen[4] = {
-		_selectionBounds.left(), _selectionBounds.right(),
-		_displayImage->height() - _selectionBounds.top(), _displayImage->height() - _selectionBounds.bottom()
-	};
-
-	const GLfloat vertexCoordinates[] = {
-		boxScreen[0],		boxScreen[3] - 1.f, 0.0f,
-		boxScreen[1] + 1.f, boxScreen[3] - 1.f, 0.0f,
-		boxScreen[1] + 1.f,	boxScreen[2],		0.0f,
-		boxScreen[0],		boxScreen[2],		0.0f
-	};
-
-	const auto vertexLocation = _selectionBoundsShaderProgram->attributeLocation("vertex");
-
-	_selectionBoundsShaderProgram->setAttributeArray(vertexLocation, vertexCoordinates, 3);
-
-	//glEnable(GL_LINE_STIPPLE);
-	//glLineStipple(1, 0x00FF);
-	glLineWidth(2.f);
-
-	glDrawArrays(GL_LINE_LOOP, 0, 4);
-
-	//glDisable(GL_LINE_STIPPLE);
-
-	//_selectionBoundsShaderProgram->disableAttributeArray(vertexLocation);
-	*/
+	
 }

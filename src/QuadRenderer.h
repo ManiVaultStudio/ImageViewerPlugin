@@ -24,6 +24,8 @@ public:
 	void render() override;
 	void destroy() override;
 
+	virtual void initializeProgram() = 0;
+
 public:
 	void setModelViewProjection(const QMatrix4x4& modelViewProjection);
 	QSize size() const;

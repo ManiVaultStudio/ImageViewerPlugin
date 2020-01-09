@@ -15,7 +15,7 @@ QuadRenderer::QuadRenderer() :
 	_vertexData(),
 	_vbo(),
 	_vao(),
-	_program(),
+	_program(std::make_unique<QOpenGLShaderProgram>()),
 	_modelViewProjection()
 {
 	_vertexData.resize(20);
@@ -23,28 +23,18 @@ QuadRenderer::QuadRenderer() :
 
 void QuadRenderer::init()
 {
-	qDebug() << "QuadRenderer::init";
-
 	initializeOpenGLFunctions();
+	initializeProgram();
 
-	_program = std::make_unique<QOpenGLShaderProgram>();
+	_program->bind();
 
-	// Shader program
-	_program->addShaderFromSourceCode(QOpenGLShader::Vertex, imageVertexShaderSource.c_str());
-	_program->addShaderFromSourceCode(QOpenGLShader::Fragment, imageFragmentShaderSource.c_str());
-	_program->link();
-	
-	// Vertex buffer object
 	_vbo.create();
 	_vbo.bind();
 	_vbo.setUsagePattern(QOpenGLBuffer::DynamicDraw);
 	_vbo.allocate(_vertexData.constData(), _vertexData.count() * sizeof(GLfloat));
 	_vbo.release();
 
-	// Vertex array object
 	_vao.create();
-
-	_program->bind();
 
 	_vao.bind();
 	{
