@@ -27,7 +27,6 @@ public:
 	virtual void initializeProgram() = 0;
 
 public:
-	void setModelViewProjection(const QMatrix4x4& modelViewProjection);
 	QSize size() const;
 
 protected:
@@ -40,5 +39,4 @@ protected:
 	QOpenGLBuffer							_vbo;
 	QOpenGLVertexArrayObject				_vao;
 	std::unique_ptr<QOpenGLShaderProgram>	_program;
-	QMatrix4x4								_modelViewProjection;
 };

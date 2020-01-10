@@ -26,6 +26,7 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_imageQuadRenderer(),
 	_selectionRenderer(),
 	_selectionBoundsRenderer(),
+	_selectRenderer(),
 	/*
 	_overlayShaderProgram(),
 	_selectionBoundsShaderProgram(),
@@ -42,7 +43,6 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_selectionModifier(SelectionModifier::Replace),
 	_brushRadius(50.f),
 	_brushRadiusDelta(2.0f),
-	_pixelSelectionColor(1.f, 0.6f, 0.f, 0.3f),
 	_selectionOutlineColor(1.0f, 0.6f, 0.f, 1.0f),
 	_ignorePaintGL(false),
 	_openglDebugLogger(std::make_unique<QOpenGLDebugLogger>())
@@ -82,6 +82,7 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_imageQuadRenderer			= std::make_unique<ImageQuadRenderer>(0);
 	_selectionRenderer			= std::make_unique<SelectionRenderer>(1);
 	_selectionBoundsRenderer	= std::make_unique<SelectionBoundsRenderer>(2);
+	_selectRenderer				= std::make_unique<SelectRenderer>(3);
 }
 
 ImageViewerWidget::~ImageViewerWidget()
@@ -91,6 +92,7 @@ ImageViewerWidget::~ImageViewerWidget()
 	_imageQuadRenderer->destroy();
 	_selectionRenderer->destroy();
 	_selectionBoundsRenderer->destroy();
+	_selectRenderer->destroy();
 
 	doneCurrent();
 }
@@ -204,6 +206,7 @@ void ImageViewerWidget::initializeGL()
 	_imageQuadRenderer->init();
 	_selectionRenderer->init();
 	_selectionBoundsRenderer->init();
+	_selectRenderer->init();
 
 	_imageViewerPlugin->computeDisplayImage();
 	_imageViewerPlugin->computeSelectionImage();
@@ -292,6 +295,9 @@ void ImageViewerWidget::paintGL() {
 	_selectionBoundsRenderer->setModelViewProjection(modelViewProjection);
 	_selectionBoundsRenderer->render();
 
+	_selectRenderer->setModelViewProjection(modelViewProjection);
+	_selectRenderer->render();
+
 #ifdef _DEBUG
 	for (const QOpenGLDebugMessage& message : _openglDebugLogger->loggedMessages())
 		qDebug() << message;
@@ -316,9 +322,8 @@ void ImageViewerWidget::onDisplayImageChanged(std::shared_ptr<QImage> displayIma
 
 		setBrushRadius(brushRadius);
 		setBrushRadiusDelta(0.2f * brushRadius);
-		/*
-		_pixelSelectionFBO = std::make_unique<QOpenGLFramebufferObject>(_displayImage->width(), _displayImage->height());
-		*/
+
+		_selectRenderer->setSize(displayImage->size());
 	}
 
 	doneCurrent();
@@ -458,13 +463,12 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 					startSelection();
 
 				if (_selectionType != SelectionType::Polygon) {
-					
-					resetPixelSelection();
+					_selectRenderer->resetPixelSelection();
 				}
 
 				_mousePositions.push_back(_mousePosition);
 
-				updatePixelSelection();
+				_selectRenderer->updatePixelSelection();
 			}
 
 			break;
@@ -516,7 +520,7 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 							_mousePositions.push_back(mouseEvent->pos());
 						}
 
-						updatePixelSelection();
+						_selectRenderer->updatePixelSelection();
 					}
 					
 					break;
@@ -749,134 +753,6 @@ bool ImageViewerWidget::initialized()
 QVector3D ImageViewerWidget::screenToWorld(const QPoint& screenPoint) const
 {
 	return QVector3D(screenPoint.x(), height() - screenPoint.y(), 0).unproject(modelView(), projection(), QRect(0, 0, width(), height()));
-}
-
-void ImageViewerWidget::updatePixelSelection()
-{
-	/*
-	//qDebug() << "Update selection" << selectionTypeName(_selectionType);
-
-	makeCurrent();
-	
-	if (!_pixelSelectionFBO->bind())
-		return;
-
-	glViewport(0, 0, _displayImage->width(), _displayImage->height());
-
-	QMatrix4x4 transform;
-
-	transform.ortho(0.0f, _displayImage->width(), 0.0f, _displayImage->height(), -1.0f, +1.0f);
-
-	
-	if (_imageQuadVAO.bind()) {
-		if (_pixelSelectionShaderProgram->bind()) {
-			glBindTexture(GL_TEXTURE_2D, _pixelSelectionFBO->texture());
-
-			_pixelSelectionShaderProgram->setUniformValue("pixelSelectionTexture", 0);
-			_pixelSelectionShaderProgram->setUniformValue("matrix", transform);
-			_pixelSelectionShaderProgram->setUniformValue("selectionType", static_cast<int>(_selectionType));
-			_pixelSelectionShaderProgram->setUniformValue("imageSize", static_cast<float>(_displayImage->size().width()), static_cast<float>(_displayImage->size().height()));
-				
-			switch (_selectionType)
-			{
-				case SelectionType::Rectangle:
-				{
-					const auto rectangleTopLeft			= screenToWorld(_mousePositions.front());
-					const auto rectangleBottomRight		= screenToWorld(_mousePositions.back());
-					const auto rectangleTopLeftUV		= QVector2D(rectangleTopLeft.x() / static_cast<float>(_displayImage->width()), rectangleTopLeft.y() / static_cast<float>(_displayImage->height()));
-					const auto rectangleBottomRightUV	= QVector2D(rectangleBottomRight.x() / static_cast<float>(_displayImage->width()), rectangleBottomRight.y() / static_cast<float>(_displayImage->height()));
-
-					auto rectangleUV	= std::make_pair(rectangleTopLeftUV, rectangleBottomRightUV);
-					auto topLeft		= QVector2D(rectangleTopLeftUV.x(), rectangleTopLeftUV.y());
-					auto bottomRight	= QVector2D(rectangleBottomRightUV.x(), rectangleBottomRightUV.y());
-
-					if (rectangleBottomRightUV.x() < rectangleTopLeftUV.x()) {
-						topLeft.setX(rectangleBottomRightUV.x());
-						bottomRight.setX(rectangleTopLeftUV.x());
-					}
-							
-					if (rectangleBottomRightUV.y() < rectangleTopLeftUV.y()) {
-						topLeft.setY(rectangleBottomRightUV.y());
-						bottomRight.setY(rectangleTopLeftUV.y());
-					}
-							
-					_pixelSelectionShaderProgram->setUniformValue("rectangleTopLeft", topLeft);
-					_pixelSelectionShaderProgram->setUniformValue("rectangleBottomRight", bottomRight);
-
-					break;
-				}
-
-				case SelectionType::Brush:
-				{
-					const auto currentMousePosition		= _mousePositions[_mousePositions.size() - 1]; 
-					const auto previousMousePosition	= _mousePositions.size() > 1 ? _mousePositions[_mousePositions.size() - 2] : currentMousePosition;
-					const auto brushCenter				= screenToWorld(currentMousePosition);
-					const auto previousBrushCenter		= screenToWorld(previousMousePosition);
-
-					_pixelSelectionShaderProgram->setUniformValue("previousBrushCenter", previousBrushCenter.x(), previousBrushCenter.y());
-					_pixelSelectionShaderProgram->setUniformValue("currentBrushCenter", brushCenter.x(), brushCenter.y());
-					_pixelSelectionShaderProgram->setUniformValue("brushRadius", _brushRadius);
-
-					break;
-				}
-
-				case SelectionType::Lasso:
-				case SelectionType::Polygon:
-				{
-					QList<QVector2D> mousePositions;
-					
-					mousePositions.reserve(static_cast<std::int32_t>(_mousePositions.size()));
-
-					for (const auto p : _mousePositions) {
-						mousePositions.push_back(QVector2D(screenToWorld(p).x(), screenToWorld(p).y()));
-					}
-
-					_pixelSelectionShaderProgram->setUniformValueArray("points", &mousePositions[0], static_cast<std::int32_t>(_mousePositions.size()));
-					_pixelSelectionShaderProgram->setUniformValue("noPoints", static_cast<int>(_mousePositions.size()));
-
-					break;
-				}
-
-				default:
-					break;
-			}
-				
-			_pixelSelectionShaderProgram->enableAttributeArray(PROGRAM_VERTEX_ATTRIBUTE);
-			_pixelSelectionShaderProgram->enableAttributeArray(PROGRAM_TEXCOORD_ATTRIBUTE);
-			_pixelSelectionShaderProgram->setAttributeBuffer(PROGRAM_VERTEX_ATTRIBUTE, GL_FLOAT, 0, 3, 5 * sizeof(GLfloat));
-			_pixelSelectionShaderProgram->setAttributeBuffer(PROGRAM_TEXCOORD_ATTRIBUTE, GL_FLOAT, 3 * sizeof(GLfloat), 2, 5 * sizeof(GLfloat));
-
-			glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
-			_pixelSelectionShaderProgram->release();
-		}
-
-		_imageQuadVAO.release();
-	}
-	
-	_pixelSelectionFBO->release();
-
-	doneCurrent();
-
-	update();
-	*/
-}
-
-void ImageViewerWidget::resetPixelSelection()
-{
-	/*
-	makeCurrent();
-
-	if (_pixelSelectionFBO->bind()) {
-		glViewport(0, 0, _displayImage->width(), _displayImage->height());
-		glClearColor(0.f, 0.f, 0.f, 0.f);
-		glClear(GL_COLOR_BUFFER_BIT);
-	}
-
-	doneCurrent();
-
-	update();
-	*/
 }
 
 void ImageViewerWidget::publishSelection()

@@ -16,7 +16,6 @@ SelectionBoundsRenderer::SelectionBoundsRenderer(const std::uint32_t& zIndex) :
 	_vbo(),
 	_vao(),
 	_program(std::make_unique<QOpenGLShaderProgram>()),
-	_modelViewProjection(),
 	_color(1.0f, 0.6f, 0.f, 0.5f),
 	_selectionBounds()
 {
@@ -88,11 +87,6 @@ void SelectionBoundsRenderer::initializeProgram()
 	_program->addShaderFromSourceCode(QOpenGLShader::Vertex, selectionBoundsVertexShaderSource.c_str());
 	_program->addShaderFromSourceCode(QOpenGLShader::Fragment, selectionBoundsFragmentShaderSource.c_str());
 	_program->link();
-}
-
-void SelectionBoundsRenderer::setModelViewProjection(const QMatrix4x4& modelViewProjection)
-{
-	_modelViewProjection = modelViewProjection;
 }
 
 void SelectionBoundsRenderer::setSelectionBounds(const QRect& selectionBounds)

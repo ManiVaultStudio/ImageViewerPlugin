@@ -15,8 +15,7 @@ QuadRenderer::QuadRenderer(const std::uint32_t& zIndex) :
 	_vertexData(),
 	_vbo(),
 	_vao(),
-	_program(std::make_unique<QOpenGLShaderProgram>()),
-	_modelViewProjection()
+	_program(std::make_unique<QOpenGLShaderProgram>())
 {
 	_vertexData.resize(20);
 }
@@ -73,11 +72,6 @@ void QuadRenderer::destroy()
 	_texture->destroy();
 	_vbo.destroy();
 	_vao.destroy();
-}
-
-void QuadRenderer::setModelViewProjection(const QMatrix4x4& modelViewProjection)
-{
-	_modelViewProjection = modelViewProjection;
 }
 
 QSize QuadRenderer::size() const
