@@ -7,7 +7,7 @@
 class SelectionRenderer : public QuadRenderer
 {
 public:
-	SelectionRenderer();
+	SelectionRenderer(const std::uint32_t& zIndex);
 
 public:
 	void render() override;

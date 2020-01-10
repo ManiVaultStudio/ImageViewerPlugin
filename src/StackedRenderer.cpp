@@ -1,0 +1,17 @@
+#include "StackedRenderer.h"
+
+#include <QDebug>
+
+StackedRenderer::StackedRenderer(const std::uint32_t& zIndex) :
+	Renderer(),
+	_zIndex(zIndex),
+	_modelViewProjection()
+{
+}
+
+void StackedRenderer::setModelViewProjection(const QMatrix4x4& modelViewProjection)
+{
+	_modelViewProjection = modelViewProjection;
+
+	_modelViewProjection.translate(0.f, 0.f, static_cast<float>(_zIndex));
+}

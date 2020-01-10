@@ -2,8 +2,9 @@
 
 #include "Common.h"
 
-#include "renderers/Renderer.h"
+#include "StackedRenderer.h"
 
+#include <QOpenGLTexture>
 #include <QVector>
 #include <QOpenGLBuffer>
 #include <QOpenGLVertexArrayObject>
@@ -12,10 +13,10 @@
 #include <QVector4D>
 #include <QRect>
 
-class SelectionBoundsRenderer : public hdps::Renderer
+class SelectionBoundsRenderer : public StackedRenderer
 {
 public:
-	SelectionBoundsRenderer();
+	SelectionBoundsRenderer(const std::uint32_t& zIndex);
 
 public:
 	void init() override;
@@ -33,11 +34,12 @@ protected:
 	bool initialized() const;
 
 protected:
+	std::unique_ptr<QOpenGLTexture>			_texture;
 	QVector<GLfloat>						_vertexData;
 	QOpenGLBuffer							_vbo;
 	QOpenGLVertexArrayObject				_vao;
 	std::unique_ptr<QOpenGLShaderProgram>	_program;
 	QMatrix4x4								_modelViewProjection;
-	QVector4D								_selectionBoundsColor;
+	QVector4D								_color;
 	QRect									_selectionBounds;
 };

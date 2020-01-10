@@ -79,9 +79,9 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 
 	setFormat(surfaceFormat);
 
-	_imageQuadRenderer			= std::make_unique<ImageQuadRenderer>();
-	_selectionRenderer			= std::make_unique<SelectionRenderer>();
-	_selectionBoundsRenderer	= std::make_unique<SelectionBoundsRenderer>();
+	_imageQuadRenderer			= std::make_unique<ImageQuadRenderer>(0);
+	_selectionRenderer			= std::make_unique<SelectionRenderer>(1);
+	_selectionBoundsRenderer	= std::make_unique<SelectionBoundsRenderer>(2);
 }
 
 ImageViewerWidget::~ImageViewerWidget()
@@ -281,14 +281,14 @@ void ImageViewerWidget::paintGL() {
 
 		_selectionOutlineShaderProgram->release();
 	}
+	
 	*/
-
 	_imageQuadRenderer->setModelViewProjection(modelViewProjection);
 	_imageQuadRenderer->render();
-
+	
 	_selectionRenderer->setModelViewProjection(modelViewProjection);
 	_selectionRenderer->render();
-
+	
 	_selectionBoundsRenderer->setModelViewProjection(modelViewProjection);
 	_selectionBoundsRenderer->render();
 
@@ -334,7 +334,10 @@ void ImageViewerWidget::onSelectionImageChanged(std::shared_ptr<QImage> selectio
 	makeCurrent();
 
 	_selectionRenderer->setImage(selectionImage);
-	_selectionBoundsRenderer->setSelectionBounds(selectionBounds);
+
+	const auto worldSelectionBounds = QRect(selectionBounds.left(), selectionImage->height() - selectionBounds.bottom() - 1, selectionBounds.width() + 1, selectionBounds.height() + 1);
+
+	_selectionBoundsRenderer->setSelectionBounds(worldSelectionBounds);
 
 	doneCurrent();
 

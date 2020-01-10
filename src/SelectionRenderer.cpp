@@ -9,8 +9,8 @@
 #define PROGRAM_VERTEX_ATTRIBUTE 0
 #define PROGRAM_TEXCOORD_ATTRIBUTE 1
 
-SelectionRenderer::SelectionRenderer() :
-	QuadRenderer(),
+SelectionRenderer::SelectionRenderer(const std::uint32_t& zIndex) :
+	QuadRenderer(zIndex),
 	_selectionColor(1.f, 0.f, 0.f, 0.6f)
 {
 }
@@ -23,12 +23,8 @@ void SelectionRenderer::render()
 	_program->bind();
 	{
 		_program->setUniformValue("selectionTexture", 0);
-		_program->setUniformValue("matrix", _modelViewProjection);
+		_program->setUniformValue("transform", _modelViewProjection);
 		_program->setUniformValue("color", _selectionColor);
-		_program->enableAttributeArray(PROGRAM_VERTEX_ATTRIBUTE);
-		_program->enableAttributeArray(PROGRAM_TEXCOORD_ATTRIBUTE);
-		_program->setAttributeBuffer(PROGRAM_VERTEX_ATTRIBUTE, GL_FLOAT, 0, 3, 5 * sizeof(GLfloat));
-		_program->setAttributeBuffer(PROGRAM_TEXCOORD_ATTRIBUTE, GL_FLOAT, 3 * sizeof(GLfloat), 2, 5 * sizeof(GLfloat));
 
 		QuadRenderer::render();
 	}
@@ -45,6 +41,8 @@ void SelectionRenderer::initializeProgram()
 void SelectionRenderer::setImage(std::shared_ptr<QImage> image)
 {
 	_texture.reset(new QOpenGLTexture(*image.get()));
+
+	_texture->setMinMagFilters(QOpenGLTexture::Nearest, QOpenGLTexture::Nearest);
 
 	createQuad();
 }

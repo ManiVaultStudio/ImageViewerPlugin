@@ -6,11 +6,11 @@ layout(location = 1) in vec2 texCoord;
 
 out vec2 uv;
 
-uniform mat4 matrix;
+uniform mat4 transform;
 
 void main(void)
 {
-    gl_Position = matrix * vertex;
+    gl_Position = transform * vertex;
     uv = texCoord;
 }
-)" 
+)"
