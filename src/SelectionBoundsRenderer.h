@@ -27,7 +27,6 @@ public:
 	void initializeProgram();
 
 public:
-	void setModelViewProjection(const QMatrix4x4& modelViewProjection);
 	void setSelectionBounds(const QRect& selectionBounds);
 
 protected:
@@ -39,7 +38,6 @@ protected:
 	QOpenGLBuffer							_vbo;
 	QOpenGLVertexArrayObject				_vao;
 	std::unique_ptr<QOpenGLShaderProgram>	_program;
-	QMatrix4x4								_modelViewProjection;
 	QVector4D								_color;
 	QRect									_selectionBounds;
 };

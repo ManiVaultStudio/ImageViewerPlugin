@@ -21,6 +21,7 @@
 #include "ImageQuadRenderer.h"
 #include "SelectionRenderer.h"
 #include "SelectionBoundsRenderer.h"
+#include "SelectRenderer.h"
 
 class QMenu;
 
@@ -100,8 +101,6 @@ public:
 	void resetView();
 
 	bool initialized();
-	void updatePixelSelection();
-	void resetPixelSelection();
 
 protected:
 	QMenu* contextMenu();
@@ -118,6 +117,7 @@ private:
 	std::unique_ptr<ImageQuadRenderer>			_imageQuadRenderer;
 	std::unique_ptr<SelectionRenderer>			_selectionRenderer;
 	std::unique_ptr<SelectionBoundsRenderer>	_selectionBoundsRenderer;
+	std::unique_ptr<SelectRenderer>				_selectRenderer;
 	InteractionMode								_interactionMode;
 	QPoint										_initialMousePosition;
 	QPoint										_mousePosition;
@@ -133,7 +133,6 @@ private:
 	float										_brushRadiusDelta;
 	QVector4D									_pixelSelectionColor;
 	QVector4D									_selectionOutlineColor;
-
 	bool										_ignorePaintGL;
 	std::unique_ptr < QOpenGLDebugLogger>		_openglDebugLogger;
 };
