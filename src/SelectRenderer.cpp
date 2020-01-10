@@ -6,42 +6,14 @@
 
 #include "Shaders.h"
 
-#define PROGRAM_VERTEX_ATTRIBUTE 0
-#define PROGRAM_TEXCOORD_ATTRIBUTE 1
-
 SelectRenderer::SelectRenderer(const std::uint32_t& zIndex) :
 	QuadRenderer(zIndex),
-	_pixelSelectionFBO(),
-	_pixelSelectionColor(1.f, 0.6f, 0.f, 0.3f)
-{
-}
-
-void SelectRenderer::init()
-{
-	initializeOpenGLFunctions();
-	initializeProgram();
-
-	_vbo.create();
-	_vbo.bind();
-	_vbo.setUsagePattern(QOpenGLBuffer::DynamicDraw);
-	_vbo.allocate(_vertexData.constData(), _vertexData.count() * sizeof(GLfloat));
-	_vbo.release();
-
-	_vao.create();
-
-	_program->bind();
-	_vao.bind();
-	_vbo.bind();
-
-	_program->enableAttributeArray(PROGRAM_VERTEX_ATTRIBUTE);
-	_program->setAttributeBuffer(PROGRAM_VERTEX_ATTRIBUTE, GL_FLOAT, 0, 3);
-
-	_vao.release();
-	_vbo.release();
-	_program->release();
-}
-
-void SelectRenderer::resize(QSize renderSize)
+	_texture(),
+	_fbo(),
+	_color(1.f, 0.6f, 0.f, 0.3f),
+	_brushRadius(50.f),
+	_brushRadiusDelta(2.0f),
+	_pixelSelectionProgram(std::make_unique<QOpenGLShaderProgram>())
 {
 }
 
@@ -50,84 +22,90 @@ void SelectRenderer::render()
 	if (!initialized())
 		return;
 
-	_program->bind();
-	{
-		/*
+	if (_program->bind()) {
 		_program->setUniformValue("overlayTexture", 0);
 		_program->setUniformValue("transform", _modelViewProjection);
-		_program->setUniformValue("color", _pixelSelectionColor);
+		_program->setUniformValue("color", _color);
+
+		QuadRenderer::render();
+
+		/*
+		_vao.bind();
+		{
+			//glBindTexture(GL_TEXTURE_2D, _fbo->texture());
+			glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+		}
+		_vao.release();
 		*/
 
-		//QuadRenderer::render();
+		_program->release();
 	}
-	_program->release();
 }
 
-void SelectRenderer::destroy()
-{
-	//_texture->destroy();
-	_vbo.destroy();
-	_vao.destroy();
-}
-
-void SelectRenderer::initializeProgram()
+void SelectRenderer::initializePrograms()
 {
 	_program->addShaderFromSourceCode(QOpenGLShader::Vertex, overlayVertexShaderSource.c_str());
 	_program->addShaderFromSourceCode(QOpenGLShader::Fragment, overlayFragmentShaderSource.c_str());
 	_program->link();
+
+	/*
+	_pixelSelectionProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, pixelSelectionVertexShaderSource.c_str());
+	_pixelSelectionProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, pixelSelectionFragmentShaderSource.c_str());
+	_pixelSelectionProgram->link();
+	*/
 }
 
-void SelectRenderer::setSize(const QSize& size)
+void SelectRenderer::setImageSize(const QSize& size)
 {
 	auto createFBO = false;
 
-	if (_pixelSelectionFBO.get() == nullptr) {
+	if (_fbo.get() == nullptr) {
 		createFBO = true;
 	}
 	else {
-		if (size != _pixelSelectionFBO->size()) {
+		if (size != _fbo->size()) {
 			createFBO = true;
 		}
 	}
 
-	if (createFBO)
-		_pixelSelectionFBO = std::make_unique<QOpenGLFramebufferObject>(size.width(), size.height());
+	setSize(size);
+
+	if (createFBO) {
+		_fbo = std::make_unique<QOpenGLFramebufferObject>(size.width(), size.height());
+	}
 }
 
-void SelectRenderer::updatePixelSelection()
+void SelectRenderer::updatePixelSelection(const SelectionType& selectionType, const std::vector<QVector3D>& mousePositions)
 {
-	/*
-	//qDebug() << "Update selection" << selectionTypeName(_selectionType);
+	return;
 
-	makeCurrent();
-
-	if (!_pixelSelectionFBO->bind())
+	if (!_fbo->bind())
 		return;
-
-	glViewport(0, 0, _displayImage->width(), _displayImage->height());
+	
+	glViewport(0, 0, _fbo->width(), _fbo->height());
 
 	QMatrix4x4 transform;
 
-	transform.ortho(0.0f, _displayImage->width(), 0.0f, _displayImage->height(), -1.0f, +1.0f);
+	transform.ortho(0.0f, _fbo->width(), 0.0f, _fbo->height(), -1.0f, +1.0f);
 
+	_vao.bind();
+	{
+		if (_pixelSelectionProgram->bind()) {
+			glBindTexture(GL_TEXTURE_2D, _fbo->texture());
 
-	if (_imageQuadVAO.bind()) {
-		if (_pixelSelectionShaderProgram->bind()) {
-			glBindTexture(GL_TEXTURE_2D, _pixelSelectionFBO->texture());
+			_pixelSelectionProgram->setUniformValue("pixelSelectionTexture", 0);
+			_pixelSelectionProgram->setUniformValue("matrix", transform);
+			_pixelSelectionProgram->setUniformValue("selectionType", static_cast<int>(selectionType));
+			_pixelSelectionProgram->setUniformValue("imageSize", static_cast<float>(_fbo->size().width()), static_cast<float>(_fbo->size().height()));
 
-			_pixelSelectionShaderProgram->setUniformValue("pixelSelectionTexture", 0);
-			_pixelSelectionShaderProgram->setUniformValue("matrix", transform);
-			_pixelSelectionShaderProgram->setUniformValue("selectionType", static_cast<int>(_selectionType));
-			_pixelSelectionShaderProgram->setUniformValue("imageSize", static_cast<float>(_displayImage->size().width()), static_cast<float>(_displayImage->size().height()));
-
-			switch (_selectionType)
+			switch (selectionType)
 			{
 				case SelectionType::Rectangle:
 				{
-					const auto rectangleTopLeft			= screenToWorld(_mousePositions.front());
-					const auto rectangleBottomRight		= screenToWorld(_mousePositions.back());
-					const auto rectangleTopLeftUV		= QVector2D(rectangleTopLeft.x() / static_cast<float>(_displayImage->width()), rectangleTopLeft.y() / static_cast<float>(_displayImage->height()));
-					const auto rectangleBottomRightUV	= QVector2D(rectangleBottomRight.x() / static_cast<float>(_displayImage->width()), rectangleBottomRight.y() / static_cast<float>(_displayImage->height()));
+					const auto rectangleTopLeft			= mousePositions.front();
+					const auto rectangleBottomRight		= mousePositions.back();
+					const auto rectangleTopLeftUV		= QVector2D(rectangleTopLeft.x() / static_cast<float>(_fbo->width()), rectangleTopLeft.y() / static_cast<float>(_fbo->height()));
+					const auto rectangleBottomRightUV	= QVector2D(rectangleBottomRight.x() / static_cast<float>(_fbo->width()), rectangleBottomRight.y() / static_cast<float>(_fbo->height()));
 
 					auto rectangleUV	= std::make_pair(rectangleTopLeftUV, rectangleBottomRightUV);
 					auto topLeft		= QVector2D(rectangleTopLeftUV.x(), rectangleTopLeftUV.y());
@@ -143,22 +121,20 @@ void SelectRenderer::updatePixelSelection()
 						bottomRight.setY(rectangleTopLeftUV.y());
 					}
 
-					_pixelSelectionShaderProgram->setUniformValue("rectangleTopLeft", topLeft);
-					_pixelSelectionShaderProgram->setUniformValue("rectangleBottomRight", bottomRight);
+					_pixelSelectionProgram->setUniformValue("rectangleTopLeft", topLeft);
+					_pixelSelectionProgram->setUniformValue("rectangleBottomRight", bottomRight);
 
 					break;
 				}
 
 				case SelectionType::Brush:
 				{
-					const auto currentMousePosition		= _mousePositions[_mousePositions.size() - 1];
-					const auto previousMousePosition	= _mousePositions.size() > 1 ? _mousePositions[_mousePositions.size() - 2] : currentMousePosition;
-					const auto brushCenter				= screenToWorld(currentMousePosition);
-					const auto previousBrushCenter		= screenToWorld(previousMousePosition);
+					const auto brushCenter			= mousePositions[mousePositions.size() - 1];
+					const auto previousBrushCenter	= mousePositions.size() > 1 ? mousePositions[mousePositions.size() - 2] : brushCenter;
 
-					_pixelSelectionShaderProgram->setUniformValue("previousBrushCenter", previousBrushCenter.x(), previousBrushCenter.y());
-					_pixelSelectionShaderProgram->setUniformValue("currentBrushCenter", brushCenter.x(), brushCenter.y());
-					_pixelSelectionShaderProgram->setUniformValue("brushRadius", _brushRadius);
+					_pixelSelectionProgram->setUniformValue("previousBrushCenter", previousBrushCenter.x(), previousBrushCenter.y());
+					_pixelSelectionProgram->setUniformValue("currentBrushCenter", brushCenter.x(), brushCenter.y());
+					_pixelSelectionProgram->setUniformValue("brushRadius", _brushRadius);
 
 					break;
 				}
@@ -168,14 +144,14 @@ void SelectRenderer::updatePixelSelection()
 				{
 					QList<QVector2D> mousePositions;
 
-					mousePositions.reserve(static_cast<std::int32_t>(_mousePositions.size()));
+					mousePositions.reserve(static_cast<std::int32_t>(mousePositions.size()));
 
-					for (const auto p : _mousePositions) {
-						mousePositions.push_back(QVector2D(screenToWorld(p).x(), screenToWorld(p).y()));
+					for (const auto& mousePosition : mousePositions) {
+						mousePositions.push_back(QVector2D(mousePosition.x(), mousePosition.y()));
 					}
 
-					_pixelSelectionShaderProgram->setUniformValueArray("points", &mousePositions[0], static_cast<std::int32_t>(_mousePositions.size()));
-					_pixelSelectionShaderProgram->setUniformValue("noPoints", static_cast<int>(_mousePositions.size()));
+					_pixelSelectionProgram->setUniformValueArray("points", &mousePositions[0], static_cast<std::int32_t>(mousePositions.size()));
+					_pixelSelectionProgram->setUniformValue("noPoints", static_cast<int>(mousePositions.size()));
 
 					break;
 				}
@@ -184,25 +160,19 @@ void SelectRenderer::updatePixelSelection()
 					break;
 			}
 
-			_pixelSelectionShaderProgram->enableAttributeArray(PROGRAM_VERTEX_ATTRIBUTE);
-			_pixelSelectionShaderProgram->enableAttributeArray(PROGRAM_TEXCOORD_ATTRIBUTE);
-			_pixelSelectionShaderProgram->setAttributeBuffer(PROGRAM_VERTEX_ATTRIBUTE, GL_FLOAT, 0, 3, 5 * sizeof(GLfloat));
-			_pixelSelectionShaderProgram->setAttributeBuffer(PROGRAM_TEXCOORD_ATTRIBUTE, GL_FLOAT, 3 * sizeof(GLfloat), 2, 5 * sizeof(GLfloat));
+			_pixelSelectionProgram->enableAttributeArray(0);
+			_pixelSelectionProgram->enableAttributeArray(1);
+			_pixelSelectionProgram->setAttributeBuffer(0, GL_FLOAT, 0, 3, 5 * sizeof(GLfloat));
+			_pixelSelectionProgram->setAttributeBuffer(1, GL_FLOAT, 3 * sizeof(GLfloat), 2, 5 * sizeof(GLfloat));
 
 			glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
-			_pixelSelectionShaderProgram->release();
+			_pixelSelectionProgram->release();
 		}
-
-		_imageQuadVAO.release();
 	}
+	_vao.release();
 
-	_pixelSelectionFBO->release();
-
-	doneCurrent();
-
-	update();
-	*/
+	_fbo->release();
 }
 
 void SelectRenderer::resetPixelSelection()
@@ -220,4 +190,56 @@ void SelectRenderer::resetPixelSelection()
 
 	update();
 	*/
+}
+
+float SelectRenderer::brushRadius() const
+{
+	return _brushRadius;
+}
+
+void SelectRenderer::setBrushRadius(const float& brushRadius)
+{
+	const auto boundBrushRadius = qBound(1.0f, 10000.f, brushRadius);
+
+	if (boundBrushRadius == _brushRadius)
+		return;
+
+	_brushRadius = boundBrushRadius;
+
+	qDebug() << "Set brush radius" << brushRadius;
+}
+
+float SelectRenderer::brushRadiusDelta() const
+{
+	return _brushRadiusDelta;
+}
+
+void SelectRenderer::setBrushRadiusDelta(const float& brushRadiusDelta)
+{
+	const auto boundBrushRadiusDelta = qBound(0.001f, 10000.f, brushRadiusDelta);
+
+	if (boundBrushRadiusDelta == _brushRadiusDelta)
+		return;
+
+	_brushRadiusDelta = qBound(0.001f, 10000.f, brushRadiusDelta);
+
+	qDebug() << "Set brush radius delta" << _brushRadiusDelta;
+}
+
+void SelectRenderer::brushSizeIncrease()
+{
+	setBrushRadius(_brushRadius + _brushRadiusDelta);
+}
+
+void SelectRenderer::brushSizeDecrease()
+{
+	setBrushRadius(_brushRadius - _brushRadiusDelta);
+}
+
+bool SelectRenderer::initialized() const
+{
+	if (_fbo.get() == nullptr)
+		return false;
+
+	return _fbo->isValid();
 }

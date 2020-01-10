@@ -12,12 +12,16 @@ public:
 public:
 	void render() override;
 
-	void initializeProgram();
+	void initializePrograms();
 
 public:
 	void setImage(std::shared_ptr<QImage> image);
 	void setOpacity(const float& opacity);
 
+protected:
+	bool initialized() const;
+
 private:
-	QVector4D	_selectionColor;
+	std::unique_ptr<QOpenGLTexture>		_texture;
+	QVector4D							_selectionColor;
 };

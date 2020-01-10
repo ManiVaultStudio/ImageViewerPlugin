@@ -11,7 +11,7 @@
 
 QuadRenderer::QuadRenderer(const std::uint32_t& zIndex) :
 	StackedRenderer(zIndex),
-	_texture(),
+	_size(),
 	_vertexData(),
 	_vbo(),
 	_vao(),
@@ -23,7 +23,7 @@ QuadRenderer::QuadRenderer(const std::uint32_t& zIndex) :
 void QuadRenderer::init()
 {
 	initializeOpenGLFunctions();
-	initializeProgram();
+	initializePrograms();
 
 	_vbo.create();
 	_vbo.bind();
@@ -37,10 +37,12 @@ void QuadRenderer::init()
 	_vao.bind();
 	_vbo.bind();
 
+	const auto stride = 5 * sizeof(GLfloat);
+
 	_program->enableAttributeArray(PROGRAM_VERTEX_ATTRIBUTE);
 	_program->enableAttributeArray(PROGRAM_TEXCOORD_ATTRIBUTE);
-	_program->setAttributeBuffer(PROGRAM_VERTEX_ATTRIBUTE, GL_FLOAT, 0, 3, 5 * sizeof(GLfloat));
-	_program->setAttributeBuffer(PROGRAM_TEXCOORD_ATTRIBUTE, GL_FLOAT, 3 * sizeof(GLfloat), 2, 5 * sizeof(GLfloat));
+	_program->setAttributeBuffer(PROGRAM_VERTEX_ATTRIBUTE, GL_FLOAT, 0, 3, stride);
+	_program->setAttributeBuffer(PROGRAM_TEXCOORD_ATTRIBUTE, GL_FLOAT, 3 * sizeof(GLfloat), 2, stride);
 
 	_vao.release();
 	_vbo.release();
@@ -55,39 +57,43 @@ void QuadRenderer::render()
 {
 	if (!initialized())
 		return;
-
-	_texture->bind();
+	
+	_vao.bind();
 	{
-		_vao.bind();
-		{
-			glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-		}
-		_vao.release();
+		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	}
-	_texture->release();
+	_vao.release();
 }
 
 void QuadRenderer::destroy()
 {
-	_texture->destroy();
 	_vbo.destroy();
 	_vao.destroy();
 }
 
 QSize QuadRenderer::size() const
 {
-	return _texture.get() == nullptr ? QSize() : QSize(_texture->width(), _texture->height());
+	return _size;
 }
 
-bool QuadRenderer::initialized() const
+void QuadRenderer::setSize(const QSize& size)
 {
-	return _texture.get() != nullptr && _texture->isCreated();
+	if (size == _size)
+		return;
+
+	_size = size;
+
+	createQuad();
 }
 
 void QuadRenderer::createQuad()
 {
-	const float width	= initialized() ? static_cast<float>(_texture->width()) : 0;
-	const float height	= initialized() ? static_cast<float>(_texture->height()) : 0;
+	qDebug() << "Create quad";
+
+	const float width	= initialized() ? static_cast<float>(_size.width()) : 0;
+	const float height	= initialized() ? static_cast<float>(_size.height()) : 0;
+
+	qDebug() << width << height;
 
 	const float coordinates[4][3] = {
 	  { width, height, 0.0f },

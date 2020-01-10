@@ -6,11 +6,9 @@
 
 #include "Shaders.h"
 
-#define PROGRAM_VERTEX_ATTRIBUTE 0
-#define PROGRAM_TEXCOORD_ATTRIBUTE 1
-
 ImageQuadRenderer::ImageQuadRenderer(const std::uint32_t& zIndex) :
 	QuadRenderer(zIndex),
+	_texture(),
 	_imageMin(),
 	_imageMax(),
 	_window(),
@@ -39,12 +37,16 @@ void ImageQuadRenderer::render()
 		_program->setUniformValue("minPixelValue", minPixelValue);
 		_program->setUniformValue("maxPixelValue", maxPixelValue);
 
-		QuadRenderer::render();
+		_texture->bind();
+		{
+			QuadRenderer::render();
+		}
+		_texture->release();
 	}
 	_program->release();
 }
 
-void ImageQuadRenderer::initializeProgram()
+void ImageQuadRenderer::initializePrograms()
 {
 	_program->addShaderFromSourceCode(QOpenGLShader::Vertex, imageVertexShaderSource.c_str());
 	_program->addShaderFromSourceCode(QOpenGLShader::Fragment, imageFragmentShaderSource.c_str());
@@ -89,7 +91,8 @@ void ImageQuadRenderer::setImage(std::shared_ptr<QImage> image)
 	_texture->allocateStorage();
 	_texture->setData(QOpenGLTexture::PixelFormat::RGBA, QOpenGLTexture::PixelType::UInt16, image->bits());
 
-	createQuad();
+	setSize(image->size());
+
 	resetWindowLevel();
 }
 
@@ -115,4 +118,9 @@ void ImageQuadRenderer::resetWindowLevel()
 {
 	_window = 1.0;
 	_level	= 0.5;
+}
+
+bool ImageQuadRenderer::initialized() const
+{
+	return _texture.get() != nullptr && _texture->isCreated();
 }

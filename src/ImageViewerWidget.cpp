@@ -41,8 +41,6 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_selecting(false),
 	_selectionType(SelectionType::Rectangle),
 	_selectionModifier(SelectionModifier::Replace),
-	_brushRadius(50.f),
-	_brushRadiusDelta(2.0f),
 	_selectionOutlineColor(1.0f, 0.6f, 0.f, 1.0f),
 	_ignorePaintGL(false),
 	_openglDebugLogger(std::make_unique<QOpenGLDebugLogger>())
@@ -82,7 +80,7 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_imageQuadRenderer			= std::make_unique<ImageQuadRenderer>(0);
 	_selectionRenderer			= std::make_unique<SelectionRenderer>(1);
 	_selectionBoundsRenderer	= std::make_unique<SelectionBoundsRenderer>(2);
-	_selectRenderer				= std::make_unique<SelectRenderer>(3);
+	_selectRenderer				= std::make_unique<SelectRenderer>(2);
 }
 
 ImageViewerWidget::~ImageViewerWidget()
@@ -224,6 +222,8 @@ void ImageViewerWidget::resizeGL(int w, int h)
 
 	_imageQuadRenderer->resize(QSize(w, h));
 	_selectionRenderer->resize(QSize(w, h));
+	_selectionBoundsRenderer->resize(QSize(w, h));
+	_selectRenderer->resize(QSize(w, h));
 }
 
 void ImageViewerWidget::paintGL() {
@@ -238,40 +238,6 @@ void ImageViewerWidget::paintGL() {
 
 	/*
 	if (_overlayShaderProgram->isLinked()) {
-		auto translate = QMatrix4x4();
-
-		translate.translate(0.0f, 0.0f, -1.0f);
-
-		if (_overlayShaderProgram->bind()) {
-			_overlayShaderProgram->setUniformValue("overlayTexture", 0);
-			_overlayShaderProgram->setUniformValue("matrix", modelViewProjection * translate);
-			_overlayShaderProgram->setUniformValue("color", _pixelSelectionColor);
-			_overlayShaderProgram->enableAttributeArray(PROGRAM_VERTEX_ATTRIBUTE);
-			_overlayShaderProgram->enableAttributeArray(PROGRAM_TEXCOORD_ATTRIBUTE);
-			_overlayShaderProgram->setAttributeBuffer(PROGRAM_VERTEX_ATTRIBUTE, GL_FLOAT, 0, 3, 5 * sizeof(GLfloat));
-			_overlayShaderProgram->setAttributeBuffer(PROGRAM_TEXCOORD_ATTRIBUTE, GL_FLOAT, 3 * sizeof(GLfloat), 2, 5 * sizeof(GLfloat));
-
-			glBindTexture(GL_TEXTURE_2D, _pixelSelectionFBO->texture());
-				
-			glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
-			_overlayShaderProgram->release();
-		}
-	}
-		
-	if (_selectionBoundsShaderProgram->bind()) {
-		QMatrix4x4 transform = projection() * modelView();
-		
-		//transform.translate(0.0f, 0.0f, -12.0f);
-
-		_selectionBoundsShaderProgram->setUniformValue("transform", transform);
-		_selectionBoundsShaderProgram->setUniformValue("color", _selectionBoundsColor);
-
-		drawSelectionBounds();
-
-		_selectionBoundsShaderProgram->release();
-	}
-
 	if (_interactionMode == InteractionMode::Selection && _selectionOutlineShaderProgram->bind()) {
 		QMatrix4x4 transform;
 
@@ -284,8 +250,8 @@ void ImageViewerWidget::paintGL() {
 
 		_selectionOutlineShaderProgram->release();
 	}
-	
 	*/
+	
 	_imageQuadRenderer->setModelViewProjection(modelViewProjection);
 	_imageQuadRenderer->render();
 	
@@ -294,10 +260,10 @@ void ImageViewerWidget::paintGL() {
 	
 	_selectionBoundsRenderer->setModelViewProjection(modelViewProjection);
 	_selectionBoundsRenderer->render();
-
+	
 	_selectRenderer->setModelViewProjection(modelViewProjection);
 	_selectRenderer->render();
-
+	
 #ifdef _DEBUG
 	for (const QOpenGLDebugMessage& message : _openglDebugLogger->loggedMessages())
 		qDebug() << message;
@@ -309,21 +275,21 @@ void ImageViewerWidget::onDisplayImageChanged(std::shared_ptr<QImage> displayIma
 	if (!isValid())
 		return;
 	
-	auto imageSizeChanged = _imageQuadRenderer->size() != displayImage->size();
-
 	makeCurrent();
 
+	auto imageSizeChanged = _imageQuadRenderer->size() != displayImage->size();
+
 	_imageQuadRenderer->setImage(displayImage);
+
+	_selectRenderer->setImageSize(displayImage->size());
 
 	if (imageSizeChanged) {
 		zoomExtents();
 
 		const auto brushRadius = 0.05f * static_cast<float>(std::min(_imageQuadRenderer->size().width(), _imageQuadRenderer->size().height()));
 
-		setBrushRadius(brushRadius);
-		setBrushRadiusDelta(0.2f * brushRadius);
-
-		_selectRenderer->setSize(displayImage->size());
+		_selectRenderer->setBrushRadius(brushRadius);
+		_selectRenderer->setBrushRadiusDelta(0.2f * brushRadius);
 	}
 
 	doneCurrent();
@@ -452,6 +418,8 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 
 	qDebug() << "Mouse press event";
 
+	makeCurrent();
+
 	switch (mouseEvent->button())
 	{
 		case Qt::LeftButton:
@@ -468,7 +436,13 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 
 				_mousePositions.push_back(_mousePosition);
 
-				_selectRenderer->updatePixelSelection();
+				auto worldMousePositions = std::vector<QVector3D>();
+
+				for (const auto& mousePosition : _mousePositions)
+				{
+					worldMousePositions.push_back(screenToWorld(mousePosition));
+				}
+				_selectRenderer->updatePixelSelection(_selectionType, worldMousePositions);
 			}
 
 			break;
@@ -489,6 +463,8 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 		default:
 			break;
 	}
+
+	doneCurrent();
 }
 
 void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
@@ -500,6 +476,8 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 		return;
 
 	//qDebug() << "Mouse move event";
+
+	makeCurrent();
 
 	switch (mouseEvent->buttons())
 	{
@@ -520,7 +498,13 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 							_mousePositions.push_back(mouseEvent->pos());
 						}
 
-						_selectRenderer->updatePixelSelection();
+						auto worldMousePositions = std::vector<QVector3D>();
+
+						for (const auto& mousePosition : _mousePositions)
+						{
+							worldMousePositions.push_back(screenToWorld(mousePosition));
+						}
+						_selectRenderer->updatePixelSelection(_selectionType, worldMousePositions);
 					}
 					
 					break;
@@ -553,6 +537,8 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 		default:
 			break;
 	}
+
+	doneCurrent();
 
 	update();
 
@@ -647,10 +633,10 @@ void ImageViewerWidget::wheelEvent(QWheelEvent* wheelEvent) {
 		{
 			if (_selectionType == SelectionType::Brush) {
 				if (wheelEvent->delta() > 0) {
-					setBrushRadius(_brushRadius + _brushRadiusDelta);
+					_selectRenderer->brushSizeIncrease();
 				}
 				else {
-					setBrushRadius(_brushRadius - _brushRadiusDelta);
+					_selectRenderer->brushSizeDecrease();
 				}
 
 				update();
@@ -991,34 +977,6 @@ void ImageViewerWidget::setSelectionModifier(const SelectionModifier& selectionM
 	_selectionModifier = selectionModifier;
 }
 
-void ImageViewerWidget::setBrushRadius(const float& brushRadius)
-{
-	const auto boundBrushRadius = qBound(1.0f, 10000.f, brushRadius);
-
-	if (boundBrushRadius == _brushRadius)
-		return;
-
-	_brushRadius = boundBrushRadius;
-
-	qDebug() << "Set brush radius" << brushRadius;
-
-	update();
-}
-
-void ImageViewerWidget::setBrushRadiusDelta(const float& brushRadiusDelta)
-{
-	const auto boundBrushRadiusDelta = qBound(0.001f, 10000.f, brushRadiusDelta);
-
-	if (boundBrushRadiusDelta == _brushRadiusDelta)
-		return;
-
-	_brushRadiusDelta = qBound(0.001f, 10000.f, brushRadiusDelta);
-
-	qDebug() << "Set brush radius delta" << _brushRadiusDelta;
-
-	update();
-}
-
 void ImageViewerWidget::drawSelectionOutlineRectangle(const QPoint& start, const QPoint& end)
 {
 	/*
@@ -1159,9 +1117,4 @@ void ImageViewerWidget::drawSelectionOutline()
 	}
 
 	//glDisable(GL_LINE_STIPPLE);
-}
-
-void ImageViewerWidget::drawSelectionBounds()
-{
-	
 }

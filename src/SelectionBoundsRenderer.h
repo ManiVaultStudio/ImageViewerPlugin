@@ -20,11 +20,11 @@ public:
 
 public:
 	void init() override;
-	void resize(QSize renderSize) override;
+	void resize(QSize renderSize);
 	void render() override;
 	void destroy() override;
 
-	void initializeProgram();
+	void initializePrograms();
 
 public:
 	void setSelectionBounds(const QRect& selectionBounds);

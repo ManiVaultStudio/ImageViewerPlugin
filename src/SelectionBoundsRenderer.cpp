@@ -25,7 +25,7 @@ SelectionBoundsRenderer::SelectionBoundsRenderer(const std::uint32_t& zIndex) :
 void SelectionBoundsRenderer::init()
 {
 	initializeOpenGLFunctions();
-	initializeProgram();
+	initializePrograms();
 
 	_vbo.create();
 	_vbo.bind();
@@ -82,7 +82,7 @@ void SelectionBoundsRenderer::destroy()
 	_vao.destroy();
 }
 
-void SelectionBoundsRenderer::initializeProgram()
+void SelectionBoundsRenderer::initializePrograms()
 {
 	_program->addShaderFromSourceCode(QOpenGLShader::Vertex, selectionBoundsVertexShaderSource.c_str());
 	_program->addShaderFromSourceCode(QOpenGLShader::Fragment, selectionBoundsFragmentShaderSource.c_str());

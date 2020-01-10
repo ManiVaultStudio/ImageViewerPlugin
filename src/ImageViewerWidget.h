@@ -42,8 +42,6 @@ public:
 	void setSelectionType(const SelectionType& selectionType);
 	SelectionModifier selectionModifier() const;
 	void setSelectionModifier(const SelectionModifier& selectionModifier);
-	void setBrushRadius(const float& brushRadius);
-	void setBrushRadiusDelta(const float& brushRadiusDelta);
 
 	void publishSelection();
 
@@ -77,7 +75,6 @@ private:
 	void drawSelectionOutlineLasso();
 	void drawSelectionOutlinePolygon();
 	void drawSelectionOutline();
-	void drawSelectionBounds();
 
 public:
 	void startMouseInteraction();
@@ -94,7 +91,7 @@ public:
 public:
 	void pan(const QPointF& delta);
 	void zoom(const float& factor);
-	void zoomAt(const QPointF & position, const float & factor);
+	void zoomAt(const QPointF& position, const float& factor);
 	void zoomExtents();
 	void zoomToRectangle(const QRectF& rectangle);
 	void zoomToSelection();
@@ -129,8 +126,6 @@ private:
 	bool										_selecting;
 	SelectionType								_selectionType;
 	SelectionModifier							_selectionModifier;
-	float										_brushRadius;
-	float										_brushRadiusDelta;
 	QVector4D									_pixelSelectionColor;
 	QVector4D									_selectionOutlineColor;
 	bool										_ignorePaintGL;
