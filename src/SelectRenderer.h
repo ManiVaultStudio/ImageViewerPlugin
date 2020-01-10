@@ -4,12 +4,8 @@
 
 #include "QuadRenderer.h"
 
-#include <QOpenGLTexture>
 #include <QVector>
-#include <QOpenGLBuffer>
-#include <QOpenGLVertexArrayObject>
-#include <QOpenGLShaderProgram>
-#include <QMatrix4x4>
+#include <QVector3D>
 #include <QVector4D>
 #include <QRect>
 #include <QOpenGLFramebufferObject>
@@ -20,21 +16,30 @@ public:
 	SelectRenderer(const std::uint32_t& zIndex);
 
 public:
-	void init() override;
-	void resize(QSize renderSize) override;
 	void render() override;
-	void destroy() override;
 
-	void initializeProgram();
+protected:
+	void initializePrograms();
 
 public:
-	void setSize(const QSize& size);
-	void updatePixelSelection();
+	void setImageSize(const QSize& size);
+	void updatePixelSelection(const SelectionType& selectionType, const std::vector<QVector3D>& mousePositions);
 	void resetPixelSelection();
+	float brushRadius() const;
+	void setBrushRadius(const float& brushRadius);
+	float brushRadiusDelta() const;
+	void setBrushRadiusDelta(const float& brushRadiusDelta);
+	void brushSizeIncrease();
+	void brushSizeDecrease();
 
 protected:
+	bool initialized() const;
 
 protected:
-	std::unique_ptr<QOpenGLFramebufferObject>	_pixelSelectionFBO;
-	QVector4D									_pixelSelectionColor;
+	std::unique_ptr<QOpenGLTexture>				_texture;
+	std::unique_ptr<QOpenGLFramebufferObject>	_fbo;
+	QVector4D									_color;
+	float										_brushRadius;
+	float										_brushRadiusDelta;
+	std::unique_ptr<QOpenGLShaderProgram>		_pixelSelectionProgram;
 };

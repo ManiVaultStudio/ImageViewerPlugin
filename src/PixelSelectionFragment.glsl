@@ -118,7 +118,7 @@ void main(void)
 		case 0:
 		{
 			bool inRectangle	= uv.x >= rectangleTopLeft.x && uv.x < rectangleBottomRight.x && uv.y >= rectangleTopLeft.y && uv.y < rectangleBottomRight.y;
-			fragmentColor		= inRectangle ? vec4(1) : vec4(vec3(0), 1);
+			fragmentColor		= vec4(1);//inRectangle ? vec4(1) : vec4(vec3(0), 1);
 			break;
 		}
 

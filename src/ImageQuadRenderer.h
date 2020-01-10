@@ -12,7 +12,7 @@ public:
 public:
 	void render() override;
 
-	void initializeProgram();
+	void initializePrograms();
 
 public:
 	void setImage(std::shared_ptr<QImage> image);
@@ -21,9 +21,13 @@ public:
 	void setWindowLevel(const float& window, const float& level);
 	void resetWindowLevel();
 
+protected:
+	bool initialized() const;
+
 private:
-	std::uint16_t	_imageMin;
-	std::uint16_t	_imageMax;
-	float			_window;
-	float			_level;
+	std::unique_ptr<QOpenGLTexture>		_texture;
+	std::uint16_t						_imageMin;
+	std::uint16_t						_imageMax;
+	float								_window;
+	float								_level;
 };

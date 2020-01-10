@@ -4,6 +4,7 @@
 
 #include "StackedRenderer.h"
 
+#include <QSize>
 #include <QOpenGLTexture>
 #include <QOpenGLBuffer>
 #include <QOpenGLVertexArrayObject>
@@ -24,17 +25,17 @@ public:
 	void render() override;
 	void destroy() override;
 
-	virtual void initializeProgram() = 0;
+	virtual void initializePrograms() = 0;
 
 public:
 	QSize size() const;
+	void setSize(const QSize& size);
 
 protected:
-	bool initialized() const;
 	void createQuad();
 
 protected:
-	std::unique_ptr<QOpenGLTexture>			_texture;
+	QSize									_size;
 	QVector<GLfloat>						_vertexData;
 	QOpenGLBuffer							_vbo;
 	QOpenGLVertexArrayObject				_vao;
