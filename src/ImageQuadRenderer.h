@@ -7,7 +7,7 @@
 class ImageQuadRenderer : public QuadRenderer
 {
 public:
-	ImageQuadRenderer();
+	ImageQuadRenderer(const std::uint32_t& zIndex);
 
 public:
 	void render() override;

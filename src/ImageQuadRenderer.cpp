@@ -9,8 +9,8 @@
 #define PROGRAM_VERTEX_ATTRIBUTE 0
 #define PROGRAM_TEXCOORD_ATTRIBUTE 1
 
-ImageQuadRenderer::ImageQuadRenderer() :
-	QuadRenderer(),
+ImageQuadRenderer::ImageQuadRenderer(const std::uint32_t& zIndex) :
+	QuadRenderer(zIndex),
 	_imageMin(),
 	_imageMax(),
 	_window(),
@@ -26,7 +26,7 @@ void ImageQuadRenderer::render()
 	_program->bind();
 	{
 		_program->setUniformValue("imageTexture", 0);
-		_program->setUniformValue("matrix", _modelViewProjection);
+		_program->setUniformValue("transform", _modelViewProjection);
 
 		const auto imageMin = static_cast<float>(_imageMin);
 		const auto imageMax = static_cast<float>(_imageMax);
@@ -38,11 +38,6 @@ void ImageQuadRenderer::render()
 
 		_program->setUniformValue("minPixelValue", minPixelValue);
 		_program->setUniformValue("maxPixelValue", maxPixelValue);
-
-		_program->enableAttributeArray(PROGRAM_VERTEX_ATTRIBUTE);
-		_program->enableAttributeArray(PROGRAM_TEXCOORD_ATTRIBUTE);
-		_program->setAttributeBuffer(PROGRAM_VERTEX_ATTRIBUTE, GL_FLOAT, 0, 3, 5 * sizeof(GLfloat));
-		_program->setAttributeBuffer(PROGRAM_TEXCOORD_ATTRIBUTE, GL_FLOAT, 3 * sizeof(GLfloat), 2, 5 * sizeof(GLfloat));
 
 		QuadRenderer::render();
 	}

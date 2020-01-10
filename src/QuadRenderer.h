@@ -2,7 +2,7 @@
 
 #include "Common.h"
 
-#include "renderers/Renderer.h"
+#include "StackedRenderer.h"
 
 #include <QOpenGLTexture>
 #include <QOpenGLBuffer>
@@ -13,10 +13,10 @@
 #include <QMatrix4x4>
 #include <QOpenGLDebugLogger>
 
-class QuadRenderer : public hdps::Renderer
+class QuadRenderer : public StackedRenderer
 {
 public:
-	QuadRenderer();
+	QuadRenderer(const std::uint32_t& zIndex);
 
 public:
 	void init() override;
