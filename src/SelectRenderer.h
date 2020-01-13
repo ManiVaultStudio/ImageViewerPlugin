@@ -10,10 +10,12 @@
 #include <QRect>
 #include <QOpenGLFramebufferObject>
 
+class ImageViewerWidget;
+
 class SelectRenderer : public QuadRenderer
 {
 public:
-	SelectRenderer(const std::uint32_t& zIndex);
+	SelectRenderer(const std::uint32_t& zIndex, ImageViewerWidget* imageViewerWidget);
 
 public:
 	void render() override;
@@ -37,11 +39,21 @@ public:
 protected:
 	bool initialized() const;
 
+private:
+	void renderOverlay();
+	void renderOutline();
+	void drawSelectionOutlineRectangle(const QVector3D& start, const QVector3D& end);
+	void drawSelectionOutlineBrush();
+	void drawSelectionOutlineLasso();
+	void drawSelectionOutlinePolygon();
+
 protected:
+	ImageViewerWidget*							_imageViewerWidget;
 	std::unique_ptr<QOpenGLTexture>				_texture;
 	std::unique_ptr<QOpenGLFramebufferObject>	_fbo;
 	QVector4D									_color;
 	float										_brushRadius;
 	float										_brushRadiusDelta;
 	std::unique_ptr<QOpenGLShaderProgram>		_pixelSelectionProgram;
+	std::unique_ptr<QOpenGLShaderProgram>		_outlineProgram;
 };

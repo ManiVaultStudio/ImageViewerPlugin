@@ -1,19 +1,24 @@
 #include "SelectRenderer.h"
+#include "ImageViewerWidget.h"
 
 #include <QDebug>
+
+#include <QtMath>
 
 #include <vector>
 
 #include "Shaders.h"
 
-SelectRenderer::SelectRenderer(const std::uint32_t& zIndex) :
+SelectRenderer::SelectRenderer(const std::uint32_t& zIndex, ImageViewerWidget* imageViewerWidget) :
 	QuadRenderer(zIndex),
+	_imageViewerWidget(imageViewerWidget),
 	_texture(),
 	_fbo(),
 	_color(1.f, 0.6f, 0.f, 0.3f),
 	_brushRadius(50.f),
 	_brushRadiusDelta(2.0f),
-	_pixelSelectionProgram(std::make_unique<QOpenGLShaderProgram>())
+	_pixelSelectionProgram(std::make_unique<QOpenGLShaderProgram>()),
+	_outlineProgram(std::make_unique<QOpenGLShaderProgram>())
 {
 }
 
@@ -37,6 +42,15 @@ void SelectRenderer::init()
 	_vbo.release();
 
 	_pixelSelectionProgram->release();
+
+	_outlineProgram->bind();
+
+	_outlineProgram->enableAttributeArray(0);
+	_outlineProgram->enableAttributeArray(1);
+	_outlineProgram->setAttributeBuffer(0, GL_FLOAT, 0, 3, stride);
+	_outlineProgram->setAttributeBuffer(1, GL_FLOAT, 3 * sizeof(GLfloat), 2, stride);
+
+	_outlineProgram->release();
 }
 
 void SelectRenderer::render()
@@ -44,19 +58,10 @@ void SelectRenderer::render()
 	if (!initialized())
 		return;
 
-	if (_program->bind()) {
-		_program->setUniformValue("overlayTexture", 0);
-		_program->setUniformValue("transform", _modelViewProjection);
-		_program->setUniformValue("color", _color);
+	renderOverlay();
 
-		_vao.bind();
-		{
-			glBindTexture(GL_TEXTURE_2D, _fbo->texture());
-			glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-		}
-		_vao.release();
-
-		_program->release();
+	if (_imageViewerWidget->interactionMode() == InteractionMode::Selection) {
+		renderOutline();
 	}
 }
 
@@ -69,6 +74,10 @@ void SelectRenderer::initializePrograms()
 	_pixelSelectionProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, pixelSelectionVertexShaderSource.c_str());
 	_pixelSelectionProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, pixelSelectionFragmentShaderSource.c_str());
 	_pixelSelectionProgram->link();
+
+	_outlineProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, selectionOutlineVertexShaderSource.c_str());
+	_outlineProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, selectionOutlineFragmentShaderSource.c_str());
+	_outlineProgram->link();
 }
 
 void SelectRenderer::setImageSize(const QSize& size)
@@ -256,4 +265,230 @@ bool SelectRenderer::initialized() const
 		return false;
 
 	return _fbo->isValid();
+}
+
+void SelectRenderer::renderOverlay()
+{
+	if (_program->bind()) {
+		_program->setUniformValue("overlayTexture", 0);
+		_program->setUniformValue("transform", _modelViewProjection);
+		_program->setUniformValue("color", _color);
+
+		_vao.bind();
+		{
+			glBindTexture(GL_TEXTURE_2D, _fbo->texture());
+			glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+		}
+		_vao.release();
+
+		_program->release();
+	}
+}
+
+void SelectRenderer::renderOutline()
+{
+	QMatrix4x4 transform;
+
+	transform.ortho(_imageViewerWidget->rect());
+
+	if (_pixelSelectionProgram->bind()) {
+		_pixelSelectionProgram->setUniformValue("transform", _modelViewProjection);
+		_pixelSelectionProgram->setUniformValue("color", _color);
+
+		switch (_imageViewerWidget->selectionType())
+		{
+			case SelectionType::Rectangle:
+			{
+				if (_imageViewerWidget->selecting()) {
+					const auto initialMousePosition = _imageViewerWidget->screenToWorld(_imageViewerWidget->mousePositions().front());
+					const auto currentMouseWorldPos = _imageViewerWidget->screenToWorld(_imageViewerWidget->mousePositions().back());
+
+					drawSelectionOutlineRectangle(initialMousePosition, currentMouseWorldPos);
+				}
+
+				break;
+			}
+
+			case SelectionType::Brush:
+			{
+				drawSelectionOutlineBrush();
+				break;
+			}
+
+			case SelectionType::Lasso:
+			{
+				drawSelectionOutlineLasso();
+				break;
+			}
+
+			case SelectionType::Polygon:
+			{
+				drawSelectionOutlinePolygon();
+				break;
+			}
+
+			default:
+				break;
+		}
+
+		_pixelSelectionProgram->release();
+	}
+}
+
+void SelectRenderer::drawSelectionOutlineRectangle(const QVector3D& start, const QVector3D& end)
+{
+	
+	const float vertices[4][3] = {
+		start.x(), start.y(), 0.0f,
+		end.x(), start.y(), 0.0f,
+		end.x(), end.y(), 0.0f,
+		start.x(), end.y(), 0.0f
+	};
+
+	auto uv = 0.f;
+
+	QVector<float> vertexData;
+
+	vertexData.resize(20);
+
+	for (int j = 0; j < 4; ++j)
+	{
+		vertexData[j * 5 + 0] = vertices[j][0];
+		vertexData[j * 5 + 1] = vertices[j][1];
+		vertexData[j * 5 + 2] = vertices[j][2];
+
+		if (j == 0) {
+			vertexData[j * 5 + 3] = 0.f;
+		}
+		else {
+			const auto a = QPointF(vertices[j][0], vertices[j][1]) - QPointF(vertices[j - 1][0], vertices[j - 1][1]);
+
+			uv += a.manhattanLength();
+
+			vertexData[j * 5 + 3] = uv;
+		}
+		
+		vertexData[j * 5 + 4] = 0.f;
+	}
+	/**/
+
+	/*
+	_outlineProgram->bind();
+
+	_outlineProgram->enableAttributeArray(0);
+	_outlineProgram->enableAttributeArray(1);
+	_outlineProgram->setAttributeBuffer(0, GL_FLOAT, 0, 3, stride);
+	_outlineProgram->setAttributeBuffer(1, GL_FLOAT, 3 * sizeof(GLfloat), 2, stride);
+
+	_outlineProgram->release();
+	
+
+	_vao.bind();
+	{
+		_vbo.bind();
+		{
+			_vbo.allocate(vertexData.constData(), vertexData.count() * sizeof(GLfloat));
+		}
+		_vbo.release();
+	}
+	_vao.release();
+	*/
+
+	/*
+	const GLfloat vertexCoordinates[] = {
+	  start.x(), start.y(), 0.0f,
+	  end.x(), start.y(), 0.0f,
+	  end.x(), end.y(), 0.0f,
+	  start.x(), end.y(), 0.0f
+	};
+	*/
+
+	/**/
+	const auto vertexLocation = _outlineProgram->attributeLocation("vertex");
+
+	_outlineProgram->setAttributeArray(vertexLocation, vertexData.constData(), 5);
+
+	glDrawArrays(GL_LINE_LOOP, 0, 4);
+	
+}
+
+void SelectRenderer::drawSelectionOutlineBrush()
+{
+	/*
+	const auto brushCenter = _imageViewerWidget->screenToWorld(_imageViewerWidget->mousePosition());
+	const auto noSegments = 64u;
+
+	qDebug() << brushCenter;
+
+	std::vector<GLfloat> vertexCoordinates;
+
+	vertexCoordinates.resize(noSegments * 3);
+
+	const auto brushRadius = _brushRadius;// *_zoom;
+
+	for (std::uint32_t s = 0; s < noSegments; s++) {
+		const auto theta = 2.0f * M_PI * float(s) / float(noSegments);
+		const auto x = brushRadius * cosf(theta);
+		const auto y = brushRadius * sinf(theta);
+
+		vertexCoordinates[s * 3 + 0] = brushCenter.x() + x;
+		vertexCoordinates[s * 3 + 1] = brushCenter.y() + y;
+		vertexCoordinates[s * 3 + 2] = 0.f;
+	}
+
+	const auto vertexLocation = _program->attributeLocation("vertex");
+
+	_program->setAttributeArray(vertexLocation, vertexCoordinates.data(), 3);
+
+	glDrawArrays(GL_LINE_LOOP, 0, noSegments);
+	*/
+}
+
+void SelectRenderer::drawSelectionOutlineLasso()
+{
+	/*
+	std::vector<GLfloat> vertexCoordinates;
+
+	vertexCoordinates.resize(_mousePositions.size() * 3);
+
+	for (std::size_t p = 0; p < _mousePositions.size(); p++) {
+		const auto mousePosition = _mousePositions[p];
+
+		vertexCoordinates[p * 3 + 0] = mousePosition.x();
+		vertexCoordinates[p * 3 + 1] = mousePosition.y();
+		vertexCoordinates[p * 3 + 2] = 0.f;
+	}
+
+	const auto vertexLocation = _selectionOutlineShaderProgram->attributeLocation("vertex");
+
+	_selectionOutlineShaderProgram->setAttributeArray(vertexLocation, vertexCoordinates.data(), 3);
+
+	glDrawArrays(GL_LINE_LOOP, 0, static_cast<std::int32_t>(_mousePositions.size()));
+	*/
+}
+
+void SelectRenderer::drawSelectionOutlinePolygon()
+{
+	/*
+	std::vector<GLfloat> vertexCoordinates;
+
+	vertexCoordinates.resize(_mousePositions.size() * 3);
+
+	for (std::size_t p = 0; p < _mousePositions.size(); p++) {
+		const auto mousePosition = _mousePositions[p];
+
+		vertexCoordinates[p * 3 + 0] = mousePosition.x();
+		vertexCoordinates[p * 3 + 1] = mousePosition.y();
+		vertexCoordinates[p * 3 + 2] = 0.f;
+	}
+
+	const auto vertexLocation = _selectionOutlineShaderProgram->attributeLocation("vertex");
+
+	_selectionOutlineShaderProgram->setAttributeArray(vertexLocation, vertexCoordinates.data(), 3);
+
+	glPointSize(4.0f);
+
+	glDrawArrays(GL_LINE_LOOP, 0, static_cast<std::int32_t>(_mousePositions.size()));
+	glDrawArrays(GL_POINTS, 0, static_cast<std::int32_t>(_mousePositions.size()));
+	*/
 }
