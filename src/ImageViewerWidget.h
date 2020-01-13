@@ -42,6 +42,9 @@ public:
 	void setSelectionType(const SelectionType& selectionType);
 	SelectionModifier selectionModifier() const;
 	void setSelectionModifier(const SelectionModifier& selectionModifier);
+	QPoint mousePosition() const;
+	std::vector<QPoint> mousePositions() const;
+	bool selecting() const;
 
 	void publishSelection();
 
@@ -68,13 +71,6 @@ private:
 	void mouseMoveEvent(QMouseEvent* mouseEvent) Q_DECL_OVERRIDE;
 	void mouseReleaseEvent(QMouseEvent* mouseEvent) Q_DECL_OVERRIDE;
 	void wheelEvent(QWheelEvent* wheelEvent) Q_DECL_OVERRIDE;
-
-private:
-	void drawSelectionOutlineRectangle(const QPoint& start, const QPoint& end);
-	void drawSelectionOutlineBrush();
-	void drawSelectionOutlineLasso();
-	void drawSelectionOutlinePolygon();
-	void drawSelectionOutline();
 
 public:
 	void startMouseInteraction();
@@ -104,7 +100,7 @@ protected:
 	QMenu* viewMenu();
 	QMenu* selectionMenu();
 
-protected:
+public:
 	QMatrix4x4 modelView() const;
 	QMatrix4x4 projection() const;
 	QVector3D screenToWorld(const QPoint& screen) const;

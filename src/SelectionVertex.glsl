@@ -13,4 +13,4 @@ void main(void)
     gl_Position = transform * vertex;
     uv = texCoord;
 }
-)" 
+)"

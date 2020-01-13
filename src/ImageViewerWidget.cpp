@@ -10,10 +10,7 @@
 #include <QMenu>
 #include <QList>
 #include <QtMath>
-#include <QPainter>
 #include <QGuiApplication>
-#include <QOpenGLTexture>
-#include <QOpenGLShaderProgram>
 #include <QOpenGLDebugLogger>
 
 #include "Shaders.h"
@@ -27,11 +24,6 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_selectionRenderer(),
 	_selectionBoundsRenderer(),
 	_selectRenderer(),
-	/*
-	_overlayShaderProgram(),
-	_selectionBoundsShaderProgram(),
-	_pixelSelectionFBO(),
-	*/
 	_interactionMode(InteractionMode::Selection),
 	_initialMousePosition(),
 	_mousePosition(),
@@ -80,7 +72,7 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_imageQuadRenderer			= std::make_unique<ImageQuadRenderer>(0);
 	_selectionRenderer			= std::make_unique<SelectionRenderer>(1);
 	_selectionBoundsRenderer	= std::make_unique<SelectionBoundsRenderer>(2);
-	_selectRenderer				= std::make_unique<SelectRenderer>(2);
+	_selectRenderer				= std::make_unique<SelectRenderer>(3, this);
 }
 
 ImageViewerWidget::~ImageViewerWidget()
@@ -241,22 +233,6 @@ void ImageViewerWidget::paintGL() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	auto modelViewProjection = projection() * modelView();
-
-	/*
-	if (_overlayShaderProgram->isLinked()) {
-	if (_interactionMode == InteractionMode::Selection && _selectionOutlineShaderProgram->bind()) {
-		QMatrix4x4 transform;
-
-		transform.ortho(rect());
-
-		_selectionOutlineShaderProgram->setUniformValue("transform", transform);
-		_selectionOutlineShaderProgram->setUniformValue("color", _selectionOutlineColor);
-
-		drawSelectionOutline();
-
-		_selectionOutlineShaderProgram->release();
-	}
-	*/
 	
 	_imageQuadRenderer->setModelViewProjection(modelViewProjection);
 	_imageQuadRenderer->render();
@@ -981,144 +957,17 @@ void ImageViewerWidget::setSelectionModifier(const SelectionModifier& selectionM
 	_selectionModifier = selectionModifier;
 }
 
-void ImageViewerWidget::drawSelectionOutlineRectangle(const QPoint& start, const QPoint& end)
+QPoint ImageViewerWidget::mousePosition() const
 {
-	/*
-	const GLfloat vertexCoordinates[] = {
-	  start.x(), start.y(), 0.0f,
-	  end.x(), start.y(), 0.0f,
-	  end.x(), end.y(), 0.0f,
-	  start.x(), end.y(), 0.0f
-	};
-
-	const auto vertexLocation = _selectionOutlineShaderProgram->attributeLocation("vertex");
-
-	_selectionOutlineShaderProgram->setAttributeArray(vertexLocation, vertexCoordinates, 3);
-
-	glDrawArrays(GL_LINE_LOOP, 0, 4);
-	*/
+	return _mousePosition;
 }
 
-void ImageViewerWidget::drawSelectionOutlineBrush()
+std::vector<QPoint> ImageViewerWidget::mousePositions() const
 {
-	/*
-	const auto brushCenter	= QWidget::mapFromGlobal(QCursor::pos());
-	const auto noSegments	= 64u;
-
-	std::vector<GLfloat> vertexCoordinates;
-
-	vertexCoordinates.resize(noSegments * 3);
-
-	const auto brushRadius = _brushRadius * _zoom;
-
-	for (std::uint32_t s = 0; s < noSegments; s++) {
-		const auto theta	= 2.0f * M_PI * float(s) / float(noSegments);
-		const auto x		= brushRadius * cosf(theta);
-		const auto y		= brushRadius * sinf(theta);
-
-		vertexCoordinates[s * 3 + 0] = brushCenter.x() + x;
-		vertexCoordinates[s * 3 + 1] = brushCenter.y() + y;
-		vertexCoordinates[s * 3 + 2] = 0.f;
-	}
-
-	const auto vertexLocation = _selectionOutlineShaderProgram->attributeLocation("vertex");
-
-	_selectionOutlineShaderProgram->setAttributeArray(vertexLocation, vertexCoordinates.data(), 3);
-
-	glDrawArrays(GL_LINE_LOOP, 0, noSegments);
-	*/
+	return _mousePositions;
 }
 
-void ImageViewerWidget::drawSelectionOutlineLasso()
+bool ImageViewerWidget::selecting() const
 {
-	/*
-	std::vector<GLfloat> vertexCoordinates;
-
-	vertexCoordinates.resize(_mousePositions.size() * 3);
-
-	for (std::size_t p = 0; p < _mousePositions.size(); p++) {
-		const auto mousePosition = _mousePositions[p];
-
-		vertexCoordinates[p * 3 + 0] = mousePosition.x();
-		vertexCoordinates[p * 3 + 1] = mousePosition.y();
-		vertexCoordinates[p * 3 + 2] = 0.f;
-	}
-
-	const auto vertexLocation = _selectionOutlineShaderProgram->attributeLocation("vertex");
-
-	_selectionOutlineShaderProgram->setAttributeArray(vertexLocation, vertexCoordinates.data(), 3);
-	
-	glDrawArrays(GL_LINE_LOOP, 0, static_cast<std::int32_t>(_mousePositions.size()));
-	*/
-}
-
-void ImageViewerWidget::drawSelectionOutlinePolygon()
-{
-	/*
-	std::vector<GLfloat> vertexCoordinates;
-
-	vertexCoordinates.resize(_mousePositions.size() * 3);
-
-	for (std::size_t p = 0; p < _mousePositions.size(); p++) {
-		const auto mousePosition = _mousePositions[p];
-
-		vertexCoordinates[p * 3 + 0] = mousePosition.x();
-		vertexCoordinates[p * 3 + 1] = mousePosition.y();
-		vertexCoordinates[p * 3 + 2] = 0.f;
-	}
-
-	const auto vertexLocation = _selectionOutlineShaderProgram->attributeLocation("vertex");
-
-	_selectionOutlineShaderProgram->setAttributeArray(vertexLocation, vertexCoordinates.data(), 3);
-
-	glPointSize(4.0f);
-
-	glDrawArrays(GL_LINE_LOOP, 0, static_cast<std::int32_t>(_mousePositions.size()));
-	glDrawArrays(GL_POINTS, 0, static_cast<std::int32_t>(_mousePositions.size()));
-	*/
-}
-
-void ImageViewerWidget::drawSelectionOutline()
-{
-	//qDebug() << "Draw selection outline";
-
-	//glEnable(GL_LINE_STIPPLE);
-	//glLineStipple(1, 0x0101);
-	//glLineWidth(2.5f);
-
-	switch (_selectionType)
-	{
-		case SelectionType::Rectangle:
-		{
-			if (_selecting) {
-				const auto currentMouseWorldPos = QWidget::mapFromGlobal(QCursor::pos());
-				drawSelectionOutlineRectangle(_initialMousePosition, currentMouseWorldPos);
-			}
-
-			break;
-		}
-
-		case SelectionType::Brush:
-		{
-			drawSelectionOutlineBrush();
-			break;
-		}
-
-		case SelectionType::Lasso:
-		{
-			drawSelectionOutlineLasso();
-			break;
-		}
-
-		case SelectionType::Polygon:
-		{
-			drawSelectionOutlinePolygon();
-			break;
-		}
-
-		default:
-			break;
-	}
-
-	//glDisable(GL_LINE_STIPPLE);
+	return _selecting;
 }
