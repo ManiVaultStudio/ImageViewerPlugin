@@ -93,8 +93,6 @@ void QuadRenderer::createQuad()
 	const float width	= initialized() ? static_cast<float>(_size.width()) : 0;
 	const float height	= initialized() ? static_cast<float>(_size.height()) : 0;
 
-	qDebug() << width << height;
-
 	const float coordinates[4][3] = {
 	  { width, height, 0.0f },
 	  { 0.0f, height, 0.0f },

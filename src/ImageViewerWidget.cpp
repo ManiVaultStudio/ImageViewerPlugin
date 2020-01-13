@@ -168,6 +168,12 @@ void ImageViewerWidget::endSelection()
 	_selecting = false;
 
 	publishSelection();
+
+	makeCurrent();
+
+	_selectRenderer->reset();
+
+	doneCurrent();
 }
 
 void ImageViewerWidget::startWindowLevelMode()
@@ -431,7 +437,7 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 					startSelection();
 
 				if (_selectionType != SelectionType::Polygon) {
-					_selectRenderer->resetPixelSelection();
+					_selectRenderer->reset();
 				}
 
 				_mousePositions.push_back(_mousePosition);
@@ -442,7 +448,7 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 				{
 					worldMousePositions.push_back(screenToWorld(mousePosition));
 				}
-				_selectRenderer->updatePixelSelection(_selectionType, worldMousePositions);
+				_selectRenderer->update(_selectionType, worldMousePositions);
 			}
 
 			break;
@@ -504,7 +510,7 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 						{
 							worldMousePositions.push_back(screenToWorld(mousePosition));
 						}
-						_selectRenderer->updatePixelSelection(_selectionType, worldMousePositions);
+						_selectRenderer->update(_selectionType, worldMousePositions);
 					}
 					
 					break;
@@ -557,6 +563,8 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 		contextMenu()->exec(mapToGlobal(mouseEvent->pos()));
 	}
 
+	makeCurrent();
+
 	switch (mouseEvent->button())
 	{
 		case Qt::LeftButton:
@@ -595,6 +603,8 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 		
 	}
 	
+	doneCurrent();
+
 	update();
 
 	QOpenGLWidget::mouseReleaseEvent(mouseEvent);
@@ -742,25 +752,18 @@ QVector3D ImageViewerWidget::screenToWorld(const QPoint& screenPoint) const
 }
 
 void ImageViewerWidget::publishSelection()
-{
-	/*
+{	
 	qDebug() << "Publish selection";
 	
-	makeCurrent();
-
-	const auto image = _pixelSelectionFBO->toImage();
-
-	doneCurrent();
-
-	resetPixelSelection();
+	const auto image = _selectRenderer->selectionImage();
 
 	auto pixelCoordinates = std::vector<std::pair<std::uint32_t, std::uint32_t>>();
 
-	pixelCoordinates.reserve(image.width() * image.height());
+	pixelCoordinates.reserve(image->width() * image->height());
 
-	for (std::int32_t y = 0; y < image.height(); y++) {
-		for (std::int32_t x = 0; x < image.width(); x++) {
-			if (image.pixelColor(x, y).red() > 0) {
+	for (std::int32_t y = 0; y < image->height(); y++) {
+		for (std::int32_t x = 0; x < image->width(); x++) {
+			if (image->pixelColor(x, y).red() > 0) {
 				pixelCoordinates.push_back(std::make_pair(x, y));
 			}
 		}
@@ -768,8 +771,9 @@ void ImageViewerWidget::publishSelection()
 
 	_imageViewerPlugin->selectPixels(pixelCoordinates, _selectionModifier);
 
+	//_selectRenderer->resetPixelSelection();
+
 	update();
-	*/
 }
 
 void ImageViewerWidget::selectAll()

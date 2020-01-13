@@ -17,20 +17,22 @@ public:
 
 public:
 	void render() override;
+	void init();
 
 protected:
 	void initializePrograms();
 
 public:
 	void setImageSize(const QSize& size);
-	void updatePixelSelection(const SelectionType& selectionType, const std::vector<QVector3D>& mousePositions);
-	void resetPixelSelection();
+	void update(const SelectionType& selectionType, const std::vector<QVector3D>& mousePositions);
+	void reset();
 	float brushRadius() const;
 	void setBrushRadius(const float& brushRadius);
 	float brushRadiusDelta() const;
 	void setBrushRadiusDelta(const float& brushRadiusDelta);
 	void brushSizeIncrease();
 	void brushSizeDecrease();
+	std::shared_ptr<QImage> selectionImage() const;
 
 protected:
 	bool initialized() const;
