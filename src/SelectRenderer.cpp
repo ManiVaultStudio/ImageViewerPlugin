@@ -17,6 +17,28 @@ SelectRenderer::SelectRenderer(const std::uint32_t& zIndex) :
 {
 }
 
+void SelectRenderer::init()
+{
+	QuadRenderer::init();
+
+	const auto stride = 5 * sizeof(GLfloat);
+
+	_pixelSelectionProgram->bind();
+
+	_vao.bind();
+	_vbo.bind();
+
+	_pixelSelectionProgram->enableAttributeArray(0);
+	_pixelSelectionProgram->enableAttributeArray(1);
+	_pixelSelectionProgram->setAttributeBuffer(0, GL_FLOAT, 0, 3, stride);
+	_pixelSelectionProgram->setAttributeBuffer(1, GL_FLOAT, 3 * sizeof(GLfloat), 2, stride);
+
+	_vao.release();
+	_vbo.release();
+
+	_pixelSelectionProgram->release();
+}
+
 void SelectRenderer::render()
 {
 	if (!initialized())
@@ -27,16 +49,12 @@ void SelectRenderer::render()
 		_program->setUniformValue("transform", _modelViewProjection);
 		_program->setUniformValue("color", _color);
 
-		QuadRenderer::render();
-
-		/*
 		_vao.bind();
 		{
-			//glBindTexture(GL_TEXTURE_2D, _fbo->texture());
+			glBindTexture(GL_TEXTURE_2D, _fbo->texture());
 			glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 		}
 		_vao.release();
-		*/
 
 		_program->release();
 	}
@@ -48,11 +66,9 @@ void SelectRenderer::initializePrograms()
 	_program->addShaderFromSourceCode(QOpenGLShader::Fragment, overlayFragmentShaderSource.c_str());
 	_program->link();
 
-	/*
 	_pixelSelectionProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, pixelSelectionVertexShaderSource.c_str());
 	_pixelSelectionProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, pixelSelectionFragmentShaderSource.c_str());
 	_pixelSelectionProgram->link();
-	*/
 }
 
 void SelectRenderer::setImageSize(const QSize& size)
@@ -68,16 +84,16 @@ void SelectRenderer::setImageSize(const QSize& size)
 		}
 	}
 
-	setSize(size);
-
 	if (createFBO) {
 		_fbo = std::make_unique<QOpenGLFramebufferObject>(size.width(), size.height());
 	}
+
+	setSize(size);
 }
 
-void SelectRenderer::updatePixelSelection(const SelectionType& selectionType, const std::vector<QVector3D>& mousePositions)
+void SelectRenderer::update(const SelectionType& selectionType, const std::vector<QVector3D>& mousePositions)
 {
-	return;
+	qDebug() << "Update";
 
 	if (!_fbo->bind())
 		return;
@@ -85,6 +101,8 @@ void SelectRenderer::updatePixelSelection(const SelectionType& selectionType, co
 	glViewport(0, 0, _fbo->width(), _fbo->height());
 
 	QMatrix4x4 transform;
+
+	auto width = _fbo->width();
 
 	transform.ortho(0.0f, _fbo->width(), 0.0f, _fbo->height(), -1.0f, +1.0f);
 
@@ -94,7 +112,7 @@ void SelectRenderer::updatePixelSelection(const SelectionType& selectionType, co
 			glBindTexture(GL_TEXTURE_2D, _fbo->texture());
 
 			_pixelSelectionProgram->setUniformValue("pixelSelectionTexture", 0);
-			_pixelSelectionProgram->setUniformValue("matrix", transform);
+			_pixelSelectionProgram->setUniformValue("transform", transform);
 			_pixelSelectionProgram->setUniformValue("selectionType", static_cast<int>(selectionType));
 			_pixelSelectionProgram->setUniformValue("imageSize", static_cast<float>(_fbo->size().width()), static_cast<float>(_fbo->size().height()));
 
@@ -142,16 +160,16 @@ void SelectRenderer::updatePixelSelection(const SelectionType& selectionType, co
 				case SelectionType::Lasso:
 				case SelectionType::Polygon:
 				{
-					QList<QVector2D> mousePositions;
+					QList<QVector2D> points;
 
-					mousePositions.reserve(static_cast<std::int32_t>(mousePositions.size()));
+					points.reserve(static_cast<std::int32_t>(mousePositions.size()));
 
 					for (const auto& mousePosition : mousePositions) {
-						mousePositions.push_back(QVector2D(mousePosition.x(), mousePosition.y()));
+						points.push_back(QVector2D(mousePosition.x(), mousePosition.y()));
 					}
 
-					_pixelSelectionProgram->setUniformValueArray("points", &mousePositions[0], static_cast<std::int32_t>(mousePositions.size()));
-					_pixelSelectionProgram->setUniformValue("noPoints", static_cast<int>(mousePositions.size()));
+					_pixelSelectionProgram->setUniformValueArray("points", &points[0], static_cast<std::int32_t>(points.size()));
+					_pixelSelectionProgram->setUniformValue("noPoints", static_cast<int>(points.size()));
 
 					break;
 				}
@@ -159,11 +177,6 @@ void SelectRenderer::updatePixelSelection(const SelectionType& selectionType, co
 				default:
 					break;
 			}
-
-			_pixelSelectionProgram->enableAttributeArray(0);
-			_pixelSelectionProgram->enableAttributeArray(1);
-			_pixelSelectionProgram->setAttributeBuffer(0, GL_FLOAT, 0, 3, 5 * sizeof(GLfloat));
-			_pixelSelectionProgram->setAttributeBuffer(1, GL_FLOAT, 3 * sizeof(GLfloat), 2, 5 * sizeof(GLfloat));
 
 			glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
@@ -175,21 +188,17 @@ void SelectRenderer::updatePixelSelection(const SelectionType& selectionType, co
 	_fbo->release();
 }
 
-void SelectRenderer::resetPixelSelection()
+void SelectRenderer::reset()
 {
-	/*
-	makeCurrent();
+	qDebug() << "Reset";
 
-	if (_pixelSelectionFBO->bind()) {
-		glViewport(0, 0, _displayImage->width(), _displayImage->height());
+	if (_fbo->bind()) {
+		glViewport(0, 0, _fbo->width(), _fbo->height());
 		glClearColor(0.f, 0.f, 0.f, 0.f);
 		glClear(GL_COLOR_BUFFER_BIT);
+
+		_fbo->release();
 	}
-
-	doneCurrent();
-
-	update();
-	*/
 }
 
 float SelectRenderer::brushRadius() const
@@ -234,6 +243,11 @@ void SelectRenderer::brushSizeIncrease()
 void SelectRenderer::brushSizeDecrease()
 {
 	setBrushRadius(_brushRadius - _brushRadiusDelta);
+}
+
+std::shared_ptr<QImage> SelectRenderer::selectionImage() const
+{
+	return std::make_shared<QImage>(_fbo->toImage());
 }
 
 bool SelectRenderer::initialized() const

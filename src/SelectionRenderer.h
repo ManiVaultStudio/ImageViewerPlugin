@@ -12,6 +12,7 @@ public:
 public:
 	void render() override;
 
+protected:
 	void initializePrograms();
 
 public:
@@ -20,7 +21,7 @@ public:
 
 protected:
 	bool initialized() const;
-
+	
 private:
 	std::unique_ptr<QOpenGLTexture>		_texture;
 	QVector4D							_selectionColor;
