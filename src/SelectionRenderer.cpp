@@ -1,4 +1,4 @@
-#include "SelectRenderer.h"
+#include "SelectionRenderer.h"
 #include "ImageViewerWidget.h"
 
 #include <QDebug>
@@ -9,7 +9,7 @@
 
 #include "Shaders.h"
 
-SelectRenderer::SelectRenderer(const std::uint32_t& zIndex, ImageViewerWidget* imageViewerWidget) :
+SelectionRenderer::SelectionRenderer(const std::uint32_t& zIndex, ImageViewerWidget* imageViewerWidget) :
 	QuadRenderer(zIndex),
 	_imageViewerWidget(imageViewerWidget),
 	_color(1.f, 0.6f, 0.f, 0.3f),
@@ -21,7 +21,7 @@ SelectRenderer::SelectRenderer(const std::uint32_t& zIndex, ImageViewerWidget* i
 {
 }
 
-void SelectRenderer::init()
+void SelectionRenderer::init()
 {
 	QuadRenderer::init();
 
@@ -100,7 +100,7 @@ void SelectRenderer::init()
 	}
 }
 
-void SelectRenderer::render()
+void SelectionRenderer::render()
 {
 	if (!isInitialized())
 		return;
@@ -111,7 +111,7 @@ void SelectRenderer::render()
 	renderBounds();
 }
 
-void SelectRenderer::setImageSize(const QSize& size)
+void SelectionRenderer::setImageSize(const QSize& size)
 {
 	auto createFBO = false;
 
@@ -131,7 +131,7 @@ void SelectRenderer::setImageSize(const QSize& size)
 	setSize(size);
 }
 
-void SelectRenderer::update(const SelectionType& selectionType, const std::vector<QVector3D>& mousePositions)
+void SelectionRenderer::update(const SelectionType& selectionType, const std::vector<QVector3D>& mousePositions)
 {
 	qDebug() << "Update";
 
@@ -234,7 +234,7 @@ void SelectRenderer::update(const SelectionType& selectionType, const std::vecto
 	selectionFBO->release();
 }
 
-void SelectRenderer::resetSelectionBuffer()
+void SelectionRenderer::resetSelectionBuffer()
 {
 	qDebug() << "Reset";
 
@@ -250,7 +250,7 @@ void SelectRenderer::resetSelectionBuffer()
 	selectionFBO->release();
 }
 
-void SelectRenderer::setSelectionImage(std::shared_ptr<QImage> image)
+void SelectionRenderer::setSelectionImage(std::shared_ptr<QImage> image)
 {
 	auto selectionTexture = std::make_shared<QOpenGLTexture>(*image.get());
 
@@ -259,22 +259,22 @@ void SelectRenderer::setSelectionImage(std::shared_ptr<QImage> image)
 	_textures["Selection"] = selectionTexture;
 }
 
-void SelectRenderer::setSelectionBounds(const QRect& selectionBounds)
+void SelectionRenderer::setSelectionBounds(const QRect& selectionBounds)
 {
 	_selectionBounds = selectionBounds;
 }
 
-void SelectRenderer::setOpacity(const float& opacity)
+void SelectionRenderer::setOpacity(const float& opacity)
 {
 	_selectionColor.setW(opacity);
 }
 
-float SelectRenderer::brushRadius() const
+float SelectionRenderer::brushRadius() const
 {
 	return _brushRadius;
 }
 
-void SelectRenderer::setBrushRadius(const float& brushRadius)
+void SelectionRenderer::setBrushRadius(const float& brushRadius)
 {
 	const auto boundBrushRadius = qBound(1.0f, 10000.f, brushRadius);
 
@@ -286,12 +286,12 @@ void SelectRenderer::setBrushRadius(const float& brushRadius)
 	qDebug() << "Set brush radius" << brushRadius;
 }
 
-float SelectRenderer::brushRadiusDelta() const
+float SelectionRenderer::brushRadiusDelta() const
 {
 	return _brushRadiusDelta;
 }
 
-void SelectRenderer::setBrushRadiusDelta(const float& brushRadiusDelta)
+void SelectionRenderer::setBrushRadiusDelta(const float& brushRadiusDelta)
 {
 	const auto boundBrushRadiusDelta = qBound(0.001f, 10000.f, brushRadiusDelta);
 
@@ -303,24 +303,24 @@ void SelectRenderer::setBrushRadiusDelta(const float& brushRadiusDelta)
 	qDebug() << "Set brush radius delta" << _brushRadiusDelta;
 }
 
-void SelectRenderer::brushSizeIncrease()
+void SelectionRenderer::brushSizeIncrease()
 {
 	setBrushRadius(_brushRadius + _brushRadiusDelta);
 }
 
-void SelectRenderer::brushSizeDecrease()
+void SelectionRenderer::brushSizeDecrease()
 {
 	setBrushRadius(_brushRadius - _brushRadiusDelta);
 }
 
-std::shared_ptr<QImage> SelectRenderer::selectionImage() const
+std::shared_ptr<QImage> SelectionRenderer::selectionImage() const
 {
 	auto selectionFBO = fbo("SelectionBuffer");
 
 	return std::make_shared<QImage>(selectionFBO->toImage());
 }
 
-bool SelectRenderer::isInitialized() const
+bool SelectionRenderer::isInitialized() const
 {
 	auto selectionFBO = fbo("SelectionBuffer");
 
@@ -330,7 +330,7 @@ bool SelectRenderer::isInitialized() const
 	return selectionFBO->isValid();
 }
 
-void SelectRenderer::createShaderPrograms()
+void SelectionRenderer::createShaderPrograms()
 {
 	auto overlayProgram = std::make_shared<QOpenGLShaderProgram>();
 
@@ -373,12 +373,12 @@ void SelectRenderer::createShaderPrograms()
 	_shaderPrograms.insert("Bounds", boundsProgram);
 }
 
-void SelectRenderer::createTextures()
+void SelectionRenderer::createTextures()
 {
 	_textures.insert("Selection", std::make_shared<QOpenGLTexture>(QOpenGLTexture::Target2D));
 }
 
-void SelectRenderer::createVBOs()
+void SelectionRenderer::createVBOs()
 {
 	auto quadVBO		= std::make_shared<QOpenGLBuffer>();
 	auto outlineVBO		= std::make_shared<QOpenGLBuffer>();
@@ -393,7 +393,7 @@ void SelectRenderer::createVBOs()
 	_vbos.insert("Bounds", boundsVBO);
 }
 
-void SelectRenderer::createVAOs()
+void SelectionRenderer::createVAOs()
 {
 	auto quadVAO	= std::make_shared<QOpenGLVertexArrayObject>();
 	auto outlineVAO	= std::make_shared<QOpenGLVertexArrayObject>();
@@ -408,7 +408,7 @@ void SelectRenderer::createVAOs()
 	_vaos.insert("Bounds", boundsVAO);
 }
 
-void SelectRenderer::renderOverlay()
+void SelectionRenderer::renderOverlay()
 {
 	auto selectionFBO = fbo("SelectionBuffer");
 
@@ -432,7 +432,7 @@ void SelectRenderer::renderOverlay()
 	}
 }
 
-void SelectRenderer::renderSelection()
+void SelectionRenderer::renderSelection()
 {
 	auto& selectionTexture = texture("Selection");
 
@@ -456,7 +456,7 @@ void SelectRenderer::renderSelection()
 	}
 }
 
-void SelectRenderer::renderOutline()
+void SelectionRenderer::renderOutline()
 {
 	if (_imageViewerWidget->interactionMode() != InteractionMode::Selection)
 		return;
@@ -491,7 +491,7 @@ void SelectRenderer::renderOutline()
 					points.append(QVector2D(end.x(), end.y()));
 					points.append(QVector2D(start.x(), end.y()));
 
-					drawPolyline(points, outlineVBO, outlineVAO);
+					drawPolyline(points, true, outlineVBO, outlineVAO);
 				}
 
 				break;
@@ -519,7 +519,7 @@ void SelectRenderer::renderOutline()
 						points.append(QVector2D(brushCenter.x() + x, brushCenter.y() + y));
 					}
 
-					drawPolyline(points, outlineVBO, outlineVAO);
+					drawPolyline(points, true, outlineVBO, outlineVAO);
 				}
 
 				break;
@@ -535,7 +535,7 @@ void SelectRenderer::renderOutline()
 						points.append(QVector2D(mousePosition.x(), mousePosition.y()));
 					}
 
-					drawPolyline(points, outlineVBO, outlineVAO);
+					drawPolyline(points, true, outlineVBO, outlineVAO);
 				}
 
 				break;
@@ -549,25 +549,32 @@ void SelectRenderer::renderOutline()
 	}
 }
 
-void SelectRenderer::renderBounds()
+void SelectionRenderer::renderBounds()
 {
-	auto* boundsVBO = vbo("Bounds").get();
-	auto* boundsVAO = vao("Bounds").get();
+	auto boundsProgram = shaderProgram("Bounds");
 
-	const auto p0 = _selectionBounds.topLeft();
-	const auto p1 = _selectionBounds.bottomRight();
+	if (boundsProgram->bind()) {
+		boundsProgram->setUniformValue("transform", _modelViewProjection);
+		boundsProgram->setUniformValue("color", _outlineColor);
 
-	QVector<QVector2D> points;
+		auto* boundsVBO = vbo("Bounds").get();
+		auto* boundsVAO = vao("Bounds").get();
 
-	points.append(QVector2D(p0.x(), p0.y()));
-	points.append(QVector2D(p1.x(), p0.y()));
-	points.append(QVector2D(p1.x(), p1.y()));
-	points.append(QVector2D(p0.x(), p1.y()));
+		const auto p0 = _selectionBounds.topLeft();
+		const auto p1 = _selectionBounds.bottomRight();
 
-	drawPolyline(points, boundsVBO, boundsVAO);
+		QVector<QVector2D> points;
+
+		points.append(QVector2D(p0.x(), p0.y()));
+		points.append(QVector2D(p1.x(), p0.y()));
+		points.append(QVector2D(p1.x(), p1.y()));
+		points.append(QVector2D(p0.x(), p1.y()));
+
+		drawPolyline(points, false, boundsVBO, boundsVAO);
+	}
 }
 
-void SelectRenderer::drawPolyline(const QVector<QVector2D>& points, QOpenGLBuffer* vbo, QOpenGLVertexArrayObject* vao)
+void SelectionRenderer::drawPolyline(const QVector<QVector2D>& points, const bool& screenCoordinates, QOpenGLBuffer* vbo, QOpenGLVertexArrayObject* vao)
 {
 	auto uv = 0.f;
 
@@ -577,7 +584,7 @@ void SelectRenderer::drawPolyline(const QVector<QVector2D>& points, QOpenGLBuffe
 
 	for (int j = 0; j < points.size(); ++j)
 	{
-		const auto worldPoint = _imageViewerWidget->screenToWorld(QPoint(points[j][0], points[j][1]));
+		const auto worldPoint = screenCoordinates ? _imageViewerWidget->screenToWorld(QPoint(points[j][0], points[j][1])) : QVector3D(points[j][0], points[j][1], 0.f);
 
 		vertexData[j * 5 + 0] = worldPoint.x();
 		vertexData[j * 5 + 1] = worldPoint.y();

@@ -21,7 +21,7 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	QOpenGLFunctions(),
 	_imageViewerPlugin(imageViewerPlugin),
 	_imageQuadRenderer(),
-	_selectRenderer(),
+	_selectionRenderer(),
 	_interactionMode(InteractionMode::Selection),
 	_initialMousePosition(),
 	_mousePosition(),
@@ -68,7 +68,7 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	setFormat(surfaceFormat);
 
 	_imageQuadRenderer	= std::make_unique<ImageQuadRenderer>(0);
-	_selectRenderer		= std::make_unique<SelectRenderer>(3, this);
+	_selectionRenderer		= std::make_unique<SelectionRenderer>(3, this);
 }
 
 ImageViewerWidget::~ImageViewerWidget()
@@ -76,7 +76,7 @@ ImageViewerWidget::~ImageViewerWidget()
 	makeCurrent();
 
 	_imageQuadRenderer->destroy();
-	_selectRenderer->destroy();
+	_selectionRenderer->destroy();
 
 	doneCurrent();
 }
@@ -157,7 +157,7 @@ void ImageViewerWidget::endSelection()
 
 	makeCurrent();
 
-	_selectRenderer->resetSelectionBuffer();
+	_selectionRenderer->resetSelectionBuffer();
 
 	doneCurrent();
 }
@@ -194,7 +194,7 @@ void ImageViewerWidget::initializeGL()
 	glDepthMask(false);
 
 	_imageQuadRenderer->init();
-	_selectRenderer->init();
+	_selectionRenderer->init();
 
 	_imageViewerPlugin->computeDisplayImage();
 	_imageViewerPlugin->computeSelectionImage();
@@ -211,7 +211,7 @@ void ImageViewerWidget::resizeGL(int w, int h)
 	zoomExtents();
 
 	_imageQuadRenderer->resize(QSize(w, h));
-	_selectRenderer->resize(QSize(w, h));
+	_selectionRenderer->resize(QSize(w, h));
 }
 
 void ImageViewerWidget::paintGL() {
@@ -227,8 +227,8 @@ void ImageViewerWidget::paintGL() {
 	_imageQuadRenderer->setModelViewProjection(modelViewProjection);
 	_imageQuadRenderer->render();
 	
-	_selectRenderer->setModelViewProjection(modelViewProjection);
-	_selectRenderer->render();
+	_selectionRenderer->setModelViewProjection(modelViewProjection);
+	_selectionRenderer->render();
 
 #ifdef _DEBUG
 	for (const QOpenGLDebugMessage& message : _openglDebugLogger->loggedMessages())
@@ -247,15 +247,15 @@ void ImageViewerWidget::onDisplayImageChanged(std::shared_ptr<QImage> displayIma
 
 	_imageQuadRenderer->setImage(displayImage);
 
-	_selectRenderer->setImageSize(displayImage->size());
+	_selectionRenderer->setImageSize(displayImage->size());
 
 	if (imageSizeChanged) {
 		zoomExtents();
 
 		const auto brushRadius = 0.05f * static_cast<float>(std::min(_imageQuadRenderer->size().width(), _imageQuadRenderer->size().height()));
 
-		_selectRenderer->setBrushRadius(brushRadius);
-		_selectRenderer->setBrushRadiusDelta(0.2f * brushRadius);
+		_selectionRenderer->setBrushRadius(brushRadius);
+		_selectionRenderer->setBrushRadiusDelta(0.2f * brushRadius);
 	}
 
 	doneCurrent();
@@ -270,11 +270,11 @@ void ImageViewerWidget::onSelectionImageChanged(std::shared_ptr<QImage> selectio
 
 	makeCurrent();
 
-	_selectRenderer->setSelectionImage(selectionImage);
+	_selectionRenderer->setSelectionImage(selectionImage);
 
 	const auto worldSelectionBounds = QRect(selectionBounds.left(), selectionImage->height() - selectionBounds.bottom() - 1, selectionBounds.width() + 1, selectionBounds.height() + 1);
 
-	_selectRenderer->setSelectionBounds(worldSelectionBounds);
+	_selectionRenderer->setSelectionBounds(worldSelectionBounds);
 
 	doneCurrent();
 
@@ -283,7 +283,7 @@ void ImageViewerWidget::onSelectionImageChanged(std::shared_ptr<QImage> selectio
 
 void ImageViewerWidget::onSelectionOpacityChanged(const float& selectionOpacity)
 {
-	_selectRenderer->setOpacity(selectionOpacity);
+	_selectionRenderer->setOpacity(selectionOpacity);
 
 	update();
 }
@@ -397,7 +397,7 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 					startSelection();
 
 				if (_selectionType != SelectionType::Polygon) {
-					_selectRenderer->resetSelectionBuffer();
+					_selectionRenderer->resetSelectionBuffer();
 				}
 
 				_mousePositions.push_back(_mousePosition);
@@ -408,7 +408,7 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 				{
 					worldMousePositions.push_back(screenToWorld(mousePosition));
 				}
-				_selectRenderer->update(_selectionType, worldMousePositions);
+				_selectionRenderer->update(_selectionType, worldMousePositions);
 			}
 
 			break;
@@ -470,7 +470,7 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 						{
 							worldMousePositions.push_back(screenToWorld(mousePosition));
 						}
-						_selectRenderer->update(_selectionType, worldMousePositions);
+						_selectionRenderer->update(_selectionType, worldMousePositions);
 					}
 					
 					break;
@@ -603,10 +603,10 @@ void ImageViewerWidget::wheelEvent(QWheelEvent* wheelEvent) {
 		{
 			if (_selectionType == SelectionType::Brush) {
 				if (wheelEvent->delta() > 0) {
-					_selectRenderer->brushSizeIncrease();
+					_selectionRenderer->brushSizeIncrease();
 				}
 				else {
-					_selectRenderer->brushSizeDecrease();
+					_selectionRenderer->brushSizeDecrease();
 				}
 
 				update();
@@ -720,7 +720,7 @@ void ImageViewerWidget::publishSelection()
 {	
 	qDebug() << "Publish selection";
 	
-	const auto image = _selectRenderer->selectionImage();
+	const auto image = _selectionRenderer->selectionImage();
 
 	auto pixelCoordinates = std::vector<std::pair<std::uint32_t, std::uint32_t>>();
 
