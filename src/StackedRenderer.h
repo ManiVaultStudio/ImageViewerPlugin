@@ -29,14 +29,16 @@ protected:
 	virtual void createTextures();
 	virtual void createVBOs();
 	virtual void createVAOs();
-	virtual void createFBOs();
 
-	std::shared_ptr<QOpenGLShaderProgram>& shaderProgram(const QString& name);
-	std::shared_ptr<QOpenGLTexture>& texture(const QString& name);
+	std::shared_ptr<QOpenGLShaderProgram> shaderProgram(const QString& name);
+	std::shared_ptr<const QOpenGLShaderProgram> shaderProgram(const QString& name) const;
+	std::shared_ptr<QOpenGLTexture> texture(const QString& name);
 	std::shared_ptr<const QOpenGLTexture> texture(const QString& name) const;
-	std::shared_ptr<QOpenGLBuffer>& vbo(const QString& name);
-	std::shared_ptr<QOpenGLVertexArrayObject>& vao(const QString& name);
-	std::shared_ptr<QOpenGLFramebufferObject>& fbo(const QString& name);
+	std::shared_ptr<QOpenGLBuffer> vbo(const QString& name);
+	std::shared_ptr<QOpenGLVertexArrayObject> vao(const QString& name);
+	std::shared_ptr<const QOpenGLVertexArrayObject> vao(const QString& name) const;
+	std::shared_ptr<QOpenGLFramebufferObject> fbo(const QString& name);
+	std::shared_ptr<const QOpenGLFramebufferObject> fbo(const QString& name) const;
 
 protected:
 	std::uint32_t												_zIndex;

@@ -12,7 +12,6 @@
 SelectRenderer::SelectRenderer(const std::uint32_t& zIndex, ImageViewerWidget* imageViewerWidget) :
 	QuadRenderer(zIndex),
 	_imageViewerWidget(imageViewerWidget),
-	_fbo(),
 	_color(1.f, 0.6f, 0.f, 0.3f),
 	_brushRadius(50.f),
 	_brushRadiusDelta(2.0f),
@@ -28,7 +27,7 @@ void SelectRenderer::init()
 
 	const auto stride = 5 * sizeof(GLfloat);
 
-	auto pixelSelectionProgram = shaderProgram("PixelSelection");
+	auto pixelSelectionProgram = shaderProgram("Selection");
 	
 	if (pixelSelectionProgram->bind()) {
 		auto quadVAO = vao("Quad");
@@ -85,17 +84,17 @@ void SelectRenderer::setImageSize(const QSize& size)
 {
 	auto createFBO = false;
 
-	if (_fbo.get() == nullptr) {
+	if (!_fbos.contains("Selection")) {
 		createFBO = true;
 	}
 	else {
-		if (size != _fbo->size()) {
+		if (size != fbo("Selection")->size()) {
 			createFBO = true;
 		}
 	}
 
 	if (createFBO) {
-		_fbo = std::make_unique<QOpenGLFramebufferObject>(size.width(), size.height());
+		_fbos.insert("Selection", std::make_shared<QOpenGLFramebufferObject>(size.width(), size.height()));
 	}
 
 	setSize(size);
@@ -105,30 +104,32 @@ void SelectRenderer::update(const SelectionType& selectionType, const std::vecto
 {
 	qDebug() << "Update";
 
-	if (!_fbo->bind())
+	auto selectionFBO = fbo("Selection");
+
+	if (!selectionFBO->bind())
 		return;
 	
-	glViewport(0, 0, _fbo->width(), _fbo->height());
+	glViewport(0, 0, selectionFBO->width(), selectionFBO->height());
 
 	QMatrix4x4 transform;
 
-	auto width = _fbo->width();
+	auto width = selectionFBO->width();
 
-	transform.ortho(0.0f, _fbo->width(), 0.0f, _fbo->height(), -1.0f, +1.0f);
+	transform.ortho(0.0f, selectionFBO->width(), 0.0f, selectionFBO->height(), -1.0f, +1.0f);
 
 	auto quadVAO = vao("Quad");
 
 	quadVAO->bind();
 	{
-		auto pixelSelectionProgram = shaderProgram("PixelSelection");
+		auto pixelSelectionProgram = shaderProgram("Selection");
 
 		if (pixelSelectionProgram->bind()) {
-			glBindTexture(GL_TEXTURE_2D, _fbo->texture());
+			glBindTexture(GL_TEXTURE_2D, selectionFBO->texture());
 
 			pixelSelectionProgram->setUniformValue("pixelSelectionTexture", 0);
 			pixelSelectionProgram->setUniformValue("transform", transform);
 			pixelSelectionProgram->setUniformValue("selectionType", static_cast<int>(selectionType));
-			pixelSelectionProgram->setUniformValue("imageSize", static_cast<float>(_fbo->size().width()), static_cast<float>(_fbo->size().height()));
+			pixelSelectionProgram->setUniformValue("imageSize", static_cast<float>(selectionFBO->size().width()), static_cast<float>(selectionFBO->size().height()));
 
 			switch (selectionType)
 			{
@@ -136,8 +137,8 @@ void SelectRenderer::update(const SelectionType& selectionType, const std::vecto
 				{
 					const auto rectangleTopLeft			= mousePositions.front();
 					const auto rectangleBottomRight		= mousePositions.back();
-					const auto rectangleTopLeftUV		= QVector2D(rectangleTopLeft.x() / static_cast<float>(_fbo->width()), rectangleTopLeft.y() / static_cast<float>(_fbo->height()));
-					const auto rectangleBottomRightUV	= QVector2D(rectangleBottomRight.x() / static_cast<float>(_fbo->width()), rectangleBottomRight.y() / static_cast<float>(_fbo->height()));
+					const auto rectangleTopLeftUV		= QVector2D(rectangleTopLeft.x() / static_cast<float>(selectionFBO->width()), rectangleTopLeft.y() / static_cast<float>(selectionFBO->height()));
+					const auto rectangleBottomRightUV	= QVector2D(rectangleBottomRight.x() / static_cast<float>(selectionFBO->width()), rectangleBottomRight.y() / static_cast<float>(selectionFBO->height()));
 
 					auto rectangleUV	= std::make_pair(rectangleTopLeftUV, rectangleBottomRightUV);
 					auto topLeft		= QVector2D(rectangleTopLeftUV.x(), rectangleTopLeftUV.y());
@@ -199,20 +200,23 @@ void SelectRenderer::update(const SelectionType& selectionType, const std::vecto
 	}
 	quadVAO->release();
 
-	_fbo->release();
+	selectionFBO->release();
 }
 
 void SelectRenderer::reset()
 {
 	qDebug() << "Reset";
 
-	if (_fbo->bind()) {
-		glViewport(0, 0, _fbo->width(), _fbo->height());
-		glClearColor(0.f, 0.f, 0.f, 0.f);
-		glClear(GL_COLOR_BUFFER_BIT);
+	auto selectionFBO = fbo("Selection");
+	
+	if (!selectionFBO->bind())
+		return;
 
-		_fbo->release();
-	}
+	glViewport(0, 0, selectionFBO->width(), selectionFBO->height());
+	glClearColor(0.f, 0.f, 0.f, 0.f);
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	selectionFBO->release();
 }
 
 float SelectRenderer::brushRadius() const
@@ -261,15 +265,19 @@ void SelectRenderer::brushSizeDecrease()
 
 std::shared_ptr<QImage> SelectRenderer::selectionImage() const
 {
-	return std::make_shared<QImage>(_fbo->toImage());
+	auto selectionFBO = fbo("Selection");
+
+	return std::make_shared<QImage>(selectionFBO->toImage());
 }
 
 bool SelectRenderer::isInitialized() const
 {
-	if (_fbo.get() == nullptr)
+	auto selectionFBO = fbo("Selection");
+
+	if (selectionFBO.get() == nullptr)
 		return false;
 
-	return _fbo->isValid();
+	return selectionFBO->isValid();
 }
 
 void SelectRenderer::createShaderPrograms()
@@ -288,7 +296,7 @@ void SelectRenderer::createShaderPrograms()
 	pixelSelectionProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, pixelSelectionFragmentShaderSource.c_str());
 	pixelSelectionProgram->link();
 
-	_shaderPrograms.insert("PixelSelection", pixelSelectionProgram);
+	_shaderPrograms.insert("Selection", pixelSelectionProgram);
 
 	auto outlineProgram = std::make_shared<QOpenGLShaderProgram>();
 
@@ -323,6 +331,8 @@ void SelectRenderer::createVAOs()
 
 void SelectRenderer::renderOverlay()
 {
+	auto selectionFBO = fbo("Selection");
+
 	auto overlayProgram = shaderProgram("Overlay");
 
 	if (overlayProgram->bind()) {
@@ -334,7 +344,7 @@ void SelectRenderer::renderOverlay()
 
 		quadVAO->bind();
 		{
-			glBindTexture(GL_TEXTURE_2D, _fbo->texture());
+			glBindTexture(GL_TEXTURE_2D, selectionFBO->texture());
 			glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 		}
 		quadVAO->release();

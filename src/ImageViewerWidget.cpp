@@ -245,7 +245,8 @@ void ImageViewerWidget::paintGL() {
 	
 	_selectRenderer->setModelViewProjection(modelViewProjection);
 	_selectRenderer->render();
-	
+	/**/
+
 #ifdef _DEBUG
 	for (const QOpenGLDebugMessage& message : _openglDebugLogger->loggedMessages())
 		qDebug() << message;

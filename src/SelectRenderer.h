@@ -34,10 +34,10 @@ public:
 
 protected:
 	bool isInitialized() const override;
+	void createShaderPrograms() override;
 	void createTextures() override;
 	void createVBOs() override;
 	void createVAOs() override;
-	void createShaderPrograms() override;
 
 private:
 	void renderOverlay();
@@ -45,12 +45,11 @@ private:
 	void drawPolyline(const QVector<QVector2D>& points);
 
 protected:
-	ImageViewerWidget*							_imageViewerWidget;
-	std::unique_ptr<QOpenGLFramebufferObject>	_fbo;
-	QVector4D									_color;
-	float										_brushRadius;
-	float										_brushRadiusDelta;
-	QVector4D									_outlineColor;
-	QOpenGLBuffer								_outlineVBO;
-	QOpenGLVertexArrayObject					_outlineVAO;
+	ImageViewerWidget*			_imageViewerWidget;
+	QVector4D					_color;
+	float						_brushRadius;
+	float						_brushRadiusDelta;
+	QVector4D					_outlineColor;
+	QOpenGLBuffer				_outlineVBO;
+	QOpenGLVertexArrayObject	_outlineVAO;
 };
