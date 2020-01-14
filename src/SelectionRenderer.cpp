@@ -67,9 +67,11 @@ void SelectionRenderer::setImage(std::shared_ptr<QImage> image)
 {
 	auto& selectionTexture = texture("Quad");
 
-	selectionTexture.reset(new QOpenGLTexture(*image.get()));
+	auto quadTexture = std::make_shared<QOpenGLTexture>(*image.get());
 
-	selectionTexture->setMinMagFilters(QOpenGLTexture::Nearest, QOpenGLTexture::Nearest);
+	quadTexture->setMinMagFilters(QOpenGLTexture::Nearest, QOpenGLTexture::Nearest);
+
+	_textures["Quad"] = quadTexture;
 
 	setSize(image->size());
 }

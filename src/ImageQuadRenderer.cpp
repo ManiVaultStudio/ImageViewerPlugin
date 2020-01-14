@@ -53,13 +53,13 @@ void ImageQuadRenderer::render()
 		quadProgram->setUniformValue("imageTexture", 0);
 		quadProgram->setUniformValue("transform", _modelViewProjection);
 
-		const auto imageMin				= static_cast<float>(_imageMin);
-		const auto imageMax				= static_cast<float>(_imageMax);
-		const auto maxWindow			= static_cast<float>(imageMax - imageMin);
-		const auto level				= std::clamp(imageMin + (_level * maxWindow), imageMin, imageMax);
-		const auto window				= std::clamp(_window * maxWindow, imageMin, imageMax);
-		const auto minPixelValue		= std::clamp(level - (window / 2.0f), imageMin, imageMax);
-		const auto maxPixelValue		= std::clamp(level + (window / 2.0f), imageMin, imageMax);
+		const auto imageMin			= static_cast<float>(_imageMin);
+		const auto imageMax			= static_cast<float>(_imageMax);
+		const auto maxWindow		= static_cast<float>(imageMax - imageMin);
+		const auto level			= std::clamp(imageMin + (_level * maxWindow), imageMin, imageMax);
+		const auto window			= std::clamp(_window * maxWindow, imageMin, imageMax);
+		const auto minPixelValue	= std::clamp(level - (window / 2.0f), imageMin, imageMax);
+		const auto maxPixelValue	= std::clamp(level + (window / 2.0f), imageMin, imageMax);
 
 		quadProgram->setUniformValue("minPixelValue", minPixelValue);
 		quadProgram->setUniformValue("maxPixelValue", maxPixelValue);
@@ -106,15 +106,16 @@ void ImageQuadRenderer::setImage(std::shared_ptr<QImage> image)
 		}
 	}
 
-	auto& quadTexture = texture("Quad");
+	auto quadTexture = std::make_shared<QOpenGLTexture>(QOpenGLTexture::Target2D);
 
-	quadTexture.reset(new QOpenGLTexture(*image.get()));
-
+	quadTexture->create();
 	quadTexture->setSize(image->size().width(), image->size().height());
 	quadTexture->setFormat(QOpenGLTexture::RGBA16_UNorm);
 	quadTexture->setWrapMode(QOpenGLTexture::ClampToEdge);
 	quadTexture->allocateStorage();
 	quadTexture->setData(QOpenGLTexture::PixelFormat::RGBA, QOpenGLTexture::PixelType::UInt16, image->bits());
+
+	_textures["Quad"] = quadTexture;
 
 	setSize(image->size());
 
@@ -148,6 +149,7 @@ void ImageQuadRenderer::resetWindowLevel()
 bool ImageQuadRenderer::isInitialized() const
 {
 	const auto quadTexture = texture("Quad");
+	auto test = quadTexture.get();
 	return quadTexture.get() != nullptr && quadTexture->isCreated();
 }
 
