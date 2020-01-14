@@ -27,24 +27,24 @@ void SelectRenderer::init()
 
 	const auto stride = 5 * sizeof(GLfloat);
 
-	auto pixelSelectionProgram = shaderProgram("SelectionBuffer");
+	auto selectionBufferProgram = shaderProgram("SelectionBuffer");
 	
-	if (pixelSelectionProgram->bind()) {
+	if (selectionBufferProgram->bind()) {
 		auto quadVAO = vao("Quad");
 		auto quadVBO = vbo("Quad");
 
 		quadVAO->bind();
 		quadVBO->bind();
 
-		pixelSelectionProgram->enableAttributeArray(0);
-		pixelSelectionProgram->enableAttributeArray(1);
-		pixelSelectionProgram->setAttributeBuffer(0, GL_FLOAT, 0, 3, stride);
-		pixelSelectionProgram->setAttributeBuffer(1, GL_FLOAT, 3 * sizeof(GLfloat), 2, stride);
+		selectionBufferProgram->enableAttributeArray(0);
+		selectionBufferProgram->enableAttributeArray(1);
+		selectionBufferProgram->setAttributeBuffer(0, GL_FLOAT, 0, 3, stride);
+		selectionBufferProgram->setAttributeBuffer(1, GL_FLOAT, 3 * sizeof(GLfloat), 2, stride);
 
 		quadVAO->release();
 		quadVBO->release();
 
-		pixelSelectionProgram->release();
+		selectionBufferProgram->release();
 	}
 
 	auto outlineProgram = shaderProgram("Outline");
@@ -121,15 +121,15 @@ void SelectRenderer::update(const SelectionType& selectionType, const std::vecto
 
 	quadVAO->bind();
 	{
-		auto pixelSelectionProgram = shaderProgram("SelectionBuffer");
+		auto selectionBufferProgram = shaderProgram("SelectionBuffer");
 
-		if (pixelSelectionProgram->bind()) {
+		if (selectionBufferProgram->bind()) {
 			glBindTexture(GL_TEXTURE_2D, selectionFBO->texture());
 
-			pixelSelectionProgram->setUniformValue("pixelSelectionTexture", 0);
-			pixelSelectionProgram->setUniformValue("transform", transform);
-			pixelSelectionProgram->setUniformValue("selectionType", static_cast<int>(selectionType));
-			pixelSelectionProgram->setUniformValue("imageSize", static_cast<float>(selectionFBO->size().width()), static_cast<float>(selectionFBO->size().height()));
+			selectionBufferProgram->setUniformValue("pixelSelectionTexture", 0);
+			selectionBufferProgram->setUniformValue("transform", transform);
+			selectionBufferProgram->setUniformValue("selectionType", static_cast<int>(selectionType));
+			selectionBufferProgram->setUniformValue("imageSize", static_cast<float>(selectionFBO->size().width()), static_cast<float>(selectionFBO->size().height()));
 
 			switch (selectionType)
 			{
@@ -154,8 +154,8 @@ void SelectRenderer::update(const SelectionType& selectionType, const std::vecto
 						bottomRight.setY(rectangleTopLeftUV.y());
 					}
 
-					pixelSelectionProgram->setUniformValue("rectangleTopLeft", topLeft);
-					pixelSelectionProgram->setUniformValue("rectangleBottomRight", bottomRight);
+					selectionBufferProgram->setUniformValue("rectangleTopLeft", topLeft);
+					selectionBufferProgram->setUniformValue("rectangleBottomRight", bottomRight);
 
 					break;
 				}
@@ -165,9 +165,9 @@ void SelectRenderer::update(const SelectionType& selectionType, const std::vecto
 					const auto brushCenter			= mousePositions[mousePositions.size() - 1];
 					const auto previousBrushCenter	= mousePositions.size() > 1 ? mousePositions[mousePositions.size() - 2] : brushCenter;
 
-					pixelSelectionProgram->setUniformValue("previousBrushCenter", previousBrushCenter.x(), previousBrushCenter.y());
-					pixelSelectionProgram->setUniformValue("currentBrushCenter", brushCenter.x(), brushCenter.y());
-					pixelSelectionProgram->setUniformValue("brushRadius", _brushRadius);
+					selectionBufferProgram->setUniformValue("previousBrushCenter", previousBrushCenter.x(), previousBrushCenter.y());
+					selectionBufferProgram->setUniformValue("currentBrushCenter", brushCenter.x(), brushCenter.y());
+					selectionBufferProgram->setUniformValue("brushRadius", _brushRadius);
 
 					break;
 				}
@@ -183,8 +183,8 @@ void SelectRenderer::update(const SelectionType& selectionType, const std::vecto
 						points.push_back(QVector2D(mousePosition.x(), mousePosition.y()));
 					}
 
-					pixelSelectionProgram->setUniformValueArray("points", &points[0], static_cast<std::int32_t>(points.size()));
-					pixelSelectionProgram->setUniformValue("noPoints", static_cast<int>(points.size()));
+					selectionBufferProgram->setUniformValueArray("points", &points[0], static_cast<std::int32_t>(points.size()));
+					selectionBufferProgram->setUniformValue("noPoints", static_cast<int>(points.size()));
 
 					break;
 				}
@@ -195,7 +195,7 @@ void SelectRenderer::update(const SelectionType& selectionType, const std::vecto
 
 			glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
-			pixelSelectionProgram->release();
+			selectionBufferProgram->release();
 		}
 	}
 	quadVAO->release();
@@ -290,13 +290,13 @@ void SelectRenderer::createShaderPrograms()
 
 	_shaderPrograms.insert("Overlay", overlayProgram);
 
-	auto pixelSelectionProgram = std::make_shared<QOpenGLShaderProgram>();
+	auto selectionBufferProgram = std::make_shared<QOpenGLShaderProgram>();
 
-	pixelSelectionProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, pixelSelectionVertexShaderSource.c_str());
-	pixelSelectionProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, pixelSelectionFragmentShaderSource.c_str());
-	pixelSelectionProgram->link();
+	selectionBufferProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, pixelSelectionVertexShaderSource.c_str());
+	selectionBufferProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, pixelSelectionFragmentShaderSource.c_str());
+	selectionBufferProgram->link();
 
-	_shaderPrograms.insert("SelectionBuffer", pixelSelectionProgram);
+	_shaderPrograms.insert("SelectionBuffer", selectionBufferProgram);
 
 	auto outlineProgram = std::make_shared<QOpenGLShaderProgram>();
 
@@ -305,6 +305,14 @@ void SelectRenderer::createShaderPrograms()
 	outlineProgram->link();
 
 	_shaderPrograms.insert("Outline", outlineProgram);
+
+	auto selectionProgram = std::make_shared<QOpenGLShaderProgram>();
+
+	selectionProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, selectionVertexShaderSource.c_str());
+	selectionProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, selectionFragmentShaderSource.c_str());
+	selectionProgram->link();
+
+	_shaderPrograms.insert("Selection", selectionProgram);
 }
 
 void SelectRenderer::createTextures()
