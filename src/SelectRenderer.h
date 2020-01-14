@@ -23,7 +23,9 @@ public:
 public:
 	void setImageSize(const QSize& size);
 	void update(const SelectionType& selectionType, const std::vector<QVector3D>& mousePositions);
-	void reset();
+	void resetSelectionBuffer();
+	void setSelectionImage(std::shared_ptr<QImage> image);
+	void setOpacity(const float& opacity);
 	float brushRadius() const;
 	void setBrushRadius(const float& brushRadius);
 	float brushRadiusDelta() const;
@@ -41,12 +43,14 @@ protected:
 
 private:
 	void renderOverlay();
+	void renderSelection();
 	void renderOutline();
 	void drawPolyline(const QVector<QVector2D>& points);
 
 protected:
 	ImageViewerWidget*			_imageViewerWidget;
 	QVector4D					_color;
+	QVector4D					_selectionColor;
 	float						_brushRadius;
 	float						_brushRadiusDelta;
 	QVector4D					_outlineColor;
