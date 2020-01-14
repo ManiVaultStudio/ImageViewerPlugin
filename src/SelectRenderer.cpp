@@ -27,7 +27,7 @@ void SelectRenderer::init()
 
 	const auto stride = 5 * sizeof(GLfloat);
 
-	auto pixelSelectionProgram = shaderProgram("Selection");
+	auto pixelSelectionProgram = shaderProgram("SelectionBuffer");
 	
 	if (pixelSelectionProgram->bind()) {
 		auto quadVAO = vao("Quad");
@@ -84,17 +84,17 @@ void SelectRenderer::setImageSize(const QSize& size)
 {
 	auto createFBO = false;
 
-	if (!_fbos.contains("Selection")) {
+	if (!_fbos.contains("SelectionBuffer")) {
 		createFBO = true;
 	}
 	else {
-		if (size != fbo("Selection")->size()) {
+		if (size != fbo("SelectionBuffer")->size()) {
 			createFBO = true;
 		}
 	}
 
 	if (createFBO) {
-		_fbos.insert("Selection", std::make_shared<QOpenGLFramebufferObject>(size.width(), size.height()));
+		_fbos.insert("SelectionBuffer", std::make_shared<QOpenGLFramebufferObject>(size.width(), size.height()));
 	}
 
 	setSize(size);
@@ -104,7 +104,7 @@ void SelectRenderer::update(const SelectionType& selectionType, const std::vecto
 {
 	qDebug() << "Update";
 
-	auto selectionFBO = fbo("Selection");
+	auto selectionFBO = fbo("SelectionBuffer");
 
 	if (!selectionFBO->bind())
 		return;
@@ -121,7 +121,7 @@ void SelectRenderer::update(const SelectionType& selectionType, const std::vecto
 
 	quadVAO->bind();
 	{
-		auto pixelSelectionProgram = shaderProgram("Selection");
+		auto pixelSelectionProgram = shaderProgram("SelectionBuffer");
 
 		if (pixelSelectionProgram->bind()) {
 			glBindTexture(GL_TEXTURE_2D, selectionFBO->texture());
@@ -207,7 +207,7 @@ void SelectRenderer::reset()
 {
 	qDebug() << "Reset";
 
-	auto selectionFBO = fbo("Selection");
+	auto selectionFBO = fbo("SelectionBuffer");
 	
 	if (!selectionFBO->bind())
 		return;
@@ -265,14 +265,14 @@ void SelectRenderer::brushSizeDecrease()
 
 std::shared_ptr<QImage> SelectRenderer::selectionImage() const
 {
-	auto selectionFBO = fbo("Selection");
+	auto selectionFBO = fbo("SelectionBuffer");
 
 	return std::make_shared<QImage>(selectionFBO->toImage());
 }
 
 bool SelectRenderer::isInitialized() const
 {
-	auto selectionFBO = fbo("Selection");
+	auto selectionFBO = fbo("SelectionBuffer");
 
 	if (selectionFBO.get() == nullptr)
 		return false;
@@ -296,7 +296,7 @@ void SelectRenderer::createShaderPrograms()
 	pixelSelectionProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, pixelSelectionFragmentShaderSource.c_str());
 	pixelSelectionProgram->link();
 
-	_shaderPrograms.insert("Selection", pixelSelectionProgram);
+	_shaderPrograms.insert("SelectionBuffer", pixelSelectionProgram);
 
 	auto outlineProgram = std::make_shared<QOpenGLShaderProgram>();
 
@@ -331,7 +331,7 @@ void SelectRenderer::createVAOs()
 
 void SelectRenderer::renderOverlay()
 {
-	auto selectionFBO = fbo("Selection");
+	auto selectionFBO = fbo("SelectionBuffer");
 
 	auto overlayProgram = shaderProgram("Overlay");
 

@@ -142,14 +142,13 @@ void ImageQuadRenderer::setWindowLevel(const float& window, const float& level)
 
 void ImageQuadRenderer::resetWindowLevel()
 {
-	_window = 1.0;
-	_level	= 0.5;
+	setWindowLevel(1.0f, 0.5f);
 }
 
 bool ImageQuadRenderer::isInitialized() const
 {
 	const auto quadTexture = texture("Quad");
-	auto test = quadTexture.get();
+	
 	return quadTexture.get() != nullptr && quadTexture->isCreated();
 }
 
