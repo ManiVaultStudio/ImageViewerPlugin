@@ -19,7 +19,6 @@
 #include "Common.h"
 
 #include "ImageQuadRenderer.h"
-#include "SelectionRenderer.h"
 #include "SelectionBoundsRenderer.h"
 #include "SelectRenderer.h"
 
