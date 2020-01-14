@@ -45,9 +45,15 @@ void SelectRenderer::init()
 		pixelSelectionProgram->release();
 	}
 
-	auto outlineProgram = shaderProgram("PixelSelection");
+	auto outlineProgram = shaderProgram("Outline");
+
+	_outlineVAO.create();
+	_outlineVBO.create();
 
 	if (outlineProgram->bind()) {
+		_outlineVAO.bind();
+		_outlineVBO.bind();
+
 		outlineProgram->enableAttributeArray(0);
 		outlineProgram->enableAttributeArray(1);
 		outlineProgram->setAttributeBuffer(0, GL_FLOAT, 0, 3, stride);
@@ -55,18 +61,9 @@ void SelectRenderer::init()
 
 		outlineProgram->release();
 
-		_outlineVBO.create();
-		_outlineVAO.create();
+		_outlineVBO.release();
+		_outlineVAO.release();
 	}
-	
-	/*
-	const auto stride = 5 * sizeof(GLfloat);
-
-	_outlineProgram->enableAttributeArray(0);
-	_outlineProgram->enableAttributeArray(1);
-	_outlineProgram->setAttributeBuffer(0, GL_FLOAT, 0, 3, stride);
-	_outlineProgram->setAttributeBuffer(1, GL_FLOAT, 3 * sizeof(GLfloat), 2, stride);
-	*/
 }
 
 void SelectRenderer::render()

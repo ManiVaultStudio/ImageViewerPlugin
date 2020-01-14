@@ -26,6 +26,18 @@ void StackedRenderer::setModelViewProjection(const QMatrix4x4& modelViewProjecti
 	_modelViewProjection.translate(0.f, 0.f, static_cast<float>(_zIndex));
 }
 
+void StackedRenderer::initializeShaderPrograms()
+{
+}
+
+void StackedRenderer::initializeTextures()
+{
+}
+
+void StackedRenderer::initializeFBOs()
+{
+}
+
 std::shared_ptr<QOpenGLShaderProgram>& StackedRenderer::shaderProgram(const QString& name)
 {
 	return _shaderPrograms[name];

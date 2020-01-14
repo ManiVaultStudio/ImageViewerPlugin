@@ -21,8 +21,9 @@ public:
 
 protected:
 	virtual bool initialized() = 0;
-	virtual void initializeShaderPrograms() = 0;
-	virtual void initializeTextures() = 0;
+	virtual void initializeShaderPrograms();
+	virtual void initializeTextures();
+	virtual void initializeFBOs();
 
 	std::shared_ptr<QOpenGLShaderProgram>& shaderProgram(const QString& name);
 	std::shared_ptr<QOpenGLTexture>& texture(const QString& name);
