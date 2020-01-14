@@ -42,10 +42,7 @@ protected:
 private:
 	void renderOverlay();
 	void renderOutline();
-	void drawSelectionOutlineRectangle(const QVector3D& start, const QVector3D& end);
-	void drawSelectionOutlineBrush();
-	void drawSelectionOutlineLasso();
-	void drawSelectionOutlinePolygon();
+	void drawPolyline(const QVector<QVector2D>& points);
 
 protected:
 	ImageViewerWidget*							_imageViewerWidget;
@@ -55,5 +52,8 @@ protected:
 	float										_brushRadius;
 	float										_brushRadiusDelta;
 	std::unique_ptr<QOpenGLShaderProgram>		_pixelSelectionProgram;
+	QVector4D									_outlineColor;
+	QOpenGLBuffer								_outlineVBO;
+	QOpenGLVertexArrayObject					_outlineVAO;
 	std::unique_ptr<QOpenGLShaderProgram>		_outlineProgram;
 };

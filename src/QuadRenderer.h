@@ -37,7 +37,7 @@ protected:
 protected:
 	QSize									_size;
 	QVector<GLfloat>						_vertexData;
-	QOpenGLBuffer							_vbo;
-	QOpenGLVertexArrayObject				_vao;
+	QOpenGLBuffer							_quadVBO;
+	QOpenGLVertexArrayObject				_quadVAO;
 	std::unique_ptr<QOpenGLShaderProgram>	_program;
 };

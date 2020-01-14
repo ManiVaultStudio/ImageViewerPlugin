@@ -647,7 +647,12 @@ void ImageViewerWidget::pan(const QPointF& delta)
 	_pan.setY(_pan.y() + (delta.y() / _zoom));
 }
 
-void ImageViewerWidget::zoom(const float& factor)
+float ImageViewerWidget::zoom() const
+{
+	return _zoom;
+}
+
+void ImageViewerWidget::zoomBy(const float& factor)
 {
 	_zoom *= factor;
 
@@ -662,7 +667,7 @@ void ImageViewerWidget::zoomAt(const QPointF& screenPosition, const float& facto
 	qDebug() << "Zoom at" << screenPosition << factor;
 
 	//pan(QPointF(-screenPosition.x(), -screenPosition.y()));
-	zoom(factor);
+	zoomBy(factor);
 	//pan(QPointF(screenPosition.x(), screenPosition.y()));
 }
 
@@ -686,7 +691,7 @@ void ImageViewerWidget::zoomToRectangle(const QRectF& rectangle)
 	const auto factorX	= (width() - 2 * _margin) / static_cast<float>(rectangle.width());
 	const auto factorY	= (height() - 2 * _margin) / static_cast<float>(rectangle.height());
 
-	zoom(factorX < factorY ? factorX : factorY);
+	zoomBy(factorX < factorY ? factorX : factorY);
 	pan(_zoom * -QPointF(center.x(), _imageQuadRenderer->size().height() - center.y()));
 
 	update();

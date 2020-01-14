@@ -13,8 +13,8 @@ QuadRenderer::QuadRenderer(const std::uint32_t& zIndex) :
 	StackedRenderer(zIndex),
 	_size(),
 	_vertexData(),
-	_vbo(),
-	_vao(),
+	_quadVBO(),
+	_quadVAO(),
 	_program(std::make_unique<QOpenGLShaderProgram>())
 {
 	_vertexData.resize(20);
@@ -25,17 +25,17 @@ void QuadRenderer::init()
 	initializeOpenGLFunctions();
 	initializePrograms();
 
-	_vbo.create();
-	_vbo.bind();
-	_vbo.setUsagePattern(QOpenGLBuffer::DynamicDraw);
-	_vbo.allocate(_vertexData.constData(), _vertexData.count() * sizeof(GLfloat));
-	_vbo.release();
+	_quadVBO.create();
+	_quadVBO.bind();
+	_quadVBO.setUsagePattern(QOpenGLBuffer::DynamicDraw);
+	_quadVBO.allocate(_vertexData.constData(), _vertexData.count() * sizeof(GLfloat));
+	_quadVBO.release();
 
-	_vao.create();
+	_quadVAO.create();
 
 	_program->bind();
-	_vao.bind();
-	_vbo.bind();
+	_quadVAO.bind();
+	_quadVBO.bind();
 
 	const auto stride = 5 * sizeof(GLfloat);
 
@@ -44,8 +44,8 @@ void QuadRenderer::init()
 	_program->setAttributeBuffer(PROGRAM_VERTEX_ATTRIBUTE, GL_FLOAT, 0, 3, stride);
 	_program->setAttributeBuffer(PROGRAM_TEXCOORD_ATTRIBUTE, GL_FLOAT, 3 * sizeof(GLfloat), 2, stride);
 
-	_vao.release();
-	_vbo.release();
+	_quadVAO.release();
+	_quadVBO.release();
 	_program->release();
 }
 
@@ -58,17 +58,17 @@ void QuadRenderer::render()
 	if (!initialized())
 		return;
 	
-	_vao.bind();
+	_quadVAO.bind();
 	{
 		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	}
-	_vao.release();
+	_quadVAO.release();
 }
 
 void QuadRenderer::destroy()
 {
-	_vbo.destroy();
-	_vao.destroy();
+	_quadVBO.destroy();
+	_quadVAO.destroy();
 }
 
 QSize QuadRenderer::size() const
@@ -110,13 +110,13 @@ void QuadRenderer::createQuad()
 		_vertexData[j * 5 + 4] = j == 2 || j == 3;
 	}
 
-	_vao.bind();
+	_quadVAO.bind();
 	{
-		_vbo.bind();
+		_quadVBO.bind();
 		{
-			_vbo.allocate(_vertexData.constData(), _vertexData.count() * sizeof(GLfloat));
+			_quadVBO.allocate(_vertexData.constData(), _vertexData.count() * sizeof(GLfloat));
 		}
-		_vbo.release();
+		_quadVBO.release();
 	}
-	_vao.release();
+	_quadVAO.release();
 }

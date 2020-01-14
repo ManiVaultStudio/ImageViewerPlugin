@@ -72,6 +72,8 @@ private:
 	void mouseReleaseEvent(QMouseEvent* mouseEvent) Q_DECL_OVERRIDE;
 	void wheelEvent(QWheelEvent* wheelEvent) Q_DECL_OVERRIDE;
 
+	bool initialized();
+
 public:
 	void startMouseInteraction();
 	void endMouseInteraction();
@@ -86,16 +88,15 @@ public:
 	
 public:
 	void pan(const QPointF& delta);
-	void zoom(const float& factor);
+	float zoom() const;
+	void zoomBy(const float& factor);
 	void zoomAt(const QPointF& position, const float& factor);
 	void zoomExtents();
 	void zoomToRectangle(const QRectF& rectangle);
 	void zoomToSelection();
 	void resetView();
 
-	bool initialized();
-
-protected:
+private:
 	QMenu* contextMenu();
 	QMenu* viewMenu();
 	QMenu* selectionMenu();
