@@ -20,4 +20,5 @@ protected:
 protected:
 	std::uint32_t	_zIndex;
 	QMatrix4x4		_modelViewProjection;
+
 };
