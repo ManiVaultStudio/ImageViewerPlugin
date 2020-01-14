@@ -6,8 +6,8 @@
 
 #include "Shaders.h"
 
-#define PROGRAM_VERTEX_ATTRIBUTE 0
-#define PROGRAM_TEXCOORD_ATTRIBUTE 1
+std::uint32_t QuadRenderer::_quadVertexAttribute = 0;
+std::uint32_t QuadRenderer::_quadTextureAttribute = 1;
 
 QuadRenderer::QuadRenderer(const std::uint32_t& zIndex) :
 	StackedRenderer(zIndex),

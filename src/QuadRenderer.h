@@ -33,8 +33,10 @@ protected:
 	void createQuad();
 
 protected:
-	QSize									_size;
-	QVector<GLfloat>						_vertexData;
-	QOpenGLBuffer							_quadVBO;
-	QOpenGLVertexArrayObject				_quadVAO;
+	QSize						_size;
+	QVector<GLfloat>			_vertexData;
+	QOpenGLBuffer				_quadVBO;
+	QOpenGLVertexArrayObject	_quadVAO;
+	static std::uint32_t		_quadVertexAttribute;
+	static std::uint32_t		_quadTextureAttribute;
 };

@@ -18,24 +18,22 @@ void SelectionRenderer::init()
 
 	const auto quadProgram = shaderProgram("Quad");
 
-	/*
 	if (quadProgram->bind()) {
 		_quadVAO.bind();
 		_quadVBO.bind();
 
 		const auto stride = 5 * sizeof(GLfloat);
 
-		quadProgram->enableAttributeArray(ImageQuadRenderer::_vertexAttribute);
-		quadProgram->enableAttributeArray(ImageQuadRenderer::_textureCoordinateAttribute);
-		quadProgram->setAttributeBuffer(ImageQuadRenderer::_vertexAttribute, GL_FLOAT, 0, 3, stride);
-		quadProgram->setAttributeBuffer(ImageQuadRenderer::_textureCoordinateAttribute, GL_FLOAT, 3 * sizeof(GLfloat), 2, stride);
+		quadProgram->enableAttributeArray(QuadRenderer::_quadVertexAttribute);
+		quadProgram->enableAttributeArray(QuadRenderer::_quadTextureAttribute);
+		quadProgram->setAttributeBuffer(QuadRenderer::_quadVertexAttribute, GL_FLOAT, 0, 3, stride);
+		quadProgram->setAttributeBuffer(QuadRenderer::_quadTextureAttribute, GL_FLOAT, 3 * sizeof(GLfloat), 2, stride);
 
 		_quadVAO.release();
 		_quadVBO.release();
 
 		quadProgram->release();
 	}
-	*/
 }
 
 void SelectionRenderer::render()
@@ -43,14 +41,14 @@ void SelectionRenderer::render()
 	if (!initialized())
 		return;
 
-	auto selectionProgram = shaderProgram("Selection");
+	auto quadProgram = shaderProgram("Quad");
 
-	if (selectionProgram->bind()) {
-		selectionProgram->setUniformValue("selectionTexture", 0);
-		selectionProgram->setUniformValue("transform", _modelViewProjection);
-		selectionProgram->setUniformValue("color", _selectionColor);
+	if (quadProgram->bind()) {
+		quadProgram->setUniformValue("selectionTexture", 0);
+		quadProgram->setUniformValue("transform", _modelViewProjection);
+		quadProgram->setUniformValue("color", _selectionColor);
 
-		auto& selectionTexture = texture("Selection");
+		auto& selectionTexture = texture("Quad");
 
 		selectionTexture->bind();
 		{
@@ -58,13 +56,13 @@ void SelectionRenderer::render()
 		}
 		selectionTexture->release();
 
-		selectionProgram->release();
+		quadProgram->release();
 	}
 }
 
 void SelectionRenderer::setImage(std::shared_ptr<QImage> image)
 {
-	auto& selectionTexture = texture("Selection");
+	auto& selectionTexture = texture("Quad");
 
 	selectionTexture.reset(new QOpenGLTexture(*image.get()));
 
@@ -80,21 +78,21 @@ void SelectionRenderer::setOpacity(const float& opacity)
 
 bool SelectionRenderer::initialized()
 {
-	return texture("Selection").get() != nullptr && texture("Selection")->isCreated();
+	return texture("Quad").get() != nullptr && texture("Quad")->isCreated();
 }
 
 void SelectionRenderer::initializeShaderPrograms()
 {
-	auto selectionProgram = std::make_shared<QOpenGLShaderProgram>();
+	auto quadProgram = std::make_shared<QOpenGLShaderProgram>();
 
-	selectionProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, selectionVertexShaderSource.c_str());
-	selectionProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, selectionFragmentShaderSource.c_str());
-	selectionProgram->link();
+	quadProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, selectionVertexShaderSource.c_str());
+	quadProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, selectionFragmentShaderSource.c_str());
+	quadProgram->link();
 
-	_shaderPrograms.insert("Selection", selectionProgram);
+	_shaderPrograms.insert("Quad", quadProgram);
 }
 
 void SelectionRenderer::initializeTextures()
 {
-	_textures.insert("Selection", std::make_shared<QOpenGLTexture>(QOpenGLTexture::Target2D));
+	_textures.insert("Quad", std::make_shared<QOpenGLTexture>(QOpenGLTexture::Target2D));
 }

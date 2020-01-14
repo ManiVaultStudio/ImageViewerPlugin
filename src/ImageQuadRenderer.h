@@ -30,6 +30,4 @@ private:
 	std::uint16_t						_imageMax;
 	float								_window;
 	float								_level;
-	static std::uint32_t				_vertexAttribute;
-	static std::uint32_t				_textureCoordinateAttribute;
 };

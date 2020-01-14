@@ -6,9 +6,6 @@
 
 #include "Shaders.h"
 
-std::uint32_t ImageQuadRenderer::_vertexAttribute = 0;
-std::uint32_t ImageQuadRenderer::_textureCoordinateAttribute = 1;
-
 ImageQuadRenderer::ImageQuadRenderer(const std::uint32_t& zIndex) :
 	QuadRenderer(zIndex),
 	_imageMin(),
@@ -30,10 +27,10 @@ void ImageQuadRenderer::init()
 
 		const auto stride = 5 * sizeof(GLfloat);
 
-		quadProgram->enableAttributeArray(ImageQuadRenderer::_vertexAttribute);
-		quadProgram->enableAttributeArray(ImageQuadRenderer::_textureCoordinateAttribute);
-		quadProgram->setAttributeBuffer(ImageQuadRenderer::_vertexAttribute, GL_FLOAT, 0, 3, stride);
-		quadProgram->setAttributeBuffer(ImageQuadRenderer::_textureCoordinateAttribute, GL_FLOAT, 3 * sizeof(GLfloat), 2, stride);
+		quadProgram->enableAttributeArray(QuadRenderer::_quadVertexAttribute);
+		quadProgram->enableAttributeArray(QuadRenderer::_quadTextureAttribute);
+		quadProgram->setAttributeBuffer(QuadRenderer::_quadVertexAttribute, GL_FLOAT, 0, 3, stride);
+		quadProgram->setAttributeBuffer(QuadRenderer::_quadTextureAttribute, GL_FLOAT, 3 * sizeof(GLfloat), 2, stride);
 
 		_quadVAO.release();
 		_quadVBO.release();
@@ -153,13 +150,13 @@ bool ImageQuadRenderer::initialized()
 
 void ImageQuadRenderer::initializeShaderPrograms()
 {
-	auto program = std::make_shared<QOpenGLShaderProgram>();
+	auto quadProgram = std::make_shared<QOpenGLShaderProgram>();
 
-	program->addShaderFromSourceCode(QOpenGLShader::Vertex, imageVertexShaderSource.c_str());
-	program->addShaderFromSourceCode(QOpenGLShader::Fragment, imageFragmentShaderSource.c_str());
-	program->link();
+	quadProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, imageVertexShaderSource.c_str());
+	quadProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, imageFragmentShaderSource.c_str());
+	quadProgram->link();
 
-	_shaderPrograms.insert("Quad", program);
+	_shaderPrograms.insert("Quad", quadProgram);
 }
 
 void ImageQuadRenderer::initializeTextures()
