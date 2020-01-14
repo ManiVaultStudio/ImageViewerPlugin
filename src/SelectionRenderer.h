@@ -22,7 +22,7 @@ public:
 
 public:
 	void setImageSize(const QSize& size);
-	void update(const SelectionType& selectionType, const std::vector<QVector3D>& mousePositions);
+	void updateSelectionBuffer(const SelectionType& selectionType, const std::vector<QVector3D>& mousePositions);
 	void resetSelectionBuffer();
 	void setSelectionImage(std::shared_ptr<QImage> image);
 	void setSelectionBounds(const QRect& selectionBounds);
@@ -50,11 +50,11 @@ private:
 	void drawPolyline(const QVector<QVector2D>& points, const bool& screenCoordinates, QOpenGLBuffer* vbo, QOpenGLVertexArrayObject* vao);
 
 protected:
-	ImageViewerWidget*			_imageViewerWidget;
-	QVector4D					_color;
-	QVector4D					_selectionColor;
-	QRect						_selectionBounds;
-	float						_brushRadius;
-	float						_brushRadiusDelta;
-	QVector4D					_outlineColor;
+	ImageViewerWidget*		_imageViewerWidget;
+	QVector4D				_color;
+	QVector4D				_selectionColor;
+	QRect					_bounds;
+	float					_brushRadius;
+	float					_brushRadiusDelta;
+	QVector4D				_outlineColor;
 };
