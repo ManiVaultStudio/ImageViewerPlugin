@@ -17,8 +17,7 @@ SelectRenderer::SelectRenderer(const std::uint32_t& zIndex, ImageViewerWidget* i
 	_brushRadius(50.f),
 	_brushRadiusDelta(2.0f),
 	_outlineColor(1.f, 0.6f, 0.f, 1.0f),
-	_outlineVBO(),
-	_outlineVAO()
+	_selectionBounds()
 {
 }
 
@@ -30,12 +29,15 @@ void SelectRenderer::init()
 
 	auto outlineProgram = shaderProgram("Outline");
 
-	_outlineVAO.create();
-	_outlineVBO.create();
+	auto outlineVBO = vbo("Quad");
+	auto outlineVAO = vao("Quad");
+
+	outlineVAO->create();
+	outlineVBO->create();
 
 	if (outlineProgram->bind()) {
-		_outlineVAO.bind();
-		_outlineVBO.bind();
+		outlineVAO->bind();
+		outlineVBO->bind();
 
 		outlineProgram->enableAttributeArray(0);
 		outlineProgram->enableAttributeArray(1);
@@ -44,8 +46,8 @@ void SelectRenderer::init()
 
 		outlineProgram->release();
 
-		_outlineVBO.release();
-		_outlineVAO.release();
+		outlineVBO->release();
+		outlineVAO->release();
 	}
 
 	auto selectionBufferProgram = shaderProgram("SelectionBuffer");
@@ -96,10 +98,8 @@ void SelectRenderer::render()
 
 	renderOverlay();
 	renderSelection();
-
-	if (_imageViewerWidget->interactionMode() == InteractionMode::Selection) {
-		renderOutline();
-	}
+	renderOutline();
+	renderSelectionBounds();
 }
 
 void SelectRenderer::setImageSize(const QSize& size)
@@ -250,6 +250,37 @@ void SelectRenderer::setSelectionImage(std::shared_ptr<QImage> image)
 	_textures["Selection"] = selectionTexture;
 }
 
+void SelectRenderer::setSelectionBounds(const QRect& selectionBounds)
+{
+	/*
+	_selectionBounds = selectionBounds;
+
+	const float coordinates[4][3] = {
+		{ _selectionBounds.topLeft().x(),		_selectionBounds.topLeft().y(),			0.0f },
+		{ _selectionBounds.topRight().x(),		_selectionBounds.topRight().y(),		0.0f },
+		{ _selectionBounds.bottomRight().x(),	_selectionBounds.bottomRight().y(),		0.0f },
+		{ _selectionBounds.bottomLeft().x(),	_selectionBounds.bottomLeft().y(),		0.0f }
+	};
+
+	for (int j = 0; j < 4; ++j)
+	{
+		_vertexData[j * 3 + 0] = coordinates[j][0];
+		_vertexData[j * 3 + 1] = coordinates[j][1];
+		_vertexData[j * 3 + 2] = coordinates[j][2];
+	}
+
+	_vao.bind();
+	{
+		_vbo.bind();
+		{
+			_vbo.allocate(_vertexData.constData(), _vertexData.count() * sizeof(GLfloat));
+		}
+		_vbo.release();
+	}
+	_vao.release();
+	*/
+}
+
 void SelectRenderer::setOpacity(const float& opacity)
 {
 	_selectionColor.setW(opacity);
@@ -358,20 +389,26 @@ void SelectRenderer::createTextures()
 
 void SelectRenderer::createVBOs()
 {
-	auto quadVBO = std::make_shared<QOpenGLBuffer>();
+	auto quadVBO		= std::make_shared<QOpenGLBuffer>();
+	auto outlineVBO		= std::make_shared<QOpenGLBuffer>();
 
 	quadVBO->create();
+	outlineVBO->create();
 	
 	_vbos.insert("Quad", quadVBO);
+	_vbos.insert("Outline", outlineVBO);
 }
 
 void SelectRenderer::createVAOs()
 {
-	auto quadVAO = std::make_shared<QOpenGLVertexArrayObject>();
+	auto quadVAO	= std::make_shared<QOpenGLVertexArrayObject>();
+	auto outlineVAO	= std::make_shared<QOpenGLVertexArrayObject>();
 
 	quadVAO->create();
+	outlineVAO->create();
 
 	_vaos.insert("Quad", quadVAO);
+	_vaos.insert("Outline", outlineVAO);
 }
 
 void SelectRenderer::renderOverlay()
@@ -424,6 +461,9 @@ void SelectRenderer::renderSelection()
 
 void SelectRenderer::renderOutline()
 {
+	if (_imageViewerWidget->interactionMode() != InteractionMode::Selection)
+		return;
+
 	auto outlineProgram = shaderProgram("Outline");
 
 	if (outlineProgram->bind()) {
@@ -435,6 +475,9 @@ void SelectRenderer::renderOutline()
 
 		outlineProgram->setUniformValue("transform", _modelViewProjection);
 		outlineProgram->setUniformValue("color", _outlineColor);
+
+		auto* outlineVBO	= vbo("Outline").get();
+		auto* outlineVAO	= vao("Outline").get();
 
 		switch (_imageViewerWidget->selectionType())
 		{
@@ -451,7 +494,7 @@ void SelectRenderer::renderOutline()
 					points.append(QVector2D(end.x(), end.y()));
 					points.append(QVector2D(start.x(), end.y()));
 
-					drawPolyline(points);
+					drawPolyline(points, outlineVBO, outlineVAO);
 				}
 
 				break;
@@ -479,7 +522,7 @@ void SelectRenderer::renderOutline()
 						points.append(QVector2D(brushCenter.x() + x, brushCenter.y() + y));
 					}
 
-					drawPolyline(points);
+					drawPolyline(points, outlineVBO, outlineVAO);
 				}
 
 				break;
@@ -495,7 +538,7 @@ void SelectRenderer::renderOutline()
 						points.append(QVector2D(mousePosition.x(), mousePosition.y()));
 					}
 
-					drawPolyline(points);
+					drawPolyline(points, outlineVBO, outlineVAO);
 				}
 
 				break;
@@ -509,7 +552,12 @@ void SelectRenderer::renderOutline()
 	}
 }
 
-void SelectRenderer::drawPolyline(const QVector<QVector2D>& points)
+void SelectRenderer::renderSelectionBounds()
+{
+
+}
+
+void SelectRenderer::drawPolyline(const QVector<QVector2D>& points, QOpenGLBuffer* vbo, QOpenGLVertexArrayObject* vao)
 {
 	auto uv = 0.f;
 
@@ -535,20 +583,20 @@ void SelectRenderer::drawPolyline(const QVector<QVector2D>& points)
 
 			vertexData[j * 5 + 3] = uv;
 		}
-		
+
 		vertexData[j * 5 + 4] = 0.f;
 	}
-	
-	_outlineVBO.bind();
-	_outlineVBO.setUsagePattern(QOpenGLBuffer::DynamicDraw);
-	_outlineVBO.allocate(vertexData.constData(), vertexData.count() * sizeof(GLfloat));
-	_outlineVBO.release();
 
-	_outlineVAO.bind();
-	_outlineVBO.bind();
+	vbo->bind();
+	vbo->setUsagePattern(QOpenGLBuffer::DynamicDraw);
+	vbo->allocate(vertexData.constData(), vertexData.count() * sizeof(GLfloat));
+	vbo->release();
+
+	vao->bind();
+	vbo->bind();
 
 	glDrawArrays(GL_LINE_LOOP, 0, points.size());
 
-	_outlineVAO.release();
-	_outlineVBO.release();
+	vao->release();
+	vbo->release();
 }

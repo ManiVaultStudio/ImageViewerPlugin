@@ -25,6 +25,7 @@ public:
 	void update(const SelectionType& selectionType, const std::vector<QVector3D>& mousePositions);
 	void resetSelectionBuffer();
 	void setSelectionImage(std::shared_ptr<QImage> image);
+	void setSelectionBounds(const QRect& selectionBounds);
 	void setOpacity(const float& opacity);
 	float brushRadius() const;
 	void setBrushRadius(const float& brushRadius);
@@ -45,15 +46,15 @@ private:
 	void renderOverlay();
 	void renderSelection();
 	void renderOutline();
-	void drawPolyline(const QVector<QVector2D>& points);
+	void renderSelectionBounds();
+	void drawPolyline(const QVector<QVector2D>& points, QOpenGLBuffer* vbo, QOpenGLVertexArrayObject* vao);
 
 protected:
 	ImageViewerWidget*			_imageViewerWidget;
 	QVector4D					_color;
 	QVector4D					_selectionColor;
+	QRect						_selectionBounds;
 	float						_brushRadius;
 	float						_brushRadiusDelta;
 	QVector4D					_outlineColor;
-	QOpenGLBuffer				_outlineVBO;
-	QOpenGLVertexArrayObject	_outlineVAO;
 };

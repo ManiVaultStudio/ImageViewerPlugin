@@ -283,7 +283,7 @@ void ImageViewerWidget::onSelectionImageChanged(std::shared_ptr<QImage> selectio
 
 	const auto worldSelectionBounds = QRect(selectionBounds.left(), selectionImage->height() - selectionBounds.bottom() - 1, selectionBounds.width() + 1, selectionBounds.height() + 1);
 
-	_selectionBoundsRenderer->setSelectionBounds(worldSelectionBounds);
+	_selectRenderer->setSelectionBounds(worldSelectionBounds);
 
 	doneCurrent();
 

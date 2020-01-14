@@ -14,8 +14,7 @@ SelectionBoundsRenderer::SelectionBoundsRenderer(const std::uint32_t& zIndex) :
 	_vertexData(),
 	_vbo(),
 	_vao(),
-	_color(1.0f, 0.6f, 0.f, 0.5f),
-	_selectionBounds()
+	_color(1.0f, 0.6f, 0.f, 0.5f)
 {
 	_vertexData.resize(12);
 }
@@ -80,38 +79,9 @@ void SelectionBoundsRenderer::destroy()
 	_vao.destroy();
 }
 
-void SelectionBoundsRenderer::setSelectionBounds(const QRect& selectionBounds)
-{
-	_selectionBounds = selectionBounds;
-
-	const float coordinates[4][3] = {
-		{ _selectionBounds.topLeft().x(),		_selectionBounds.topLeft().y(),			0.0f },
-		{ _selectionBounds.topRight().x(),		_selectionBounds.topRight().y(),		0.0f },
-		{ _selectionBounds.bottomRight().x(),	_selectionBounds.bottomRight().y(),		0.0f },
-		{ _selectionBounds.bottomLeft().x(),	_selectionBounds.bottomLeft().y(),		0.0f }
-	};
-
-	for (int j = 0; j < 4; ++j)
-	{
-		_vertexData[j * 3 + 0] = coordinates[j][0];
-		_vertexData[j * 3 + 1] = coordinates[j][1];
-		_vertexData[j * 3 + 2] = coordinates[j][2];
-	}
-
-	_vao.bind();
-	{
-		_vbo.bind();
-		{
-			_vbo.allocate(_vertexData.constData(), _vertexData.count() * sizeof(GLfloat));
-		}
-		_vbo.release();
-	}
-	_vao.release();
-}
-
 bool SelectionBoundsRenderer::isInitialized() const
 {
-	return _selectionBounds.isValid();
+	return true;// _selectionBounds.isValid();
 }
 
 void SelectionBoundsRenderer::createShaderPrograms()
