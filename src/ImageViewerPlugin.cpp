@@ -102,8 +102,6 @@ void ImageViewerPlugin::update()
 	if (_currentImages == nullptr)
 		return;
 
-	qDebug() << "Update";
-
 	auto imageFileNames = QStringList();
 
 	foreach(const QString& imageFilePath, _currentImages->imageFilePaths())
