@@ -27,13 +27,9 @@ void SelectRenderer::init()
 
 	const auto stride = 5 * sizeof(GLfloat);
 
-	auto outlineProgram = shaderProgram("Outline");
-
-	auto outlineVBO = vbo("Quad");
-	auto outlineVAO = vao("Quad");
-
-	outlineVAO->create();
-	outlineVBO->create();
+	auto outlineProgram	= shaderProgram("Outline");
+	auto outlineVBO		= vbo("Quad");
+	auto outlineVAO		= vao("Quad");
 
 	if (outlineProgram->bind()) {
 		outlineVAO->bind();
@@ -50,15 +46,12 @@ void SelectRenderer::init()
 		outlineVAO->release();
 	}
 
+	auto quadVAO = vao("Quad");
+	auto quadVBO = vbo("Quad");
+
 	auto selectionBufferProgram = shaderProgram("SelectionBuffer");
 
 	if (selectionBufferProgram->bind()) {
-		auto quadVAO = vao("Quad");
-		auto quadVBO = vbo("Quad");
-
-		quadVAO->bind();
-		quadVBO->bind();
-
 		selectionBufferProgram->enableAttributeArray(0);
 		selectionBufferProgram->enableAttributeArray(1);
 		selectionBufferProgram->setAttributeBuffer(0, GL_FLOAT, 0, 3, stride);
@@ -73,9 +66,6 @@ void SelectRenderer::init()
 	auto selectionProgram = shaderProgram("Selection");
 
 	if (selectionProgram->bind()) {
-		auto quadVAO = vao("Quad");
-		auto quadVBO = vbo("Quad");
-
 		quadVAO->bind();
 		quadVBO->bind();
 
@@ -89,6 +79,25 @@ void SelectRenderer::init()
 
 		selectionProgram->release();
 	}
+
+	auto boundsProgram	= shaderProgram("Bounds");
+	auto boundsVAO		= vao("Bounds");
+	auto boundsVBO		= vbo("Bounds");
+
+	if (boundsProgram->bind()) {
+		boundsVAO->bind();
+		boundsVBO->bind();
+
+		boundsProgram->enableAttributeArray(0);
+		boundsProgram->enableAttributeArray(1);
+		boundsProgram->setAttributeBuffer(0, GL_FLOAT, 0, 3, stride);
+		boundsProgram->setAttributeBuffer(1, GL_FLOAT, 3 * sizeof(GLfloat), 2, stride);
+
+		boundsVAO->release();
+		boundsVBO->release();
+
+		boundsProgram->release();
+	}
 }
 
 void SelectRenderer::render()
@@ -99,7 +108,7 @@ void SelectRenderer::render()
 	renderOverlay();
 	renderSelection();
 	renderOutline();
-	renderSelectionBounds();
+	renderBounds();
 }
 
 void SelectRenderer::setImageSize(const QSize& size)
@@ -252,33 +261,7 @@ void SelectRenderer::setSelectionImage(std::shared_ptr<QImage> image)
 
 void SelectRenderer::setSelectionBounds(const QRect& selectionBounds)
 {
-	/*
 	_selectionBounds = selectionBounds;
-
-	const float coordinates[4][3] = {
-		{ _selectionBounds.topLeft().x(),		_selectionBounds.topLeft().y(),			0.0f },
-		{ _selectionBounds.topRight().x(),		_selectionBounds.topRight().y(),		0.0f },
-		{ _selectionBounds.bottomRight().x(),	_selectionBounds.bottomRight().y(),		0.0f },
-		{ _selectionBounds.bottomLeft().x(),	_selectionBounds.bottomLeft().y(),		0.0f }
-	};
-
-	for (int j = 0; j < 4; ++j)
-	{
-		_vertexData[j * 3 + 0] = coordinates[j][0];
-		_vertexData[j * 3 + 1] = coordinates[j][1];
-		_vertexData[j * 3 + 2] = coordinates[j][2];
-	}
-
-	_vao.bind();
-	{
-		_vbo.bind();
-		{
-			_vbo.allocate(_vertexData.constData(), _vertexData.count() * sizeof(GLfloat));
-		}
-		_vbo.release();
-	}
-	_vao.release();
-	*/
 }
 
 void SelectRenderer::setOpacity(const float& opacity)
@@ -380,6 +363,14 @@ void SelectRenderer::createShaderPrograms()
 	selectionProgram->link();
 
 	_shaderPrograms.insert("Selection", selectionProgram);
+
+	auto boundsProgram = std::make_shared<QOpenGLShaderProgram>();
+
+	boundsProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, boundsVertexShaderSource.c_str());
+	boundsProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, boundsFragmentShaderSource.c_str());
+	boundsProgram->link();
+
+	_shaderPrograms.insert("Bounds", boundsProgram);
 }
 
 void SelectRenderer::createTextures()
@@ -391,24 +382,30 @@ void SelectRenderer::createVBOs()
 {
 	auto quadVBO		= std::make_shared<QOpenGLBuffer>();
 	auto outlineVBO		= std::make_shared<QOpenGLBuffer>();
+	auto boundsVBO		= std::make_shared<QOpenGLBuffer>();
 
 	quadVBO->create();
 	outlineVBO->create();
+	boundsVBO->create();
 	
 	_vbos.insert("Quad", quadVBO);
 	_vbos.insert("Outline", outlineVBO);
+	_vbos.insert("Bounds", boundsVBO);
 }
 
 void SelectRenderer::createVAOs()
 {
 	auto quadVAO	= std::make_shared<QOpenGLVertexArrayObject>();
 	auto outlineVAO	= std::make_shared<QOpenGLVertexArrayObject>();
+	auto boundsVAO	= std::make_shared<QOpenGLVertexArrayObject>();
 
 	quadVAO->create();
 	outlineVAO->create();
+	boundsVAO->create();
 
 	_vaos.insert("Quad", quadVAO);
 	_vaos.insert("Outline", outlineVAO);
+	_vaos.insert("Bounds", boundsVAO);
 }
 
 void SelectRenderer::renderOverlay()
@@ -552,9 +549,22 @@ void SelectRenderer::renderOutline()
 	}
 }
 
-void SelectRenderer::renderSelectionBounds()
+void SelectRenderer::renderBounds()
 {
+	auto* boundsVBO = vbo("Bounds").get();
+	auto* boundsVAO = vao("Bounds").get();
 
+	const auto p0 = _selectionBounds.topLeft();
+	const auto p1 = _selectionBounds.bottomRight();
+
+	QVector<QVector2D> points;
+
+	points.append(QVector2D(p0.x(), p0.y()));
+	points.append(QVector2D(p1.x(), p0.y()));
+	points.append(QVector2D(p1.x(), p1.y()));
+	points.append(QVector2D(p0.x(), p1.y()));
+
+	drawPolyline(points, boundsVBO, boundsVAO);
 }
 
 void SelectRenderer::drawPolyline(const QVector<QVector2D>& points, QOpenGLBuffer* vbo, QOpenGLVertexArrayObject* vao)

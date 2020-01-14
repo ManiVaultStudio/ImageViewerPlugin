@@ -46,7 +46,7 @@ private:
 	void renderOverlay();
 	void renderSelection();
 	void renderOutline();
-	void renderSelectionBounds();
+	void renderBounds();
 	void drawPolyline(const QVector<QVector2D>& points, QOpenGLBuffer* vbo, QOpenGLVertexArrayObject* vao);
 
 protected:

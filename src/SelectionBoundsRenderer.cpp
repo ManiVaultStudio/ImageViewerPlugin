@@ -86,13 +86,6 @@ bool SelectionBoundsRenderer::isInitialized() const
 
 void SelectionBoundsRenderer::createShaderPrograms()
 {
-	auto boundsOutlineProgram = std::make_shared<QOpenGLShaderProgram>();
-
-	boundsOutlineProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, selectionBoundsVertexShaderSource.c_str());
-	boundsOutlineProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, selectionBoundsFragmentShaderSource.c_str());
-	boundsOutlineProgram->link();
-
-	_shaderPrograms.insert("Outline", boundsOutlineProgram);
 }
 
 void SelectionBoundsRenderer::createTextures()
