@@ -19,7 +19,6 @@
 #include "Common.h"
 
 #include "ImageQuadRenderer.h"
-#include "SelectionBoundsRenderer.h"
 #include "SelectRenderer.h"
 
 class QMenu;
@@ -108,7 +107,6 @@ public:
 private:
 	ImageViewerPlugin*							_imageViewerPlugin;
 	std::unique_ptr<ImageQuadRenderer>			_imageQuadRenderer;
-	std::unique_ptr<SelectionBoundsRenderer>	_selectionBoundsRenderer;
 	std::unique_ptr<SelectRenderer>				_selectRenderer;
 	InteractionMode								_interactionMode;
 	QPoint										_initialMousePosition;
