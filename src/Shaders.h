@@ -14,12 +14,12 @@ const std::string selectionBufferVertexShaderSource =
 #include "SelectionBufferVertex.glsl"
 ;
 
-const std::string overlayFragmentShaderSource =
-#include "OverlayFragment.glsl"
+const std::string selectionOverlayFragmentShaderSource =
+#include "SelectionOverlayFragment.glsl"
 ;
 
-const std::string overlayVertexShaderSource =
-#include "OverlayVertex.glsl"
+const std::string selectionOverlayVertexShaderSource =
+#include "SelectionOverlayVertex.glsl"
 ;
 
 const std::string selectionFragmentShaderSource =
