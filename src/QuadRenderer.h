@@ -25,8 +25,6 @@ public:
 	void render() override;
 	void destroy() override;
 
-	virtual void initializePrograms() = 0;
-
 public:
 	QSize size() const;
 	void setSize(const QSize& size);
@@ -39,5 +37,4 @@ protected:
 	QVector<GLfloat>						_vertexData;
 	QOpenGLBuffer							_quadVBO;
 	QOpenGLVertexArrayObject				_quadVAO;
-	std::unique_ptr<QOpenGLShaderProgram>	_program;
 };

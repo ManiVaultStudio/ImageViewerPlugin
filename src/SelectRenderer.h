@@ -21,9 +21,6 @@ public:
 	void render() override;
 	void init();
 
-protected:
-	void initializePrograms();
-
 public:
 	void setImageSize(const QSize& size);
 	void update(const SelectionType& selectionType, const std::vector<QVector3D>& mousePositions);
@@ -37,7 +34,9 @@ public:
 	std::shared_ptr<QImage> selectionImage() const;
 
 protected:
-	bool initialized() const;
+	bool initialized() override;
+	void initializeShaderPrograms() override;
+	void initializeTextures() override;
 
 private:
 	void renderOverlay();
@@ -46,14 +45,11 @@ private:
 
 protected:
 	ImageViewerWidget*							_imageViewerWidget;
-	std::unique_ptr<QOpenGLTexture>				_texture;
 	std::unique_ptr<QOpenGLFramebufferObject>	_fbo;
 	QVector4D									_color;
 	float										_brushRadius;
 	float										_brushRadiusDelta;
-	std::unique_ptr<QOpenGLShaderProgram>		_pixelSelectionProgram;
 	QVector4D									_outlineColor;
 	QOpenGLBuffer								_outlineVBO;
 	QOpenGLVertexArrayObject					_outlineVAO;
-	std::unique_ptr<QOpenGLShaderProgram>		_outlineProgram;
 };
