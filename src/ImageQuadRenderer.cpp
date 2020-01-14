@@ -6,9 +6,11 @@
 
 #include "Shaders.h"
 
+std::uint32_t ImageQuadRenderer::_vertexAttribute = 0;
+std::uint32_t ImageQuadRenderer::_textureCoordinateAttribute = 1;
+
 ImageQuadRenderer::ImageQuadRenderer(const std::uint32_t& zIndex) :
 	QuadRenderer(zIndex),
-	_texture(),
 	_imageMin(),
 	_imageMax(),
 	_window(),
@@ -16,41 +18,62 @@ ImageQuadRenderer::ImageQuadRenderer(const std::uint32_t& zIndex) :
 {
 }
 
+void ImageQuadRenderer::init()
+{
+	QuadRenderer::init();
+
+	const auto quadProgram = shaderProgram("Quad");
+
+	if (quadProgram->bind()) {
+		_quadVAO.bind();
+		_quadVBO.bind();
+
+		const auto stride = 5 * sizeof(GLfloat);
+
+		quadProgram->enableAttributeArray(ImageQuadRenderer::_vertexAttribute);
+		quadProgram->enableAttributeArray(ImageQuadRenderer::_textureCoordinateAttribute);
+		quadProgram->setAttributeBuffer(ImageQuadRenderer::_vertexAttribute, GL_FLOAT, 0, 3, stride);
+		quadProgram->setAttributeBuffer(ImageQuadRenderer::_textureCoordinateAttribute, GL_FLOAT, 3 * sizeof(GLfloat), 2, stride);
+
+		_quadVAO.release();
+		_quadVBO.release();
+
+		quadProgram->release();
+	}
+}
+
 void ImageQuadRenderer::render()
 {
 	if (!initialized())
 		return;
 
-	_program->bind();
-	{
-		_program->setUniformValue("imageTexture", 0);
-		_program->setUniformValue("transform", _modelViewProjection);
+	const auto quadProgram = shaderProgram("Quad");
 
-		const auto imageMin = static_cast<float>(_imageMin);
-		const auto imageMax = static_cast<float>(_imageMax);
-		const auto maxWindow = static_cast<float>(imageMax - imageMin);
-		const auto level = std::clamp(imageMin + (_level * maxWindow), imageMin, imageMax);
-		const auto window = std::clamp(_window * maxWindow, imageMin, imageMax);
-		const auto minPixelValue = std::clamp(level - (window / 2.0f), imageMin, imageMax);
-		const auto maxPixelValue = std::clamp(level + (window / 2.0f), imageMin, imageMax);
+	if (quadProgram->bind()) {
+		quadProgram->setUniformValue("imageTexture", 0);
+		quadProgram->setUniformValue("transform", _modelViewProjection);
 
-		_program->setUniformValue("minPixelValue", minPixelValue);
-		_program->setUniformValue("maxPixelValue", maxPixelValue);
+		const auto imageMin				= static_cast<float>(_imageMin);
+		const auto imageMax				= static_cast<float>(_imageMax);
+		const auto maxWindow			= static_cast<float>(imageMax - imageMin);
+		const auto level				= std::clamp(imageMin + (_level * maxWindow), imageMin, imageMax);
+		const auto window				= std::clamp(_window * maxWindow, imageMin, imageMax);
+		const auto minPixelValue		= std::clamp(level - (window / 2.0f), imageMin, imageMax);
+		const auto maxPixelValue		= std::clamp(level + (window / 2.0f), imageMin, imageMax);
 
-		_texture->bind();
+		quadProgram->setUniformValue("minPixelValue", minPixelValue);
+		quadProgram->setUniformValue("maxPixelValue", maxPixelValue);
+
+		auto quadTexture = texture("Quad");
+
+		quadTexture->bind();
 		{
 			QuadRenderer::render();
 		}
-		_texture->release();
-	}
-	_program->release();
-}
+		quadTexture->release();
 
-void ImageQuadRenderer::initializePrograms()
-{
-	_program->addShaderFromSourceCode(QOpenGLShader::Vertex, imageVertexShaderSource.c_str());
-	_program->addShaderFromSourceCode(QOpenGLShader::Fragment, imageFragmentShaderSource.c_str());
-	_program->link();
+		quadProgram->release();
+	}
 }
 
 void ImageQuadRenderer::setImage(std::shared_ptr<QImage> image)
@@ -83,13 +106,15 @@ void ImageQuadRenderer::setImage(std::shared_ptr<QImage> image)
 		}
 	}
 
-	_texture.reset(new QOpenGLTexture(QOpenGLTexture::Target2D));
+	auto& quadTexture = texture("Quad");
 
-	_texture->setSize(image->size().width(), image->size().height());
-	_texture->setFormat(QOpenGLTexture::RGBA16_UNorm);
-	_texture->setWrapMode(QOpenGLTexture::ClampToEdge);
-	_texture->allocateStorage();
-	_texture->setData(QOpenGLTexture::PixelFormat::RGBA, QOpenGLTexture::PixelType::UInt16, image->bits());
+	quadTexture.reset(new QOpenGLTexture(*image.get()));
+
+	quadTexture->setSize(image->size().width(), image->size().height());
+	quadTexture->setFormat(QOpenGLTexture::RGBA16_UNorm);
+	quadTexture->setWrapMode(QOpenGLTexture::ClampToEdge);
+	quadTexture->allocateStorage();
+	quadTexture->setData(QOpenGLTexture::PixelFormat::RGBA, QOpenGLTexture::PixelType::UInt16, image->bits());
 
 	setSize(image->size());
 
@@ -120,7 +145,24 @@ void ImageQuadRenderer::resetWindowLevel()
 	_level	= 0.5;
 }
 
-bool ImageQuadRenderer::initialized() const
+bool ImageQuadRenderer::initialized()
 {
-	return _texture.get() != nullptr && _texture->isCreated();
+	const auto quadTexture = texture("Quad");
+	return quadTexture.get() != nullptr && quadTexture->isCreated();
+}
+
+void ImageQuadRenderer::initializeShaderPrograms()
+{
+	auto program = std::make_shared<QOpenGLShaderProgram>();
+
+	program->addShaderFromSourceCode(QOpenGLShader::Vertex, imageVertexShaderSource.c_str());
+	program->addShaderFromSourceCode(QOpenGLShader::Fragment, imageFragmentShaderSource.c_str());
+	program->link();
+
+	_shaderPrograms.insert("Quad", program);
+}
+
+void ImageQuadRenderer::initializeTextures()
+{
+	_textures.insert("Quad", std::make_shared<QOpenGLTexture>(QOpenGLTexture::Target2D));
 }

@@ -10,9 +10,8 @@ public:
 	ImageQuadRenderer(const std::uint32_t& zIndex);
 
 public:
+	void init() override;
 	void render() override;
-
-	void initializePrograms();
 
 public:
 	void setImage(std::shared_ptr<QImage> image);
@@ -22,12 +21,15 @@ public:
 	void resetWindowLevel();
 
 protected:
-	bool initialized() const;
+	bool initialized();
+	void initializeShaderPrograms();
+	void initializeTextures();
 
 private:
-	std::unique_ptr<QOpenGLTexture>		_texture;
 	std::uint16_t						_imageMin;
 	std::uint16_t						_imageMax;
 	float								_window;
 	float								_level;
+	static std::uint32_t				_vertexAttribute;
+	static std::uint32_t				_textureCoordinateAttribute;
 };

@@ -24,20 +24,18 @@ public:
 	void render() override;
 	void destroy() override;
 
-	void initializePrograms();
-
 public:
 	void setSelectionBounds(const QRect& selectionBounds);
 
 protected:
-	bool initialized() const;
+	virtual bool initialized();
+	virtual void initializeShaderPrograms();
+	virtual void initializeTextures();
 
 protected:
-	std::unique_ptr<QOpenGLTexture>			_texture;
 	QVector<GLfloat>						_vertexData;
 	QOpenGLBuffer							_vbo;
 	QOpenGLVertexArrayObject				_vao;
-	std::unique_ptr<QOpenGLShaderProgram>	_program;
 	QVector4D								_color;
 	QRect									_selectionBounds;
 };

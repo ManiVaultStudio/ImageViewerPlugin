@@ -12,17 +12,15 @@ public:
 public:
 	void render() override;
 
-protected:
-	void initializePrograms();
-
 public:
 	void setImage(std::shared_ptr<QImage> image);
 	void setOpacity(const float& opacity);
 
 protected:
-	bool initialized() const;
+	bool initialized() override;
+	void initializeShaderPrograms() override;
+	void initializeTextures() override;
 	
 private:
-	std::unique_ptr<QOpenGLTexture>		_texture;
-	QVector4D							_selectionColor;
+	QVector4D	_selectionColor;
 };

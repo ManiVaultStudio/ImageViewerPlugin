@@ -14,16 +14,14 @@ QuadRenderer::QuadRenderer(const std::uint32_t& zIndex) :
 	_size(),
 	_vertexData(),
 	_quadVBO(),
-	_quadVAO(),
-	_program(std::make_unique<QOpenGLShaderProgram>())
+	_quadVAO()
 {
 	_vertexData.resize(20);
 }
 
 void QuadRenderer::init()
 {
-	initializeOpenGLFunctions();
-	initializePrograms();
+	StackedRenderer::init();
 
 	_quadVBO.create();
 	_quadVBO.bind();
@@ -32,21 +30,6 @@ void QuadRenderer::init()
 	_quadVBO.release();
 
 	_quadVAO.create();
-
-	_program->bind();
-	_quadVAO.bind();
-	_quadVBO.bind();
-
-	const auto stride = 5 * sizeof(GLfloat);
-
-	_program->enableAttributeArray(PROGRAM_VERTEX_ATTRIBUTE);
-	_program->enableAttributeArray(PROGRAM_TEXCOORD_ATTRIBUTE);
-	_program->setAttributeBuffer(PROGRAM_VERTEX_ATTRIBUTE, GL_FLOAT, 0, 3, stride);
-	_program->setAttributeBuffer(PROGRAM_TEXCOORD_ATTRIBUTE, GL_FLOAT, 3 * sizeof(GLfloat), 2, stride);
-
-	_quadVAO.release();
-	_quadVBO.release();
-	_program->release();
 }
 
 void QuadRenderer::resize(QSize renderSize)

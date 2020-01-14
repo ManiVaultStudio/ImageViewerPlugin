@@ -12,16 +12,13 @@
 SelectRenderer::SelectRenderer(const std::uint32_t& zIndex, ImageViewerWidget* imageViewerWidget) :
 	QuadRenderer(zIndex),
 	_imageViewerWidget(imageViewerWidget),
-	_texture(),
 	_fbo(),
 	_color(1.f, 0.6f, 0.f, 0.3f),
 	_brushRadius(50.f),
 	_brushRadiusDelta(2.0f),
-	_pixelSelectionProgram(std::make_unique<QOpenGLShaderProgram>()),
 	_outlineColor(1.f, 0.6f, 0.f, 1.0f),
 	_outlineVBO(),
-	_outlineVAO(),
-	_outlineProgram(std::make_unique<QOpenGLShaderProgram>())
+	_outlineVAO()
 {
 }
 
@@ -31,33 +28,45 @@ void SelectRenderer::init()
 
 	const auto stride = 5 * sizeof(GLfloat);
 
-	_pixelSelectionProgram->bind();
+	auto pixelSelectionProgram = shaderProgram("PixelSelection");
+	
+	if (pixelSelectionProgram->bind()) {
+		_quadVAO.bind();
+		_quadVBO.bind();
 
-	_quadVAO.bind();
-	_quadVBO.bind();
+		pixelSelectionProgram->enableAttributeArray(0);
+		pixelSelectionProgram->enableAttributeArray(1);
+		pixelSelectionProgram->setAttributeBuffer(0, GL_FLOAT, 0, 3, stride);
+		pixelSelectionProgram->setAttributeBuffer(1, GL_FLOAT, 3 * sizeof(GLfloat), 2, stride);
 
-	_pixelSelectionProgram->enableAttributeArray(0);
-	_pixelSelectionProgram->enableAttributeArray(1);
-	_pixelSelectionProgram->setAttributeBuffer(0, GL_FLOAT, 0, 3, stride);
-	_pixelSelectionProgram->setAttributeBuffer(1, GL_FLOAT, 3 * sizeof(GLfloat), 2, stride);
+		_quadVAO.release();
+		_quadVBO.release();
 
-	_quadVAO.release();
-	_quadVBO.release();
+		pixelSelectionProgram->release();
+	}
 
-	_pixelSelectionProgram->release();
+	auto outlineProgram = shaderProgram("PixelSelection");
 
-	_outlineProgram->bind();
+	if (outlineProgram->bind()) {
+		outlineProgram->enableAttributeArray(0);
+		outlineProgram->enableAttributeArray(1);
+		outlineProgram->setAttributeBuffer(0, GL_FLOAT, 0, 3, stride);
+		outlineProgram->setAttributeBuffer(1, GL_FLOAT, 3 * sizeof(GLfloat), 2, stride);
+
+		outlineProgram->release();
+
+		_outlineVBO.create();
+		_outlineVAO.create();
+	}
+	
+	/*
+	const auto stride = 5 * sizeof(GLfloat);
 
 	_outlineProgram->enableAttributeArray(0);
 	_outlineProgram->enableAttributeArray(1);
 	_outlineProgram->setAttributeBuffer(0, GL_FLOAT, 0, 3, stride);
 	_outlineProgram->setAttributeBuffer(1, GL_FLOAT, 3 * sizeof(GLfloat), 2, stride);
-
-	_outlineProgram->release();
-
-	_outlineVBO.create();
-	_outlineVAO.create();
-	
+	*/
 }
 
 void SelectRenderer::render()
@@ -70,21 +79,6 @@ void SelectRenderer::render()
 	if (_imageViewerWidget->interactionMode() == InteractionMode::Selection) {
 		renderOutline();
 	}
-}
-
-void SelectRenderer::initializePrograms()
-{
-	_program->addShaderFromSourceCode(QOpenGLShader::Vertex, overlayVertexShaderSource.c_str());
-	_program->addShaderFromSourceCode(QOpenGLShader::Fragment, overlayFragmentShaderSource.c_str());
-	_program->link();
-
-	_pixelSelectionProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, pixelSelectionVertexShaderSource.c_str());
-	_pixelSelectionProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, pixelSelectionFragmentShaderSource.c_str());
-	_pixelSelectionProgram->link();
-
-	_outlineProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, selectionOutlineVertexShaderSource.c_str());
-	_outlineProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, selectionOutlineFragmentShaderSource.c_str());
-	_outlineProgram->link();
 }
 
 void SelectRenderer::setImageSize(const QSize& size)
@@ -124,13 +118,15 @@ void SelectRenderer::update(const SelectionType& selectionType, const std::vecto
 
 	_quadVAO.bind();
 	{
-		if (_pixelSelectionProgram->bind()) {
+		auto pixelSelectionProgram = shaderProgram("PixelSelection");
+
+		if (pixelSelectionProgram->bind()) {
 			glBindTexture(GL_TEXTURE_2D, _fbo->texture());
 
-			_pixelSelectionProgram->setUniformValue("pixelSelectionTexture", 0);
-			_pixelSelectionProgram->setUniformValue("transform", transform);
-			_pixelSelectionProgram->setUniformValue("selectionType", static_cast<int>(selectionType));
-			_pixelSelectionProgram->setUniformValue("imageSize", static_cast<float>(_fbo->size().width()), static_cast<float>(_fbo->size().height()));
+			pixelSelectionProgram->setUniformValue("pixelSelectionTexture", 0);
+			pixelSelectionProgram->setUniformValue("transform", transform);
+			pixelSelectionProgram->setUniformValue("selectionType", static_cast<int>(selectionType));
+			pixelSelectionProgram->setUniformValue("imageSize", static_cast<float>(_fbo->size().width()), static_cast<float>(_fbo->size().height()));
 
 			switch (selectionType)
 			{
@@ -155,8 +151,8 @@ void SelectRenderer::update(const SelectionType& selectionType, const std::vecto
 						bottomRight.setY(rectangleTopLeftUV.y());
 					}
 
-					_pixelSelectionProgram->setUniformValue("rectangleTopLeft", topLeft);
-					_pixelSelectionProgram->setUniformValue("rectangleBottomRight", bottomRight);
+					pixelSelectionProgram->setUniformValue("rectangleTopLeft", topLeft);
+					pixelSelectionProgram->setUniformValue("rectangleBottomRight", bottomRight);
 
 					break;
 				}
@@ -166,9 +162,9 @@ void SelectRenderer::update(const SelectionType& selectionType, const std::vecto
 					const auto brushCenter			= mousePositions[mousePositions.size() - 1];
 					const auto previousBrushCenter	= mousePositions.size() > 1 ? mousePositions[mousePositions.size() - 2] : brushCenter;
 
-					_pixelSelectionProgram->setUniformValue("previousBrushCenter", previousBrushCenter.x(), previousBrushCenter.y());
-					_pixelSelectionProgram->setUniformValue("currentBrushCenter", brushCenter.x(), brushCenter.y());
-					_pixelSelectionProgram->setUniformValue("brushRadius", _brushRadius);
+					pixelSelectionProgram->setUniformValue("previousBrushCenter", previousBrushCenter.x(), previousBrushCenter.y());
+					pixelSelectionProgram->setUniformValue("currentBrushCenter", brushCenter.x(), brushCenter.y());
+					pixelSelectionProgram->setUniformValue("brushRadius", _brushRadius);
 
 					break;
 				}
@@ -184,8 +180,8 @@ void SelectRenderer::update(const SelectionType& selectionType, const std::vecto
 						points.push_back(QVector2D(mousePosition.x(), mousePosition.y()));
 					}
 
-					_pixelSelectionProgram->setUniformValueArray("points", &points[0], static_cast<std::int32_t>(points.size()));
-					_pixelSelectionProgram->setUniformValue("noPoints", static_cast<int>(points.size()));
+					pixelSelectionProgram->setUniformValueArray("points", &points[0], static_cast<std::int32_t>(points.size()));
+					pixelSelectionProgram->setUniformValue("noPoints", static_cast<int>(points.size()));
 
 					break;
 				}
@@ -196,7 +192,7 @@ void SelectRenderer::update(const SelectionType& selectionType, const std::vecto
 
 			glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
-			_pixelSelectionProgram->release();
+			pixelSelectionProgram->release();
 		}
 	}
 	_quadVAO.release();
@@ -266,7 +262,7 @@ std::shared_ptr<QImage> SelectRenderer::selectionImage() const
 	return std::make_shared<QImage>(_fbo->toImage());
 }
 
-bool SelectRenderer::initialized() const
+bool SelectRenderer::initialized()
 {
 	if (_fbo.get() == nullptr)
 		return false;
@@ -274,12 +270,46 @@ bool SelectRenderer::initialized() const
 	return _fbo->isValid();
 }
 
+void SelectRenderer::initializeShaderPrograms()
+{
+	auto overlayProgram = std::make_shared<QOpenGLShaderProgram>();
+
+	overlayProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, overlayVertexShaderSource.c_str());
+	overlayProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, overlayFragmentShaderSource.c_str());
+	overlayProgram->link();
+
+	_shaderPrograms.insert("Overlay", overlayProgram);
+
+	auto pixelSelectionProgram = std::make_shared<QOpenGLShaderProgram>();
+
+	pixelSelectionProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, pixelSelectionVertexShaderSource.c_str());
+	pixelSelectionProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, pixelSelectionFragmentShaderSource.c_str());
+	pixelSelectionProgram->link();
+
+	_shaderPrograms.insert("PixelSelection", pixelSelectionProgram);
+
+	auto outlineProgram = std::make_shared<QOpenGLShaderProgram>();
+
+	outlineProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, selectionOutlineVertexShaderSource.c_str());
+	outlineProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, selectionOutlineFragmentShaderSource.c_str());
+	outlineProgram->link();
+
+	_shaderPrograms.insert("Outline", outlineProgram);
+}
+
+void SelectRenderer::initializeTextures()
+{
+
+}
+
 void SelectRenderer::renderOverlay()
 {
-	if (_program->bind()) {
-		_program->setUniformValue("overlayTexture", 0);
-		_program->setUniformValue("transform", _modelViewProjection);
-		_program->setUniformValue("color", _color);
+	auto overlayProgram = shaderProgram("Overlay");
+
+	if (overlayProgram->bind()) {
+		overlayProgram->setUniformValue("overlayTexture", 0);
+		overlayProgram->setUniformValue("transform", _modelViewProjection);
+		overlayProgram->setUniformValue("color", _color);
 
 		_quadVAO.bind();
 		{
@@ -288,21 +318,23 @@ void SelectRenderer::renderOverlay()
 		}
 		_quadVAO.release();
 
-		_program->release();
+		overlayProgram->release();
 	}
 }
 
 void SelectRenderer::renderOutline()
 {
-	if (_outlineProgram->bind()) {
+	auto outlineProgram = shaderProgram("Outline");
+
+	if (outlineProgram->bind()) {
 		const auto mousePositions = _imageViewerWidget->mousePositions();
 
 		QMatrix4x4 transform;
 
 		transform.ortho(_imageViewerWidget->rect());
 
-		_outlineProgram->setUniformValue("transform", _modelViewProjection);
-		_outlineProgram->setUniformValue("color", _outlineColor);
+		outlineProgram->setUniformValue("transform", _modelViewProjection);
+		outlineProgram->setUniformValue("color", _outlineColor);
 
 		switch (_imageViewerWidget->selectionType())
 		{
@@ -373,7 +405,7 @@ void SelectRenderer::renderOutline()
 				break;
 		}
 
-		_outlineProgram->release();
+		outlineProgram->release();
 	}
 }
 
@@ -414,13 +446,6 @@ void SelectRenderer::drawPolyline(const QVector<QVector2D>& points)
 
 	_outlineVAO.bind();
 	_outlineVBO.bind();
-
-	const auto stride = 5 * sizeof(GLfloat);
-
-	_outlineProgram->enableAttributeArray(0);
-	_outlineProgram->enableAttributeArray(1);
-	_outlineProgram->setAttributeBuffer(0, GL_FLOAT, 0, 3, stride);
-	_outlineProgram->setAttributeBuffer(1, GL_FLOAT, 3 * sizeof(GLfloat), 2, stride);
 
 	glDrawArrays(GL_LINE_LOOP, 0, points.size());
 

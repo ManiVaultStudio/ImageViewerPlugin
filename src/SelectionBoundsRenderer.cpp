@@ -11,11 +11,9 @@
 
 SelectionBoundsRenderer::SelectionBoundsRenderer(const std::uint32_t& zIndex) :
 	StackedRenderer(zIndex),
-	_texture(),
 	_vertexData(),
 	_vbo(),
 	_vao(),
-	_program(std::make_unique<QOpenGLShaderProgram>()),
 	_color(1.0f, 0.6f, 0.f, 0.5f),
 	_selectionBounds()
 {
@@ -24,8 +22,7 @@ SelectionBoundsRenderer::SelectionBoundsRenderer(const std::uint32_t& zIndex) :
 
 void SelectionBoundsRenderer::init()
 {
-	initializeOpenGLFunctions();
-	initializePrograms();
+	StackedRenderer::init();
 
 	_vbo.create();
 	_vbo.bind();
@@ -35,16 +32,20 @@ void SelectionBoundsRenderer::init()
 
 	_vao.create();
 
-	_program->bind();
-	_vao.bind();
-	_vbo.bind();
+	auto boundsOutlineProgram = shaderProgram("BoundsOutline");
 
-	_program->enableAttributeArray(PROGRAM_VERTEX_ATTRIBUTE);
-	_program->setAttributeBuffer(PROGRAM_VERTEX_ATTRIBUTE, GL_FLOAT, 0, 3);
+	if (boundsOutlineProgram->bind()) {
+		_vao.bind();
+		_vbo.bind();
 
-	_vao.release();
-	_vbo.release();
-	_program->release();
+		boundsOutlineProgram->enableAttributeArray(PROGRAM_VERTEX_ATTRIBUTE);
+		boundsOutlineProgram->setAttributeBuffer(PROGRAM_VERTEX_ATTRIBUTE, GL_FLOAT, 0, 3);
+
+		_vao.release();
+		_vbo.release();
+
+		boundsOutlineProgram->release();
+	}
 }
 
 void SelectionBoundsRenderer::resize(QSize renderSize)
@@ -56,37 +57,27 @@ void SelectionBoundsRenderer::render()
 	if (!initialized())
 		return;
 
-	_program->bind();
-	{
-		_program->setUniformValue("transform", _modelViewProjection);
-		_program->setUniformValue("color", _color);
+	auto boundsOutlineProgram = shaderProgram("BoundsOutlineProgram");
 
-		//_texture->bind();
-		//{
-			_vao.bind();
-			{
-				glLineWidth(2.f);
-				glDrawArrays(GL_LINE_LOOP, 0, 4);
-			}
-			_vao.release();
-			//}
-		//_texture->release();
+	if (boundsOutlineProgram->bind()) {
+		boundsOutlineProgram->setUniformValue("transform", _modelViewProjection);
+		boundsOutlineProgram->setUniformValue("color", _color);
+
+		_vao.bind();
+		{
+			glLineWidth(2.f);
+			glDrawArrays(GL_LINE_LOOP, 0, 4);
+		}
+		_vao.release();
+
+		boundsOutlineProgram->release();
 	}
-	_program->release();
 }
 
 void SelectionBoundsRenderer::destroy()
 {
-	//_texture->destroy();
 	_vbo.destroy();
 	_vao.destroy();
-}
-
-void SelectionBoundsRenderer::initializePrograms()
-{
-	_program->addShaderFromSourceCode(QOpenGLShader::Vertex, selectionBoundsVertexShaderSource.c_str());
-	_program->addShaderFromSourceCode(QOpenGLShader::Fragment, selectionBoundsFragmentShaderSource.c_str());
-	_program->link();
 }
 
 void SelectionBoundsRenderer::setSelectionBounds(const QRect& selectionBounds)
@@ -118,7 +109,22 @@ void SelectionBoundsRenderer::setSelectionBounds(const QRect& selectionBounds)
 	_vao.release();
 }
 
-bool SelectionBoundsRenderer::initialized() const
+bool SelectionBoundsRenderer::initialized()
 {
 	return _selectionBounds.isValid();
+}
+
+void SelectionBoundsRenderer::initializeShaderPrograms()
+{
+	auto boundsOutlineProgram = std::make_shared<QOpenGLShaderProgram>();
+
+	boundsOutlineProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, selectionBoundsVertexShaderSource.c_str());
+	boundsOutlineProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, selectionBoundsFragmentShaderSource.c_str());
+	boundsOutlineProgram->link();
+
+	_shaderPrograms.insert("BoundsOutline", boundsOutlineProgram);
+}
+
+void SelectionBoundsRenderer::initializeTextures()
+{
 }
