@@ -3,10 +3,6 @@
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions>
 #include <QOpenGLTexture>
-#include <QOpenGLFramebufferObject>
-#include <QOpenGLShaderProgram>
-#include <QOpenGLBuffer>
-#include <QOpenGLVertexArrayObject>
 #include <QMouseEvent>
 #include <QColor>
 #include <QRect>
@@ -19,7 +15,7 @@
 #include "Common.h"
 
 #include "ImageQuadRenderer.h"
-#include "SelectRenderer.h"
+#include "SelectionRenderer.h"
 
 class QMenu;
 
@@ -107,7 +103,7 @@ public:
 private:
 	ImageViewerPlugin*							_imageViewerPlugin;
 	std::unique_ptr<ImageQuadRenderer>			_imageQuadRenderer;
-	std::unique_ptr<SelectRenderer>				_selectRenderer;
+	std::unique_ptr<SelectionRenderer>			_selectionRenderer;
 	InteractionMode								_interactionMode;
 	QPoint										_initialMousePosition;
 	QPoint										_mousePosition;

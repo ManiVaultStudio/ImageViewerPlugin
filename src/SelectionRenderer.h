@@ -11,10 +11,10 @@
 
 class ImageViewerWidget;
 
-class SelectRenderer : public QuadRenderer
+class SelectionRenderer : public QuadRenderer
 {
 public:
-	SelectRenderer(const std::uint32_t& zIndex, ImageViewerWidget* imageViewerWidget);
+	SelectionRenderer(const std::uint32_t& zIndex, ImageViewerWidget* imageViewerWidget);
 
 public:
 	void render() override;
@@ -47,7 +47,7 @@ private:
 	void renderSelection();
 	void renderOutline();
 	void renderBounds();
-	void drawPolyline(const QVector<QVector2D>& points, QOpenGLBuffer* vbo, QOpenGLVertexArrayObject* vao);
+	void drawPolyline(const QVector<QVector2D>& points, const bool& screenCoordinates, QOpenGLBuffer* vbo, QOpenGLVertexArrayObject* vao);
 
 protected:
 	ImageViewerWidget*			_imageViewerWidget;
