@@ -328,8 +328,8 @@ void SelectionRenderer::createShaderPrograms()
 {
 	auto overlayProgram = std::make_shared<QOpenGLShaderProgram>();
 
-	overlayProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, overlayVertexShaderSource.c_str());
-	overlayProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, overlayFragmentShaderSource.c_str());
+	overlayProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, selectionOverlayVertexShaderSource.c_str());
+	overlayProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, selectionOverlayFragmentShaderSource.c_str());
 	overlayProgram->link();
 
 	_shaderPrograms.insert("Overlay", overlayProgram);
