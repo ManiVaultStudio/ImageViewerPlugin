@@ -237,19 +237,15 @@ void ImageViewerWidget::paintGL() {
 	_imageQuadRenderer->setModelViewProjection(modelViewProjection);
 	_imageQuadRenderer->render();
 	
-	/*
 	_selectionRenderer->setModelViewProjection(modelViewProjection);
 	_selectionRenderer->render();
-	*/
-
 	
 	_selectionBoundsRenderer->setModelViewProjection(modelViewProjection);
 	_selectionBoundsRenderer->render();
 	
-	/*_selectRenderer->setModelViewProjection(modelViewProjection);
+	_selectRenderer->setModelViewProjection(modelViewProjection);
 	_selectRenderer->render();
-	*/
-
+	
 #ifdef _DEBUG
 	for (const QOpenGLDebugMessage& message : _openglDebugLogger->loggedMessages())
 		qDebug() << message;
