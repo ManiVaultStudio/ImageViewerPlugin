@@ -13,6 +13,7 @@ SelectRenderer::SelectRenderer(const std::uint32_t& zIndex, ImageViewerWidget* i
 	QuadRenderer(zIndex),
 	_imageViewerWidget(imageViewerWidget),
 	_color(1.f, 0.6f, 0.f, 0.3f),
+	_selectionColor(1.f, 0.f, 0.f, 0.6f),
 	_brushRadius(50.f),
 	_brushRadiusDelta(2.0f),
 	_outlineColor(1.f, 0.6f, 0.f, 1.0f),
@@ -26,26 +27,6 @@ void SelectRenderer::init()
 	QuadRenderer::init();
 
 	const auto stride = 5 * sizeof(GLfloat);
-
-	auto selectionBufferProgram = shaderProgram("SelectionBuffer");
-	
-	if (selectionBufferProgram->bind()) {
-		auto quadVAO = vao("Quad");
-		auto quadVBO = vbo("Quad");
-
-		quadVAO->bind();
-		quadVBO->bind();
-
-		selectionBufferProgram->enableAttributeArray(0);
-		selectionBufferProgram->enableAttributeArray(1);
-		selectionBufferProgram->setAttributeBuffer(0, GL_FLOAT, 0, 3, stride);
-		selectionBufferProgram->setAttributeBuffer(1, GL_FLOAT, 3 * sizeof(GLfloat), 2, stride);
-
-		quadVAO->release();
-		quadVBO->release();
-
-		selectionBufferProgram->release();
-	}
 
 	auto outlineProgram = shaderProgram("Outline");
 
@@ -66,6 +47,46 @@ void SelectRenderer::init()
 		_outlineVBO.release();
 		_outlineVAO.release();
 	}
+
+	auto selectionBufferProgram = shaderProgram("SelectionBuffer");
+
+	if (selectionBufferProgram->bind()) {
+		auto quadVAO = vao("Quad");
+		auto quadVBO = vbo("Quad");
+
+		quadVAO->bind();
+		quadVBO->bind();
+
+		selectionBufferProgram->enableAttributeArray(0);
+		selectionBufferProgram->enableAttributeArray(1);
+		selectionBufferProgram->setAttributeBuffer(0, GL_FLOAT, 0, 3, stride);
+		selectionBufferProgram->setAttributeBuffer(1, GL_FLOAT, 3 * sizeof(GLfloat), 2, stride);
+
+		quadVAO->release();
+		quadVBO->release();
+
+		selectionBufferProgram->release();
+	}
+
+	auto selectionProgram = shaderProgram("Selection");
+
+	if (selectionProgram->bind()) {
+		auto quadVAO = vao("Quad");
+		auto quadVBO = vbo("Quad");
+
+		quadVAO->bind();
+		quadVBO->bind();
+
+		selectionProgram->enableAttributeArray(0);
+		selectionProgram->enableAttributeArray(1);
+		selectionProgram->setAttributeBuffer(0, GL_FLOAT, 0, 3, stride);
+		selectionProgram->setAttributeBuffer(1, GL_FLOAT, 3 * sizeof(GLfloat), 2, stride);
+
+		quadVAO->release();
+		quadVBO->release();
+
+		selectionProgram->release();
+	}
 }
 
 void SelectRenderer::render()
@@ -74,6 +95,7 @@ void SelectRenderer::render()
 		return;
 
 	renderOverlay();
+	renderSelection();
 
 	if (_imageViewerWidget->interactionMode() == InteractionMode::Selection) {
 		renderOutline();
@@ -203,7 +225,7 @@ void SelectRenderer::update(const SelectionType& selectionType, const std::vecto
 	selectionFBO->release();
 }
 
-void SelectRenderer::reset()
+void SelectRenderer::resetSelectionBuffer()
 {
 	qDebug() << "Reset";
 
@@ -217,6 +239,20 @@ void SelectRenderer::reset()
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	selectionFBO->release();
+}
+
+void SelectRenderer::setSelectionImage(std::shared_ptr<QImage> image)
+{
+	auto selectionTexture = std::make_shared<QOpenGLTexture>(*image.get());
+
+	selectionTexture->setMinMagFilters(QOpenGLTexture::Nearest, QOpenGLTexture::Nearest);
+
+	_textures["Selection"] = selectionTexture;
+}
+
+void SelectRenderer::setOpacity(const float& opacity)
+{
+	_selectionColor.setW(opacity);
 }
 
 float SelectRenderer::brushRadius() const
@@ -290,14 +326,6 @@ void SelectRenderer::createShaderPrograms()
 
 	_shaderPrograms.insert("Overlay", overlayProgram);
 
-	auto selectionBufferProgram = std::make_shared<QOpenGLShaderProgram>();
-
-	selectionBufferProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, pixelSelectionVertexShaderSource.c_str());
-	selectionBufferProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, pixelSelectionFragmentShaderSource.c_str());
-	selectionBufferProgram->link();
-
-	_shaderPrograms.insert("SelectionBuffer", selectionBufferProgram);
-
 	auto outlineProgram = std::make_shared<QOpenGLShaderProgram>();
 
 	outlineProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, selectionOutlineVertexShaderSource.c_str());
@@ -305,6 +333,14 @@ void SelectRenderer::createShaderPrograms()
 	outlineProgram->link();
 
 	_shaderPrograms.insert("Outline", outlineProgram);
+
+	auto selectionBufferProgram = std::make_shared<QOpenGLShaderProgram>();
+
+	selectionBufferProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, selectionBufferVertexShaderSource.c_str());
+	selectionBufferProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, selectionBufferFragmentShaderSource.c_str());
+	selectionBufferProgram->link();
+
+	_shaderPrograms.insert("SelectionBuffer", selectionBufferProgram);
 
 	auto selectionProgram = std::make_shared<QOpenGLShaderProgram>();
 
@@ -317,6 +353,7 @@ void SelectRenderer::createShaderPrograms()
 
 void SelectRenderer::createTextures()
 {
+	_textures.insert("Selection", std::make_shared<QOpenGLTexture>(QOpenGLTexture::Target2D));
 }
 
 void SelectRenderer::createVBOs()
@@ -358,6 +395,30 @@ void SelectRenderer::renderOverlay()
 		quadVAO->release();
 
 		overlayProgram->release();
+	}
+}
+
+void SelectRenderer::renderSelection()
+{
+	auto& selectionTexture = texture("Selection");
+
+	if (selectionTexture.get() == nullptr || !selectionTexture->isCreated())
+		return;
+
+	auto selectionProgram = shaderProgram("Selection");
+
+	if (selectionProgram->bind()) {
+		selectionProgram->setUniformValue("selectionTexture", 0);
+		selectionProgram->setUniformValue("transform", _modelViewProjection);
+		selectionProgram->setUniformValue("color", _selectionColor);
+
+		selectionTexture->bind();
+		{
+			QuadRenderer::render();
+		}
+		selectionTexture->release();
+
+		selectionProgram->release();
 	}
 }
 

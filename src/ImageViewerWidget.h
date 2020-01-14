@@ -109,7 +109,6 @@ public:
 private:
 	ImageViewerPlugin*							_imageViewerPlugin;
 	std::unique_ptr<ImageQuadRenderer>			_imageQuadRenderer;
-	std::unique_ptr<SelectionRenderer>			_selectionRenderer;
 	std::unique_ptr<SelectionBoundsRenderer>	_selectionBoundsRenderer;
 	std::unique_ptr<SelectRenderer>				_selectRenderer;
 	InteractionMode								_interactionMode;

@@ -21,7 +21,6 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	QOpenGLFunctions(),
 	_imageViewerPlugin(imageViewerPlugin),
 	_imageQuadRenderer(),
-	_selectionRenderer(),
 	_selectionBoundsRenderer(),
 	_selectRenderer(),
 	_interactionMode(InteractionMode::Selection),
@@ -70,7 +69,6 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	setFormat(surfaceFormat);
 
 	_imageQuadRenderer			= std::make_unique<ImageQuadRenderer>(0);
-	_selectionRenderer			= std::make_unique<SelectionRenderer>(1);
 	_selectionBoundsRenderer	= std::make_unique<SelectionBoundsRenderer>(2);
 	_selectRenderer				= std::make_unique<SelectRenderer>(3, this);
 }
@@ -80,7 +78,6 @@ ImageViewerWidget::~ImageViewerWidget()
 	makeCurrent();
 
 	_imageQuadRenderer->destroy();
-	_selectionRenderer->destroy();
 	_selectionBoundsRenderer->destroy();
 	_selectRenderer->destroy();
 
@@ -163,7 +160,7 @@ void ImageViewerWidget::endSelection()
 
 	makeCurrent();
 
-	_selectRenderer->reset();
+	_selectRenderer->resetSelectionBuffer();
 
 	doneCurrent();
 }
@@ -200,7 +197,6 @@ void ImageViewerWidget::initializeGL()
 	glDepthMask(false);
 
 	_imageQuadRenderer->init();
-	_selectionRenderer->init();
 	_selectionBoundsRenderer->init();
 	_selectRenderer->init();
 
@@ -219,7 +215,6 @@ void ImageViewerWidget::resizeGL(int w, int h)
 	zoomExtents();
 
 	_imageQuadRenderer->resize(QSize(w, h));
-	_selectionRenderer->resize(QSize(w, h));
 	_selectionBoundsRenderer->resize(QSize(w, h));
 	_selectRenderer->resize(QSize(w, h));
 }
@@ -237,11 +232,8 @@ void ImageViewerWidget::paintGL() {
 	_imageQuadRenderer->setModelViewProjection(modelViewProjection);
 	_imageQuadRenderer->render();
 	
-	_selectionRenderer->setModelViewProjection(modelViewProjection);
-	_selectionRenderer->render();
-	
-	_selectionBoundsRenderer->setModelViewProjection(modelViewProjection);
-	_selectionBoundsRenderer->render();
+	//_selectionBoundsRenderer->setModelViewProjection(modelViewProjection);
+	//_selectionBoundsRenderer->render();
 	
 	_selectRenderer->setModelViewProjection(modelViewProjection);
 	_selectRenderer->render();
@@ -287,7 +279,7 @@ void ImageViewerWidget::onSelectionImageChanged(std::shared_ptr<QImage> selectio
 
 	makeCurrent();
 
-	_selectionRenderer->setImage(selectionImage);
+	_selectRenderer->setSelectionImage(selectionImage);
 
 	const auto worldSelectionBounds = QRect(selectionBounds.left(), selectionImage->height() - selectionBounds.bottom() - 1, selectionBounds.width() + 1, selectionBounds.height() + 1);
 
@@ -300,7 +292,7 @@ void ImageViewerWidget::onSelectionImageChanged(std::shared_ptr<QImage> selectio
 
 void ImageViewerWidget::onSelectionOpacityChanged(const float& selectionOpacity)
 {
-	_selectionRenderer->setOpacity(selectionOpacity);
+	_selectRenderer->setOpacity(selectionOpacity);
 
 	update();
 }
@@ -414,7 +406,7 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 					startSelection();
 
 				if (_selectionType != SelectionType::Polygon) {
-					_selectRenderer->reset();
+					_selectRenderer->resetSelectionBuffer();
 				}
 
 				_mousePositions.push_back(_mousePosition);

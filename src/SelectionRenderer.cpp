@@ -76,11 +76,6 @@ void SelectionRenderer::setImage(std::shared_ptr<QImage> image)
 	setSize(image->size());
 }
 
-void SelectionRenderer::setOpacity(const float& opacity)
-{
-	_selectionColor.setW(opacity);
-}
-
 bool SelectionRenderer::isInitialized() const
 {
 	return texture("Quad").get() != nullptr && texture("Quad")->isCreated();

@@ -15,7 +15,6 @@ public:
 
 public:
 	void setImage(std::shared_ptr<QImage> image);
-	void setOpacity(const float& opacity);
 
 protected:
 	bool isInitialized() const override;
