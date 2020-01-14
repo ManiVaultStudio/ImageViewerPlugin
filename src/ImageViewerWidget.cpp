@@ -21,7 +21,6 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	QOpenGLFunctions(),
 	_imageViewerPlugin(imageViewerPlugin),
 	_imageQuadRenderer(),
-	_selectionBoundsRenderer(),
 	_selectRenderer(),
 	_interactionMode(InteractionMode::Selection),
 	_initialMousePosition(),
@@ -68,9 +67,8 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 
 	setFormat(surfaceFormat);
 
-	_imageQuadRenderer			= std::make_unique<ImageQuadRenderer>(0);
-	_selectionBoundsRenderer	= std::make_unique<SelectionBoundsRenderer>(2);
-	_selectRenderer				= std::make_unique<SelectRenderer>(3, this);
+	_imageQuadRenderer	= std::make_unique<ImageQuadRenderer>(0);
+	_selectRenderer		= std::make_unique<SelectRenderer>(3, this);
 }
 
 ImageViewerWidget::~ImageViewerWidget()
@@ -78,7 +76,6 @@ ImageViewerWidget::~ImageViewerWidget()
 	makeCurrent();
 
 	_imageQuadRenderer->destroy();
-	_selectionBoundsRenderer->destroy();
 	_selectRenderer->destroy();
 
 	doneCurrent();
@@ -197,7 +194,6 @@ void ImageViewerWidget::initializeGL()
 	glDepthMask(false);
 
 	_imageQuadRenderer->init();
-	_selectionBoundsRenderer->init();
 	_selectRenderer->init();
 
 	_imageViewerPlugin->computeDisplayImage();
@@ -215,7 +211,6 @@ void ImageViewerWidget::resizeGL(int w, int h)
 	zoomExtents();
 
 	_imageQuadRenderer->resize(QSize(w, h));
-	_selectionBoundsRenderer->resize(QSize(w, h));
 	_selectRenderer->resize(QSize(w, h));
 }
 
@@ -232,12 +227,8 @@ void ImageViewerWidget::paintGL() {
 	_imageQuadRenderer->setModelViewProjection(modelViewProjection);
 	_imageQuadRenderer->render();
 	
-	//_selectionBoundsRenderer->setModelViewProjection(modelViewProjection);
-	//_selectionBoundsRenderer->render();
-	
 	_selectRenderer->setModelViewProjection(modelViewProjection);
 	_selectRenderer->render();
-	/**/
 
 #ifdef _DEBUG
 	for (const QOpenGLDebugMessage& message : _openglDebugLogger->loggedMessages())
