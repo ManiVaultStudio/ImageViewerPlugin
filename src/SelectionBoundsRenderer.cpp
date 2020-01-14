@@ -32,7 +32,7 @@ void SelectionBoundsRenderer::init()
 
 	_vao.create();
 
-	auto boundsOutlineProgram = shaderProgram("BoundsOutline");
+	auto boundsOutlineProgram = shaderProgram("Outline");
 
 	if (boundsOutlineProgram->bind()) {
 		_vao.bind();
@@ -57,7 +57,7 @@ void SelectionBoundsRenderer::render()
 	if (!initialized())
 		return;
 
-	auto boundsOutlineProgram = shaderProgram("BoundsOutlineProgram");
+	auto boundsOutlineProgram = shaderProgram("Outline");
 
 	if (boundsOutlineProgram->bind()) {
 		boundsOutlineProgram->setUniformValue("transform", _modelViewProjection);
@@ -122,7 +122,7 @@ void SelectionBoundsRenderer::initializeShaderPrograms()
 	boundsOutlineProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, selectionBoundsFragmentShaderSource.c_str());
 	boundsOutlineProgram->link();
 
-	_shaderPrograms.insert("BoundsOutline", boundsOutlineProgram);
+	_shaderPrograms.insert("Outline", boundsOutlineProgram);
 }
 
 void SelectionBoundsRenderer::initializeTextures()

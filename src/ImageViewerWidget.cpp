@@ -240,11 +240,13 @@ void ImageViewerWidget::paintGL() {
 	/*
 	_selectionRenderer->setModelViewProjection(modelViewProjection);
 	_selectionRenderer->render();
+	*/
+
 	
 	_selectionBoundsRenderer->setModelViewProjection(modelViewProjection);
 	_selectionBoundsRenderer->render();
 	
-	_selectRenderer->setModelViewProjection(modelViewProjection);
+	/*_selectRenderer->setModelViewProjection(modelViewProjection);
 	_selectRenderer->render();
 	*/
 
