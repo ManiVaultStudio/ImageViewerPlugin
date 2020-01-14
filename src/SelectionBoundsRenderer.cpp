@@ -54,7 +54,7 @@ void SelectionBoundsRenderer::resize(QSize renderSize)
 
 void SelectionBoundsRenderer::render()
 {
-	if (!initialized())
+	if (!isInitialized())
 		return;
 
 	auto boundsOutlineProgram = shaderProgram("Outline");
@@ -109,12 +109,12 @@ void SelectionBoundsRenderer::setSelectionBounds(const QRect& selectionBounds)
 	_vao.release();
 }
 
-bool SelectionBoundsRenderer::initialized()
+bool SelectionBoundsRenderer::isInitialized() const
 {
 	return _selectionBounds.isValid();
 }
 
-void SelectionBoundsRenderer::initializeShaderPrograms()
+void SelectionBoundsRenderer::createShaderPrograms()
 {
 	auto boundsOutlineProgram = std::make_shared<QOpenGLShaderProgram>();
 
@@ -125,6 +125,6 @@ void SelectionBoundsRenderer::initializeShaderPrograms()
 	_shaderPrograms.insert("Outline", boundsOutlineProgram);
 }
 
-void SelectionBoundsRenderer::initializeTextures()
+void SelectionBoundsRenderer::createTextures()
 {
 }

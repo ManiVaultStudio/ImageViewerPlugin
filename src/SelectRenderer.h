@@ -8,7 +8,6 @@
 #include <QVector3D>
 #include <QVector4D>
 #include <QRect>
-#include <QOpenGLFramebufferObject>
 
 class ImageViewerWidget;
 
@@ -34,9 +33,11 @@ public:
 	std::shared_ptr<QImage> selectionImage() const;
 
 protected:
-	bool initialized() override;
-	void initializeShaderPrograms() override;
-	void initializeTextures() override;
+	bool isInitialized() const override;
+	void createTextures() override;
+	void createVBOs() override;
+	void createVAOs() override;
+	void createShaderPrograms() override;
 
 private:
 	void renderOverlay();

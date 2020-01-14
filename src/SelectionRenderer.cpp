@@ -19,8 +19,11 @@ void SelectionRenderer::init()
 	const auto quadProgram = shaderProgram("Quad");
 
 	if (quadProgram->bind()) {
-		_quadVAO.bind();
-		_quadVBO.bind();
+		auto quadVBO = vbo("Quad");
+		auto quadVAO = vao("Quad");
+
+		quadVAO->bind();
+		quadVBO->bind();
 
 		const auto stride = 5 * sizeof(GLfloat);
 
@@ -29,8 +32,8 @@ void SelectionRenderer::init()
 		quadProgram->setAttributeBuffer(QuadRenderer::_quadVertexAttribute, GL_FLOAT, 0, 3, stride);
 		quadProgram->setAttributeBuffer(QuadRenderer::_quadTextureAttribute, GL_FLOAT, 3 * sizeof(GLfloat), 2, stride);
 
-		_quadVAO.release();
-		_quadVBO.release();
+		quadVAO->release();
+		quadVBO->release();
 
 		quadProgram->release();
 	}
@@ -38,7 +41,7 @@ void SelectionRenderer::init()
 
 void SelectionRenderer::render()
 {
-	if (!initialized())
+	if (!isInitialized())
 		return;
 
 	auto quadProgram = shaderProgram("Quad");
@@ -76,12 +79,12 @@ void SelectionRenderer::setOpacity(const float& opacity)
 	_selectionColor.setW(opacity);
 }
 
-bool SelectionRenderer::initialized()
+bool SelectionRenderer::isInitialized() const
 {
 	return texture("Quad").get() != nullptr && texture("Quad")->isCreated();
 }
 
-void SelectionRenderer::initializeShaderPrograms()
+void SelectionRenderer::createShaderPrograms()
 {
 	auto quadProgram = std::make_shared<QOpenGLShaderProgram>();
 
@@ -92,7 +95,7 @@ void SelectionRenderer::initializeShaderPrograms()
 	_shaderPrograms.insert("Quad", quadProgram);
 }
 
-void SelectionRenderer::initializeTextures()
+void SelectionRenderer::createTextures()
 {
 	_textures.insert("Quad", std::make_shared<QOpenGLTexture>(QOpenGLTexture::Target2D));
 }

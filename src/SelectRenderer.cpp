@@ -31,16 +31,19 @@ void SelectRenderer::init()
 	auto pixelSelectionProgram = shaderProgram("PixelSelection");
 	
 	if (pixelSelectionProgram->bind()) {
-		_quadVAO.bind();
-		_quadVBO.bind();
+		auto quadVAO = vao("Quad");
+		auto quadVBO = vbo("Quad");
+
+		quadVAO->bind();
+		quadVBO->bind();
 
 		pixelSelectionProgram->enableAttributeArray(0);
 		pixelSelectionProgram->enableAttributeArray(1);
 		pixelSelectionProgram->setAttributeBuffer(0, GL_FLOAT, 0, 3, stride);
 		pixelSelectionProgram->setAttributeBuffer(1, GL_FLOAT, 3 * sizeof(GLfloat), 2, stride);
 
-		_quadVAO.release();
-		_quadVBO.release();
+		quadVAO->release();
+		quadVBO->release();
 
 		pixelSelectionProgram->release();
 	}
@@ -68,7 +71,7 @@ void SelectRenderer::init()
 
 void SelectRenderer::render()
 {
-	if (!initialized())
+	if (!isInitialized())
 		return;
 
 	renderOverlay();
@@ -113,7 +116,9 @@ void SelectRenderer::update(const SelectionType& selectionType, const std::vecto
 
 	transform.ortho(0.0f, _fbo->width(), 0.0f, _fbo->height(), -1.0f, +1.0f);
 
-	_quadVAO.bind();
+	auto quadVAO = vao("Quad");
+
+	quadVAO->bind();
 	{
 		auto pixelSelectionProgram = shaderProgram("PixelSelection");
 
@@ -192,7 +197,7 @@ void SelectRenderer::update(const SelectionType& selectionType, const std::vecto
 			pixelSelectionProgram->release();
 		}
 	}
-	_quadVAO.release();
+	quadVAO->release();
 
 	_fbo->release();
 }
@@ -259,7 +264,7 @@ std::shared_ptr<QImage> SelectRenderer::selectionImage() const
 	return std::make_shared<QImage>(_fbo->toImage());
 }
 
-bool SelectRenderer::initialized()
+bool SelectRenderer::isInitialized() const
 {
 	if (_fbo.get() == nullptr)
 		return false;
@@ -267,7 +272,7 @@ bool SelectRenderer::initialized()
 	return _fbo->isValid();
 }
 
-void SelectRenderer::initializeShaderPrograms()
+void SelectRenderer::createShaderPrograms()
 {
 	auto overlayProgram = std::make_shared<QOpenGLShaderProgram>();
 
@@ -294,9 +299,26 @@ void SelectRenderer::initializeShaderPrograms()
 	_shaderPrograms.insert("Outline", outlineProgram);
 }
 
-void SelectRenderer::initializeTextures()
+void SelectRenderer::createTextures()
 {
+}
 
+void SelectRenderer::createVBOs()
+{
+	auto quadVBO = std::make_shared<QOpenGLBuffer>();
+
+	quadVBO->create();
+	
+	_vbos.insert("Quad", quadVBO);
+}
+
+void SelectRenderer::createVAOs()
+{
+	auto quadVAO = std::make_shared<QOpenGLVertexArrayObject>();
+
+	quadVAO->create();
+
+	_vaos.insert("Quad", quadVAO);
 }
 
 void SelectRenderer::renderOverlay()
@@ -308,12 +330,14 @@ void SelectRenderer::renderOverlay()
 		overlayProgram->setUniformValue("transform", _modelViewProjection);
 		overlayProgram->setUniformValue("color", _color);
 
-		_quadVAO.bind();
+		auto quadVAO = vao("Quad");
+
+		quadVAO->bind();
 		{
 			glBindTexture(GL_TEXTURE_2D, _fbo->texture());
 			glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 		}
-		_quadVAO.release();
+		quadVAO->release();
 
 		overlayProgram->release();
 	}

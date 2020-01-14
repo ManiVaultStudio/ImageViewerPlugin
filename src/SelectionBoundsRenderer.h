@@ -28,9 +28,9 @@ public:
 	void setSelectionBounds(const QRect& selectionBounds);
 
 protected:
-	virtual bool initialized();
-	virtual void initializeShaderPrograms();
-	virtual void initializeTextures();
+	virtual bool isInitialized() const;
+	virtual void createShaderPrograms();
+	virtual void createTextures();
 
 protected:
 	QVector<GLfloat>						_vertexData;

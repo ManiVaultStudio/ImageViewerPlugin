@@ -18,9 +18,9 @@ public:
 	void setOpacity(const float& opacity);
 
 protected:
-	bool initialized() override;
-	void initializeShaderPrograms() override;
-	void initializeTextures() override;
+	bool isInitialized() const override;
+	void createShaderPrograms() override;
+	void createTextures() override;
 	
 private:
 	QVector4D	_selectionColor;
