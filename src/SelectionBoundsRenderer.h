@@ -25,7 +25,7 @@ public:
 	void destroy() override;
 
 public:
-	void setSelectionBounds(const QRect& selectionBounds);
+	
 
 protected:
 	virtual bool isInitialized() const;
@@ -37,5 +37,5 @@ protected:
 	QOpenGLBuffer							_vbo;
 	QOpenGLVertexArrayObject				_vao;
 	QVector4D								_color;
-	QRect									_selectionBounds;
+	
 };
