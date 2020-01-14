@@ -21,9 +21,9 @@ public:
 	void resetWindowLevel();
 
 protected:
-	bool initialized();
-	void initializeShaderPrograms();
-	void initializeTextures();
+	bool isInitialized() const;
+	void createShaderPrograms();
+	void createTextures();
 
 private:
 	std::uint16_t						_imageMin;
