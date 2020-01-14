@@ -10,6 +10,7 @@ public:
 	SelectionRenderer(const std::uint32_t& zIndex);
 
 public:
+	void init() override;
 	void render() override;
 
 public:
