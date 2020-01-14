@@ -12,6 +12,32 @@ SelectionRenderer::SelectionRenderer(const std::uint32_t& zIndex) :
 {
 }
 
+void SelectionRenderer::init()
+{
+	QuadRenderer::init();
+
+	const auto quadProgram = shaderProgram("Quad");
+
+	/*
+	if (quadProgram->bind()) {
+		_quadVAO.bind();
+		_quadVBO.bind();
+
+		const auto stride = 5 * sizeof(GLfloat);
+
+		quadProgram->enableAttributeArray(ImageQuadRenderer::_vertexAttribute);
+		quadProgram->enableAttributeArray(ImageQuadRenderer::_textureCoordinateAttribute);
+		quadProgram->setAttributeBuffer(ImageQuadRenderer::_vertexAttribute, GL_FLOAT, 0, 3, stride);
+		quadProgram->setAttributeBuffer(ImageQuadRenderer::_textureCoordinateAttribute, GL_FLOAT, 3 * sizeof(GLfloat), 2, stride);
+
+		_quadVAO.release();
+		_quadVBO.release();
+
+		quadProgram->release();
+	}
+	*/
+}
+
 void SelectionRenderer::render()
 {
 	if (!initialized())
@@ -24,7 +50,7 @@ void SelectionRenderer::render()
 		selectionProgram->setUniformValue("transform", _modelViewProjection);
 		selectionProgram->setUniformValue("color", _selectionColor);
 
-		auto selectionTexture = texture("Selection");
+		auto& selectionTexture = texture("Selection");
 
 		selectionTexture->bind();
 		{
