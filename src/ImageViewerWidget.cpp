@@ -64,6 +64,8 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 #ifdef _DEBUG
 	surfaceFormat.setOption(QSurfaceFormat::DebugContext);
 #endif
+	
+	surfaceFormat.setSamples(8);
 
 	setFormat(surfaceFormat);
 

@@ -47,14 +47,15 @@ private:
 	void renderSelection();
 	void renderOutline();
 	void renderBounds();
-	void drawPolyline(const QVector<QVector2D>& points, const bool& screenCoordinates, QOpenGLBuffer* vbo, QOpenGLVertexArrayObject* vao);
+	void drawPolyline(QVector<QVector2D>& points, const bool& screenCoordinates, QOpenGLBuffer* vbo, QOpenGLVertexArrayObject* vao, const bool& closed = true, const float& scale = 1.f);
 
 protected:
-	ImageViewerWidget*		_imageViewerWidget;
-	QVector4D				_color;
-	QVector4D				_selectionColor;
-	QRect					_bounds;
-	float					_brushRadius;
-	float					_brushRadiusDelta;
-	QVector4D				_outlineColor;
+	ImageViewerWidget*		_imageViewerWidget;		/*! Pointer to image viewer widget */
+	QColor					_bufferColor;			/*! Selected pixel color during selection */
+	QColor					_selectionColor;		/*! Pixel color of selected data points */
+	QColor					_boundsColor;			/*! Line color of selection bounds */
+	QColor					_outlineColor;			/*! Outline color of selection geometry */
+	QRect					_bounds;				/*! Selection bounds */
+	float					_brushRadius;			/*! Selection brush radius */
+	float					_brushRadiusDelta;		/*! Selection brush size increase/decrease delta */
 };
