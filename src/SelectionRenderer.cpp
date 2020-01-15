@@ -428,7 +428,7 @@ void SelectionRenderer::renderOverlay()
 
 void SelectionRenderer::renderSelection()
 {
-	auto& selectionTexture = texture("Selection");
+	auto selectionTexture = texture("Selection");
 
 	if (selectionTexture.get() == nullptr || !selectionTexture->isCreated())
 		return;
