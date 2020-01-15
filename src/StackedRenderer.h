@@ -17,12 +17,16 @@
 class StackedRenderer : public hdps::Renderer
 {
 public:
-	StackedRenderer(const std::uint32_t& zIndex);
+	StackedRenderer(const float& depth);
 	
 public:
 	void init() override;
 	void destroy() override;
 
+public:
+	float depth() const;
+	void setDepth(const float& depth);
+	QMatrix4x4 modelViewProjection() const;
 	void setModelViewProjection(const QMatrix4x4& modelViewProjection);
 
 protected:
@@ -43,7 +47,7 @@ protected:
 	std::shared_ptr<const QOpenGLFramebufferObject> fbo(const QString& name) const;
 
 protected:
-	std::uint32_t												_zIndex;
+	float														_depth;
 	QMatrix4x4													_modelViewProjection;
 	QMap<QString, std::shared_ptr<QOpenGLShaderProgram>>		_shaderPrograms;
 	QMap<QString, std::shared_ptr<QOpenGLTexture>>				_textures;

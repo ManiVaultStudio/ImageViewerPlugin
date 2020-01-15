@@ -9,8 +9,8 @@
 std::uint32_t QuadRenderer::_quadVertexAttribute = 0;
 std::uint32_t QuadRenderer::_quadTextureAttribute = 1;
 
-QuadRenderer::QuadRenderer(const std::uint32_t& zIndex) :
-	StackedRenderer(zIndex),
+QuadRenderer::QuadRenderer(const float& depth) :
+	StackedRenderer(depth),
 	_size(),
 	_vertexData()
 {

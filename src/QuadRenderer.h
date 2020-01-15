@@ -12,7 +12,7 @@
 class QuadRenderer : public StackedRenderer
 {
 public:
-	QuadRenderer(const std::uint32_t& zIndex);
+	QuadRenderer(const float& depth);
 
 public:
 	void init() override;
@@ -32,8 +32,8 @@ private:
 	void createQuad();
 
 protected:
-	QSize						_size;
-	QVector<GLfloat>			_vertexData;
-	static std::uint32_t		_quadVertexAttribute;
-	static std::uint32_t		_quadTextureAttribute;
+	QSize					_size;
+	QVector<GLfloat>		_vertexData;
+	static std::uint32_t	_quadVertexAttribute;
+	static std::uint32_t	_quadTextureAttribute;
 };

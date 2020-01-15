@@ -14,7 +14,7 @@ class ImageViewerWidget;
 class SelectionRenderer : public QuadRenderer
 {
 public:
-	SelectionRenderer(const std::uint32_t& zIndex, ImageViewerWidget* imageViewerWidget);
+	SelectionRenderer(const float& depth, ImageViewerWidget* imageViewerWidget);
 
 public:
 	void render() override;

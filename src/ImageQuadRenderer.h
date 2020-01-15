@@ -7,7 +7,7 @@
 class ImageQuadRenderer : public QuadRenderer
 {
 public:
-	ImageQuadRenderer(const std::uint32_t& zIndex);
+	ImageQuadRenderer(const float& depth);
 
 public:
 	void init() override;
@@ -15,6 +15,9 @@ public:
 
 public:
 	void setImage(std::shared_ptr<QImage> image);
+	std::uint16_t imageMin() const;
+	std::uint16_t imageMax() const;
+	void setImageMinMax(const std::uint16_t& imageMin, const std::uint16_t& imageMax);
 	float window() const;
 	float level() const;
 	void setWindowLevel(const float& window, const float& level);
@@ -25,9 +28,15 @@ protected:
 	void createShaderPrograms();
 	void createTextures();
 
+/*
+signals:
+	void imageMinMaxChanged(const std::uint16_t& imageMin, const std::uint16_t& imageMax);
+	void windowLevelChanged(const float& window, const float& level);
+*/
+
 private:
-	std::uint16_t						_imageMin;
-	std::uint16_t						_imageMax;
-	float								_window;
-	float								_level;
+	std::uint16_t	_imageMin;
+	std::uint16_t	_imageMax;
+	float			_window;
+	float			_level;
 };

@@ -6,8 +6,8 @@
 
 #include "Shaders.h"
 
-ImageQuadRenderer::ImageQuadRenderer(const std::uint32_t& zIndex) :
-	QuadRenderer(zIndex),
+ImageQuadRenderer::ImageQuadRenderer(const float& depth) :
+	QuadRenderer(depth),
 	_imageMin(),
 	_imageMax(),
 	_window(),
@@ -122,6 +122,29 @@ void ImageQuadRenderer::setImage(std::shared_ptr<QImage> image)
 	resetWindowLevel();
 }
 
+std::uint16_t ImageQuadRenderer::imageMin() const
+{
+	return _imageMin;
+}
+
+std::uint16_t ImageQuadRenderer::imageMax() const
+{
+	return _imageMax;
+}
+
+void ImageQuadRenderer::setImageMinMax(const std::uint16_t& imageMin, const std::uint16_t& imageMax)
+{
+	if (imageMin == _imageMin && imageMax == _imageMax)
+		return;
+
+	_imageMin = imageMin;
+	_imageMax = imageMax;
+
+	qDebug() << "Set image min/max" << _imageMin << _imageMax;
+
+//	emit imageMinMaxChanged(_imageMin, _imageMax);
+}
+
 float ImageQuadRenderer::window() const
 {
 	return _window;
@@ -134,10 +157,15 @@ float ImageQuadRenderer::level() const
 
 void ImageQuadRenderer::setWindowLevel(const float& window, const float& level)
 {
+	if (window == _window && level == _level)
+		return;
+
 	_window	= std::clamp(window, 0.01f, 1.0f);
 	_level	= std::clamp(level, 0.01f, 1.0f);
 
 	qDebug() << "Set window/level" << _window << _level;
+
+//	emit windowLevelChanged(_window, _level);
 }
 
 void ImageQuadRenderer::resetWindowLevel()

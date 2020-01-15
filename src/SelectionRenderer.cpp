@@ -9,8 +9,8 @@
 
 #include "Shaders.h"
 
-SelectionRenderer::SelectionRenderer(const std::uint32_t& zIndex, ImageViewerWidget* imageViewerWidget) :
-	QuadRenderer(zIndex),
+SelectionRenderer::SelectionRenderer(const float& depth, ImageViewerWidget* imageViewerWidget) :
+	QuadRenderer(depth),
 	_imageViewerWidget(imageViewerWidget),
 	_color(1.f, 0.6f, 0.f, 0.3f),
 	_selectionColor(1.f, 0.f, 0.f, 0.6f),
@@ -101,9 +101,9 @@ void SelectionRenderer::render()
 	if (!isInitialized())
 		return;
 
-	renderOverlay();
-	renderSelection();
-	renderOutline();
+	//renderOverlay();
+	//renderSelection();
+	//renderOutline();
 	renderBounds();
 }
 
@@ -370,6 +370,20 @@ void SelectionRenderer::createShaderPrograms()
 void SelectionRenderer::createTextures()
 {
 	_textures.insert("Selection", std::make_shared<QOpenGLTexture>(QOpenGLTexture::Target2D));
+
+	auto stippleImage = QImage(4, 1, QImage::Format::Format_RGBA8888);
+
+	stippleImage.setPixelColor(QPoint(0, 0), QColor(250, 255, 0, 255));
+	stippleImage.setPixelColor(QPoint(1, 0), QColor(0, 255, 0, 255));
+	stippleImage.setPixelColor(QPoint(2, 0), QColor(255, 0, 0, 255));
+	stippleImage.setPixelColor(QPoint(3, 0), QColor(255, 0, 0, 255));
+
+	auto stippleTexture = std::make_shared<QOpenGLTexture>(stippleImage);
+
+	stippleTexture->setWrapMode(QOpenGLTexture::Repeat);
+	stippleTexture->setMinMagFilters(QOpenGLTexture::Nearest, QOpenGLTexture::Nearest);
+
+	_textures["Stipple"] = stippleTexture;
 }
 
 void SelectionRenderer::createVBOs()
@@ -546,11 +560,9 @@ void SelectionRenderer::renderBounds()
 	auto boundsProgram = shaderProgram("Bounds");
 
 	if (boundsProgram->bind()) {
+		boundsProgram->setUniformValue("stippleTexture", 0);
 		boundsProgram->setUniformValue("transform", _modelViewProjection);
 		boundsProgram->setUniformValue("color", _outlineColor);
-
-		auto* boundsVBO = vbo("Bounds").get();
-		auto* boundsVAO = vao("Bounds").get();
 
 		const auto p0 = _bounds.topLeft();
 		const auto p1 = _bounds.bottomRight();
@@ -562,17 +574,23 @@ void SelectionRenderer::renderBounds()
 		points.append(QVector2D(p1.x(), p1.y()));
 		points.append(QVector2D(p0.x(), p1.y()));
 
-		drawPolyline(points, false, boundsVBO, boundsVAO);
+		auto stippleTexture = texture("Stipple");
+
+		stippleTexture->bind();
+		{
+			drawPolyline(points, false, vbo("Bounds").get(), vao("Bounds").get());
+		}
+		stippleTexture->release();
 	}
 }
 
 void SelectionRenderer::drawPolyline(const QVector<QVector2D>& points, const bool& screenCoordinates, QOpenGLBuffer* vbo, QOpenGLVertexArrayObject* vao)
 {
-	auto uv = 0.f;
-
 	QVector<float> vertexData;
 
 	vertexData.resize(points.size() * 5);
+
+	auto u = 0.f;
 
 	for (int j = 0; j < points.size(); ++j)
 	{
@@ -583,29 +601,36 @@ void SelectionRenderer::drawPolyline(const QVector<QVector2D>& points, const boo
 		vertexData[j * 5 + 2] = 0.f;
 
 		if (j == 0) {
-			vertexData[j * 5 + 3] = 0.f;
+			vertexData[j * 5 + 3] = 0.5f;
 		}
 		else {
 			const auto a = QPointF(points[j][0], points[j][1]) - QPointF(points[j - 1][0], points[j - 1][1]);
 
-			uv += a.manhattanLength();
+			u += a.manhattanLength() / 100.0f;
 
-			vertexData[j * 5 + 3] = uv;
+			vertexData[j * 5 + 3] = u;
 		}
 
 		vertexData[j * 5 + 4] = 0.f;
+
+		qDebug() << vertexData[j * 5 + 3];
+		//qDebug() << vertexData[j * 5 + 4];
 	}
 
 	vbo->bind();
-	vbo->setUsagePattern(QOpenGLBuffer::DynamicDraw);
-	vbo->allocate(vertexData.constData(), vertexData.count() * sizeof(GLfloat));
-	vbo->release();
+	{
+		vbo->setUsagePattern(QOpenGLBuffer::DynamicDraw);
+		vbo->allocate(vertexData.constData(), vertexData.count() * sizeof(GLfloat));
+		vbo->release();
+	}
 
 	vao->bind();
-	vbo->bind();
-
-	glDrawArrays(GL_LINE_LOOP, 0, points.size());
-
+	{
+		vbo->bind();
+		{
+			glDrawArrays(GL_LINE_LOOP, 0, points.size());
+		}
+		vbo->release();
+	}
 	vao->release();
-	vbo->release();
 }

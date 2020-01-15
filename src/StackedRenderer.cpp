@@ -2,9 +2,9 @@
 
 #include <QDebug>
 
-StackedRenderer::StackedRenderer(const std::uint32_t& zIndex) :
+StackedRenderer::StackedRenderer(const float& depth) :
 	Renderer(),
-	_zIndex(zIndex),
+	_depth(depth),
 	_modelViewProjection(),
 	_shaderPrograms(),
 	_textures(),
@@ -26,13 +26,48 @@ void StackedRenderer::init()
 
 void StackedRenderer::destroy()
 {
+	for (auto texture : _textures)
+	{
+		texture->release();
+		texture->destroy();
+	}
+
+	for (auto vbo : _vbos)
+	{
+		vbo->release();
+		vbo->destroy();
+	}
+
+	for (auto vao : _vaos)
+	{
+		vao->release();
+		vao->destroy();
+	}
+}
+
+float StackedRenderer::depth() const
+{
+	return _depth;
+}
+
+void StackedRenderer::setDepth(const float& depth)
+{
+	if (depth == _depth)
+		return;
+
+	_depth = depth;
+}
+
+QMatrix4x4 StackedRenderer::modelViewProjection() const
+{
+	return _modelViewProjection;
 }
 
 void StackedRenderer::setModelViewProjection(const QMatrix4x4& modelViewProjection)
 {
 	_modelViewProjection = modelViewProjection;
 
-	_modelViewProjection.translate(0.f, 0.f, static_cast<float>(_zIndex));
+	_modelViewProjection.translate(0.f, 0.f, static_cast<float>(_depth));
 }
 
 void StackedRenderer::createShaderPrograms()
@@ -45,12 +80,10 @@ void StackedRenderer::createTextures()
 
 void StackedRenderer::createVBOs()
 {
-
 }
 
 void StackedRenderer::createVAOs()
 {
-
 }
 
 std::shared_ptr<QOpenGLShaderProgram> StackedRenderer::shaderProgram(const QString& name)
