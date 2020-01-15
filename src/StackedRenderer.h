@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "Common.h"
 
 #include "renderers/Renderer.h"
