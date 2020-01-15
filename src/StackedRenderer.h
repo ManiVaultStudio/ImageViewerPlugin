@@ -30,7 +30,7 @@ protected:
 	virtual void createShaderPrograms();
 	virtual void createTextures();
 	virtual void createVBOs();
-	virtual void createVAOs();
+	virtual void createVAOs(); 
 
 	std::shared_ptr<QOpenGLShaderProgram> shaderProgram(const QString& name);
 	std::shared_ptr<const QOpenGLShaderProgram> shaderProgram(const QString& name) const;
