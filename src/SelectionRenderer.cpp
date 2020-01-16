@@ -724,6 +724,8 @@ void SelectionRenderer::drawPolyline(QVector<QVector2D> points, QOpenGLBuffer* v
 		if (id >= 0 && id < noPoints) {
 			return outsideVectorAtPoint(id, direction);
 		}
+
+		return QVector2D(0.0f, 0.0f);
 	};
 
 	const auto v = (points[1] - points[0]).normalized();
