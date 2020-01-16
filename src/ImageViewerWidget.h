@@ -46,6 +46,9 @@ public:
 	void selectNone();
 	void invertSelection();
 
+	std::shared_ptr<ImageQuadRenderer> imageQuadRenderer();
+	std::shared_ptr<SelectionRenderer> selectionRenderer();
+
 public:
 	void onDisplayImageChanged(std::shared_ptr<QImage> displayImage);
 	void onSelectionImageChanged(std::shared_ptr<QImage> selectionImage, const QRect& selectionBounds);
@@ -102,8 +105,8 @@ public:
 
 private:
 	ImageViewerPlugin*							_imageViewerPlugin;
-	std::unique_ptr<ImageQuadRenderer>			_imageQuadRenderer;
-	std::unique_ptr<SelectionRenderer>			_selectionRenderer;
+	std::shared_ptr<ImageQuadRenderer>			_imageQuadRenderer;
+	std::shared_ptr<SelectionRenderer>			_selectionRenderer;
 	InteractionMode								_interactionMode;
 	QPoint										_initialMousePosition;
 	QPoint										_mousePosition;

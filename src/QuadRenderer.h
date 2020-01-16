@@ -11,6 +11,8 @@
 
 class QuadRenderer : public StackedRenderer
 {
+	Q_OBJECT
+
 public:
 	QuadRenderer(const float& depth);
 
@@ -30,6 +32,9 @@ protected:
 
 private:
 	void createQuad();
+
+signals:
+	void sizeChanged(const QSize& size);
 
 protected:
 	QSize					_size;

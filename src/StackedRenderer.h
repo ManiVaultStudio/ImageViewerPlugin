@@ -14,8 +14,10 @@
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLFramebufferObject>
 
-class StackedRenderer : public hdps::Renderer
+class StackedRenderer : public QObject, public hdps::Renderer
 {
+	Q_OBJECT
+
 public:
 	StackedRenderer(const float& depth);
 	

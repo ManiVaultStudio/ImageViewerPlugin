@@ -14,7 +14,7 @@ SelectionRenderer::SelectionRenderer(const float& depth, ImageViewerWidget* imag
 	_imageViewerWidget(imageViewerWidget),
 	_bufferColor(255, 153, 0, 70),
 	_selectionColor(255, 0, 0, 153),
-	_boundsColor(255, 153, 0, 150),
+	_boundsColor(255, 153, 0, 70),
 	_boundsLineWidth(2.0f),
 	_outlineColor(255, 153, 0, 150),
 	_outlineLineWidth(2.0f),
@@ -615,7 +615,7 @@ void SelectionRenderer::renderBounds()
 	}
 }
 
-void SelectionRenderer::drawPolyline(QVector<QVector2D>& points, QOpenGLBuffer* vbo, QOpenGLVertexArrayObject* vao, const bool& closed /*= true*/, const float& lineWidth /*= 1.f*/, const float& textureScale /*= 0.05f*/)
+void SelectionRenderer::drawPolyline(QVector<QVector2D> points, QOpenGLBuffer* vbo, QOpenGLVertexArrayObject* vao, const bool& closed /*= true*/, const float& lineWidth /*= 1.f*/, const float& textureScale /*= 0.05f*/)
 {
 	if (closed && points.size() > 2) {
 		points.append(points.first());

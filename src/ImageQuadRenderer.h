@@ -6,6 +6,8 @@
 
 class ImageQuadRenderer : public QuadRenderer
 {
+	Q_OBJECT
+
 public:
 	ImageQuadRenderer(const float& depth);
 
@@ -28,11 +30,9 @@ protected:
 	void createShaderPrograms();
 	void createTextures();
 
-/*
 signals:
 	void imageMinMaxChanged(const std::uint16_t& imageMin, const std::uint16_t& imageMax);
 	void windowLevelChanged(const float& window, const float& level);
-*/
 
 private:
 	std::uint16_t	_imageMin;

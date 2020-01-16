@@ -70,8 +70,8 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 
 	setFormat(surfaceFormat);
 
-	_imageQuadRenderer	= std::make_unique<ImageQuadRenderer>(0);
-	_selectionRenderer		= std::make_unique<SelectionRenderer>(3, this);
+	_imageQuadRenderer	= std::make_shared<ImageQuadRenderer>(0);
+	_selectionRenderer	= std::make_shared<SelectionRenderer>(3, this);
 }
 
 ImageViewerWidget::~ImageViewerWidget()
@@ -797,6 +797,16 @@ void ImageViewerWidget::invertSelection()
 	_imageViewerPlugin->selectPixels(std::vector<std::pair<std::uint32_t, std::uint32_t>>(), SelectionModifier::Invert);
 
 	update();
+}
+
+std::shared_ptr<ImageQuadRenderer> ImageViewerWidget::imageQuadRenderer()
+{
+	return _imageQuadRenderer;
+}
+
+std::shared_ptr<SelectionRenderer> ImageViewerWidget::selectionRenderer()
+{
+	return _selectionRenderer;
 }
 
 QMenu* ImageViewerWidget::contextMenu()
