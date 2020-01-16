@@ -504,7 +504,7 @@ void SelectionRenderer::renderOutline()
 
 		outlineStippleTexture->bind();
 		{
-			auto screenToWorld = [&](const QVector<QVector2D>& screenPoints) {
+			auto screenToWorld = [&](const QVector<QVector2D>& screenPoints) -> QVector<QVector2D> {
 				QVector<QVector2D> worldPoints; 
 
 				for (const auto& screenPoint : screenPoints)

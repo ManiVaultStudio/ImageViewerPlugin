@@ -23,6 +23,8 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	_averageImages(false),
 	_selectionOpacity(0.6f)
 {
+	qRegisterMetaType<std::shared_ptr<std::shared_ptr<QImage>>>("std::shared_ptr<QImage>");
+
 	//setFocusPolicy(Qt::FocusPolicy::StrongFocus);
 
 	_imageViewerWidget	= new ImageViewerWidget(this);
