@@ -640,7 +640,7 @@ void SelectionRenderer::drawPolyline(QVector<QVector2D>& points, QOpenGLBuffer* 
 		vertexData.append(v);
 	};
 
-	auto halfAngleVector = [&points](const QVector2D& a, const QVector2D& b) {
+	auto halfAngleVector = [](const QVector2D& a, const QVector2D& b) {
 		auto v = (a.normalized() + b.normalized()) / 2.0f;
 
 		v.normalize();
@@ -648,6 +648,17 @@ void SelectionRenderer::drawPolyline(QVector<QVector2D>& points, QOpenGLBuffer* 
 		if (QVector2D::dotProduct(v, a) > 0)
 			return -v;
 		
+		return v;
+	};
+
+	auto outVector = [&points](const QVector2D& a, const QVector2D& b) {
+		auto v = (a.normalized() + b.normalized()) / 2.0f;
+
+		v.normalize();
+
+		if (QVector2D::dotProduct(v, a) > 0)
+			return -v;
+
 		return v;
 	};
 
