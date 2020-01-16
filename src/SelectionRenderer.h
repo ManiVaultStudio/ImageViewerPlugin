@@ -13,6 +13,8 @@ class ImageViewerWidget;
 
 class SelectionRenderer : public QuadRenderer
 {
+	Q_OBJECT
+
 public:
 	SelectionRenderer(const float& depth, ImageViewerWidget* imageViewerWidget);
 
@@ -47,7 +49,7 @@ private:
 	void renderSelection();
 	void renderOutline();
 	void renderBounds();
-	void drawPolyline(QVector<QVector2D>& points, QOpenGLBuffer* vbo, QOpenGLVertexArrayObject* vao, const bool& closed = true, const float& lineWidth = 1.f, const float& textureScale = 0.05f);
+	void drawPolyline(QVector<QVector2D> points, QOpenGLBuffer* vbo, QOpenGLVertexArrayObject* vao, const bool& closed = true, const float& lineWidth = 1.f, const float& textureScale = 0.05f);
 
 protected:
 	ImageViewerWidget*		_imageViewerWidget;		/*! Pointer to image viewer widget */

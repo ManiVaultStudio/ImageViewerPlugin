@@ -65,6 +65,8 @@ void QuadRenderer::setSize(const QSize& size)
 	_size = size;
 
 	createQuad();
+
+	emit sizeChanged(_size);
 }
 
 void QuadRenderer::createVBOs()

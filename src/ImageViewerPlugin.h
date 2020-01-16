@@ -60,6 +60,7 @@ private:
 	void setDatasetNames(const QStringList& datasetNames);
 	void setImageNames(const QStringList& imageNames);
 	void setDimensionNames(const QStringList& dimensionNames);
+	void updateWindowTitle();
 
 signals:
 	void datasetNamesChanged(const QStringList& datasetNames);

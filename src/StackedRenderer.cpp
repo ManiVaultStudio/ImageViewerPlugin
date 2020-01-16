@@ -3,6 +3,7 @@
 #include <QDebug>
 
 StackedRenderer::StackedRenderer(const float& depth) :
+	QObject(),
 	Renderer(),
 	_depth(depth),
 	_modelViewProjection(),

@@ -28,10 +28,37 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	_imageViewerWidget	= new ImageViewerWidget(this);
 	_settingsWidget		= new SettingsWidget(this);
 
-	connect(this, &ImageViewerPlugin::currentDatasetChanged, this, &ImageViewerPlugin::computeDisplayImage);
-	connect(this, &ImageViewerPlugin::currentImageIdChanged, this, &ImageViewerPlugin::computeDisplayImage);
-	connect(this, &ImageViewerPlugin::currentDimensionIdChanged, this, &ImageViewerPlugin::computeDisplayImage);
-	connect(this, &ImageViewerPlugin::averageImagesChanged, this, &ImageViewerPlugin::computeDisplayImage);
+	connect(this, &ImageViewerPlugin::currentDatasetChanged, [&]() {
+		computeDisplayImage();
+		updateWindowTitle();
+	});
+
+	connect(this, &ImageViewerPlugin::currentImageIdChanged, [&]() {
+		computeDisplayImage();
+		updateWindowTitle();
+	});
+
+	connect(this, &ImageViewerPlugin::currentDimensionIdChanged, [&]() {
+		computeDisplayImage();
+		updateWindowTitle();
+	});
+
+	connect(this, &ImageViewerPlugin::averageImagesChanged, [&]() {
+		computeDisplayImage();
+		updateWindowTitle();
+	});
+
+	connect(this->_imageViewerWidget->imageQuadRenderer().get(), &ImageQuadRenderer::windowLevelChanged, [&]() {
+		updateWindowTitle();
+	});
+
+	connect(this->_imageViewerWidget->imageQuadRenderer().get(), &ImageQuadRenderer::imageMinMaxChanged, [&]() {
+		updateWindowTitle();
+	});
+
+	connect(this->_imageViewerWidget->imageQuadRenderer().get(), &ImageQuadRenderer::sizeChanged, [&]() {
+		updateWindowTitle();
+	});
 }
 
 void ImageViewerPlugin::init()
@@ -218,6 +245,9 @@ void ImageViewerPlugin::computeSelectionImage()
 	if (imageCollectionType() == ImageCollectionType::Stack) {
 		emit selectionImageChanged(_currentImages->selectionImage(), _currentImages->selectionBounds(true));
 	}
+	else {
+		emit selectionImageChanged(std::make_shared<QImage>(), QRect());
+	}
 }
 
 QStringList ImageViewerPlugin::datasetNames() const
@@ -254,6 +284,8 @@ void ImageViewerPlugin::setCurrentDatasetName(const QString& currentDatasetName)
 	setCurrentDimensionId(0);
 
 	computeSelectionImage();
+
+	updateWindowTitle();
 }
 
 auto ImageViewerPlugin::currentImageId() const
@@ -276,6 +308,8 @@ void ImageViewerPlugin::setCurrentImageId(const std::int32_t& currentImageId)
 	emit currentImageIdChanged(_currentImageId);
 
 	computeSelectionImage();
+
+	updateWindowTitle();
 }
 
 auto ImageViewerPlugin::currentDimensionId() const
@@ -298,6 +332,8 @@ void ImageViewerPlugin::setCurrentDimensionId(const std::int32_t& currentDimensi
 	emit currentDimensionIdChanged(_currentDimensionId);
 
 	update();
+
+	updateWindowTitle();
 }
 
 bool ImageViewerPlugin::averageImages() const
@@ -378,6 +414,29 @@ void ImageViewerPlugin::setDimensionNames(const QStringList& dimensionNames)
 	emit dimensionNamesChanged(_dimensionNames);
 }
 
+void ImageViewerPlugin::updateWindowTitle()
+{
+	QStringList properties;
+
+	properties << QString("dataset=%1").arg(_currentDatasetName);
+	//properties << QString("image=%1").arg(_imageNames.size() > 0 ? _imageNames[_currentImageId] : "");
+	//properties << QString("dimension=%1").arg(_dimensionNames.size() > 0 ? _dimensionNames[_currentDimensionId] : "");
+	
+	const auto size = _imageViewerWidget->imageQuadRenderer()->size();
+
+	properties << QString("width=%1").arg(QString::number(size.width()));
+	properties << QString("height=%1").arg(QString::number(size.height()));
+
+	properties << QString("window=%1").arg(QString::number(_imageViewerWidget->imageQuadRenderer()->window(), 'f', 2));
+	properties << QString("level=%1").arg(QString::number(_imageViewerWidget->imageQuadRenderer()->level(), 'f', 2));
+	properties << QString("imageMin=%1").arg(QString::number(_imageViewerWidget->imageQuadRenderer()->imageMin()));
+	properties << QString("imageMax=%1").arg(QString::number(_imageViewerWidget->imageQuadRenderer()->imageMax()));
+	properties << QString("noSelectedPixels=%1").arg(QString::number(selection().size()));
+	properties << QString("noPixels=%1").arg(QString::number(size.width() * size.height()));
+
+	setWindowTitle(QString("%1").arg(properties.join(", ")));
+}
+
 void ImageViewerPlugin::dataAdded(const QString dataset)
 {
 	qDebug() << "Data added" << dataset;
@@ -410,6 +469,8 @@ void ImageViewerPlugin::selectionChanged(const QString dataset)
 		computeDisplayImage();
 	else
 		computeSelectionImage();
+
+	updateWindowTitle();
 }
 
 hdps::DataTypes ImageViewerPlugin::supportedDataTypes() const

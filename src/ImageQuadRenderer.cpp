@@ -142,7 +142,7 @@ void ImageQuadRenderer::setImageMinMax(const std::uint16_t& imageMin, const std:
 
 	qDebug() << "Set image min/max" << _imageMin << _imageMax;
 
-//	emit imageMinMaxChanged(_imageMin, _imageMax);
+	emit imageMinMaxChanged(_imageMin, _imageMax);
 }
 
 float ImageQuadRenderer::window() const
@@ -165,7 +165,7 @@ void ImageQuadRenderer::setWindowLevel(const float& window, const float& level)
 
 	qDebug() << "Set window/level" << _window << _level;
 
-//	emit windowLevelChanged(_window, _level);
+	emit windowLevelChanged(_window, _level);
 }
 
 void ImageQuadRenderer::resetWindowLevel()
