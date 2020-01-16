@@ -640,109 +640,111 @@ void SelectionRenderer::drawPolyline(QVector<QVector2D>& points, QOpenGLBuffer* 
 		vertexData.append(v);
 	};
 
-	auto halfAngleVector = [](const QVector2D& a, const QVector2D& b) {
+	auto halfAngleVector = [](const QVector2D& a, const QVector2D& b, const bool& forceOutside = true) {
 		auto v = (a.normalized() + b.normalized()) / 2.0f;
 
 		v.normalize();
 
-		if (QVector2D::dotProduct(v, a) > 0)
-			return -v;
-		
-		return v;
-	};
-
-	auto outVector = [&points](const QVector2D& a, const QVector2D& b) {
-		auto v = (a.normalized() + b.normalized()) / 2.0f;
-
-		v.normalize();
-
-		if (QVector2D::dotProduct(v, a) > 0)
-			return -v;
-
-		return v;
-	};
-
-	for (int j = 0; j < points.size() - 1; ++j)
-	{
-		auto inner = QVector3D();
-		auto outer = QVector3D();
-		
-		const auto p = points[j];
-
-		if (j > 0) {
-			const auto vA = points[j - 1] - p;
-			const auto vB = points[j + 1] - p;
-			
-			auto vC = halfAngleVector(vA, vB);
-
-			const auto vInner = points[j] - halfLineWidth * vC;
-			const auto vOuter = points[j] + halfLineWidth * vC;
-
-			inner = QVector3D(vInner[0], vInner[1], 0.f);
-			outer = QVector3D(vOuter[0], vOuter[1], 0.f);
-
-			u += scale * (points[j + 1] - p).length();
+		if (forceOutside) {
+			if (QVector2D::dotProduct(v, a) > 0)
+				return -v;
 		}
-		else {
-			if (j == 0) {
-				if (closed) {
-					const auto vA = points[noPoints - 2] - points[0];
-					const auto vB = points[j + 1] - points[j];
+		
+		return v;
+	};
 
-					auto vC = halfAngleVector(vA, vB);
+	auto outsideVectorAtPoint = [&points, &noPoints, &closed, &halfAngleVector, &halfLineWidth](const std::uint32_t& id) {
+		if (id == 0) {
+			if (closed) {
+				const auto p = points[0];
+				const auto a = (points[noPoints - 2] - p).normalized();
+				const auto b = (points[1] - p).normalized();
+				
+				return halfAngleVector(a, b);
+			}
+			else {
+				const auto p = points[1];
+				const auto a = (points[0] - p).normalized();
+				const auto b = (points[2] - p).normalized();
+				const auto v = (points[1] - points[0]).normalized();
 
-					const auto vInner = points[j] - halfLineWidth * vC;
-					const auto vOuter = points[j] + halfLineWidth * vC;
+				auto ha = halfAngleVector(a, b);
 
-					inner = QVector3D(vInner[0], vInner[1], 0.f);
-					outer = QVector3D(vOuter[0], vOuter[1], 0.f);
-				}
-				else {
-					const auto vA = points[j + 1] - points[j];
-					
-					auto vC = QVector3D(vA.y(), -vA.x(), 0.f).normalized();
+				auto vp = QVector2D(-v.y(), v.x());
 
-					const auto vInner = points[j] - halfLineWidth * vC;
-					const auto vOuter = points[j] + halfLineWidth * vC;
+				if (QVector2D::dotProduct(vp, ha) < 0)
+					return -vp;
 
-					inner = QVector3D(vInner[0], vInner[1], 0.f);
-					outer = QVector3D(vOuter[0], vOuter[1], 0.f);
-				}
+				return vp;
 			}
 		}
 
+		if (id == noPoints - 1) {
+			if (closed) {
+				const auto p = points[0];
+				const auto a = (points[noPoints - 2] - p).normalized();
+				const auto b = (points[1] - p).normalized();
+
+				return halfAngleVector(a, b);
+			}
+			else {
+				const auto p = points[noPoints - 1];
+				const auto a = (points[noPoints - 3] - p).normalized();
+				const auto b = (points[noPoints - 2] - p).normalized();
+				const auto v = (points[noPoints - 2] - points[noPoints - 1]).normalized();
+
+				auto ha = halfAngleVector(a, b);
+
+				auto vp = QVector2D(-v.y(), v.x());
+
+				if (QVector2D::dotProduct(vp, ha) < 0)
+					return -vp;
+
+				return vp;
+			}
+		}
+
+		const auto p = points[id];
+		const auto a = points[id - 1] - p;
+		const auto b = points[id + 1] - p;
+
+		auto v = (a.normalized() + b.normalized()) / 2.0f;
+
+		v.normalize();
+
+		if (QVector2D::dotProduct(v, a) > 0)
+			return -v;
+
+		return v;
+	};
+
+	auto outsidePoint = [&points, &noPoints, &closed, &outsideVectorAtPoint](const std::uint32_t& id) {
+		if (noPoints == 0)
+			return QVector2D(0.0f, 0.0f);
+
+		if (noPoints == 1)
+			return QVector2D(0.0f, 0.0f);
+
+		if (noPoints == 2) {
+			const auto v = (points[1] - points[0]).normalized();
+			return QVector2D(-v.y(), v.x());
+		}
+
+		if (id >= 0 && id < noPoints) {
+			return outsideVectorAtPoint(id);
+		}
+	};
+
+	for (int j = 0; j < points.size(); ++j)
+	{
+		const auto p		= outsidePoint(j);
+		const auto vInner	= points[j] - p;
+		const auto vOuter	= points[j] + p;
+		const auto inner	= QVector3D(vInner[0], vInner[1], 0.f);
+		const auto outer	= QVector3D(vOuter[0], vOuter[1], 0.f);
+
 		addVertex(inner.x(), inner.y(), u, 0.0f);
 		addVertex(outer.x(), outer.y(), u, 1.0f);
-	}
-
-	if (closed) {
-		const auto vA = points[noPoints - 2] - points[0];
-		const auto vB = points[1] - points[0];
-
-		auto vC = halfAngleVector(vA, vB);
-
-		const auto vInner = points[0] - halfLineWidth * vC;
-		const auto vOuter = points[0] + halfLineWidth * vC;
-
-		auto inner = QVector3D(vInner[0], vInner[1], 0.f);
-		auto outer = QVector3D(vOuter[0], vOuter[1], 0.f);
-
-		addVertex(inner.x(), inner.y(), 0.0f, 0.0f);
-		addVertex(outer.x(), outer.y(), 0.0f, 0.0f);
-	}
-	else {
-		const auto vA = points[points.size() - 2] - points[points.size() - 1];
-
-		auto vC = QVector3D(-vA.y(), vA.x(), 0.f).normalized();
-
-		const auto vInner = points[points.size() - 1] - halfLineWidth * vC;
-		const auto vOuter = points[points.size() - 1] + halfLineWidth * vC;
-
-		auto inner = QVector3D(vInner[0], vInner[1], 0.f);
-		auto outer = QVector3D(vOuter[0], vOuter[1], 0.f);
-
-		addVertex(inner.x(), inner.y(), 0.0f, 0.0f);
-		addVertex(outer.x(), outer.y(), 0.0f, 0.0f);
 	}
 
 	vbo->bind();
