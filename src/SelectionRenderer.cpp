@@ -12,7 +12,7 @@
 SelectionRenderer::SelectionRenderer(const float& depth, ImageViewerWidget* imageViewerWidget) :
 	QuadRenderer(depth),
 	_imageViewerWidget(imageViewerWidget),
-	_bufferColor(255, 153, 0, 40),
+	_bufferColor(255, 153, 0, 70),
 	_selectionColor(255, 0, 0, 153),
 	_boundsColor(255, 153, 0, 150),
 	_outlineColor(255, 153, 0, 150),
@@ -496,7 +496,7 @@ void SelectionRenderer::renderOutline()
 		auto* outlineVBO	= vbo("Outline").get();
 		auto* outlineVAO	= vao("Outline").get();
 
-		const auto lineWidth = 5.f;
+		const auto lineWidth = 2.f;
 
 		auto outlineStippleTexture = texture("OutlineStipple");
 
@@ -563,7 +563,7 @@ void SelectionRenderer::renderOutline()
 				case SelectionType::Lasso:
 				case SelectionType::Polygon:
 				{
-					if (mousePositions.size() >= 2) {
+					if (mousePositions.size() >= 1) {
 						for (const auto& mousePosition : mousePositions) {
 							points.append(QVector2D(mousePosition.x(), mousePosition.y()));
 						}
@@ -607,7 +607,7 @@ void SelectionRenderer::renderBounds()
 
 		boundsStippleTexture->bind();
 		{
-			drawPolyline(points, vbo("Bounds").get(), vao("Bounds").get(), true, 2.0f, 0.1f);
+			drawPolyline(points, vbo("Bounds").get(), vao("Bounds").get(), true, 3.0f, 0.1f);
 		}
 		boundsStippleTexture->release();
 	}
@@ -640,17 +640,9 @@ void SelectionRenderer::drawPolyline(QVector<QVector2D>& points, QOpenGLBuffer* 
 		vertexData.append(v);
 	};
 
-	auto halfAngleVector = [](const QVector2D& a, const QVector2D& b, const bool& forceOutside = false) {
+	auto halfAngleVector = [](const QVector2D& a, const QVector2D& b) {
 		auto v = (a.normalized() + b.normalized()) / 2.0f;
-
-		v.normalize();
-
-		if (forceOutside) {
-			if (QVector2D::dotProduct(v, a) > 0)
-				return -v;
-		}
-		
-		return v;
+		return v.normalized();
 	};
 
 	auto outsideVectorAtPoint = [&points, &noPoints, &closed, &halfAngleVector, &halfLineWidth](const std::uint32_t& id, const QVector2D& direction) {
@@ -754,7 +746,7 @@ void SelectionRenderer::drawPolyline(QVector<QVector2D>& points, QOpenGLBuffer* 
 		addVertex(inner.x(), inner.y(), u, 0.0f);
 		addVertex(outer.x(), outer.y(), u, 1.0f);
 		
-		if (j > 0 && j < points.size() - 1) {
+		if (j < points.size() - 1) {
 			const auto p1		= points[j + 1];
 			const auto p0		= points[j];
 			const auto vPar		= (p1 - p0).normalized();
