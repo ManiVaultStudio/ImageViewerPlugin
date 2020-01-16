@@ -496,7 +496,7 @@ void SelectionRenderer::renderOutline()
 		auto* outlineVBO	= vbo("Outline").get();
 		auto* outlineVAO	= vao("Outline").get();
 
-		const auto lineWidth = 2.f;
+		const auto lineWidth = 20.f;
 
 		auto outlineStippleTexture = texture("OutlineStipple");
 
@@ -568,7 +568,7 @@ void SelectionRenderer::renderOutline()
 							points.append(QVector2D(mousePosition.x(), mousePosition.y()));
 						}
 
-						drawPolyline(screenToWorld(points), outlineVBO, outlineVAO, true, lineWidth);
+						drawPolyline(screenToWorld(points), outlineVBO, outlineVAO, false, lineWidth);
 					}
 
 					break;
@@ -632,6 +632,25 @@ void SelectionRenderer::drawPolyline(QVector<QVector2D>& points, QOpenGLBuffer* 
 	const auto worldLineWidth	= (pWorld1 - pWorld0).length();
 	const auto halfLineWidth	= 0.5f * worldLineWidth;
 
+	auto addVertex = [&vertexData](const float& x, const float& y, const float& u, const float& v) {
+		vertexData.append(x);
+		vertexData.append(y);
+		vertexData.append(0.0f);
+		vertexData.append(u);
+		vertexData.append(v);
+	};
+
+	auto halfAngleVector = [&points](const QVector2D& a, const QVector2D& b) {
+		auto v = (a.normalized() + b.normalized()) / 2.0f;
+
+		v.normalize();
+
+		if (QVector2D::dotProduct(v, a) > 0)
+			return -v;
+		
+		return v;
+	};
+
 	for (int j = 0; j < points.size() - 1; ++j)
 	{
 		auto inner = QVector3D();
@@ -643,9 +662,7 @@ void SelectionRenderer::drawPolyline(QVector<QVector2D>& points, QOpenGLBuffer* 
 			const auto vA = points[j - 1] - p;
 			const auto vB = points[j + 1] - p;
 			
-			auto vC = (vA.normalized() + vB.normalized()) / 2.0f;
-
-			vC.normalize();
+			auto vC = halfAngleVector(vA, vB);
 
 			const auto vInner = points[j] - halfLineWidth * vC;
 			const auto vOuter = points[j] + halfLineWidth * vC;
@@ -661,9 +678,7 @@ void SelectionRenderer::drawPolyline(QVector<QVector2D>& points, QOpenGLBuffer* 
 					const auto vA = points[noPoints - 2] - points[0];
 					const auto vB = points[j + 1] - points[j];
 
-					auto vC = (vA.normalized() + vB.normalized()) / 2.0f;
-
-					vC.normalize();
+					auto vC = halfAngleVector(vA, vB);
 
 					const auto vInner = points[j] - halfLineWidth * vC;
 					const auto vOuter = points[j] + halfLineWidth * vC;
@@ -672,10 +687,9 @@ void SelectionRenderer::drawPolyline(QVector<QVector2D>& points, QOpenGLBuffer* 
 					outer = QVector3D(vOuter[0], vOuter[1], 0.f);
 				}
 				else {
-					
 					const auto vA = points[j + 1] - points[j];
 					
-					auto vC = QVector3D(-vA.y(), vA.x(), 0.f).normalized();
+					auto vC = QVector3D(vA.y(), -vA.x(), 0.f).normalized();
 
 					const auto vInner = points[j] - halfLineWidth * vC;
 					const auto vOuter = points[j] + halfLineWidth * vC;
@@ -686,30 +700,15 @@ void SelectionRenderer::drawPolyline(QVector<QVector2D>& points, QOpenGLBuffer* 
 			}
 		}
 
-		// Inner
-		vertexData.append(inner.x());
-		vertexData.append(inner.y());
-		vertexData.append(0.f);
-
-		vertexData.append(u);
-		vertexData.append(0.f);
-
-		// Inner
-		vertexData.append(outer.x());
-		vertexData.append(outer.y());
-		vertexData.append(0.f);
-
-		vertexData.append(u);
-		vertexData.append(1.f);
+		addVertex(inner.x(), inner.y(), u, 0.0f);
+		addVertex(outer.x(), outer.y(), u, 1.0f);
 	}
 
 	if (closed) {
 		const auto vA = points[noPoints - 2] - points[0];
 		const auto vB = points[1] - points[0];
 
-		auto vC = (vA.normalized() + vB.normalized()) / 2.0f;
-
-		vC.normalize();
+		auto vC = halfAngleVector(vA, vB);
 
 		const auto vInner = points[0] - halfLineWidth * vC;
 		const auto vOuter = points[0] + halfLineWidth * vC;
@@ -717,22 +716,22 @@ void SelectionRenderer::drawPolyline(QVector<QVector2D>& points, QOpenGLBuffer* 
 		auto inner = QVector3D(vInner[0], vInner[1], 0.f);
 		auto outer = QVector3D(vOuter[0], vOuter[1], 0.f);
 
+		addVertex(inner.x(), inner.y(), 0.0f, 0.0f);
+		addVertex(outer.x(), outer.y(), 0.0f, 0.0f);
+	}
+	else {
+		const auto vA = points[points.size() - 2] - points[points.size() - 1];
 
-		// Inner
-		vertexData.append(inner.x());
-		vertexData.append(inner.y());
-		vertexData.append(0.f);
+		auto vC = QVector3D(-vA.y(), vA.x(), 0.f).normalized();
 
-		vertexData.append(0.f);
-		vertexData.append(0.f);
+		const auto vInner = points[points.size() - 1] - halfLineWidth * vC;
+		const auto vOuter = points[points.size() - 1] + halfLineWidth * vC;
 
-		// Inner
-		vertexData.append(outer.x());
-		vertexData.append(outer.y());
-		vertexData.append(0.f);
+		auto inner = QVector3D(vInner[0], vInner[1], 0.f);
+		auto outer = QVector3D(vOuter[0], vOuter[1], 0.f);
 
-		vertexData.append(0.f);
-		vertexData.append(0.f);
+		addVertex(inner.x(), inner.y(), 0.0f, 0.0f);
+		addVertex(outer.x(), outer.y(), 0.0f, 0.0f);
 	}
 
 	vbo->bind();
