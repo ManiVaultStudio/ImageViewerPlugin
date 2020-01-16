@@ -496,7 +496,7 @@ void SelectionRenderer::renderOutline()
 		auto* outlineVBO	= vbo("Outline").get();
 		auto* outlineVAO	= vao("Outline").get();
 
-		const auto lineWidth = 20.f;
+		const auto lineWidth = 5.f;
 
 		auto outlineStippleTexture = texture("OutlineStipple");
 
@@ -568,7 +568,7 @@ void SelectionRenderer::renderOutline()
 							points.append(QVector2D(mousePosition.x(), mousePosition.y()));
 						}
 
-						drawPolyline(screenToWorld(points), outlineVBO, outlineVAO, false, lineWidth);
+						drawPolyline(screenToWorld(points), outlineVBO, outlineVAO, true, lineWidth);
 					}
 
 					break;
@@ -640,7 +640,7 @@ void SelectionRenderer::drawPolyline(QVector<QVector2D>& points, QOpenGLBuffer* 
 		vertexData.append(v);
 	};
 
-	auto halfAngleVector = [](const QVector2D& a, const QVector2D& b, const bool& forceOutside = true) {
+	auto halfAngleVector = [](const QVector2D& a, const QVector2D& b, const bool& forceOutside = false) {
 		auto v = (a.normalized() + b.normalized()) / 2.0f;
 
 		v.normalize();
@@ -653,24 +653,27 @@ void SelectionRenderer::drawPolyline(QVector<QVector2D>& points, QOpenGLBuffer* 
 		return v;
 	};
 
-	auto outsideVectorAtPoint = [&points, &noPoints, &closed, &halfAngleVector, &halfLineWidth](const std::uint32_t& id) {
+	auto outsideVectorAtPoint = [&points, &noPoints, &closed, &halfAngleVector, &halfLineWidth](const std::uint32_t& id, const QVector2D& direction) {
 		if (id == 0) {
 			if (closed) {
-				const auto p = points[0];
-				const auto a = (points[noPoints - 2] - p).normalized();
-				const auto b = (points[1] - p).normalized();
-				
-				return halfAngleVector(a, b);
+				const auto p			= points[0];
+				const auto v0			= (points[noPoints - 2] - p).normalized();
+				const auto v1			= (points[1] - p).normalized();
+				const auto vHalfAngle	= halfAngleVector(v0, v1);
+				const auto vOutside		= halfLineWidth * vHalfAngle * (1.0f / std::abs(QVector2D::dotProduct(vHalfAngle, QVector2D(-v0.y(), v0.x()).normalized())));
+
+				if (QVector2D::dotProduct(vOutside, direction) < 0)
+					return -vOutside;
+
+				return vOutside;
 			}
 			else {
 				const auto p = points[1];
 				const auto a = (points[0] - p).normalized();
 				const auto b = (points[2] - p).normalized();
 				const auto v = (points[1] - points[0]).normalized();
-
-				auto ha = halfAngleVector(a, b);
-
-				auto vp = QVector2D(-v.y(), v.x());
+				const auto ha = halfAngleVector(a, b);
+				const auto vp = halfLineWidth * QVector2D(-v.y(), v.x());
 
 				if (QVector2D::dotProduct(vp, ha) < 0)
 					return -vp;
@@ -681,21 +684,24 @@ void SelectionRenderer::drawPolyline(QVector<QVector2D>& points, QOpenGLBuffer* 
 
 		if (id == noPoints - 1) {
 			if (closed) {
-				const auto p = points[0];
-				const auto a = (points[noPoints - 2] - p).normalized();
-				const auto b = (points[1] - p).normalized();
+				const auto p			= points[0];
+				const auto v0			= (points[noPoints - 2] - p).normalized();
+				const auto v1			= (points[1] - p).normalized();
+				const auto vHalfAngle	= halfAngleVector(v0, v1);
+				const auto vOutside		= halfLineWidth * vHalfAngle * (1.0f / std::abs(QVector2D::dotProduct(vHalfAngle, QVector2D(-v0.y(), v0.x()).normalized())));
 
-				return halfAngleVector(a, b);
+				if (QVector2D::dotProduct(vOutside, direction) < 0)
+					return -vOutside;
+
+				return vOutside;
 			}
 			else {
 				const auto p = points[noPoints - 1];
 				const auto a = (points[noPoints - 3] - p).normalized();
 				const auto b = (points[noPoints - 2] - p).normalized();
 				const auto v = (points[noPoints - 2] - points[noPoints - 1]).normalized();
-
-				auto ha = halfAngleVector(a, b);
-
-				auto vp = QVector2D(-v.y(), v.x());
+				const auto ha = halfAngleVector(a, b);
+				const auto vp = halfLineWidth * QVector2D(-v.y(), v.x());
 
 				if (QVector2D::dotProduct(vp, ha) < 0)
 					return -vp;
@@ -704,21 +710,19 @@ void SelectionRenderer::drawPolyline(QVector<QVector2D>& points, QOpenGLBuffer* 
 			}
 		}
 
-		const auto p = points[id];
-		const auto a = points[id - 1] - p;
-		const auto b = points[id + 1] - p;
+		const auto p			= points[id];
+		const auto v0			= (points[id - 1] - p).normalized();
+		const auto v1			= (points[id + 1] - p).normalized();
+		const auto vHalfAngle	= halfAngleVector(v0, v1);
+		const auto vOutside		= halfLineWidth * vHalfAngle * (1.0f / std::abs(QVector2D::dotProduct(vHalfAngle, QVector2D(-v0.y(), v0.x()).normalized())));
 
-		auto v = (a.normalized() + b.normalized()) / 2.0f;
+		if (QVector2D::dotProduct(vHalfAngle, direction) < 0)
+			return -vOutside;
 
-		v.normalize();
-
-		if (QVector2D::dotProduct(v, a) > 0)
-			return -v;
-
-		return v;
+		return vOutside;
 	};
 
-	auto outsidePoint = [&points, &noPoints, &closed, &outsideVectorAtPoint](const std::uint32_t& id) {
+	auto outsidePoint = [&points, &noPoints, &closed, &outsideVectorAtPoint, &halfLineWidth](const std::uint32_t& id, const QVector2D& direction) {
 		if (noPoints == 0)
 			return QVector2D(0.0f, 0.0f);
 
@@ -727,24 +731,41 @@ void SelectionRenderer::drawPolyline(QVector<QVector2D>& points, QOpenGLBuffer* 
 
 		if (noPoints == 2) {
 			const auto v = (points[1] - points[0]).normalized();
-			return QVector2D(-v.y(), v.x());
+			return halfLineWidth * QVector2D(-v.y(), v.x());
 		}
 
 		if (id >= 0 && id < noPoints) {
-			return outsideVectorAtPoint(id);
+			return outsideVectorAtPoint(id, direction);
 		}
 	};
 
+	const auto v = (points[1] - points[0]).normalized();
+
+	auto direction = QVector2D(-v.y(), v.x()).normalized();
+
 	for (int j = 0; j < points.size(); ++j)
 	{
-		const auto p		= outsidePoint(j);
-		const auto vInner	= points[j] - p;
-		const auto vOuter	= points[j] + p;
+		const auto pOutside	= outsidePoint(j, direction);
+		const auto vInner	= points[j] - pOutside;
+		const auto vOuter	= points[j] + pOutside;
 		const auto inner	= QVector3D(vInner[0], vInner[1], 0.f);
 		const auto outer	= QVector3D(vOuter[0], vOuter[1], 0.f);
 
 		addVertex(inner.x(), inner.y(), u, 0.0f);
 		addVertex(outer.x(), outer.y(), u, 1.0f);
+		
+		if (j > 0 && j < points.size() - 1) {
+			const auto p1		= points[j + 1];
+			const auto p0		= points[j];
+			const auto vPar		= (p1 - p0).normalized();
+			const auto vPerp	= QVector2D(-vPar.y(), vPar.x()).normalized();
+			const auto dot		= QVector2D::dotProduct(pOutside, vPerp);
+
+			direction = vPerp;
+
+			if (dot < 0)
+				direction *= -1.0f;
+		}
 	}
 
 	vbo->bind();

@@ -524,7 +524,7 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 
 	qDebug() << "Mouse release event";
 
-	if (mouseEvent->button() == Qt::RightButton && _mousePositions.size() == 0)
+	if (mouseEvent->button() == Qt::RightButton && _mousePositions.size() == 0 && _interactionMode != InteractionMode::Selection)
 	{
 		contextMenu()->exec(mapToGlobal(mouseEvent->pos()));
 	}
