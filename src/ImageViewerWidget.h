@@ -98,7 +98,7 @@ private:
 public:
 	QMatrix4x4 modelView() const;
 	QMatrix4x4 projection() const;
-	QVector3D screenToWorld(const QPoint& screen) const;
+	QVector3D screenToWorld(const QPointF& screen) const;
 
 private:
 	ImageViewerPlugin*							_imageViewerPlugin;

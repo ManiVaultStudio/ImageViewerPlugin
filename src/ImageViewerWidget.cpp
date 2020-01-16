@@ -16,6 +16,7 @@
 #include "Shaders.h"
 
 // Panning and zooming inspired by: https://community.khronos.org/t/opengl-compound-zoom-and-pan-effect/72565/7
+// Line width and antia-aliasing inspired by // https://vitaliburkov.wordpress.com/2016/09/17/simple-and-fast-high-quality-antialiased-lines-with-opengl/
 
 ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	QOpenGLFunctions(),
@@ -64,6 +65,8 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 #ifdef _DEBUG
 	surfaceFormat.setOption(QSurfaceFormat::DebugContext);
 #endif
+	
+	surfaceFormat.setSamples(8);
 
 	setFormat(surfaceFormat);
 
@@ -192,6 +195,7 @@ void ImageViewerWidget::initializeGL()
 	glEnable(GL_LINE_SMOOTH);
 	glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
 	glDepthMask(false);
+	glLineWidth(100);
 
 	_imageQuadRenderer->init();
 	_selectionRenderer->init();
@@ -460,6 +464,13 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 
 				case InteractionMode::Selection:
 				{
+					auto worldMousePositions = std::vector<QVector3D>();
+
+					for (const auto& mousePosition : _mousePositions)
+					{
+						worldMousePositions.push_back(screenToWorld(mousePosition));
+					}
+
 					if (_imageViewerPlugin->selectable() && _selecting) {
 						if (_selectionType != SelectionType::Polygon) {
 							_mousePositions.push_back(mouseEvent->pos());
@@ -473,6 +484,8 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 						}
 
 						_selectionRenderer->updateSelectionBuffer(_selectionType, worldMousePositions);
+						//worldMousePositions.pop_back();
+						//worldMousePositions.push_back(screenToWorld(_mousePosition));
 					}
 					
 					break;
@@ -506,6 +519,22 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 			break;
 	}
 
+	/*
+	if (_interactionMode == InteractionMode::Selection && _selectionType == SelectionType::Polygon) {
+		auto worldMousePositions = std::vector<QVector3D>();
+
+		for (const auto& mousePosition : _mousePositions)
+		{
+			worldMousePositions.push_back(screenToWorld(mousePosition));
+		}
+
+		worldMousePositions.pop_back();
+		worldMousePositions.push_back(screenToWorld(_mousePosition));
+
+		_selectionRenderer->updateSelectionBuffer(_selectionType, worldMousePositions);
+	}
+	*/
+
 	doneCurrent();
 
 	update();
@@ -520,7 +549,7 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 
 	qDebug() << "Mouse release event";
 
-	if (mouseEvent->button() == Qt::RightButton && _mousePositions.size() == 0)
+	if (mouseEvent->button() == Qt::RightButton && _mousePositions.size() == 0 && _interactionMode != InteractionMode::Selection)
 	{
 		contextMenu()->exec(mapToGlobal(mouseEvent->pos()));
 	}
@@ -713,9 +742,9 @@ bool ImageViewerWidget::initialized()
 	//return _displayImage.get() != nullptr;
 }
 
-QVector3D ImageViewerWidget::screenToWorld(const QPoint& screenPoint) const
+QVector3D ImageViewerWidget::screenToWorld(const QPointF& screen) const
 {
-	return QVector3D(screenPoint.x(), height() - screenPoint.y(), 0).unproject(modelView(), projection(), QRect(0, 0, width(), height()));
+	return QVector3D(screen.x(), height() - screen.y(), 0).unproject(modelView(), projection(), QRect(0, 0, width(), height()));
 }
 
 void ImageViewerWidget::publishSelection()
