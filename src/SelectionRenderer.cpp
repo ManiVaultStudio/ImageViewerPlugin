@@ -12,10 +12,10 @@
 SelectionRenderer::SelectionRenderer(const float& depth, ImageViewerWidget* imageViewerWidget) :
 	QuadRenderer(depth),
 	_imageViewerWidget(imageViewerWidget),
-	_bufferColor(255, 153, 0, 77),
+	_bufferColor(255, 153, 0, 40),
 	_selectionColor(255, 0, 0, 153),
-	_boundsColor(255, 153, 0, 77),
-	_outlineColor(255, 153, 0, 77),
+	_boundsColor(255, 153, 0, 150),
+	_outlineColor(255, 153, 0, 150),
 	_brushRadius(50.f),
 	_brushRadiusDelta(2.0f),
 	_bounds()
@@ -372,12 +372,10 @@ void SelectionRenderer::createTextures()
 {
 	_textures.insert("Selection", std::make_shared<QOpenGLTexture>(QOpenGLTexture::Target2D));
 
-	auto boundsStippleImage = QImage(2, 2, QImage::Format::Format_RGBA8888);
+	auto boundsStippleImage = QImage(2, 1, QImage::Format::Format_RGBA8888);
 
 	boundsStippleImage.setPixelColor(QPoint(0, 0), _boundsColor);
-	boundsStippleImage.setPixelColor(QPoint(1, 0), _boundsColor);
-	boundsStippleImage.setPixelColor(QPoint(1, 0), QColor(0, 0, 0, 0));
-	boundsStippleImage.setPixelColor(QPoint(1, 1), QColor(0, 0, 0, 0));
+	boundsStippleImage.setPixelColor(QPoint(1, 0), _boundsColor);// QColor(0, 0, 0, 0));
 
 	auto boundsStippleTexture = std::make_shared<QOpenGLTexture>(boundsStippleImage);
 
@@ -389,7 +387,7 @@ void SelectionRenderer::createTextures()
 	auto outlineStippleImage = QImage(2, 1, QImage::Format::Format_RGBA8888);
 
 	outlineStippleImage.setPixelColor(QPoint(0, 0), _outlineColor);
-	outlineStippleImage.setPixelColor(QPoint(1, 0), QColor(0, 0, 0, 0));
+	outlineStippleImage.setPixelColor(QPoint(1, 0), _outlineColor);// QColor(0, 0, 0, 0));
 
 	auto outlineStippleTexture = std::make_shared<QOpenGLTexture>(outlineStippleImage);
 
@@ -491,18 +489,34 @@ void SelectionRenderer::renderOutline()
 
 		transform.ortho(_imageViewerWidget->rect());
 
-		outlineProgram->setUniformValue("transform", _modelViewProjection);
 		outlineProgram->setUniformValue("stippleTexture", 0);
+		outlineProgram->setUniformValue("transform", _modelViewProjection);
+		outlineProgram->setUniformValue("color", _outlineColor);
 
 		auto* outlineVBO	= vbo("Outline").get();
 		auto* outlineVAO	= vao("Outline").get();
 
-		const auto scale = 0.2f;
+		const auto lineWidth = 2.f;
 
 		auto outlineStippleTexture = texture("OutlineStipple");
 
 		outlineStippleTexture->bind();
 		{
+			auto screenToWorld = [&](const QVector<QVector2D>& screenPoints) {
+				QVector<QVector2D> worldPoints; 
+
+				for (const auto& screenPoint : screenPoints)
+				{
+					const auto worldPoint = _imageViewerWidget->screenToWorld(QPointF(screenPoint.x(), screenPoint.y()));
+
+					worldPoints.append(QVector2D(worldPoint.x(), worldPoint.y()));
+				}
+
+				return worldPoints;
+			};
+
+			QVector<QVector2D> points;
+
 			switch (_imageViewerWidget->selectionType())
 			{
 				case SelectionType::Rectangle:
@@ -511,14 +525,12 @@ void SelectionRenderer::renderOutline()
 						const auto start	= mousePositions.front();
 						const auto end		= mousePositions.back();
 
-						QVector<QVector2D> points;
-
 						points.append(QVector2D(start.x(), start.y()));
 						points.append(QVector2D(end.x(), start.y()));
 						points.append(QVector2D(end.x(), end.y()));
 						points.append(QVector2D(start.x(), end.y()));
 
-						drawPolyline(points, true, outlineVBO, outlineVAO, true, scale);
+						drawPolyline(screenToWorld(points), outlineVBO, outlineVAO, true, lineWidth);
 					}
 
 					break;
@@ -527,9 +539,7 @@ void SelectionRenderer::renderOutline()
 				case SelectionType::Brush:
 				{
 					const auto brushCenter	= _imageViewerWidget->mousePosition();
-					const auto noSegments	= 64u;
-
-					QVector<QVector2D> points;
+					const auto noSegments	= 128u;
 
 					std::vector<GLfloat> vertexCoordinates;
 
@@ -545,7 +555,7 @@ void SelectionRenderer::renderOutline()
 						points.append(QVector2D(brushCenter.x() + x, brushCenter.y() + y));
 					}
 
-					drawPolyline(points, true, outlineVBO, outlineVAO, true, scale);
+					drawPolyline(screenToWorld(points), outlineVBO, outlineVAO, true, lineWidth);
 
 					break;
 				}
@@ -554,14 +564,11 @@ void SelectionRenderer::renderOutline()
 				case SelectionType::Polygon:
 				{
 					if (mousePositions.size() >= 2) {
-						QVector<QVector2D> points;
-
 						for (const auto& mousePosition : mousePositions) {
 							points.append(QVector2D(mousePosition.x(), mousePosition.y()));
 						}
 
-						drawPolyline(points, true, outlineVBO, outlineVAO, false, scale);
-					
+						drawPolyline(screenToWorld(points), outlineVBO, outlineVAO, true, lineWidth);
 					}
 
 					break;
@@ -600,46 +607,132 @@ void SelectionRenderer::renderBounds()
 
 		boundsStippleTexture->bind();
 		{
-			glLineWidth(30);
-
-			drawPolyline(points, false, vbo("Bounds").get(), vao("Bounds").get(), true, 1.0f);
+			drawPolyline(points, vbo("Bounds").get(), vao("Bounds").get(), true, 2.0f, 0.1f);
 		}
 		boundsStippleTexture->release();
 	}
 }
 
-void SelectionRenderer::drawPolyline(QVector<QVector2D>& points, const bool& screenCoordinates, QOpenGLBuffer* vbo, QOpenGLVertexArrayObject* vao, const bool& closed /*= true*/, const float& scale /*= 1.f*/)
+void SelectionRenderer::drawPolyline(QVector<QVector2D>& points, QOpenGLBuffer* vbo, QOpenGLVertexArrayObject* vao, const bool& closed /*= true*/, const float& lineWidth /*= 1.f*/, const float& scale /*= 1.0f*/)
 {
 	if (closed) {
 		points.append(points.first());
 	}
-
+	
 	QVector<float> vertexData;
 
-	vertexData.resize(points.size() * 5);
+	const auto noPoints = points.size();
+
+	vertexData.reserve(noPoints * 5);
 
 	auto u = 0.f;
 
-	for (int j = 0; j < points.size(); ++j)
+	const auto pWorld0			= _imageViewerWidget->screenToWorld(QPointF(0.0f, 0.0f));
+	const auto pWorld1			= _imageViewerWidget->screenToWorld(QPointF(lineWidth, 0.0f));
+	const auto worldLineWidth	= (pWorld1 - pWorld0).length();
+	const auto halfLineWidth	= 0.5f * worldLineWidth;
+
+	for (int j = 0; j < points.size() - 1; ++j)
 	{
-		const auto worldPoint = screenCoordinates ? _imageViewerWidget->screenToWorld(QPoint(points[j][0], points[j][1])) : QVector3D(points[j][0], points[j][1], 0.f);
+		auto inner = QVector3D();
+		auto outer = QVector3D();
+		
+		const auto p = points[j];
 
-		vertexData[j * 5 + 0] = worldPoint.x();
-		vertexData[j * 5 + 1] = worldPoint.y();
-		vertexData[j * 5 + 2] = 0.f;
+		if (j > 0) {
+			const auto vA = points[j - 1] - p;
+			const auto vB = points[j + 1] - p;
+			
+			auto vC = (vA.normalized() + vB.normalized()) / 2.0f;
 
-		if (j == 0) {
-			vertexData[j * 5 + 3] = 0.5f;
+			vC.normalize();
+
+			const auto vInner = points[j] - halfLineWidth * vC;
+			const auto vOuter = points[j] + halfLineWidth * vC;
+
+			inner = QVector3D(vInner[0], vInner[1], 0.f);
+			outer = QVector3D(vOuter[0], vOuter[1], 0.f);
+
+			u += scale * (points[j + 1] - p).length();
 		}
 		else {
-			const auto a = QPointF(points[j][0], points[j][1]) - QPointF(points[j - 1][0], points[j - 1][1]);
+			if (j == 0) {
+				if (closed) {
+					const auto vA = points[noPoints - 2] - points[0];
+					const auto vB = points[j + 1] - points[j];
 
-			u += scale * a.manhattanLength();
+					auto vC = (vA.normalized() + vB.normalized()) / 2.0f;
 
-			vertexData[j * 5 + 3] = u;
+					vC.normalize();
+
+					const auto vInner = points[j] - halfLineWidth * vC;
+					const auto vOuter = points[j] + halfLineWidth * vC;
+
+					inner = QVector3D(vInner[0], vInner[1], 0.f);
+					outer = QVector3D(vOuter[0], vOuter[1], 0.f);
+				}
+				else {
+					
+					const auto vA = points[j + 1] - points[j];
+					
+					auto vC = QVector3D(-vA.y(), vA.x(), 0.f).normalized();
+
+					const auto vInner = points[j] - halfLineWidth * vC;
+					const auto vOuter = points[j] + halfLineWidth * vC;
+
+					inner = QVector3D(vInner[0], vInner[1], 0.f);
+					outer = QVector3D(vOuter[0], vOuter[1], 0.f);
+				}
+			}
 		}
 
-		vertexData[j * 5 + 4] = 0.f;
+		// Inner
+		vertexData.append(inner.x());
+		vertexData.append(inner.y());
+		vertexData.append(0.f);
+
+		vertexData.append(u);
+		vertexData.append(0.f);
+
+		// Inner
+		vertexData.append(outer.x());
+		vertexData.append(outer.y());
+		vertexData.append(0.f);
+
+		vertexData.append(u);
+		vertexData.append(1.f);
+	}
+
+	if (closed) {
+		const auto vA = points[noPoints - 2] - points[0];
+		const auto vB = points[1] - points[0];
+
+		auto vC = (vA.normalized() + vB.normalized()) / 2.0f;
+
+		vC.normalize();
+
+		const auto vInner = points[0] - halfLineWidth * vC;
+		const auto vOuter = points[0] + halfLineWidth * vC;
+
+		auto inner = QVector3D(vInner[0], vInner[1], 0.f);
+		auto outer = QVector3D(vOuter[0], vOuter[1], 0.f);
+
+
+		// Inner
+		vertexData.append(inner.x());
+		vertexData.append(inner.y());
+		vertexData.append(0.f);
+
+		vertexData.append(0.f);
+		vertexData.append(0.f);
+
+		// Inner
+		vertexData.append(outer.x());
+		vertexData.append(outer.y());
+		vertexData.append(0.f);
+
+		vertexData.append(0.f);
+		vertexData.append(0.f);
 	}
 
 	vbo->bind();
@@ -653,8 +746,7 @@ void SelectionRenderer::drawPolyline(QVector<QVector2D>& points, const bool& scr
 	{
 		vbo->bind();
 		{
-			glLineWidth(20);
-			glDrawArrays(GL_LINE_STRIP, 0, points.size());
+			glDrawArrays(GL_TRIANGLE_STRIP, 0, vertexData.size() / 5);
 		}
 		vbo->release();
 	}

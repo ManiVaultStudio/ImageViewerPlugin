@@ -16,6 +16,7 @@
 #include "Shaders.h"
 
 // Panning and zooming inspired by: https://community.khronos.org/t/opengl-compound-zoom-and-pan-effect/72565/7
+// Line width and antia-aliasing inspired by // https://vitaliburkov.wordpress.com/2016/09/17/simple-and-fast-high-quality-antialiased-lines-with-opengl/
 
 ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	QOpenGLFunctions(),
@@ -194,6 +195,7 @@ void ImageViewerWidget::initializeGL()
 	glEnable(GL_LINE_SMOOTH);
 	glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
 	glDepthMask(false);
+	glLineWidth(100);
 
 	_imageQuadRenderer->init();
 	_selectionRenderer->init();
@@ -715,9 +717,9 @@ bool ImageViewerWidget::initialized()
 	//return _displayImage.get() != nullptr;
 }
 
-QVector3D ImageViewerWidget::screenToWorld(const QPoint& screenPoint) const
+QVector3D ImageViewerWidget::screenToWorld(const QPointF& screen) const
 {
-	return QVector3D(screenPoint.x(), height() - screenPoint.y(), 0).unproject(modelView(), projection(), QRect(0, 0, width(), height()));
+	return QVector3D(screen.x(), height() - screen.y(), 0).unproject(modelView(), projection(), QRect(0, 0, width(), height()));
 }
 
 void ImageViewerWidget::publishSelection()
