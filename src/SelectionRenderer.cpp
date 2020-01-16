@@ -563,7 +563,7 @@ void SelectionRenderer::renderOutline()
 				case SelectionType::Lasso:
 				case SelectionType::Polygon:
 				{
-					if (mousePositions.size() >= 1) {
+					if (mousePositions.size() >= 2) {
 						for (const auto& mousePosition : mousePositions) {
 							points.append(QVector2D(mousePosition.x(), mousePosition.y()));
 						}
@@ -586,6 +586,9 @@ void SelectionRenderer::renderOutline()
 
 void SelectionRenderer::renderBounds()
 {
+	if (_bounds.isValid())
+		return;
+
 	auto boundsProgram = shaderProgram("Bounds");
 
 	if (boundsProgram->bind()) {
@@ -615,10 +618,12 @@ void SelectionRenderer::renderBounds()
 
 void SelectionRenderer::drawPolyline(QVector<QVector2D>& points, QOpenGLBuffer* vbo, QOpenGLVertexArrayObject* vao, const bool& closed /*= true*/, const float& lineWidth /*= 1.f*/, const float& scale /*= 1.0f*/)
 {
-	if (closed) {
+	if (closed && points.size() > 2) {
 		points.append(points.first());
 	}
 	
+	qDebug() << "drawPolyline";
+
 	QVector<float> vertexData;
 
 	const auto noPoints = points.size();
@@ -641,8 +646,7 @@ void SelectionRenderer::drawPolyline(QVector<QVector2D>& points, QOpenGLBuffer* 
 	};
 
 	auto halfAngleVector = [](const QVector2D& a, const QVector2D& b) {
-		auto v = (a.normalized() + b.normalized()) / 2.0f;
-		return v.normalized();
+		return ((a.normalized() + b.normalized()) / 2.0f).normalized();
 	};
 
 	auto outsideVectorAtPoint = [&points, &noPoints, &closed, &halfAngleVector, &halfLineWidth](const std::uint32_t& id, const QVector2D& direction) {
@@ -734,6 +738,8 @@ void SelectionRenderer::drawPolyline(QVector<QVector2D>& points, QOpenGLBuffer* 
 	const auto v = (points[1] - points[0]).normalized();
 
 	auto direction = QVector2D(-v.y(), v.x()).normalized();
+
+	qDebug() << points.size();
 
 	for (int j = 0; j < points.size(); ++j)
 	{
