@@ -130,6 +130,8 @@ void SelectionRenderer::setImageSize(const QSize& size)
 
 void SelectionRenderer::updateSelectionBuffer(const SelectionType& selectionType, const std::vector<QVector3D>& mousePositions)
 {
+	qDebug() << "updateSelectionBuffer";
+
 	auto selectionFBO = fbo("SelectionBuffer");
 
 	if (!selectionFBO->bind())
@@ -622,8 +624,6 @@ void SelectionRenderer::drawPolyline(QVector<QVector2D>& points, QOpenGLBuffer* 
 		points.append(points.first());
 	}
 	
-	qDebug() << "drawPolyline";
-
 	QVector<float> vertexData;
 
 	const auto noPoints = points.size();
@@ -738,8 +738,6 @@ void SelectionRenderer::drawPolyline(QVector<QVector2D>& points, QOpenGLBuffer* 
 	const auto v = (points[1] - points[0]).normalized();
 
 	auto direction = QVector2D(-v.y(), v.x()).normalized();
-
-	qDebug() << points.size();
 
 	for (int j = 0; j < points.size(); ++j)
 	{

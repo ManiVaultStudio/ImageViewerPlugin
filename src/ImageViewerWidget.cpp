@@ -464,6 +464,13 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 
 				case InteractionMode::Selection:
 				{
+					auto worldMousePositions = std::vector<QVector3D>();
+
+					for (const auto& mousePosition : _mousePositions)
+					{
+						worldMousePositions.push_back(screenToWorld(mousePosition));
+					}
+
 					if (_imageViewerPlugin->selectable() && _selecting) {
 						if (_selectionType != SelectionType::Polygon) {
 							_mousePositions.push_back(mouseEvent->pos());
@@ -477,6 +484,8 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 						}
 
 						_selectionRenderer->updateSelectionBuffer(_selectionType, worldMousePositions);
+						//worldMousePositions.pop_back();
+						//worldMousePositions.push_back(screenToWorld(_mousePosition));
 					}
 					
 					break;
@@ -509,6 +518,22 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 		default:
 			break;
 	}
+
+	/*
+	if (_interactionMode == InteractionMode::Selection && _selectionType == SelectionType::Polygon) {
+		auto worldMousePositions = std::vector<QVector3D>();
+
+		for (const auto& mousePosition : _mousePositions)
+		{
+			worldMousePositions.push_back(screenToWorld(mousePosition));
+		}
+
+		worldMousePositions.pop_back();
+		worldMousePositions.push_back(screenToWorld(_mousePosition));
+
+		_selectionRenderer->updateSelectionBuffer(_selectionType, worldMousePositions);
+	}
+	*/
 
 	doneCurrent();
 
