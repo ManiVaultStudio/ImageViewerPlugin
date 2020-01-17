@@ -263,9 +263,21 @@ void SelectionRenderer::setSelectionBounds(const QRect& selectionBounds)
 	_bounds = selectionBounds;
 }
 
-void SelectionRenderer::setOpacity(const float& opacity)
+float SelectionRenderer::selectionOpacity() const
 {
-	_selectionColor.setAlpha(opacity * 255.0f);
+	return _selectionColor.alphaF();
+}
+
+void SelectionRenderer::setSelectionOpacity(const float& selectionOpacity)
+{
+	if (selectionOpacity == _selectionColor.alphaF())
+		return;
+
+	_selectionColor.setAlphaF(selectionOpacity);
+
+	qDebug() << "Set selection opacity" << selectionOpacity;
+
+	emit selectionOpacityChanged(_selectionColor.alphaF());
 }
 
 float SelectionRenderer::brushRadius() const

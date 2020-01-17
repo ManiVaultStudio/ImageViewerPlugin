@@ -1,5 +1,6 @@
 #include "SettingsWidget.h"
 #include "ImageViewerPlugin.h"
+#include "ImageViewerWidget.h"
 
 #include "ui_SettingsWidget.h"
 
@@ -18,7 +19,11 @@ SettingsWidget::SettingsWidget(ImageViewerPlugin* imageViewerPlugin) :
 	connect(_ui->imagesComboBox, QOverload<const int>::of(&QComboBox::currentIndexChanged), _imageViewerPlugin, &ImageViewerPlugin::setCurrentImageId);
 	connect(_ui->dimensionsComboBox, QOverload<const int>::of(&QComboBox::currentIndexChanged), _imageViewerPlugin, &ImageViewerPlugin::setCurrentDimensionId);
 	connect(_ui->averageImagesCheckBox, &QCheckBox::stateChanged, _imageViewerPlugin, [=](int state) { _imageViewerPlugin->setAverageImages(static_cast<bool>(state)); });
-	connect(_ui->selectionOpacitySlider, &QSlider::valueChanged, _imageViewerPlugin, [=](int value) { _imageViewerPlugin->setSelectionOpacity(static_cast<float>(value) / 100.f); });
+	connect(_ui->selectionOpacitySlider, &QSlider::valueChanged, _imageViewerPlugin, [=](int value) {
+		_imageViewerPlugin->imageViewerWidget()->selectionRenderer()->setSelectionOpacity(static_cast<float>(value) / 100.f);
+		_imageViewerPlugin->imageViewerWidget()->update();
+	});
+
 	connect(_ui->createSubsetFromSelectionPushButton, &QCheckBox::clicked, _imageViewerPlugin, &ImageViewerPlugin::createSubsetFromSelection);
 	
 	connect(_imageViewerPlugin, &ImageViewerPlugin::datasetNamesChanged, this, &SettingsWidget::onDatasetNamesChanged);
@@ -164,7 +169,7 @@ void SettingsWidget::updateSelectionOpacityUI()
 {
 	const auto hasSelection = _imageViewerPlugin->hasSelection();
 
-	_ui->selectionOpacitySlider->setValue(_imageViewerPlugin->selectionOpacity() * 100.0f);
+	_ui->selectionOpacitySlider->setValue(_imageViewerPlugin->imageViewerWidget()->selectionRenderer()->selectionOpacity() * 100.0f);
 
 	const auto imageCollectionType = _imageViewerPlugin->imageCollectionType();
 

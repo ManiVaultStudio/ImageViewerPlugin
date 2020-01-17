@@ -20,8 +20,7 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	_currentImageId(0),
 	_dimensionNames(),
 	_currentDimensionId(0),
-	_averageImages(false),
-	_selectionOpacity(0.6f)
+	_averageImages(false)
 {
 	qRegisterMetaType<std::shared_ptr<std::shared_ptr<QImage>>>("std::shared_ptr<QImage>");
 
@@ -358,23 +357,6 @@ void ImageViewerPlugin::setAverageImages(const bool& averageImages)
 	update();
 }
 
-float ImageViewerPlugin::selectionOpacity() const
-{
-	return _selectionOpacity;
-}
-
-void ImageViewerPlugin::setSelectionOpacity(const float& selectionOpacity)
-{
-	if (selectionOpacity == _selectionOpacity)
-		return;
-
-	_selectionOpacity = selectionOpacity;
-
-	qDebug() << "Set selection opacity" << _selectionOpacity;
-
-	emit selectionOpacityChanged(_selectionOpacity);
-}
-
 void ImageViewerPlugin::createSubsetFromSelection()
 {
 	if (_currentImages == nullptr)
@@ -383,6 +365,11 @@ void ImageViewerPlugin::createSubsetFromSelection()
 	qDebug() << "Create subset from selection";
 
 	_currentImages->createSubset();
+}
+
+ImageViewerWidget* ImageViewerPlugin::imageViewerWidget()
+{
+	return _imageViewerWidget;
 }
 
 void ImageViewerPlugin::setDatasetNames(const QStringList& datasetNames)

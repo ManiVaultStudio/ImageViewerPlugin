@@ -50,11 +50,11 @@ protected:
 	QSharedPointer<const QOpenGLFramebufferObject> fbo(const QString& name) const;
 
 protected:
-	float														_depth;
-	QMatrix4x4													_modelViewProjection;
-	QMap<QString, QSharedPointer<QOpenGLShaderProgram>>			_shaderPrograms;
-	QMap<QString, QSharedPointer<QOpenGLTexture>>				_textures;
-	QMap<QString, QSharedPointer<QOpenGLBuffer>>				_vbos;
-	QMap<QString, QSharedPointer<QOpenGLVertexArrayObject>>		_vaos;
-	QMap<QString, QSharedPointer<QOpenGLFramebufferObject>>		_fbos;
+	float														_depth;					/*! Depth (layer) at which to display the rendered content */
+	QMatrix4x4													_modelViewProjection;	/*! Model-view-projection matrix */
+	QMap<QString, QSharedPointer<QOpenGLShaderProgram>>			_shaderPrograms;		/*! OpenGL Shader program map */
+	QMap<QString, QSharedPointer<QOpenGLTexture>>				_textures;				/*! OpenGL texture map */
+	QMap<QString, QSharedPointer<QOpenGLBuffer>>				_vbos;					/*! OpenGL Vertex Buffer Object (VBO) map */
+	QMap<QString, QSharedPointer<QOpenGLVertexArrayObject>>		_vaos;					/*! OpenGL Vertex Attribute Object (VAO) map */
+	QMap<QString, QSharedPointer<QOpenGLFramebufferObject>>		_fbos;					/*! OpenGL frame buffer object map */
 };

@@ -52,9 +52,8 @@ public:
 	void setCurrentDimensionId(const std::int32_t& currentDimensionId);
 	bool averageImages() const;
 	void setAverageImages(const bool& averageImages);
-	float selectionOpacity() const;
-	void setSelectionOpacity(const float& selectionOpacity);
 	void createSubsetFromSelection();
+	ImageViewerWidget* imageViewerWidget();
 
 private:
 	void setDatasetNames(const QStringList& datasetNames);
@@ -70,22 +69,20 @@ signals:
 	void dimensionNamesChanged(const QStringList& dimensionNames);
 	void currentDimensionIdChanged(const std::int32_t& currentDimensionId);
 	void averageImagesChanged(const bool& averageImages);
-	void selectionOpacityChanged(const float& selectionOpacity);
 	void displayImageChanged(std::shared_ptr<QImage> displayImage);
 	void selectionImageChanged(std::shared_ptr<QImage> selectionImage, const QRect& selectionBounds);
 
 private:
-	ImageViewerWidget*	_imageViewerWidget;
-	SettingsWidget*		_settingsWidget;
-	QStringList			_datasetNames;
-	QString				_currentDatasetName;
-	Images*				_currentImages;
-	QStringList			_imageNames;
-	std::int32_t		_currentImageId;
-	QStringList			_dimensionNames;
-	std::int32_t		_currentDimensionId;
-	bool				_averageImages;
-	float				_selectionOpacity;
+	ImageViewerWidget*	_imageViewerWidget;			/*! Pointer to image viewer widget */
+	SettingsWidget*		_settingsWidget;			/*! Image viewer settings widget */
+	QStringList			_datasetNames;				/*! Available datasets */
+	QString				_currentDatasetName;		/*! Name of the currently displayed image dataset */
+	Images*				_currentImages;				/*! Pointer to the Images HDPS data structure */
+	QStringList			_imageNames;				/*! Image names */
+	std::int32_t		_currentImageId;			/*! The index of the current image  */
+	QStringList			_dimensionNames;			/*! Dimension names */
+	std::int32_t		_currentDimensionId;		/*! The index of the current dimension */
+	bool				_averageImages;				/*! Whether to average images (ImageCollectionType::Sequence) */
 };
 
 class ImageViewerPluginFactory : public ViewPluginFactory

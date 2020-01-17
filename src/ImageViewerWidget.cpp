@@ -24,7 +24,6 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_imageQuadRenderer(),
 	_selectionRenderer(),
 	_interactionMode(InteractionMode::Selection),
-	_initialMousePosition(),
 	_mousePosition(),
 	_zoom(1.f),
 	_zoomSensitivity(0.05f),
@@ -33,7 +32,6 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_selectionType(SelectionType::Rectangle),
 	_selectionModifier(SelectionModifier::Replace),
 	_selectionOutlineColor(1.0f, 0.6f, 0.f, 1.0f),
-	_ignorePaintGL(false),
 	_openglDebugLogger(std::make_unique<QOpenGLDebugLogger>())
 {
 	setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
@@ -45,7 +43,6 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	connect(_imageViewerPlugin, &ImageViewerPlugin::currentImageIdChanged, this, &ImageViewerWidget::onCurrentImageIdChanged);
 	connect(_imageViewerPlugin, &ImageViewerPlugin::displayImageChanged, this, &ImageViewerWidget::onDisplayImageChanged);
 	connect(_imageViewerPlugin, &ImageViewerPlugin::selectionImageChanged, this, &ImageViewerWidget::onSelectionImageChanged);
-	connect(_imageViewerPlugin, &ImageViewerPlugin::selectionOpacityChanged, this, &ImageViewerWidget::onSelectionOpacityChanged);
 
 	QSurfaceFormat surfaceFormat;
 
@@ -53,11 +50,14 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	surfaceFormat.setSamples(4);
 
 #ifdef __APPLE__
+	// Ask for an OpenGL 3.3 Core Context as the default
 	surfaceFormat.setVersion(3, 3);
 	surfaceFormat.setProfile(QSurfaceFormat::CoreProfile);
 	surfaceFormat.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
+	//QSurfaceFormat::setDefaultFormat(defaultFormat);
 #else
-	surfaceFormat.setVersion(3, 3);
+	// Ask for an OpenGL 4.3 Core Context as the default
+	surfaceFormat.setVersion(4, 3);
 	surfaceFormat.setProfile(QSurfaceFormat::CoreProfile);
 	surfaceFormat.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
 #endif
@@ -66,7 +66,7 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	surfaceFormat.setOption(QSurfaceFormat::DebugContext);
 #endif
 	
-	surfaceFormat.setSamples(8);
+	surfaceFormat.setSamples(16);
 
 	setFormat(surfaceFormat);
 
@@ -87,8 +87,6 @@ ImageViewerWidget::~ImageViewerWidget()
 void ImageViewerWidget::startMouseInteraction()
 {
 	qDebug() << "Start mouse interaction";
-
-	_initialMousePosition = _mousePosition;
 
 	_mousePositions.clear();
 }
@@ -220,9 +218,6 @@ void ImageViewerWidget::resizeGL(int w, int h)
 
 void ImageViewerWidget::paintGL() {
 
-	if (_ignorePaintGL)
-		return;
-
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -281,13 +276,6 @@ void ImageViewerWidget::onSelectionImageChanged(std::shared_ptr<QImage> selectio
 	_selectionRenderer->setSelectionBounds(worldSelectionBounds);
 
 	doneCurrent();
-
-	update();
-}
-
-void ImageViewerWidget::onSelectionOpacityChanged(const float& selectionOpacity)
-{
-	_selectionRenderer->setOpacity(selectionOpacity);
 
 	update();
 }

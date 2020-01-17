@@ -16,7 +16,8 @@ class SettingsWidget : public QWidget
 {
 public:
 	SettingsWidget(ImageViewerPlugin* imageViewerPlugin);
-    ~SettingsWidget();
+	~SettingsWidget();
+
 private:
 	void onDatasetNamesChanged(const QStringList& datasetNames);
 	void onCurrentDatasetChanged(const QString& currentDataset);
@@ -30,6 +31,6 @@ private:
 	void updateSelectionOpacityUI();
 
 private:
-	ImageViewerPlugin*						_imageViewerPlugin;
-	std::unique_ptr<Ui::SettingsWidget>		_ui;
+	ImageViewerPlugin*						_imageViewerPlugin;		/*! Pointer to the image viewer plugin */
+	std::unique_ptr<Ui::SettingsWidget>		_ui;					/*! UI */
 };

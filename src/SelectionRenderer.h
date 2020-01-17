@@ -25,13 +25,15 @@ public:
 	void resetSelectionBuffer();
 	void setSelectionImage(std::shared_ptr<QImage> image);
 	void setSelectionBounds(const QRect& selectionBounds);
-	void setOpacity(const float& opacity);
+	float selectionOpacity() const;
+	void setSelectionOpacity(const float& selectionOpacity);
 	float brushRadius() const;
 	void setBrushRadius(const float& brushRadius);
 	float brushRadiusDelta() const;
 	void setBrushRadiusDelta(const float& brushRadiusDelta);
 	void brushSizeIncrease();
 	void brushSizeDecrease();
+
 	std::shared_ptr<QImage> selectionImage() const;
 
 protected:
@@ -46,6 +48,9 @@ private:
 	void renderOutline();
 	void renderBounds();
 	void drawPolyline(QVector<QVector2D> points, QOpenGLBuffer* vbo, QOpenGLVertexArrayObject* vao, const bool& closed = true, const float& lineWidth = 1.f, const float& textureScale = 0.05f);
+
+signals:
+	void selectionOpacityChanged(const float& selectionOpacity);
 
 protected:
 	ImageViewerWidget*	_imageViewerWidget;		/*! Pointer to image viewer widget */

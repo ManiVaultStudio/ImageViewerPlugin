@@ -38,8 +38,8 @@ signals:
 	void windowLevelChanged(const float& window, const float& level);
 
 private:
-	std::uint16_t	_imageMin;				/*! Minimum pixel value */
-	std::uint16_t	_imageMax;				/*! Maximum pixel value */
+	std::uint16_t	_imageMin;				/*! Minimum pixel value in the image */
+	std::uint16_t	_imageMax;				/*! Maximum pixel value in the image  */
 	float			_windowNormalized;		/*! Normalized window */
 	float			_levelNormalized;		/*! Normalized level */
 	float			_window;				/*! Window */

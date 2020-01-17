@@ -101,22 +101,20 @@ public:
 	QVector3D screenToWorld(const QPointF& screen) const;
 
 private:
-	ImageViewerPlugin*							_imageViewerPlugin;
-	std::shared_ptr<ImageQuadRenderer>			_imageQuadRenderer;
-	std::shared_ptr<SelectionRenderer>			_selectionRenderer;
-	InteractionMode								_interactionMode;
-	QPoint										_initialMousePosition;
-	QPoint										_mousePosition;
-	std::vector<QPoint>							_mousePositions;
-	QPointF										_pan;
-	float										_zoom;
-	float										_zoomSensitivity;
-	int											_margin;
-	bool										_selecting;
-	SelectionType								_selectionType;
-	SelectionModifier							_selectionModifier;
-	QVector4D									_pixelSelectionColor;
-	QVector4D									_selectionOutlineColor;
-	bool										_ignorePaintGL;
-	std::unique_ptr < QOpenGLDebugLogger>		_openglDebugLogger;
+	ImageViewerPlugin*						_imageViewerPlugin;			/*! Pointer to image viewer plugin */
+	std::shared_ptr<ImageQuadRenderer>		_imageQuadRenderer;			/*! Image quad renderer */
+	std::shared_ptr<SelectionRenderer>		_selectionRenderer;			/*! Selection renderer */
+	InteractionMode							_interactionMode;			/*! Type of interaction e.g. navigation, selection and window/level */
+	QPoint									_mousePosition;				/*! Real-time mouse position */
+	std::vector<QPoint>						_mousePositions;			/*! All recorded mouse positions during interaction event */
+	QPointF									_pan;						/*! Move view horizontally/vertically */
+	float									_zoom;						/*! Zoom view in/out */
+	float									_zoomSensitivity;			/*! Zoom sensitivity */
+	int										_margin;					/*! Margin between image and viewer widget boundaries */
+	bool									_selecting;					/*! Whether selection is taking place */
+	SelectionType							_selectionType;				/*! Type of selection e.g. rectangle, brush and polygon */
+	SelectionModifier						_selectionModifier;			/*! The selection modifier determines if and how new selections are combined with existing selections e.g. add, replace and remove */
+	QVector4D								_pixelSelectionColor;		/*! The color of selected pixels (data points) */
+	QVector4D								_selectionOutlineColor;		/*! Color of outlines e.g. selection geometry/bounds */	
+	std::unique_ptr <QOpenGLDebugLogger>	_openglDebugLogger;			/*! OpenGL debug logger (on in debug mode) */
 };
