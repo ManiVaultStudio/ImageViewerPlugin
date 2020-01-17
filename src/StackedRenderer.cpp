@@ -111,6 +111,11 @@ QSharedPointer<QOpenGLBuffer> StackedRenderer::vbo(const QString& name)
 	return _vbos[name];
 }
 
+QSharedPointer<const QOpenGLBuffer> StackedRenderer::vbo(const QString& name) const
+{
+	return _vbos[name];
+}
+
 QSharedPointer<QOpenGLVertexArrayObject> StackedRenderer::vao(const QString& name)
 {
 	return _vaos[name];
