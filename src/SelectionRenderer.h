@@ -15,12 +15,21 @@ class SelectionRenderer : public QuadRenderer
 	Q_OBJECT
 
 public:
+	/**
+	 * Constructor
+	 * @param depth Depth (layer) to render content at
+	 * @param imageViewerWidget Pointer to image viewer widget
+	 */
 	SelectionRenderer(const float& depth, ImageViewerWidget* imageViewerWidget);
 
 public:
+	/** Renders the content */
 	void render() override;
+
+	/** Initialize the renderer */
 	void init() override;
 
+	/** Return whether the renderer is initialized */
 	bool isInitialized() const override;
 
 public:

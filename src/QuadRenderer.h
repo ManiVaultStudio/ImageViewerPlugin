@@ -16,11 +16,20 @@ class QuadRenderer : public StackedRenderer
 	Q_OBJECT
 
 public:
+	/**
+	 * Constructor
+	 * @param depth Depth (layer) to render content at
+	 */
 	QuadRenderer(const float& depth);
 
 public:
+	/** Initializes the renderer */
 	void init() override;
+
+	/** Resizes the renderer */
 	void resize(QSize renderSize) override;
+
+	/** Renders the content */
 	void render() override;
 
 public:

@@ -13,12 +13,20 @@ class ImageQuadRenderer : public QuadRenderer
 	Q_OBJECT
 
 public:
+	/**
+	 * Constructor
+	 * @param depth Depth (layer) to render content at
+	 */
 	ImageQuadRenderer(const float& depth);
 
 public:
+	/** Initializes the renderer */
 	void init() override;
+
+	/** Renders the content */
 	void render() override;
 
+	/** Return whether the renderer is initialized */
 	bool isInitialized() const override;
 
 public:

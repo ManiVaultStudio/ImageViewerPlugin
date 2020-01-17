@@ -19,7 +19,13 @@ namespace Ui {
 class SettingsWidget : public QWidget
 {
 public:
+	/**
+	 * Constructor
+	 * @param imageViewerPlugin Pointer to the image viewer plugin
+	 */
 	SettingsWidget(ImageViewerPlugin* imageViewerPlugin);
+
+	/** Destructor */
 	~SettingsWidget();
 
 private:

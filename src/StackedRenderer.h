@@ -23,12 +23,20 @@ class StackedRenderer : public QObject, public hdps::Renderer
 	Q_OBJECT
 
 public:
+	/**
+	 * Constructor
+	 * @param depth Depth (layer) to render content at
+	 */
 	StackedRenderer(const float& depth);
 	
 public:
+	/** Initializes the renderer */
 	void init() override;
+
+	/** Destroys the renderer */
 	void destroy() override;
 
+	/** Return whether the renderer is initialized */
 	virtual bool isInitialized() const = 0;
 
 public:

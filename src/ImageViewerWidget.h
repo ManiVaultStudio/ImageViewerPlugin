@@ -29,7 +29,13 @@ class ImageViewerWidget : public QOpenGLWidget, protected QOpenGLFunctions
 	Q_OBJECT
 
 public:
+	/**
+	 * Constructor
+	 * @param imageViewerPlugin Pointer to image viewer plugin
+	 */
 	ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin);
+
+	/** Destructor */
 	~ImageViewerWidget() override;
 
 public:

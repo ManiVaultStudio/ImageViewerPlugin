@@ -21,14 +21,25 @@ class ImageViewerPlugin : public ViewPlugin
 	Q_OBJECT
 
 public:
+	/** Constructor */
 	ImageViewerPlugin();
 
+	/** Initializes the plugin */
 	void init() override;
 
+	/** Triggered when image data is added */
 	void dataAdded(const QString name) Q_DECL_OVERRIDE;
+
+	/** Triggered when image data is changed */
 	void dataChanged(const QString name) Q_DECL_OVERRIDE;
+
+	/** Triggered when image data is removed */
 	void dataRemoved(const QString name) Q_DECL_OVERRIDE;
+
+	/** Triggered when selection has changed */
 	void selectionChanged(const QString dataName) Q_DECL_OVERRIDE;
+
+	/** Determines which data types this the image viewer is compatible with */
 	hdps::DataTypes supportedDataTypes() const Q_DECL_OVERRIDE;
 
 public:
