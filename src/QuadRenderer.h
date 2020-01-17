@@ -7,6 +7,10 @@
 #include <QSize>
 #include <QVector>
 
+/**
+ * Quad renderer
+ * This renderer class is used to display quads using OpenGL
+ */
 class QuadRenderer : public StackedRenderer
 {
 	Q_OBJECT

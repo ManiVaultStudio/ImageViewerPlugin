@@ -12,6 +12,10 @@ using hdps::plugin::ViewPlugin;
 class ImageViewerWidget;
 class SettingsWidget;
 
+/**
+ * Image viewer plugin class
+ * This HDPS view plugin class provides functionality to view/interact with high-dimensional image data
+ */
 class ImageViewerPlugin : public ViewPlugin
 {
 	Q_OBJECT

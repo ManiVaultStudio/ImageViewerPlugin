@@ -12,6 +12,10 @@ namespace Ui {
 	class SettingsWidget;
 }
 
+/**
+ * Settings widget class
+ * This widget provides a user interface to interact with high-dimensional image data
+ */
 class SettingsWidget : public QWidget
 {
 public:

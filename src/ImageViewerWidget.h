@@ -20,6 +20,10 @@ class QMenu;
 
 class ImageViewerPlugin;
 
+/**
+ * Image viewer widget class
+ * This widget displays high-dimensional image data
+ */
 class ImageViewerWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
 	Q_OBJECT

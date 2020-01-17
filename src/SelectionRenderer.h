@@ -6,6 +6,10 @@
 
 class ImageViewerWidget;
 
+/**
+ * Selection renderer class
+ * This renderer class is used to display selections of high-dimensional image data using OpenGL
+ */
 class SelectionRenderer : public QuadRenderer
 {
 	Q_OBJECT

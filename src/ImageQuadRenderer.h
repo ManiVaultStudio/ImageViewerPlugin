@@ -4,6 +4,10 @@
 
 #include "QuadRenderer.h"
 
+/**
+ * Image quad renderer class
+ * This renderer class is used to display textured quads using OpenGL
+ */
 class ImageQuadRenderer : public QuadRenderer
 {
 	Q_OBJECT

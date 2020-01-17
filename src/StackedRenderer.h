@@ -14,6 +14,10 @@
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLFramebufferObject>
 
+/**
+ * Stacked renderer class
+ * This renderer class is used to render content in layers using OpenGL
+ */
 class StackedRenderer : public QObject, public hdps::Renderer
 {
 	Q_OBJECT
