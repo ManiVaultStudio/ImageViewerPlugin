@@ -420,7 +420,7 @@ void ImageViewerPlugin::updateWindowTitle()
 {
 	QStringList properties;
 
-	properties << QString("dataset=%1").arg(_currentDatasetName);
+	//properties << QString("dataset=%1").arg(_currentDatasetName);
 	//properties << QString("image=%1").arg(_imageNames.size() > 0 ? _imageNames[_currentImageId] : "");
 	//properties << QString("dimension=%1").arg(_dimensionNames.size() > 0 ? _dimensionNames[_currentDimensionId] : "");
 	

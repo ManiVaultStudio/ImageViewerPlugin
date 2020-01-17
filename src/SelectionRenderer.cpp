@@ -124,7 +124,7 @@ void SelectionRenderer::setImageSize(const QSize& size)
 	}
 
 	if (createFBO) {
-		_fbos.insert("SelectionBuffer", std::make_shared<QOpenGLFramebufferObject>(size.width(), size.height()));
+		_fbos.insert("SelectionBuffer", QSharedPointer<QOpenGLFramebufferObject>::create(size.width(), size.height()));
 	}
 
 	setSize(size);
@@ -251,7 +251,7 @@ void SelectionRenderer::resetSelectionBuffer()
 
 void SelectionRenderer::setSelectionImage(std::shared_ptr<QImage> image)
 {
-	auto selectionTexture = std::make_shared<QOpenGLTexture>(*image.get());
+	auto selectionTexture = QSharedPointer<QOpenGLTexture>::create(*image.get());
 
 	selectionTexture->setMinMagFilters(QOpenGLTexture::Nearest, QOpenGLTexture::Nearest);
 
@@ -331,7 +331,7 @@ bool SelectionRenderer::isInitialized() const
 
 void SelectionRenderer::createShaderPrograms()
 {
-	auto overlayProgram = std::make_shared<QOpenGLShaderProgram>();
+	auto overlayProgram = QSharedPointer<QOpenGLShaderProgram>::create();
 
 	overlayProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, selectionOverlayVertexShaderSource.c_str());
 	overlayProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, selectionOverlayFragmentShaderSource.c_str());
@@ -339,7 +339,7 @@ void SelectionRenderer::createShaderPrograms()
 
 	_shaderPrograms.insert("Overlay", overlayProgram);
 
-	auto outlineProgram = std::make_shared<QOpenGLShaderProgram>();
+	auto outlineProgram = QSharedPointer<QOpenGLShaderProgram>::create();
 
 	outlineProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, selectionOutlineVertexShaderSource.c_str());
 	outlineProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, selectionOutlineFragmentShaderSource.c_str());
@@ -347,7 +347,7 @@ void SelectionRenderer::createShaderPrograms()
 
 	_shaderPrograms.insert("Outline", outlineProgram);
 
-	auto selectionBufferProgram = std::make_shared<QOpenGLShaderProgram>();
+	auto selectionBufferProgram = QSharedPointer<QOpenGLShaderProgram>::create();
 
 	selectionBufferProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, selectionBufferVertexShaderSource.c_str());
 	selectionBufferProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, selectionBufferFragmentShaderSource.c_str());
@@ -355,7 +355,7 @@ void SelectionRenderer::createShaderPrograms()
 
 	_shaderPrograms.insert("SelectionBuffer", selectionBufferProgram);
 
-	auto selectionProgram = std::make_shared<QOpenGLShaderProgram>();
+	auto selectionProgram = QSharedPointer<QOpenGLShaderProgram>::create();
 
 	selectionProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, selectionVertexShaderSource.c_str());
 	selectionProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, selectionFragmentShaderSource.c_str());
@@ -363,7 +363,7 @@ void SelectionRenderer::createShaderPrograms()
 
 	_shaderPrograms.insert("Selection", selectionProgram);
 
-	auto boundsProgram = std::make_shared<QOpenGLShaderProgram>();
+	auto boundsProgram = QSharedPointer<QOpenGLShaderProgram>::create();
 
 	boundsProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, selectionBoundsVertexShaderSource.c_str());
 	boundsProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, selectionBoundsFragmentShaderSource.c_str());
@@ -374,14 +374,14 @@ void SelectionRenderer::createShaderPrograms()
 
 void SelectionRenderer::createTextures()
 {
-	_textures.insert("Selection", std::make_shared<QOpenGLTexture>(QOpenGLTexture::Target2D));
+	_textures.insert("Selection", QSharedPointer<QOpenGLTexture>::create(QOpenGLTexture::Target2D));
 
 	auto boundsStippleImage = QImage(2, 1, QImage::Format::Format_RGBA8888);
 
 	boundsStippleImage.setPixelColor(QPoint(0, 0), _boundsColor);
 	boundsStippleImage.setPixelColor(QPoint(1, 0), QColor(0, 0, 0, 0));
 
-	auto boundsStippleTexture = std::make_shared<QOpenGLTexture>(boundsStippleImage);
+	auto boundsStippleTexture = QSharedPointer<QOpenGLTexture>::create(boundsStippleImage);
 
 	boundsStippleTexture->setWrapMode(QOpenGLTexture::Repeat);
 	boundsStippleTexture->setMinMagFilters(QOpenGLTexture::Nearest, QOpenGLTexture::Nearest);
@@ -393,7 +393,7 @@ void SelectionRenderer::createTextures()
 	outlineStippleImage.setPixelColor(QPoint(0, 0), _outlineColor);
 	outlineStippleImage.setPixelColor(QPoint(1, 0), QColor(0, 0, 0, 0));
 
-	auto outlineStippleTexture = std::make_shared<QOpenGLTexture>(outlineStippleImage);
+	auto outlineStippleTexture = QSharedPointer<QOpenGLTexture>::create(outlineStippleImage);
 
 	outlineStippleTexture->setWrapMode(QOpenGLTexture::Repeat);
 	outlineStippleTexture->setMinMagFilters(QOpenGLTexture::Nearest, QOpenGLTexture::Nearest);
@@ -403,9 +403,9 @@ void SelectionRenderer::createTextures()
 
 void SelectionRenderer::createVBOs()
 {
-	auto quadVBO		= std::make_shared<QOpenGLBuffer>();
-	auto outlineVBO		= std::make_shared<QOpenGLBuffer>();
-	auto boundsVBO		= std::make_shared<QOpenGLBuffer>();
+	auto quadVBO		= QSharedPointer<QOpenGLBuffer>::create();
+	auto outlineVBO		= QSharedPointer<QOpenGLBuffer>::create();
+	auto boundsVBO		= QSharedPointer<QOpenGLBuffer>::create();
 
 	quadVBO->create();
 	outlineVBO->create();
@@ -418,9 +418,9 @@ void SelectionRenderer::createVBOs()
 
 void SelectionRenderer::createVAOs()
 {
-	auto quadVAO	= std::make_shared<QOpenGLVertexArrayObject>();
-	auto outlineVAO	= std::make_shared<QOpenGLVertexArrayObject>();
-	auto boundsVAO	= std::make_shared<QOpenGLVertexArrayObject>();
+	auto quadVAO	= QSharedPointer<QOpenGLVertexArrayObject>::create();
+	auto outlineVAO	= QSharedPointer<QOpenGLVertexArrayObject>::create();
+	auto boundsVAO	= QSharedPointer<QOpenGLVertexArrayObject>::create();
 
 	quadVAO->create();
 	outlineVAO->create();

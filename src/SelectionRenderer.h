@@ -4,11 +4,6 @@
 
 #include "QuadRenderer.h"
 
-#include <QVector>
-#include <QVector3D>
-#include <QVector4D>
-#include <QRect>
-
 class ImageViewerWidget;
 
 class SelectionRenderer : public QuadRenderer
@@ -21,6 +16,8 @@ public:
 public:
 	void render() override;
 	void init();
+
+	bool isInitialized() const override;
 
 public:
 	void setImageSize(const QSize& size);
@@ -38,7 +35,6 @@ public:
 	std::shared_ptr<QImage> selectionImage() const;
 
 protected:
-	bool isInitialized() const override;
 	void createShaderPrograms() override;
 	void createTextures() override;
 	void createVBOs() override;
@@ -52,14 +48,14 @@ private:
 	void drawPolyline(QVector<QVector2D> points, QOpenGLBuffer* vbo, QOpenGLVertexArrayObject* vao, const bool& closed = true, const float& lineWidth = 1.f, const float& textureScale = 0.05f);
 
 protected:
-	ImageViewerWidget*		_imageViewerWidget;		/*! Pointer to image viewer widget */
-	QColor					_bufferColor;			/*! Selected pixel color during selection */
-	QColor					_selectionColor;		/*! Pixel color of selected data points */
-	QColor					_boundsColor;			/*! Line color of selection bounds */
-	float					_boundsLineWidth;		/*! Line width of selection bounds */
-	QColor					_outlineColor;			/*! Outline color of selection geometry */
-	float					_outlineLineWidth;		/*! Outline line width of selection geometry */
-	QRect					_bounds;				/*! Selection bounds */
-	float					_brushRadius;			/*! Selection brush radius */
-	float					_brushRadiusDelta;		/*! Selection brush size increase/decrease delta */
+	ImageViewerWidget*	_imageViewerWidget;		/*! Pointer to image viewer widget */
+	QColor				_bufferColor;			/*! Selected pixel color during selection */
+	QColor				_selectionColor;		/*! Pixel color of selected data points */
+	QColor				_boundsColor;			/*! Line color of selection bounds */
+	float				_boundsLineWidth;		/*! Line width of selection bounds */
+	QColor				_outlineColor;			/*! Outline color of selection geometry */
+	float				_outlineLineWidth;		/*! Outline line width of selection geometry */
+	QRect				_bounds;				/*! Selection bounds */
+	float				_brushRadius;			/*! Selection brush radius */
+	float				_brushRadiusDelta;		/*! Selection brush size increase/decrease delta */
 };

@@ -106,7 +106,7 @@ void ImageQuadRenderer::setImage(std::shared_ptr<QImage> image)
 		}
 	}
 
-	auto quadTexture = std::make_shared<QOpenGLTexture>(QOpenGLTexture::Target2D);
+	auto quadTexture = QSharedPointer<QOpenGLTexture>::create(QOpenGLTexture::Target2D);
 
 	quadTexture->create();
 	quadTexture->setSize(image->size().width(), image->size().height());
@@ -182,7 +182,7 @@ bool ImageQuadRenderer::isInitialized() const
 
 void ImageQuadRenderer::createShaderPrograms()
 {
-	auto quadProgram = std::make_shared<QOpenGLShaderProgram>();
+	auto quadProgram = QSharedPointer<QOpenGLShaderProgram>::create();
 
 	quadProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, imageVertexShaderSource.c_str());
 	quadProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, imageFragmentShaderSource.c_str());
@@ -193,5 +193,5 @@ void ImageQuadRenderer::createShaderPrograms()
 
 void ImageQuadRenderer::createTextures()
 {
-	_textures.insert("Quad", std::make_shared<QOpenGLTexture>(QOpenGLTexture::Target2D));
+	_textures.insert("Quad", QSharedPointer<QOpenGLTexture>::create(QOpenGLTexture::Target2D));
 }

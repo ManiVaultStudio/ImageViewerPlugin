@@ -86,47 +86,47 @@ void StackedRenderer::createVAOs()
 {
 }
 
-std::shared_ptr<QOpenGLShaderProgram> StackedRenderer::shaderProgram(const QString& name)
+QSharedPointer<QOpenGLShaderProgram> StackedRenderer::shaderProgram(const QString& name)
 {
 	return _shaderPrograms[name];
 }
 
-std::shared_ptr<const QOpenGLShaderProgram> StackedRenderer::shaderProgram(const QString& name) const
+QSharedPointer<const QOpenGLShaderProgram> StackedRenderer::shaderProgram(const QString& name) const
 {
 	return _shaderPrograms[name];
 }
 
-std::shared_ptr<QOpenGLTexture> StackedRenderer::texture(const QString& name)
+QSharedPointer<QOpenGLTexture> StackedRenderer::texture(const QString& name)
 {
 	return _textures[name];
 }
 
-std::shared_ptr<const QOpenGLTexture> StackedRenderer::texture(const QString& name) const
+QSharedPointer<const QOpenGLTexture> StackedRenderer::texture(const QString& name) const
 {
 	return _textures[name];
 }
 
-std::shared_ptr<QOpenGLBuffer> StackedRenderer::vbo(const QString& name)
+QSharedPointer<QOpenGLBuffer> StackedRenderer::vbo(const QString& name)
 {
 	return _vbos[name];
 }
 
-std::shared_ptr<QOpenGLVertexArrayObject> StackedRenderer::vao(const QString& name)
+QSharedPointer<QOpenGLVertexArrayObject> StackedRenderer::vao(const QString& name)
 {
 	return _vaos[name];
 }
 
-std::shared_ptr<const QOpenGLVertexArrayObject> StackedRenderer::vao(const QString& name) const
+QSharedPointer<const QOpenGLVertexArrayObject> StackedRenderer::vao(const QString& name) const
 {
 	return _vaos[name];
 }
 
-std::shared_ptr<QOpenGLFramebufferObject> StackedRenderer::fbo(const QString& name)
+QSharedPointer<QOpenGLFramebufferObject> StackedRenderer::fbo(const QString& name)
 {
 	return _fbos[name];
 }
 
-std::shared_ptr<const QOpenGLFramebufferObject> StackedRenderer::fbo(const QString& name) const
+QSharedPointer<const QOpenGLFramebufferObject> StackedRenderer::fbo(const QString& name) const
 {
 	return _fbos[name];
 }

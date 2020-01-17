@@ -1,21 +1,20 @@
 #pragma once
 
-#include <QOpenGLWidget>
-#include <QOpenGLFunctions>
-#include <QOpenGLTexture>
-#include <QMouseEvent>
-#include <QColor>
-#include <QRect>
-#include <QOpenGLDebugLogger>
-
-#include <memory>
-
-#include "ImageData/ImageData.h"
-
 #include "Common.h"
 
 #include "ImageQuadRenderer.h"
 #include "SelectionRenderer.h"
+
+#include "ImageData/ImageData.h"
+
+#include <memory>
+
+#include <QOpenGLWidget>
+#include <QOpenGLFunctions>
+#include <QMouseEvent>
+#include <QColor>
+#include <QRect>
+#include <QOpenGLDebugLogger>
 
 class QMenu;
 
@@ -68,8 +67,6 @@ private:
 	void mouseMoveEvent(QMouseEvent* mouseEvent) Q_DECL_OVERRIDE;
 	void mouseReleaseEvent(QMouseEvent* mouseEvent) Q_DECL_OVERRIDE;
 	void wheelEvent(QWheelEvent* wheelEvent) Q_DECL_OVERRIDE;
-
-	bool initialized();
 
 public:
 	void startMouseInteraction();

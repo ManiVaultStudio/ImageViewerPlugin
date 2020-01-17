@@ -25,6 +25,8 @@ public:
 	void init() override;
 	void destroy() override;
 
+	virtual bool isInitialized() const = 0;
+
 public:
 	float depth() const;
 	void setDepth(const float& depth);
@@ -32,28 +34,27 @@ public:
 	void setModelViewProjection(const QMatrix4x4& modelViewProjection);
 
 protected:
-	virtual bool isInitialized() const = 0;
 	virtual void createShaderPrograms();
 	virtual void createTextures();
 	virtual void createVBOs();
-	virtual void createVAOs(); 
+	virtual void createVAOs();
 
-	std::shared_ptr<QOpenGLShaderProgram> shaderProgram(const QString& name);
-	std::shared_ptr<const QOpenGLShaderProgram> shaderProgram(const QString& name) const;
-	std::shared_ptr<QOpenGLTexture> texture(const QString& name);
-	std::shared_ptr<const QOpenGLTexture> texture(const QString& name) const;
-	std::shared_ptr<QOpenGLBuffer> vbo(const QString& name);
-	std::shared_ptr<QOpenGLVertexArrayObject> vao(const QString& name);
-	std::shared_ptr<const QOpenGLVertexArrayObject> vao(const QString& name) const;
-	std::shared_ptr<QOpenGLFramebufferObject> fbo(const QString& name);
-	std::shared_ptr<const QOpenGLFramebufferObject> fbo(const QString& name) const;
+	QSharedPointer<QOpenGLShaderProgram> shaderProgram(const QString& name);
+	QSharedPointer<const QOpenGLShaderProgram> shaderProgram(const QString& name) const;
+	QSharedPointer<QOpenGLTexture> texture(const QString& name);
+	QSharedPointer<const QOpenGLTexture> texture(const QString& name) const;
+	QSharedPointer<QOpenGLBuffer> vbo(const QString& name);
+	QSharedPointer<QOpenGLVertexArrayObject> vao(const QString& name);
+	QSharedPointer<const QOpenGLVertexArrayObject> vao(const QString& name) const;
+	QSharedPointer<QOpenGLFramebufferObject> fbo(const QString& name);
+	QSharedPointer<const QOpenGLFramebufferObject> fbo(const QString& name) const;
 
 protected:
 	float														_depth;
 	QMatrix4x4													_modelViewProjection;
-	QMap<QString, std::shared_ptr<QOpenGLShaderProgram>>		_shaderPrograms;
-	QMap<QString, std::shared_ptr<QOpenGLTexture>>				_textures;
-	QMap<QString, std::shared_ptr<QOpenGLBuffer>>				_vbos;
-	QMap<QString, std::shared_ptr<QOpenGLVertexArrayObject>>	_vaos;
-	QMap<QString, std::shared_ptr<QOpenGLFramebufferObject>>	_fbos;
+	QMap<QString, QSharedPointer<QOpenGLShaderProgram>>			_shaderPrograms;
+	QMap<QString, QSharedPointer<QOpenGLTexture>>				_textures;
+	QMap<QString, QSharedPointer<QOpenGLBuffer>>				_vbos;
+	QMap<QString, QSharedPointer<QOpenGLVertexArrayObject>>		_vaos;
+	QMap<QString, QSharedPointer<QOpenGLFramebufferObject>>		_fbos;
 };

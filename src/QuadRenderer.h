@@ -5,9 +5,7 @@
 #include "StackedRenderer.h"
 
 #include <QSize>
-#include <QImage>
 #include <QVector>
-#include <QMatrix4x4>
 
 class QuadRenderer : public StackedRenderer
 {

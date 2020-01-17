@@ -383,7 +383,7 @@ void ImageViewerWidget::keyReleaseEvent(QKeyEvent* keyEvent)
 
 void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 {
-	if (!initialized())
+	if (!_imageQuadRenderer->isInitialized())
 		return;
 
 	qDebug() << "Mouse press event";
@@ -440,7 +440,7 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 
 void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 
-	if (!initialized())
+	if (!_imageQuadRenderer->isInitialized())
 		return;
 
 	if (!_mousePositions.empty() && mouseEvent->pos() == _mousePositions.back())
@@ -544,7 +544,7 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 
 void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 
-	if (!initialized())
+	if (!_imageQuadRenderer->isInitialized())
 		return;
 
 	qDebug() << "Mouse release event";
@@ -603,7 +603,7 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 
 void ImageViewerWidget::wheelEvent(QWheelEvent* wheelEvent) {
 
-	if (!initialized())
+	if (!_imageQuadRenderer->isInitialized())
 		return;
 
 	qDebug() << "Mouse wheel event" << interactionModeTypeName(_interactionMode);
@@ -734,12 +734,6 @@ void ImageViewerWidget::resetView()
 	_zoom = 1.f;
 
 	update();
-}
-
-bool ImageViewerWidget::initialized()
-{
-	return true;
-	//return _displayImage.get() != nullptr;
 }
 
 QVector3D ImageViewerWidget::screenToWorld(const QPointF& screen) const

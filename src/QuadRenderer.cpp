@@ -71,14 +71,14 @@ void QuadRenderer::setSize(const QSize& size)
 
 void QuadRenderer::createVBOs()
 {
-	auto quadVBO = std::make_shared<QOpenGLBuffer>();
+	auto quadVBO = QSharedPointer<QOpenGLBuffer>::create();
 
 	_vbos.insert("Quad", quadVBO);
 }
 
 void QuadRenderer::createVAOs()
 {
-	auto quadVAO = std::make_shared<QOpenGLVertexArrayObject>();
+	auto quadVAO = QSharedPointer<QOpenGLVertexArrayObject>::create();
 
 	_vaos.insert("Quad", quadVAO);
 }

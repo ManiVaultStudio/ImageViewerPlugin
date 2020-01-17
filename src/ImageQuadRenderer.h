@@ -15,6 +15,8 @@ public:
 	void init() override;
 	void render() override;
 
+	bool isInitialized() const;
+
 public:
 	void setImage(std::shared_ptr<QImage> image);
 	std::uint16_t imageMin() const;
@@ -26,7 +28,6 @@ public:
 	void resetWindowLevel();
 
 protected:
-	bool isInitialized() const;
 	void createShaderPrograms();
 	void createTextures();
 

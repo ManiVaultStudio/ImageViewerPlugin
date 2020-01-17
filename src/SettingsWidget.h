@@ -2,9 +2,9 @@
 
 #include "Common.h"
 
-#include <QWidget>
-
 #include <memory>
+
+#include <QWidget>
 
 class ImageViewerPlugin;
 
