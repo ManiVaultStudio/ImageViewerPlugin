@@ -96,7 +96,7 @@ ImageCollectionType ImageViewerPlugin::imageCollectionType() const
 	return _currentImages->imageCollectionType();
 }
 
-bool ImageViewerPlugin::selectable() const
+bool ImageViewerPlugin::allowsPixelSelection() const
 {
 	return imageCollectionType() == ImageCollectionType::Stack;
 }

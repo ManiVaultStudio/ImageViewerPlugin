@@ -384,7 +384,7 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 		{
 			_mousePosition = mouseEvent->pos();
 
-			if (_imageViewerPlugin->selectable()) {
+			if (_imageViewerPlugin->allowsPixelSelection()) {
 				if (_mousePositions.empty())
 					startSelection();
 
@@ -459,7 +459,7 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 						worldMousePositions.push_back(screenToWorld(mousePosition));
 					}
 
-					if (_imageViewerPlugin->selectable() && _selecting) {
+					if (_imageViewerPlugin->allowsPixelSelection() && _selecting) {
 						if (_selectionType != SelectionType::Polygon) {
 							_mousePositions.push_back(mouseEvent->pos());
 						}
@@ -550,7 +550,7 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 		{
 			if (_interactionMode == InteractionMode::Selection)
 			{
-				if (_imageViewerPlugin->selectable() && _selecting) {
+				if (_imageViewerPlugin->allowsPixelSelection() && _selecting) {
 					if (_selectionType != SelectionType::Polygon) {
 						endSelection();
 					}
