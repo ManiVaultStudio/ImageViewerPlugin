@@ -96,8 +96,8 @@ signals:
 private:
 	std::uint16_t	_imageMin;				/*! Minimum pixel value in the image */
 	std::uint16_t	_imageMax;				/*! Maximum pixel value in the image  */
-	float			_windowNormalized;		/*! Normalized window */
-	float			_levelNormalized;		/*! Normalized level */
-	float			_window;				/*! Window */
-	float			_level;					/*! Level */
+	float			_windowNormalized;		/*! Normalized display window */
+	float			_levelNormalized;		/*! Normalized display level */
+	float			_window;				/*! Display window */
+	float			_level;					/*! Display level */
 };
