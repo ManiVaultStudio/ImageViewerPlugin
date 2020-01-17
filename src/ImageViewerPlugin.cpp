@@ -429,8 +429,8 @@ void ImageViewerPlugin::updateWindowTitle()
 	properties << QString("width=%1").arg(QString::number(size.width()));
 	properties << QString("height=%1").arg(QString::number(size.height()));
 
-	properties << QString("window=%1").arg(QString::number(_imageViewerWidget->imageQuadRenderer()->window(), 'f', 2));
-	properties << QString("level=%1").arg(QString::number(_imageViewerWidget->imageQuadRenderer()->level(), 'f', 2));
+	properties << QString("window=%1").arg(QString::number(_imageViewerWidget->imageQuadRenderer()->windowNormalized(), 'f', 2));
+	properties << QString("level=%1").arg(QString::number(_imageViewerWidget->imageQuadRenderer()->levelNormalized(), 'f', 2));
 	properties << QString("imageMin=%1").arg(QString::number(_imageViewerWidget->imageQuadRenderer()->imageMin()));
 	properties << QString("imageMax=%1").arg(QString::number(_imageViewerWidget->imageQuadRenderer()->imageMax()));
 	properties << QString("noSelectedPixels=%1").arg(QString::number(selection().size()));

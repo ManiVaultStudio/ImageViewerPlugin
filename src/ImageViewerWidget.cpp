@@ -504,8 +504,8 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 				const auto worldPos = screenToWorld(_mousePosition);
 				const auto deltaWindow = (mouseEvent->pos().x() - _mousePosition.x()) / 150.f;
 				const auto deltaLevel = -(mouseEvent->pos().y() - _mousePosition.y()) / 150.f;
-				const auto window = std::clamp(_imageQuadRenderer->window() + deltaWindow, 0.0f, 1.0f);
-				const auto level = std::clamp(_imageQuadRenderer->level() + deltaLevel, 0.0f, 1.0f);
+				const auto window = std::clamp(_imageQuadRenderer->windowNormalized() + deltaWindow, 0.0f, 1.0f);
+				const auto level = std::clamp(_imageQuadRenderer->levelNormalized() + deltaLevel, 0.0f, 1.0f);
 
 				_imageQuadRenderer->setWindowLevel(window, level);
 
