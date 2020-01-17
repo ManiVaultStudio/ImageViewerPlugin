@@ -16,8 +16,8 @@ SelectionRenderer::SelectionRenderer(const float& depth, ImageViewerWidget* imag
 	_selectionColor(255, 0, 0, 153),
 	_boundsColor(255, 153, 0, 70),
 	_boundsLineWidth(2.0f),
-	_outlineColor(255, 153, 0, 150),
-	_outlineLineWidth(2.0f),
+	_outlineColor(255, 153, 0, 255),
+	_outlineLineWidth(3.0f),
 	_brushRadius(50.f),
 	_brushRadiusDelta(2.0f),
 	_bounds()
@@ -400,15 +400,18 @@ void SelectionRenderer::createTextures()
 
 	_textures["BoundsStipple"] = boundsStippleTexture;
 
-	auto outlineStippleImage = QImage(2, 1, QImage::Format::Format_RGBA8888);
+	auto outlineStippleImage = QImage(1, 1, QImage::Format::Format_RGBA8888);
+
+	auto fade = _outlineColor;
+
+	fade.setAlpha(0);
 
 	outlineStippleImage.setPixelColor(QPoint(0, 0), _outlineColor);
-	outlineStippleImage.setPixelColor(QPoint(1, 0), QColor(0, 0, 0, 0));
 
 	auto outlineStippleTexture = QSharedPointer<QOpenGLTexture>::create(outlineStippleImage);
 
 	outlineStippleTexture->setWrapMode(QOpenGLTexture::Repeat);
-	outlineStippleTexture->setMinMagFilters(QOpenGLTexture::Nearest, QOpenGLTexture::Nearest);
+	outlineStippleTexture->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
 
 	_textures["OutlineStipple"] = outlineStippleTexture;
 }
@@ -646,10 +649,11 @@ void SelectionRenderer::drawPolyline(QVector<QVector2D> points, QOpenGLBuffer* v
 
 	QVector<QPair<QVector2D, QVector2D>> coordinates;
 
-	
+	auto halfAngleVector = [](const QVector2D& v0, const QVector2D& v1) {
+		if (std::abs(QVector2D::dotProduct(v0, v1)) == 1.0f)
+			return QVector2D(-v0.y(), v0.x()).normalized();
 
-	auto halfAngleVector = [](const QVector2D& a, const QVector2D& b) {
-		return ((a.normalized() + b.normalized()) / 2.0f).normalized();
+		return (v0 + v1).normalized();
 	};
 
 	auto outsideVectorAtPoint = [&points, &noPoints, &closed, &halfAngleVector, &halfLineWidth](const std::uint32_t& id, const QVector2D& direction) {
@@ -713,8 +717,9 @@ void SelectionRenderer::drawPolyline(QVector<QVector2D> points, QOpenGLBuffer* v
 		const auto v0			= (points[id - 1] - p).normalized();
 		const auto v1			= (points[id + 1] - p).normalized();
 		const auto vHalfAngle	= halfAngleVector(v0, v1);
-		const auto vOutside		= halfLineWidth * vHalfAngle * (1.0f / std::abs(QVector2D::dotProduct(vHalfAngle, QVector2D(-v0.y(), v0.x()).normalized())));
+		const auto vOutside		= halfLineWidth * vHalfAngle *(1.0f / std::abs(QVector2D::dotProduct(vHalfAngle, QVector2D(-v0.y(), v0.x()).normalized())));
 
+		//qDebug() << v0 << v1 << vHalfAngle;
 		if (QVector2D::dotProduct(vHalfAngle, direction) < 0)
 			return -vOutside;
 
@@ -779,7 +784,7 @@ void SelectionRenderer::drawPolyline(QVector<QVector2D> points, QOpenGLBuffer* v
 		const auto outer = coordinate.second;
 
 		addVertex(inner.x(), inner.y(), 0.0f, 0.0f);
-		addVertex(outer.x(), outer.y(), 0.0f, 0.0f);
+		addVertex(outer.x(), outer.y(), 0.0f, 1.0f);
 	}
 
 	vbo->bind();

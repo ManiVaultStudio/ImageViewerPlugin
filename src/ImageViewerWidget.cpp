@@ -31,7 +31,6 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_selecting(false),
 	_selectionType(SelectionType::Rectangle),
 	_selectionModifier(SelectionModifier::Replace),
-	_selectionOutlineColor(1.0f, 0.6f, 0.f, 1.0f),
 	_openglDebugLogger(std::make_unique<QOpenGLDebugLogger>())
 {
 	setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
@@ -393,7 +392,7 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 				}
 
 				_mousePositions.push_back(_mousePosition);
-
+				
 				auto worldMousePositions = std::vector<QVector3D>();
 
 				for (const auto& mousePosition : _mousePositions)
@@ -461,7 +460,11 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 
 					if (_imageViewerPlugin->allowsPixelSelection() && _selecting) {
 						if (_selectionType != SelectionType::Polygon) {
-							_mousePositions.push_back(mouseEvent->pos());
+							const auto lastMousePosition = _mousePositions.back();
+							const auto moved = mouseEvent->pos() - lastMousePosition;
+
+							if (moved.manhattanLength() > 10)
+								_mousePositions.push_back(mouseEvent->pos());
 						}
 
 						auto worldMousePositions = std::vector<QVector3D>();
@@ -470,7 +473,7 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 						{
 							worldMousePositions.push_back(screenToWorld(mousePosition));
 						}
-
+						
 						_selectionRenderer->updateSelectionBuffer(_selectionType, worldMousePositions);
 						//worldMousePositions.pop_back();
 						//worldMousePositions.push_back(screenToWorld(_mousePosition));

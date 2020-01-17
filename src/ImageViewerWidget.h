@@ -279,6 +279,5 @@ private:
 	SelectionType							_selectionType;				/*! Type of selection e.g. rectangle, brush and polygon */
 	SelectionModifier						_selectionModifier;			/*! The selection modifier determines if and how new selections are combined with existing selections e.g. add, replace and remove */
 	QVector4D								_pixelSelectionColor;		/*! The color of selected pixels (data points) */
-	QVector4D								_selectionOutlineColor;		/*! Color of outlines e.g. selection geometry/bounds */	
 	std::unique_ptr <QOpenGLDebugLogger>	_openglDebugLogger;			/*! OpenGL debug logger (on in debug mode) */
 };
