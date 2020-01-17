@@ -249,9 +249,9 @@ void SelectionRenderer::resetSelectionBuffer()
 	selectionFBO->release();
 }
 
-void SelectionRenderer::setSelectionImage(std::shared_ptr<QImage> image)
+void SelectionRenderer::setSelectionImage(std::shared_ptr<QImage> selectionImage)
 {
-	auto selectionTexture = QSharedPointer<QOpenGLTexture>::create(*image.get());
+	auto selectionTexture = QSharedPointer<QOpenGLTexture>::create(*selectionImage.get());
 
 	selectionTexture->setMinMagFilters(QOpenGLTexture::Nearest, QOpenGLTexture::Nearest);
 

@@ -129,7 +129,7 @@ private:
 
 signals:
 	/**
-	 * Triggered when the selection opacity has changed
+	 * Invoked when the selection opacity has changed
 	 * @param selectionOpacity Selection opacity
 	 */
 	void selectionOpacityChanged(const float& selectionOpacity);

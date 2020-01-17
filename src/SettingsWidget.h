@@ -30,49 +30,49 @@ public:
 
 private:
 	/** 
-	 * Triggered when data set names changed
+	 * Invoked when data set names changed
 	 * @param datasetNames Data set names
 	 */
 	void onDatasetNamesChanged(const QStringList& datasetNames);
 
 	/** 
-	 * Triggered when the current data set changed
+	 * Invoked when current data set changes
 	 * @param currentDataset Current data set
 	 */
 	void onCurrentDatasetChanged(const QString& currentDataset);
 
 	/** 
-	 * Triggered when image names changed
+	 * Invoked when image names changes
 	 * @param imageNames Image names
 	 */
 	void onImageNamesChanged(const QStringList& imageNames);
 
 	/** 
-	 * Triggered when the current image changed
+	 * Invoked when the current image changes
 	 * @param currentImage Current image index
 	 */
 	void onCurrentImageChanged(const int& currentImage);
 
 	/** 
-	 * Triggered when dimension names changed
+	 * Invoked when dimension names change
 	  * @param dimensionNames Dimension names
 	 */
 	void onDimensionNamesChanged(const QStringList& dimensionNames);
 
 	/** 
-	 * Triggered when current dimension changed
+	 * Invoked when the current dimension changes
 	 * @param currentDimension Current dimension index
 	 */
 	void onCurrentDimensionChanged(const int& currentDimension);
 
 	/**
-	 * Triggered when average images changed
+	 * Invoked when average images changes
 	 * @param averageImages Whether sequence images should be averaged
 	 */
 	void onAverageImagesChanged(const bool& averageImages);
 
 	/** 
-	 * Triggered when the selection image changed
+	 * Invoked when the selection image changes
 	 * @param selectionImage Selection image
 	 * @param selectionBounds Two-dimensional boundaries of the selected pixel in the selection image
 	 */
