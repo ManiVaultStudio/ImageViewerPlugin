@@ -57,7 +57,10 @@ private:
 	void createQuad();
 
 signals:
-	/** Invoked when the quad size has changed */
+	/**
+	 * Invoked when the quad size has changed
+	 * @param size Size of the quad
+	 */
 	void sizeChanged(const QSize& size);
 
 protected:
