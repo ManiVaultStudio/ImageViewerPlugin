@@ -15,7 +15,7 @@ public:
 
 public:
 	void render() override;
-	void init();
+	void init() override;
 
 	bool isInitialized() const override;
 

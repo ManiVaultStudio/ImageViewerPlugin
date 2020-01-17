@@ -10,8 +10,10 @@ ImageQuadRenderer::ImageQuadRenderer(const float& depth) :
 	QuadRenderer(depth),
 	_imageMin(),
 	_imageMax(),
-	_window(),
-	_level()
+	_windowNormalized(),
+	_levelNormalized(),
+	_window(1.0f),
+	_level(0.5f)
 {
 }
 
@@ -55,11 +57,8 @@ void ImageQuadRenderer::render()
 
 		const auto imageMin			= static_cast<float>(_imageMin);
 		const auto imageMax			= static_cast<float>(_imageMax);
-		const auto maxWindow		= static_cast<float>(imageMax - imageMin);
-		const auto level			= std::clamp(imageMin + (_level * maxWindow), imageMin, imageMax);
-		const auto window			= std::clamp(_window * maxWindow, imageMin, imageMax);
-		const auto minPixelValue	= std::clamp(level - (window / 2.0f), imageMin, imageMax);
-		const auto maxPixelValue	= std::clamp(level + (window / 2.0f), imageMin, imageMax);
+		const auto minPixelValue	= std::clamp(_level - (_window / 2.0f), imageMin, imageMax);
+		const auto maxPixelValue	= std::clamp(_level + (_window / 2.0f), imageMin, imageMax);
 
 		quadProgram->setUniformValue("minPixelValue", minPixelValue);
 		quadProgram->setUniformValue("maxPixelValue", maxPixelValue);
@@ -145,9 +144,19 @@ void ImageQuadRenderer::setImageMinMax(const std::uint16_t& imageMin, const std:
 	emit imageMinMaxChanged(_imageMin, _imageMax);
 }
 
+float ImageQuadRenderer::windowNormalized() const
+{
+	return _windowNormalized;
+}
+
 float ImageQuadRenderer::window() const
 {
 	return _window;
+}
+
+float ImageQuadRenderer::levelNormalized() const
+{
+	return _levelNormalized;
 }
 
 float ImageQuadRenderer::level() const
@@ -157,13 +166,18 @@ float ImageQuadRenderer::level() const
 
 void ImageQuadRenderer::setWindowLevel(const float& window, const float& level)
 {
-	if (window == _window && level == _level)
+	if (window == _windowNormalized && level == _levelNormalized)
 		return;
 
-	_window	= std::clamp(window, 0.01f, 1.0f);
-	_level	= std::clamp(level, 0.01f, 1.0f);
+	_windowNormalized	= std::clamp(window, 0.01f, 1.0f);
+	_levelNormalized	= std::clamp(level, 0.01f, 1.0f);
+	
+	const auto maxWindow = static_cast<float>(_imageMax - _imageMin);
 
-	qDebug() << "Set window/level" << _window << _level;
+	_level	= std::clamp(_imageMin + (_levelNormalized * maxWindow), static_cast<float>(_imageMin), static_cast<float>(_imageMax));
+	_window	= std::clamp(_windowNormalized * maxWindow, static_cast<float>(_imageMin), static_cast<float>(_imageMax));
+
+	qDebug() << "Set window/level" << _windowNormalized << _levelNormalized;
 
 	emit windowLevelChanged(_window, _level);
 }
