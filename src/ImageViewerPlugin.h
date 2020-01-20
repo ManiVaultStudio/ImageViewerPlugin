@@ -206,16 +206,16 @@ signals:
 	void selectionImageChanged(std::shared_ptr<QImage> selectionImage, const QRect& selectionBounds);
 
 private:
-	ImageViewerWidget*	_imageViewerWidget;			/*! Pointer to image viewer widget */
-	SettingsWidget*		_settingsWidget;			/*! Image viewer settings widget */
-	QStringList			_datasetNames;				/*! Available datasets */
-	QString				_currentDatasetName;		/*! Name of the currently displayed image dataset */
-	Images*				_currentImages;				/*! Pointer to the Images HDPS data structure */
-	QStringList			_imageNames;				/*! Image names */
-	std::int32_t		_currentImageId;			/*! The index of the current image  */
-	QStringList			_dimensionNames;			/*! Dimension names */
-	std::int32_t		_currentDimensionId;		/*! The index of the current dimension */
-	bool				_averageImages;				/*! Whether to average images (ImageCollectionType::Sequence) */
+	ImageViewerWidget*	_imageViewerWidget;			/** Pointer to image viewer widget */
+	SettingsWidget*		_settingsWidget;			/** Image viewer settings widget */
+	QStringList			_datasetNames;				/** Available datasets */
+	QString				_currentDatasetName;		/** Name of the currently displayed image dataset */
+	Images*				_currentImages;				/** Pointer to the Images HDPS data structure */
+	QStringList			_imageNames;				/** Image names */
+	std::int32_t		_currentImageId;			/** The index of the current image  */
+	QStringList			_dimensionNames;			/** Dimension names */
+	std::int32_t		_currentDimensionId;		/** The index of the current dimension */
+	bool				_averageImages;				/** Whether to average images (ImageCollectionType::Sequence) */
 };
 
 /**
@@ -229,12 +229,12 @@ class ImageViewerPluginFactory : public ViewPluginFactory
 	Q_PLUGIN_METADATA(IID "nl.tudelft.ImageViewerPlugin" FILE "ImageViewerPlugin.json")
 
 public:
-	/** Constructor */
+	/** Default constructor */
 	ImageViewerPluginFactory() {}
 
 	/** Destructor */
 	~ImageViewerPluginFactory() {}
 
-	/** Create an image viewer plugin instance */
+	/** Creates an image viewer plugin instance */
 	ImageViewerPlugin* produce();
 };

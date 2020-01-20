@@ -14,10 +14,10 @@ class QOpenGLShaderProgram;
  */
 enum class InteractionMode
 {
-	None,			/*! No interaction takes place */
-	Navigation,		/*! The image view position and zoom are manipulated */
-	Selection,		/*! Image pixels are selected */
-	WindowLevel		/*! The image display window and/or level are manipulated */
+	None,			/** No interaction takes place */
+	Navigation,		/** The image view position and zoom are manipulated */
+	Selection,		/** Image pixels are selected */
+	WindowLevel		/** The image display window and/or level are manipulated */
 };
 
 /**
@@ -53,10 +53,10 @@ inline QString interactionModeTypeName(const InteractionMode& interactionMode)
  */
 enum class SelectionType
 {
-	Rectangle,		/*! A rectangle is drawn to select pixels */
-	Brush,			/*! A brush is used the paint selection */
-	Lasso,			/*! A lasso tool is used to enclose pixels */
-	Polygon			/*! A polygon is drawn to select pixels */
+	Rectangle,		/** A rectangle is drawn to select pixels */
+	Brush,			/** A brush is used the paint selection */
+	Lasso,			/** A lasso tool is used to enclose pixels */
+	Polygon			/** A polygon is drawn to select pixels */
 };
 
 /**

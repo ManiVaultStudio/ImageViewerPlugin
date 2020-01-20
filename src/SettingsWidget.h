@@ -82,6 +82,6 @@ private:
 	void updateSelectionOpacityUI();
 
 private:
-	ImageViewerPlugin*						_imageViewerPlugin;		/*! Pointer to the image viewer plugin */
-	std::unique_ptr<Ui::SettingsWidget>		_ui;					/*! UI */
+	ImageViewerPlugin*						_imageViewerPlugin;		/** Pointer to the image viewer plugin */
+	std::unique_ptr<Ui::SettingsWidget>		_ui;					/** UI */
 };

@@ -64,8 +64,8 @@ signals:
 	void sizeChanged(const QSize& size);
 
 protected:
-	QSize					_size;						/*! Size of the rendered quad */
-	QVector<GLfloat>		_vertexData;				/*! Quad vertex data */
-	static std::uint32_t	_quadVertexAttribute;		/*! Quad vertex attribute location */
-	static std::uint32_t	_quadTextureAttribute;		/*! Quad texture attribute location */
+	QSize					_size;						/** Size of the rendered quad */
+	QVector<GLfloat>		_vertexData;				/** Quad vertex data */
+	static std::uint32_t	_quadVertexAttribute;		/** Quad vertex attribute location */
+	static std::uint32_t	_quadTextureAttribute;		/** Quad texture attribute location */
 };
