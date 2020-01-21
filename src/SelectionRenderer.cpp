@@ -130,7 +130,7 @@ void SelectionRenderer::setImageSize(const QSize& size)
 	setSize(size);
 }
 
-void SelectionRenderer::updateSelectionBuffer(const SelectionType& selectionType, const std::vector<QVector3D>& mousePositions)
+void SelectionRenderer::updateSelectionBuffer()
 {
 	//qDebug() << "Update selection buffer";
 
@@ -149,6 +149,8 @@ void SelectionRenderer::updateSelectionBuffer(const SelectionType& selectionType
 
 	auto quadVAO = vao("Quad");
 
+	const auto mousePositions = _imageViewerWidget->mousePositionsWorld();
+
 	quadVAO->bind();
 	{
 		auto selectionBufferProgram = shaderProgram("SelectionBuffer");
@@ -158,10 +160,10 @@ void SelectionRenderer::updateSelectionBuffer(const SelectionType& selectionType
 
 			selectionBufferProgram->setUniformValue("pixelSelectionTexture", 0);
 			selectionBufferProgram->setUniformValue("transform", transform);
-			selectionBufferProgram->setUniformValue("selectionType", static_cast<int>(selectionType));
+			selectionBufferProgram->setUniformValue("selectionType", static_cast<int>(_imageViewerWidget->selectionType()));
 			selectionBufferProgram->setUniformValue("imageSize", static_cast<float>(selectionFBO->size().width()), static_cast<float>(selectionFBO->size().height()));
 
-			switch (selectionType)
+			switch (_imageViewerWidget->selectionType())
 			{
 				case SelectionType::Rectangle:
 				{
@@ -419,16 +421,10 @@ void SelectionRenderer::createTextures()
 void SelectionRenderer::createVBOs()
 {
 	auto quadVBO		= QSharedPointer<QOpenGLBuffer>::create();
-	auto outlineVBO		= QSharedPointer<QOpenGLBuffer>::create();
-	auto boundsVBO		= QSharedPointer<QOpenGLBuffer>::create();
 
 	quadVBO->create();
-	outlineVBO->create();
-	boundsVBO->create();
 	
 	_vbos.insert("Quad", quadVBO);
-	_vbos.insert("Outline", outlineVBO);
-	_vbos.insert("Bounds", boundsVBO);
 }
 
 void SelectionRenderer::createVAOs()
@@ -496,6 +492,7 @@ void SelectionRenderer::renderSelection()
 
 void SelectionRenderer::renderOutline()
 {
+	/*
 	if (_imageViewerWidget->interactionMode() != InteractionMode::Selection)
 		return;
 
@@ -599,6 +596,7 @@ void SelectionRenderer::renderOutline()
 
 		outlineProgram->release();
 	}
+	*/
 }
 
 void SelectionRenderer::renderBounds()
@@ -624,183 +622,8 @@ void SelectionRenderer::renderBounds()
 
 		boundsStippleTexture->bind();
 		{
-			drawPolyline(points, vbo("Bounds").get(), vao("Bounds").get(), true, _boundsLineWidth, 0.1f);
+			//drawPolyline(points, true, _boundsLineWidth, 0.1f);
 		}
 		boundsStippleTexture->release();
 	}
-}
-
-void SelectionRenderer::drawPolyline(QVector<QVector2D> points, QOpenGLBuffer* vbo, QOpenGLVertexArrayObject* vao, const bool& closed /*= true*/, const float& lineWidth /*= 1.f*/, const float& textureScale /*= 0.05f*/)
-{
-	if (closed && points.size() > 2) {
-		points.append(points.first());
-	}
-	
-	QVector<float> vertexData;
-
-	const auto noPoints = points.size();
-
-	vertexData.reserve(noPoints * 5);
-
-	const auto pWorld0			= _imageViewerWidget->screenToWorld(QPointF(0.0f, 0.0f));
-	const auto pWorld1			= _imageViewerWidget->screenToWorld(QPointF(lineWidth, 0.0f));
-	const auto worldLineWidth	= (pWorld1 - pWorld0).length();
-	const auto halfLineWidth	= 0.5f * worldLineWidth;
-
-	QVector<QPair<QVector2D, QVector2D>> coordinates;
-
-	auto halfAngleVector = [](const QVector2D& v0, const QVector2D& v1) {
-		if (std::abs(QVector2D::dotProduct(v0, v1)) == 1.0f)
-			return QVector2D(-v0.y(), v0.x()).normalized();
-
-		return (v0 + v1).normalized();
-	};
-
-	auto outsideVectorAtPoint = [&points, &noPoints, &closed, &halfAngleVector, &halfLineWidth](const std::uint32_t& id, const QVector2D& direction) {
-		if (id == 0) {
-			if (closed) {
-				const auto p			= points[0];
-				const auto v0			= (points[noPoints - 2] - p).normalized();
-				const auto v1			= (points[1] - p).normalized();
-				const auto vHalfAngle	= halfAngleVector(v0, v1);
-				const auto vOutside		= halfLineWidth * vHalfAngle * (1.0f / std::abs(QVector2D::dotProduct(vHalfAngle, QVector2D(-v0.y(), v0.x()).normalized())));
-
-				if (QVector2D::dotProduct(vOutside, direction) < 0)
-					return -vOutside;
-
-				return vOutside;
-			}
-			else {
-				const auto p = points[1];
-				const auto a = (points[0] - p).normalized();
-				const auto b = (points[2] - p).normalized();
-				const auto v = (points[1] - points[0]).normalized();
-				const auto ha = halfAngleVector(a, b);
-				const auto vp = halfLineWidth * QVector2D(-v.y(), v.x());
-
-				if (QVector2D::dotProduct(vp, ha) < 0)
-					return -vp;
-
-				return vp;
-			}
-		}
-
-		if (id == noPoints - 1) {
-			if (closed) {
-				const auto p			= points[0];
-				const auto v0			= (points[noPoints - 2] - p).normalized();
-				const auto v1			= (points[1] - p).normalized();
-				const auto vHalfAngle	= halfAngleVector(v0, v1);
-				const auto vOutside		= halfLineWidth * vHalfAngle * (1.0f / std::abs(QVector2D::dotProduct(vHalfAngle, QVector2D(-v0.y(), v0.x()).normalized())));
-
-				if (QVector2D::dotProduct(vOutside, direction) < 0)
-					return -vOutside;
-
-				return vOutside;
-			}
-			else {
-				const auto p = points[noPoints - 1];
-				const auto a = (points[noPoints - 3] - p).normalized();
-				const auto b = (points[noPoints - 2] - p).normalized();
-				const auto v = (points[noPoints - 2] - points[noPoints - 1]).normalized();
-				const auto ha = halfAngleVector(a, b);
-				const auto vp = halfLineWidth * QVector2D(-v.y(), v.x());
-
-				if (QVector2D::dotProduct(vp, ha) < 0)
-					return -vp;
-
-				return vp;
-			}
-		}
-
-		const auto p			= points[id];
-		const auto v0			= (points[id - 1] - p).normalized();
-		const auto v1			= (points[id + 1] - p).normalized();
-		const auto vHalfAngle	= halfAngleVector(v0, v1);
-		const auto vOutside		= halfLineWidth * vHalfAngle *(1.0f / std::abs(QVector2D::dotProduct(vHalfAngle, QVector2D(-v0.y(), v0.x()).normalized())));
-
-		//qDebug() << v0 << v1 << vHalfAngle;
-		if (QVector2D::dotProduct(vHalfAngle, direction) < 0)
-			return -vOutside;
-
-		return vOutside;
-	};
-
-	auto outsidePoint = [&points, &noPoints, &closed, &outsideVectorAtPoint, &halfLineWidth](const std::uint32_t& id, const QVector2D& direction) {
-		if (noPoints == 0)
-			return QVector2D(0.0f, 0.0f);
-
-		if (noPoints == 1)
-			return QVector2D(0.0f, 0.0f);
-
-		if (noPoints == 2) {
-			const auto v = (points[1] - points[0]).normalized();
-			return halfLineWidth * QVector2D(-v.y(), v.x());
-		}
-
-		if (id >= 0 && id < noPoints) {
-			return outsideVectorAtPoint(id, direction);
-		}
-
-		return QVector2D(0.0f, 0.0f);
-	};
-
-	const auto v = (points[1] - points[0]).normalized();
-
-	auto direction = QVector2D(-v.y(), v.x()).normalized();
-
-	for (int j = 0; j < points.size(); ++j)
-	{
-		const auto pOutside	= outsidePoint(j, direction);
-		const auto vInner	= points[j] - pOutside;
-		const auto vOuter	= points[j] + pOutside;
-
-		coordinates.append(QPair(vInner, vOuter));
-
-		if (j < points.size() - 1) {
-			const auto p1		= points[j + 1];
-			const auto p0		= points[j];
-			const auto vPar		= (p1 - p0).normalized();
-			const auto vPerp	= QVector2D(-vPar.y(), vPar.x()).normalized();
-			const auto dot		= QVector2D::dotProduct(pOutside, vPerp);
-
-			direction = vPerp;
-
-			if (dot < 0)
-				direction *= -1.0f;
-		}
-	}
-
-	auto addVertex = [&vertexData](const float& x, const float& y, const float& u, const float& v) {
-		vertexData.append(x);
-		vertexData.append(y);
-		vertexData.append(0.0f);
-		vertexData.append(u);
-		vertexData.append(v);
-	};
-
-	for (const auto& coordinate : coordinates) {
-		const auto inner = coordinate.first;
-		const auto outer = coordinate.second;
-
-		addVertex(inner.x(), inner.y(), 0.0f, 0.0f);
-		addVertex(outer.x(), outer.y(), 0.0f, 1.0f);
-	}
-
-	vbo->bind();
-	{
-		vbo->setUsagePattern(QOpenGLBuffer::DynamicDraw);
-		vbo->allocate(vertexData.constData(), vertexData.count() * sizeof(GLfloat));
-		vbo->release();
-	}
-
-	vao->bind();
-	{
-		vbo->bind();
-		{
-			glDrawArrays(GL_TRIANGLE_STRIP, 0, vertexData.size() / 5);
-		}
-		vbo->release();
-	}
-	vao->release();
 }

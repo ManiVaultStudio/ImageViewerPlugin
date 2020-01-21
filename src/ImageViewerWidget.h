@@ -70,8 +70,11 @@ public:
 	/** Returns the current mouse position */
 	QPoint mousePosition() const;
 
-	/** Returns the mouse positions that were recorded during an interaction event */
-	std::vector<QPoint> mousePositions() const;
+	/** Returns mouse event positions in screen coordinates */
+	std::vector<QPoint> mousePositionsScreen() const;
+
+	/** Returns mouse event positions in three-dimensional world coordinates */
+	std::vector<QVector3D> mousePositionsWorld() const;
 
 	/** Whether the user is currently selecting */
 	bool selecting() const;

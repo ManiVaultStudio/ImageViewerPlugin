@@ -400,7 +400,7 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 					worldMousePositions.push_back(screenToWorld(mousePosition));
 				}
 
-				_selectionRenderer->updateSelectionBuffer(_selectionType, worldMousePositions);
+				_selectionRenderer->updateSelectionBuffer();
 			}
 
 			break;
@@ -466,17 +466,8 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 							if (moved.manhattanLength() > 10)
 								_mousePositions.push_back(mouseEvent->pos());
 						}
-
-						auto worldMousePositions = std::vector<QVector3D>();
-
-						for (const auto& mousePosition : _mousePositions)
-						{
-							worldMousePositions.push_back(screenToWorld(mousePosition));
-						}
 						
-						_selectionRenderer->updateSelectionBuffer(_selectionType, worldMousePositions);
-						//worldMousePositions.pop_back();
-						//worldMousePositions.push_back(screenToWorld(_mousePosition));
+						_selectionRenderer->updateSelectionBuffer();
 					}
 					
 					break;
@@ -509,22 +500,6 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 		default:
 			break;
 	}
-
-	/*
-	if (_interactionMode == InteractionMode::Selection && _selectionType == SelectionType::Polygon) {
-		auto worldMousePositions = std::vector<QVector3D>();
-
-		for (const auto& mousePosition : _mousePositions)
-		{
-			worldMousePositions.push_back(screenToWorld(mousePosition));
-		}
-
-		worldMousePositions.pop_back();
-		worldMousePositions.push_back(screenToWorld(_mousePosition));
-
-		_selectionRenderer->updateSelectionBuffer(_selectionType, worldMousePositions);
-	}
-	*/
 
 	doneCurrent();
 
@@ -977,9 +952,21 @@ QPoint ImageViewerWidget::mousePosition() const
 	return _mousePosition;
 }
 
-std::vector<QPoint> ImageViewerWidget::mousePositions() const
+std::vector<QPoint> ImageViewerWidget::mousePositionsScreen() const
 {
 	return _mousePositions;
+}
+
+std::vector<QVector3D> ImageViewerWidget::mousePositionsWorld() const
+{
+	auto mousePositionsWorld = std::vector<QVector3D>();
+
+	for (const auto& mousePosition : _mousePositions)
+	{
+		mousePositionsWorld.push_back(screenToWorld(mousePosition));
+	}
+
+	return mousePositionsWorld;
 }
 
 bool ImageViewerWidget::selecting() const

@@ -41,11 +41,9 @@ public:
 	void setImageSize(const QSize& size);
 
 	/**
-	 * Update the (temporary) selection buffer during interaction
-	 * @param selectionType Type of selection
-	 * @param mousePositions Mouse positions in world space
+	 * Update the pixel selection buffer during interaction
 	 */
-	void updateSelectionBuffer(const SelectionType& selectionType, const std::vector<QVector3D>& mousePositions);
+	void updateSelectionBuffer();
 
 	/** Reset the (temporary) selection buffer */
 	void resetSelectionBuffer();
@@ -116,17 +114,6 @@ private:
 
 	/** Renders the selection bounds */
 	void renderBounds();
-
-	/**
-	 * Draws a polyline with OpenGL
-	 * @param points Polyline points in world space
-	 * @param vbo Pointer to polyline Vertex Buffer Object (VBO)
-	 * @param vbo Pointer to polyline Vertex Array Object (VAO)
-	 * @param closed Whether to close the polyline
-	 * @param lineWidth Width of the polyline in screen space
-	 * @param textureScale Scale of the texture coordinate (U)
-	 */
-	void drawPolyline(QVector<QVector2D> points, QOpenGLBuffer* vbo, QOpenGLVertexArrayObject* vao, const bool& closed = true, const float& lineWidth = 1.f, const float& textureScale = 0.05f);
 
 signals:
 	/**
