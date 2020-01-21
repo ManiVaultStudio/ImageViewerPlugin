@@ -1,6 +1,8 @@
 R"(
 #version 330
 
+#extension GL_ARB_gpu_shader_fp64 : enable
+
 uniform sampler2D imageTexture;
 uniform float minPixelValue;
 uniform float maxPixelValue;
@@ -12,12 +14,12 @@ void main(void)
 {
 	fragmentColor = texture(imageTexture, uv);
 
-	float range	= maxPixelValue - minPixelValue;
+	double range = maxPixelValue - minPixelValue;
 
 	for (int c = 0; c < 3; c++)
 	{
-		float fraction		= (fragmentColor[c] * 65535.0f) - minPixelValue;
-		fragmentColor[c]	= clamp(fraction / range, 0.0, 1.0);
+		double fraction		= (double(fragmentColor[c]) * 65535.0) - double(minPixelValue);
+		fragmentColor[c]	= float(clamp(fraction / range, 0.0, 1.0));
 	}
 }
 )"

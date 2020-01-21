@@ -22,7 +22,7 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	_currentDimensionId(0),
 	_averageImages(false)
 {
-	qRegisterMetaType<std::shared_ptr<std::shared_ptr<QImage>>>("std::shared_ptr<QImage>");
+	qRegisterMetaType<std::shared_ptr<QImage>>("std::shared_ptr<QImage>");
 
 	//setFocusPolicy(Qt::FocusPolicy::StrongFocus);
 

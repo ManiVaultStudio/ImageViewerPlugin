@@ -111,6 +111,7 @@ void ImageQuadRenderer::setImage(std::shared_ptr<QImage> image)
 	quadTexture->setSize(image->size().width(), image->size().height());
 	quadTexture->setFormat(QOpenGLTexture::RGBA16_UNorm);
 	quadTexture->setWrapMode(QOpenGLTexture::ClampToEdge);
+	quadTexture->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
 	quadTexture->allocateStorage();
 	quadTexture->setData(QOpenGLTexture::PixelFormat::RGBA, QOpenGLTexture::PixelType::UInt16, image->bits());
 
