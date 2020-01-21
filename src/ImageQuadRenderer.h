@@ -7,6 +7,7 @@
 /**
  * Image quad renderer class
  * This renderer class is used to display textured quads using OpenGL
+ * @author Thomas Kroes
  */
 class ImageQuadRenderer : public QuadRenderer
 {

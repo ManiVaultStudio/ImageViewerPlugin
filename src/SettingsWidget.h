@@ -15,6 +15,7 @@ namespace Ui {
 /**
  * Settings widget class
  * This widget provides a user interface to interact with high-dimensional image data
+ * @author Thomas Kroes
  */
 class SettingsWidget : public QWidget
 {

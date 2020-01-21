@@ -23,6 +23,7 @@ class ImageViewerPlugin;
 /**
  * Image viewer widget class
  * This widget displays high-dimensional image data
+ * @author Thomas Kroes
  */
 class ImageViewerWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {

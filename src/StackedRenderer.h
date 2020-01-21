@@ -17,6 +17,7 @@
 /**
  * Stacked renderer class
  * This renderer class is used to render content in layers using OpenGL
+ * @author Thomas Kroes
  */
 class StackedRenderer : public QObject, public hdps::Renderer
 {

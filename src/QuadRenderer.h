@@ -10,6 +10,7 @@
 /**
  * Quad renderer
  * This renderer class is used to display quads using OpenGL
+ * @author Thomas Kroes
  */
 class QuadRenderer : public StackedRenderer
 {
