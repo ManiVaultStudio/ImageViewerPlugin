@@ -19,9 +19,6 @@ void Polyline2D::initialize()
 {
 	Shape::initialize();
 
-	vao()->create();
-	vbo()->create();
-
 	const auto stride = 5 * sizeof(GLfloat);
 
 	if (this->shaderProgram()->isLinked() && this->shaderProgram()->bind()) {

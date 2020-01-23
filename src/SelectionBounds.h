@@ -3,23 +3,31 @@
 #include "Polyline2D.h"
 
 #include <QRectF>
+#include <QColor>
 
 /**
  * OpenGL bounds class
  * @author Thomas Kroes
  */
-class Bounds : public Polyline2D
+class SelectionBounds : public Polyline2D
 {
+	Q_OBJECT
+
 public:
 	/** Default constructor
 	 * @param name Name of the bounds polyline
 	 */
-	Bounds(const QString& name = "Bounds");
+	SelectionBounds(const QString& name = "Bounds", const QColor& color = QColor(255, 160, 70, 150));
 
 	/** Set bounds
 	 * @param bounds Bounds
 	 */
 	void setBounds(const QRectF& bounds);
+
+	/** Set rendering color
+	 * @param color Color
+	 */
+	void setColor(const QColor& color);
 
 protected:
 	/** Adds the OpenGL shader programs that the shape needs */
@@ -35,7 +43,19 @@ protected:
 	void addTextures();
 
 signals:
+	/**
+	 * Signals that the bounds changed
+	 * @param bounds Bounds
+	 */
+	void boundsChanged(const QRectF& bounds);
+	
+	/**
+	 * Signals that the color changed
+	 * @param color Color
+	 */
+	void colorChanged(const QColor& color);
 
 protected:
 	QRectF		_bounds;			/** Bounds */
+	QColor		_color;				/** Color */
 };

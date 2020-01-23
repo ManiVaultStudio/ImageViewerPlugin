@@ -14,13 +14,9 @@ SelectionRenderer::SelectionRenderer(const float& depth, ImageViewerWidget* imag
 	_imageViewerWidget(imageViewerWidget),
 	_bufferColor(255, 153, 0, 70),
 	_selectionColor(255, 0, 0, 153),
-	_boundsColor(255, 153, 0, 70),
-	_boundsLineWidth(2.0f),
-	_outlineColor(255, 153, 0, 255),
-	_outlineLineWidth(3.0f),
 	_brushRadius(50.f),
 	_brushRadiusDelta(2.0f),
-	_bounds("Bounds")
+	_selectionBounds("Bounds")
 {
 }
 
@@ -62,7 +58,7 @@ void SelectionRenderer::init()
 		selectionProgram->release();
 	}
 
-	_bounds.initialize();
+	_selectionBounds.initialize();
 }
 
 void SelectionRenderer::render()
@@ -73,7 +69,7 @@ void SelectionRenderer::render()
 	renderOverlay();
 	renderSelection();
 	
-	_bounds.render();
+	_selectionBounds.render();
 }
 
 void SelectionRenderer::setImageSize(const QSize& size)
@@ -228,7 +224,7 @@ void SelectionRenderer::setSelectionImage(std::shared_ptr<QImage> selectionImage
 
 void SelectionRenderer::setSelectionBounds(const QRect& selectionBounds)
 {
-	_bounds.setBounds(selectionBounds);
+	_selectionBounds.setBounds(selectionBounds);
 }
 
 float SelectionRenderer::selectionOpacity() const
@@ -356,6 +352,7 @@ void SelectionRenderer::createShaderPrograms()
 
 void SelectionRenderer::createTextures()
 {
+	/*
 	_textures.insert("Selection", QSharedPointer<QOpenGLTexture>::create(QOpenGLTexture::Target2D));
 
 	auto boundsStippleImage = QImage(2, 1, QImage::Format::Format_RGBA8888);
@@ -369,21 +366,7 @@ void SelectionRenderer::createTextures()
 	boundsStippleTexture->setMinMagFilters(QOpenGLTexture::Nearest, QOpenGLTexture::Nearest);
 
 	_textures["BoundsStipple"] = boundsStippleTexture;
-
-	auto outlineStippleImage = QImage(1, 1, QImage::Format::Format_RGBA8888);
-
-	auto fade = _outlineColor;
-
-	fade.setAlpha(0);
-
-	outlineStippleImage.setPixelColor(QPoint(0, 0), _outlineColor);
-
-	auto outlineStippleTexture = QSharedPointer<QOpenGLTexture>::create(outlineStippleImage);
-
-	outlineStippleTexture->setWrapMode(QOpenGLTexture::Repeat);
-	outlineStippleTexture->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
-
-	_textures["OutlineStipple"] = outlineStippleTexture;
+	*/
 }
 
 void SelectionRenderer::createVBOs()

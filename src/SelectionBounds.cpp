@@ -1,4 +1,4 @@
-#include "Bounds.h"
+#include "SelectionBounds.h"
 
 #include <QOpenGLShaderProgram>
 #include <QOpenGLBuffer>
@@ -8,13 +8,14 @@
 
 #include "Shaders.h"
 
-Bounds::Bounds(const QString& name /*= "Bounds"*/) :
+SelectionBounds::SelectionBounds(const QString& name /*= "Bounds"*/, const QColor& color /*= QColor(255, 160, 70, 150)*/) :
 	Polyline2D(name),
-	_bounds()
+	_bounds(),
+	_color(color)
 {
 }
 
-void Bounds::setBounds(const QRectF& bounds)
+void SelectionBounds::setBounds(const QRectF& bounds)
 {
 	if (bounds == _bounds)
 		return;
@@ -41,9 +42,21 @@ void Bounds::setBounds(const QRectF& bounds)
 		_boundsPolyline.setPoints(points);
 	}
 	*/
+
+	emit boundsChanged(_bounds);
 }
 
-void Bounds::addShaderPrograms()
+void SelectionBounds::setColor(const QColor& color)
+{
+	if (color == _color)
+		return;
+
+	_color = color;
+
+	emit colorChanged(_color);
+}
+
+void SelectionBounds::addShaderPrograms()
 {
 	qDebug() << "Adding shader programs";
 
@@ -54,7 +67,7 @@ void Bounds::addShaderPrograms()
 	shaderProgram()->link();
 }
 
-void Bounds::addVAOs()
+void SelectionBounds::addVAOs()
 {
 	qDebug() << "Adding vertex array objects";
 
@@ -63,7 +76,7 @@ void Bounds::addVAOs()
 	vao()->create();
 }
 
-void Bounds::addVBOs()
+void SelectionBounds::addVBOs()
 {
 	qDebug() << "Adding vertex buffer objects";
 
@@ -72,9 +85,16 @@ void Bounds::addVBOs()
 	vbo()->create();
 }
 
-void Bounds::addTextures()
+void SelectionBounds::addTextures()
 {
 	qDebug() << "Adding textures";
 
 	addTexture("Polyline", QSharedPointer<QOpenGLTexture>::create(QOpenGLTexture::Target2D));
+
+	auto textureImage = QImage(1, 1, QImage::Format::Format_RGBA8888);
+
+	textureImage.setPixelColor(QPoint(0, 0), _color);
+
+	texture()->setWrapMode(QOpenGLTexture::Repeat);
+	texture()->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
 }

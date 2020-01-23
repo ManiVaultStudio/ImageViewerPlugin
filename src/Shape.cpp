@@ -19,7 +19,7 @@ Shape::~Shape() = default;
 
 void Shape::destroy()
 {
-	qDebug() << "Destroying" << _name;
+	qDebug() << "Destroying" << _name << "shape";
 
 	for (auto key : _vaos.keys())
 	{
@@ -39,7 +39,7 @@ void Shape::destroy()
 
 void Shape::initialize()
 {
-	qDebug() << "Initializing" << _name;
+	qDebug() << "Initializing" << _name << "shape";
 
 	addShaderPrograms();
 	addVAOs();
