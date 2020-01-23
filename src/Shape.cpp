@@ -19,7 +19,7 @@ Shape::~Shape() = default;
 
 void Shape::destroy()
 {
-	qDebug() << "Destroying" << _name << "shape";
+	qDebug() << "Destroy shape" << _name;
 
 	for (auto key : _vaos.keys())
 	{
@@ -39,7 +39,7 @@ void Shape::destroy()
 
 void Shape::initialize()
 {
-	qDebug() << "Initializing" << _name << "shape";
+	qDebug() << "Initialize the" << _name << "shape";
 
 	addShaderPrograms();
 	addVAOs();
@@ -54,26 +54,39 @@ bool Shape::isInitialized() const
 
 void Shape::render()
 {
-	qDebug() << "Rendering" << _name << "shape";
+	//log(__FUNCTION__);
+}
+
+void Shape::log(const QString& event) const
+{
+	qDebug() << event.toLatin1().data();
 }
 
 void Shape::addShaderProgram(const QString& name, QSharedPointer<QOpenGLShaderProgram> shaderProgram)
 {
+	qDebug() << "Add OpenGL shader program to" << _name << "shape";
+
 	_shaderPrograms.insert(name, shaderProgram);
 }
 
 void Shape::addVAO(const QString& name, QSharedPointer<QOpenGLVertexArrayObject> vao)
 {
+	qDebug() << "Add OpenGL VAO to" << _name << "shape";
+
 	_vaos.insert(name, vao);
 }
 
 void Shape::addVBO(const QString& name, QSharedPointer<QOpenGLBuffer> vbo)
 {
+	qDebug() << "Add OpenGL VBO to" << _name << "shape";
+
 	_vbos.insert(name, vbo);
 }
 
 void Shape::addTexture(const QString& name, QSharedPointer<QOpenGLTexture> texture)
 {
+	qDebug() << "Add OpenGL texture to" << _name << "shape";
+
 	_textures.insert(name, texture);
 }
 

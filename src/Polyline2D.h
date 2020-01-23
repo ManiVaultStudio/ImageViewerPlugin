@@ -26,12 +26,6 @@ public:
 	/** Renders the polyline */
 	void render() override;
 
-	/**
-	 * Set polyline points
-	 * @param points Points in world coordinates
-	 */
-	void setPoints(QVector<QVector2D> points);
-
 	/** Returns the shader program for this polyline */
 	const QSharedPointer<QOpenGLShaderProgram> shaderProgram() const;
 
@@ -45,6 +39,12 @@ public:
 	const QSharedPointer<QOpenGLTexture> texture() const;
 
 protected:
+	/**
+	 * Set polyline points
+	 * @param points Points in world coordinates
+	 */
+	void setPoints(QVector<QVector2D> points);
+
 	/** Returns the shader program for this polyline */
 	QSharedPointer<QOpenGLShaderProgram> shaderProgram();
 

@@ -20,11 +20,10 @@ void SelectionBounds::setBounds(const QRectF& bounds)
 	if (bounds == _bounds)
 		return;
 
+	qDebug() << "Set selection bounds shape bounds";
+
 	_bounds = bounds;
 	
-	/*
-	_bounds = selectionBounds;
-
 	const auto p0 = _bounds.topLeft();
 	const auto p1 = _bounds.bottomRight();
 
@@ -35,13 +34,7 @@ void SelectionBounds::setBounds(const QRectF& bounds)
 	points.append(QVector2D(p1.x(), p1.y()));
 	points.append(QVector2D(p0.x(), p1.y()));
 
-	auto boundsStippleTexture = texture("BoundsStipple");
-
-	boundsStippleTexture->bind();
-	{
-		_boundsPolyline.setPoints(points);
-	}
-	*/
+	setPoints(points);
 
 	emit boundsChanged(_bounds);
 }
@@ -51,6 +44,8 @@ void SelectionBounds::setColor(const QColor& color)
 	if (color == _color)
 		return;
 
+	qDebug() << "Set selection bounds shape color";
+
 	_color = color;
 
 	emit colorChanged(_color);
@@ -58,7 +53,7 @@ void SelectionBounds::setColor(const QColor& color)
 
 void SelectionBounds::addShaderPrograms()
 {
-	qDebug() << "Adding shader programs";
+	qDebug() << "Add OpenGL shader programs to" << _name << "shape";
 
 	addShaderProgram("Polyline", QSharedPointer<QOpenGLShaderProgram>::create());
 
@@ -69,7 +64,7 @@ void SelectionBounds::addShaderPrograms()
 
 void SelectionBounds::addVAOs()
 {
-	qDebug() << "Adding vertex array objects";
+	qDebug() << "Add OpenGL VAO's to" << _name << "shape";
 
 	addVAO("Polyline", QSharedPointer<QOpenGLVertexArrayObject>::create());
 
@@ -78,7 +73,7 @@ void SelectionBounds::addVAOs()
 
 void SelectionBounds::addVBOs()
 {
-	qDebug() << "Adding vertex buffer objects";
+	qDebug() << "Add OpenGL VBO's to" << _name << "shape";
 
 	addVBO("Polyline", QSharedPointer<QOpenGLBuffer>::create());
 
@@ -87,7 +82,7 @@ void SelectionBounds::addVBOs()
 
 void SelectionBounds::addTextures()
 {
-	qDebug() << "Adding textures";
+	qDebug() << "Add OpenGL textures to" << _name << "shape";
 
 	addTexture("Polyline", QSharedPointer<QOpenGLTexture>::create(QOpenGLTexture::Target2D));
 

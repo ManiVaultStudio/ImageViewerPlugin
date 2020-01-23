@@ -41,7 +41,7 @@ void Polyline2D::initialize()
 
 void Polyline2D::setPoints(QVector<QVector2D> points)
 {
-	qDebug() << "Polyline2D::setPoints()";
+	qDebug() << "Set polyline points";
 
 	if (_closed && points.size() > 2) {
 		points.append(points.first());

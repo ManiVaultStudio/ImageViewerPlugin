@@ -49,6 +49,12 @@ public:
 	/** Renders the shape */
 	virtual void render();
 
+	/**
+	 * Logs a message with the shape name prefix
+	 * @param event Event
+	 */
+	void log(const QString& event) const;
+
 protected:
 	/** Adds the OpenGL shader programs that the shape needs */
 	virtual void addShaderPrograms() = 0;
