@@ -46,6 +46,21 @@ public:
 	 */
 	bool isInitialized() const;
 
+	/**
+	 * Determines whether the shape is enabled (visible)
+	 * @return Whether the shape is enabled
+	 */
+	bool isEnabled() const;
+
+	/**
+	 * Sets whether the shape is enabled or not (visible)
+	 * @param enabled Whether the shape is enabled or not
+	 */
+	void setEnabled(const bool& enabled);
+
+	/** Returns whether the shape should be rendered */
+	bool canRender() const;
+
 	/** Renders the shape */
 	virtual void render();
 
@@ -124,9 +139,15 @@ signals:
 	/** Signals that the shape has been successfully initialized */
 	void initialized();
 
+	/** Signals that the shape has been enabled or disabled
+	 * @param enabled Whether the shape is enabled or not
+	 */
+	void enabledChanged(const bool& enabled);
+
 protected:
 	QString														_name;				/** Name of the shape */
 	bool														_initialized;		/** Whether the shape is initialized or not */
+	bool														_enabled;			/** Whether the shape is enabled or not */
 	QMap<QString, QSharedPointer<QOpenGLShaderProgram>>			_shaderPrograms;	/** OpenGL shader program */
 	QMap<QString, QSharedPointer<QOpenGLVertexArrayObject>>		_vaos;				/** OpenGL Vertex Array Object (VAO) */
 	QMap<QString, QSharedPointer<QOpenGLBuffer>>				_vbos;				/** OpenGL Vertex Buffer Object (VBO) */

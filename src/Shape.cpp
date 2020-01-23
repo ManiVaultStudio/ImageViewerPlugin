@@ -8,6 +8,7 @@
 Shape::Shape(const QString& name) :
 	_name(name),
 	_initialized(false),
+	_enabled(),
 	_shaderPrograms(),
 	_vaos(),
 	_vbos(),
@@ -50,6 +51,28 @@ void Shape::initialize()
 bool Shape::isInitialized() const
 {
 	return _initialized;
+}
+
+bool Shape::isEnabled() const
+{
+	return _enabled;
+}
+
+void Shape::setEnabled(const bool& enabled)
+{
+	if (enabled == enabled)
+		return;
+
+	_enabled = enabled;
+
+	qDebug() << "Set " << _name << "shape" << (_enabled ? "enabled" : "disabled");
+
+	emit enabledChanged(enabled);
+}
+
+bool Shape::canRender() const
+{
+	return isEnabled() && isInitialized();
 }
 
 void Shape::render()

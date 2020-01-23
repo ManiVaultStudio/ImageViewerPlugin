@@ -209,7 +209,7 @@ void Polyline2D::setPoints(QVector<QVector2D> points)
 		vbo()->release();
 	}
 
-	qDebug() << vertexData;
+	//qDebug() << vertexData;
 }
 
 QSharedPointer<QOpenGLShaderProgram> Polyline2D::shaderProgram()
@@ -259,10 +259,17 @@ bool Polyline2D::isTextured() const
 
 void Polyline2D::render()
 {
+	if (canRender())
+		return;
+
 	Shape::render();
+
+	qDebug() << "Render" << _name << "shape";
 
 	if (isTextured()) {
 		texture()->bind();
+
+		qDebug() << "Using texture";
 	}
 
 	if (shaderProgram()->bind()) {
@@ -271,7 +278,7 @@ void Polyline2D::render()
 			vbo()->bind();
 			{
 				//qDebug() << _noPoints;
-				glDrawArrays(GL_TRIANGLE_STRIP, 0, _noPoints);
+				glDrawArrays(GL_TRIANGLE_STRIP, 0, _noPoints * 2);
 			}
 			vbo()->release();
 		}
