@@ -1,21 +1,30 @@
 #pragma once
 
-#include "Common.h"
+#include "Shape.h"
 
-#include <QSharedPointer>
-
-class QOpenGLShaderProgram;
-class QOpenGLBuffer;
-class QOpenGLVertexArrayObject;
-
-class Polyline2D
+/**
+ * OpenGL polyline 2D class
+ * @author Thomas Kroes
+ */
+class Polyline2D : public Shape
 {
 public:
-	Polyline2D(QSharedPointer<QOpenGLShaderProgram> shaderProgram, const bool& closed = true, const float& lineWidth = 1.f, const float& textureScale = 0.05f);
+	/**
+	 * Constructor
+	 * @param closed Whether to close the polyline or not
+	 * @param lineWidth Line width
+	 * @param textureScale Scale of the texture in the U direction
+	 */
+	Polyline2D(const QString& name, const bool& closed = true, const float& lineWidth = 1.f, const float& textureScale = 0.05f);
 
-public:
-	/** Initialized the shape (must be called in appropriate OpenGL context) */
-	void initialize();
+	/** Initialized the shape (must be called in appropriate OpenGL context)
+	 * @param shaderProgram Shared pointer to the OpenGL shader program
+	 * @param texture Shared pointer to the OpenGL texture
+	 */
+	void initialize() override;
+
+	/** Renders the polyline */
+	void render() override;
 
 	/**
 	 * Set polyline points
@@ -23,17 +32,42 @@ public:
 	 */
 	void setPoints(QVector<QVector2D> points);
 
-public:
-	/** Renders the polyline */
-	void render();
+	/** Returns the shader program for this polyline */
+	const QSharedPointer<QOpenGLShaderProgram> shaderProgram() const;
+
+	/** Returns the OpenGL Vertex Array Object (VAO) for this polyline */
+	const QSharedPointer<QOpenGLVertexArrayObject> vao() const;
+
+	/** Returns the OpenGL Vertex Buffer Object (VBO) for this polyline */
+	const QSharedPointer<QOpenGLBuffer> vbo() const;
+
+	/** Returns the OpenGL texture for this polyline */
+	const QSharedPointer<QOpenGLTexture> texture() const;
+
+protected:
+	/** Returns the shader program for this polyline */
+	QSharedPointer<QOpenGLShaderProgram> shaderProgram();
+
+	/** Returns the OpenGL Vertex Array Object (VAO) for this polyline */
+	QSharedPointer<QOpenGLVertexArrayObject> vao();
+
+	/** Returns the OpenGL Vertex Buffer Object (VBO) for this polyline */
+	QSharedPointer<QOpenGLBuffer> vbo();
+
+	/** Returns the OpenGL texture for this polyline */
+	QSharedPointer<QOpenGLTexture> texture();
+
+	/**
+	 * Determines whether the polyline is textured
+	 * @return Whether the polyline is textured
+	 */
+	bool isTextured() const;
 
 signals:
 
 protected:
-	QSharedPointer<QOpenGLShaderProgram>		_shaderProgram;		/** Shader program */
-	QSharedPointer<QOpenGLVertexArrayObject>	_vao;				/** Vertex Array Object (VAO) */
-	QSharedPointer<QOpenGLBuffer>				_vbo;				/** Vertex Buffer Object (VBO) */
-	bool										_closed;			/** Whether to close the polyline or not */
-	float										_lineWidth;			/** Line width in world space */
-	float										_textureScale;		/** Texture scale */
+	bool				_closed;			/** Whether to close the polyline or not */
+	float				_lineWidth;			/** Line width in world space */
+	float				_textureScale;		/** Texture scale */
+	std::uint32_t		_noPoints;			/** Number of points */
 };

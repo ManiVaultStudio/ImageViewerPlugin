@@ -20,7 +20,7 @@ SelectionRenderer::SelectionRenderer(const float& depth, ImageViewerWidget* imag
 	_outlineLineWidth(3.0f),
 	_brushRadius(50.f),
 	_brushRadiusDelta(2.0f),
-	_bounds()
+	_bounds("Bounds")
 {
 }
 
@@ -62,41 +62,7 @@ void SelectionRenderer::init()
 		selectionProgram->release();
 	}
 
-	auto boundsProgram	= shaderProgram("Bounds");
-	auto boundsVAO		= vao("Bounds");
-	auto boundsVBO		= vbo("Bounds");
-
-	if (boundsProgram->bind()) {
-		boundsVAO->bind();
-		boundsVBO->bind();
-
-		boundsProgram->enableAttributeArray(0);
-		boundsProgram->enableAttributeArray(1);
-		boundsProgram->setAttributeBuffer(0, GL_FLOAT, 0, 3, stride);
-		boundsProgram->setAttributeBuffer(1, GL_FLOAT, 3 * sizeof(GLfloat), 2, stride);
-		
-		boundsVBO->release();
-		boundsVAO->release();
-		boundsProgram->release();
-	}
-
-	auto outlineProgram	= shaderProgram("Outline");
-	auto outlineVBO		= vbo("Outline");
-	auto outlineVAO		= vao("Outline");
-
-	if (outlineProgram->bind()) {
-		outlineVAO->bind();
-		outlineVBO->bind();
-
-		outlineProgram->enableAttributeArray(0);
-		outlineProgram->enableAttributeArray(1);
-		outlineProgram->setAttributeBuffer(0, GL_FLOAT, 0, 3, stride);
-		outlineProgram->setAttributeBuffer(1, GL_FLOAT, 3 * sizeof(GLfloat), 2, stride);
-
-		outlineVBO->release();
-		outlineVAO->release();
-		outlineProgram->release();
-	}
+	_bounds.initialize();
 }
 
 void SelectionRenderer::render()
@@ -106,8 +72,8 @@ void SelectionRenderer::render()
 
 	renderOverlay();
 	renderSelection();
-	renderOutline();
-	renderBounds();
+	
+	_bounds.render();
 }
 
 void SelectionRenderer::setImageSize(const QSize& size)
@@ -262,7 +228,7 @@ void SelectionRenderer::setSelectionImage(std::shared_ptr<QImage> selectionImage
 
 void SelectionRenderer::setSelectionBounds(const QRect& selectionBounds)
 {
-	_bounds = selectionBounds;
+	_bounds.setBounds(selectionBounds);
 }
 
 float SelectionRenderer::selectionOpacity() const
@@ -377,6 +343,7 @@ void SelectionRenderer::createShaderPrograms()
 
 	_shaderPrograms.insert("Selection", selectionProgram);
 
+	/*
 	auto boundsProgram = QSharedPointer<QOpenGLShaderProgram>::create();
 
 	boundsProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, selectionBoundsVertexShaderSource.c_str());
@@ -384,6 +351,7 @@ void SelectionRenderer::createShaderPrograms()
 	boundsProgram->link();
 
 	_shaderPrograms.insert("Bounds", boundsProgram);
+	*/
 }
 
 void SelectionRenderer::createTextures()
@@ -430,16 +398,10 @@ void SelectionRenderer::createVBOs()
 void SelectionRenderer::createVAOs()
 {
 	auto quadVAO	= QSharedPointer<QOpenGLVertexArrayObject>::create();
-	auto outlineVAO	= QSharedPointer<QOpenGLVertexArrayObject>::create();
-	auto boundsVAO	= QSharedPointer<QOpenGLVertexArrayObject>::create();
 
 	quadVAO->create();
-	outlineVAO->create();
-	boundsVAO->create();
 
 	_vaos.insert("Quad", quadVAO);
-	_vaos.insert("Outline", outlineVAO);
-	_vaos.insert("Bounds", boundsVAO);
 }
 
 void SelectionRenderer::renderOverlay()
@@ -597,33 +559,4 @@ void SelectionRenderer::renderOutline()
 		outlineProgram->release();
 	}
 	*/
-}
-
-void SelectionRenderer::renderBounds()
-{
-	auto boundsProgram = shaderProgram("Bounds");
-
-	if (boundsProgram->bind()) {
-		boundsProgram->setUniformValue("stippleTexture", 0);
-		boundsProgram->setUniformValue("transform", _modelViewProjection);
-		boundsProgram->setUniformValue("color", _outlineColor);
-
-		const auto p0 = _bounds.topLeft();
-		const auto p1 = _bounds.bottomRight();
-
-		QVector<QVector2D> points;
-
-		points.append(QVector2D(p0.x(), p0.y()));
-		points.append(QVector2D(p1.x(), p0.y()));
-		points.append(QVector2D(p1.x(), p1.y()));
-		points.append(QVector2D(p0.x(), p1.y()));
-
-		auto boundsStippleTexture = texture("BoundsStipple");
-
-		boundsStippleTexture->bind();
-		{
-			//drawPolyline(points, true, _boundsLineWidth, 0.1f);
-		}
-		boundsStippleTexture->release();
-	}
 }

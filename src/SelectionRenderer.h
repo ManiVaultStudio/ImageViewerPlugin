@@ -3,6 +3,7 @@
 #include "Common.h"
 
 #include "QuadRenderer.h"
+#include "Bounds.h"
 
 class ImageViewerWidget;
 
@@ -112,9 +113,6 @@ private:
 	/** Renders the selection geometry outline */
 	void renderOutline();
 
-	/** Renders the selection bounds */
-	void renderBounds();
-
 signals:
 	/**
 	 * Invoked when the selection opacity has changed
@@ -130,7 +128,9 @@ protected:
 	float				_boundsLineWidth;		/** Line width of selection bounds */
 	QColor				_outlineColor;			/** Outline color of selection geometry */
 	float				_outlineLineWidth;		/** Outline line width of selection geometry */
-	QRect				_bounds;				/** Selection bounds */
+	//QRect				_bounds;				/** Selection bounds */
 	float				_brushRadius;			/** Selection brush radius */
 	float				_brushRadiusDelta;		/** Selection brush size increase/decrease delta */
+	//Polyline2D			_outlinePolyline;		/** Outline polyline */
+	Bounds				_bounds;				/** Bounds shape */
 };

@@ -49,6 +49,7 @@ ImageViewerPlugin::ImageViewerPlugin() :
 		updateWindowTitle();
 	});
 
+	/*
 	connect(this->_imageViewerWidget->imageQuadRenderer().get(), &ImageQuadRenderer::windowLevelChanged, [&]() {
 		updateWindowTitle();
 	});
@@ -60,6 +61,7 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	connect(this->_imageViewerWidget->imageQuadRenderer().get(), &ImageQuadRenderer::sizeChanged, [&]() {
 		updateWindowTitle();
 	});
+	*/
 }
 
 void ImageViewerPlugin::init()
@@ -423,7 +425,7 @@ void ImageViewerPlugin::updateWindowTitle()
 	properties << QString("noSelectedPixels=%1").arg(QString::number(selection().size()));
 	properties << QString("noPixels=%1").arg(QString::number(size.width() * size.height()));
 
-	setWindowTitle(QString("%1").arg(properties.join(", ")));
+//	setWindowTitle(QString("%1").arg(properties.join(", ")));
 }
 
 void ImageViewerPlugin::dataAdded(const QString dataset)
