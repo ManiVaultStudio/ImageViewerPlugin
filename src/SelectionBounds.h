@@ -17,7 +17,7 @@ public:
 	/** Default constructor
 	 * @param name Name of the bounds polyline
 	 */
-	SelectionBounds(const QString& name = "Bounds", const QColor& color = QColor(255, 160, 70, 150));
+	SelectionBounds(const QString& name = "Bounds", const QColor& color = QColor(255, 153, 0, 70));
 
 	/** Set bounds
 	 * @param bounds Bounds

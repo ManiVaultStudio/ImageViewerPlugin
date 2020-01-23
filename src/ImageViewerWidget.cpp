@@ -213,6 +213,8 @@ void ImageViewerWidget::resizeGL(int w, int h)
 
 	_imageQuadRenderer->resize(QSize(w, h));
 	_selectionRenderer->resize(QSize(w, h));
+
+	
 }
 
 void ImageViewerWidget::paintGL() {
@@ -221,11 +223,11 @@ void ImageViewerWidget::paintGL() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	auto modelViewProjection = projection() * modelView();
-	
+
 	_imageQuadRenderer->setModelViewProjection(modelViewProjection);
-	_imageQuadRenderer->render();
-	
 	_selectionRenderer->setModelViewProjection(modelViewProjection);
+
+	_imageQuadRenderer->render();
 	_selectionRenderer->render();
 
 #ifdef _DEBUG

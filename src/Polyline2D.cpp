@@ -55,12 +55,7 @@ void Polyline2D::setPoints(QVector<QVector2D> points)
 
 	vertexData.reserve(noPoints * 5);
 
-	/*
-	const auto pWorld0 = _imageViewerWidget->screenToWorld(QPointF(0.0f, 0.0f));
-	const auto pWorld1 = _imageViewerWidget->screenToWorld(QPointF(lineWidth, 0.0f));
-	const auto worldLineWidth = (pWorld1 - pWorld0).length();
-	*/
-	const auto halfLineWidth = 0.5f * 100.0f;
+	const auto halfLineWidth = 0.5f * _lineWidth;
 
 	QVector<QPair<QVector2D, QVector2D>> coordinates;
 
@@ -209,7 +204,7 @@ void Polyline2D::setPoints(QVector<QVector2D> points)
 		vbo()->release();
 	}
 
-	//qDebug() << vertexData;
+	qDebug() << vertexData;
 }
 
 QSharedPointer<QOpenGLShaderProgram> Polyline2D::shaderProgram()
@@ -252,6 +247,23 @@ const QSharedPointer<QOpenGLTexture> Polyline2D::texture() const
 	return _textures["Polyline"];
 }
 
+float Polyline2D::lineWidth() const
+{
+	return _lineWidth;
+}
+
+void Polyline2D::setLineWidth(const float& lineWidth)
+{
+	if (lineWidth == _lineWidth)
+		return;
+
+	qDebug() << "Set polyline line width to" << QString::number(lineWidth, 'f', 1);
+
+	_lineWidth = lineWidth;
+
+	emit lineWidthChanged(_lineWidth);
+}
+
 bool Polyline2D::isTextured() const
 {
 	return texture().get() != nullptr && texture()->isCreated();
@@ -259,7 +271,7 @@ bool Polyline2D::isTextured() const
 
 void Polyline2D::render()
 {
-	if (canRender())
+	if (!canRender())
 		return;
 
 	Shape::render();
@@ -273,14 +285,13 @@ void Polyline2D::render()
 	}
 
 	if (shaderProgram()->bind()) {
+		shaderProgram()->setUniformValue("lineTexture", 0);
+		shaderProgram()->setUniformValue("transform", _modelViewProjection);
+
 		vao()->bind();
 		{
-			vbo()->bind();
-			{
-				//qDebug() << _noPoints;
-				glDrawArrays(GL_TRIANGLE_STRIP, 0, _noPoints * 2);
-			}
-			vbo()->release();
+			//qDebug() << _noPoints;
+			glDrawArrays(GL_TRIANGLE_STRIP, 0, _noPoints * 2);
 		}
 		vao()->release();
 

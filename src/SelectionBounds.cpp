@@ -8,7 +8,7 @@
 
 #include "Shaders.h"
 
-SelectionBounds::SelectionBounds(const QString& name /*= "Bounds"*/, const QColor& color /*= QColor(255, 160, 70, 150)*/) :
+SelectionBounds::SelectionBounds(const QString& name /*= "Bounds"*/, const QColor& color /*= QColor(255, 153, 0, 70)*/) :
 	Polyline2D(name),
 	_bounds(),
 	_color(color)
@@ -84,11 +84,11 @@ void SelectionBounds::addTextures()
 {
 	qDebug() << "Add OpenGL textures to" << _name << "shape";
 
-	addTexture("Polyline", QSharedPointer<QOpenGLTexture>::create(QOpenGLTexture::Target2D));
-
 	auto textureImage = QImage(1, 1, QImage::Format::Format_RGBA8888);
 
 	textureImage.setPixelColor(QPoint(0, 0), _color);
+
+	addTexture("Polyline", QSharedPointer<QOpenGLTexture>::create(textureImage));
 
 	texture()->setWrapMode(QOpenGLTexture::Repeat);
 	texture()->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);

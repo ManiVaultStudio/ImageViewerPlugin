@@ -69,7 +69,17 @@ void SelectionRenderer::render()
 	renderOverlay();
 	renderSelection();
 	
+	const auto pWorld0 = _imageViewerWidget->screenToWorld(QPointF(0.0f, 0.0f));
+	const auto pWorld1 = _imageViewerWidget->screenToWorld(QPointF(1.f, 0.0f));
+
+	_selectionBounds.setLineWidth((pWorld1 - pWorld0).length());
+	_selectionBounds.setModelViewProjection(_modelViewProjection);
 	_selectionBounds.render();
+}
+
+void SelectionRenderer::resize(QSize renderSize)
+{
+	qDebug() << "Selection renderer resize";
 }
 
 void SelectionRenderer::setImageSize(const QSize& size)
@@ -224,7 +234,12 @@ void SelectionRenderer::setSelectionImage(std::shared_ptr<QImage> selectionImage
 
 void SelectionRenderer::setSelectionBounds(const QRect& selectionBounds)
 {
-	_selectionBounds.setBounds(selectionBounds);
+	auto bounds = selectionBounds;
+
+	bounds.setWidth(selectionBounds.width() - 1);
+	bounds.setHeight(selectionBounds.height() - 1);
+
+	_selectionBounds.setBounds(bounds);
 }
 
 float SelectionRenderer::selectionOpacity() const
@@ -347,25 +362,6 @@ void SelectionRenderer::createShaderPrograms()
 	boundsProgram->link();
 
 	_shaderPrograms.insert("Bounds", boundsProgram);
-	*/
-}
-
-void SelectionRenderer::createTextures()
-{
-	/*
-	_textures.insert("Selection", QSharedPointer<QOpenGLTexture>::create(QOpenGLTexture::Target2D));
-
-	auto boundsStippleImage = QImage(2, 1, QImage::Format::Format_RGBA8888);
-
-	boundsStippleImage.setPixelColor(QPoint(0, 0), _boundsColor);
-	boundsStippleImage.setPixelColor(QPoint(1, 0), QColor(0, 0, 0, 0));
-
-	auto boundsStippleTexture = QSharedPointer<QOpenGLTexture>::create(boundsStippleImage);
-
-	boundsStippleTexture->setWrapMode(QOpenGLTexture::Repeat);
-	boundsStippleTexture->setMinMagFilters(QOpenGLTexture::Nearest, QOpenGLTexture::Nearest);
-
-	_textures["BoundsStipple"] = boundsStippleTexture;
 	*/
 }
 

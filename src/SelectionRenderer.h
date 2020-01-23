@@ -28,6 +28,9 @@ public:
 	/** Renders the content */
 	void render() override;
 
+	/** Resizes the renderer */
+	void resize(QSize renderSize) override;
+
 	/** Initialize the renderer */
 	void init() override;
 
@@ -99,7 +102,6 @@ public:
 
 protected:
 	void createShaderPrograms() override;
-	void createTextures() override;
 	void createVBOs() override;
 	void createVAOs() override;
 

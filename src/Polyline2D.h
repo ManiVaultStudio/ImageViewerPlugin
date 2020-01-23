@@ -8,6 +8,8 @@
  */
 class Polyline2D : public Shape
 {
+	Q_OBJECT
+
 public:
 	/**
 	 * Constructor
@@ -38,6 +40,15 @@ public:
 	/** Returns the OpenGL texture for this polyline */
 	const QSharedPointer<QOpenGLTexture> texture() const;
 
+	/** Returns the line width in world space */
+	float lineWidth() const;
+
+	/**
+	 * Sets the line width
+	 * @param lineWidth Line width in world space
+	 */
+	void setLineWidth(const float& lineWidth);
+
 protected:
 	/**
 	 * Set polyline points
@@ -64,6 +75,11 @@ protected:
 	bool isTextured() const;
 
 signals:
+	/**
+	 * Signals that the line width changed
+	 * @param lineWidth Line width in world space
+	 */
+	void lineWidthChanged(const float& lineWidth);
 
 protected:
 	bool				_closed;			/** Whether to close the polyline or not */

@@ -3,6 +3,7 @@
 #include "Common.h"
 
 #include <QObject>
+#include <QMatrix4x4>
 #include <QMap>
 #include <QSharedPointer>
 
@@ -60,6 +61,15 @@ public:
 
 	/** Returns whether the shape should be rendered */
 	bool canRender() const;
+	
+	/** Returns the model-view-projection matrix */
+	QMatrix4x4 modelViewProjection() const;
+
+	/**
+	 * Sets the model-view-projection matrix
+	 * @param modelViewProjection Model-view-projection matrix
+	 */
+	void setModelViewProjection(const QMatrix4x4& modelViewProjection);
 
 	/** Renders the shape */
 	virtual void render();
@@ -144,12 +154,18 @@ signals:
 	 */
 	void enabledChanged(const bool& enabled);
 
+	/** Signals that the model view projection matrix changed
+	 * @param modelViewProjection Model view projection matrix
+	 */
+	void modelViewProjectionChanged(const QMatrix4x4& modelViewProjection);
+
 protected:
-	QString														_name;				/** Name of the shape */
-	bool														_initialized;		/** Whether the shape is initialized or not */
-	bool														_enabled;			/** Whether the shape is enabled or not */
-	QMap<QString, QSharedPointer<QOpenGLShaderProgram>>			_shaderPrograms;	/** OpenGL shader program */
-	QMap<QString, QSharedPointer<QOpenGLVertexArrayObject>>		_vaos;				/** OpenGL Vertex Array Object (VAO) */
-	QMap<QString, QSharedPointer<QOpenGLBuffer>>				_vbos;				/** OpenGL Vertex Buffer Object (VBO) */
-	QMap<QString, QSharedPointer<QOpenGLTexture>>				_textures;			/** OpenGL texture */
+	QString														_name;						/** Name of the shape */
+	bool														_initialized;				/** Whether the shape is initialized or not */
+	bool														_enabled;					/** Whether the shape is enabled or not */
+	QMatrix4x4													_modelViewProjection;		/** Model-view-projection matrix */
+	QMap<QString, QSharedPointer<QOpenGLShaderProgram>>			_shaderPrograms;			/** OpenGL shader program */
+	QMap<QString, QSharedPointer<QOpenGLVertexArrayObject>>		_vaos;						/** OpenGL Vertex Array Object (VAO) */
+	QMap<QString, QSharedPointer<QOpenGLBuffer>>				_vbos;						/** OpenGL Vertex Buffer Object (VBO) */
+	QMap<QString, QSharedPointer<QOpenGLTexture>>				_textures;					/** OpenGL texture */
 };

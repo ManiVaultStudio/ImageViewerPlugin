@@ -8,7 +8,7 @@
 Shape::Shape(const QString& name) :
 	_name(name),
 	_initialized(false),
-	_enabled(),
+	_enabled(true),
 	_shaderPrograms(),
 	_vaos(),
 	_vbos(),
@@ -75,9 +75,27 @@ bool Shape::canRender() const
 	return isEnabled() && isInitialized();
 }
 
+QMatrix4x4 Shape::modelViewProjection() const
+{
+	return _modelViewProjection;
+}
+
+void Shape::setModelViewProjection(const QMatrix4x4& modelViewProjection)
+{
+	if (modelViewProjection == _modelViewProjection)
+		return;
+
+	_modelViewProjection = modelViewProjection;
+
+	//_modelViewProjection.translate(0.f, 0.f, static_cast<float>(_depth));
+
+	qDebug() << "Set model view projection matrix of" << _name << "shape";
+
+	emit modelViewProjectionChanged(_modelViewProjection);
+}
+
 void Shape::render()
 {
-	//log(__FUNCTION__);
 }
 
 void Shape::log(const QString& event) const
