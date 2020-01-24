@@ -63,9 +63,9 @@ void Renderer::setColorImage(std::shared_ptr<QImage> colorImage)
 
 	imageQuadShape->setImage(colorImage);
 
-	shape<SelectionBufferQuad>("SelectionBufferQuad")->setSize(colorImage->size());
-
 	if (previousImageSize != colorImage->size()) {
+		shape<SelectionBufferQuad>("SelectionBufferQuad")->setSize(colorImage->size());
+
 		const auto brushRadius = 0.05f * static_cast<float>(std::min(colorImage->width(), colorImage->height()));
 
 		selectionBufferQuad()->setBrushRadius(brushRadius);

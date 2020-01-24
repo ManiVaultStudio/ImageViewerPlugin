@@ -78,9 +78,11 @@ signals:
 	void zChanged(const float& z);
 
 protected:
-	float				_z;					/** Position along z-axis */
-	bool				_closed;			/** Whether to close the polyline or not */
-	float				_lineWidth;			/** Line width in world space */
-	float				_textureScale;		/** Texture scale */
-	std::uint32_t		_noPoints;			/** Number of points */
+	float					_z;						/** Position along z-axis */
+	bool					_closed;				/** Whether to close the polyline or not */
+	float					_lineWidth;				/** Line width in world space */
+	float					_textureScale;			/** Texture scale */
+	std::uint32_t			_noPoints;				/** Number of points */
+	static std::uint32_t	_vertexAttribute;		/** Quad vertex attribute location */
+	static std::uint32_t	_textureAttribute;		/** Quad texture attribute location */
 };

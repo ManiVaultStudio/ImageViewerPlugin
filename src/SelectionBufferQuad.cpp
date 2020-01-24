@@ -349,11 +349,9 @@ void SelectionBufferQuad::reset()
 	selectionFBO->release();
 }
 
-/*
-std::shared_ptr<QImage> Renderer::selectionImage() const
+QSharedPointer<QImage> SelectionBufferQuad::selectionImage() const
 {
 	auto selectionFBO = fbo("SelectionBuffer");
 
-	return std::make_shared<QImage>(selectionFBO->toImage());
+	return QSharedPointer<QImage>::create(selectionFBO->toImage());
 }
-*/

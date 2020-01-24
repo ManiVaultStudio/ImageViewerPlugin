@@ -102,7 +102,7 @@ public:
 	void reset();
 
 	/** Returns the current selection image */
-	//std::shared_ptr<QImage> selectionImage() const;
+	QSharedPointer<QImage> selectionImage() const;
 
 protected:
 	/** Adds the OpenGL shader programs that the shape needs */

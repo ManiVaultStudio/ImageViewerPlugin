@@ -6,6 +6,9 @@
 #include <QOpenGLTexture>
 #include <QDebug>
 
+std::uint32_t Polyline2D::_vertexAttribute = 0;
+std::uint32_t Polyline2D::_textureAttribute = 1;
+
 Polyline2D::Polyline2D(const QString& name, const float& z /*= 0.f*/, const bool& closed /*= true*/, const float& lineWidth /*= 1.f*/, const float& textureScale /*= 0.05f*/) :
 	Shape(name),
 	_z(z),
@@ -22,19 +25,23 @@ void Polyline2D::initialize()
 
 	const auto stride = 5 * sizeof(GLfloat);
 
-	if (shaderProgram("Polyline")->isLinked() && shaderProgram("Polyline")->bind()) {
-		vao("Polyline")->bind();
-		vbo("Polyline")->bind();
+	auto polylineShaderProgram	= shaderProgram("Polyline");
+	auto polylineVAO			= vao("Polyline");
+	auto polylineVBO			= vbo("Polyline");
 
-		shaderProgram("Polyline")->enableAttributeArray(0);
-		shaderProgram("Polyline")->enableAttributeArray(1);
-		shaderProgram("Polyline")->setAttributeBuffer(0, GL_FLOAT, 0, 3, stride);
-		shaderProgram("Polyline")->setAttributeBuffer(1, GL_FLOAT, 3 * sizeof(GLfloat), 2, stride);
+	if (polylineShaderProgram->isLinked() && polylineShaderProgram->bind()) {
+		polylineVAO->bind();
+		polylineVBO->bind();
 
-		vbo("Polyline")->release();
-		vao("Polyline")->release();
+		polylineShaderProgram->enableAttributeArray(Polyline2D::_vertexAttribute);
+		polylineShaderProgram->enableAttributeArray(Polyline2D::_textureAttribute);
+		polylineShaderProgram->setAttributeBuffer(Polyline2D::_vertexAttribute, GL_FLOAT, 0, 3, stride);
+		polylineShaderProgram->setAttributeBuffer(Polyline2D::_textureAttribute, GL_FLOAT, 3 * sizeof(GLfloat), 2, stride);
 
-		shaderProgram("Polyline")->release();
+		polylineVBO->release();
+		polylineVAO->release();
+
+		polylineShaderProgram->release();
 
 		_initialized = true;
 	}

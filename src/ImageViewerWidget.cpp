@@ -676,10 +676,9 @@ QVector3D ImageViewerWidget::screenToWorld(const QPointF& screen) const
 
 void ImageViewerWidget::publishSelection()
 {	
-	/* TODO
 	qDebug() << "Publish selection";
 	
-	const auto image = _renderer->selectionImage();
+	const auto image = _renderer->selectionBufferQuad()->selectionImage();
 
 	auto pixelCoordinates = std::vector<std::pair<std::uint32_t, std::uint32_t>>();
 
@@ -693,12 +692,11 @@ void ImageViewerWidget::publishSelection()
 		}
 	}
 
-	_imageViewerPlugin->selectPixels(pixelCoordinates, _selectionModifier);
+	_imageViewerPlugin->selectPixels(pixelCoordinates, _renderer->selectionBufferQuad()->selectionModifier());
 
-	//_selectRenderer->resetPixelSelection();
+	_renderer->selectionBufferQuad()->reset();
 
 	update();
-	*/
 }
 
 void ImageViewerWidget::selectAll()
