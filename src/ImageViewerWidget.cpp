@@ -364,7 +364,7 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 					worldMousePositions.push_back(screenToWorld(mousePosition));
 				}
 
-				_renderer->updateSelectionBufferQuad();
+				_renderer->updateSelectionBufferQuad(mousePositionsWorld());
 			}
 
 			break;
@@ -433,7 +433,7 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 								_mousePositions.push_back(mouseEvent->pos());
 						}
 						
-						_renderer->updateSelectionBufferQuad();
+						_renderer->updateSelectionBufferQuad(mousePositionsWorld());
 					}
 					
 					break;

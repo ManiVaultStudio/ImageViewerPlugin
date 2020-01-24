@@ -28,6 +28,15 @@ public:
 	 */
 	void setSize(const QSize& size);
 
+	/** Returns the color */
+	QColor color() const;
+
+	/**
+	 * Sets the color
+	 * @param size Quad size
+	 */
+	void setColor(const QColor& color);
+
 	/** Returns the opacity */
 	float opacity() const;
 
@@ -37,10 +46,31 @@ public:
 	 */
 	void setOpacity(const float& opacity);
 
+	/** Returns the selection type */
+	SelectionType selectionType() const;
+
 	/**
-	 * Update the pixel selection buffer during interaction
+	 * Sets the selection type
+	 * @param selectionType Selection type
 	 */
-	void update();
+	void setSelectionType(const SelectionType& selectionType);
+
+	/** Returns the brush radius */
+	float brushRadius() const;
+
+	/**
+	 * Sets the brush radius
+	 * @param brushRadius Brush radius
+	 */
+	void setBrushRadius(const float& brushRadius);
+
+	/** Returns the mouse positions */
+	std::vector<QVector3D> mousePositions() const;
+
+	/** Sets the mouse positions
+	 * @param mousePositions Mouse positions in world coordinates
+	 */
+	void setMousePositions(std::vector<QVector3D> mousePositions);
 
 	/** Reset the (temporary) selection buffer */
 	void reset();
@@ -63,18 +93,39 @@ protected:
 
 signals:
 	/**
-	 * Invoked when the quad size changed
+	 * Invoked when the size changed
 	 * @param size Quad size
 	 */
 	void sizeChanged(const QSize& size);
 
 	/**
-	 * Invoked when the opacity has changed
+	 * Invoked when the color changed
+	 * @param color Color
+	 */
+	void colorChanged(const QColor& color);
+
+	/**
+	 * Invoked when the opacity changed
 	 * @param opacity Selection opacity
 	 */
 	void opacityChanged(const float& opacity);
 
+	/**
+	 * Invoked when the selection type changed
+	 * @param selectionType Selection type
+	 */
+	void selectionTypeChanged(const SelectionType& selectionType);
+
+	/**
+	 * Invoked when the brush radius changed
+	 * @param brushRadius Brush radius
+	 */
+	void brushRadiusChanged(const float& brushRadius);
+
 protected:
-	QSize		_size;		/** Size of the quad */
-	QColor		_color;		/** Selection color */
+	QSize						_size;				/** Size of the quad */
+	QColor						_color;				/** Selection color */
+	SelectionType				_selectionType;		/** Type of selection e.g. rectangle, brush */
+	float						_brushRadius;		/** Brush radius */
+	std::vector<QVector3D>		_mousePositions;	/** Mouse positions during selection */
 };

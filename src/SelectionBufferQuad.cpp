@@ -12,7 +12,10 @@
 SelectionBufferQuad::SelectionBufferQuad(const QString& name /*= "SelectionBufferQuad"*/, const float& z /*= 0.f*/) :
 	Quad(name, z),
 	_size(),
-	_color(255, 0, 0, 200)
+	_color(255, 0, 0, 200),
+	_selectionType(SelectionType::None),
+	_brushRadius(1.0f),
+	_mousePositions()
 {
 }
 
@@ -62,13 +65,30 @@ void SelectionBufferQuad::setSize(const QSize& size)
 
 	_size = size;
 
-	qDebug() << "Set size to" << size << "for" << _name;
+	qDebug() << "Set size to" << _size << "for" << _name;
 
-	if (_fbos.contains("Quad")) {
-		_fbos.insert("Quad", QSharedPointer<QOpenGLFramebufferObject>::create(_size.width(), _size.height()));
+	if (_fbos.contains("SelectionBuffer")) {
+		_fbos.insert("SelectionBuffer", QSharedPointer<QOpenGLFramebufferObject>::create(_size.width(), _size.height()));
 	}
 
 	emit sizeChanged(_size);
+}
+
+QColor SelectionBufferQuad::color() const
+{
+	return _color;
+}
+
+void SelectionBufferQuad::setColor(const QColor& color)
+{
+	if (color == _color)
+		return;
+
+	_color = color;
+
+	qDebug() << "Set color to" << _color << "for" << _name;
+
+	emit colorChanged(_color);
 }
 
 float SelectionBufferQuad::opacity() const
@@ -83,9 +103,48 @@ void SelectionBufferQuad::setOpacity(const float& opacity)
 
 	_color.setAlphaF(opacity);
 
-	qDebug() << "Set opacity" << _color.alphaF();
+	qDebug() << "Set opacity to" << _color.alphaF() << "for" << _name;
 
 	emit opacityChanged(_color.alphaF());
+}
+
+SelectionType SelectionBufferQuad::selectionType() const
+{
+	return _selectionType;
+}
+
+void SelectionBufferQuad::setSelectionType(const SelectionType& selectionType)
+{
+	if (selectionType == _selectionType)
+		return;
+
+	_selectionType = selectionType;
+
+	qDebug() << "Set selection type to" << selectionTypeName(_selectionType) << "for" << _name;
+
+	emit selectionTypeChanged(_selectionType);
+}
+
+float SelectionBufferQuad::brushRadius() const
+{
+	return _brushRadius;
+}
+
+void SelectionBufferQuad::setBrushRadius(const float& brushRadius)
+{
+	if (brushRadius == _brushRadius)
+		return;
+
+	_brushRadius = brushRadius;
+
+	qDebug() << "Set brush radius to" << QString::number(_brushRadius, 'f', 1) << "for" << _name;
+
+	emit brushRadiusChanged(_brushRadius);
+}
+
+std::vector<QVector3D> SelectionBufferQuad::mousePositions() const
+{
+	return _mousePositions;
 }
 
 void SelectionBufferQuad::addShaderPrograms()
@@ -126,48 +185,48 @@ void SelectionBufferQuad::configureShaderProgram(const QString& name)
 	}
 }
 
-void SelectionBufferQuad::update()
+void SelectionBufferQuad::setMousePositions(std::vector<QVector3D> mousePositions)
 {
-	/*
-	//qDebug() << "Update selection buffer";
-
-	auto selectionFBO = fbo("SelectionBuffer");
-
-	if (!selectionFBO->bind())
+	if (_selectionType == SelectionType::None)
 		return;
 
-	glViewport(0, 0, selectionFBO->width(), selectionFBO->height());
+	qDebug() << "Set mouse position for" << _name;
+
+	auto selectionBufferFBO = fbo("SelectionBuffer");
+
+	if (!selectionBufferFBO->bind())
+		return;
+	
+	glViewport(0, 0, selectionBufferFBO->width(), selectionBufferFBO->height());
 
 	QMatrix4x4 transform;
 
-	auto width = selectionFBO->width();
+	auto width = selectionBufferFBO->width();
 
-	transform.ortho(0.0f, selectionFBO->width(), 0.0f, selectionFBO->height(), -1.0f, +1.0f);
+	transform.ortho(0.0f, selectionBufferFBO->width(), 0.0f, selectionBufferFBO->height(), -1.0f, +1.0f);
 
 	auto quadVAO = vao("Quad");
-
-	const auto mousePositions = _imageViewerWidget->mousePositionsWorld();
 
 	quadVAO->bind();
 	{
 		auto selectionBufferProgram = shaderProgram("SelectionBuffer");
 
 		if (selectionBufferProgram->bind()) {
-			glBindTexture(GL_TEXTURE_2D, selectionFBO->texture());
+			glBindTexture(GL_TEXTURE_2D, selectionBufferFBO->texture());
 
 			selectionBufferProgram->setUniformValue("pixelSelectionTexture", 0);
 			selectionBufferProgram->setUniformValue("transform", transform);
-			selectionBufferProgram->setUniformValue("selectionType", static_cast<int>(_imageViewerWidget->selectionType()));
-			selectionBufferProgram->setUniformValue("imageSize", static_cast<float>(selectionFBO->size().width()), static_cast<float>(selectionFBO->size().height()));
+			selectionBufferProgram->setUniformValue("selectionType", static_cast<int>(_selectionType));
+			selectionBufferProgram->setUniformValue("imageSize", static_cast<float>(selectionBufferFBO->size().width()), static_cast<float>(selectionBufferFBO->size().height()));
 
-			switch (_imageViewerWidget->selectionType())
+			switch (_selectionType)
 			{
 				case SelectionType::Rectangle:
 				{
 					const auto rectangleTopLeft			= mousePositions.front();
 					const auto rectangleBottomRight		= mousePositions.back();
-					const auto rectangleTopLeftUV		= QVector2D(rectangleTopLeft.x() / static_cast<float>(selectionFBO->width()), rectangleTopLeft.y() / static_cast<float>(selectionFBO->height()));
-					const auto rectangleBottomRightUV	= QVector2D(rectangleBottomRight.x() / static_cast<float>(selectionFBO->width()), rectangleBottomRight.y() / static_cast<float>(selectionFBO->height()));
+					const auto rectangleTopLeftUV		= QVector2D(rectangleTopLeft.x() / static_cast<float>(selectionBufferFBO->width()), rectangleTopLeft.y() / static_cast<float>(selectionBufferFBO->height()));
+					const auto rectangleBottomRightUV	= QVector2D(rectangleBottomRight.x() / static_cast<float>(selectionBufferFBO->width()), rectangleBottomRight.y() / static_cast<float>(selectionBufferFBO->height()));
 
 					auto rectangleUV	= std::make_pair(rectangleTopLeftUV, rectangleBottomRightUV);
 					auto topLeft		= QVector2D(rectangleTopLeftUV.x(), rectangleTopLeftUV.y());
@@ -229,8 +288,7 @@ void SelectionBufferQuad::update()
 	}
 	quadVAO->release();
 
-	selectionFBO->release();
-	*/
+	selectionBufferFBO->release();
 }
 
 void SelectionBufferQuad::reset()

@@ -91,8 +91,10 @@ public:
 	/** Returns the current selection image */
 	std::shared_ptr<QImage> selectionImage() const;
 
-	/** Updates the selection buffer quad */
-	void updateSelectionBufferQuad();
+	/** Updates the selection buffer quad
+	 * @param mousePositions Mouse positions in world coordinates
+	 */
+	void updateSelectionBufferQuad(std::vector<QVector3D> mousePositions);
 
 	/** Returns the selection buffer quad */
 	void resetSelectionBufferQuad();
