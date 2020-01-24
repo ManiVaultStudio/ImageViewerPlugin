@@ -25,7 +25,9 @@ Renderer::Renderer(const float& depth, ImageViewerWidget* imageViewerWidget) :
 	_imageViewerWidget(imageViewerWidget),
 	_shapes(),
 	_selectionType(SelectionType::Rectangle),
-	_selectionModifier(SelectionModifier::Replace)
+	_selectionModifier(SelectionModifier::Replace),
+	_brushRadius(10.0f),
+	_brushRadiusDelta(1.f)
 {
 	createShapes();
 }
@@ -73,8 +75,8 @@ void Renderer::setColorImage(std::shared_ptr<QImage> colorImage)
 
 		const auto brushRadius = 0.05f * static_cast<float>(std::min(colorImage->width(), colorImage->height()));
 
-		selectionBufferQuad()->setBrushRadius(brushRadius);
-		selectionBufferQuad()->setBrushRadiusDelta(0.2f * brushRadius);
+		setBrushRadius(brushRadius);
+		setBrushRadiusDelta(0.2f * brushRadius);
 
 		const auto pWorld0 = _imageViewerWidget->screenToWorld(QPointF(0.0f, 0.0f));
 		const auto pWorld1 = _imageViewerWidget->screenToWorld(QPointF(1.f, 0.0f));
@@ -154,6 +156,54 @@ void Renderer::setSelectionModifier(const SelectionModifier& selectionModifier)
 	qDebug() << "Set selection modifier to" << selectionModifierName(selectionModifier);
 
 	emit selectionModifierChanged(_selectionModifier);
+}
+
+float Renderer::brushRadius() const
+{
+	return _brushRadius;
+}
+
+void Renderer::setBrushRadius(const float& brushRadius)
+{
+	const auto boundBrushRadius = qBound(1.0f, 100000.f, brushRadius);
+
+	if (boundBrushRadius == _brushRadius)
+		return;
+
+	_brushRadius = boundBrushRadius;
+
+	qDebug() << "Set brush radius to" << QString::number(_brushRadius, 'f', 1);
+
+	emit brushRadiusChanged(_brushRadius);
+}
+
+float Renderer::brushRadiusDelta() const
+{
+	return _brushRadiusDelta;
+}
+
+void Renderer::setBrushRadiusDelta(const float& brushRadiusDelta)
+{
+	const auto boundBrushRadiusDelta = qBound(0.1f, 10000.f, brushRadiusDelta);
+
+	if (boundBrushRadiusDelta == _brushRadiusDelta)
+		return;
+
+	_brushRadiusDelta = boundBrushRadiusDelta;
+
+	qDebug() << "Set brush radius delta" << _brushRadiusDelta;
+
+	emit brushRadiusDeltaChanged(_brushRadiusDelta);
+}
+
+void Renderer::brushSizeIncrease()
+{
+	setBrushRadius(_brushRadius + _brushRadiusDelta);
+}
+
+void Renderer::brushSizeDecrease()
+{
+	setBrushRadius(_brushRadius - _brushRadiusDelta);
 }
 
 void Renderer::createShapes()

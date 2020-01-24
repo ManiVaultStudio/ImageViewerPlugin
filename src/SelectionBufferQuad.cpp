@@ -12,9 +12,7 @@
 SelectionBufferQuad::SelectionBufferQuad(const QString& name /*= "SelectionBufferQuad"*/, const float& z /*= 0.f*/) :
 	Quad(name, z),
 	_size(),
-	_color(255, 153, 0, 40),
-	_brushRadius(10.0f),
-	_brushRadiusDelta(1.f)
+	_color(255, 153, 0, 40)
 {
 }
 
@@ -98,54 +96,6 @@ void SelectionBufferQuad::setOpacity(const float& opacity)
 	emit opacityChanged(_color.alphaF());
 }
 
-float SelectionBufferQuad::brushRadius() const
-{
-	return _brushRadius;
-}
-
-void SelectionBufferQuad::setBrushRadius(const float& brushRadius)
-{
-	const auto boundBrushRadius = qBound(1.0f, 100000.f, brushRadius);
-
-	if (boundBrushRadius == _brushRadius)
-		return;
-
-	_brushRadius = boundBrushRadius;
-
-	qDebug() << "Set brush radius to" << QString::number(_brushRadius, 'f', 1) << "for" << _name;
-
-	emit brushRadiusChanged(_brushRadius);
-}
-
-float SelectionBufferQuad::brushRadiusDelta() const
-{
-	return _brushRadiusDelta;
-}
-
-void SelectionBufferQuad::setBrushRadiusDelta(const float& brushRadiusDelta)
-{
-	const auto boundBrushRadiusDelta = qBound(0.1f, 10000.f, brushRadiusDelta);
-
-	if (boundBrushRadiusDelta == _brushRadiusDelta)
-		return;
-
-	_brushRadiusDelta = boundBrushRadiusDelta;
-
-	qDebug() << "Set brush radius delta" << _brushRadiusDelta << "for" << _name;
-
-	emit brushRadiusDeltaChanged(_brushRadiusDelta);
-}
-
-void SelectionBufferQuad::brushSizeIncrease()
-{
-	setBrushRadius(_brushRadius + _brushRadiusDelta);
-}
-
-void SelectionBufferQuad::brushSizeDecrease()
-{
-	setBrushRadius(_brushRadius - _brushRadiusDelta);
-}
-
 void SelectionBufferQuad::addShaderPrograms()
 {
 	qDebug() << "Add OpenGL shader programs to" << _name << "shape";
@@ -179,7 +129,7 @@ void SelectionBufferQuad::configureShaderProgram(const QString& name)
 	}
 }
 
-void SelectionBufferQuad::update(std::vector<QVector3D> mousePositions, const SelectionType& selectionType)
+void SelectionBufferQuad::update(std::vector<QVector3D> mousePositions, const SelectionType& selectionType, const float& brushRadius)
 {
 	qDebug() << "Set mouse position for" << _name;
 
@@ -252,7 +202,7 @@ void SelectionBufferQuad::update(std::vector<QVector3D> mousePositions, const Se
 
 					selectionBufferProgram->setUniformValue("previousBrushCenter", previousBrushCenter.x(), previousBrushCenter.y());
 					selectionBufferProgram->setUniformValue("currentBrushCenter", brushCenter.x(), brushCenter.y());
-					selectionBufferProgram->setUniformValue("brushRadius", _brushRadius);
+					selectionBufferProgram->setUniformValue("brushRadius", brushRadius);
 
 					break;
 				}

@@ -102,6 +102,30 @@ public:
 	 */
 	void setSelectionModifier(const SelectionModifier& selectionModifier);
 
+	/** Returns the brush radius */
+	float brushRadius() const;
+
+	/**
+	 * Sets the brush radius
+	 * @param brushRadius Brush radius
+	 */
+	void setBrushRadius(const float& brushRadius);
+
+	/** Returns the brush radius delta (amount to increasing/decreasing) */
+	float brushRadiusDelta() const;
+
+	/**
+	 * Sets the brush radius delta (amount to increasing/decreasing)
+	 * @param brushRadiusDelta Amount to add/remove
+	 */
+	void setBrushRadiusDelta(const float& brushRadiusDelta);
+
+	/** Increase the brush size by _brushRadiusDelta */
+	void brushSizeIncrease();
+
+	/** Decrease the brush size by _brushRadiusDelta */
+	void brushSizeDecrease();
+
 private:
 	/** Create shapes */
 	void createShapes();
@@ -114,7 +138,6 @@ private:
 
 	/** Destroy shapes */
 	void destroyShapes();
-
 
 signals:
 	/**
@@ -129,9 +152,23 @@ signals:
 	 */
 	void selectionModifierChanged(const SelectionModifier& selectionModifier);
 
+	/**
+	 * Invoked when the brush radius changed
+	 * @param brushRadius Brush radius
+	 */
+	void brushRadiusChanged(const float& brushRadius);
+
+	/**
+	 * Invoked when the brush radius delta changed
+	 * @param brushRadiusDelta Brush radius delta
+	 */
+	void brushRadiusDeltaChanged(const float& brushRadiusDelta);
+
 protected:
 	ImageViewerWidget*						_imageViewerWidget;		/** Pointer to image viewer widget */
 	QMap<QString, QSharedPointer<Shape>>	_shapes;				/** Shapes map */
 	SelectionType							_selectionType;			/** Type of selection e.g. rectangle, brush */
 	SelectionModifier						_selectionModifier;		/** The selection modifier determines if and how new selections are combined with existing selections e.g. add, replace and remove */
+	float									_brushRadius;			/** Brush radius */
+	float									_brushRadiusDelta;		/** Selection brush size increase/decrease delta */
 };

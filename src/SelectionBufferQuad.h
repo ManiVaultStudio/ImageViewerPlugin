@@ -46,35 +46,11 @@ public:
 	 */
 	void setOpacity(const float& opacity);
 
-	/** Returns the brush radius */
-	float brushRadius() const;
-
-	/**
-	 * Sets the brush radius
-	 * @param brushRadius Brush radius
-	 */
-	void setBrushRadius(const float& brushRadius);
-
-	/** Returns the brush radius delta (amount to increasing/decreasing) */
-	float brushRadiusDelta() const;
-
-	/**
-	 * Sets the brush radius delta (amount to increasing/decreasing)
-	 * @param brushRadiusDelta Amount to add/remove
-	 */
-	void setBrushRadiusDelta(const float& brushRadiusDelta);
-
-	/** Increase the brush size by _brushRadiusDelta */
-	void brushSizeIncrease();
-
-	/** Decrease the brush size by _brushRadiusDelta */
-	void brushSizeDecrease();
-
 	/** Updates the selection buffer
 	 * @param mousePositions Mouse positions in world coordinates
 	 * @param selectionType Selection type
 	 */
-	void update(std::vector<QVector3D> mousePositions, const SelectionType& selectionType);
+	void update(std::vector<QVector3D> mousePositions, const SelectionType& selectionType, const float& brushRadius);
 
 	/** Reset the (temporary) selection buffer */
 	void reset();
@@ -111,21 +87,7 @@ signals:
 	 */
 	void opacityChanged(const float& opacity);
 
-	/**
-	 * Invoked when the brush radius changed
-	 * @param brushRadius Brush radius
-	 */
-	void brushRadiusChanged(const float& brushRadius);
-
-	/**
-	 * Invoked when the brush radius delta changed
-	 * @param brushRadiusDelta Brush radius delta
-	 */
-	void brushRadiusDeltaChanged(const float& brushRadiusDelta);
-
 protected:
-	QSize		_size;					/** Size of the quad */
-	QColor		_color;					/** Selection color */
-	float		_brushRadius;			/** Brush radius */
-	float		_brushRadiusDelta;		/** Selection brush size increase/decrease delta */
+	QSize		_size;		/** Size of the quad */
+	QColor		_color;		/** Selection color */
 };

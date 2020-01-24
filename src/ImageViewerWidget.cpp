@@ -356,7 +356,7 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 
 				_mousePositions.push_back(_mousePosition);
 
-				_renderer->selectionBufferQuad()->update(mousePositionsWorld(), _renderer->selectionType());
+				_renderer->selectionBufferQuad()->update(mousePositionsWorld(), _renderer->selectionType(), _renderer->brushRadius());
 			}
 
 			break;
@@ -419,7 +419,7 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 						}
 						*/
 
-						_renderer->selectionBufferQuad()->update(mousePositionsWorld(), _renderer->selectionType());
+						_renderer->selectionBufferQuad()->update(mousePositionsWorld(), _renderer->selectionType(), _renderer->brushRadius());
 						_renderer->selectionOutline()->update(mousePositionsWorld(), _renderer->selectionType());
 					}
 					
@@ -553,10 +553,10 @@ void ImageViewerWidget::wheelEvent(QWheelEvent* wheelEvent) {
 		{
 			if (_renderer->selectionType() == SelectionType::Brush) {
 				if (wheelEvent->delta() > 0) {
-					_renderer->selectionBufferQuad()->brushSizeIncrease();
+					_renderer->brushSizeIncrease();
 				}
 				else {
-					_renderer->selectionBufferQuad()->brushSizeDecrease();
+					_renderer->brushSizeDecrease();
 				}
 
 				update();
