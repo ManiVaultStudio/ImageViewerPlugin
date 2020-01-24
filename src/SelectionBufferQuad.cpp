@@ -67,8 +67,11 @@ void SelectionBufferQuad::setSize(const QSize& size)
 
 	qDebug() << "Set size to" << _size << "for" << _name;
 
-	if (_fbos.contains("SelectionBuffer")) {
+	if (!_fbos.contains("SelectionBuffer")) {
 		_fbos.insert("SelectionBuffer", QSharedPointer<QOpenGLFramebufferObject>::create(_size.width(), _size.height()));
+	}
+	else {
+		fbo("SelectionBuffer").reset(new QOpenGLFramebufferObject(_size.width(), _size.height()));
 	}
 
 	emit sizeChanged(_size);
@@ -293,8 +296,7 @@ void SelectionBufferQuad::setMousePositions(std::vector<QVector3D> mousePosition
 
 void SelectionBufferQuad::reset()
 {
-	/*
-	qDebug() << "Reset";
+	qDebug() << "Reset" << _name;
 
 	auto selectionFBO = fbo("SelectionBuffer");
 
@@ -306,5 +308,4 @@ void SelectionBufferQuad::reset()
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	selectionFBO->release();
-	*/
 }

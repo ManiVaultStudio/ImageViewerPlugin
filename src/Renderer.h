@@ -121,8 +121,6 @@ private:
 
 protected:
 	ImageViewerWidget*						_imageViewerWidget;		/** Pointer to image viewer widget */
-	QColor									_bufferColor;			/** Selected pixel color during selection */
-	QColor									_selectionColor;		/** Pixel color of selected data points */
 	float									_brushRadius;			/** Selection brush radius */
 	float									_brushRadiusDelta;		/** Selection brush size increase/decrease delta */
 	QMap<QString, QSharedPointer<Shape>>	_shapes;				/** Shapes map */

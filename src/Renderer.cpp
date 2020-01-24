@@ -21,8 +21,6 @@ template SelectionBufferQuad* Renderer::shape<SelectionBufferQuad>(const QString
 Renderer::Renderer(const float& depth, ImageViewerWidget* imageViewerWidget) :
 	StackedRenderer(depth),
 	_imageViewerWidget(imageViewerWidget),
-	_bufferColor(255, 153, 0, 70),
-	_selectionColor(255, 0, 0, 153),
 	_brushRadius(50.f),
 	_brushRadiusDelta(2.0f)
 {
@@ -215,34 +213,6 @@ void Renderer::destroyShapes()
 		_shapes[key]->destroy();
 	}
 }
-
-/*
-void Renderer::renderOverlay()
-{
-	 TODO
-	auto selectionFBO = fbo("SelectionBuffer");
-
-	auto overlayProgram = shaderProgram("Overlay");
-
-	if (overlayProgram->bind()) {
-		overlayProgram->setUniformValue("overlayTexture", 0);
-		overlayProgram->setUniformValue("transform", _modelViewProjection);
-		overlayProgram->setUniformValue("color", _bufferColor);
-
-		auto quadVAO = vao("Quad");
-
-		quadVAO->bind();
-		{
-			glBindTexture(GL_TEXTURE_2D, selectionFBO->texture());
-			glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-		}
-		quadVAO->release();
-
-		overlayProgram->release();
-	}
-	
-}
-*/
 
 /*
 void Renderer::renderOutline()
