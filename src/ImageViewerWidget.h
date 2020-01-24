@@ -48,15 +48,6 @@ public:
 	 */
 	void setInteractionMode(const InteractionMode& interactionMode);
 
-	/** Returns the selection type */
-	SelectionType selectionType() const;
-
-	/**
-	 * Sets the selection type
-	 * @param selectionType Selection type
-	 */
-	void setSelectionType(const SelectionType& selectionType);
-
 	/** Returns the selection modifier */
 	SelectionModifier selectionModifier() const;
 
@@ -256,7 +247,6 @@ private:
 	float									_zoomSensitivity;			/** Zoom sensitivity */
 	int										_margin;					/** Margin between image and viewer widget boundaries */
 	bool									_selecting;					/** Whether selection is taking place */
-	SelectionType							_selectionType;				/** Type of selection e.g. rectangle, brush and polygon */
 	SelectionModifier						_selectionModifier;			/** The selection modifier determines if and how new selections are combined with existing selections e.g. add, replace and remove */
 	QVector4D								_pixelSelectionColor;		/** The color of selected pixels (data points) */
 	std::unique_ptr <QOpenGLDebugLogger>	_openglDebugLogger;			/** OpenGL debug logger (on in debug mode) */

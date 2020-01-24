@@ -94,10 +94,12 @@ public:
 	/** Updates the selection buffer quad
 	 * @param mousePositions Mouse positions in world coordinates
 	 */
-	void updateSelectionBufferQuad(std::vector<QVector3D> mousePositions);
+	//void updateSelectionBufferQuad(std::vector<QVector3D> mousePositions);
 
 	/** Returns the selection buffer quad */
-	void resetSelectionBufferQuad();
+	//void resetSelectionBufferQuad();
+
+	SelectionBufferQuad* selectionBufferQuad();
 
 	/**
 	 * Get shape by name
@@ -124,5 +126,4 @@ protected:
 	float									_brushRadius;			/** Selection brush radius */
 	float									_brushRadiusDelta;		/** Selection brush size increase/decrease delta */
 	QMap<QString, QSharedPointer<Shape>>	_shapes;				/** Shapes map */
-	
 };

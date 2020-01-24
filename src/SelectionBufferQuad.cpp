@@ -13,7 +13,7 @@ SelectionBufferQuad::SelectionBufferQuad(const QString& name /*= "SelectionBuffe
 	Quad(name, z),
 	_size(),
 	_color(255, 0, 0, 200),
-	_selectionType(SelectionType::None),
+	_selectionType(SelectionType::Rectangle),
 	_brushRadius(1.0f),
 	_mousePositions()
 {

@@ -144,14 +144,9 @@ std::shared_ptr<QImage> Renderer::selectionImage() const
 	return std::make_shared<QImage>(selectionFBO->toImage());
 }
 
-void Renderer::updateSelectionBufferQuad(std::vector<QVector3D> mousePositions)
+SelectionBufferQuad* Renderer::selectionBufferQuad()
 {
-	shape<SelectionBufferQuad>("SelectionBufferQuad")->setMousePositions(mousePositions);
-}
-
-void Renderer::resetSelectionBufferQuad()
-{
-	shape<SelectionBufferQuad>("SelectionBufferQuad")->reset();
+	return shape<SelectionBufferQuad>("SelectionBufferQuad");
 }
 
 template<typename T>
