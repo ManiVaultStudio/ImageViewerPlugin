@@ -7,6 +7,7 @@
 
 class ImageQuad;
 class SelectionBufferQuad;
+class SelectionOutline;
 
 class ImageViewerWidget;
 
@@ -70,6 +71,9 @@ public:
 
 	/** Returns the selection buffer quad */
 	SelectionBufferQuad* selectionBufferQuad();
+
+	/** Returns the selection outline */
+	SelectionOutline* selectionOutline();
 
 	/**
 	 * Get shape by name

@@ -12,11 +12,13 @@
 #include "SelectionBounds.h"
 #include "SelectionQuad.h"
 #include "SelectionBufferQuad.h"
+#include "SelectionOutline.h"
 
 template SelectionBounds* Renderer::shape<SelectionBounds>(const QString& name);
 template ImageQuad* Renderer::shape<ImageQuad>(const QString& name);
 template SelectionQuad* Renderer::shape<SelectionQuad>(const QString& name);
 template SelectionBufferQuad* Renderer::shape<SelectionBufferQuad>(const QString& name);
+template SelectionOutline* Renderer::shape<SelectionOutline>(const QString& name);
 
 Renderer::Renderer(const float& depth, ImageViewerWidget* imageViewerWidget) :
 	StackedRenderer(depth),
@@ -69,7 +71,7 @@ void Renderer::setColorImage(std::shared_ptr<QImage> colorImage)
 		const auto pWorld0 = _imageViewerWidget->screenToWorld(QPointF(0.0f, 0.0f));
 		const auto pWorld1 = _imageViewerWidget->screenToWorld(QPointF(1.f, 0.0f));
 
-		shape<SelectionBounds>("SelectionBounds")->setLineWidth((pWorld1 - pWorld0).length());
+		shape<SelectionBounds>("SelectionBounds")->setLineWidth(1);
 	}
 }
 
@@ -101,6 +103,11 @@ SelectionBufferQuad* Renderer::selectionBufferQuad()
 	return shape<SelectionBufferQuad>("SelectionBufferQuad");
 }
 
+SelectionOutline* Renderer::selectionOutline()
+{
+	return shape<SelectionOutline>("SelectionOutline");
+}
+
 template<typename T>
 T* Renderer::shape(const QString& name)
 {
@@ -120,6 +127,7 @@ void Renderer::createShapes()
 	_shapes.insert("SelectionBufferQuad", QSharedPointer<SelectionBufferQuad>::create("SelectionBufferQuad", 2.f));
 	_shapes.insert("SelectionQuad", QSharedPointer<SelectionQuad>::create("SelectionQuad", 1.f));
 	_shapes.insert("SelectionBounds", QSharedPointer<SelectionBounds>::create("SelectionBounds", 0.f));
+	_shapes.insert("SelectionOutline", QSharedPointer<SelectionOutline>::create("SelectionOutline", 0.f));
 
 	//_shapes["ImageQuad"]->setEnabled(false);
 	//_shapes["SelectionQuad"]->setEnabled(false);

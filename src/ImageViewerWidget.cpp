@@ -16,6 +16,7 @@
 #include "Renderer.h"
 #include "ImageQuad.h"
 #include "SelectionBufferQuad.h"
+#include "SelectionOutline.h"
 
 // Panning and zooming inspired by: https://community.khronos.org/t/opengl-compound-zoom-and-pan-effect/72565/7
 // Line width and anti-aliasing inspired by // https://vitaliburkov.wordpress.com/2016/09/17/simple-and-fast-high-quality-antialiased-lines-with-opengl/
@@ -406,15 +407,6 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 
 				case InteractionMode::Selection:
 				{
-					/*
-					auto worldMousePositions = std::vector<QVector3D>();
-
-					for (const auto& mousePosition : _mousePositions)
-					{
-						worldMousePositions.push_back(screenToWorld(mousePosition));
-					}
-					*/
-
 					if (_imageViewerPlugin->allowsPixelSelection() && _selecting) {
 						_mousePositions.push_back(mouseEvent->pos());
 						/*
@@ -428,6 +420,7 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 						*/
 
 						_renderer->selectionBufferQuad()->setMousePositions(mousePositionsWorld());
+						_renderer->selectionOutline()->setMousePositions(mousePositionsWorld());
 					}
 					
 					break;
