@@ -75,6 +75,21 @@ public:
 	 */
 	void setBrushRadius(const float& brushRadius);
 
+	/** Returns the brush radius delta (amount to increasing/decreasing) */
+	float brushRadiusDelta() const;
+
+	/**
+	 * Sets the brush radius delta (amount to increasing/decreasing)
+	 * @param brushRadiusDelta Amount to add/remove
+	 */
+	void setBrushRadiusDelta(const float& brushRadiusDelta);
+
+	/** Increase the brush size by _brushRadiusDelta */
+	void brushSizeIncrease();
+
+	/** Decrease the brush size by _brushRadiusDelta */
+	void brushSizeDecrease();
+
 	/** Returns the mouse positions */
 	std::vector<QVector3D> mousePositions() const;
 
@@ -136,11 +151,18 @@ signals:
 	 */
 	void brushRadiusChanged(const float& brushRadius);
 
+	/**
+	 * Invoked when the brush radius delta changed
+	 * @param brushRadiusDelta Brush radius delta
+	 */
+	void brushRadiusDeltaChanged(const float& brushRadiusDelta);
+
 protected:
 	QSize						_size;					/** Size of the quad */
 	QColor						_color;					/** Selection color */
 	SelectionType				_selectionType;			/** Type of selection e.g. rectangle, brush */
 	SelectionModifier			_selectionModifier;		/** The selection modifier determines if and how new selections are combined with existing selections e.g. add, replace and remove */
 	float						_brushRadius;			/** Brush radius */
+	float						_brushRadiusDelta;		/** Selection brush size increase/decrease delta */
 	std::vector<QVector3D>		_mousePositions;		/** Mouse positions during selection */
 };

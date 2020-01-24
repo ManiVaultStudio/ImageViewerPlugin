@@ -20,9 +20,7 @@ template SelectionBufferQuad* Renderer::shape<SelectionBufferQuad>(const QString
 
 Renderer::Renderer(const float& depth, ImageViewerWidget* imageViewerWidget) :
 	StackedRenderer(depth),
-	_imageViewerWidget(imageViewerWidget),
-	_brushRadius(50.f),
-	_brushRadiusDelta(2.0f)
+	_imageViewerWidget(imageViewerWidget)
 {
 	createShapes();
 }
@@ -65,13 +63,13 @@ void Renderer::setColorImage(std::shared_ptr<QImage> colorImage)
 
 	imageQuadShape->setImage(colorImage);
 
+	shape<SelectionBufferQuad>("SelectionBufferQuad")->setSize(colorImage->size());
+
 	if (previousImageSize != colorImage->size()) {
-		shape<SelectionBufferQuad>("SelectionBufferQuad")->setSize(colorImage->size());
+		const auto brushRadius = 0.05f * static_cast<float>(std::min(colorImage->width(), colorImage->height()));
 
-		const auto brushRadius = 0.05f * static_cast<float>(std::min(previousImageSize.width(), previousImageSize.height()));
-
-		//_renderer->setBrushRadius(brushRadius);
-		//_renderer->setBrushRadiusDelta(0.2f * brushRadius);
+		selectionBufferQuad()->setBrushRadius(brushRadius);
+		selectionBufferQuad()->setBrushRadiusDelta(0.2f * brushRadius);
 	}
 }
 
@@ -81,50 +79,6 @@ void Renderer::setSelectionImage(std::shared_ptr<QImage> selectionImage, const Q
 
 	shape<SelectionQuad>("SelectionQuad")->setImage(selectionImage);
 	shape<SelectionBounds>("SelectionBounds")->setBounds(worldSelectionBounds);
-}
-
-float Renderer::brushRadius() const
-{
-	return _brushRadius;
-}
-
-void Renderer::setBrushRadius(const float& brushRadius)
-{
-	const auto boundBrushRadius = qBound(1.0f, 10000.f, brushRadius);
-
-	if (boundBrushRadius == _brushRadius)
-		return;
-
-	_brushRadius = boundBrushRadius;
-
-	qDebug() << "Set brush radius" << brushRadius;
-}
-
-float Renderer::brushRadiusDelta() const
-{
-	return _brushRadiusDelta;
-}
-
-void Renderer::setBrushRadiusDelta(const float& brushRadiusDelta)
-{
-	const auto boundBrushRadiusDelta = qBound(0.001f, 10000.f, brushRadiusDelta);
-
-	if (boundBrushRadiusDelta == _brushRadiusDelta)
-		return;
-
-	_brushRadiusDelta = qBound(0.001f, 10000.f, brushRadiusDelta);
-
-	qDebug() << "Set brush radius delta" << _brushRadiusDelta;
-}
-
-void Renderer::brushSizeIncrease()
-{
-	setBrushRadius(_brushRadius + _brushRadiusDelta);
-}
-
-void Renderer::brushSizeDecrease()
-{
-	setBrushRadius(_brushRadius - _brushRadiusDelta);
 }
 
 float Renderer::selectionOpacity()

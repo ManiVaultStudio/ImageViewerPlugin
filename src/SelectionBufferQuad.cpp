@@ -16,6 +16,7 @@ SelectionBufferQuad::SelectionBufferQuad(const QString& name /*= "SelectionBuffe
 	_selectionType(SelectionType::Rectangle),
 	_selectionModifier(SelectionModifier::Replace),
 	_brushRadius(10.0f),
+	_brushRadiusDelta(1.f),
 	_mousePositions()
 {
 }
@@ -24,11 +25,6 @@ void SelectionBufferQuad::render()
 {
 	if (!canRender())
 		return;
-
-	//auto selectionBufferFBO = fbo("SelectionBuffer");
-
-	//if (!selectionBufferFBO->isValid())
-	//	return;
 
 	//qDebug() << "Render" << _name << "shape";
 
@@ -63,10 +59,10 @@ void SelectionBufferQuad::setSize(const QSize& size)
 		_fbos.insert("SelectionBuffer", QSharedPointer<QOpenGLFramebufferObject>::create(_size.width(), _size.height()));
 	}
 	else {
-		fbo("SelectionBuffer").reset(new QOpenGLFramebufferObject(_size.width(), _size.height()));
+		_fbos["SelectionBuffer"] = QSharedPointer<QOpenGLFramebufferObject>::create(_size.width(), _size.height());
 	}
 
-	setRectangle(QRectF(0, 0, size.width(), size.height()));
+	setRectangle(QRectF(0, 0, _size.width(), _size.height()));
 
 	emit sizeChanged(_size);
 }
@@ -146,14 +142,45 @@ float SelectionBufferQuad::brushRadius() const
 
 void SelectionBufferQuad::setBrushRadius(const float& brushRadius)
 {
-	if (brushRadius == _brushRadius)
+	const auto boundBrushRadius = qBound(1.0f, 100000.f, brushRadius);
+
+	if (boundBrushRadius == _brushRadius)
 		return;
 
-	_brushRadius = brushRadius;
+	_brushRadius = boundBrushRadius;
 
 	qDebug() << "Set brush radius to" << QString::number(_brushRadius, 'f', 1) << "for" << _name;
 
 	emit brushRadiusChanged(_brushRadius);
+}
+
+float SelectionBufferQuad::brushRadiusDelta() const
+{
+	return _brushRadiusDelta;
+}
+
+void SelectionBufferQuad::setBrushRadiusDelta(const float& brushRadiusDelta)
+{
+	const auto boundBrushRadiusDelta = qBound(0.1f, 10000.f, brushRadiusDelta);
+
+	if (boundBrushRadiusDelta == _brushRadiusDelta)
+		return;
+
+	_brushRadiusDelta = boundBrushRadiusDelta;
+
+	qDebug() << "Set brush radius delta" << _brushRadiusDelta << "for" << _name;
+
+	emit brushRadiusDeltaChanged(_brushRadiusDelta);
+}
+
+void SelectionBufferQuad::brushSizeIncrease()
+{
+	setBrushRadius(_brushRadius + _brushRadiusDelta);
+}
+
+void SelectionBufferQuad::brushSizeDecrease()
+{
+	setBrushRadius(_brushRadius - _brushRadiusDelta);
 }
 
 std::vector<QVector3D> SelectionBufferQuad::mousePositions() const

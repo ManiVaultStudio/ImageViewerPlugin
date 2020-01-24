@@ -56,30 +56,6 @@ public:
 	 */
 	void setSelectionImage(std::shared_ptr<QImage> selectionImage, const QRect& selectionBounds);
 
-	/** Returns the brush radius */
-	float brushRadius() const;
-
-	/**
-	 * Sets the brush radius
-	 * @param brushRadius Brush radius
-	 */
-	void setBrushRadius(const float& brushRadius);
-
-	/** Returns the brush radius delta (amount to increasing/decreasing) */
-	float brushRadiusDelta() const;
-
-	/**
-	 * Sets the brush radius delta (amount to increasing/decreasing)
-	 * @param brushRadiusDelta Amount to add/remove 
-	 */
-	void setBrushRadiusDelta(const float& brushRadiusDelta);
-
-	/** Increase the brush size by _brushRadiusDelta */
-	void brushSizeIncrease();
-
-	/** Decrease the brush size by _brushRadiusDelta */
-	void brushSizeDecrease();
-
 	/** Returns the selection opacity */
 	float selectionOpacity();
 
@@ -117,7 +93,5 @@ private:
 
 protected:
 	ImageViewerWidget*						_imageViewerWidget;		/** Pointer to image viewer widget */
-	float									_brushRadius;			/** Selection brush radius */
-	float									_brushRadiusDelta;		/** Selection brush size increase/decrease delta */
 	QMap<QString, QSharedPointer<Shape>>	_shapes;				/** Shapes map */
 };

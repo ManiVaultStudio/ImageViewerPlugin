@@ -562,10 +562,10 @@ void ImageViewerWidget::wheelEvent(QWheelEvent* wheelEvent) {
 		{
 			if (_renderer->selectionBufferQuad()->selectionType() == SelectionType::Brush) {
 				if (wheelEvent->delta() > 0) {
-					_renderer->brushSizeIncrease();
+					_renderer->selectionBufferQuad()->brushSizeIncrease();
 				}
 				else {
-					_renderer->brushSizeDecrease();
+					_renderer->selectionBufferQuad()->brushSizeDecrease();
 				}
 
 				update();
