@@ -420,7 +420,7 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 						*/
 
 						_renderer->selectionBufferQuad()->update(mousePositionsWorld(), _renderer->selectionType());
-						_renderer->selectionOutline()->setMousePositions(mousePositionsWorld());
+						_renderer->selectionOutline()->update(mousePositionsWorld(), _renderer->selectionType());
 					}
 					
 					break;

@@ -27,13 +27,11 @@ public:
 	 */
 	void setColor(const QColor& color);
 
-	/** Returns the mouse positions */
-	std::vector<QVector3D> mousePositions() const;
-
-	/** Sets the mouse positions
+	/** Updates the selection buffer
 	 * @param mousePositions Mouse positions in world coordinates
+	 * @param selectionType Selection type
 	 */
-	void setMousePositions(std::vector<QVector3D> mousePositions);
+	void update(std::vector<QVector3D> mousePositions, const SelectionType& selectionType);
 
 	/** Returns the view rectangle */
 	QRect viewRectangle() const;
@@ -62,10 +60,6 @@ protected:
 	 */
 	void configureShaderProgram(const QString& name) override;
 
-private:
-	/** Updates the internal structure so that the polyline can be displayed on the screen */
-	void update();
-
 signals:
 	/**
 	 * Signals that the color changed
@@ -74,19 +68,12 @@ signals:
 	void colorChanged(const QColor& color);
 
 	/**
-	 * Signals that the mouse positions changed
-	 * @param mousePositions Color
-	 */
-	void mousePositionsChanged(const std::vector<QVector3D>& mousePositions);
-
-	/**
 	 * Signals that the view rectangle changed
 	 * @param viewRectangle View rectangle
 	 */
 	void viewRectangleChanged(const QRect& viewRectangle);
 
 protected:
-	QColor						_color;				/** Color */
-	std::vector<QVector3D>		_mousePositions;	/** Mouse positions during selection */
-	QRect						_viewRectangle;		/** View rectangle */
+	QColor		_color;				/** Color */
+	QRect		_viewRectangle;		/** View rectangle */
 };

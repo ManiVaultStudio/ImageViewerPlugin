@@ -70,9 +70,6 @@ public:
 	/** Decrease the brush size by _brushRadiusDelta */
 	void brushSizeDecrease();
 
-	/** Returns the mouse positions */
-	std::vector<QVector3D> mousePositions() const;
-
 	/** Updates the selection buffer
 	 * @param mousePositions Mouse positions in world coordinates
 	 * @param selectionType Selection type
@@ -127,9 +124,8 @@ signals:
 	void brushRadiusDeltaChanged(const float& brushRadiusDelta);
 
 protected:
-	QSize						_size;					/** Size of the quad */
-	QColor						_color;					/** Selection color */
-	float						_brushRadius;			/** Brush radius */
-	float						_brushRadiusDelta;		/** Selection brush size increase/decrease delta */
-	std::vector<QVector3D>		_mousePositions;		/** Mouse positions during selection */
+	QSize		_size;					/** Size of the quad */
+	QColor		_color;					/** Selection color */
+	float		_brushRadius;			/** Brush radius */
+	float		_brushRadiusDelta;		/** Selection brush size increase/decrease delta */
 };

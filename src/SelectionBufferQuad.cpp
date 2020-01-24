@@ -14,8 +14,7 @@ SelectionBufferQuad::SelectionBufferQuad(const QString& name /*= "SelectionBuffe
 	_size(),
 	_color(255, 153, 0, 40),
 	_brushRadius(10.0f),
-	_brushRadiusDelta(1.f),
-	_mousePositions()
+	_brushRadiusDelta(1.f)
 {
 }
 
@@ -145,11 +144,6 @@ void SelectionBufferQuad::brushSizeIncrease()
 void SelectionBufferQuad::brushSizeDecrease()
 {
 	setBrushRadius(_brushRadius - _brushRadiusDelta);
-}
-
-std::vector<QVector3D> SelectionBufferQuad::mousePositions() const
-{
-	return _mousePositions;
 }
 
 void SelectionBufferQuad::addShaderPrograms()
