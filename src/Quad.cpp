@@ -9,9 +9,10 @@
 std::uint32_t Quad::_vertexAttribute	= 0;
 std::uint32_t Quad::_textureAttribute	= 1;
 
-Quad::Quad(const QString& name /*= "Quad"*/) :
+Quad::Quad(const QString& name /*= "Quad"*/, const float& z /*= 0.f*/) :
 	Shape(name),
 	_rectangle(),
+	_z(z),
 	_vertexData()
 {
 	_vertexData.resize(20);
@@ -89,14 +90,31 @@ QSizeF Quad::size() const
 	return _rectangle.size();
 }
 
+float Quad::z() const
+{
+	return _z;
+}
+
+void Quad::setZ(const float& z)
+{
+	if (z == _z)
+		return;
+
+	_z = z;
+
+	qDebug() << "Set position along z-axis" << _z;
+
+	emit zChanged(_z);
+}
+
 void Quad::setRectangle(const QRectF& rectangle)
 {
 	if (rectangle == _rectangle)
 		return;
-	
-	qDebug() << "Set quad rectangle";
 
 	_rectangle = rectangle;
+
+	qDebug() << "Set quad rectangle" << _rectangle;
 
 	emit rectangleChanged(_rectangle);
 

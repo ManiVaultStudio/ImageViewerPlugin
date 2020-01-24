@@ -15,7 +15,7 @@ class Quad : public Shape
 
 public:
 	/** Constructor */
-	Quad(const QString& name = "Quad");
+	Quad(const QString& name = "Quad", const float& z = 0.f);
 
 	/** Initialized the shape (must be called in appropriate OpenGL context) */
 	void initialize() override;
@@ -28,6 +28,15 @@ public:
 
 	/** Returns the quad size */
 	QSizeF size() const;
+
+	/** Return position along z-axis */
+	float z() const;
+
+	/**
+	 * Set position along z-axis
+	 * @param z Position along z-axis
+	 */
+	void setZ(const float& z);
 
 protected:
 	/**
@@ -65,8 +74,15 @@ signals:
 	 */
 	void rectangleChanged(const QRectF& rectangle);
 
+	/**
+	 * Signals that z changed
+	 * @param z Position along z-axis
+	 */
+	void zChanged(const float& z);
+
 protected:
 	QRectF					_rectangle;				/** Rectangle (in world space) that defines the quad */
+	float					_z;						/** Position along z-axis */
 	QVector<GLfloat>		_vertexData;			/** Quad vertex data */
 	static std::uint32_t	_vertexAttribute;		/** Quad vertex attribute location */
 	static std::uint32_t	_textureAttribute;		/** Quad texture attribute location */

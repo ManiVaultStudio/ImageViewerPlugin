@@ -20,7 +20,7 @@ SettingsWidget::SettingsWidget(ImageViewerPlugin* imageViewerPlugin) :
 	connect(_ui->dimensionsComboBox, QOverload<const int>::of(&QComboBox::currentIndexChanged), _imageViewerPlugin, &ImageViewerPlugin::setCurrentDimensionId);
 	connect(_ui->averageImagesCheckBox, &QCheckBox::stateChanged, _imageViewerPlugin, [=](int state) { _imageViewerPlugin->setAverageImages(static_cast<bool>(state)); });
 	connect(_ui->selectionOpacitySlider, &QSlider::valueChanged, _imageViewerPlugin, [=](int value) {
-		_imageViewerPlugin->imageViewerWidget()->selectionRenderer()->setSelectionOpacity(static_cast<float>(value) / 100.f);
+		_imageViewerPlugin->imageViewerWidget()->renderer()->setSelectionOpacity(static_cast<float>(value) / 100.f);
 		_imageViewerPlugin->imageViewerWidget()->update();
 	});
 
@@ -169,7 +169,7 @@ void SettingsWidget::updateSelectionOpacityUI()
 {
 	const auto hasSelection = _imageViewerPlugin->hasSelection();
 
-	_ui->selectionOpacitySlider->setValue(_imageViewerPlugin->imageViewerWidget()->selectionRenderer()->selectionOpacity() * 100.0f);
+	_ui->selectionOpacitySlider->setValue(_imageViewerPlugin->imageViewerWidget()->renderer()->selectionOpacity() * 100.0f);
 
 	const auto imageCollectionType = _imageViewerPlugin->imageCollectionType();
 

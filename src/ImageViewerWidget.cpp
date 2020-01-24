@@ -17,12 +17,12 @@
 #include "ImageQuad.h"
 
 // Panning and zooming inspired by: https://community.khronos.org/t/opengl-compound-zoom-and-pan-effect/72565/7
-// Line width and antia-aliasing inspired by // https://vitaliburkov.wordpress.com/2016/09/17/simple-and-fast-high-quality-antialiased-lines-with-opengl/
+// Line width and anti-aliasing inspired by // https://vitaliburkov.wordpress.com/2016/09/17/simple-and-fast-high-quality-antialiased-lines-with-opengl/
 
 ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	QOpenGLFunctions(),
 	_imageViewerPlugin(imageViewerPlugin),
-	_renderer(),
+	_renderer(QSharedPointer<Renderer>::create(3, this)),
 	_interactionMode(InteractionMode::Selection),
 	_mousePosition(),
 	_zoom(1.f),
@@ -40,7 +40,14 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 
 	connect(_imageViewerPlugin, &ImageViewerPlugin::currentDatasetChanged, this, &ImageViewerWidget::onCurrentDatasetChanged);
 	connect(_imageViewerPlugin, &ImageViewerPlugin::currentImageIdChanged, this, &ImageViewerWidget::onCurrentImageIdChanged);
-	connect(_imageViewerPlugin, &ImageViewerPlugin::selectionImageChanged, this->_renderer.get(), &Renderer::setSelectionImage);
+	connect(_imageViewerPlugin, &ImageViewerPlugin::selectionImageChanged, this, [&](std::shared_ptr<QImage> image, const QRect& bounds) {
+		makeCurrent();
+		{
+			_renderer->setSelectionImage(image, bounds);
+			update();
+		}
+		doneCurrent();
+	}, Qt::AutoConnection);
 
 	QSurfaceFormat surfaceFormat;
 
@@ -68,7 +75,6 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 
 	setFormat(surfaceFormat);
 
-	_renderer	= std::make_shared<Renderer>(3, this);
 
 	connect(_imageViewerPlugin, &ImageViewerPlugin::displayImageChanged, this, &ImageViewerWidget::onDisplayImageChanged);
 }
@@ -704,6 +710,7 @@ QVector3D ImageViewerWidget::screenToWorld(const QPointF& screen) const
 
 void ImageViewerWidget::publishSelection()
 {	
+	/* TODO
 	qDebug() << "Publish selection";
 	
 	const auto image = _renderer->selectionImage();
@@ -725,6 +732,7 @@ void ImageViewerWidget::publishSelection()
 	//_selectRenderer->resetPixelSelection();
 
 	update();
+	*/
 }
 
 void ImageViewerWidget::selectAll()
@@ -754,7 +762,7 @@ void ImageViewerWidget::invertSelection()
 	update();
 }
 
-std::shared_ptr<Renderer> ImageViewerWidget::selectionRenderer()
+QSharedPointer<Renderer> ImageViewerWidget::renderer()
 {
 	return _renderer;
 }

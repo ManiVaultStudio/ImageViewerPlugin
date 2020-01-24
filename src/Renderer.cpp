@@ -10,9 +10,11 @@
 #include "Shaders.h"
 #include "ImageQuad.h"
 #include "SelectionBounds.h"
+#include "SelectionQuad.h"
 
 template SelectionBounds* Renderer::shape<SelectionBounds>(const QString& name);
 template ImageQuad* Renderer::shape<ImageQuad>(const QString& name);
+template SelectionQuad* Renderer::shape<SelectionQuad>(const QString& name);
 
 Renderer::Renderer(const float& depth, ImageViewerWidget* imageViewerWidget) :
 	StackedRenderer(depth),
@@ -210,18 +212,8 @@ void Renderer::setSelectionImage(std::shared_ptr<QImage> selectionImage, const Q
 {
 	const auto worldSelectionBounds = QRect(selectionBounds.left(), selectionImage->height() - selectionBounds.bottom() - 1, selectionBounds.width() + 1, selectionBounds.height() + 1);
 
-	shape<ImageQuad>("SelectionQuad")->setImage(selectionImage);
+	shape<SelectionQuad>("SelectionQuad")->setImage(selectionImage);
 	shape<SelectionBounds>("SelectionBounds")->setBounds(worldSelectionBounds);
-}
-
-void Renderer::setSelectionBounds(const QRect& selectionBounds)
-{
-	auto bounds = selectionBounds;
-
-	bounds.setWidth(selectionBounds.width() - 1);
-	bounds.setHeight(selectionBounds.height() - 1);
-
-	shape<SelectionBounds>("SelectionBounds")->setBounds(bounds);
 }
 
 float Renderer::selectionOpacity() const
@@ -370,8 +362,11 @@ void Renderer::createShapes()
 	qDebug() << "Creating shapes";
 
 	_shapes.insert("ImageQuad", QSharedPointer<ImageQuad>::create("ImageQuad"));
-	_shapes.insert("SelectionQuad", QSharedPointer<ImageQuad>::create("SelectionQuad"));
+	_shapes.insert("SelectionQuad", QSharedPointer<SelectionQuad>::create("SelectionQuad"));
 	_shapes.insert("SelectionBounds", QSharedPointer<SelectionBounds>::create("SelectionBounds"));
+
+	//_shapes["ImageQuad"]->setEnabled(false);
+	//_shapes["SelectionQuad"]->setEnabled(false);
 }
 
 void Renderer::initializeShapes()

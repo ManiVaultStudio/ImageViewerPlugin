@@ -61,7 +61,7 @@ bool Shape::isEnabled() const
 
 void Shape::setEnabled(const bool& enabled)
 {
-	if (enabled == enabled)
+	if (enabled == _enabled)
 		return;
 
 	_enabled = enabled;

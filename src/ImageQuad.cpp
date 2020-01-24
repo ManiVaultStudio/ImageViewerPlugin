@@ -167,8 +167,8 @@ void ImageQuad::configureShaderProgram(const QString& name)
 	auto quadProgram = shaderProgram("Quad");
 
 	if (name == "Quad") {
-		quadProgram->setUniformValue("imageTexture", 0);
 		quadProgram->setUniformValue("transform", _modelViewProjection);
+		quadProgram->setUniformValue("imageTexture", 0);
 		quadProgram->setUniformValue("minPixelValue", _minPixelValue);
 		quadProgram->setUniformValue("maxPixelValue", _maxPixelValue);
 	}

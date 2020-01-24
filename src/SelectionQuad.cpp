@@ -1,0 +1,58 @@
+#include "SelectionQuad.h"
+
+#include <QOpenGLShaderProgram>
+#include <QOpenGLBuffer>
+#include <QOpenGLVertexArrayObject>
+#include <QOpenGLTexture>
+#include <QDebug>
+
+#include "Shaders.h"
+
+SelectionQuad::SelectionQuad(const QString& name /*= "SelectionQuad"*/) :
+	Quad(name),
+	_color(255, 0, 0, 150)
+{
+}
+
+void SelectionQuad::setImage(std::shared_ptr<QImage> image)
+{
+	qDebug() << "Set selection image for" << _name;
+
+	texture("Quad")->setData(*image.get());
+
+	setRectangle(QRectF(0, 0, image->width(), image->height()));
+}
+
+void SelectionQuad::addShaderPrograms()
+{
+	qDebug() << "Add OpenGL shader programs to" << _name << "shape";
+
+	addShaderProgram("Quad", QSharedPointer<QOpenGLShaderProgram>::create());
+
+	shaderProgram("Quad")->addShaderFromSourceCode(QOpenGLShader::Vertex, selectionVertexShaderSource.c_str());
+	shaderProgram("Quad")->addShaderFromSourceCode(QOpenGLShader::Fragment, selectionFragmentShaderSource.c_str());
+	shaderProgram("Quad")->link();
+}
+
+void SelectionQuad::addTextures()
+{
+	qDebug() << "Add OpenGL textures to" << _name << "shape";
+
+	addTexture("Quad", QSharedPointer<QOpenGLTexture>::create(QOpenGLTexture::Target2D));
+
+	texture("Quad")->setWrapMode(QOpenGLTexture::Repeat);
+	texture("Quad")->setMinMagFilters(QOpenGLTexture::Nearest, QOpenGLTexture::Nearest);
+}
+
+void SelectionQuad::configureShaderProgram(const QString& name)
+{
+	//qDebug() << "Configuring shader program" << name << "for" << _name;
+
+	auto quadProgram = shaderProgram("Quad");
+
+	if (name == "Quad") {
+		quadProgram->setUniformValue("transform", _modelViewProjection);
+		quadProgram->setUniformValue("selectionTexture", 0);
+		quadProgram->setUniformValue("color", _color);
+	}
+}

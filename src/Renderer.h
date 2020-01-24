@@ -55,12 +55,6 @@ public:
 	 */
 	void setSelectionImage(std::shared_ptr<QImage> selectionImage, const QRect& selectionBounds);
 
-	/**
-	 * Set selection bounds
-	 * @param selectionBounds Bounds of the selected pixels in the selection image
-	 */
-	void setSelectionBounds(const QRect& selectionBounds);
-
 	/** Returns the selection opacity */
 	float selectionOpacity() const;
 
