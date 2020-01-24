@@ -13,11 +13,13 @@ class Polyline2D : public Shape
 public:
 	/**
 	 * Constructor
+	 * @param name Name of the polyline
+	 * @param z Position along the z-axis
 	 * @param closed Whether to close the polyline or not
 	 * @param lineWidth Line width
 	 * @param textureScale Scale of the texture in the U direction
 	 */
-	Polyline2D(const QString& name, const bool& closed = true, const float& lineWidth = 1.f, const float& textureScale = 0.05f);
+	Polyline2D(const QString& name, const float& z = 0.f, const bool& closed = true, const float& lineWidth = 1.f, const float& textureScale = 0.05f);
 
 	/** Initialized the shape (must be called in appropriate OpenGL context) */
 	void initialize() override;
@@ -33,6 +35,15 @@ public:
 	 * @param lineWidth Line width in world space
 	 */
 	void setLineWidth(const float& lineWidth);
+
+	/** Return position along z-axis */
+	float z() const;
+
+	/**
+	 * Set position along z-axis
+	 * @param z Position along z-axis
+	 */
+	void setZ(const float& z);
 
 protected:
 	/**
@@ -60,7 +71,14 @@ signals:
 	 */
 	void lineWidthChanged(const float& lineWidth);
 
+	/**
+	 * Signals that z changed
+	 * @param z Position along z-axis
+	 */
+	void zChanged(const float& z);
+
 protected:
+	float				_z;					/** Position along z-axis */
 	bool				_closed;			/** Whether to close the polyline or not */
 	float				_lineWidth;			/** Line width in world space */
 	float				_textureScale;		/** Texture scale */

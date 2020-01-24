@@ -191,13 +191,14 @@ void ImageViewerWidget::initializeGL()
 
 	initializeOpenGLFunctions();
 
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LEQUAL);
+	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glCullFace(GL_BACK);
+
 	glEnable(GL_MULTISAMPLE);
-	glEnable(GL_LINE_SMOOTH);
-	glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
-	glDepthMask(false);
-	glLineWidth(100);
 
 	_renderer->init();
 
@@ -220,7 +221,6 @@ void ImageViewerWidget::resizeGL(int w, int h)
 
 void ImageViewerWidget::paintGL() {
 
-	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	auto modelViewProjection = projection() * modelView();
@@ -880,7 +880,7 @@ QMatrix4x4 ImageViewerWidget::projection() const
 
 	QMatrix4x4 projection;
 
-	projection.ortho(-halfSize.width(), halfSize.width(), -halfSize.height(), halfSize.height(), -10.0f, +10.0f);
+	projection.ortho(-halfSize.width(), halfSize.width(), -halfSize.height(), halfSize.height(), -100.0f, +100.0f);
 
 	return projection;
 }

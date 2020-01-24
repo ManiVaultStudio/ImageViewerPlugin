@@ -8,8 +8,8 @@
 
 #include "Shaders.h"
 
-SelectionQuad::SelectionQuad(const QString& name /*= "SelectionQuad"*/) :
-	Quad(name),
+SelectionQuad::SelectionQuad(const QString& name /*= "SelectionQuad"*/, const float& z /*= 0.f*/) :
+	Quad(name, z),
 	_color(255, 0, 0, 150)
 {
 }
@@ -18,6 +18,9 @@ void SelectionQuad::setImage(std::shared_ptr<QImage> image)
 {
 	qDebug() << "Set selection image for" << _name;
 
+	auto quadTexture = texture("Quad");
+
+	texture("Quad")->destroy();
 	texture("Quad")->setData(*image.get());
 
 	setRectangle(QRectF(0, 0, image->width(), image->height()));
@@ -42,16 +45,16 @@ void SelectionQuad::addTextures()
 
 	texture("Quad")->setWrapMode(QOpenGLTexture::Repeat);
 	texture("Quad")->setMinMagFilters(QOpenGLTexture::Nearest, QOpenGLTexture::Nearest);
+	texture("Quad")->setWrapMode(QOpenGLTexture::ClampToEdge);
 }
 
 void SelectionQuad::configureShaderProgram(const QString& name)
 {
-	//qDebug() << "Configuring shader program" << name << "for" << _name;
+	Quad::configureShaderProgram(name);
 
 	auto quadProgram = shaderProgram("Quad");
 
 	if (name == "Quad") {
-		quadProgram->setUniformValue("transform", _modelViewProjection);
 		quadProgram->setUniformValue("selectionTexture", 0);
 		quadProgram->setUniformValue("color", _color);
 	}

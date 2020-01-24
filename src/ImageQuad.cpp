@@ -8,8 +8,8 @@
 
 #include "Shaders.h"
 
-ImageQuad::ImageQuad(const QString& name /*= "ImageQuad"*/) :
-	Quad(name),
+ImageQuad::ImageQuad(const QString& name /*= "ImageQuad"*/, const float& z /*= 0.f*/) :
+	Quad(name, z),
 	_imageMin(),
 	_imageMax(),
 	_minPixelValue(),
@@ -162,12 +162,11 @@ void ImageQuad::addTextures()
 
 void ImageQuad::configureShaderProgram(const QString& name)
 {
-	//qDebug() << "Configuring shader program" << name << "for" << _name;
+	Quad::configureShaderProgram(name);
 
 	auto quadProgram = shaderProgram("Quad");
 
 	if (name == "Quad") {
-		quadProgram->setUniformValue("transform", _modelViewProjection);
 		quadProgram->setUniformValue("imageTexture", 0);
 		quadProgram->setUniformValue("minPixelValue", _minPixelValue);
 		quadProgram->setUniformValue("maxPixelValue", _maxPixelValue);

@@ -21,7 +21,5 @@ void main(void)
 		double fraction		= (double(fragmentColor[c]) * 65535.0) - double(minPixelValue);
 		fragmentColor[c]	= float(clamp(fraction / range, 0.0, 1.0));
 	}
-
-	//fragmentColor = vec4(1,0,0,1);
 }
 )"

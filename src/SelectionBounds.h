@@ -17,7 +17,7 @@ public:
 	/** Default constructor
 	 * @param name Name of the bounds polyline
 	 */
-	SelectionBounds(const QString& name = "Bounds", const QColor& color = QColor(255, 153, 0, 70));
+	SelectionBounds(const QString& name = "Bounds", const float& z = 0.f, const QColor& color = QColor(255, 153, 0, 70));
 
 	/** Set bounds
 	 * @param bounds Bounds
@@ -42,6 +42,12 @@ protected:
 	/** Adds the OpenGL textures that the shape needs */
 	void addTextures();
 
+	/**
+	 * Configure an OpenGL shader program (right after the shader program is bound in the render function)
+	 * @param name Name of the OpenGL shader program
+	 */
+	void configureShaderProgram(const QString& name) override;
+
 signals:
 	/**
 	 * Signals that the bounds changed
@@ -56,6 +62,6 @@ signals:
 	void colorChanged(const QColor& color);
 
 protected:
-	QRectF		_bounds;			/** Bounds */
-	QColor		_color;				/** Color */
+	QRectF		_bounds;		/** Bounds */
+	QColor		_color;			/** Color */
 };

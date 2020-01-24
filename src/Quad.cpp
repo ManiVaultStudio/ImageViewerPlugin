@@ -102,7 +102,7 @@ void Quad::setZ(const float& z)
 
 	_z = z;
 
-	qDebug() << "Set position along z-axis" << _z;
+	qDebug() << "Set position along z-axis" << _z << "for" << _name;
 
 	emit zChanged(_z);
 }
@@ -147,6 +147,19 @@ void Quad::addVBOs()
 bool Quad::canRender() const
 {
 	return Shape::canRender() && _rectangle.isValid();
+}
+
+void Quad::configureShaderProgram(const QString& name)
+{
+	auto quadProgram = shaderProgram("Quad");
+
+	if (name == "Quad") {
+		QMatrix4x4 translate;
+
+		translate.translate(0.f, 0.f, _z);
+
+		quadProgram->setUniformValue("transform", _modelViewProjection * translate);
+	}
 }
 
 void Quad::createQuad()

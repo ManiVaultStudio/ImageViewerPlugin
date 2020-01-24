@@ -8,8 +8,8 @@
 
 #include "Shaders.h"
 
-SelectionBounds::SelectionBounds(const QString& name /*= "Bounds"*/, const QColor& color /*= QColor(255, 153, 0, 70)*/) :
-	Polyline2D(name),
+SelectionBounds::SelectionBounds(const QString& name /*= "Bounds"*/, const float& z /*= 0.f*/, const QColor& color /*= QColor(255, 153, 0, 70)*/) :
+	Polyline2D(name, z),
 	_bounds(),
 	_color(color)
 {
@@ -92,4 +92,19 @@ void SelectionBounds::addTextures()
 
 	texture("Polyline")->setWrapMode(QOpenGLTexture::Repeat);
 	texture("Polyline")->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
+}
+
+void SelectionBounds::configureShaderProgram(const QString& name)
+{
+	Polyline2D::configureShaderProgram(name);
+
+	auto polylineProgram = shaderProgram("Polyline");
+
+	if (name == "Polyline") {
+		QMatrix4x4 translate;
+
+		translate.translate(0.f, 0.f, _z);
+
+		polylineProgram->setUniformValue("transform", _modelViewProjection * translate);
+	}
 }

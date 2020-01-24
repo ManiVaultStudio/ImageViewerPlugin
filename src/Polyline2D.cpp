@@ -6,8 +6,9 @@
 #include <QOpenGLTexture>
 #include <QDebug>
 
-Polyline2D::Polyline2D(const QString& name, const bool& closed /*= true*/, const float& lineWidth /*= 1.f*/, const float& textureScale /*= 0.05f*/) :
+Polyline2D::Polyline2D(const QString& name, const float& z /*= 0.f*/, const bool& closed /*= true*/, const float& lineWidth /*= 1.f*/, const float& textureScale /*= 0.05f*/) :
 	Shape(name),
+	_z(z),
 	_closed(closed),
 	_lineWidth(lineWidth),
 	_textureScale(textureScale),
@@ -37,6 +38,68 @@ void Polyline2D::initialize()
 
 		_initialized = true;
 	}
+}
+
+void Polyline2D::render()
+{
+	if (!canRender())
+		return;
+
+	Shape::render();
+
+	//qDebug() << "Render" << _name << "shape";
+
+	if (isTextured()) {
+		texture("Polyline")->bind();
+	}
+
+	if (bindShaderProgram("Polyline")) {
+		vao("Polyline")->bind();
+		{
+			glDrawArrays(GL_TRIANGLE_STRIP, 0, _noPoints * 2);
+		}
+		vao("Polyline")->release();
+
+		shaderProgram("Polyline")->release();
+	}
+
+	if (isTextured()) {
+		texture("Polyline")->release();
+	}
+}
+
+float Polyline2D::lineWidth() const
+{
+	return _lineWidth;
+}
+
+void Polyline2D::setLineWidth(const float& lineWidth)
+{
+	if (lineWidth == _lineWidth)
+		return;
+
+	qDebug() << "Set polyline line width to" << QString::number(lineWidth, 'f', 1);
+
+	_lineWidth = lineWidth;
+
+	emit lineWidthChanged(_lineWidth);
+}
+
+float Polyline2D::z() const
+{
+	return _z;
+}
+
+void Polyline2D::setZ(const float& z)
+{
+	if (z == _z)
+		return;
+
+	_z = z;
+
+	qDebug() << "Set position along z-axis" << _z << "for" << _name;
+
+	emit zChanged(_z);
 }
 
 void Polyline2D::setPoints(QVector<QVector2D> points)
@@ -196,7 +259,7 @@ void Polyline2D::setPoints(QVector<QVector2D> points)
 		addVertex(inner.x(), inner.y(), 0.0f, 0.0f);
 		addVertex(outer.x(), outer.y(), 0.0f, 1.0f);
 	}
-	
+
 	vbo("Polyline")->bind();
 	{
 		vbo("Polyline")->setUsagePattern(QOpenGLBuffer::DynamicDraw);
@@ -215,54 +278,9 @@ void Polyline2D::configureShaderProgram(const QString& name)
 	}
 }
 
-float Polyline2D::lineWidth() const
-{
-	return _lineWidth;
-}
-
-void Polyline2D::setLineWidth(const float& lineWidth)
-{
-	if (lineWidth == _lineWidth)
-		return;
-
-	qDebug() << "Set polyline line width to" << QString::number(lineWidth, 'f', 1);
-
-	_lineWidth = lineWidth;
-
-	emit lineWidthChanged(_lineWidth);
-}
-
 bool Polyline2D::isTextured() const
 {
 	return texture("Polyline").get() != nullptr && texture("Polyline")->isCreated();
-}
-
-void Polyline2D::render()
-{
-	if (!canRender())
-		return;
-
-	Shape::render();
-
-	//qDebug() << "Render" << _name << "shape";
-
-	if (isTextured()) {
-		texture("Polyline")->bind();
-	}
-
-	if (bindShaderProgram("Polyline")) {
-		vao("Polyline")->bind();
-		{
-			glDrawArrays(GL_TRIANGLE_STRIP, 0, _noPoints * 2);
-		}
-		vao("Polyline")->release();
-
-		shaderProgram("Polyline")->release();
-	}
-
-	if (isTextured()) {
-		texture("Polyline")->release();
-	}
 }
 
 //void SelectionRenderer::drawPolyline(QVector<QPoint> pointsScreen, QOpenGLBuffer* vbo, QOpenGLVertexArrayObject* vao, const bool& closed /*= true*/, const float& lineWidth /*= 1.f*/, const float& textureScale /*= 0.05f*/)

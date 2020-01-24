@@ -360,10 +360,10 @@ void Renderer::createVAOs()
 void Renderer::createShapes()
 {
 	qDebug() << "Creating shapes";
-
-	_shapes.insert("ImageQuad", QSharedPointer<ImageQuad>::create("ImageQuad"));
-	_shapes.insert("SelectionQuad", QSharedPointer<SelectionQuad>::create("SelectionQuad"));
-	_shapes.insert("SelectionBounds", QSharedPointer<SelectionBounds>::create("SelectionBounds"));
+	
+	_shapes.insert("ImageQuad", QSharedPointer<ImageQuad>::create("ImageQuad", 2.f));
+	_shapes.insert("SelectionQuad", QSharedPointer<SelectionQuad>::create("SelectionQuad", 1.f));
+	_shapes.insert("SelectionBounds", QSharedPointer<SelectionBounds>::create("SelectionBounds", 0.f));
 
 	//_shapes["ImageQuad"]->setEnabled(false);
 	//_shapes["SelectionQuad"]->setEnabled(false);

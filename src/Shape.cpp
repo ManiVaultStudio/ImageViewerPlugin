@@ -26,16 +26,19 @@ void Shape::destroy()
 	for (auto key : _vaos.keys())
 	{
 		_vaos[key]->destroy();
+		_vaos[key]->release();
 	}
 
 	for (auto key :_vbos.keys())
 	{
 		_vbos[key]->destroy();
+		_vbos[key]->release();
 	}
 
 	for (auto key : _vaos.keys())
 	{
 		_textures[key]->destroy();
+		_textures[key]->release();
 	}
 }
 

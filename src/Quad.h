@@ -60,6 +60,12 @@ protected:
 	/** Returns whether the shape can be rendered */
 	virtual bool canRender() const;
 
+	/**
+	 * Configure an OpenGL shader program (right after the shader program is bound in the render function)
+	 * @param name Name of the OpenGL shader program
+	 */
+	void configureShaderProgram(const QString& name) override;
+
 private:
 	/**
 	 * Creates the OpenGL quad buffers
