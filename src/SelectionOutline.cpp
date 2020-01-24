@@ -8,8 +8,10 @@
 
 #include "Shaders.h"
 
+#include <QtMath>
+
 SelectionOutline::SelectionOutline(const QString& name /*= "Bounds"*/, const float& z /*= 0.f*/, const QColor& color /*= QColor(255, 153, 0, 70)*/) :
-	Polyline2D(name, z),
+	Polyline2D(name, z, true, 0.5f),
 	_color(color)
 {
 }
@@ -31,96 +33,6 @@ void SelectionOutline::setColor(const QColor& color)
 	emit colorChanged(_color);
 }
 
-void SelectionOutline::update(std::vector<QVector3D> mousePositions, const SelectionType& selectionType)
-{
-	/*
-	auto polylineShaderProgram = shaderProgram("Outline");
-
-	if (polylineShaderProgram->bind()) {
-		QMatrix4x4 transform;
-
-		transform.ortho(_viewRectangle);
-
-		polylineShaderProgram->setUniformValue("stippleTexture", 0);
-		polylineShaderProgram->setUniformValue("transform", _modelViewProjection);
-		polylineShaderProgram->setUniformValue("color", _color);
-
-		auto* outlineVBO = vbo("Outline").get();
-		auto* outlineVAO = vao("Outline").get();
-
-		auto outlineStippleTexture = texture("OutlineStipple");
-
-		outlineStippleTexture->bind();
-		{
-			QVector<QVector2D> points;
-
-			switch (selectionType)
-			{
-				case SelectionType::Rectangle:
-				{
-					if (_imageViewerWidget->selecting() && mousePositions.size() >= 2) {
-						const auto start = mousePositions.front();
-						const auto end = mousePositions.back();
-
-						points.append(QVector2D(start.x(), start.y()));
-						points.append(QVector2D(end.x(), start.y()));
-						points.append(QVector2D(end.x(), end.y()));
-						points.append(QVector2D(start.x(), end.y()));
-
-						drawPolyline(screenToWorld(points), outlineVBO, outlineVAO, true, _outlineLineWidth);
-					}
-
-					break;
-				}
-
-				case SelectionType::Brush:
-				{
-					const auto brushCenter = _imageViewerWidget->mousePosition();
-					const auto noSegments = 128u;
-
-					std::vector<GLfloat> vertexCoordinates;
-
-					vertexCoordinates.resize(noSegments * 3);
-
-					const auto brushRadius = _brushRadius * _imageViewerWidget->zoom();
-
-					for (std::uint32_t s = 0; s < noSegments; s++) {
-						const auto theta = 2.0f * M_PI * float(s) / float(noSegments);
-						const auto x = brushRadius * cosf(theta);
-						const auto y = brushRadius * sinf(theta);
-
-						points.append(QVector2D(brushCenter.x() + x, brushCenter.y() + y));
-					}
-
-					drawPolyline(screenToWorld(points), outlineVBO, outlineVAO, true, _outlineLineWidth);
-					break;
-				}
-
-				case SelectionType::Lasso:
-				case SelectionType::Polygon:
-				{
-					if (mousePositions.size() >= 2) {
-						for (const auto& mousePosition : mousePositions) {
-							points.append(QVector2D(mousePosition.x(), mousePosition.y()));
-						}
-
-						drawPolyline(screenToWorld(points), outlineVBO, outlineVAO, true, _outlineLineWidth);
-					}
-
-					break;
-				}
-
-				default:
-					break;
-			}
-		}
-		outlineStippleTexture->release();
-
-		polylineShaderProgram->release();
-	}
-	*/
-}
-
 QRect SelectionOutline::viewRectangle() const
 {
 	return _viewRectangle;
@@ -136,6 +48,98 @@ void SelectionOutline::setViewRectangle(const QRect& viewRectangle)
 	_viewRectangle = viewRectangle;
 
 	emit viewRectangleChanged(_viewRectangle);
+}
+
+void SelectionOutline::update(std::vector<QVector3D> mousePositions, const SelectionType& selectionType, const float& brushRadius)
+{
+	auto polylineShaderProgram = shaderProgram("Polyline");
+
+	if (polylineShaderProgram->bind()) {
+		QMatrix4x4 transform;
+
+		transform.ortho(_viewRectangle);
+
+		polylineShaderProgram->setUniformValue("stippleTexture", 0);
+		polylineShaderProgram->setUniformValue("transform", _modelViewProjection);
+		polylineShaderProgram->setUniformValue("color", _color);
+
+		auto* outlineVBO = vbo("Polyline").get();
+		auto* outlineVAO = vao("Polyline").get();
+
+		auto outlineStippleTexture = texture("Polyline");
+
+		outlineStippleTexture->bind();
+		{
+			QVector<QVector2D> points;
+
+			switch (selectionType)
+			{
+				case SelectionType::Rectangle:
+				{
+					if (mousePositions.size() >= 2) {
+						const auto start = mousePositions.front();
+						const auto end = mousePositions.back();
+
+						points.append(QVector2D(start.x(), start.y()));
+						points.append(QVector2D(end.x(), start.y()));
+						points.append(QVector2D(end.x(), end.y()));
+						points.append(QVector2D(start.x(), end.y()));
+
+						setPoints(points);
+					}
+					break;
+				}
+
+				case SelectionType::Brush:
+				{
+					if (mousePositions.size() >= 1) {
+						const auto brushCenter = mousePositions.back();
+						const auto noSegments = 128u;
+
+						std::vector<GLfloat> vertexCoordinates;
+
+						vertexCoordinates.resize(noSegments * 3);
+
+						for (std::uint32_t s = 0; s < noSegments; s++) {
+							const auto theta = 2.0f * M_PI * float(s) / float(noSegments);
+							const auto x = brushRadius * cosf(theta);
+							const auto y = brushRadius * sinf(theta);
+
+							points.append(QVector2D(brushCenter.x() + x, brushCenter.y() + y));
+						}
+
+						setPoints(points);
+					}
+
+					break;
+				}
+
+				case SelectionType::Lasso:
+				case SelectionType::Polygon:
+				{
+					if (mousePositions.size() >= 2) {
+						for (const auto& mousePosition : mousePositions) {
+							points.append(QVector2D(mousePosition.x(), mousePosition.y()));
+						}
+
+						setPoints(points);
+					}
+					break;
+				}
+
+				default:
+					break;
+			}
+		}
+		outlineStippleTexture->release();
+
+		polylineShaderProgram->release();
+	}
+}
+
+void SelectionOutline::reset()
+{
+	qDebug() << "Reset" << _name;
 }
 
 void SelectionOutline::addShaderPrograms()

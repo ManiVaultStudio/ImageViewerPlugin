@@ -420,7 +420,7 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 						*/
 
 						_renderer->selectionBufferQuad()->update(mousePositionsWorld(), _renderer->selectionType(), _renderer->brushRadius());
-						_renderer->selectionOutline()->update(mousePositionsWorld(), _renderer->selectionType());
+						_renderer->selectionOutline()->update(mousePositionsWorld(), _renderer->selectionType(), _renderer->brushRadius());
 					}
 					
 					break;
@@ -558,6 +558,8 @@ void ImageViewerWidget::wheelEvent(QWheelEvent* wheelEvent) {
 				else {
 					_renderer->brushSizeDecrease();
 				}
+
+				_renderer->selectionOutline()->update(mousePositionsWorld(), _renderer->selectionType(), _renderer->brushRadius());
 
 				update();
 			}

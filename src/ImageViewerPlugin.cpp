@@ -2,6 +2,8 @@
 #include "ImageViewerWidget.h"
 #include "SettingsWidget.h"
 
+#include "ImageQuad.h"
+
 #include <QDebug>
 #include <QFileInfo>
 
@@ -29,39 +31,40 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	_imageViewerWidget	= new ImageViewerWidget(this);
 	_settingsWidget		= new SettingsWidget(this);
 
-	connect(this, &ImageViewerPlugin::currentDatasetChanged, [&]() {
+	connect(this, &ImageViewerPlugin::currentDatasetChanged, this, [&]() {
 		computeDisplayImage();
 		updateWindowTitle();
-	});
+	}, Qt::AutoConnection);
 
-	connect(this, &ImageViewerPlugin::currentImageIdChanged, [&]() {
+	connect(this, &ImageViewerPlugin::currentImageIdChanged, this, [&]() {
 		computeDisplayImage();
 		updateWindowTitle();
-	});
+	}, Qt::AutoConnection);
 
-	connect(this, &ImageViewerPlugin::currentDimensionIdChanged, [&]() {
+	connect(this, &ImageViewerPlugin::currentDimensionIdChanged, this, [&]() {
 		computeDisplayImage();
 		updateWindowTitle();
-	});
+	}, Qt::AutoConnection);
 
-	connect(this, &ImageViewerPlugin::averageImagesChanged, [&]() {
+	connect(this, &ImageViewerPlugin::averageImagesChanged, this, [&]() {
 		computeDisplayImage();
 		updateWindowTitle();
-	});
+	}, Qt::AutoConnection);
 
-	/*
-	connect(this->_imageViewerWidget->imageQuadRenderer().get(), &ImageQuadRenderer::windowLevelChanged, [&]() {
+	auto imageQuad = this->_imageViewerWidget->renderer()->imageQuad();
+
+	connect(imageQuad, &ImageQuad::windowLevelChanged, this, [&]() {
+		updateWindowTitle();
+	}, Qt::AutoConnection);
+
+	
+	connect(imageQuad, &ImageQuad::imageMinMaxChanged, [&]() {
 		updateWindowTitle();
 	});
 
-	connect(this->_imageViewerWidget->imageQuadRenderer().get(), &ImageQuadRenderer::imageMinMaxChanged, [&]() {
+	connect(imageQuad, &ImageQuad::sizeChanged, [&]() {
 		updateWindowTitle();
 	});
-
-	connect(this->_imageViewerWidget->imageQuadRenderer().get(), &ImageQuadRenderer::sizeChanged, [&]() {
-		updateWindowTitle();
-	});
-	*/
 }
 
 void ImageViewerPlugin::init()
@@ -288,7 +291,7 @@ void ImageViewerPlugin::setCurrentDatasetName(const QString& currentDatasetName)
 
 	computeSelectionImage();
 
-	updateWindowTitle();
+	//updateWindowTitle();
 }
 
 auto ImageViewerPlugin::currentImageId() const
@@ -312,7 +315,7 @@ void ImageViewerPlugin::setCurrentImageId(const std::int32_t& currentImageId)
 
 	computeSelectionImage();
 
-	updateWindowTitle();
+	//updateWindowTitle();
 }
 
 auto ImageViewerPlugin::currentDimensionId() const
@@ -336,7 +339,7 @@ void ImageViewerPlugin::setCurrentDimensionId(const std::int32_t& currentDimensi
 
 	update();
 
-	updateWindowTitle();
+	//updateWindowTitle();
 }
 
 bool ImageViewerPlugin::averageImages() const
@@ -412,20 +415,21 @@ void ImageViewerPlugin::updateWindowTitle()
 	//properties << QString("dataset=%1").arg(_currentDatasetName);
 	//properties << QString("image=%1").arg(_imageNames.size() > 0 ? _imageNames[_currentImageId] : "");
 	//properties << QString("dimension=%1").arg(_dimensionNames.size() > 0 ? _dimensionNames[_currentDimensionId] : "");
-	/*
-	const auto size = _imageViewerWidget->_selectionRenderer->_imageQuad.size();
+	
+	auto imageQuad = _imageViewerWidget->renderer()->imageQuad();
+
+	const auto size = imageQuad->size();
 
 	properties << QString("width=%1").arg(QString::number(size.width()));
 	properties << QString("height=%1").arg(QString::number(size.height()));
-
-	properties << QString("window=%1").arg(QString::number(_imageViewerWidget->imageQuadRenderer()->windowNormalized(), 'f', 2));
-	properties << QString("level=%1").arg(QString::number(_imageViewerWidget->imageQuadRenderer()->levelNormalized(), 'f', 2));
-	properties << QString("imageMin=%1").arg(QString::number(_imageViewerWidget->imageQuadRenderer()->imageMin()));
-	properties << QString("imageMax=%1").arg(QString::number(_imageViewerWidget->imageQuadRenderer()->imageMax()));
+	properties << QString("window=%1").arg(QString::number(imageQuad->windowNormalized(), 'f', 2));
+	properties << QString("level=%1").arg(QString::number(imageQuad->levelNormalized(), 'f', 2));
+	properties << QString("imageMin=%1").arg(QString::number(imageQuad->imageMin()));
+	properties << QString("imageMax=%1").arg(QString::number(imageQuad->imageMax()));
 	properties << QString("noSelectedPixels=%1").arg(QString::number(selection().size()));
 	properties << QString("noPixels=%1").arg(QString::number(size.width() * size.height()));
-	*/
-//	setWindowTitle(QString("%1").arg(properties.join(", ")));
+	
+	setWindowTitle(QString("%1").arg(properties.join(", ")));
 }
 
 void ImageViewerPlugin::dataAdded(const QString dataset)

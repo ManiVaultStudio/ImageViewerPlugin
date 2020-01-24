@@ -68,6 +68,8 @@ void ImageQuad::setImage(std::shared_ptr<QImage> image)
 	setRectangle(QRectF(0, 0, image->width(), image->height()));
 
 	resetWindowLevel();
+
+	sizeChanged(image->size());
 }
 
 std::uint16_t ImageQuad::imageMin() const

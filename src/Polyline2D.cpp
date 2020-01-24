@@ -127,8 +127,6 @@ void Polyline2D::setPoints(QVector<QVector2D> points)
 
 	const auto halfLineWidth = 0.5f * _lineWidth;
 
-	qDebug() << _lineWidth;
-
 	QVector<QPair<QVector2D, QVector2D>> coordinates;
 
 	auto halfAngleVector = [](const QVector2D& v0, const QVector2D& v1) {
@@ -291,18 +289,3 @@ bool Polyline2D::isTextured() const
 {
 	return texture("Polyline").get() != nullptr && texture("Polyline")->isCreated();
 }
-
-//void SelectionRenderer::drawPolyline(QVector<QPoint> pointsScreen, QOpenGLBuffer* vbo, QOpenGLVertexArrayObject* vao, const bool& closed /*= true*/, const float& lineWidth /*= 1.f*/, const float& textureScale /*= 0.05f*/)
-// {
-//	auto pointsWorld = QVector<QVector2D>();
-
-//	for (const auto& pointScreen : pointsScreen)
-//	{
-//		const auto pointWorld = _imageViewerWidget->screenToWorld(pointScreen);
-//		pointsWorld.push_back(QVector2D(pointWorld.x(), pointWorld.y()));
-//	}
-
-//	qDebug() << pointsWorld;
-
-//	//drawPolyline(pointsWorld, vbo, vao, closed, lineWidth, textureScale);
-//}

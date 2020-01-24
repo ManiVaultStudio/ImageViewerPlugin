@@ -27,12 +27,6 @@ public:
 	 */
 	void setColor(const QColor& color);
 
-	/** Updates the selection buffer
-	 * @param mousePositions Mouse positions in world coordinates
-	 * @param selectionType Selection type
-	 */
-	void update(std::vector<QVector3D> mousePositions, const SelectionType& selectionType);
-
 	/** Returns the view rectangle */
 	QRect viewRectangle() const;
 
@@ -40,6 +34,15 @@ public:
 	 * @param viewSize View size
 	 */
 	void setViewRectangle(const QRect& viewRectangle);
+
+	/** Updates the selection buffer
+	 * @param mousePositions Mouse positions in world coordinates
+	 * @param selectionType Selection type
+	 */
+	void update(std::vector<QVector3D> mousePositions, const SelectionType& selectionType, const float& brushRadius);
+
+	/** Reset the outline */
+	void reset();
 
 protected:
 	/** Adds the OpenGL shader programs that the shape needs */
