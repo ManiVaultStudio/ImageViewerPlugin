@@ -57,9 +57,9 @@ void SelectionBounds::addShaderPrograms()
 
 	addShaderProgram("Polyline", QSharedPointer<QOpenGLShaderProgram>::create());
 
-	shaderProgram()->addShaderFromSourceCode(QOpenGLShader::Vertex, selectionBoundsVertexShaderSource.c_str());
-	shaderProgram()->addShaderFromSourceCode(QOpenGLShader::Fragment, selectionBoundsFragmentShaderSource.c_str());
-	shaderProgram()->link();
+	shaderProgram("Polyline")->addShaderFromSourceCode(QOpenGLShader::Vertex, selectionBoundsVertexShaderSource.c_str());
+	shaderProgram("Polyline")->addShaderFromSourceCode(QOpenGLShader::Fragment, selectionBoundsFragmentShaderSource.c_str());
+	shaderProgram("Polyline")->link();
 }
 
 void SelectionBounds::addVAOs()
@@ -68,7 +68,7 @@ void SelectionBounds::addVAOs()
 
 	addVAO("Polyline", QSharedPointer<QOpenGLVertexArrayObject>::create());
 
-	vao()->create();
+	vao("Polyline")->create();
 }
 
 void SelectionBounds::addVBOs()
@@ -77,7 +77,7 @@ void SelectionBounds::addVBOs()
 
 	addVBO("Polyline", QSharedPointer<QOpenGLBuffer>::create());
 
-	vbo()->create();
+	vbo("Polyline")->create();
 }
 
 void SelectionBounds::addTextures()
@@ -90,6 +90,6 @@ void SelectionBounds::addTextures()
 
 	addTexture("Polyline", QSharedPointer<QOpenGLTexture>::create(textureImage));
 
-	texture()->setWrapMode(QOpenGLTexture::Repeat);
-	texture()->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
+	texture("Polyline")->setWrapMode(QOpenGLTexture::Repeat);
+	texture("Polyline")->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
 }

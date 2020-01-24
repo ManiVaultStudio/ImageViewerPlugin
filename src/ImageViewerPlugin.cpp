@@ -412,8 +412,8 @@ void ImageViewerPlugin::updateWindowTitle()
 	//properties << QString("dataset=%1").arg(_currentDatasetName);
 	//properties << QString("image=%1").arg(_imageNames.size() > 0 ? _imageNames[_currentImageId] : "");
 	//properties << QString("dimension=%1").arg(_dimensionNames.size() > 0 ? _dimensionNames[_currentDimensionId] : "");
-	
-	const auto size = _imageViewerWidget->imageQuadRenderer()->size();
+	/*
+	const auto size = _imageViewerWidget->_selectionRenderer->_imageQuad.size();
 
 	properties << QString("width=%1").arg(QString::number(size.width()));
 	properties << QString("height=%1").arg(QString::number(size.height()));
@@ -424,7 +424,7 @@ void ImageViewerPlugin::updateWindowTitle()
 	properties << QString("imageMax=%1").arg(QString::number(_imageViewerWidget->imageQuadRenderer()->imageMax()));
 	properties << QString("noSelectedPixels=%1").arg(QString::number(selection().size()));
 	properties << QString("noPixels=%1").arg(QString::number(size.width() * size.height()));
-
+	*/
 //	setWindowTitle(QString("%1").arg(properties.join(", ")));
 }
 

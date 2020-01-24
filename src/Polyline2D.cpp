@@ -21,19 +21,19 @@ void Polyline2D::initialize()
 
 	const auto stride = 5 * sizeof(GLfloat);
 
-	if (this->shaderProgram()->isLinked() && this->shaderProgram()->bind()) {
-		vao()->bind();
-		vbo()->bind();
+	if (shaderProgram("Polyline")->isLinked() && shaderProgram("Polyline")->bind()) {
+		vao("Polyline")->bind();
+		vbo("Polyline")->bind();
 
-		this->shaderProgram()->enableAttributeArray(0);
-		this->shaderProgram()->enableAttributeArray(1);
-		this->shaderProgram()->setAttributeBuffer(0, GL_FLOAT, 0, 3, stride);
-		this->shaderProgram()->setAttributeBuffer(1, GL_FLOAT, 3 * sizeof(GLfloat), 2, stride);
+		shaderProgram("Polyline")->enableAttributeArray(0);
+		shaderProgram("Polyline")->enableAttributeArray(1);
+		shaderProgram("Polyline")->setAttributeBuffer(0, GL_FLOAT, 0, 3, stride);
+		shaderProgram("Polyline")->setAttributeBuffer(1, GL_FLOAT, 3 * sizeof(GLfloat), 2, stride);
 
-		vbo()->release();
-		vao()->release();
+		vbo("Polyline")->release();
+		vao("Polyline")->release();
 
-		this->shaderProgram()->release();
+		shaderProgram("Polyline")->release();
 
 		_initialized = true;
 	}
@@ -197,54 +197,22 @@ void Polyline2D::setPoints(QVector<QVector2D> points)
 		addVertex(outer.x(), outer.y(), 0.0f, 1.0f);
 	}
 	
-	vbo()->bind();
+	vbo("Polyline")->bind();
 	{
-		vbo()->setUsagePattern(QOpenGLBuffer::DynamicDraw);
-		vbo()->allocate(vertexData.constData(), vertexData.count() * sizeof(GLfloat));
-		vbo()->release();
+		vbo("Polyline")->setUsagePattern(QOpenGLBuffer::DynamicDraw);
+		vbo("Polyline")->allocate(vertexData.constData(), vertexData.count() * sizeof(GLfloat));
+		vbo("Polyline")->release();
 	}
-
-	qDebug() << vertexData;
 }
 
-QSharedPointer<QOpenGLShaderProgram> Polyline2D::shaderProgram()
+void Polyline2D::configureShaderProgram(const QString& name)
 {
-	return _shaderPrograms["Polyline"];
-}
+	//qDebug() << "Configuring shader program" << name << "for" << _name;
 
-const QSharedPointer<QOpenGLShaderProgram> Polyline2D::shaderProgram() const
-{
-	return _shaderPrograms["Polyline"];
-}
-
-QSharedPointer<QOpenGLVertexArrayObject> Polyline2D::vao()
-{
-	return _vaos["Polyline"];
-}
-
-const QSharedPointer<QOpenGLVertexArrayObject> Polyline2D::vao() const
-{
-	return _vaos["Polyline"];
-}
-
-QSharedPointer<QOpenGLBuffer> Polyline2D::vbo()
-{
-	return _vbos["Polyline"];
-}
-
-const QSharedPointer<QOpenGLBuffer> Polyline2D::vbo() const
-{
-	return _vbos["Polyline"];
-}
-
-QSharedPointer<QOpenGLTexture> Polyline2D::texture()
-{
-	return _textures["Polyline"];
-}
-
-const QSharedPointer<QOpenGLTexture> Polyline2D::texture() const
-{
-	return _textures["Polyline"];
+	if (name == "Polyline") {
+		shaderProgram("Polyline")->setUniformValue("lineTexture", 0);
+		shaderProgram("Polyline")->setUniformValue("transform", _modelViewProjection);
+	}
 }
 
 float Polyline2D::lineWidth() const
@@ -266,7 +234,7 @@ void Polyline2D::setLineWidth(const float& lineWidth)
 
 bool Polyline2D::isTextured() const
 {
-	return texture().get() != nullptr && texture()->isCreated();
+	return texture("Polyline").get() != nullptr && texture("Polyline")->isCreated();
 }
 
 void Polyline2D::render()
@@ -276,30 +244,24 @@ void Polyline2D::render()
 
 	Shape::render();
 
-	qDebug() << "Render" << _name << "shape";
+	//qDebug() << "Render" << _name << "shape";
 
 	if (isTextured()) {
-		texture()->bind();
-
-		qDebug() << "Using texture";
+		texture("Polyline")->bind();
 	}
 
-	if (shaderProgram()->bind()) {
-		shaderProgram()->setUniformValue("lineTexture", 0);
-		shaderProgram()->setUniformValue("transform", _modelViewProjection);
-
-		vao()->bind();
+	if (bindShaderProgram("Polyline")) {
+		vao("Polyline")->bind();
 		{
-			//qDebug() << _noPoints;
 			glDrawArrays(GL_TRIANGLE_STRIP, 0, _noPoints * 2);
 		}
-		vao()->release();
+		vao("Polyline")->release();
 
-		shaderProgram()->release();
+		shaderProgram("Polyline")->release();
 	}
 
 	if (isTextured()) {
-		texture()->release();
+		texture("Polyline")->release();
 	}
 }
 

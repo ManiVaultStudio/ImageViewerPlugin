@@ -1,5 +1,6 @@
 #include "Shape.h"
 
+#include <QOpenGLShaderProgram>
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLBuffer>
 #include <QOpenGLTexture>
@@ -103,6 +104,15 @@ void Shape::log(const QString& event) const
 	qDebug() << event.toLatin1().data();
 }
 
+bool Shape::bindShaderProgram(const QString& name)
+{
+	const auto bound = shaderProgram(name)->bind();
+
+	this->configureShaderProgram(name);
+
+	return bound;
+}
+
 void Shape::addShaderProgram(const QString& name, QSharedPointer<QOpenGLShaderProgram> shaderProgram)
 {
 	qDebug() << "Add OpenGL shader program to" << _name << "shape";
@@ -131,7 +141,17 @@ void Shape::addTexture(const QString& name, QSharedPointer<QOpenGLTexture> textu
 	_textures.insert(name, texture);
 }
 
+void Shape::configureShaderProgram(const QString& name)
+{
+	qDebug() << "Configure shader program" << name << "for" << _name << "not implemented";
+}
+
 QSharedPointer<QOpenGLShaderProgram> Shape::shaderProgram(const QString& name)
+{
+	return _shaderPrograms[name];
+}
+
+const QSharedPointer<QOpenGLShaderProgram> Shape::shaderProgram(const QString& name) const
 {
 	return _shaderPrograms[name];
 }
@@ -141,12 +161,27 @@ QSharedPointer<QOpenGLVertexArrayObject> Shape::vao(const QString& name)
 	return _vaos[name];
 }
 
+const QSharedPointer<QOpenGLVertexArrayObject> Shape::vao(const QString& name) const
+{
+	return _vaos[name];
+}
+
 QSharedPointer<QOpenGLBuffer> Shape::vbo(const QString& name)
 {
 	return _vbos[name];
 }
 
+const QSharedPointer<QOpenGLBuffer> Shape::vbo(const QString& name) const
+{
+	return _vbos[name];
+}
+
 QSharedPointer<QOpenGLTexture> Shape::texture(const QString& name)
+{
+	return _textures[name];
+}
+
+const QSharedPointer<QOpenGLTexture> Shape::texture(const QString& name) const
 {
 	return _textures[name];
 }

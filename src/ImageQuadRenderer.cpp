@@ -199,8 +199,8 @@ void ImageQuadRenderer::createShaderPrograms()
 {
 	auto quadProgram = QSharedPointer<QOpenGLShaderProgram>::create();
 
-	quadProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, imageVertexShaderSource.c_str());
-	quadProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, imageFragmentShaderSource.c_str());
+	quadProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, imageQuadVertexShaderSource.c_str());
+	quadProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, imageQuadFragmentShaderSource.c_str());
 	quadProgram->link();
 
 	_shaderPrograms.insert("Quad", quadProgram);

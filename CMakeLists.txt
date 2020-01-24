@@ -30,7 +30,7 @@ file(GLOB JSON src/*.json)
 set(SOURCES ${H} ${CPP})
 set(AUX ${JSON})
 
-source_group(Plugin FILES ${SOURCES})
+source_group(Plugin FILES ${SOURCES} )
 source_group(UI FILES ${UIS})
 source_group(Shaders FILES ${SHADERS})
 source_group(Aux FILES ${AUX})

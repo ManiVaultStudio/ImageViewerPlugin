@@ -11,9 +11,6 @@
 #include "ImageQuad.h"
 #include "SelectionBounds.h"
 
-template SelectionBounds* SelectionRenderer::shape<SelectionBounds>(const QString& name);
-template ImageQuad* SelectionRenderer::shape<ImageQuad>(const QString& name);
-
 SelectionRenderer::SelectionRenderer(const float& depth, ImageViewerWidget* imageViewerWidget) :
 	QuadRenderer(depth),
 	_imageViewerWidget(imageViewerWidget),
@@ -409,37 +406,21 @@ void SelectionRenderer::createVAOs()
 void SelectionRenderer::createShapes()
 {
 	qDebug() << "Creating shapes";
-
-	_shapes.insert("ImageQuad", QSharedPointer<ImageQuad>::create("ImageQuad"));
-	_shapes.insert("SelectionBounds", QSharedPointer<SelectionBounds>::create("SelectionBounds"));
 }
 
 void SelectionRenderer::initializeShapes()
 {
 	qDebug() << "Initializing" << _shapes.size() << "shapes";
-
-	for (auto key : _shapes.keys()) {
-		_shapes[key]->initialize();
-	}
 }
 
 void SelectionRenderer::renderShapes()
 {
 	qDebug() << "Render" << _shapes.size() << "shapes";
-
-	for (auto key : _shapes.keys()) {
-		_shapes[key]->setModelViewProjection(_modelViewProjection);
-		_shapes[key]->render();
-	}
 }
 
 void SelectionRenderer::destroyShapes()
 {
 	qDebug() << "Destroying" << _shapes.size() << "shapes";
-
-	for (auto key : _shapes.keys()) {
-		_shapes[key]->destroy();
-	}
 }
 
 void SelectionRenderer::renderOverlay()

@@ -14,6 +14,7 @@
 #include <QOpenGLDebugLogger>
 
 #include "Shaders.h"
+#include "ImageQuad.h"
 
 // Panning and zooming inspired by: https://community.khronos.org/t/opengl-compound-zoom-and-pan-effect/72565/7
 // Line width and antia-aliasing inspired by // https://vitaliburkov.wordpress.com/2016/09/17/simple-and-fast-high-quality-antialiased-lines-with-opengl/
@@ -21,7 +22,6 @@
 ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	QOpenGLFunctions(),
 	_imageViewerPlugin(imageViewerPlugin),
-	_imageQuadRenderer(),
 	_selectionRenderer(),
 	_interactionMode(InteractionMode::Selection),
 	_mousePosition(),
@@ -40,7 +40,6 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 
 	connect(_imageViewerPlugin, &ImageViewerPlugin::currentDatasetChanged, this, &ImageViewerWidget::onCurrentDatasetChanged);
 	connect(_imageViewerPlugin, &ImageViewerPlugin::currentImageIdChanged, this, &ImageViewerWidget::onCurrentImageIdChanged);
-	connect(_imageViewerPlugin, &ImageViewerPlugin::displayImageChanged, this, &ImageViewerWidget::onDisplayImageChanged);
 	connect(_imageViewerPlugin, &ImageViewerPlugin::selectionImageChanged, this, &ImageViewerWidget::onSelectionImageChanged);
 
 	QSurfaceFormat surfaceFormat;
@@ -69,15 +68,15 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 
 	setFormat(surfaceFormat);
 
-	_imageQuadRenderer	= std::make_shared<ImageQuadRenderer>(0);
 	_selectionRenderer	= std::make_shared<SelectionRenderer>(3, this);
+
+	connect(_imageViewerPlugin, &ImageViewerPlugin::displayImageChanged, this, &ImageViewerWidget::onDisplayImageChanged);
 }
 
 ImageViewerWidget::~ImageViewerWidget()
 {
 	makeCurrent();
 
-	_imageQuadRenderer->destroy();
 	_selectionRenderer->destroy();
 
 	doneCurrent();
@@ -194,7 +193,6 @@ void ImageViewerWidget::initializeGL()
 	glDepthMask(false);
 	glLineWidth(100);
 
-	_imageQuadRenderer->init();
 	_selectionRenderer->init();
 
 	_imageViewerPlugin->computeDisplayImage();
@@ -211,10 +209,7 @@ void ImageViewerWidget::resizeGL(int w, int h)
 
 	zoomExtents();
 
-	_imageQuadRenderer->resize(QSize(w, h));
 	_selectionRenderer->resize(QSize(w, h));
-
-	
 }
 
 void ImageViewerWidget::paintGL() {
@@ -224,10 +219,9 @@ void ImageViewerWidget::paintGL() {
 
 	auto modelViewProjection = projection() * modelView();
 
-	_imageQuadRenderer->setModelViewProjection(modelViewProjection);
 	_selectionRenderer->setModelViewProjection(modelViewProjection);
 
-	_imageQuadRenderer->render();
+	//_imageQuadRenderer->render();
 	_selectionRenderer->render();
 
 #ifdef _DEBUG
@@ -243,20 +237,24 @@ void ImageViewerWidget::onDisplayImageChanged(std::shared_ptr<QImage> displayIma
 	
 	makeCurrent();
 
-	auto imageSizeChanged = _imageQuadRenderer->size() != displayImage->size();
+	auto* imageQuadShape = _selectionRenderer->shape<ImageQuad>("ImageQuad");
 
-	_imageQuadRenderer->setImage(displayImage);
+	const auto previousImageSize = imageQuadShape->size();
+
+	auto imageSizeChanged = previousImageSize != displayImage->size();
 
 	_selectionRenderer->setImageSize(displayImage->size());
 
 	if (imageSizeChanged) {
 		zoomExtents();
 
-		const auto brushRadius = 0.05f * static_cast<float>(std::min(_imageQuadRenderer->size().width(), _imageQuadRenderer->size().height()));
+		const auto brushRadius = 0.05f * static_cast<float>(std::min(previousImageSize.width(), previousImageSize.height()));
 
 		_selectionRenderer->setBrushRadius(brushRadius);
 		_selectionRenderer->setBrushRadiusDelta(0.2f * brushRadius);
 	}
+
+	imageQuadShape->setImage(displayImage);
 
 	doneCurrent();
 
@@ -372,8 +370,10 @@ void ImageViewerWidget::keyReleaseEvent(QKeyEvent* keyEvent)
 
 void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 {
+	/* TODO
 	if (!_imageQuadRenderer->isInitialized())
 		return;
+	*/
 
 	qDebug() << "Mouse press event";
 
@@ -429,8 +429,10 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 
 void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 
+	/* TODO
 	if (!_imageQuadRenderer->isInitialized())
 		return;
+	*/
 
 	if (!_mousePositions.empty() && mouseEvent->pos() == _mousePositions.back())
 		return;
@@ -484,17 +486,19 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 
 		case Qt::RightButton:
 		{
+			/* TODO
 			if (_interactionMode == InteractionMode::WindowLevel) {
-				const auto worldPos = screenToWorld(_mousePosition);
-				const auto deltaWindow = (mouseEvent->pos().x() - _mousePosition.x()) / 150.f;
-				const auto deltaLevel = -(mouseEvent->pos().y() - _mousePosition.y()) / 150.f;
-				const auto window = std::clamp(_imageQuadRenderer->windowNormalized() + deltaWindow, 0.0f, 1.0f);
-				const auto level = std::clamp(_imageQuadRenderer->levelNormalized() + deltaLevel, 0.0f, 1.0f);
+				const auto worldPos		= screenToWorld(_mousePosition);
+				const auto deltaWindow	= (mouseEvent->pos().x() - _mousePosition.x()) / 150.f;
+				const auto deltaLevel	= -(mouseEvent->pos().y() - _mousePosition.y()) / 150.f;
+				const auto window		= std::clamp(_imageQuadRenderer->windowNormalized() + deltaWindow, 0.0f, 1.0f);
+				const auto level		= std::clamp(_imageQuadRenderer->levelNormalized() + deltaLevel, 0.0f, 1.0f);
 
 				_imageQuadRenderer->setWindowLevel(window, level);
 
 				_mousePositions.push_back(_mousePosition);
 			}
+			*/
 
 			break;
 		}
@@ -512,8 +516,10 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 
 void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 
+	/* TODO
 	if (!_imageQuadRenderer->isInitialized())
 		return;
+	*/
 
 	qDebug() << "Mouse release event";
 
@@ -571,8 +577,10 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 
 void ImageViewerWidget::wheelEvent(QWheelEvent* wheelEvent) {
 
+	/* TODO
 	if (!_imageQuadRenderer->isInitialized())
 		return;
+	*/
 
 	qDebug() << "Mouse wheel event" << interactionModeTypeName(_interactionMode);
 
@@ -656,16 +664,19 @@ void ImageViewerWidget::zoomAt(const QPointF& screenPosition, const float& facto
 
 void ImageViewerWidget::zoomExtents()
 {
+	/* TODO
 	if (_imageViewerPlugin->currentDatasetName().isEmpty())
 		return;
 	
 	qDebug() << "Zoom extents" << _zoom;
 
 	zoomToRectangle(QRectF(QPointF(), QSizeF(_imageQuadRenderer->size().width(), _imageQuadRenderer->size().height())));
+	*/
 }
 
 void ImageViewerWidget::zoomToRectangle(const QRectF& rectangle)
 {
+	/* TODO
 	qDebug() << "Zoom to rectangle" << rectangle;
 
 	resetView();
@@ -678,6 +689,7 @@ void ImageViewerWidget::zoomToRectangle(const QRectF& rectangle)
 	pan(_zoom * -QPointF(center.x(), _imageQuadRenderer->size().height() - center.y()));
 
 	update();
+	*/
 }
 
 void ImageViewerWidget::zoomToSelection()
@@ -761,11 +773,6 @@ void ImageViewerWidget::invertSelection()
 	update();
 }
 
-std::shared_ptr<ImageQuadRenderer> ImageViewerWidget::imageQuadRenderer()
-{
-	return _imageQuadRenderer;
-}
-
 std::shared_ptr<SelectionRenderer> ImageViewerWidget::selectionRenderer()
 {
 	return _selectionRenderer;
@@ -799,7 +806,8 @@ QMenu* ImageViewerWidget::contextMenu()
 QMenu* ImageViewerWidget::viewMenu()
 {
 	auto* viewMenu = new QMenu("View");
-
+	
+	/* TODO
 	auto* zoomToExtentsAction = new QAction("Zoom extents");
 	auto* zoomToSelectionAction = new QAction("Zoom to selection");
 	auto* resetWindowLevelAction = new QAction("Reset window/level");
@@ -818,6 +826,7 @@ QMenu* ImageViewerWidget::viewMenu()
 	viewMenu->addAction(zoomToSelectionAction);
 	viewMenu->addSeparator();
 	viewMenu->addAction(resetWindowLevelAction);
+	*/
 
 	return viewMenu;
 }

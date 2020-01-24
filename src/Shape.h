@@ -60,7 +60,7 @@ public:
 	void setEnabled(const bool& enabled);
 
 	/** Returns whether the shape should be rendered */
-	bool canRender() const;
+	virtual bool canRender() const;
 	
 	/** Returns the model-view-projection matrix */
 	QMatrix4x4 modelViewProjection() const;
@@ -80,18 +80,24 @@ public:
 	 */
 	void log(const QString& event) const;
 
+	/**
+	 * Bind shader program in the current OpenGL context
+	 * @param name Name of the OpenGL shader program
+	 */
+	bool bindShaderProgram(const QString& name);
+
 protected:
 	/** Adds the OpenGL shader programs that the shape needs */
-	virtual void addShaderPrograms() = 0;
+	virtual void addShaderPrograms() {};
 
 	/** Adds the OpenGL vertex array objects that the shape needs */
-	virtual void addVAOs() = 0;
+	virtual void addVAOs() {};
 
 	/** Adds the OpenGL vertex buffer objects that the shape needs */
-	virtual void addVBOs() = 0;
+	virtual void addVBOs() {};
 
 	/** Adds the OpenGL textures that the shape needs */
-	virtual void addTextures() = 0;
+	virtual void addTextures() {};
 
 	/**
 	 * Adds an OpenGL shader program
@@ -122,10 +128,22 @@ protected:
 	void addTexture(const QString& name, QSharedPointer<QOpenGLTexture> texture);
 
 	/**
+	 * Configure an OpenGL shader program (right after the shader program is bound in the render function)
+	 * @param name Name of the OpenGL shader program
+	 */
+	virtual void configureShaderProgram(const QString& name);
+
+	/**
 	 * Retrieves an OpenGL shader program by name
 	 * @param name Name of the shader program
 	 */
 	QSharedPointer<QOpenGLShaderProgram> shaderProgram(const QString& name);
+
+	/**
+	 * Retrieves an OpenGL shader program by name
+	 * @param name Name of the shader program
+	 */
+	const QSharedPointer<QOpenGLShaderProgram> shaderProgram(const QString& name) const;
 
 	/**
 	 * Retrieves an OpenGL Vertex Array Object (VAO) by name
@@ -134,16 +152,34 @@ protected:
 	QSharedPointer<QOpenGLVertexArrayObject> vao(const QString& name);
 
 	/**
+	 * Retrieves an OpenGL Vertex Array Object (VAO) by name
+	 * @param name Name of vertex array object
+	 */
+	const QSharedPointer<QOpenGLVertexArrayObject> vao(const QString& name) const;
+
+	/**
 	 * Retrieves an OpenGL Vertex Buffer Object (VBO) by name
 	 * @param name Name of vertex buffer object
 	 */
 	QSharedPointer<QOpenGLBuffer> vbo(const QString& name);
 
 	/**
+	 * Retrieves an OpenGL Vertex Buffer Object (VBO) by name
+	 * @param name Name of vertex buffer object
+	 */
+	const QSharedPointer<QOpenGLBuffer> vbo(const QString& name) const;
+
+	/**
 	 * Retrieves an OpenGL texture by name
 	 * @param name Name of the texture
 	 */
 	QSharedPointer<QOpenGLTexture> texture(const QString& name);
+
+	/**
+	 * Retrieves an OpenGL texture by name
+	 * @param name Name of the texture
+	 */
+	const QSharedPointer<QOpenGLTexture> texture(const QString& name) const;
 
 signals:
 	/** Signals that the shape has been successfully initialized */
