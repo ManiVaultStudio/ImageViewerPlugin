@@ -13,7 +13,7 @@
 #include <QGuiApplication>
 #include <QOpenGLDebugLogger>
 
-#include "Shaders.h"
+#include "Renderer.h"
 #include "ImageQuad.h"
 
 // Panning and zooming inspired by: https://community.khronos.org/t/opengl-compound-zoom-and-pan-effect/72565/7
@@ -49,6 +49,16 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 		doneCurrent();
 	}, Qt::AutoConnection);
 
+	connect(_imageViewerPlugin, &ImageViewerPlugin::displayImageChanged, this, [&](std::shared_ptr<QImage> image) {
+		makeCurrent();
+		{
+			_renderer->setColorImage(image);
+			zoomExtents();
+			update();
+		}
+		doneCurrent();
+	}, Qt::AutoConnection);
+
 	QSurfaceFormat surfaceFormat;
 
 	surfaceFormat.setRenderableType(QSurfaceFormat::OpenGL);
@@ -74,9 +84,6 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	surfaceFormat.setSamples(16);
 
 	setFormat(surfaceFormat);
-
-
-	connect(_imageViewerPlugin, &ImageViewerPlugin::displayImageChanged, this, &ImageViewerWidget::onDisplayImageChanged);
 }
 
 ImageViewerWidget::~ImageViewerWidget()
@@ -162,7 +169,7 @@ void ImageViewerWidget::endSelection()
 
 	makeCurrent();
 
-	_renderer->resetSelectionBuffer();
+	_renderer->resetSelectionBufferQuad();
 
 	doneCurrent();
 }
@@ -232,35 +239,6 @@ void ImageViewerWidget::paintGL() {
 	for (const QOpenGLDebugMessage& message : _openglDebugLogger->loggedMessages())
 		qDebug() << message;
 #endif
-}
-
-void ImageViewerWidget::onDisplayImageChanged(std::shared_ptr<QImage> displayImage)
-{
-	if (!isValid())
-		return;
-	
-	makeCurrent();
-
-	auto* imageQuadShape = _renderer->shape<ImageQuad>("ImageQuad");
-
-	const auto previousImageSize = imageQuadShape->size();
-
-	imageQuadShape->setImage(displayImage);
-
-	auto imageSizeChanged = previousImageSize != displayImage->size();
-
-	if (imageSizeChanged) {
-		zoomExtents();
-
-		const auto brushRadius = 0.05f * static_cast<float>(std::min(previousImageSize.width(), previousImageSize.height()));
-
-		_renderer->setBrushRadius(brushRadius);
-		_renderer->setBrushRadiusDelta(0.2f * brushRadius);
-	}
-
-	doneCurrent();
-
-	update();
 }
 
 void ImageViewerWidget::onCurrentDatasetChanged(const QString& currentDataset)
@@ -374,7 +352,7 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 					startSelection();
 
 				if (_selectionType != SelectionType::Polygon) {
-					_renderer->resetSelectionBuffer();
+					_renderer->resetSelectionBufferQuad();
 				}
 
 				_mousePositions.push_back(_mousePosition);
@@ -386,7 +364,7 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 					worldMousePositions.push_back(screenToWorld(mousePosition));
 				}
 
-				_renderer->updateSelectionBuffer();
+				_renderer->updateSelectionBufferQuad();
 			}
 
 			break;
@@ -455,7 +433,7 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 								_mousePositions.push_back(mouseEvent->pos());
 						}
 						
-						_renderer->updateSelectionBuffer();
+						_renderer->updateSelectionBufferQuad();
 					}
 					
 					break;

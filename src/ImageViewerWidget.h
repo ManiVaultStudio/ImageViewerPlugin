@@ -95,18 +95,6 @@ public:
 
 public:
 	/**
-	 * Invoked when the display image changes
-	 * @param displayImage Display image
-	 */
-	void onDisplayImageChanged(std::shared_ptr<QImage> displayImage);
-
-	/**
-	 * Invoked when the selection opacity changes
-	 * @param selectionOpacity Selection opacity
-	 */
-	void onSelectionOpacityChanged(const float& selectionOpacity);
-
-	/**
 	 * Invoked when the current dataset changes
 	 * @param currentDataset Current dataset name
 	 */

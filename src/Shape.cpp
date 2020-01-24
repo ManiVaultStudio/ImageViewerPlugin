@@ -4,6 +4,7 @@
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLBuffer>
 #include <QOpenGLTexture>
+#include <QOpenGLFramebufferObject>
 #include <QDebug>
 
 Shape::Shape(const QString& name) :
@@ -13,7 +14,8 @@ Shape::Shape(const QString& name) :
 	_shaderPrograms(),
 	_vaos(),
 	_vbos(),
-	_textures()
+	_textures(),
+	_fbos()
 {
 }
 
@@ -40,6 +42,11 @@ void Shape::destroy()
 		_textures[key]->destroy();
 		_textures[key]->release();
 	}
+
+	for (auto key : _fbos.keys())
+	{
+		_fbos[key]->release();
+	}
 }
 
 void Shape::initialize()
@@ -50,6 +57,7 @@ void Shape::initialize()
 	addVAOs();
 	addVBOs();
 	addTextures();
+	addFBOs();
 }
 
 bool Shape::isInitialized() const
@@ -144,6 +152,13 @@ void Shape::addTexture(const QString& name, QSharedPointer<QOpenGLTexture> textu
 	_textures.insert(name, texture);
 }
 
+void Shape::addFBO(const QString& name, QSharedPointer<QOpenGLFramebufferObject> fbo)
+{
+	qDebug() << "Add OpenGL texture to" << _name << "shape";
+
+	_fbos.insert(name, fbo);
+}
+
 void Shape::configureShaderProgram(const QString& name)
 {
 	qDebug() << "Configure shader program" << name << "for" << _name << "not implemented";
@@ -187,4 +202,14 @@ QSharedPointer<QOpenGLTexture> Shape::texture(const QString& name)
 const QSharedPointer<QOpenGLTexture> Shape::texture(const QString& name) const
 {
 	return _textures[name];
+}
+
+QSharedPointer<QOpenGLFramebufferObject> Shape::fbo(const QString& name)
+{
+	return _fbos[name];
+}
+
+const QSharedPointer<QOpenGLFramebufferObject> Shape::fbo(const QString& name) const
+{
+	return _fbos[name];
 }

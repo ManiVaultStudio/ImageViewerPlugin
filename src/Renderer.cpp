@@ -11,10 +11,12 @@
 #include "ImageQuad.h"
 #include "SelectionBounds.h"
 #include "SelectionQuad.h"
+#include "SelectionBufferQuad.h"
 
 template SelectionBounds* Renderer::shape<SelectionBounds>(const QString& name);
 template ImageQuad* Renderer::shape<ImageQuad>(const QString& name);
 template SelectionQuad* Renderer::shape<SelectionQuad>(const QString& name);
+template SelectionBufferQuad* Renderer::shape<SelectionBufferQuad>(const QString& name);
 
 Renderer::Renderer(const float& depth, ImageViewerWidget* imageViewerWidget) :
 	StackedRenderer(depth),
@@ -45,8 +47,6 @@ void Renderer::render()
 		return;
 
 	renderShapes();
-
-	
 }
 
 void Renderer::resize(QSize renderSize)
@@ -59,148 +59,22 @@ void Renderer::resize(QSize renderSize)
 	shape<SelectionBounds>("SelectionBounds")->setLineWidth((pWorld1 - pWorld0).length());
 }
 
-/*
-	auto createFBO = false;
-
-	if (!_fbos.contains("SelectionBuffer")) {
-		createFBO = true;
-	}
-	else {
-		if (size != fbo("SelectionBuffer")->size()) {
-			createFBO = true;
-		}
-	}
-
-	if (createFBO) {
-		_fbos.insert("SelectionBuffer", QSharedPointer<QOpenGLFramebufferObject>::create(size.width(), size.height()));
-	}
-
-	setSize(size);
-	*/
-
-void Renderer::updateSelectionBuffer()
+void Renderer::setColorImage(std::shared_ptr<QImage> colorImage)
 {
-	/*
-	//qDebug() << "Update selection buffer";
+	auto* imageQuadShape = shape<ImageQuad>("ImageQuad");
 
-	auto selectionFBO = fbo("SelectionBuffer");
+	const auto previousImageSize = imageQuadShape->size();
 
-	if (!selectionFBO->bind())
-		return;
-	
-	glViewport(0, 0, selectionFBO->width(), selectionFBO->height());
+	imageQuadShape->setImage(colorImage);
 
-	QMatrix4x4 transform;
+	if (previousImageSize != colorImage->size()) {
+		shape<SelectionBufferQuad>("SelectionBufferQuad")->setSize(colorImage->size());
 
-	auto width = selectionFBO->width();
+		const auto brushRadius = 0.05f * static_cast<float>(std::min(previousImageSize.width(), previousImageSize.height()));
 
-	transform.ortho(0.0f, selectionFBO->width(), 0.0f, selectionFBO->height(), -1.0f, +1.0f);
-
-	auto quadVAO = vao("Quad");
-
-	const auto mousePositions = _imageViewerWidget->mousePositionsWorld();
-
-	quadVAO->bind();
-	{
-		auto selectionBufferProgram = shaderProgram("SelectionBuffer");
-
-		if (selectionBufferProgram->bind()) {
-			glBindTexture(GL_TEXTURE_2D, selectionFBO->texture());
-
-			selectionBufferProgram->setUniformValue("pixelSelectionTexture", 0);
-			selectionBufferProgram->setUniformValue("transform", transform);
-			selectionBufferProgram->setUniformValue("selectionType", static_cast<int>(_imageViewerWidget->selectionType()));
-			selectionBufferProgram->setUniformValue("imageSize", static_cast<float>(selectionFBO->size().width()), static_cast<float>(selectionFBO->size().height()));
-
-			switch (_imageViewerWidget->selectionType())
-			{
-				case SelectionType::Rectangle:
-				{
-					const auto rectangleTopLeft			= mousePositions.front();
-					const auto rectangleBottomRight		= mousePositions.back();
-					const auto rectangleTopLeftUV		= QVector2D(rectangleTopLeft.x() / static_cast<float>(selectionFBO->width()), rectangleTopLeft.y() / static_cast<float>(selectionFBO->height()));
-					const auto rectangleBottomRightUV	= QVector2D(rectangleBottomRight.x() / static_cast<float>(selectionFBO->width()), rectangleBottomRight.y() / static_cast<float>(selectionFBO->height()));
-
-					auto rectangleUV	= std::make_pair(rectangleTopLeftUV, rectangleBottomRightUV);
-					auto topLeft		= QVector2D(rectangleTopLeftUV.x(), rectangleTopLeftUV.y());
-					auto bottomRight	= QVector2D(rectangleBottomRightUV.x(), rectangleBottomRightUV.y());
-
-					if (rectangleBottomRightUV.x() < rectangleTopLeftUV.x()) {
-						topLeft.setX(rectangleBottomRightUV.x());
-						bottomRight.setX(rectangleTopLeftUV.x());
-					}
-
-					if (rectangleBottomRightUV.y() < rectangleTopLeftUV.y()) {
-						topLeft.setY(rectangleBottomRightUV.y());
-						bottomRight.setY(rectangleTopLeftUV.y());
-					}
-
-					selectionBufferProgram->setUniformValue("rectangleTopLeft", topLeft);
-					selectionBufferProgram->setUniformValue("rectangleBottomRight", bottomRight);
-
-					break;
-				}
-
-				case SelectionType::Brush:
-				{
-					const auto brushCenter			= mousePositions[mousePositions.size() - 1];
-					const auto previousBrushCenter	= mousePositions.size() > 1 ? mousePositions[mousePositions.size() - 2] : brushCenter;
-
-					selectionBufferProgram->setUniformValue("previousBrushCenter", previousBrushCenter.x(), previousBrushCenter.y());
-					selectionBufferProgram->setUniformValue("currentBrushCenter", brushCenter.x(), brushCenter.y());
-					selectionBufferProgram->setUniformValue("brushRadius", _brushRadius);
-
-					break;
-				}
-
-				case SelectionType::Lasso:
-				case SelectionType::Polygon:
-				{
-					QList<QVector2D> points;
-
-					points.reserve(static_cast<std::int32_t>(mousePositions.size()));
-
-					for (const auto& mousePosition : mousePositions) {
-						points.push_back(QVector2D(mousePosition.x(), mousePosition.y()));
-					}
-
-					selectionBufferProgram->setUniformValueArray("points", &points[0], static_cast<std::int32_t>(points.size()));
-					selectionBufferProgram->setUniformValue("noPoints", static_cast<int>(points.size()));
-
-					break;
-				}
-
-				default:
-					break;
-			}
-
-			glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
-			selectionBufferProgram->release();
-		}
+		//_renderer->setBrushRadius(brushRadius);
+		//_renderer->setBrushRadiusDelta(0.2f * brushRadius);
 	}
-	quadVAO->release();
-
-	selectionFBO->release();
-	*/
-}
-
-void Renderer::resetSelectionBuffer()
-{
-	/*
-	qDebug() << "Reset";
-
-	auto selectionFBO = fbo("SelectionBuffer");
-	
-	if (!selectionFBO->bind())
-		return;
-
-	glViewport(0, 0, selectionFBO->width(), selectionFBO->height());
-	glClearColor(0.f, 0.f, 0.f, 0.f);
-	glClear(GL_COLOR_BUFFER_BIT);
-
-	selectionFBO->release();
-	*/
 }
 
 void Renderer::setSelectionImage(std::shared_ptr<QImage> selectionImage, const QRect& selectionBounds)
@@ -272,6 +146,16 @@ std::shared_ptr<QImage> Renderer::selectionImage() const
 	return std::make_shared<QImage>(selectionFBO->toImage());
 }
 
+void Renderer::updateSelectionBufferQuad()
+{
+	shape<SelectionBufferQuad>("SelectionBufferQuad")->update();
+}
+
+void Renderer::resetSelectionBufferQuad()
+{
+	shape<SelectionBufferQuad>("SelectionBufferQuad")->reset();
+}
+
 template<typename T>
 T* Renderer::shape(const QString& name)
 {
@@ -291,66 +175,13 @@ bool Renderer::isInitialized() const
 	return selectionFBO->isValid();
 }
 
-/*
-void Renderer::createShaderPrograms()
-{
-	auto overlayProgram = QSharedPointer<QOpenGLShaderProgram>::create();
-
-	overlayProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, selectionOverlayVertexShaderSource.c_str());
-	overlayProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, selectionOverlayFragmentShaderSource.c_str());
-	overlayProgram->link();
-
-	_shaderPrograms.insert("Overlay", overlayProgram);
-
-	auto outlineProgram = QSharedPointer<QOpenGLShaderProgram>::create();
-
-	outlineProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, selectionOutlineVertexShaderSource.c_str());
-	outlineProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, selectionOutlineFragmentShaderSource.c_str());
-	outlineProgram->link();
-
-	_shaderPrograms.insert("Outline", outlineProgram);
-
-	auto selectionBufferProgram = QSharedPointer<QOpenGLShaderProgram>::create();
-
-	selectionBufferProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, selectionBufferVertexShaderSource.c_str());
-	selectionBufferProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, selectionBufferFragmentShaderSource.c_str());
-	selectionBufferProgram->link();
-
-	_shaderPrograms.insert("SelectionBuffer", selectionBufferProgram);
-
-	auto selectionProgram = QSharedPointer<QOpenGLShaderProgram>::create();
-
-	selectionProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, selectionVertexShaderSource.c_str());
-	selectionProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, selectionFragmentShaderSource.c_str());
-	selectionProgram->link();
-
-	_shaderPrograms.insert("Selection", selectionProgram);
-	
-
-void Renderer::createVBOs()
-{
-	auto quadVBO		= QSharedPointer<QOpenGLBuffer>::create();
-
-	quadVBO->create();
-	
-	_vbos.insert("Quad", quadVBO);
-}
-
-void Renderer::createVAOs()
-{
-	auto quadVAO	= QSharedPointer<QOpenGLVertexArrayObject>::create();
-
-	quadVAO->create();
-
-	_vaos.insert("Quad", quadVAO);
-}
-*/
 void Renderer::createShapes()
 {
 	qDebug() << "Creating shapes";
 	
-	_shapes.insert("ImageQuad", QSharedPointer<ImageQuad>::create("ImageQuad", 2.f));
-	_shapes.insert("SelectionQuad", QSharedPointer<SelectionQuad>::create("SelectionQuad", 1.f));
+	_shapes.insert("ImageQuad", QSharedPointer<ImageQuad>::create("ImageQuad", 3.f));
+	_shapes.insert("SelectionQuad", QSharedPointer<SelectionQuad>::create("SelectionQuad", 2.f));
+	_shapes.insert("SelectionBufferQuad", QSharedPointer<SelectionBufferQuad>::create("SelectionBufferQuad", 1.f));
 	_shapes.insert("SelectionBounds", QSharedPointer<SelectionBounds>::create("SelectionBounds", 0.f));
 
 	//_shapes["ImageQuad"]->setEnabled(false);

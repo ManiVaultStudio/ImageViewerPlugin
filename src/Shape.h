@@ -11,6 +11,7 @@ class QOpenGLShaderProgram;
 class QOpenGLBuffer;
 class QOpenGLVertexArrayObject;
 class QOpenGLTexture;
+class QOpenGLFramebufferObject;
 
 /**
  * OpenGL shape class
@@ -86,19 +87,6 @@ public:
 	 */
 	bool bindShaderProgram(const QString& name);
 
-protected:
-	/** Adds the OpenGL shader programs that the shape needs */
-	virtual void addShaderPrograms() {};
-
-	/** Adds the OpenGL vertex array objects that the shape needs */
-	virtual void addVAOs() {};
-
-	/** Adds the OpenGL vertex buffer objects that the shape needs */
-	virtual void addVBOs() {};
-
-	/** Adds the OpenGL textures that the shape needs */
-	virtual void addTextures() {};
-
 	/**
 	 * Adds an OpenGL shader program
 	 * @param name Name of the shader program
@@ -126,6 +114,29 @@ protected:
 	 * @param texture Shared pointer to the texture
 	 */
 	void addTexture(const QString& name, QSharedPointer<QOpenGLTexture> texture);
+
+	/**
+	 * Adds an OpenGL Frame Buffer Object (FBO)
+	 * @param name Name of the FBO
+	 * @param fbo Shared pointer to the FBO
+	 */
+	void addFBO(const QString& name, QSharedPointer<QOpenGLFramebufferObject> fbo);
+
+protected:
+	/** Adds the OpenGL shader programs that the shape needs */
+	virtual void addShaderPrograms() {};
+
+	/** Adds the OpenGL vertex array objects that the shape needs */
+	virtual void addVAOs() {};
+
+	/** Adds the OpenGL vertex buffer objects that the shape needs */
+	virtual void addVBOs() {};
+
+	/** Adds the OpenGL textures that the shape needs */
+	virtual void addTextures() {};
+
+	/** Adds the OpenGL frame buffer objects that the shape needs */
+	virtual void addFBOs() {};
 
 	/**
 	 * Configure an OpenGL shader program (right after the shader program is bound in the render function)
@@ -181,6 +192,18 @@ protected:
 	 */
 	const QSharedPointer<QOpenGLTexture> texture(const QString& name) const;
 
+	/**
+	 * Retrieves an OpenGL Frame Buffer Object (FBO) by name
+	 * @param name Name of the frame buffer object
+	 */
+	QSharedPointer<QOpenGLFramebufferObject> fbo(const QString& name);
+
+	/**
+	 * Retrieves an OpenGL Frame Buffer Object (FBO) by name
+	 * @param name Name of the frame buffer object
+	 */
+	const QSharedPointer<QOpenGLFramebufferObject> fbo(const QString& name) const;
+
 signals:
 	/** Signals that the shape has been successfully initialized */
 	void initialized();
@@ -204,4 +227,5 @@ protected:
 	QMap<QString, QSharedPointer<QOpenGLVertexArrayObject>>		_vaos;						/** OpenGL Vertex Array Object (VAO) */
 	QMap<QString, QSharedPointer<QOpenGLBuffer>>				_vbos;						/** OpenGL Vertex Buffer Object (VBO) */
 	QMap<QString, QSharedPointer<QOpenGLTexture>>				_textures;					/** OpenGL texture */
+	QMap<QString, QSharedPointer<QOpenGLFramebufferObject>>		_fbos;						/** OpenGL Frame Buffer Objects (FBO) */
 };

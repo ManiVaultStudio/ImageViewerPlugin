@@ -5,6 +5,8 @@
 #include "StackedRenderer.h"
 #include "Shape.h"
 
+class SelectionBufferQuad;
+
 class ImageViewerWidget;
 
 /**
@@ -42,15 +44,13 @@ public:
 
 public:
 	/**
-	 * Update the pixel selection buffer during interaction
+	 * Sets the color image
+	 * @param colorImage Color image
 	 */
-	void updateSelectionBuffer();
-
-	/** Reset the (temporary) selection buffer */
-	void resetSelectionBuffer();
+	void setColorImage(std::shared_ptr<QImage> colorImage);
 
 	/**
-	 * Set the selection image
+	 * Sets the selection image
 	 * @param selectionImage Selection image
 	 */
 	void setSelectionImage(std::shared_ptr<QImage> selectionImage, const QRect& selectionBounds);
@@ -90,6 +90,12 @@ public:
 
 	/** Returns the current selection image */
 	std::shared_ptr<QImage> selectionImage() const;
+
+	/** Updates the selection buffer quad */
+	void updateSelectionBufferQuad();
+
+	/** Returns the selection buffer quad */
+	void resetSelectionBufferQuad();
 
 	/**
 	 * Get shape by name
