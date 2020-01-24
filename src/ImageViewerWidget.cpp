@@ -68,7 +68,7 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 
 	setFormat(surfaceFormat);
 
-	_selectionRenderer	= std::make_shared<SelectionRenderer>(3, this);
+	_selectionRenderer	= std::make_shared<Renderer>(3, this);
 
 	connect(_imageViewerPlugin, &ImageViewerPlugin::displayImageChanged, this, &ImageViewerWidget::onDisplayImageChanged);
 }
@@ -773,7 +773,7 @@ void ImageViewerWidget::invertSelection()
 	update();
 }
 
-std::shared_ptr<SelectionRenderer> ImageViewerWidget::selectionRenderer()
+std::shared_ptr<Renderer> ImageViewerWidget::selectionRenderer()
 {
 	return _selectionRenderer;
 }

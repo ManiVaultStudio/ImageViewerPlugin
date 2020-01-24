@@ -12,7 +12,7 @@ class ImageViewerWidget;
  * This renderer class is used to display selections of high-dimensional image data using OpenGL
  * @author Thomas Kroes
  */
-class SelectionRenderer : public QuadRenderer
+class Renderer : public QuadRenderer
 {
 	Q_OBJECT
 
@@ -22,7 +22,7 @@ public:
 	 * @param depth Depth (layer) to render content at
 	 * @param imageViewerWidget Pointer to image viewer widget
 	 */
-	SelectionRenderer(const float& depth, ImageViewerWidget* imageViewerWidget);
+	Renderer(const float& depth, ImageViewerWidget* imageViewerWidget);
 
 public:
 	/** Renders the content */

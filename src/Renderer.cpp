@@ -1,4 +1,4 @@
-#include "SelectionRenderer.h"
+#include "Renderer.h"
 #include "ImageViewerWidget.h"
 
 #include <QDebug>
@@ -11,10 +11,10 @@
 #include "ImageQuad.h"
 #include "SelectionBounds.h"
 
-template SelectionBounds* SelectionRenderer::shape<SelectionBounds>(const QString& name);
-template ImageQuad* SelectionRenderer::shape<ImageQuad>(const QString& name);
+template SelectionBounds* Renderer::shape<SelectionBounds>(const QString& name);
+template ImageQuad* Renderer::shape<ImageQuad>(const QString& name);
 
-SelectionRenderer::SelectionRenderer(const float& depth, ImageViewerWidget* imageViewerWidget) :
+Renderer::Renderer(const float& depth, ImageViewerWidget* imageViewerWidget) :
 	QuadRenderer(depth),
 	_imageViewerWidget(imageViewerWidget),
 	_bufferColor(255, 153, 0, 70),
@@ -25,7 +25,7 @@ SelectionRenderer::SelectionRenderer(const float& depth, ImageViewerWidget* imag
 	createShapes();
 }
 
-void SelectionRenderer::init()
+void Renderer::init()
 {
 	QuadRenderer::init();
 
@@ -66,12 +66,12 @@ void SelectionRenderer::init()
 	initializeShapes();
 }
 
-void SelectionRenderer::destroy()
+void Renderer::destroy()
 {
 	destroyShapes();
 }
 
-void SelectionRenderer::render()
+void Renderer::render()
 {
 	if (!isInitialized())
 		return;
@@ -94,12 +94,12 @@ void SelectionRenderer::render()
 	*/
 }
 
-void SelectionRenderer::resize(QSize renderSize)
+void Renderer::resize(QSize renderSize)
 {
 	qDebug() << "Selection renderer resize";
 }
 
-void SelectionRenderer::setImageSize(const QSize& size)
+void Renderer::setImageSize(const QSize& size)
 {
 	auto createFBO = false;
 
@@ -119,7 +119,7 @@ void SelectionRenderer::setImageSize(const QSize& size)
 	setSize(size);
 }
 
-void SelectionRenderer::updateSelectionBuffer()
+void Renderer::updateSelectionBuffer()
 {
 	//qDebug() << "Update selection buffer";
 
@@ -224,7 +224,7 @@ void SelectionRenderer::updateSelectionBuffer()
 	selectionFBO->release();
 }
 
-void SelectionRenderer::resetSelectionBuffer()
+void Renderer::resetSelectionBuffer()
 {
 	qDebug() << "Reset";
 
@@ -240,7 +240,7 @@ void SelectionRenderer::resetSelectionBuffer()
 	selectionFBO->release();
 }
 
-void SelectionRenderer::setSelectionImage(std::shared_ptr<QImage> selectionImage)
+void Renderer::setSelectionImage(std::shared_ptr<QImage> selectionImage)
 {
 	auto selectionTexture = QSharedPointer<QOpenGLTexture>::create(*selectionImage.get());
 
@@ -249,7 +249,7 @@ void SelectionRenderer::setSelectionImage(std::shared_ptr<QImage> selectionImage
 	_textures["Selection"] = selectionTexture;
 }
 
-void SelectionRenderer::setSelectionBounds(const QRect& selectionBounds)
+void Renderer::setSelectionBounds(const QRect& selectionBounds)
 {
 	auto bounds = selectionBounds;
 
@@ -259,12 +259,12 @@ void SelectionRenderer::setSelectionBounds(const QRect& selectionBounds)
 	shape<SelectionBounds>("SelectionBounds")->setBounds(bounds);
 }
 
-float SelectionRenderer::selectionOpacity() const
+float Renderer::selectionOpacity() const
 {
 	return _selectionColor.alphaF();
 }
 
-void SelectionRenderer::setSelectionOpacity(const float& selectionOpacity)
+void Renderer::setSelectionOpacity(const float& selectionOpacity)
 {
 	if (selectionOpacity == _selectionColor.alphaF())
 		return;
@@ -276,12 +276,12 @@ void SelectionRenderer::setSelectionOpacity(const float& selectionOpacity)
 	emit selectionOpacityChanged(_selectionColor.alphaF());
 }
 
-float SelectionRenderer::brushRadius() const
+float Renderer::brushRadius() const
 {
 	return _brushRadius;
 }
 
-void SelectionRenderer::setBrushRadius(const float& brushRadius)
+void Renderer::setBrushRadius(const float& brushRadius)
 {
 	const auto boundBrushRadius = qBound(1.0f, 10000.f, brushRadius);
 
@@ -293,12 +293,12 @@ void SelectionRenderer::setBrushRadius(const float& brushRadius)
 	qDebug() << "Set brush radius" << brushRadius;
 }
 
-float SelectionRenderer::brushRadiusDelta() const
+float Renderer::brushRadiusDelta() const
 {
 	return _brushRadiusDelta;
 }
 
-void SelectionRenderer::setBrushRadiusDelta(const float& brushRadiusDelta)
+void Renderer::setBrushRadiusDelta(const float& brushRadiusDelta)
 {
 	const auto boundBrushRadiusDelta = qBound(0.001f, 10000.f, brushRadiusDelta);
 
@@ -310,17 +310,17 @@ void SelectionRenderer::setBrushRadiusDelta(const float& brushRadiusDelta)
 	qDebug() << "Set brush radius delta" << _brushRadiusDelta;
 }
 
-void SelectionRenderer::brushSizeIncrease()
+void Renderer::brushSizeIncrease()
 {
 	setBrushRadius(_brushRadius + _brushRadiusDelta);
 }
 
-void SelectionRenderer::brushSizeDecrease()
+void Renderer::brushSizeDecrease()
 {
 	setBrushRadius(_brushRadius - _brushRadiusDelta);
 }
 
-std::shared_ptr<QImage> SelectionRenderer::selectionImage() const
+std::shared_ptr<QImage> Renderer::selectionImage() const
 {
 	auto selectionFBO = fbo("SelectionBuffer");
 
@@ -328,12 +328,12 @@ std::shared_ptr<QImage> SelectionRenderer::selectionImage() const
 }
 
 template<typename T>
-T* SelectionRenderer::shape(const QString& name)
+T* Renderer::shape(const QString& name)
 {
 	return dynamic_cast<T*>(_shapes[name].get());
 }
 
-bool SelectionRenderer::isInitialized() const
+bool Renderer::isInitialized() const
 {
 	auto selectionFBO = fbo("SelectionBuffer");
 
@@ -343,7 +343,7 @@ bool SelectionRenderer::isInitialized() const
 	return selectionFBO->isValid();
 }
 
-void SelectionRenderer::createShaderPrograms()
+void Renderer::createShaderPrograms()
 {
 	auto overlayProgram = QSharedPointer<QOpenGLShaderProgram>::create();
 
@@ -388,7 +388,7 @@ void SelectionRenderer::createShaderPrograms()
 	*/
 }
 
-void SelectionRenderer::createVBOs()
+void Renderer::createVBOs()
 {
 	auto quadVBO		= QSharedPointer<QOpenGLBuffer>::create();
 
@@ -397,7 +397,7 @@ void SelectionRenderer::createVBOs()
 	_vbos.insert("Quad", quadVBO);
 }
 
-void SelectionRenderer::createVAOs()
+void Renderer::createVAOs()
 {
 	auto quadVAO	= QSharedPointer<QOpenGLVertexArrayObject>::create();
 
@@ -406,7 +406,7 @@ void SelectionRenderer::createVAOs()
 	_vaos.insert("Quad", quadVAO);
 }
 
-void SelectionRenderer::createShapes()
+void Renderer::createShapes()
 {
 	qDebug() << "Creating shapes";
 
@@ -414,7 +414,7 @@ void SelectionRenderer::createShapes()
 	_shapes.insert("SelectionBounds", QSharedPointer<SelectionBounds>::create("SelectionBounds"));
 }
 
-void SelectionRenderer::initializeShapes()
+void Renderer::initializeShapes()
 {
 	qDebug() << "Initializing" << _shapes.size() << "shapes";
 
@@ -423,7 +423,7 @@ void SelectionRenderer::initializeShapes()
 	}
 }
 
-void SelectionRenderer::renderShapes()
+void Renderer::renderShapes()
 {
 	qDebug() << "Render" << _shapes.size() << "shapes";
 
@@ -433,7 +433,7 @@ void SelectionRenderer::renderShapes()
 	}
 }
 
-void SelectionRenderer::destroyShapes()
+void Renderer::destroyShapes()
 {
 	qDebug() << "Destroying" << _shapes.size() << "shapes";
 
@@ -442,7 +442,7 @@ void SelectionRenderer::destroyShapes()
 	}
 }
 
-void SelectionRenderer::renderOverlay()
+void Renderer::renderOverlay()
 {
 	auto selectionFBO = fbo("SelectionBuffer");
 
@@ -466,7 +466,7 @@ void SelectionRenderer::renderOverlay()
 	}
 }
 
-void SelectionRenderer::renderSelection()
+void Renderer::renderSelection()
 {
 	auto selectionTexture = texture("Selection");
 
@@ -490,7 +490,7 @@ void SelectionRenderer::renderSelection()
 	}
 }
 
-void SelectionRenderer::renderOutline()
+void Renderer::renderOutline()
 {
 	/*
 	if (_imageViewerWidget->interactionMode() != InteractionMode::Selection)

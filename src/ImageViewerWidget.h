@@ -2,7 +2,7 @@
 
 #include "Common.h"
 
-#include "SelectionRenderer.h"
+#include "Renderer.h"
 
 #include "ImageData/ImageData.h"
 
@@ -91,7 +91,7 @@ public:
 	void invertSelection();
 
 	/** Returns the selection renderer */
-	std::shared_ptr<SelectionRenderer> selectionRenderer();
+	std::shared_ptr<Renderer> selectionRenderer();
 
 public:
 	/**
@@ -266,7 +266,7 @@ public:
 
 private:
 	ImageViewerPlugin*						_imageViewerPlugin;			/** Pointer to image viewer plugin */
-	std::shared_ptr<SelectionRenderer>		_selectionRenderer;			/** Selection renderer */
+	std::shared_ptr<Renderer>		_selectionRenderer;			/** Selection renderer */
 	InteractionMode							_interactionMode;			/** Type of interaction e.g. navigation, selection and window/level */
 	QPoint									_mousePosition;				/** Real-time mouse position */
 	std::vector<QPoint>						_mousePositions;			/** All recorded mouse positions during interaction event */
