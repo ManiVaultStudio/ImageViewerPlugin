@@ -794,7 +794,6 @@ QMenu* ImageViewerWidget::viewMenu()
 {
 	auto* viewMenu = new QMenu("View");
 	
-	/* TODO
 	auto* zoomToExtentsAction = new QAction("Zoom extents");
 	auto* zoomToSelectionAction = new QAction("Zoom to selection");
 	auto* resetWindowLevelAction = new QAction("Reset window/level");
@@ -807,13 +806,12 @@ QMenu* ImageViewerWidget::viewMenu()
 
 	connect(zoomToExtentsAction, &QAction::triggered, this, &ImageViewerWidget::zoomExtents);
 	connect(zoomToSelectionAction, &QAction::triggered, this, &ImageViewerWidget::zoomToSelection);
-	connect(resetWindowLevelAction, &QAction::triggered, [&]() { _imageQuadRenderer->resetWindowLevel();  });
+	connect(resetWindowLevelAction, &QAction::triggered, [&]() { _renderer->shape<ImageQuad>("ImageQuad")->resetWindowLevel();  });
 
 	viewMenu->addAction(zoomToExtentsAction);
 	viewMenu->addAction(zoomToSelectionAction);
 	viewMenu->addSeparator();
 	viewMenu->addAction(resetWindowLevelAction);
-	*/
 
 	return viewMenu;
 }
