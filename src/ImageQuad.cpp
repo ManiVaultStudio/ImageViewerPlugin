@@ -56,15 +56,14 @@ void ImageQuad::setImage(std::shared_ptr<QImage> image)
 	const auto imageMin = static_cast<float>(_imageMin);
 	const auto imageMax = static_cast<float>(_imageMax);
 
-	auto quadTexture = texture("Quad");
-
-	quadTexture->create();
-	quadTexture->setSize(image->size().width(), image->size().height());
-	quadTexture->setFormat(QOpenGLTexture::RGBA16_UNorm);
-	quadTexture->setWrapMode(QOpenGLTexture::ClampToEdge);
-	quadTexture->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
-	quadTexture->allocateStorage();
-	quadTexture->setData(QOpenGLTexture::PixelFormat::RGBA, QOpenGLTexture::PixelType::UInt16, image->bits());
+	texture("Quad")->destroy();
+	texture("Quad")->create();
+	texture("Quad")->setSize(image->size().width(), image->size().height());
+	texture("Quad")->setFormat(QOpenGLTexture::RGBA16_UNorm);
+	texture("Quad")->setWrapMode(QOpenGLTexture::ClampToEdge);
+	texture("Quad")->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
+	texture("Quad")->allocateStorage();
+	texture("Quad")->setData(QOpenGLTexture::PixelFormat::RGBA, QOpenGLTexture::PixelType::UInt16, image->bits());
 
 	setRectangle(QRectF(0, 0, image->width(), image->height()));
 

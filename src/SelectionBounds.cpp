@@ -25,7 +25,7 @@ void SelectionBounds::setBounds(const QRectF& bounds)
 	_bounds = bounds;
 	
 	const auto p0 = _bounds.topLeft();
-	const auto p1 = _bounds.bottomRight();
+	const auto p1 = _bounds.bottomRight() - QPointF(1.f, 1.f);
 
 	QVector<QVector2D> points;
 

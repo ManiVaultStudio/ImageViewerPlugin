@@ -226,8 +226,6 @@ void ImageViewerWidget::paintGL() {
 	auto modelViewProjection = projection() * modelView();
 
 	_renderer->setModelViewProjection(modelViewProjection);
-
-	//_imageQuadRenderer->render();
 	_renderer->render();
 
 #ifdef _DEBUG
@@ -245,9 +243,9 @@ void ImageViewerWidget::onDisplayImageChanged(std::shared_ptr<QImage> displayIma
 
 	auto* imageQuadShape = _renderer->shape<ImageQuad>("ImageQuad");
 
-	imageQuadShape->setImage(displayImage);
-
 	const auto previousImageSize = imageQuadShape->size();
+
+	imageQuadShape->setImage(displayImage);
 
 	auto imageSizeChanged = previousImageSize != displayImage->size();
 

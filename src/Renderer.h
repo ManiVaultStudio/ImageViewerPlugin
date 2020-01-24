@@ -55,15 +55,6 @@ public:
 	 */
 	void setSelectionImage(std::shared_ptr<QImage> selectionImage, const QRect& selectionBounds);
 
-	/** Returns the selection opacity */
-	float selectionOpacity() const;
-
-	/**
-	 * Sets the selection opacity
-	 * @param selectionOpacity Selection opacity
-	 */
-	void setSelectionOpacity(const float& selectionOpacity);
-
 	/** Returns the brush radius */
 	float brushRadius() const;
 
@@ -88,6 +79,15 @@ public:
 	/** Decrease the brush size by _brushRadiusDelta */
 	void brushSizeDecrease();
 
+	/** Returns the selection opacity */
+	float selectionOpacity();
+
+	/**
+	 * Sets the selection  opacity
+	 * @param selectionOpacity Selection opacity
+	 */
+	void setSelectionOpacity(const float& selectionOpacity);
+
 	/** Returns the current selection image */
 	std::shared_ptr<QImage> selectionImage() const;
 
@@ -111,19 +111,6 @@ private:
 	/** Destroy shapes */
 	void destroyShapes();
 
-	/** Renders the selection overlay */
-	void renderOverlay();
-
-	/** Renders the selection geometry outline */
-	void renderOutline();
-
-signals:
-	/**
-	 * Invoked when the selection opacity has changed
-	 * @param selectionOpacity Selection opacity
-	 */
-	void selectionOpacityChanged(const float& selectionOpacity);
-
 protected:
 	ImageViewerWidget*						_imageViewerWidget;		/** Pointer to image viewer widget */
 	QColor									_bufferColor;			/** Selected pixel color during selection */
@@ -131,4 +118,5 @@ protected:
 	float									_brushRadius;			/** Selection brush radius */
 	float									_brushRadiusDelta;		/** Selection brush size increase/decrease delta */
 	QMap<QString, QSharedPointer<Shape>>	_shapes;				/** Shapes map */
+	
 };

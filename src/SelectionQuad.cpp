@@ -10,7 +10,7 @@
 
 SelectionQuad::SelectionQuad(const QString& name /*= "SelectionQuad"*/, const float& z /*= 0.f*/) :
 	Quad(name, z),
-	_color(255, 0, 0, 150)
+	_color(255, 0, 0, 200)
 {
 }
 
@@ -24,6 +24,23 @@ void SelectionQuad::setImage(std::shared_ptr<QImage> image)
 	texture("Quad")->setData(*image.get());
 
 	setRectangle(QRectF(0, 0, image->width(), image->height()));
+}
+
+float SelectionQuad::opacity() const
+{
+	return _color.alphaF();
+}
+
+void SelectionQuad::setOpacity(const float& opacity)
+{
+	if (opacity == _color.alphaF())
+		return;
+
+	_color.setAlphaF(opacity);
+
+	qDebug() << "Set opacity" << _color.alphaF();
+
+	emit opacityChanged(_color.alphaF());
 }
 
 void SelectionQuad::addShaderPrograms()

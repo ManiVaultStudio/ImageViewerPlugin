@@ -46,22 +46,17 @@ void Renderer::render()
 
 	renderShapes();
 
-	/*
-	const auto pWorld0 = _imageViewerWidget->screenToWorld(QPointF(0.0f, 0.0f));
-	const auto pWorld1 = _imageViewerWidget->screenToWorld(QPointF(1.f, 0.0f));
-
-	_selectionBounds.setLineWidth((pWorld1 - pWorld0).length());
-	_selectionBounds.setModelViewProjection(_modelViewProjection);
-	_selectionBounds.render();
-
-	_imageQuad.setModelViewProjection(_modelViewProjection);
-	_imageQuad.render();
-	*/
+	
 }
 
 void Renderer::resize(QSize renderSize)
 {
 	qDebug() << "Selection renderer resize";
+
+	const auto pWorld0 = _imageViewerWidget->screenToWorld(QPointF(0.0f, 0.0f));
+	const auto pWorld1 = _imageViewerWidget->screenToWorld(QPointF(4.f, 0.0f));
+
+	shape<SelectionBounds>("SelectionBounds")->setLineWidth((pWorld1 - pWorld0).length());
 }
 
 /*
@@ -216,23 +211,6 @@ void Renderer::setSelectionImage(std::shared_ptr<QImage> selectionImage, const Q
 	shape<SelectionBounds>("SelectionBounds")->setBounds(worldSelectionBounds);
 }
 
-float Renderer::selectionOpacity() const
-{
-	return _selectionColor.alphaF();
-}
-
-void Renderer::setSelectionOpacity(const float& selectionOpacity)
-{
-	if (selectionOpacity == _selectionColor.alphaF())
-		return;
-
-	_selectionColor.setAlphaF(selectionOpacity);
-
-	qDebug() << "Set selection opacity" << selectionOpacity;
-
-	emit selectionOpacityChanged(_selectionColor.alphaF());
-}
-
 float Renderer::brushRadius() const
 {
 	return _brushRadius;
@@ -275,6 +253,16 @@ void Renderer::brushSizeIncrease()
 void Renderer::brushSizeDecrease()
 {
 	setBrushRadius(_brushRadius - _brushRadiusDelta);
+}
+
+float Renderer::selectionOpacity()
+{
+	return shape<SelectionQuad>("SelectionQuad")->opacity();
+}
+
+void Renderer::setSelectionOpacity(const float& selectionOpacity)
+{
+	shape<SelectionQuad>("SelectionQuad")->setOpacity(selectionOpacity);
 }
 
 std::shared_ptr<QImage> Renderer::selectionImage() const
@@ -397,9 +385,10 @@ void Renderer::destroyShapes()
 	}
 }
 
+/*
 void Renderer::renderOverlay()
 {
-	/* TODO
+	 TODO
 	auto selectionFBO = fbo("SelectionBuffer");
 
 	auto overlayProgram = shaderProgram("Overlay");
@@ -420,12 +409,14 @@ void Renderer::renderOverlay()
 
 		overlayProgram->release();
 	}
-	*/
+	
 }
+*/
 
+/*
 void Renderer::renderOutline()
 {
-	/* TODO
+	 TODO
 	if (_imageViewerWidget->interactionMode() != InteractionMode::Selection)
 		return;
 
@@ -529,5 +520,6 @@ void Renderer::renderOutline()
 
 		outlineProgram->release();
 	}
-	*/
+	
 }
+*/
