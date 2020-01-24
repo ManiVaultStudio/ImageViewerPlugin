@@ -15,7 +15,7 @@ template SelectionBounds* Renderer::shape<SelectionBounds>(const QString& name);
 template ImageQuad* Renderer::shape<ImageQuad>(const QString& name);
 
 Renderer::Renderer(const float& depth, ImageViewerWidget* imageViewerWidget) :
-	QuadRenderer(depth),
+	StackedRenderer(depth),
 	_imageViewerWidget(imageViewerWidget),
 	_bufferColor(255, 153, 0, 70),
 	_selectionColor(255, 0, 0, 153),
@@ -27,41 +27,7 @@ Renderer::Renderer(const float& depth, ImageViewerWidget* imageViewerWidget) :
 
 void Renderer::init()
 {
-	QuadRenderer::init();
-
-	const auto stride = 5 * sizeof(GLfloat);
-
-	auto quadVAO = vao("Quad");
-	auto quadVBO = vbo("Quad");
-
-	auto selectionBufferProgram = shaderProgram("SelectionBuffer");
-
-	if (selectionBufferProgram->bind()) {
-		selectionBufferProgram->enableAttributeArray(0);
-		selectionBufferProgram->enableAttributeArray(1);
-		selectionBufferProgram->setAttributeBuffer(0, GL_FLOAT, 0, 3, stride);
-		selectionBufferProgram->setAttributeBuffer(1, GL_FLOAT, 3 * sizeof(GLfloat), 2, stride);
-
-		quadVBO->release();
-		quadVAO->release();
-		selectionBufferProgram->release();
-	}
-
-	auto selectionProgram = shaderProgram("Selection");
-
-	if (selectionProgram->bind()) {
-		quadVAO->bind();
-		quadVBO->bind();
-
-		selectionProgram->enableAttributeArray(0);
-		selectionProgram->enableAttributeArray(1);
-		selectionProgram->setAttributeBuffer(0, GL_FLOAT, 0, 3, stride);
-		selectionProgram->setAttributeBuffer(1, GL_FLOAT, 3 * sizeof(GLfloat), 2, stride);
-
-		quadVBO->release();
-		quadVAO->release();
-		selectionProgram->release();
-	}
+	StackedRenderer::init();
 
 	initializeShapes();
 }
@@ -78,9 +44,6 @@ void Renderer::render()
 
 	renderShapes();
 
-	//renderOverlay();
-	//renderSelection();
-	
 	/*
 	const auto pWorld0 = _imageViewerWidget->screenToWorld(QPointF(0.0f, 0.0f));
 	const auto pWorld1 = _imageViewerWidget->screenToWorld(QPointF(1.f, 0.0f));
@@ -99,8 +62,7 @@ void Renderer::resize(QSize renderSize)
 	qDebug() << "Selection renderer resize";
 }
 
-void Renderer::setImageSize(const QSize& size)
-{
+/*
 	auto createFBO = false;
 
 	if (!_fbos.contains("SelectionBuffer")) {
@@ -117,10 +79,11 @@ void Renderer::setImageSize(const QSize& size)
 	}
 
 	setSize(size);
-}
+	*/
 
 void Renderer::updateSelectionBuffer()
 {
+	/*
 	//qDebug() << "Update selection buffer";
 
 	auto selectionFBO = fbo("SelectionBuffer");
@@ -222,10 +185,12 @@ void Renderer::updateSelectionBuffer()
 	quadVAO->release();
 
 	selectionFBO->release();
+	*/
 }
 
 void Renderer::resetSelectionBuffer()
 {
+	/*
 	qDebug() << "Reset";
 
 	auto selectionFBO = fbo("SelectionBuffer");
@@ -238,15 +203,15 @@ void Renderer::resetSelectionBuffer()
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	selectionFBO->release();
+	*/
 }
 
-void Renderer::setSelectionImage(std::shared_ptr<QImage> selectionImage)
+void Renderer::setSelectionImage(std::shared_ptr<QImage> selectionImage, const QRect& selectionBounds)
 {
-	auto selectionTexture = QSharedPointer<QOpenGLTexture>::create(*selectionImage.get());
+	const auto worldSelectionBounds = QRect(selectionBounds.left(), selectionImage->height() - selectionBounds.bottom() - 1, selectionBounds.width() + 1, selectionBounds.height() + 1);
 
-	selectionTexture->setMinMagFilters(QOpenGLTexture::Nearest, QOpenGLTexture::Nearest);
-
-	_textures["Selection"] = selectionTexture;
+	shape<ImageQuad>("SelectionQuad")->setImage(selectionImage);
+	shape<SelectionBounds>("SelectionBounds")->setBounds(worldSelectionBounds);
 }
 
 void Renderer::setSelectionBounds(const QRect& selectionBounds)
@@ -335,6 +300,9 @@ T* Renderer::shape(const QString& name)
 
 bool Renderer::isInitialized() const
 {
+	// TODO
+	return true;
+
 	auto selectionFBO = fbo("SelectionBuffer");
 
 	if (selectionFBO.get() == nullptr)
@@ -343,6 +311,7 @@ bool Renderer::isInitialized() const
 	return selectionFBO->isValid();
 }
 
+/*
 void Renderer::createShaderPrograms()
 {
 	auto overlayProgram = QSharedPointer<QOpenGLShaderProgram>::create();
@@ -376,17 +345,7 @@ void Renderer::createShaderPrograms()
 	selectionProgram->link();
 
 	_shaderPrograms.insert("Selection", selectionProgram);
-
-	/*
-	auto boundsProgram = QSharedPointer<QOpenGLShaderProgram>::create();
-
-	boundsProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, selectionBoundsVertexShaderSource.c_str());
-	boundsProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, selectionBoundsFragmentShaderSource.c_str());
-	boundsProgram->link();
-
-	_shaderPrograms.insert("Bounds", boundsProgram);
-	*/
-}
+	
 
 void Renderer::createVBOs()
 {
@@ -405,12 +364,13 @@ void Renderer::createVAOs()
 
 	_vaos.insert("Quad", quadVAO);
 }
-
+*/
 void Renderer::createShapes()
 {
 	qDebug() << "Creating shapes";
 
 	_shapes.insert("ImageQuad", QSharedPointer<ImageQuad>::create("ImageQuad"));
+	_shapes.insert("SelectionQuad", QSharedPointer<ImageQuad>::create("SelectionQuad"));
 	_shapes.insert("SelectionBounds", QSharedPointer<SelectionBounds>::create("SelectionBounds"));
 }
 
@@ -444,6 +404,7 @@ void Renderer::destroyShapes()
 
 void Renderer::renderOverlay()
 {
+	/* TODO
 	auto selectionFBO = fbo("SelectionBuffer");
 
 	auto overlayProgram = shaderProgram("Overlay");
@@ -464,35 +425,12 @@ void Renderer::renderOverlay()
 
 		overlayProgram->release();
 	}
-}
-
-void Renderer::renderSelection()
-{
-	auto selectionTexture = texture("Selection");
-
-	if (selectionTexture.get() == nullptr || !selectionTexture->isCreated())
-		return;
-
-	auto selectionProgram = shaderProgram("Selection");
-
-	if (selectionProgram->bind()) {
-		selectionProgram->setUniformValue("selectionTexture", 0);
-		selectionProgram->setUniformValue("transform", _modelViewProjection);
-		selectionProgram->setUniformValue("color", _selectionColor);
-
-		selectionTexture->bind();
-		{
-			QuadRenderer::render();
-		}
-		selectionTexture->release();
-
-		selectionProgram->release();
-	}
+	*/
 }
 
 void Renderer::renderOutline()
 {
-	/*
+	/* TODO
 	if (_imageViewerWidget->interactionMode() != InteractionMode::Selection)
 		return;
 

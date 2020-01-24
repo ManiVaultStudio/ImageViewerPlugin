@@ -22,7 +22,7 @@
 ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	QOpenGLFunctions(),
 	_imageViewerPlugin(imageViewerPlugin),
-	_selectionRenderer(),
+	_renderer(),
 	_interactionMode(InteractionMode::Selection),
 	_mousePosition(),
 	_zoom(1.f),
@@ -40,7 +40,7 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 
 	connect(_imageViewerPlugin, &ImageViewerPlugin::currentDatasetChanged, this, &ImageViewerWidget::onCurrentDatasetChanged);
 	connect(_imageViewerPlugin, &ImageViewerPlugin::currentImageIdChanged, this, &ImageViewerWidget::onCurrentImageIdChanged);
-	connect(_imageViewerPlugin, &ImageViewerPlugin::selectionImageChanged, this, &ImageViewerWidget::onSelectionImageChanged);
+	connect(_imageViewerPlugin, &ImageViewerPlugin::selectionImageChanged, this->_renderer.get(), &Renderer::setSelectionImage);
 
 	QSurfaceFormat surfaceFormat;
 
@@ -68,7 +68,7 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 
 	setFormat(surfaceFormat);
 
-	_selectionRenderer	= std::make_shared<Renderer>(3, this);
+	_renderer	= std::make_shared<Renderer>(3, this);
 
 	connect(_imageViewerPlugin, &ImageViewerPlugin::displayImageChanged, this, &ImageViewerWidget::onDisplayImageChanged);
 }
@@ -77,7 +77,7 @@ ImageViewerWidget::~ImageViewerWidget()
 {
 	makeCurrent();
 
-	_selectionRenderer->destroy();
+	_renderer->destroy();
 
 	doneCurrent();
 }
@@ -156,7 +156,7 @@ void ImageViewerWidget::endSelection()
 
 	makeCurrent();
 
-	_selectionRenderer->resetSelectionBuffer();
+	_renderer->resetSelectionBuffer();
 
 	doneCurrent();
 }
@@ -193,7 +193,7 @@ void ImageViewerWidget::initializeGL()
 	glDepthMask(false);
 	glLineWidth(100);
 
-	_selectionRenderer->init();
+	_renderer->init();
 
 	_imageViewerPlugin->computeDisplayImage();
 	_imageViewerPlugin->computeSelectionImage();
@@ -209,7 +209,7 @@ void ImageViewerWidget::resizeGL(int w, int h)
 
 	zoomExtents();
 
-	_selectionRenderer->resize(QSize(w, h));
+	_renderer->resize(QSize(w, h));
 }
 
 void ImageViewerWidget::paintGL() {
@@ -219,10 +219,10 @@ void ImageViewerWidget::paintGL() {
 
 	auto modelViewProjection = projection() * modelView();
 
-	_selectionRenderer->setModelViewProjection(modelViewProjection);
+	_renderer->setModelViewProjection(modelViewProjection);
 
 	//_imageQuadRenderer->render();
-	_selectionRenderer->render();
+	_renderer->render();
 
 #ifdef _DEBUG
 	for (const QOpenGLDebugMessage& message : _openglDebugLogger->loggedMessages())
@@ -237,42 +237,22 @@ void ImageViewerWidget::onDisplayImageChanged(std::shared_ptr<QImage> displayIma
 	
 	makeCurrent();
 
-	auto* imageQuadShape = _selectionRenderer->shape<ImageQuad>("ImageQuad");
+	auto* imageQuadShape = _renderer->shape<ImageQuad>("ImageQuad");
+
+	imageQuadShape->setImage(displayImage);
 
 	const auto previousImageSize = imageQuadShape->size();
 
 	auto imageSizeChanged = previousImageSize != displayImage->size();
-
-	_selectionRenderer->setImageSize(displayImage->size());
 
 	if (imageSizeChanged) {
 		zoomExtents();
 
 		const auto brushRadius = 0.05f * static_cast<float>(std::min(previousImageSize.width(), previousImageSize.height()));
 
-		_selectionRenderer->setBrushRadius(brushRadius);
-		_selectionRenderer->setBrushRadiusDelta(0.2f * brushRadius);
+		_renderer->setBrushRadius(brushRadius);
+		_renderer->setBrushRadiusDelta(0.2f * brushRadius);
 	}
-
-	imageQuadShape->setImage(displayImage);
-
-	doneCurrent();
-
-	update();
-}
-
-void ImageViewerWidget::onSelectionImageChanged(std::shared_ptr<QImage> selectionImage, const QRect& selectionBounds)
-{
-	if (!isValid())
-		return;
-
-	makeCurrent();
-
-	_selectionRenderer->setSelectionImage(selectionImage);
-
-	const auto worldSelectionBounds = QRect(selectionBounds.left(), selectionImage->height() - selectionBounds.bottom() - 1, selectionBounds.width() + 1, selectionBounds.height() + 1);
-
-	_selectionRenderer->setSelectionBounds(worldSelectionBounds);
 
 	doneCurrent();
 
@@ -390,7 +370,7 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 					startSelection();
 
 				if (_selectionType != SelectionType::Polygon) {
-					_selectionRenderer->resetSelectionBuffer();
+					_renderer->resetSelectionBuffer();
 				}
 
 				_mousePositions.push_back(_mousePosition);
@@ -402,7 +382,7 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 					worldMousePositions.push_back(screenToWorld(mousePosition));
 				}
 
-				_selectionRenderer->updateSelectionBuffer();
+				_renderer->updateSelectionBuffer();
 			}
 
 			break;
@@ -471,7 +451,7 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 								_mousePositions.push_back(mouseEvent->pos());
 						}
 						
-						_selectionRenderer->updateSelectionBuffer();
+						_renderer->updateSelectionBuffer();
 					}
 					
 					break;
@@ -610,10 +590,10 @@ void ImageViewerWidget::wheelEvent(QWheelEvent* wheelEvent) {
 		{
 			if (_selectionType == SelectionType::Brush) {
 				if (wheelEvent->delta() > 0) {
-					_selectionRenderer->brushSizeIncrease();
+					_renderer->brushSizeIncrease();
 				}
 				else {
-					_selectionRenderer->brushSizeDecrease();
+					_renderer->brushSizeDecrease();
 				}
 
 				update();
@@ -664,19 +644,18 @@ void ImageViewerWidget::zoomAt(const QPointF& screenPosition, const float& facto
 
 void ImageViewerWidget::zoomExtents()
 {
-	/* TODO
 	if (_imageViewerPlugin->currentDatasetName().isEmpty())
 		return;
 	
 	qDebug() << "Zoom extents" << _zoom;
 
-	zoomToRectangle(QRectF(QPointF(), QSizeF(_imageQuadRenderer->size().width(), _imageQuadRenderer->size().height())));
-	*/
+	auto* imageQuad = _renderer->shape<ImageQuad>("ImageQuad");
+
+	zoomToRectangle(QRectF(QPointF(), QSizeF(imageQuad->size().width(), imageQuad->size().height())));
 }
 
 void ImageViewerWidget::zoomToRectangle(const QRectF& rectangle)
 {
-	/* TODO
 	qDebug() << "Zoom to rectangle" << rectangle;
 
 	resetView();
@@ -686,10 +665,12 @@ void ImageViewerWidget::zoomToRectangle(const QRectF& rectangle)
 	const auto factorY	= (height() - 2 * _margin) / static_cast<float>(rectangle.height());
 
 	zoomBy(factorX < factorY ? factorX : factorY);
-	pan(_zoom * -QPointF(center.x(), _imageQuadRenderer->size().height() - center.y()));
+
+	auto* imageQuad = _renderer->shape<ImageQuad>("ImageQuad");
+
+	pan(_zoom * -QPointF(center.x(), imageQuad->size().height() - center.y()));
 
 	update();
-	*/
 }
 
 void ImageViewerWidget::zoomToSelection()
@@ -725,7 +706,7 @@ void ImageViewerWidget::publishSelection()
 {	
 	qDebug() << "Publish selection";
 	
-	const auto image = _selectionRenderer->selectionImage();
+	const auto image = _renderer->selectionImage();
 
 	auto pixelCoordinates = std::vector<std::pair<std::uint32_t, std::uint32_t>>();
 
@@ -775,7 +756,7 @@ void ImageViewerWidget::invertSelection()
 
 std::shared_ptr<Renderer> ImageViewerWidget::selectionRenderer()
 {
-	return _selectionRenderer;
+	return _renderer;
 }
 
 QMenu* ImageViewerWidget::contextMenu()

@@ -101,13 +101,6 @@ public:
 	void onDisplayImageChanged(std::shared_ptr<QImage> displayImage);
 
 	/**
-	 * Invoked when the selection image changes
-	 * @param selectionImage Selection image
-	 * @param selectionBounds Bounds of the selected pixels in the selection image
-	 */
-	void onSelectionImageChanged(std::shared_ptr<QImage> selectionImage, const QRect& selectionBounds);
-
-	/**
 	 * Invoked when the selection opacity changes
 	 * @param selectionOpacity Selection opacity
 	 */
@@ -266,7 +259,7 @@ public:
 
 private:
 	ImageViewerPlugin*						_imageViewerPlugin;			/** Pointer to image viewer plugin */
-	std::shared_ptr<Renderer>		_selectionRenderer;			/** Selection renderer */
+	std::shared_ptr<Renderer>				_renderer;					/** Selection renderer */
 	InteractionMode							_interactionMode;			/** Type of interaction e.g. navigation, selection and window/level */
 	QPoint									_mousePosition;				/** Real-time mouse position */
 	std::vector<QPoint>						_mousePositions;			/** All recorded mouse positions during interaction event */

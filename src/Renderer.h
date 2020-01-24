@@ -2,7 +2,7 @@
 
 #include "Common.h"
 
-#include "QuadRenderer.h"
+#include "StackedRenderer.h"
 #include "Shape.h"
 
 class ImageViewerWidget;
@@ -12,7 +12,7 @@ class ImageViewerWidget;
  * This renderer class is used to display selections of high-dimensional image data using OpenGL
  * @author Thomas Kroes
  */
-class Renderer : public QuadRenderer
+class Renderer : public StackedRenderer
 {
 	Q_OBJECT
 
@@ -42,12 +42,6 @@ public:
 
 public:
 	/**
-	 * Set image size
-	 * param size Size of the image
-	 */
-	void setImageSize(const QSize& size);
-
-	/**
 	 * Update the pixel selection buffer during interaction
 	 */
 	void updateSelectionBuffer();
@@ -59,7 +53,7 @@ public:
 	 * Set the selection image
 	 * @param selectionImage Selection image
 	 */
-	void setSelectionImage(std::shared_ptr<QImage> selectionImage);
+	void setSelectionImage(std::shared_ptr<QImage> selectionImage, const QRect& selectionBounds);
 
 	/**
 	 * Set selection bounds
@@ -110,11 +104,6 @@ public:
 	template<typename T>
 	T* shape(const QString& name);
 
-protected:
-	void createShaderPrograms() override;
-	void createVBOs() override;
-	void createVAOs() override;
-
 private:
 	/** Create shapes */
 	void createShapes();
@@ -130,9 +119,6 @@ private:
 
 	/** Renders the selection overlay */
 	void renderOverlay();
-
-	/** Renders the pixel selection */
-	void renderSelection();
 
 	/** Renders the selection geometry outline */
 	void renderOutline();
