@@ -1,7 +1,5 @@
 #pragma once
 
-#include "ImageData/ImageData.h"
-
 #include "Quad.h"
 
 #include <QColor>
@@ -48,24 +46,6 @@ public:
 	 */
 	void setOpacity(const float& opacity);
 
-	/** Returns the selection type */
-	SelectionType selectionType() const;
-
-	/**
-	 * Sets the selection type
-	 * @param selectionType Selection type
-	 */
-	void setSelectionType(const SelectionType& selectionType);
-
-	/** Returns the selection modifier */
-	SelectionModifier selectionModifier() const;
-
-	/**
-	 * Sets the selection modifier
-	 * @param selectionModifier Selection modifier
-	 */
-	void setSelectionModifier(const SelectionModifier& selectionModifier);
-
 	/** Returns the brush radius */
 	float brushRadius() const;
 
@@ -93,10 +73,11 @@ public:
 	/** Returns the mouse positions */
 	std::vector<QVector3D> mousePositions() const;
 
-	/** Sets the mouse positions
+	/** Updates the selection buffer
 	 * @param mousePositions Mouse positions in world coordinates
+	 * @param selectionType Selection type
 	 */
-	void setMousePositions(std::vector<QVector3D> mousePositions);
+	void update(std::vector<QVector3D> mousePositions, const SelectionType& selectionType);
 
 	/** Reset the (temporary) selection buffer */
 	void reset();
@@ -134,18 +115,6 @@ signals:
 	void opacityChanged(const float& opacity);
 
 	/**
-	 * Invoked when the selection type changed
-	 * @param selectionType Selection type
-	 */
-	void selectionTypeChanged(const SelectionType& selectionType);
-
-	/**
-	 * Invoked when the selection modifier changed
-	 * @param selectionModifier Selection modifier
-	 */
-	void selectionModifierChanged(const SelectionModifier& selectionModifier);
-
-	/**
 	 * Invoked when the brush radius changed
 	 * @param brushRadius Brush radius
 	 */
@@ -160,8 +129,6 @@ signals:
 protected:
 	QSize						_size;					/** Size of the quad */
 	QColor						_color;					/** Selection color */
-	SelectionType				_selectionType;			/** Type of selection e.g. rectangle, brush */
-	SelectionModifier			_selectionModifier;		/** The selection modifier determines if and how new selections are combined with existing selections e.g. add, replace and remove */
 	float						_brushRadius;			/** Brush radius */
 	float						_brushRadiusDelta;		/** Selection brush size increase/decrease delta */
 	std::vector<QVector3D>		_mousePositions;		/** Mouse positions during selection */

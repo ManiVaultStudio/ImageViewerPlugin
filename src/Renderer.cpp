@@ -22,9 +22,25 @@ template SelectionOutline* Renderer::shape<SelectionOutline>(const QString& name
 
 Renderer::Renderer(const float& depth, ImageViewerWidget* imageViewerWidget) :
 	StackedRenderer(depth),
-	_imageViewerWidget(imageViewerWidget)
+	_imageViewerWidget(imageViewerWidget),
+	_shapes(),
+	_selectionType(SelectionType::Rectangle),
+	_selectionModifier(SelectionModifier::Replace)
 {
 	createShapes();
+}
+
+void Renderer::render()
+{
+	if (!isInitialized())
+		return;
+
+	renderShapes();
+}
+
+void Renderer::resize(QSize renderSize)
+{
+	qDebug() << "Selection renderer resize";
 }
 
 void Renderer::init()
@@ -39,17 +55,9 @@ void Renderer::destroy()
 	destroyShapes();
 }
 
-void Renderer::render()
+bool Renderer::isInitialized() const
 {
-	if (!isInitialized())
-		return;
-
-	renderShapes();
-}
-
-void Renderer::resize(QSize renderSize)
-{
-	qDebug() << "Selection renderer resize";
+	return _shapes["ImageQuad"]->isInitialized();
 }
 
 void Renderer::setColorImage(std::shared_ptr<QImage> colorImage)
@@ -114,9 +122,38 @@ T* Renderer::shape(const QString& name)
 	return dynamic_cast<T*>(_shapes[name].get());
 }
 
-bool Renderer::isInitialized() const
+SelectionType Renderer::selectionType() const
 {
-	return _shapes["ImageQuad"]->isInitialized();
+	return _selectionType;
+}
+
+void Renderer::setSelectionType(const SelectionType& selectionType)
+{
+	if (selectionType == _selectionType)
+		return;
+
+	_selectionType = selectionType;
+
+	qDebug() << "Set selection type to" << selectionTypeName(_selectionType);
+
+	emit selectionTypeChanged(_selectionType);
+}
+
+SelectionModifier Renderer::selectionModifier() const
+{
+	return _selectionModifier;
+}
+
+void Renderer::setSelectionModifier(const SelectionModifier& selectionModifier)
+{
+	if (selectionModifier == _selectionModifier)
+		return;
+
+	_selectionModifier = selectionModifier;
+
+	qDebug() << "Set selection modifier to" << selectionModifierName(selectionModifier);
+
+	emit selectionModifierChanged(_selectionModifier);
 }
 
 void Renderer::createShapes()

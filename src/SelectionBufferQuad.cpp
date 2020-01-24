@@ -13,8 +13,6 @@ SelectionBufferQuad::SelectionBufferQuad(const QString& name /*= "SelectionBuffe
 	Quad(name, z),
 	_size(),
 	_color(255, 153, 0, 40),
-	_selectionType(SelectionType::Rectangle),
-	_selectionModifier(SelectionModifier::Replace),
 	_brushRadius(10.0f),
 	_brushRadiusDelta(1.f),
 	_mousePositions()
@@ -99,40 +97,6 @@ void SelectionBufferQuad::setOpacity(const float& opacity)
 	qDebug() << "Set opacity to" << _color.alphaF() << "for" << _name;
 
 	emit opacityChanged(_color.alphaF());
-}
-
-SelectionType SelectionBufferQuad::selectionType() const
-{
-	return _selectionType;
-}
-
-void SelectionBufferQuad::setSelectionType(const SelectionType& selectionType)
-{
-	if (selectionType == _selectionType)
-		return;
-
-	_selectionType = selectionType;
-
-	qDebug() << "Set selection type to" << selectionTypeName(_selectionType) << "for" << _name;
-
-	emit selectionTypeChanged(_selectionType);
-}
-
-SelectionModifier SelectionBufferQuad::selectionModifier() const
-{
-	return _selectionModifier;
-}
-
-void SelectionBufferQuad::setSelectionModifier(const SelectionModifier& selectionModifier)
-{
-	if (selectionModifier == _selectionModifier)
-		return;
-
-	_selectionModifier = selectionModifier;
-
-	qDebug() << "Set selection modifier to" << selectionModifierName(selectionModifier) << "for" << _name;
-
-	emit selectionModifierChanged(_selectionModifier);
 }
 
 float SelectionBufferQuad::brushRadius() const
@@ -221,11 +185,8 @@ void SelectionBufferQuad::configureShaderProgram(const QString& name)
 	}
 }
 
-void SelectionBufferQuad::setMousePositions(std::vector<QVector3D> mousePositions)
+void SelectionBufferQuad::update(std::vector<QVector3D> mousePositions, const SelectionType& selectionType)
 {
-	if (_selectionType == SelectionType::None)
-		return;
-
 	qDebug() << "Set mouse position for" << _name;
 
 	auto selectionBufferFBO = fbo("SelectionBuffer");
@@ -252,14 +213,14 @@ void SelectionBufferQuad::setMousePositions(std::vector<QVector3D> mousePosition
 
 			selectionBufferProgram->setUniformValue("pixelSelectionTexture", 0);
 			selectionBufferProgram->setUniformValue("transform", transform);
-			selectionBufferProgram->setUniformValue("selectionType", static_cast<int>(_selectionType));
+			selectionBufferProgram->setUniformValue("selectionType", static_cast<int>(selectionType));
 
 			auto imageWidth		= static_cast<float>(selectionBufferFBO->size().width());
 			auto imageHeight	= static_cast<float>(selectionBufferFBO->size().height());
 
 			selectionBufferProgram->setUniformValue("imageSize", imageWidth, imageHeight);
 
-			switch (_selectionType)
+			switch (selectionType)
 			{
 				case SelectionType::Rectangle:
 				{

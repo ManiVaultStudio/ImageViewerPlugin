@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ImageData/ImageData.h"
+
 #include "Common.h"
 
 #include "StackedRenderer.h"
@@ -82,6 +84,24 @@ public:
 	template<typename T>
 	T* shape(const QString& name);
 
+	/** Returns the selection type */
+	SelectionType selectionType() const;
+
+	/**
+	 * Sets the selection type
+	 * @param selectionType Selection type
+	 */
+	void setSelectionType(const SelectionType& selectionType);
+
+	/** Returns the selection modifier */
+	SelectionModifier selectionModifier() const;
+
+	/**
+	 * Sets the selection modifier
+	 * @param selectionModifier Selection modifier
+	 */
+	void setSelectionModifier(const SelectionModifier& selectionModifier);
+
 private:
 	/** Create shapes */
 	void createShapes();
@@ -95,7 +115,23 @@ private:
 	/** Destroy shapes */
 	void destroyShapes();
 
+
+signals:
+	/**
+	 * Invoked when the selection type changed
+	 * @param selectionType Selection type
+	 */
+	void selectionTypeChanged(const SelectionType& selectionType);
+
+	/**
+	 * Invoked when the selection modifier changed
+	 * @param selectionModifier Selection modifier
+	 */
+	void selectionModifierChanged(const SelectionModifier& selectionModifier);
+
 protected:
 	ImageViewerWidget*						_imageViewerWidget;		/** Pointer to image viewer widget */
 	QMap<QString, QSharedPointer<Shape>>	_shapes;				/** Shapes map */
+	SelectionType							_selectionType;			/** Type of selection e.g. rectangle, brush */
+	SelectionModifier						_selectionModifier;		/** The selection modifier determines if and how new selections are combined with existing selections e.g. add, replace and remove */
 };

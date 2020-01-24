@@ -135,7 +135,7 @@ void ImageViewerWidget::startSelectionMode(const SelectionType& selectionType)
 
 	setInteractionMode(InteractionMode::Selection);
 
-	_renderer->selectionBufferQuad()->setSelectionType(selectionType);
+	_renderer->setSelectionType(selectionType);
 
 	startMouseInteraction();
 }
@@ -281,11 +281,11 @@ void ImageViewerWidget::keyPressEvent(QKeyEvent* keyEvent)
 				break;
 
 			case Qt::Key::Key_Shift:
-				_renderer->selectionBufferQuad()->setSelectionModifier(SelectionModifier::Add);
+				_renderer->setSelectionModifier(SelectionModifier::Add);
 				break;
 
 			case Qt::Key::Key_Control:
-				_renderer->selectionBufferQuad()->setSelectionModifier(SelectionModifier::Remove);
+				_renderer->setSelectionModifier(SelectionModifier::Remove);
 				break;
 
 			case Qt::Key::Key_Space:
@@ -315,7 +315,7 @@ void ImageViewerWidget::keyReleaseEvent(QKeyEvent* keyEvent)
 			case Qt::Key::Key_Shift:
 			case Qt::Key::Key_Control:
 			{
-				_renderer->selectionBufferQuad()->setSelectionModifier(SelectionModifier::Replace);
+				_renderer->setSelectionModifier(SelectionModifier::Replace);
 				break;
 			}
 
@@ -350,13 +350,13 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 				if (_mousePositions.empty())
 					startSelection();
 
-				if (_renderer->selectionBufferQuad()->selectionType() != SelectionType::Polygon) {
+				if (_renderer->selectionType() != SelectionType::Polygon) {
 					_renderer->selectionBufferQuad()->reset();
 				}
 
 				_mousePositions.push_back(_mousePosition);
 
-				_renderer->selectionBufferQuad()->setMousePositions(mousePositionsWorld());
+				_renderer->selectionBufferQuad()->update(mousePositionsWorld(), _renderer->selectionType());
 			}
 
 			break;
@@ -364,7 +364,7 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 
 		case Qt::RightButton:
 		{
-			if (_renderer->selectionBufferQuad()->selectionType() == SelectionType::Polygon && !_mousePositions.empty()) {
+			if (_renderer->selectionType() == SelectionType::Polygon && !_mousePositions.empty()) {
 				endSelection();
 			}
 			else {
@@ -410,7 +410,7 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 					if (_imageViewerPlugin->allowsPixelSelection() && _selecting) {
 						_mousePositions.push_back(mouseEvent->pos());
 						/*
-						if (_renderer->selectionBufferQuad()->selectionType() != SelectionType::Polygon) {
+						if (_renderer->selectionType() != SelectionType::Polygon) {
 							const auto lastMousePosition = _mousePositions.back();
 							const auto moved = mouseEvent->pos() - lastMousePosition;
 
@@ -419,7 +419,7 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 						}
 						*/
 
-						_renderer->selectionBufferQuad()->setMousePositions(mousePositionsWorld());
+						_renderer->selectionBufferQuad()->update(mousePositionsWorld(), _renderer->selectionType());
 						_renderer->selectionOutline()->setMousePositions(mousePositionsWorld());
 					}
 					
@@ -482,7 +482,7 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 			if (_interactionMode == InteractionMode::Selection)
 			{
 				if (_imageViewerPlugin->allowsPixelSelection() && _selecting) {
-					if (_renderer->selectionBufferQuad()->selectionType() != SelectionType::Polygon) {
+					if (_renderer->selectionType() != SelectionType::Polygon) {
 						endSelection();
 					}
 				}
@@ -551,7 +551,7 @@ void ImageViewerWidget::wheelEvent(QWheelEvent* wheelEvent) {
 
 		case InteractionMode::Selection:
 		{
-			if (_renderer->selectionBufferQuad()->selectionType() == SelectionType::Brush) {
+			if (_renderer->selectionType() == SelectionType::Brush) {
 				if (wheelEvent->delta() > 0) {
 					_renderer->selectionBufferQuad()->brushSizeIncrease();
 				}
@@ -683,7 +683,7 @@ void ImageViewerWidget::publishSelection()
 		}
 	}
 
-	_imageViewerPlugin->selectPixels(pixelCoordinates, _renderer->selectionBufferQuad()->selectionModifier());
+	_imageViewerPlugin->selectPixels(pixelCoordinates, _renderer->selectionModifier());
 
 	_renderer->selectionBufferQuad()->reset();
 
@@ -786,10 +786,10 @@ QMenu* ImageViewerWidget::selectionMenu()
 	auto* selectAllAction			= new QAction("Select all");
 	auto* invertSelectionAction		= new QAction("Invert");
 
-	connect(rectangleSelectionAction, &QAction::triggered, [this]() { _renderer->selectionBufferQuad()->setSelectionType(SelectionType::Rectangle); });
-	connect(brushSelectionAction, &QAction::triggered, [this]() { _renderer->selectionBufferQuad()->setSelectionType(SelectionType::Brush); });
-	connect(lassoSelectionAction, &QAction::triggered, [this]() { _renderer->selectionBufferQuad()->setSelectionType(SelectionType::Lasso); });
-	connect(polygonSelectionAction, &QAction::triggered, [this]() { _renderer->selectionBufferQuad()->setSelectionType(SelectionType::Polygon); });
+	connect(rectangleSelectionAction, &QAction::triggered, [this]() { _renderer->setSelectionType(SelectionType::Rectangle); });
+	connect(brushSelectionAction, &QAction::triggered, [this]() { _renderer->setSelectionType(SelectionType::Brush); });
+	connect(lassoSelectionAction, &QAction::triggered, [this]() { _renderer->setSelectionType(SelectionType::Lasso); });
+	connect(polygonSelectionAction, &QAction::triggered, [this]() { _renderer->setSelectionType(SelectionType::Polygon); });
 
 	connect(selectAllAction, &QAction::triggered, [this]() { selectAll(); });
 	connect(selectNoneAction, &QAction::triggered, [this]() { selectNone(); });
@@ -800,7 +800,7 @@ QMenu* ImageViewerWidget::selectionMenu()
 	lassoSelectionAction->setCheckable(true);
 	polygonSelectionAction->setCheckable(true);
 
-	const auto selectionType = _renderer->selectionBufferQuad()->selectionType();
+	const auto selectionType = _renderer->selectionType();
 
 	rectangleSelectionAction->setChecked(selectionType == SelectionType::Rectangle);
 	brushSelectionAction->setChecked(selectionType == SelectionType::Brush);
