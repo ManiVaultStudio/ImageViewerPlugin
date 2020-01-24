@@ -406,14 +406,18 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 
 				case InteractionMode::Selection:
 				{
+					/*
 					auto worldMousePositions = std::vector<QVector3D>();
 
 					for (const auto& mousePosition : _mousePositions)
 					{
 						worldMousePositions.push_back(screenToWorld(mousePosition));
 					}
+					*/
 
 					if (_imageViewerPlugin->allowsPixelSelection() && _selecting) {
+						_mousePositions.push_back(mouseEvent->pos());
+						/*
 						if (_renderer->selectionBufferQuad()->selectionType() != SelectionType::Polygon) {
 							const auto lastMousePosition = _mousePositions.back();
 							const auto moved = mouseEvent->pos() - lastMousePosition;
@@ -421,7 +425,8 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 							if (moved.manhattanLength() > 10)
 								_mousePositions.push_back(mouseEvent->pos());
 						}
-						
+						*/
+
 						_renderer->selectionBufferQuad()->setMousePositions(mousePositionsWorld());
 					}
 					

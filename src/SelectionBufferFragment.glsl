@@ -115,14 +115,14 @@ void main(void)
 	vec2 P = uv * imageSize;
 
 	switch (selectionType) {
-		case 0:
+		case 1:
 		{
 			bool inRectangle	= uv.x >= rectangleTopLeft.x && uv.x < rectangleBottomRight.x && uv.y >= rectangleTopLeft.y && uv.y < rectangleBottomRight.y;
 			fragmentColor		= inRectangle ? vec4(1) : vec4(vec3(0), 1);
 			break;
 		}
 
-		case 1:
+		case 2:
 		{
 			bool inBrush		= length(P - currentBrushCenter) < brushRadius;
 			bool prevInBrush	= texture(pixelSelectionTexture, vec2(uv.x, 1.f - uv.y)).r > 0;
@@ -142,11 +142,12 @@ void main(void)
 			}
 
 			fragmentColor = (inBrush || prevInBrush) ? vec4(1) : vec4(vec3(0), 1);
+
 			break;
 		}
 
-		case 2:
 		case 3:
+		case 4:
 		{
 			fragmentColor = isInside(P) ? vec4(1) : vec4(vec3(0), 1);
 			break;

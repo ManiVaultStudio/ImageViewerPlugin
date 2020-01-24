@@ -12,10 +12,10 @@
 SelectionBufferQuad::SelectionBufferQuad(const QString& name /*= "SelectionBufferQuad"*/, const float& z /*= 0.f*/) :
 	Quad(name, z),
 	_size(),
-	_color(255, 0, 0, 200),
+	_color(255, 153, 0, 40),
 	_selectionType(SelectionType::Rectangle),
 	_selectionModifier(SelectionModifier::Replace),
-	_brushRadius(1.0f),
+	_brushRadius(10.0f),
 	_mousePositions()
 {
 }
@@ -199,8 +199,6 @@ void SelectionBufferQuad::setMousePositions(std::vector<QVector3D> mousePosition
 	if (_selectionType == SelectionType::None)
 		return;
 
-	qDebug() << mousePositions;
-
 	qDebug() << "Set mouse position for" << _name;
 
 	auto selectionBufferFBO = fbo("SelectionBuffer");
@@ -228,7 +226,11 @@ void SelectionBufferQuad::setMousePositions(std::vector<QVector3D> mousePosition
 			selectionBufferProgram->setUniformValue("pixelSelectionTexture", 0);
 			selectionBufferProgram->setUniformValue("transform", transform);
 			selectionBufferProgram->setUniformValue("selectionType", static_cast<int>(_selectionType));
-			selectionBufferProgram->setUniformValue("imageSize", static_cast<float>(selectionBufferFBO->size().width()), static_cast<float>(selectionBufferFBO->size().height()));
+
+			auto imageWidth		= static_cast<float>(selectionBufferFBO->size().width());
+			auto imageHeight	= static_cast<float>(selectionBufferFBO->size().height());
+
+			selectionBufferProgram->setUniformValue("imageSize", imageWidth, imageHeight);
 
 			switch (_selectionType)
 			{
@@ -242,6 +244,8 @@ void SelectionBufferQuad::setMousePositions(std::vector<QVector3D> mousePosition
 					auto rectangleUV	= std::make_pair(rectangleTopLeftUV, rectangleBottomRightUV);
 					auto topLeft		= QVector2D(rectangleTopLeftUV.x(), rectangleTopLeftUV.y());
 					auto bottomRight	= QVector2D(rectangleBottomRightUV.x(), rectangleBottomRightUV.y());
+
+					qDebug() << rectangleTopLeftUV << rectangleBottomRightUV;
 
 					if (rectangleBottomRightUV.x() < rectangleTopLeftUV.x()) {
 						topLeft.setX(rectangleBottomRightUV.x());
@@ -305,8 +309,7 @@ void SelectionBufferQuad::setMousePositions(std::vector<QVector3D> mousePosition
 void SelectionBufferQuad::reset()
 {
 	qDebug() << "Reset" << _name;
-
-	/*
+	
 	auto selectionFBO = fbo("SelectionBuffer");
 
 	if (!selectionFBO->bind())
@@ -317,8 +320,6 @@ void SelectionBufferQuad::reset()
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	selectionFBO->release();
-
-	*/
 }
 
 /*
