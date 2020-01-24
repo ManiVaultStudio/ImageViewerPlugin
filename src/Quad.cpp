@@ -25,28 +25,33 @@ void Quad::initialize()
 	if (!_shaderPrograms.contains("Quad") || !_vaos.contains("Quad") || !_vbos.contains("Quad"))
 		return;
 
-	vbo("Quad")->bind();
+	auto quadVAO = vao("Quad");
+	auto quadVBO = vbo("Quad");
+
+	quadVBO->bind();
 	{
-		vbo("Quad")->setUsagePattern(QOpenGLBuffer::DynamicDraw);
-		vbo("Quad")->allocate(_vertexData.constData(), _vertexData.count() * sizeof(GLfloat));
-		vbo("Quad")->release();
+		quadVBO->setUsagePattern(QOpenGLBuffer::DynamicDraw);
+		quadVBO->allocate(_vertexData.constData(), _vertexData.count() * sizeof(GLfloat));
+		quadVBO->release();
 	}
 
-	if (shaderProgram("Quad")->isLinked() && shaderProgram("Quad")->bind()) {
+	auto quadShaderProgram = shaderProgram("Quad");
+
+	if (quadShaderProgram->isLinked() && quadShaderProgram->bind()) {
 		const auto stride = 5 * sizeof(GLfloat);
 
-		vao("Quad")->bind();
-		vbo("Quad")->bind();
+		quadVAO->bind();
+		quadVBO->bind();
 
-		shaderProgram("Quad")->enableAttributeArray(Quad::_vertexAttribute);
-		shaderProgram("Quad")->enableAttributeArray(Quad::_textureAttribute);
-		shaderProgram("Quad")->setAttributeBuffer(Quad::_vertexAttribute, GL_FLOAT, 0, 3, stride);
-		shaderProgram("Quad")->setAttributeBuffer(Quad::_textureAttribute, GL_FLOAT, 3 * sizeof(GLfloat), 2, stride);
+		quadShaderProgram->enableAttributeArray(Quad::_vertexAttribute);
+		quadShaderProgram->enableAttributeArray(Quad::_textureAttribute);
+		quadShaderProgram->setAttributeBuffer(Quad::_vertexAttribute, GL_FLOAT, 0, 3, stride);
+		quadShaderProgram->setAttributeBuffer(Quad::_textureAttribute, GL_FLOAT, 3 * sizeof(GLfloat), 2, stride);
 
-		vao("Quad")->release();
-		vbo("Quad")->release();
+		quadVAO->release();
+		quadVBO->release();
 
-		shaderProgram("Quad")->release();
+		quadShaderProgram->release();
 
 		_initialized = true;
 	}

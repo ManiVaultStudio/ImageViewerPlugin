@@ -137,11 +137,9 @@ void Renderer::setSelectionOpacity(const float& selectionOpacity)
 	shape<SelectionQuad>("SelectionQuad")->setOpacity(selectionOpacity);
 }
 
-std::shared_ptr<QImage> Renderer::selectionImage() const
+ImageQuad* Renderer::imageQuad()
 {
-	auto selectionFBO = fbo("SelectionBuffer");
-
-	return std::make_shared<QImage>(selectionFBO->toImage());
+	return shape<ImageQuad>("ImageQuad");
 }
 
 SelectionBufferQuad* Renderer::selectionBufferQuad()
@@ -157,33 +155,26 @@ T* Renderer::shape(const QString& name)
 
 bool Renderer::isInitialized() const
 {
-	// TODO
-	return true;
-
-	auto selectionFBO = fbo("SelectionBuffer");
-
-	if (selectionFBO.get() == nullptr)
-		return false;
-
-	return selectionFBO->isValid();
+	return _shapes["ImageQuad"]->isInitialized();
 }
 
 void Renderer::createShapes()
 {
-	qDebug() << "Creating shapes";
+	//qDebug() << "Creating shapes";
 	
 	_shapes.insert("ImageQuad", QSharedPointer<ImageQuad>::create("ImageQuad", 3.f));
-	_shapes.insert("SelectionQuad", QSharedPointer<SelectionQuad>::create("SelectionQuad", 2.f));
-	_shapes.insert("SelectionBufferQuad", QSharedPointer<SelectionBufferQuad>::create("SelectionBufferQuad", 1.f));
+	_shapes.insert("SelectionBufferQuad", QSharedPointer<SelectionBufferQuad>::create("SelectionBufferQuad", 2.f));
+	_shapes.insert("SelectionQuad", QSharedPointer<SelectionQuad>::create("SelectionQuad", 1.f));
 	_shapes.insert("SelectionBounds", QSharedPointer<SelectionBounds>::create("SelectionBounds", 0.f));
 
 	//_shapes["ImageQuad"]->setEnabled(false);
 	//_shapes["SelectionQuad"]->setEnabled(false);
+	//_shapes["SelectionBufferQuad"]->setEnabled(false);
 }
 
 void Renderer::initializeShapes()
 {
-	qDebug() << "Initializing" << _shapes.size() << "shapes";
+	//qDebug() << "Initializing" << _shapes.size() << "shapes";
 
 	for (auto key : _shapes.keys()) {
 		_shapes[key]->initialize();
@@ -192,7 +183,7 @@ void Renderer::initializeShapes()
 
 void Renderer::renderShapes()
 {
-	qDebug() << "Render" << _shapes.size() << "shapes";
+	//qDebug() << "Render" << _shapes.size() << "shapes";
 
 	for (auto key : _shapes.keys()) {
 		_shapes[key]->setModelViewProjection(_modelViewProjection);
@@ -202,7 +193,7 @@ void Renderer::renderShapes()
 
 void Renderer::destroyShapes()
 {
-	qDebug() << "Destroying" << _shapes.size() << "shapes";
+	//qDebug() << "Destroying" << _shapes.size() << "shapes";
 
 	for (auto key : _shapes.keys()) {
 		_shapes[key]->destroy();

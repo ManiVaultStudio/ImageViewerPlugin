@@ -5,6 +5,7 @@
 #include "StackedRenderer.h"
 #include "Shape.h"
 
+class ImageQuad;
 class SelectionBufferQuad;
 
 class ImageViewerWidget;
@@ -88,17 +89,10 @@ public:
 	 */
 	void setSelectionOpacity(const float& selectionOpacity);
 
-	/** Returns the current selection image */
-	std::shared_ptr<QImage> selectionImage() const;
-
-	/** Updates the selection buffer quad
-	 * @param mousePositions Mouse positions in world coordinates
-	 */
-	//void updateSelectionBufferQuad(std::vector<QVector3D> mousePositions);
+	/** Returns the image quad */
+	ImageQuad* imageQuad();
 
 	/** Returns the selection buffer quad */
-	//void resetSelectionBufferQuad();
-
 	SelectionBufferQuad* selectionBufferQuad();
 
 	/**

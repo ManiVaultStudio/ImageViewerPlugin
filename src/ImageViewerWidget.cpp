@@ -30,7 +30,6 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_zoomSensitivity(0.05f),
 	_margin(25),
 	_selecting(false),
-	_selectionModifier(SelectionModifier::Replace),
 	_openglDebugLogger(std::make_unique<QOpenGLDebugLogger>())
 {
 	setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
@@ -281,11 +280,11 @@ void ImageViewerWidget::keyPressEvent(QKeyEvent* keyEvent)
 				break;
 
 			case Qt::Key::Key_Shift:
-				setSelectionModifier(SelectionModifier::Add);
+				_renderer->selectionBufferQuad()->setSelectionModifier(SelectionModifier::Add);
 				break;
 
 			case Qt::Key::Key_Control:
-				setSelectionModifier(SelectionModifier::Remove);
+				_renderer->selectionBufferQuad()->setSelectionModifier(SelectionModifier::Remove);
 				break;
 
 			case Qt::Key::Key_Space:
@@ -315,7 +314,7 @@ void ImageViewerWidget::keyReleaseEvent(QKeyEvent* keyEvent)
 			case Qt::Key::Key_Shift:
 			case Qt::Key::Key_Control:
 			{
-				setSelectionModifier(SelectionModifier::Replace);
+				_renderer->selectionBufferQuad()->setSelectionModifier(SelectionModifier::Replace);
 				break;
 			}
 
@@ -333,10 +332,8 @@ void ImageViewerWidget::keyReleaseEvent(QKeyEvent* keyEvent)
 
 void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 {
-	/* TODO
-	if (!_imageQuadRenderer->isInitialized())
+	if (!_renderer->isInitialized())
 		return;
-	*/
 
 	qDebug() << "Mouse press event";
 
@@ -385,10 +382,8 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 
 void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 
-	/* TODO
-	if (!_imageQuadRenderer->isInitialized())
+	if (!_renderer->isInitialized())
 		return;
-	*/
 
 	if (!_mousePositions.empty() && mouseEvent->pos() == _mousePositions.back())
 		return;
@@ -472,10 +467,8 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 
 void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 
-	/* TODO
-	if (!_imageQuadRenderer->isInitialized())
+	if (!_renderer->isInitialized())
 		return;
-	*/
 
 	qDebug() << "Mouse release event";
 
@@ -533,10 +526,8 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 
 void ImageViewerWidget::wheelEvent(QWheelEvent* wheelEvent) {
 
-	/* TODO
-	if (!_imageQuadRenderer->isInitialized())
+	if (!_renderer->isInitialized())
 		return;
-	*/
 
 	qDebug() << "Mouse wheel event" << interactionModeTypeName(_interactionMode);
 
@@ -883,21 +874,6 @@ void ImageViewerWidget::setInteractionMode(const InteractionMode& interactionMod
 	}
 
 	_interactionMode = interactionMode;
-}
-
-SelectionModifier ImageViewerWidget::selectionModifier() const
-{
-	return _selectionModifier;
-}
-
-void ImageViewerWidget::setSelectionModifier(const SelectionModifier& selectionModifier)
-{
-	if (selectionModifier == _selectionModifier)
-		return;
-
-	qDebug() << "Set selection modifier to" << selectionModifierName(selectionModifier);
-
-	_selectionModifier = selectionModifier;
 }
 
 QPoint ImageViewerWidget::mousePosition() const

@@ -39,13 +39,3 @@ void StackedRenderer::setModelViewProjection(const QMatrix4x4& modelViewProjecti
 
 	_modelViewProjection.translate(0.f, 0.f, static_cast<float>(_depth));
 }
-
-QSharedPointer<QOpenGLFramebufferObject> StackedRenderer::fbo(const QString& name)
-{
-	return _fbos[name];
-}
-
-QSharedPointer<const QOpenGLFramebufferObject> StackedRenderer::fbo(const QString& name) const
-{
-	return _fbos[name];
-}

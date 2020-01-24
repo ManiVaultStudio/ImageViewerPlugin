@@ -48,15 +48,6 @@ public:
 	 */
 	void setInteractionMode(const InteractionMode& interactionMode);
 
-	/** Returns the selection modifier */
-	SelectionModifier selectionModifier() const;
-
-	/**
-	 * Sets the selection modifier
-	 * @param selectionModifier Selection modifier
-	 */
-	void setSelectionModifier(const SelectionModifier& selectionModifier);
-
 	/** Returns the current mouse position */
 	QPoint mousePosition() const;
 
@@ -247,7 +238,5 @@ private:
 	float									_zoomSensitivity;			/** Zoom sensitivity */
 	int										_margin;					/** Margin between image and viewer widget boundaries */
 	bool									_selecting;					/** Whether selection is taking place */
-	SelectionModifier						_selectionModifier;			/** The selection modifier determines if and how new selections are combined with existing selections e.g. add, replace and remove */
-	QVector4D								_pixelSelectionColor;		/** The color of selected pixels (data points) */
 	std::unique_ptr <QOpenGLDebugLogger>	_openglDebugLogger;			/** OpenGL debug logger (on in debug mode) */
 };

@@ -57,13 +57,6 @@ public:
 	void setModelViewProjection(const QMatrix4x4& modelViewProjection);
 
 protected:
-	/** Lookup OpenGL Frame Buffer Object (FBO) by name */
-	QSharedPointer<QOpenGLFramebufferObject> fbo(const QString& name);
-
-	/** Lookup OpenGL Frame Buffer Object (FBO) by name */
-	QSharedPointer<const QOpenGLFramebufferObject> fbo(const QString& name) const;
-
-protected:
 	float														_depth;					/** Depth (layer) at which to display the rendered content */
 	QMatrix4x4													_modelViewProjection;	/** Model-view-projection matrix */
 	QMap<QString, QSharedPointer<QOpenGLFramebufferObject>>		_fbos;					/** OpenGL frame buffer object map */

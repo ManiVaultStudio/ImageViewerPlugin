@@ -14,6 +14,7 @@ SelectionBufferQuad::SelectionBufferQuad(const QString& name /*= "SelectionBuffe
 	_size(),
 	_color(255, 0, 0, 200),
 	_selectionType(SelectionType::Rectangle),
+	_selectionModifier(SelectionModifier::Replace),
 	_brushRadius(1.0f),
 	_mousePositions()
 {
@@ -24,20 +25,16 @@ void SelectionBufferQuad::render()
 	if (!canRender())
 		return;
 
-	auto quadFbo = fbo("Quad");
+	//auto selectionBufferFBO = fbo("SelectionBuffer");
 
-	if (!quadFbo->isValid())
-		return;
-
-	Shape::render();
+	//if (!selectionBufferFBO->isValid())
+	//	return;
 
 	//qDebug() << "Render" << _name << "shape";
 
-	if (isTextured()) {
-		glBindTexture(GL_TEXTURE_2D, quadFbo->texture());
-	}
-
 	if (bindShaderProgram("Quad")) {
+		glBindTexture(GL_TEXTURE_2D, fbo("SelectionBuffer")->texture());
+
 		vao("Quad")->bind();
 		{
 			glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
@@ -46,11 +43,6 @@ void SelectionBufferQuad::render()
 
 		shaderProgram("Quad")->release();
 	}
-
-	/*
-	if (isTextured()) {
-	}
-	*/
 }
 
 QSize SelectionBufferQuad::size() const
@@ -73,6 +65,8 @@ void SelectionBufferQuad::setSize(const QSize& size)
 	else {
 		fbo("SelectionBuffer").reset(new QOpenGLFramebufferObject(_size.width(), _size.height()));
 	}
+
+	setRectangle(QRectF(0, 0, size.width(), size.height()));
 
 	emit sizeChanged(_size);
 }
@@ -128,6 +122,23 @@ void SelectionBufferQuad::setSelectionType(const SelectionType& selectionType)
 	emit selectionTypeChanged(_selectionType);
 }
 
+SelectionModifier SelectionBufferQuad::selectionModifier() const
+{
+	return _selectionModifier;
+}
+
+void SelectionBufferQuad::setSelectionModifier(const SelectionModifier& selectionModifier)
+{
+	if (selectionModifier == _selectionModifier)
+		return;
+
+	_selectionModifier = selectionModifier;
+
+	qDebug() << "Set selection modifier to" << selectionModifierName(selectionModifier) << "for" << _name;
+
+	emit selectionModifierChanged(_selectionModifier);
+}
+
 float SelectionBufferQuad::brushRadius() const
 {
 	return _brushRadius;
@@ -156,24 +167,19 @@ void SelectionBufferQuad::addShaderPrograms()
 
 	addShaderProgram("Quad", QSharedPointer<QOpenGLShaderProgram>::create());
 
-	shaderProgram("Quad")->addShaderFromSourceCode(QOpenGLShader::Vertex, selectionBufferVertexShaderSource.c_str());
-	shaderProgram("Quad")->addShaderFromSourceCode(QOpenGLShader::Fragment, selectionBufferFragmentShaderSource.c_str());
-	shaderProgram("Quad")->link();
-}
+	auto quadProgram = shaderProgram("Quad");
 
-void SelectionBufferQuad::addTextures()
-{
-	qDebug() << "Add OpenGL textures to" << _name << "shape";
+	quadProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, selectionOverlayVertexShaderSource.c_str());
+	quadProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, selectionOverlayFragmentShaderSource.c_str());
+	quadProgram->link();
 
-	addTexture("Quad", QSharedPointer<QOpenGLTexture>::create(QOpenGLTexture::Target2D));
+	addShaderProgram("SelectionBuffer", QSharedPointer<QOpenGLShaderProgram>::create());
 
-	texture("Quad")->setWrapMode(QOpenGLTexture::Repeat);
-	texture("Quad")->setMinMagFilters(QOpenGLTexture::Nearest, QOpenGLTexture::Nearest);
-	texture("Quad")->setWrapMode(QOpenGLTexture::ClampToEdge);
-}
+	auto selectionBufferProgram = shaderProgram("SelectionBuffer");
 
-void SelectionBufferQuad::addFBOs()
-{
+	selectionBufferProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, selectionBufferVertexShaderSource.c_str());
+	selectionBufferProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, selectionBufferFragmentShaderSource.c_str());
+	selectionBufferProgram->link();
 }
 
 void SelectionBufferQuad::configureShaderProgram(const QString& name)
@@ -192,6 +198,8 @@ void SelectionBufferQuad::setMousePositions(std::vector<QVector3D> mousePosition
 {
 	if (_selectionType == SelectionType::None)
 		return;
+
+	qDebug() << mousePositions;
 
 	qDebug() << "Set mouse position for" << _name;
 
@@ -298,6 +306,7 @@ void SelectionBufferQuad::reset()
 {
 	qDebug() << "Reset" << _name;
 
+	/*
 	auto selectionFBO = fbo("SelectionBuffer");
 
 	if (!selectionFBO->bind())
@@ -308,4 +317,15 @@ void SelectionBufferQuad::reset()
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	selectionFBO->release();
+
+	*/
 }
+
+/*
+std::shared_ptr<QImage> Renderer::selectionImage() const
+{
+	auto selectionFBO = fbo("SelectionBuffer");
+
+	return std::make_shared<QImage>(selectionFBO->toImage());
+}
+*/
