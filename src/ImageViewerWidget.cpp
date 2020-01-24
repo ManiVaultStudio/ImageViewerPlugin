@@ -200,7 +200,6 @@ void ImageViewerWidget::initializeGL()
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
-	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glCullFace(GL_BACK);
@@ -228,6 +227,7 @@ void ImageViewerWidget::resizeGL(int w, int h)
 
 void ImageViewerWidget::paintGL() {
 
+	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	auto modelViewProjection = projection() * modelView();
@@ -442,19 +442,17 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 
 		case Qt::RightButton:
 		{
-			/* TODO
 			if (_interactionMode == InteractionMode::WindowLevel) {
 				const auto worldPos		= screenToWorld(_mousePosition);
 				const auto deltaWindow	= (mouseEvent->pos().x() - _mousePosition.x()) / 150.f;
 				const auto deltaLevel	= -(mouseEvent->pos().y() - _mousePosition.y()) / 150.f;
-				const auto window		= std::clamp(_imageQuadRenderer->windowNormalized() + deltaWindow, 0.0f, 1.0f);
-				const auto level		= std::clamp(_imageQuadRenderer->levelNormalized() + deltaLevel, 0.0f, 1.0f);
+				const auto window		= std::clamp(_renderer->imageQuad()->windowNormalized() + deltaWindow, 0.0f, 1.0f);
+				const auto level		= std::clamp(_renderer->imageQuad()->levelNormalized() + deltaLevel, 0.0f, 1.0f);
 
-				_imageQuadRenderer->setWindowLevel(window, level);
+				_renderer->imageQuad()->setWindowLevel(window, level);
 
 				_mousePositions.push_back(_mousePosition);
 			}
-			*/
 
 			break;
 		}
@@ -769,10 +767,11 @@ QMenu* ImageViewerWidget::viewMenu()
 	resetWindowLevelAction->setToolTip("Reset window/level to default values");
 
 	zoomToSelectionAction->setEnabled(_imageViewerPlugin->noSelectedPixels() > 0);
+	resetWindowLevelAction->setEnabled(_renderer->imageQuad()->windowNormalized() < 1.f && _renderer->imageQuad()->levelNormalized() != 0.5f);
 
 	connect(zoomToExtentsAction, &QAction::triggered, this, &ImageViewerWidget::zoomExtents);
 	connect(zoomToSelectionAction, &QAction::triggered, this, &ImageViewerWidget::zoomToSelection);
-	connect(resetWindowLevelAction, &QAction::triggered, [&]() { _renderer->shape<ImageQuad>("ImageQuad")->resetWindowLevel();  });
+	connect(resetWindowLevelAction, &QAction::triggered, [&]() { _renderer->imageQuad()->resetWindowLevel();  });
 
 	viewMenu->addAction(zoomToExtentsAction);
 	viewMenu->addAction(zoomToSelectionAction);

@@ -48,11 +48,6 @@ void Renderer::render()
 void Renderer::resize(QSize renderSize)
 {
 	qDebug() << "Selection renderer resize";
-
-	const auto pWorld0 = _imageViewerWidget->screenToWorld(QPointF(0.0f, 0.0f));
-	const auto pWorld1 = _imageViewerWidget->screenToWorld(QPointF(4.f, 0.0f));
-
-	shape<SelectionBounds>("SelectionBounds")->setLineWidth((pWorld1 - pWorld0).length());
 }
 
 void Renderer::setColorImage(std::shared_ptr<QImage> colorImage)
@@ -70,6 +65,11 @@ void Renderer::setColorImage(std::shared_ptr<QImage> colorImage)
 
 		selectionBufferQuad()->setBrushRadius(brushRadius);
 		selectionBufferQuad()->setBrushRadiusDelta(0.2f * brushRadius);
+
+		const auto pWorld0 = _imageViewerWidget->screenToWorld(QPointF(0.0f, 0.0f));
+		const auto pWorld1 = _imageViewerWidget->screenToWorld(QPointF(1.f, 0.0f));
+
+		shape<SelectionBounds>("SelectionBounds")->setLineWidth((pWorld1 - pWorld0).length());
 	}
 }
 

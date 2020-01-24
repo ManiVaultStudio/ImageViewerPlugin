@@ -22,6 +22,8 @@ void SelectionQuad::setImage(std::shared_ptr<QImage> image)
 
 	texture("Quad")->destroy();
 	texture("Quad")->setData(*image.get());
+	texture("Quad")->setMinMagFilters(QOpenGLTexture::Nearest, QOpenGLTexture::Nearest);
+	texture("Quad")->setWrapMode(QOpenGLTexture::ClampToEdge);
 
 	setRectangle(QRectF(0, 0, image->width(), image->height()));
 }
@@ -59,10 +61,6 @@ void SelectionQuad::addTextures()
 	qDebug() << "Add OpenGL textures to" << _name << "shape";
 
 	addTexture("Quad", QSharedPointer<QOpenGLTexture>::create(QOpenGLTexture::Target2D));
-
-	texture("Quad")->setWrapMode(QOpenGLTexture::Repeat);
-	texture("Quad")->setMinMagFilters(QOpenGLTexture::Nearest, QOpenGLTexture::Nearest);
-	texture("Quad")->setWrapMode(QOpenGLTexture::ClampToEdge);
 }
 
 void SelectionQuad::configureShaderProgram(const QString& name)

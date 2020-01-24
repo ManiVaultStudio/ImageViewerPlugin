@@ -23,8 +23,6 @@ void Polyline2D::initialize()
 {
 	Shape::initialize();
 
-	const auto stride = 5 * sizeof(GLfloat);
-
 	auto polylineShaderProgram	= shaderProgram("Polyline");
 	auto polylineVAO			= vao("Polyline");
 	auto polylineVBO			= vbo("Polyline");
@@ -32,6 +30,8 @@ void Polyline2D::initialize()
 	if (polylineShaderProgram->isLinked() && polylineShaderProgram->bind()) {
 		polylineVAO->bind();
 		polylineVBO->bind();
+
+		const auto stride = 5 * sizeof(GLfloat);
 
 		polylineShaderProgram->enableAttributeArray(Polyline2D::_vertexAttribute);
 		polylineShaderProgram->enableAttributeArray(Polyline2D::_textureAttribute);
@@ -126,6 +126,8 @@ void Polyline2D::setPoints(QVector<QVector2D> points)
 	vertexData.reserve(noPoints * 5);
 
 	const auto halfLineWidth = 0.5f * _lineWidth;
+
+	qDebug() << _lineWidth;
 
 	QVector<QPair<QVector2D, QVector2D>> coordinates;
 
