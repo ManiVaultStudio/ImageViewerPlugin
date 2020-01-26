@@ -9,8 +9,8 @@
 std::uint32_t Polyline2D::_vertexAttribute = 0;
 std::uint32_t Polyline2D::_textureAttribute = 1;
 
-Polyline2D::Polyline2D(const QString& name, const float& z /*= 0.f*/, const bool& closed /*= true*/, const float& lineWidth /*= 1.f*/, const float& textureScale /*= 0.05f*/) :
-	Shape(name),
+Polyline2D::Polyline2D(Renderer* renderer, const QString& name, const float& z /*= 0.f*/, const bool& closed /*= true*/, const float& lineWidth /*= 1.f*/, const float& textureScale /*= 0.05f*/) :
+	Shape(renderer, name),
 	_z(z),
 	_closed(closed),
 	_lineWidth(lineWidth),
@@ -281,7 +281,7 @@ void Polyline2D::configureShaderProgram(const QString& name)
 
 	if (name == "Polyline") {
 		shaderProgram("Polyline")->setUniformValue("lineTexture", 0);
-		shaderProgram("Polyline")->setUniformValue("transform", _modelViewProjection);
+		shaderProgram("Polyline")->setUniformValue("transform", modelViewProjectionMatrix());
 	}
 }
 

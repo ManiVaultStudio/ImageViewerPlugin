@@ -17,7 +17,7 @@ public:
 	/** Default constructor
 	 * @param name Name of the bounds polyline
 	 */
-	SelectionOutline(const QString& name = "SelectionOutline", const float& z = 0.f, const QColor& color = QColor(255, 153, 0, 150));
+	SelectionOutline(Renderer* renderer, const QString& name = "SelectionOutline", const float& z = 0.f, const QColor& color = QColor(255, 153, 0, 150));
 
 	/** Returns the color */
 	QColor color() const;
@@ -43,6 +43,15 @@ public:
 
 	/** Reset the outline */
 	void reset();
+
+	/** Invoked when a mouse button is pressed */
+	void onMousePressEvent(QMouseEvent* mouseEvent) override;
+
+	/** Invoked when a mouse button is released */
+	void onMouseReleaseEvent(QMouseEvent* mouseEvent) override;
+
+	/** Invoked when the mouse pointer is moved */
+	void onMouseMoveEvent(QMouseEvent* mouseEvent) override;
 
 protected:
 	/** Adds the OpenGL shader programs that the shape needs */
@@ -77,6 +86,7 @@ signals:
 	void viewRectangleChanged(const QRect& viewRectangle);
 
 protected:
-	QColor		_color;				/** Color */
-	QRect		_viewRectangle;		/** View rectangle */
+	QColor				_color;				/** Color */
+	QRect				_viewRectangle;		/** View rectangle */
+	QVector<QPoint>		_mousePositions;	/** Recorded mouse positions during active phase */
 };

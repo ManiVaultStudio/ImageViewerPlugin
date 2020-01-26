@@ -12,7 +12,7 @@ class ImageQuad : public Quad
 
 public:
 	/** Constructor */
-	ImageQuad(const QString& name = "ImageQuad", const float& z = 0.f);
+	ImageQuad(Renderer* renderer, const QString& name, const float& z = 0.f);
 
 	/**
 	 * Sets the image

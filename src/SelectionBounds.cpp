@@ -8,8 +8,8 @@
 
 #include "Shaders.h"
 
-SelectionBounds::SelectionBounds(const QString& name /*= "Bounds"*/, const float& z /*= 0.f*/, const QColor& color /*= QColor(255, 153, 0, 70)*/) :
-	Polyline2D(name, z),
+SelectionBounds::SelectionBounds(Renderer* renderer, const QString& name, const float& z /*= 0.f*/, const QColor& color /*= QColor(255, 153, 0, 150)*/) :
+	Polyline2D(renderer, name, z),
 	_bounds(),
 	_color(color)
 {
@@ -105,6 +105,6 @@ void SelectionBounds::configureShaderProgram(const QString& name)
 
 		translate.translate(0.f, 0.f, _z);
 
-		polylineProgram->setUniformValue("transform", _modelViewProjection * translate);
+		polylineProgram->setUniformValue("transform", modelViewProjectionMatrix() * translate);
 	}
 }

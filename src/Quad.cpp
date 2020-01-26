@@ -9,8 +9,8 @@
 std::uint32_t Quad::_vertexAttribute	= 0;
 std::uint32_t Quad::_textureAttribute	= 1;
 
-Quad::Quad(const QString& name /*= "Quad"*/, const float& z /*= 0.f*/) :
-	Shape(name),
+Quad::Quad(Renderer* renderer, const QString& name, const float& z /*= 0.f*/) :
+	Shape(renderer, name),
 	_rectangle(),
 	_z(z),
 	_vertexData()
@@ -163,7 +163,7 @@ void Quad::configureShaderProgram(const QString& name)
 
 		translate.translate(0.f, 0.f, _z);
 
-		quadProgram->setUniformValue("transform", _modelViewProjection * translate);
+		quadProgram->setUniformValue("transform", modelViewProjectionMatrix() * translate);
 	}
 }
 

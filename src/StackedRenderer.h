@@ -47,17 +47,7 @@ public:
 	 */
 	void setDepth(const float& depth);
 
-	/** Returns the model-view-projection matrix */
-	QMatrix4x4 modelViewProjection() const;
-
-	/**
-	 * Sets the model-view-projection matrix
-	 * @param modelViewProjection Model-view-projection matrix
-	 */
-	void setModelViewProjection(const QMatrix4x4& modelViewProjection);
-
 protected:
 	float														_depth;					/** Depth (layer) at which to display the rendered content */
-	QMatrix4x4													_modelViewProjection;	/** Model-view-projection matrix */
 	QMap<QString, QSharedPointer<QOpenGLFramebufferObject>>		_fbos;					/** OpenGL frame buffer object map */
 };

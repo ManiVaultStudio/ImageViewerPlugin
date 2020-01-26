@@ -19,7 +19,7 @@ public:
 	 * @param lineWidth Line width
 	 * @param textureScale Scale of the texture in the U direction
 	 */
-	Polyline2D(const QString& name, const float& z = 0.f, const bool& closed = true, const float& lineWidth = 1.f, const float& textureScale = 0.05f);
+	Polyline2D(Renderer* renderer, const QString& name, const float& z = 0.f, const bool& closed = true, const float& lineWidth = 1.f, const float& textureScale = 0.05f);
 
 	/** Initialized the shape (must be called in appropriate OpenGL context) */
 	void initialize() override;

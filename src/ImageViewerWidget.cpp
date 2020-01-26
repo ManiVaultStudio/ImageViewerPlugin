@@ -89,104 +89,6 @@ ImageViewerWidget::~ImageViewerWidget()
 	doneCurrent();
 }
 
-void ImageViewerWidget::startMouseInteraction()
-{
-	qDebug() << "Start mouse interaction";
-
-	_mousePositions.clear();
-}
-
-void ImageViewerWidget::endMouseInteraction()
-{
-	qDebug() << "End mouse interaction";
-
-	_mousePositions.clear();
-}
-
-void ImageViewerWidget::startNavigationMode()
-{
-	qDebug() << "Start navigation";
-
-	setInteractionMode(InteractionMode::Navigation);
-
-	startMouseInteraction();
-}
-
-void ImageViewerWidget::endNavigationMode()
-{
-	qDebug() << "End navigation";
-
-	endMouseInteraction();
-
-	QWidget::setCursor(Qt::OpenHandCursor);
-
-	setInteractionMode(InteractionMode::None);
-}
-
-void ImageViewerWidget::startSelectionMode(const SelectionType& selectionType)
-{
-	qDebug() << "Start selection mode";
-
-	setInteractionMode(InteractionMode::Selection);
-
-	_renderer->setSelectionType(selectionType);
-
-	startMouseInteraction();
-}
-
-void ImageViewerWidget::endSelectionMode()
-{
-	qDebug() << "End selection mode";
-
-	endMouseInteraction();
-
-	setInteractionMode(InteractionMode::None);
-}
-
-void ImageViewerWidget::startSelection()
-{
-	qDebug() << "Start selection";
-
-	startMouseInteraction();
-
-	_selecting = true;
-}
-
-void ImageViewerWidget::endSelection()
-{
-	qDebug() << "End selection";
-
-	endMouseInteraction();
-
-	_selecting = false;
-
-	publishSelection();
-
-	makeCurrent();
-
-	_renderer->selectionBufferQuad()->reset();
-
-	doneCurrent();
-}
-
-void ImageViewerWidget::startWindowLevelMode()
-{
-	qDebug() << "Start window/level interaction";
-
-	setInteractionMode(InteractionMode::WindowLevel);
-
-	startMouseInteraction();
-}
-
-void ImageViewerWidget::endWindowLevelMode()
-{
-	qDebug() << "End window/level interaction";
-
-	endMouseInteraction();
-
-	setInteractionMode(InteractionMode::Selection);
-}
-
 void ImageViewerWidget::initializeGL()
 {
 	qDebug() << "Initializing OpenGL";
@@ -227,7 +129,6 @@ void ImageViewerWidget::paintGL() {
 
 	auto modelViewProjection = projection() * modelView();
 
-	_renderer->setModelViewProjection(modelViewProjection);
 	_renderer->render();
 
 #ifdef _DEBUG
@@ -263,6 +164,7 @@ void ImageViewerWidget::keyPressEvent(QKeyEvent* keyEvent)
 	}
 	else
 	{
+		/*
 		switch (keyEvent->key())
 		{
 			case Qt::Key::Key_R:
@@ -296,6 +198,7 @@ void ImageViewerWidget::keyPressEvent(QKeyEvent* keyEvent)
 			default:
 				break;
 		}
+		*/
 	}
 
 	QOpenGLWidget::keyPressEvent(keyEvent);
@@ -321,7 +224,7 @@ void ImageViewerWidget::keyReleaseEvent(QKeyEvent* keyEvent)
 			}
 
 			case Qt::Key::Key_Space:
-				endNavigationMode();
+				//endNavigationMode();
 				break;
 
 			default:
@@ -341,37 +244,21 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 
 	switch (mouseEvent->button())
 	{
-		/*
 		case Qt::LeftButton:
 		{
-			_mousePosition = mouseEvent->pos();
-
 			if (_imageViewerPlugin->allowsPixelSelection()) {
-				if (_mousePositions.empty())
-					startSelection();
-
-				if (_renderer->selectionType() != SelectionType::Polygon) {
-					_renderer->selectionBufferQuad()->reset();
-				}
-
-				_mousePositions.push_back(_mousePosition);
-
-				_renderer->selectionBufferQuad()->update(mousePositionsWorld(), _renderer->selectionType(), _renderer->brushRadius());
+				_renderer->selectionBufferQuad()->activate();
+				_renderer->selectionOutline()->activate();
+				_renderer->selectionOutline()->reset();
+				_renderer->selectionBufferQuad()->reset();
 			}
 
 			break;
 		}
-		*/
 
 		case Qt::RightButton:
 		{
-			if (_renderer->selectionType() == SelectionType::Polygon && !_mousePositions.empty()) {
-				endSelection();
-			}
-			else {
-				_renderer->imageQuad()->activate();
-			}
-
+			_renderer->imageQuad()->activate();
 			break;
 		}
 
@@ -404,18 +291,14 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 	{
 		case Qt::LeftButton:
 		{
-			/*
-			if (_interactionMode == InteractionMode::Selection)
-			{
-				if (_imageViewerPlugin->allowsPixelSelection() && _selecting) {
-					if (_renderer->selectionType() != SelectionType::Polygon) {
-						endSelection();
-					}
-				}
-
-				break;
+			if (_imageViewerPlugin->allowsPixelSelection()) {
+				_renderer->selectionOutline()->reset();
+				_renderer->selectionBufferQuad()->reset();
+				_renderer->selectionBufferQuad()->deactivate();
+				_renderer->selectionOutline()->deactivate();
 			}
-			*/
+
+			break;
 		}
 
 		case Qt::RightButton:
@@ -432,8 +315,6 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 	_renderer->mouseReleaseEvent(mouseEvent);
 
 	doneCurrent();
-
-	update();
 
 	QOpenGLWidget::mouseReleaseEvent(mouseEvent);
 }
@@ -586,6 +467,7 @@ void ImageViewerWidget::zoomAt(const QPointF& screenPosition, const float& facto
 
 void ImageViewerWidget::zoomExtents()
 {
+	/*
 	if (_imageViewerPlugin->currentDatasetName().isEmpty())
 		return;
 	
@@ -594,6 +476,7 @@ void ImageViewerWidget::zoomExtents()
 	auto* imageQuad = _renderer->shape<ImageQuad>("ImageQuad");
 
 	zoomToRectangle(QRectF(QPointF(), QSizeF(imageQuad->size().width(), imageQuad->size().height())));
+	*/
 }
 
 void ImageViewerWidget::zoomToRectangle(const QRectF& rectangle)
@@ -637,11 +520,6 @@ void ImageViewerWidget::resetView()
 	_zoom = 1.f;
 
 	update();
-}
-
-QVector3D ImageViewerWidget::screenToWorld(const QPointF& screen) const
-{
-	return QVector3D(screen.x(), height() - screen.y(), 0).unproject(modelView(), projection(), QRect(0, 0, width(), height()));
 }
 
 void ImageViewerWidget::publishSelection()
@@ -820,6 +698,7 @@ QMatrix4x4 ImageViewerWidget::projection() const
 	return projection;
 }
 
+/*
 InteractionMode ImageViewerWidget::interactionMode() const
 {
 	return _interactionMode;
@@ -849,21 +728,18 @@ void ImageViewerWidget::setInteractionMode(const InteractionMode& interactionMod
 
 	_interactionMode = interactionMode;
 }
-
-std::vector<QPoint> ImageViewerWidget::mousePositionsScreen() const
-{
-	return _mousePositions;
-}
+*/
 
 std::vector<QVector3D> ImageViewerWidget::mousePositionsWorld() const
 {
+	
 	auto mousePositionsWorld = std::vector<QVector3D>();
-
+	/*
 	for (const auto& mousePosition : _mousePositions)
 	{
 		mousePositionsWorld.push_back(screenToWorld(mousePosition));
 	}
-
+	*/
 	return mousePositionsWorld;
 }
 

@@ -14,7 +14,7 @@ class SelectionBufferQuad : public Quad
 
 public:
 	/** Constructor */
-	SelectionBufferQuad(const QString& name = "SelectionBufferQuad", const float& z = 0.f);
+	SelectionBufferQuad(Renderer* renderer, const QString& name, const float& z = 0.f);
 
 	/** Renders the selection buffer quad */
 	void render();
@@ -58,6 +58,15 @@ public:
 	/** Returns the current selection image */
 	QSharedPointer<QImage> selectionImage() const;
 
+	/** Invoked when a mouse button is pressed */
+	void onMousePressEvent(QMouseEvent* mouseEvent) override;
+
+	/** Invoked when a mouse button is released */
+	void onMouseReleaseEvent(QMouseEvent* mouseEvent) override;
+
+	/** Invoked when the mouse pointer is moved */
+	void onMouseMoveEvent(QMouseEvent* mouseEvent) override;
+
 protected:
 	/** Adds the OpenGL shader programs that the shape needs */
 	void addShaderPrograms();
@@ -88,6 +97,7 @@ signals:
 	void opacityChanged(const float& opacity);
 
 protected:
-	QSize		_size;		/** Size of the quad */
-	QColor		_color;		/** Selection color */
+	QSize				_size;				/** Size of the quad */
+	QColor				_color;				/** Selection color */
+	QVector<QPoint>		_mousePositions;	/** Recorded mouse positions during active phase */
 };

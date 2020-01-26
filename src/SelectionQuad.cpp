@@ -8,8 +8,8 @@
 
 #include "Shaders.h"
 
-SelectionQuad::SelectionQuad(const QString& name /*= "SelectionQuad"*/, const float& z /*= 0.f*/) :
-	Quad(name, z),
+SelectionQuad::SelectionQuad(Renderer* renderer, const QString& name, const float& z /*= 0.f*/) :
+	Quad(renderer, name, z),
 	_color(255, 0, 0, 200)
 {
 }

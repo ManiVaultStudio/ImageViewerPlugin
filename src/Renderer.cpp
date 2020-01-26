@@ -110,6 +110,11 @@ void Renderer::mouseWheelEvent(QWheelEvent* wheelEvent)
 	}
 }
 
+QVector3D Renderer::screenToWorld(const QMatrix4x4& modelViewMatrix, const QMatrix4x4& projectionMatrix, const QPointF& screenPoint) const
+{
+	return QVector3D(screenPoint.x(), _imageViewerWidget->height()- screenPoint.y(), 0).unproject(modelViewMatrix, projectionMatrix, QRect(0, 0, _imageViewerWidget->width(), _imageViewerWidget->height()));
+}
+
 void Renderer::setColorImage(std::shared_ptr<QImage> colorImage)
 {
 	auto* imageQuadShape = shape<ImageQuad>("ImageQuad");
@@ -126,10 +131,12 @@ void Renderer::setColorImage(std::shared_ptr<QImage> colorImage)
 		setBrushRadius(brushRadius);
 		setBrushRadiusDelta(0.2f * brushRadius);
 
+		/*
 		const auto pWorld0 = _imageViewerWidget->screenToWorld(QPointF(0.0f, 0.0f));
 		const auto pWorld1 = _imageViewerWidget->screenToWorld(QPointF(1.f, 0.0f));
 
 		shape<SelectionBounds>("SelectionBounds")->setLineWidth(1);
+		*/
 	}
 }
 
@@ -272,17 +279,17 @@ void Renderer::createShapes()
 {
 	//qDebug() << "Creating shapes";
 	
-	addShape("ImageQuad", QSharedPointer<ImageQuad>::create("ImageQuad", 3.f));
-	addShape("SelectionBufferQuad", QSharedPointer<SelectionBufferQuad>::create("SelectionBufferQuad", 2.f));
-	addShape("SelectionQuad", QSharedPointer<SelectionQuad>::create("SelectionQuad", 1.f));
-	addShape("SelectionBounds", QSharedPointer<SelectionBounds>::create("SelectionBounds", 0.f));
-	addShape("SelectionOutline", QSharedPointer<SelectionOutline>::create("SelectionOutline", 0.f));
+	addShape("ImageQuad", QSharedPointer<ImageQuad>::create(this, "ImageQuad", 3.f));
+	addShape("SelectionBufferQuad", QSharedPointer<SelectionBufferQuad>::create(this, "SelectionBufferQuad", 2.f));
+	addShape("SelectionQuad", QSharedPointer<SelectionQuad>::create(this, "SelectionQuad", 1.f));
+	addShape("SelectionBounds", QSharedPointer<SelectionBounds>::create(this, "SelectionBounds", 0.f));
+	addShape("SelectionOutline", QSharedPointer<SelectionOutline>::create(this, "SelectionOutline", 0.f));
 
 	//_shapes["ImageQuad"]->setEnabled(false);
 	//_shapes["SelectionBufferQuad"]->setEnabled(false);
 	//_shapes["SelectionQuad"]->setEnabled(false);
-	_shapes["SelectionBounds"]->setEnabled(false);
-	_shapes["SelectionOutline"]->setEnabled(false);
+	//_shapes["SelectionBounds"]->setEnabled(false);
+	//_shapes["SelectionOutline"]->setEnabled(false);
 }
 
 void Renderer::initializeShapes()
@@ -299,7 +306,8 @@ void Renderer::renderShapes()
 	//qDebug() << "Render" << _shapes.size() << "shapes";
 
 	for (auto key : _shapes.keys()) {
-		_shapes[key]->setModelViewProjection(_modelViewProjection);
+		_shapes[key]->setModelView(_imageViewerWidget->modelView());
+		_shapes[key]->setProjectionMatrix(_imageViewerWidget->projection());
 		_shapes[key]->render();
 	}
 }

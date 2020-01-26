@@ -9,8 +9,8 @@
 
 #include "Shaders.h"
 
-ImageQuad::ImageQuad(const QString& name /*= "ImageQuad"*/, const float& z /*= 0.f*/) :
-	Quad(name, z),
+ImageQuad::ImageQuad(Renderer* renderer, const QString& name, const float& z /*= 0.f*/) :
+	Quad(renderer, name, z),
 	_imageMin(),
 	_imageMax(),
 	_minPixelValue(),

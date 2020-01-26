@@ -39,18 +39,6 @@ public:
 	~ImageViewerWidget() override;
 
 public:
-	/** Returns the interaction mode */
-	InteractionMode interactionMode() const;
-
-	/**
-	 * Sets the interaction mode
-	 * @param interactionMode Interaction mode
-	 */
-	void setInteractionMode(const InteractionMode& interactionMode);
-
-	/** Returns mouse event positions in screen coordinates */
-	std::vector<QPoint> mousePositionsScreen() const;
-
 	/** Returns mouse event positions in three-dimensional world coordinates */
 	std::vector<QVector3D> mousePositionsWorld() const;
 
@@ -135,40 +123,6 @@ private:
 	 * @param wheelEvent Mouse wheel event
 	 */
 	void wheelEvent(QWheelEvent* wheelEvent) Q_DECL_OVERRIDE;
-
-public:
-	/** Starts mouse interaction */
-	void startMouseInteraction();
-
-	/** Ends mouse interaction */
-	void endMouseInteraction();
-
-	/**
-	 * Start selection mode
-	 * @param selectionType Selection type
-	 */
-	void startSelectionMode(const SelectionType& selectionType);
-
-	/** Ens selection mode*/
-	void endSelectionMode();
-
-	/** Start selection */
-	void startSelection();
-
-	/** End selection */
-	void endSelection();
-
-	/** Start navigating */
-	void startNavigationMode();
-
-	/** End navigating */
-	void endNavigationMode();
-
-	/** Start window/level interaction mode */
-	void startWindowLevelMode();
-
-	/** End window/level interaction mode */
-	void endWindowLevelMode();
 	
 public:
 	/**
@@ -225,14 +179,10 @@ public:
 	/** Returns the projection matrix */
 	QMatrix4x4 projection() const;
 
-	/** Convert screen coordinate to world coordinate */
-	QVector3D screenToWorld(const QPointF& screen) const;
-
 private:
 	ImageViewerPlugin*						_imageViewerPlugin;			/** Pointer to image viewer plugin */
 	QSharedPointer<Renderer>				_renderer;					/** Selection renderer */
 	InteractionMode							_interactionMode;			/** Type of interaction e.g. navigation, selection and window/level */
-	std::vector<QPoint>						_mousePositions;			/** All recorded mouse positions during interaction event */
 	QPointF									_pan;						/** Move view horizontally/vertically */
 	float									_zoom;						/** Zoom view in/out */
 	float									_zoomSensitivity;			/** Zoom sensitivity */

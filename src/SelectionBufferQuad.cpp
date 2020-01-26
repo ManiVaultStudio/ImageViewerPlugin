@@ -5,15 +5,18 @@
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLTexture>
 #include <QOpenGLFramebufferObject>
+#include <QMouseEvent>
 #include <QDebug>
 
 #include "Shaders.h"
 
-SelectionBufferQuad::SelectionBufferQuad(const QString& name /*= "SelectionBufferQuad"*/, const float& z /*= 0.f*/) :
-	Quad(name, z),
+SelectionBufferQuad::SelectionBufferQuad(Renderer* renderer, const QString& name, const float& z /*= 0.f*/) :
+	Quad(renderer, name, z),
 	_size(),
-	_color(255, 153, 0, 40)
+	_color(255, 153, 0, 40),
+	_mousePositions()
 {
+	_mouseEvents = static_cast<int>(MouseEvent::Press) | static_cast<int>(MouseEvent::Release) | static_cast<int>(MouseEvent::Move);
 }
 
 void SelectionBufferQuad::render()
@@ -259,4 +262,24 @@ QSharedPointer<QImage> SelectionBufferQuad::selectionImage() const
 	auto selectionFBO = fbo("SelectionBuffer");
 
 	return QSharedPointer<QImage>::create(selectionFBO->toImage());
+}
+
+void SelectionBufferQuad::onMousePressEvent(QMouseEvent* mouseEvent)
+{
+	//qDebug() << "Mouse press event for" << _name;
+
+	_mousePositions.clear();
+	_mousePositions.push_back(mouseEvent->pos());
+}
+
+void SelectionBufferQuad::onMouseReleaseEvent(QMouseEvent* mouseEvent)
+{
+	//qDebug() << "Mouse release event for" << _name;
+}
+
+void SelectionBufferQuad::onMouseMoveEvent(QMouseEvent* mouseEvent)
+{
+	//qDebug() << "Mouse move event for" << _name;
+
+	
 }

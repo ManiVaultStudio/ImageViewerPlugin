@@ -4,16 +4,19 @@
 #include <QOpenGLBuffer>
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLTexture>
+#include <QMouseEvent>
 #include <QDebug>
 
 #include "Shaders.h"
 
 #include <QtMath>
 
-SelectionOutline::SelectionOutline(const QString& name /*= "Bounds"*/, const float& z /*= 0.f*/, const QColor& color /*= QColor(255, 153, 0, 70)*/) :
-	Polyline2D(name, z, true, 0.5f),
-	_color(color)
+SelectionOutline::SelectionOutline(Renderer* renderer, const QString& name /*= "SelectionOutline"*/, const float& z /*= 0.f*/, const QColor& color /*= QColor(255, 153, 0, 150)*/) :
+	Polyline2D(renderer, name, z, true, 0.5f),
+	_color(color),
+	_mousePositions()
 {
+	_mouseEvents = static_cast<int>(MouseEvent::Press) | static_cast<int>(MouseEvent::Release) | static_cast<int>(MouseEvent::Move);
 }
 
 QColor SelectionOutline::color() const
@@ -60,7 +63,7 @@ void SelectionOutline::update(std::vector<QVector3D> mousePositions, const Selec
 		transform.ortho(_viewRectangle);
 
 		polylineShaderProgram->setUniformValue("stippleTexture", 0);
-		polylineShaderProgram->setUniformValue("transform", _modelViewProjection);
+		polylineShaderProgram->setUniformValue("transform", modelViewProjectionMatrix());
 		polylineShaderProgram->setUniformValue("color", _color);
 
 		auto* outlineVBO = vbo("Polyline").get();
@@ -142,6 +145,24 @@ void SelectionOutline::reset()
 	qDebug() << "Reset" << _name;
 }
 
+void SelectionOutline::onMousePressEvent(QMouseEvent* mouseEvent)
+{
+	qDebug() << "Mouse press event for" << _name;
+
+	_mousePositions.clear();
+	_mousePositions.push_back(mouseEvent->pos());
+}
+
+void SelectionOutline::onMouseReleaseEvent(QMouseEvent* mouseEvent)
+{
+	qDebug() << "Mouse release event for" << _name;
+}
+
+void SelectionOutline::onMouseMoveEvent(QMouseEvent* mouseEvent)
+{
+	qDebug() << "Mouse move event for" << _name;
+}
+
 void SelectionOutline::addShaderPrograms()
 {
 	qDebug() << "Add OpenGL shader programs to" << _name << "shape";
@@ -200,6 +221,6 @@ void SelectionOutline::configureShaderProgram(const QString& name)
 
 		translate.translate(0.f, 0.f, _z);
 
-		polylineProgram->setUniformValue("transform", _modelViewProjection * translate);
+		polylineProgram->setUniformValue("transform", modelViewProjectionMatrix() * translate);
 	}
 }

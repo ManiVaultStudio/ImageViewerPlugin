@@ -7,12 +7,15 @@
 #include <QOpenGLFramebufferObject>
 #include <QDebug>
 
-Shape::Shape(const QString& name) :
+Shape::Shape(Renderer* renderer, const QString& name) :
+	_renderer(renderer),
 	_name(name),
 	_active(false),
 	_mouseEvents(static_cast<int>(MouseEvent::None)),
 	_initialized(false),
 	_enabled(true),
+	_modelViewMatrix(),
+	_projectionMatrix(),
 	_shaderPrograms(),
 	_vaos(),
 	_vbos(),
@@ -112,25 +115,47 @@ bool Shape::canRender() const
 	return isEnabled() && isInitialized();
 }
 
-QMatrix4x4 Shape::modelViewProjection() const
+QMatrix4x4 Shape::modelViewMatrix() const
 {
-	return _modelViewProjection;
+	return _modelViewMatrix;
 }
 
-void Shape::setModelViewProjection(const QMatrix4x4& modelViewProjection)
+void Shape::setModelView(const QMatrix4x4& modelViewMatrix)
 {
-	if (modelViewProjection == _modelViewProjection)
+	if (modelViewMatrix == _modelViewMatrix)
 		return;
 
-	_modelViewProjection = modelViewProjection;
+	_modelViewMatrix = modelViewMatrix;
 
-	//_modelViewProjection.translate(0.f, 0.f, static_cast<float>(_depth));
+	qDebug() << "Set model > view matrix for" << _name;
 
-	qDebug() << "Set model view projection matrix of" << _name << "shape";
-
-	emit modelViewProjectionChanged(_modelViewProjection);
+	emit modelViewMatrixChanged(_modelViewMatrix);
 	
 	emit changed(this);
+}
+
+QMatrix4x4 Shape::projectionMatrix() const
+{
+	return _projectionMatrix;
+}
+
+void Shape::setProjectionMatrix(const QMatrix4x4& projectionMatrix)
+{
+	if (projectionMatrix == _projectionMatrix)
+		return;
+
+	_projectionMatrix = projectionMatrix;
+
+	qDebug() << "Set projection matrix for" << _name;
+
+	emit projectionMatrixChanged(_projectionMatrix);
+
+	emit changed(this);
+}
+
+QMatrix4x4 Shape::modelViewProjectionMatrix() const
+{
+	return _modelViewMatrix * _projectionMatrix;
 }
 
 void Shape::render()
