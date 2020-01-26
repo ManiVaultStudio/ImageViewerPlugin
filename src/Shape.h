@@ -184,10 +184,10 @@ public:
 	bool isActive() const;
 
 	/** Activate the shape */
-	void activate();
+	virtual void activate();
 
 	/** Deactivate the shape */
-	void deactivate();
+	virtual void deactivate();
 
 protected:
 	/** Adds the OpenGL shader programs that the shape needs */

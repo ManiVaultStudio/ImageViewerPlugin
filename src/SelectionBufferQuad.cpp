@@ -8,6 +8,7 @@
 #include <QMouseEvent>
 #include <QDebug>
 
+#include "Renderer.h"
 #include "Shaders.h"
 
 SelectionBufferQuad::SelectionBufferQuad(Renderer* renderer, const QString& name, const float& z /*= 0.f*/) :
@@ -266,20 +267,57 @@ QSharedPointer<QImage> SelectionBufferQuad::selectionImage() const
 
 void SelectionBufferQuad::onMousePressEvent(QMouseEvent* mouseEvent)
 {
-	//qDebug() << "Mouse press event for" << _name;
+	qDebug() << "Mouse press event for" << _name;
 
-	_mousePositions.clear();
-	_mousePositions.push_back(mouseEvent->pos());
+	_mousePositions.push_back(_renderer->screenToWorld(_modelViewMatrix, _projectionMatrix, mouseEvent->pos()));
 }
 
 void SelectionBufferQuad::onMouseReleaseEvent(QMouseEvent* mouseEvent)
 {
-	//qDebug() << "Mouse release event for" << _name;
+	qDebug() << "Mouse release event for" << _name;
+
+	switch (mouseEvent->button())
+	{
+		case Qt::LeftButton:
+		{
+			if (_renderer->selectionType() != SelectionType::Polygon) {
+				deactivate();
+			}
+
+			break;
+		}
+
+		case Qt::RightButton:
+		{
+			if (_renderer->selectionType() == SelectionType::Polygon) {
+				deactivate();
+			}
+
+			break;
+		}
+
+		default:
+			break;
+	}
 }
 
 void SelectionBufferQuad::onMouseMoveEvent(QMouseEvent* mouseEvent)
 {
-	//qDebug() << "Mouse move event for" << _name;
+	qDebug() << "Mouse move event for" << _name;
 
-	
+	_mousePositions.push_back(_renderer->screenToWorld(_modelViewMatrix, _projectionMatrix, QPointF(mouseEvent->pos())));
+}
+
+void SelectionBufferQuad::activate()
+{
+	Quad::activate();
+
+	_mousePositions.clear();
+}
+
+void SelectionBufferQuad::deactivate()
+{
+	Quad::deactivate();
+
+	_mousePositions.clear();
 }

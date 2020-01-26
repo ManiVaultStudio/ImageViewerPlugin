@@ -7,6 +7,7 @@
 #include <QMouseEvent>
 #include <QDebug>
 
+#include "Renderer.h"
 #include "Shaders.h"
 
 #include <QtMath>
@@ -149,18 +150,57 @@ void SelectionOutline::onMousePressEvent(QMouseEvent* mouseEvent)
 {
 	qDebug() << "Mouse press event for" << _name;
 
-	_mousePositions.clear();
-	_mousePositions.push_back(mouseEvent->pos());
+	_mousePositions.push_back(_renderer->screenToWorld(_modelViewMatrix, _projectionMatrix, mouseEvent->pos()));
 }
 
 void SelectionOutline::onMouseReleaseEvent(QMouseEvent* mouseEvent)
 {
 	qDebug() << "Mouse release event for" << _name;
+
+	switch (mouseEvent->button())
+	{
+		case Qt::LeftButton:
+		{
+			if (_renderer->selectionType() != SelectionType::Polygon) {
+				deactivate();
+			}
+
+			break;
+		}
+
+		case Qt::RightButton: 
+		{
+			if (_renderer->selectionType() == SelectionType::Polygon) {
+				deactivate();
+			}
+
+			break;
+		}
+
+		default:
+			break;
+	}
 }
 
 void SelectionOutline::onMouseMoveEvent(QMouseEvent* mouseEvent)
 {
 	qDebug() << "Mouse move event for" << _name;
+	
+	_mousePositions.push_back(_renderer->screenToWorld(_modelViewMatrix, _projectionMatrix, QPointF(mouseEvent->pos())));
+}
+
+void SelectionOutline::activate()
+{
+	Polyline2D::activate();
+
+	_mousePositions.clear();
+}
+
+void SelectionOutline::deactivate()
+{
+	Polyline2D::deactivate();
+
+	_mousePositions.clear();
 }
 
 void SelectionOutline::addShaderPrograms()

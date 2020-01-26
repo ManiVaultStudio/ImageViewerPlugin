@@ -294,8 +294,8 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 			if (_imageViewerPlugin->allowsPixelSelection()) {
 				_renderer->selectionOutline()->reset();
 				_renderer->selectionBufferQuad()->reset();
-				_renderer->selectionBufferQuad()->deactivate();
-				_renderer->selectionOutline()->deactivate();
+				//_renderer->selectionBufferQuad()->deactivate();
+				//_renderer->selectionOutline()->deactivate();
 			}
 
 			break;

@@ -53,6 +53,12 @@ public:
 	/** Invoked when the mouse pointer is moved */
 	void onMouseMoveEvent(QMouseEvent* mouseEvent) override;
 
+	/** Activate the shape */
+	void activate() override;
+
+	/** Deactivate the shape */
+	void deactivate() override;
+
 protected:
 	/** Adds the OpenGL shader programs that the shape needs */
 	void addShaderPrograms();
@@ -86,7 +92,7 @@ signals:
 	void viewRectangleChanged(const QRect& viewRectangle);
 
 protected:
-	QColor				_color;				/** Color */
-	QRect				_viewRectangle;		/** View rectangle */
-	QVector<QPoint>		_mousePositions;	/** Recorded mouse positions during active phase */
+	QColor					_color;				/** Color */
+	QRect					_viewRectangle;		/** View rectangle */
+	QVector<QVector3D>		_mousePositions;	/** Recorded mouse positions in world coordinates */
 };

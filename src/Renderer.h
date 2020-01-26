@@ -75,7 +75,6 @@ public:
 	/** Convert screen coordinate to world coordinates
 	 * @param modelViewMatrix Model > view matrix
 	 * @param projectionMatrix Projection matrix
-	 * @param screenSize Screen size
 	 * @param screenPoint Point in screen coordinates
 	*/
 	QVector3D screenToWorld(const QMatrix4x4& modelViewMatrix, const QMatrix4x4& projectionMatrix, const QPointF& screenPoint) const;

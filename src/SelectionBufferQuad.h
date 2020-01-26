@@ -67,6 +67,12 @@ public:
 	/** Invoked when the mouse pointer is moved */
 	void onMouseMoveEvent(QMouseEvent* mouseEvent) override;
 
+	/** Activate the shape */
+	void activate() override;
+
+	/** Deactivate the shape */
+	void deactivate() override;
+
 protected:
 	/** Adds the OpenGL shader programs that the shape needs */
 	void addShaderPrograms();
@@ -97,7 +103,7 @@ signals:
 	void opacityChanged(const float& opacity);
 
 protected:
-	QSize				_size;				/** Size of the quad */
-	QColor				_color;				/** Selection color */
-	QVector<QPoint>		_mousePositions;	/** Recorded mouse positions during active phase */
+	QSize					_size;				/** Size of the quad */
+	QColor					_color;				/** Selection color */
+	QVector<QVector3D>		_mousePositions;	/** Recorded mouse positions during active phase */
 };
