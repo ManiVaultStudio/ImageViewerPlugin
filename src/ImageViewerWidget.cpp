@@ -38,6 +38,7 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	setMouseTracking(true);
 
 	connect(_renderer.get(), &Renderer::dirty, this, &ImageViewerWidget::onRendererDirty);
+	connect(_renderer->selectionBufferQuad(), &SelectionBufferQuad::selectionEnded, this, &ImageViewerWidget::publishSelection);
 
 	connect(_imageViewerPlugin, &ImageViewerPlugin::currentDatasetChanged, this, &ImageViewerWidget::onCurrentDatasetChanged);
 	connect(_imageViewerPlugin, &ImageViewerPlugin::currentImageIdChanged, this, &ImageViewerWidget::onCurrentImageIdChanged);
@@ -164,23 +165,23 @@ void ImageViewerWidget::keyPressEvent(QKeyEvent* keyEvent)
 	}
 	else
 	{
-		/*
+		
 		switch (keyEvent->key())
 		{
 			case Qt::Key::Key_R:
-				startSelectionMode(SelectionType::Rectangle);
+				_renderer->setSelectionType(SelectionType::Rectangle);
 				break;
 
 			case Qt::Key::Key_B:
-				startSelectionMode(SelectionType::Brush);
+				_renderer->setSelectionType(SelectionType::Brush);
 				break;
 
 			case Qt::Key::Key_L:
-				startSelectionMode(SelectionType::Lasso);
+				_renderer->setSelectionType(SelectionType::Lasso);
 				break;
 
 			case Qt::Key::Key_P:
-				startSelectionMode(SelectionType::Polygon);
+				_renderer->setSelectionType(SelectionType::Polygon);
 				break;
 
 			case Qt::Key::Key_Shift:
@@ -192,13 +193,13 @@ void ImageViewerWidget::keyPressEvent(QKeyEvent* keyEvent)
 				break;
 
 			case Qt::Key::Key_Space:
-				startNavigationMode();
+				//startNavigationMode();
 				break;
 
 			default:
 				break;
 		}
-		*/
+		/**/
 	}
 
 	QOpenGLWidget::keyPressEvent(keyEvent);
@@ -294,8 +295,6 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 			if (_imageViewerPlugin->allowsPixelSelection()) {
 				_renderer->selectionOutline()->reset();
 				_renderer->selectionBufferQuad()->reset();
-				//_renderer->selectionBufferQuad()->deactivate();
-				//_renderer->selectionOutline()->deactivate();
 			}
 
 			break;
@@ -324,48 +323,7 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 	if (!_renderer->isInitialized())
 		return;
 
-	//if (!_mousePositions.empty() && mouseEvent->pos() == _mousePositions.back())
-	//	return;
-
 	makeCurrent();
-
-	const auto mousePosition = mouseEvent->pos();
-
-	switch (mouseEvent->buttons())
-	{
-		case Qt::LeftButton:
-		{
-			/*
-			switch (_interactionMode)
-			{
-				case InteractionMode::Navigation:
-				{
-					pan(QPointF(mouseEvent->pos().x() - mousePosition.x(), mouseEvent->pos().y() - mousePosition.y()));
-					break;
-				}
-
-				case InteractionMode::Selection:
-				{
-					if (_imageViewerPlugin->allowsPixelSelection() && _selecting) {
-						_mousePositions.push_back(mouseEvent->pos());
-						_renderer->selectionBufferQuad()->update(mousePositionsWorld(), _renderer->selectionType(), _renderer->brushRadius());
-						_renderer->selectionOutline()->update(mousePositionsWorld(), _renderer->selectionType(), _renderer->brushRadius());
-					}
-
-					break;
-				}
-
-				default:
-					break;
-			}
-			*/
-
-			break;
-		}
-
-		default:
-			break;
-	}
 
 	_renderer->mouseMoveEvent(mouseEvent);
 
@@ -379,8 +337,11 @@ void ImageViewerWidget::wheelEvent(QWheelEvent* wheelEvent) {
 	if (!_renderer->isInitialized())
 		return;
 
+	makeCurrent();
+
 	_renderer->mouseWheelEvent(wheelEvent);
 
+	doneCurrent();
 	/*
 	qDebug() << "Mouse wheel event" << interactionModeTypeName(_interactionMode);
 
@@ -423,9 +384,6 @@ void ImageViewerWidget::wheelEvent(QWheelEvent* wheelEvent) {
 
 			break;
 		}
-
-		case InteractionMode::WindowLevel:
-			break;
 
 		default:
 			break;
@@ -526,7 +484,7 @@ void ImageViewerWidget::publishSelection()
 {	
 	qDebug() << "Publish selection";
 	
-	const auto image = _renderer->selectionBufferQuad()->selectionImage();
+	const auto image = _renderer->selectionBufferQuad()->selectionBufferImage();
 
 	auto pixelCoordinates = std::vector<std::pair<std::uint32_t, std::uint32_t>>();
 

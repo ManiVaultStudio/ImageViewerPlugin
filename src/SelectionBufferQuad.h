@@ -50,13 +50,13 @@ public:
 	 * @param mousePositions Mouse positions in world coordinates
 	 * @param selectionType Selection type
 	 */
-	void update(std::vector<QVector3D> mousePositions, const SelectionType& selectionType, const float& brushRadius);
+	void update();
 
 	/** Reset the (temporary) selection buffer */
 	void reset();
 
-	/** Returns the current selection image */
-	QSharedPointer<QImage> selectionImage() const;
+	/** Returns the current selection buffer image */
+	QSharedPointer<QImage> selectionBufferImage() const;
 
 	/** Invoked when a mouse button is pressed */
 	void onMousePressEvent(QMouseEvent* mouseEvent) override;
@@ -101,6 +101,10 @@ signals:
 	 * @param opacity Selection opacity
 	 */
 	void opacityChanged(const float& opacity);
+
+	/**
+	 * Invoked when the selection process has ended */
+	void selectionEnded();
 
 protected:
 	QSize					_size;				/** Size of the quad */

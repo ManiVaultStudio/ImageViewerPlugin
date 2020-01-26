@@ -108,6 +108,15 @@ void Renderer::mouseWheelEvent(QWheelEvent* wheelEvent)
 		if (shape->isActive() && shape->handlesMouseWheelEvents())
 			shape->onMouseWheelEvent(wheelEvent);
 	}
+
+	if (selectionType() == SelectionType::Brush) {
+		if (wheelEvent->delta() > 0) {
+			brushSizeIncrease();
+		}
+		else {
+			brushSizeDecrease();
+		}
+	}
 }
 
 QVector3D Renderer::screenToWorld(const QMatrix4x4& modelViewMatrix, const QMatrix4x4& projectionMatrix, const QPointF& screenPoint) const

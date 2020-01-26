@@ -35,12 +35,6 @@ public:
 	 */
 	void setViewRectangle(const QRect& viewRectangle);
 
-	/** Updates the selection buffer
-	 * @param mousePositions Mouse positions in world coordinates
-	 * @param selectionType Selection type
-	 */
-	void update(std::vector<QVector3D> mousePositions, const SelectionType& selectionType, const float& brushRadius);
-
 	/** Reset the outline */
 	void reset();
 
@@ -60,6 +54,9 @@ public:
 	void deactivate() override;
 
 protected:
+	/** Updates the selection buffer */
+	void update();
+
 	/** Adds the OpenGL shader programs that the shape needs */
 	void addShaderPrograms();
 
