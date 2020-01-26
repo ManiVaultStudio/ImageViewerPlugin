@@ -9,6 +9,8 @@
 
 Shape::Shape(const QString& name) :
 	_name(name),
+	_mouseInteraction(false),
+	_mouseEvents(static_cast<int>(MouseEvent::None)),
 	_initialized(false),
 	_enabled(true),
 	_shaderPrograms(),
@@ -65,6 +67,27 @@ bool Shape::isInitialized() const
 	return _initialized;
 }
 
+QString Shape::name() const
+{
+	return _name;
+}
+
+void Shape::setName(const QString& name)
+{
+	if (name == _name)
+		return;
+
+	const auto oldName = _name;
+
+	_name = name;
+
+	qDebug() << "Rename" << oldName << "to" << _name;
+
+	emit nameChanged(_name);
+
+	emit changed(this);
+}
+
 bool Shape::isEnabled() const
 {
 	return _enabled;
@@ -80,6 +103,8 @@ void Shape::setEnabled(const bool& enabled)
 	qDebug() << "Set " << _name << "shape" << (_enabled ? "enabled" : "disabled");
 
 	emit enabledChanged(enabled);
+
+	emit changed(this);
 }
 
 bool Shape::canRender() const
@@ -104,6 +129,8 @@ void Shape::setModelViewProjection(const QMatrix4x4& modelViewProjection)
 	qDebug() << "Set model view projection matrix of" << _name << "shape";
 
 	emit modelViewProjectionChanged(_modelViewProjection);
+	
+	emit changed(this);
 }
 
 void Shape::render()
@@ -212,4 +239,74 @@ QSharedPointer<QOpenGLFramebufferObject> Shape::fbo(const QString& name)
 const QSharedPointer<QOpenGLFramebufferObject> Shape::fbo(const QString& name) const
 {
 	return _fbos[name];
+}
+
+void Shape::onMousePressEvent(QMouseEvent* mouseEvent)
+{
+	qDebug() << "Mouse press event not implemented in" << _name;
+}
+
+void Shape::onMouseReleaseEvent(QMouseEvent* mouseEvent)
+{
+	qDebug() << "Mouse release event not implemented in" << _name;
+}
+
+void Shape::onMouseMoveEvent(QMouseEvent* mouseEvent)
+{
+	qDebug() << "Mouse move event not implemented in" << _name;
+}
+
+void Shape::onMouseWheelEvent(QWheelEvent* wheelEvent)
+{
+	qDebug() << "Mouse wheel event not implemented in" << _name;
+}
+
+void Shape::handleMousePressEvents()
+{
+	_mouseEvents = _mouseEvents | static_cast<int>(MouseEvent::Press);
+}
+
+void Shape::handleMouseReleaseEvents()
+{
+	_mouseEvents = _mouseEvents | static_cast<int>(MouseEvent::Release);
+}
+
+void Shape::handleMouseMoveEvents()
+{
+	_mouseEvents = _mouseEvents | static_cast<int>(MouseEvent::Move);
+}
+
+void Shape::handleMouseWheelEvents()
+{
+	_mouseEvents = _mouseEvents | static_cast<int>(MouseEvent::Wheel);
+}
+
+bool Shape::handlesMousePressEvents()
+{
+	return _mouseEvents & static_cast<int>(MouseEvent::Press);
+}
+
+bool Shape::handlesMouseReleaseEvents()
+{
+	return _mouseEvents & static_cast<int>(MouseEvent::Release);
+}
+
+bool Shape::handlesMouseMoveEvents()
+{
+	return _mouseEvents & static_cast<int>(MouseEvent::Move);
+}
+
+bool Shape::handlesMouseWheelEvents()
+{
+	return _mouseEvents & static_cast<int>(MouseEvent::Wheel);
+}
+
+bool Shape::mouseInteraction() const
+{
+	return _mouseInteraction;
+}
+
+void Shape::setMouseInteraction(const bool& mouseInteraction)
+{
+	qDebug() << "Mouse interaction is" << (mouseInteraction ? "enabled" : "disabled") << "for" << _name;
 }

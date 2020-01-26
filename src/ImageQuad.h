@@ -55,6 +55,15 @@ public:
 	/** Resets the display window and level */
 	void resetWindowLevel();
 
+	/** Invoked when a mouse button is pressed */
+	void onMousePressEvent(QMouseEvent* mouseEvent) override;
+
+	/** Invoked when a mouse button is released */
+	void onMouseReleaseEvent(QMouseEvent* mouseEvent) override;
+
+	/** Invoked when the mouse pointer is moved */
+	void onMouseMoveEvent(QMouseEvent* mouseEvent) override;
+
 protected:
 	/** Adds the OpenGL shader programs that the shape needs */
 	void addShaderPrograms();

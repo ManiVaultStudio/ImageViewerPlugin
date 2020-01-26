@@ -13,9 +13,11 @@ class SelectionOutline;
 
 class ImageViewerWidget;
 
+class QMouseEvent;
+class QWheelEvent;
+
 /**
  * Selection renderer class
- * This renderer class is used to display selections of high-dimensional image data using OpenGL
  * @author Thomas Kroes
  */
 class Renderer : public StackedRenderer
@@ -45,6 +47,30 @@ public:
 
 	/** Return whether the renderer is initialized */
 	bool isInitialized() const override;
+
+	/**
+	 * Invoked when the mouse button is pressed
+	 * @param mouseEvent Mouse event
+	 */
+	void mousePressEvent(QMouseEvent* mouseEvent);
+
+	/**
+	 * Invoked when the mouse button is released
+	 * @param mouseEvent Mouse event
+	 */
+	void mouseReleaseEvent(QMouseEvent* mouseEvent);
+
+	/**
+	 * Invoked when the mouse pointer is moved
+	 * @param mouseEvent Mouse event
+	 */
+	void mouseMoveEvent(QMouseEvent* mouseEvent);
+
+	/**
+	 * Invoked when the mouse wheel is rotated
+	 * @param wheelEvent Mouse wheel event
+	 */
+	void mouseWheelEvent(QWheelEvent* wheelEvent);
 
 public:
 	/**
@@ -126,7 +152,19 @@ public:
 	/** Decrease the brush size by _brushRadiusDelta */
 	void brushSizeDecrease();
 
+protected:
+	/**
+	 * Invoked when a shape has changed
+	 * shape Pointer to a shape
+	 */
+	void onShapeChanged(Shape* shape);
+
 private:
+	/** Add a shape
+	 * @param shape Shared pointer to shape
+	*/
+	void addShape(const QString& name, QSharedPointer<Shape> shape);
+
 	/** Create shapes */
 	void createShapes();
 
@@ -141,13 +179,13 @@ private:
 
 signals:
 	/**
-	 * Invoked when the selection type changed
+	 * Signals the selection type changed
 	 * @param selectionType Selection type
 	 */
 	void selectionTypeChanged(const SelectionType& selectionType);
 
 	/**
-	 * Invoked when the selection modifier changed
+	 * Signals the selection modifier changed
 	 * @param selectionModifier Selection modifier
 	 */
 	void selectionModifierChanged(const SelectionModifier& selectionModifier);
@@ -159,10 +197,13 @@ signals:
 	void brushRadiusChanged(const float& brushRadius);
 
 	/**
-	 * Invoked when the brush radius delta changed
+	 * Signals the brush radius delta changed
 	 * @param brushRadiusDelta Brush radius delta
 	 */
 	void brushRadiusDeltaChanged(const float& brushRadiusDelta);
+
+	/** Signals that the renderer just became dirty (one or more shapes need to be re-rendered) */
+	void dirty();
 
 protected:
 	ImageViewerWidget*						_imageViewerWidget;		/** Pointer to image viewer widget */

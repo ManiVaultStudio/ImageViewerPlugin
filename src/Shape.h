@@ -12,6 +12,8 @@ class QOpenGLBuffer;
 class QOpenGLVertexArrayObject;
 class QOpenGLTexture;
 class QOpenGLFramebufferObject;
+class QMouseEvent;
+class QWheelEvent;
 
 /**
  * OpenGL shape class
@@ -48,10 +50,16 @@ public:
 	 */
 	bool isInitialized() const;
 
+	/** Returns the shape name */
+	QString name() const;
+
 	/**
-	 * Determines whether the shape is enabled (visible)
-	 * @return Whether the shape is enabled
+	 * Sets the name
+	 * @param name Shape name
 	 */
+	void setName(const QString& name);
+
+	/** Returns whether the shape is enabled (visible) */
 	bool isEnabled() const;
 
 	/**
@@ -121,6 +129,63 @@ public:
 	 * @param fbo Shared pointer to the FBO
 	 */
 	void addFBO(const QString& name, QSharedPointer<QOpenGLFramebufferObject> fbo);
+
+	/** Invoked when a mouse button is pressed */
+	virtual void onMousePressEvent(QMouseEvent* mouseEvent);
+
+	/** Invoked when a mouse button is released */
+	virtual void onMouseReleaseEvent(QMouseEvent* mouseEvent);
+
+	/** Invoked when the mouse pointer is moved */
+	virtual void onMouseMoveEvent(QMouseEvent* mouseEvent);
+
+	/** Invoked when the mouse wheel is rotated */
+	virtual void onMouseWheelEvent(QWheelEvent* wheelEvent);
+
+	/** This shape will handle mouse press events */
+	void handleMousePressEvents();
+
+	/** This shape will handle mouse press events */
+	void handleMouseReleaseEvents();
+
+	/** This shape will handle mouse press events */
+	void handleMouseMoveEvents();
+
+	/** This shape will handle mouse press events */
+	void handleMouseWheelEvents();
+
+	/**
+	 * Determines whether this shape handles mouse press events  
+	 * @return Whether this shape handles mouse press events
+	 */
+	bool handlesMousePressEvents();
+
+	/**
+	 * Determines whether this shape handles mouse release events
+	 * @return Whether this shape handles mouse release events
+	 */
+	bool handlesMouseReleaseEvents();
+
+	/**
+	 * Determines whether this shape handles mouse move events
+	 * @return Whether this shape handles mouse move events
+	 */
+	bool handlesMouseMoveEvents();
+
+	/**
+	 * Determines whether this shape handles mouse wheel events
+	 * @return Whether this shape handles mouse wheel events
+	 */
+	bool handlesMouseWheelEvents();
+	
+	/** Returns whether mouse interaction is enabled */
+	bool mouseInteraction() const;
+
+	/**
+	 * Set mouse interaction on/off
+	 * @param mouseInteraction Mouse interaction on/off
+	 */
+	void setMouseInteraction(const bool& mouseInteraction);
 
 protected:
 	/** Adds the OpenGL shader programs that the shape needs */
@@ -208,6 +273,11 @@ signals:
 	/** Signals that the shape has been successfully initialized */
 	void initialized();
 
+	/** Signals that the shape name changed
+	 * @param name New shape name
+	 */
+	void nameChanged(const QString& name);
+
 	/** Signals that the shape has been enabled or disabled
 	 * @param enabled Whether the shape is enabled or not
 	 */
@@ -218,8 +288,13 @@ signals:
 	 */
 	void modelViewProjectionChanged(const QMatrix4x4& modelViewProjection);
 
+	/** Signals that the shape changed */
+	void changed(Shape* shape);
+
 protected:
 	QString														_name;						/** Name of the shape */
+	bool														_mouseInteraction;			/** Mouse interaction enabled/disabled */
+	int															_mouseEvents;				/** Defines which type of mouse events should be processed by the shape */
 	bool														_initialized;				/** Whether the shape is initialized or not */
 	bool														_enabled;					/** Whether the shape is enabled or not */
 	QMatrix4x4													_modelViewProjection;		/** Model-view-projection matrix */

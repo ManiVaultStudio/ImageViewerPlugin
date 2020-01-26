@@ -19,6 +19,9 @@ ImageQuad::ImageQuad(const QString& name /*= "ImageQuad"*/, const float& z /*= 0
 	_window(1.0f),
 	_level(0.5f)
 {
+	handleMousePressEvents();
+	handleMouseReleaseEvents();
+	handleMouseMoveEvents();
 }
 
 void ImageQuad::setImage(std::shared_ptr<QImage> image)
@@ -70,6 +73,8 @@ void ImageQuad::setImage(std::shared_ptr<QImage> image)
 	resetWindowLevel();
 
 	sizeChanged(image->size());
+
+	emit changed(this);
 }
 
 std::uint16_t ImageQuad::imageMin() const
@@ -138,6 +143,21 @@ void ImageQuad::setWindowLevel(const float& window, const float& level)
 void ImageQuad::resetWindowLevel()
 {
 	setWindowLevel(1.0f, 0.5f);
+}
+
+void ImageQuad::onMousePressEvent(QMouseEvent* mouseEvent)
+{
+	qDebug() << "onMousePressEvent";
+}
+
+void ImageQuad::onMouseReleaseEvent(QMouseEvent* mouseEvent)
+{
+	qDebug() << "onMouseReleaseEvent";
+}
+
+void ImageQuad::onMouseMoveEvent(QMouseEvent* mouseEvent)
+{
+	qDebug() << "onMouseMoveEvent";
 }
 
 void ImageQuad::addShaderPrograms()

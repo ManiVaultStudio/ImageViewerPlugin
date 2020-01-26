@@ -48,9 +48,6 @@ public:
 	 */
 	void setInteractionMode(const InteractionMode& interactionMode);
 
-	/** Returns the current mouse position */
-	QPoint mousePosition() const;
-
 	/** Returns mouse event positions in screen coordinates */
 	std::vector<QPoint> mousePositionsScreen() const;
 
@@ -87,6 +84,10 @@ public:
 	 * @param currentImageId Current image index
 	 */
 	void onCurrentImageIdChanged(const std::int32_t& currentImageId);
+
+	/**
+	 * Invoked when the renderer becomes dirty */
+	void onRendererDirty();
 	
 private:
 	/** Initializes OpenGL */
@@ -231,7 +232,6 @@ private:
 	ImageViewerPlugin*						_imageViewerPlugin;			/** Pointer to image viewer plugin */
 	QSharedPointer<Renderer>				_renderer;					/** Selection renderer */
 	InteractionMode							_interactionMode;			/** Type of interaction e.g. navigation, selection and window/level */
-	QPoint									_mousePosition;				/** Real-time mouse position */
 	std::vector<QPoint>						_mousePositions;			/** All recorded mouse positions during interaction event */
 	QPointF									_pan;						/** Move view horizontally/vertically */
 	float									_zoom;						/** Zoom view in/out */

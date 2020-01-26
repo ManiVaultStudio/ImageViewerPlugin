@@ -86,3 +86,50 @@ inline QString selectionTypeName(const SelectionType& selectionType)
 
 	return "";
 }
+
+/**
+ * Mouse event
+ * Defines mouse events for use in shapes
+ */
+enum class MouseEvent
+{
+	None		= 1ul << 0,								/** Don't capture mouse events */
+	Press		= 1ul << 1,								/** Capture mouse press events */
+	Release		= 1ul << 2,								/** Capture mouse release events */
+	Move		= 1ul << 3,								/** Capture mouse move events */
+	Wheel		= 1ul << 4,								/** Capture mouse wheel events */
+	All			= Press | Release | Move | Wheel		/** Capture all mouse events */
+};
+
+/**
+ * Returns the string-based name of the mouse event
+ * @param mouseEvent Mouse event
+ */
+inline QString mouseEventName(const MouseEvent& mouseEvent)
+{
+	switch (mouseEvent)
+	{
+		case MouseEvent::None:
+			return "None";
+
+		case MouseEvent::Press:
+			return "Press";
+
+		case MouseEvent::Release:
+			return "Release";
+
+		case MouseEvent::Move:
+			return "Move";
+
+		case MouseEvent::Wheel:
+			return "Wheel";
+
+		case MouseEvent::All:
+			return "All";
+
+		default:
+			break;
+	}
+
+	return "";
+}

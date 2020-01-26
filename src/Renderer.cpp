@@ -62,6 +62,54 @@ bool Renderer::isInitialized() const
 	return _shapes["ImageQuad"]->isInitialized();
 }
 
+void Renderer::mousePressEvent(QMouseEvent* mouseEvent)
+{
+	//qDebug() << "Mouse press event";
+
+	for (auto key : _shapes.keys()) {
+		auto shape = _shapes[key];
+
+		if (shape->mouseInteraction() && shape->handlesMousePressEvents())
+			shape->onMousePressEvent(mouseEvent);
+	}
+}
+
+void Renderer::mouseMoveEvent(QMouseEvent* mouseEvent)
+{
+	//qDebug() << "Mouse move event";
+
+	for (auto key : _shapes.keys()) {
+		auto shape = _shapes[key];
+
+		if (shape->mouseInteraction() && shape->handlesMouseMoveEvents())
+			shape->onMouseMoveEvent(mouseEvent);
+	}
+}
+
+void Renderer::mouseReleaseEvent(QMouseEvent* mouseEvent)
+{
+	//qDebug() << "Mouse release event";
+
+	for (auto key : _shapes.keys()) {
+		auto shape = _shapes[key];
+
+		if (shape->mouseInteraction() && shape->handlesMouseReleaseEvents())
+			shape->onMouseReleaseEvent(mouseEvent);
+	}
+}
+
+void Renderer::mouseWheelEvent(QWheelEvent* wheelEvent)
+{
+	//qDebug() << "Mouse wheel event";
+
+	for (auto key : _shapes.keys()) {
+		auto shape = _shapes[key];
+
+		if (shape->mouseInteraction() && shape->handlesMouseWheelEvents())
+			shape->onMouseWheelEvent(wheelEvent);
+	}
+}
+
 void Renderer::setColorImage(std::shared_ptr<QImage> colorImage)
 {
 	auto* imageQuadShape = shape<ImageQuad>("ImageQuad");
@@ -206,20 +254,35 @@ void Renderer::brushSizeDecrease()
 	setBrushRadius(_brushRadius - _brushRadiusDelta);
 }
 
+void Renderer::onShapeChanged(Shape* shape)
+{
+	qDebug() << "Shape" << shape->name() << "changed";
+
+	emit dirty();
+}
+
+void Renderer::addShape(const QString& name, QSharedPointer<Shape> shape)
+{
+	_shapes.insert(name, shape);
+
+	connect(shape.get(), &Shape::changed, this, &Renderer::onShapeChanged);
+}
+
 void Renderer::createShapes()
 {
 	//qDebug() << "Creating shapes";
 	
-	_shapes.insert("ImageQuad", QSharedPointer<ImageQuad>::create("ImageQuad", 3.f));
-	_shapes.insert("SelectionBufferQuad", QSharedPointer<SelectionBufferQuad>::create("SelectionBufferQuad", 2.f));
-	_shapes.insert("SelectionQuad", QSharedPointer<SelectionQuad>::create("SelectionQuad", 1.f));
-	_shapes.insert("SelectionBounds", QSharedPointer<SelectionBounds>::create("SelectionBounds", 0.f));
-	_shapes.insert("SelectionOutline", QSharedPointer<SelectionOutline>::create("SelectionOutline", 0.f));
+	addShape("ImageQuad", QSharedPointer<ImageQuad>::create("ImageQuad", 3.f));
+	addShape("SelectionBufferQuad", QSharedPointer<SelectionBufferQuad>::create("SelectionBufferQuad", 2.f));
+	addShape("SelectionQuad", QSharedPointer<SelectionQuad>::create("SelectionQuad", 1.f));
+	addShape("SelectionBounds", QSharedPointer<SelectionBounds>::create("SelectionBounds", 0.f));
+	addShape("SelectionOutline", QSharedPointer<SelectionOutline>::create("SelectionOutline", 0.f));
 
 	//_shapes["ImageQuad"]->setEnabled(false);
-	//_shapes["SelectionQuad"]->setEnabled(false);
-	//_shapes["SelectionBufferQuad"]->setEnabled(false);
-	//_shapes["SelectionOutline"]->setEnabled(false);
+	_shapes["SelectionBufferQuad"]->setEnabled(false);
+	_shapes["SelectionQuad"]->setEnabled(false);
+	_shapes["SelectionBounds"]->setEnabled(false);
+	_shapes["SelectionOutline"]->setEnabled(false);
 }
 
 void Renderer::initializeShapes()
