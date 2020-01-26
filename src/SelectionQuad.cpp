@@ -26,6 +26,8 @@ void SelectionQuad::setImage(std::shared_ptr<QImage> image)
 	texture("Quad")->setWrapMode(QOpenGLTexture::ClampToEdge);
 
 	setRectangle(QRectF(0, 0, image->width(), image->height()));
+
+	emit changed(this);
 }
 
 float SelectionQuad::opacity() const
@@ -43,6 +45,8 @@ void SelectionQuad::setOpacity(const float& opacity)
 	qDebug() << "Set opacity" << _color.alphaF();
 
 	emit opacityChanged(_color.alphaF());
+
+	emit changed(this);
 }
 
 void SelectionQuad::addShaderPrograms()

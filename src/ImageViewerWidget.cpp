@@ -248,7 +248,7 @@ void ImageViewerWidget::onCurrentImageIdChanged(const std::int32_t& currentImage
 
 void ImageViewerWidget::onRendererDirty()
 {
-	qDebug() << "Renderer dirty";
+	//qDebug() << "Renderer dirty";
 
 	update();
 }

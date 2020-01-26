@@ -142,18 +142,6 @@ public:
 	/** Invoked when the mouse wheel is rotated */
 	virtual void onMouseWheelEvent(QWheelEvent* wheelEvent);
 
-	/** This shape will handle mouse press events */
-	void handleMousePressEvents();
-
-	/** This shape will handle mouse press events */
-	void handleMouseReleaseEvents();
-
-	/** This shape will handle mouse press events */
-	void handleMouseMoveEvents();
-
-	/** This shape will handle mouse press events */
-	void handleMouseWheelEvents();
-
 	/**
 	 * Determines whether this shape handles mouse press events  
 	 * @return Whether this shape handles mouse press events

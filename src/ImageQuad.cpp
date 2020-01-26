@@ -21,9 +21,7 @@ ImageQuad::ImageQuad(const QString& name /*= "ImageQuad"*/, const float& z /*= 0
 	_level(0.5f),
 	_mousePosition()
 {
-	handleMousePressEvents();
-	handleMouseReleaseEvents();
-	handleMouseMoveEvents();
+	_mouseEvents = static_cast<int>(MouseEvent::Press) | static_cast<int>(MouseEvent::Release) | static_cast<int>(MouseEvent::Move);
 }
 
 void ImageQuad::setImage(std::shared_ptr<QImage> image)
@@ -149,19 +147,19 @@ void ImageQuad::resetWindowLevel()
 
 void ImageQuad::onMousePressEvent(QMouseEvent* mouseEvent)
 {
-	qDebug() << "Mouse press event for" << _name;
+	//qDebug() << "Mouse press event for" << _name;
 
 	_mousePosition = mouseEvent->pos();
 }
 
 void ImageQuad::onMouseReleaseEvent(QMouseEvent* mouseEvent)
 {
-	qDebug() << "Mouse release event for" << _name;
+	//qDebug() << "Mouse release event for" << _name;
 }
 
 void ImageQuad::onMouseMoveEvent(QMouseEvent* mouseEvent)
 {
-	qDebug() << "Mouse move event for" << _name;
+	//qDebug() << "Mouse move event for" << _name;
 
 	const auto deltaWindow	= (mouseEvent->pos().x() - _mousePosition.x()) / 150.f;
 	const auto deltaLevel	= -(mouseEvent->pos().y() - _mousePosition.y()) / 150.f;

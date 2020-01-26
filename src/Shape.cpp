@@ -261,26 +261,6 @@ void Shape::onMouseWheelEvent(QWheelEvent* wheelEvent)
 	qDebug() << "Mouse wheel event not implemented in" << _name;
 }
 
-void Shape::handleMousePressEvents()
-{
-	_mouseEvents = _mouseEvents | static_cast<int>(MouseEvent::Press);
-}
-
-void Shape::handleMouseReleaseEvents()
-{
-	_mouseEvents = _mouseEvents | static_cast<int>(MouseEvent::Release);
-}
-
-void Shape::handleMouseMoveEvents()
-{
-	_mouseEvents = _mouseEvents | static_cast<int>(MouseEvent::Move);
-}
-
-void Shape::handleMouseWheelEvents()
-{
-	_mouseEvents = _mouseEvents | static_cast<int>(MouseEvent::Wheel);
-}
-
 bool Shape::handlesMousePressEvents()
 {
 	return _mouseEvents & static_cast<int>(MouseEvent::Press);
