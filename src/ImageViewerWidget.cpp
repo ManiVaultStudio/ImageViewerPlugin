@@ -337,15 +337,11 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 	if (!_renderer->isInitialized())
 		return;
 
-	_renderer->mousePressEvent(mouseEvent);
-
-	/*
-	qDebug() << "Mouse press event";
-
 	makeCurrent();
 
 	switch (mouseEvent->button())
 	{
+		/*
 		case Qt::LeftButton:
 		{
 			_mousePosition = mouseEvent->pos();
@@ -365,6 +361,7 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 
 			break;
 		}
+		*/
 
 		case Qt::RightButton:
 		{
@@ -372,9 +369,9 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 				endSelection();
 			}
 			else {
-				startWindowLevelMode();
+				_renderer->imageQuad()->activate();
 			}
-			
+
 			break;
 		}
 
@@ -382,8 +379,9 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 			break;
 	}
 
+	_renderer->mousePressEvent(mouseEvent);
+
 	doneCurrent();
-	*/
 
 	QOpenGLWidget::mousePressEvent(mouseEvent);
 }
@@ -393,15 +391,12 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 	if (!_renderer->isInitialized())
 		return;
 
-	_renderer->mouseReleaseEvent(mouseEvent);
-
 	/*
-	qDebug() << "Mouse release event";
-
 	if (mouseEvent->button() == Qt::RightButton && _mousePositions.size() == 0 && _interactionMode != InteractionMode::Selection)
 	{
 		contextMenu()->exec(mapToGlobal(mouseEvent->pos()));
 	}
+	*/
 
 	makeCurrent();
 
@@ -409,6 +404,7 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 	{
 		case Qt::LeftButton:
 		{
+			/*
 			if (_interactionMode == InteractionMode::Selection)
 			{
 				if (_imageViewerPlugin->allowsPixelSelection() && _selecting) {
@@ -419,22 +415,12 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 
 				break;
 			}
+			*/
 		}
 
 		case Qt::RightButton:
 		{
-			switch (_interactionMode)
-			{
-				case InteractionMode::WindowLevel:
-				{
-					endWindowLevelMode();
-					break;
-				}
-
-				default:
-					break;
-			}
-		
+			_renderer->imageQuad()->deactivate();
 			break;
 		}
 		
@@ -443,10 +429,11 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 		
 	}
 	
+	_renderer->mouseReleaseEvent(mouseEvent);
+
 	doneCurrent();
 
 	update();
-	*/
 
 	QOpenGLWidget::mouseReleaseEvent(mouseEvent);
 }
@@ -456,25 +443,23 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 	if (!_renderer->isInitialized())
 		return;
 
-	if (!_mousePositions.empty() && mouseEvent->pos() == _mousePositions.back())
-		return;
-
-	_renderer->mouseMoveEvent(mouseEvent);
-
-	/*
-	//qDebug() << "Mouse move event";
+	//if (!_mousePositions.empty() && mouseEvent->pos() == _mousePositions.back())
+	//	return;
 
 	makeCurrent();
+
+	const auto mousePosition = mouseEvent->pos();
 
 	switch (mouseEvent->buttons())
 	{
 		case Qt::LeftButton:
 		{
+			/*
 			switch (_interactionMode)
 			{
 				case InteractionMode::Navigation:
 				{
-					pan(QPointF(mouseEvent->pos().x() - _mousePosition.x(), mouseEvent->pos().y() - _mousePosition.y()));
+					pan(QPointF(mouseEvent->pos().x() - mousePosition.x(), mouseEvent->pos().y() - mousePosition.y()));
 					break;
 				}
 
@@ -492,23 +477,7 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 				default:
 					break;
 			}
-
-			break;
-		}
-
-		case Qt::RightButton:
-		{
-			if (_interactionMode == InteractionMode::WindowLevel) {
-				const auto worldPos = screenToWorld(_mousePosition);
-				const auto deltaWindow = (mouseEvent->pos().x() - _mousePosition.x()) / 150.f;
-				const auto deltaLevel = -(mouseEvent->pos().y() - _mousePosition.y()) / 150.f;
-				const auto window = std::clamp(_renderer->imageQuad()->windowNormalized() + deltaWindow, 0.0f, 1.0f);
-				const auto level = std::clamp(_renderer->imageQuad()->levelNormalized() + deltaLevel, 0.0f, 1.0f);
-
-				_renderer->imageQuad()->setWindowLevel(window, level);
-
-				_mousePositions.push_back(_mousePosition);
-			}
+			*/
 
 			break;
 		}
@@ -517,12 +486,11 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 			break;
 	}
 
+	_renderer->mouseMoveEvent(mouseEvent);
+
 	doneCurrent();
 
 	update();
-
-	_mousePosition = mouseEvent->pos();
-	*/
 }
 
 void ImageViewerWidget::wheelEvent(QWheelEvent* wheelEvent) {

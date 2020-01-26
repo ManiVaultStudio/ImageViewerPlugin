@@ -9,7 +9,7 @@
 
 Shape::Shape(const QString& name) :
 	_name(name),
-	_mouseInteraction(false),
+	_active(false),
 	_mouseEvents(static_cast<int>(MouseEvent::None)),
 	_initialized(false),
 	_enabled(true),
@@ -301,12 +301,24 @@ bool Shape::handlesMouseWheelEvents()
 	return _mouseEvents & static_cast<int>(MouseEvent::Wheel);
 }
 
-bool Shape::mouseInteraction() const
+bool Shape::isActive() const
 {
-	return _mouseInteraction;
+	return _active;
 }
 
-void Shape::setMouseInteraction(const bool& mouseInteraction)
+void Shape::activate()
 {
-	qDebug() << "Mouse interaction is" << (mouseInteraction ? "enabled" : "disabled") << "for" << _name;
+	if (!_enabled)
+		return;
+
+	_active = true;
+
+	qDebug() << "Activated" << _name;
+}
+
+void Shape::deactivate()
+{
+	_active = false;
+
+	qDebug() << "Deactivated" << _name;
 }

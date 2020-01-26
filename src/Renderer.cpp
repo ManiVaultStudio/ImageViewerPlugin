@@ -69,7 +69,7 @@ void Renderer::mousePressEvent(QMouseEvent* mouseEvent)
 	for (auto key : _shapes.keys()) {
 		auto shape = _shapes[key];
 
-		if (shape->mouseInteraction() && shape->handlesMousePressEvents())
+		if (shape->isActive() && shape->handlesMousePressEvents())
 			shape->onMousePressEvent(mouseEvent);
 	}
 }
@@ -81,7 +81,7 @@ void Renderer::mouseMoveEvent(QMouseEvent* mouseEvent)
 	for (auto key : _shapes.keys()) {
 		auto shape = _shapes[key];
 
-		if (shape->mouseInteraction() && shape->handlesMouseMoveEvents())
+		if (shape->isActive() && shape->handlesMouseMoveEvents())
 			shape->onMouseMoveEvent(mouseEvent);
 	}
 }
@@ -93,7 +93,7 @@ void Renderer::mouseReleaseEvent(QMouseEvent* mouseEvent)
 	for (auto key : _shapes.keys()) {
 		auto shape = _shapes[key];
 
-		if (shape->mouseInteraction() && shape->handlesMouseReleaseEvents())
+		if (shape->isActive() && shape->handlesMouseReleaseEvents())
 			shape->onMouseReleaseEvent(mouseEvent);
 	}
 }
@@ -105,7 +105,7 @@ void Renderer::mouseWheelEvent(QWheelEvent* wheelEvent)
 	for (auto key : _shapes.keys()) {
 		auto shape = _shapes[key];
 
-		if (shape->mouseInteraction() && shape->handlesMouseWheelEvents())
+		if (shape->isActive() && shape->handlesMouseWheelEvents())
 			shape->onMouseWheelEvent(wheelEvent);
 	}
 }

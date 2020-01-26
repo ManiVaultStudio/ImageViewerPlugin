@@ -178,14 +178,14 @@ public:
 	 */
 	bool handlesMouseWheelEvents();
 	
-	/** Returns whether mouse interaction is enabled */
-	bool mouseInteraction() const;
+	/** Returns whether the shape is active e.g. interaction with the mouse */
+	bool isActive() const;
 
-	/**
-	 * Set mouse interaction on/off
-	 * @param mouseInteraction Mouse interaction on/off
-	 */
-	void setMouseInteraction(const bool& mouseInteraction);
+	/** Activate the shape */
+	void activate();
+
+	/** Deactivate the shape */
+	void deactivate();
 
 protected:
 	/** Adds the OpenGL shader programs that the shape needs */
@@ -293,7 +293,7 @@ signals:
 
 protected:
 	QString														_name;						/** Name of the shape */
-	bool														_mouseInteraction;			/** Mouse interaction enabled/disabled */
+	bool														_active;					/** Shapes is being interacted with */
 	int															_mouseEvents;				/** Defines which type of mouse events should be processed by the shape */
 	bool														_initialized;				/** Whether the shape is initialized or not */
 	bool														_enabled;					/** Whether the shape is enabled or not */

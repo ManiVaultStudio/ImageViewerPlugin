@@ -4,6 +4,7 @@
 #include <QOpenGLBuffer>
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLTexture>
+#include <QMouseEvent>
 #include <QDebug>
 
 #include "Shaders.h"
@@ -17,7 +18,8 @@ ImageQuad::ImageQuad(const QString& name /*= "ImageQuad"*/, const float& z /*= 0
 	_windowNormalized(),
 	_levelNormalized(),
 	_window(1.0f),
-	_level(0.5f)
+	_level(0.5f),
+	_mousePosition()
 {
 	handleMousePressEvents();
 	handleMouseReleaseEvents();
@@ -147,17 +149,28 @@ void ImageQuad::resetWindowLevel()
 
 void ImageQuad::onMousePressEvent(QMouseEvent* mouseEvent)
 {
-	qDebug() << "onMousePressEvent";
+	qDebug() << "Mouse press event for" << _name;
+
+	_mousePosition = mouseEvent->pos();
 }
 
 void ImageQuad::onMouseReleaseEvent(QMouseEvent* mouseEvent)
 {
-	qDebug() << "onMouseReleaseEvent";
+	qDebug() << "Mouse release event for" << _name;
 }
 
 void ImageQuad::onMouseMoveEvent(QMouseEvent* mouseEvent)
 {
-	qDebug() << "onMouseMoveEvent";
+	qDebug() << "Mouse move event for" << _name;
+
+	const auto deltaWindow	= (mouseEvent->pos().x() - _mousePosition.x()) / 150.f;
+	const auto deltaLevel	= -(mouseEvent->pos().y() - _mousePosition.y()) / 150.f;
+	const auto window		= std::clamp(windowNormalized() + deltaWindow, 0.0f, 1.0f);
+	const auto level		= std::clamp(levelNormalized() + deltaLevel, 0.0f, 1.0f);
+
+	_mousePosition = mouseEvent->pos();
+
+	setWindowLevel(window, level);
 }
 
 void ImageQuad::addShaderPrograms()

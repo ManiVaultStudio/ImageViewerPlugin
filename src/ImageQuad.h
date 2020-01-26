@@ -108,4 +108,5 @@ protected:
 	float			_levelNormalized;		/** Normalized display level */
 	float			_window;				/** Display window */
 	float			_level;					/** Display level */
+	QPoint			_mousePosition;			/** Mouse position */
 };
