@@ -1,11 +1,8 @@
 #include "Renderer.h"
 #include "ImageViewerWidget.h"
 
-#include <QDebug>
-
 #include <QtMath>
-
-#include <vector>
+#include <QDebug>
 
 #include "Shaders.h"
 #include "ImageQuad.h"
@@ -24,6 +21,7 @@ Renderer::Renderer(QWidget* parent) :
 	hdps::Renderer(),
 	_parent(parent),
 	_shapes(),
+	_interactionMode(InteractionMode::Selection),
 	_pan(),
 	_zoom(1.f),
 	_zoomSensitivity(0.05f),
@@ -303,6 +301,36 @@ template<typename T>
 T* Renderer::shape(const QString& name)
 {
 	return dynamic_cast<T*>(_shapes[name].get());
+}
+
+InteractionMode Renderer::interactionMode() const
+{
+	return _interactionMode;
+}
+
+void Renderer::setInteractionMode(const InteractionMode& interactionMode)
+{
+	if (interactionMode == _interactionMode)
+		return;
+
+	qDebug() << "Set interaction mode to" << interactionModeTypeName(interactionMode);
+
+	switch (interactionMode)
+	{
+		case InteractionMode::Navigation:
+			_parent->setCursor(Qt::OpenHandCursor);
+			break;
+
+		case InteractionMode::Selection:
+		case InteractionMode::None:
+			_parent->setCursor(Qt::ArrowCursor);
+			break;
+
+		default:
+			break;
+	}
+
+	_interactionMode = interactionMode;
 }
 
 SelectionType Renderer::selectionType() const

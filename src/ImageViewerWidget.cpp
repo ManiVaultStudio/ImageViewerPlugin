@@ -25,8 +25,6 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	QOpenGLFunctions(),
 	_imageViewerPlugin(imageViewerPlugin),
 	_renderer(QSharedPointer<Renderer>::create(this)),
-	_interactionMode(InteractionMode::Selection),
-	_selecting(false),
 	_openglDebugLogger(std::make_unique<QOpenGLDebugLogger>())
 {
 	setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
@@ -539,35 +537,3 @@ QMenu* ImageViewerWidget::selectionMenu()
 
 	return selectionMenu;
 }
-
-/*
-InteractionMode ImageViewerWidget::interactionMode() const
-{
-	return _interactionMode;
-}
-
-void ImageViewerWidget::setInteractionMode(const InteractionMode& interactionMode)
-{
-	if (interactionMode == _interactionMode)
-		return;
-
-	qDebug() << "Set interaction mode to" << interactionModeTypeName(interactionMode);
-
-	switch (interactionMode)
-	{
-		case InteractionMode::Navigation:
-			QWidget::setCursor(Qt::OpenHandCursor);
-			break;
-
-		case InteractionMode::Selection:
-		case InteractionMode::None:
-			QWidget::setCursor(Qt::ArrowCursor);
-			break;
-
-		default:
-			break;
-	}
-
-	_interactionMode = interactionMode;
-}
-*/

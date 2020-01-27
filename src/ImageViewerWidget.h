@@ -134,6 +134,5 @@ private:
 private:
 	ImageViewerPlugin*						_imageViewerPlugin;			/** Pointer to image viewer plugin */
 	QSharedPointer<Renderer>				_renderer;					/** Selection renderer */
-	InteractionMode							_interactionMode;			/** Type of interaction e.g. navigation, selection and window/level */
 	std::unique_ptr <QOpenGLDebugLogger>	_openglDebugLogger;			/** OpenGL debug logger (on in debug mode) */
 };

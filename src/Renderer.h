@@ -159,6 +159,15 @@ public:
 	template<typename T>
 	T* shape(const QString& name);
 
+	/** Returns the interaction mode */
+	InteractionMode interactionMode() const;
+
+	/**
+	 * Set interaction mode
+	 * @param interactionMode Interaction mode
+	 */
+	void setInteractionMode(const InteractionMode& interactionMode);
+
 	/** Returns the selection type */
 	SelectionType selectionType() const;
 
@@ -257,6 +266,7 @@ signals:
 protected:
 	QWidget*								_parent;				/** Pointer to parent widget */
 	QMap<QString, QSharedPointer<Shape>>	_shapes;				/** Shapes map */
+	InteractionMode							_interactionMode;		/** Type of interaction e.g. navigation, selection and window/level */
 	QPointF									_pan;					/** Move view horizontally/vertically */
 	float									_zoom;					/** Zoom view in/out */
 	float									_zoomSensitivity;		/** Zoom sensitivity */
