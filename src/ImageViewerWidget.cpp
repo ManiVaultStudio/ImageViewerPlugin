@@ -24,11 +24,8 @@
 ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	QOpenGLFunctions(),
 	_imageViewerPlugin(imageViewerPlugin),
-	_renderer(QSharedPointer<Renderer>::create(3, this)),
+	_renderer(QSharedPointer<Renderer>::create(this)),
 	_interactionMode(InteractionMode::Selection),
-	_zoom(1.f),
-	_zoomSensitivity(0.05f),
-	_margin(25),
 	_selecting(false),
 	_openglDebugLogger(std::make_unique<QOpenGLDebugLogger>())
 {
@@ -118,7 +115,7 @@ void ImageViewerWidget::resizeGL(int w, int h)
 {
 	qDebug() << "Resizing image viewer";
 
-	zoomExtents();
+	_renderer->zoomExtents();
 
 	_renderer->resize(QSize(w, h));
 }
@@ -127,8 +124,6 @@ void ImageViewerWidget::paintGL() {
 
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	auto modelViewProjection = projection() * modelView();
 
 	_renderer->render();
 
@@ -391,95 +386,6 @@ void ImageViewerWidget::wheelEvent(QWheelEvent* wheelEvent) {
 	*/
 }
 
-void ImageViewerWidget::pan(const QPointF& delta)
-{
-	qDebug() << "Pan" << delta;
-
-	_pan.setX(_pan.x() + (delta.x() / _zoom));
-	_pan.setY(_pan.y() + (delta.y() / _zoom));
-}
-
-float ImageViewerWidget::zoom() const
-{
-	return _zoom;
-}
-
-void ImageViewerWidget::zoomBy(const float& factor)
-{
-	_zoom *= factor;
-
-	qDebug() << "Zoom" << _zoom;
-
-	_pan.setX(_pan.x() * factor);
-	_pan.setY(_pan.y() * factor);
-}
-
-void ImageViewerWidget::zoomAt(const QPointF& screenPosition, const float& factor) {
-
-	qDebug() << "Zoom at" << screenPosition << factor;
-
-	//pan(QPointF(-screenPosition.x(), -screenPosition.y()));
-	zoomBy(factor);
-	//pan(QPointF(screenPosition.x(), screenPosition.y()));
-}
-
-void ImageViewerWidget::zoomExtents()
-{
-	/*
-	if (_imageViewerPlugin->currentDatasetName().isEmpty())
-		return;
-	
-	qDebug() << "Zoom extents" << _zoom;
-
-	auto* imageQuad = _renderer->shape<ImageQuad>("ImageQuad");
-
-	zoomToRectangle(QRectF(QPointF(), QSizeF(imageQuad->size().width(), imageQuad->size().height())));
-	*/
-}
-
-void ImageViewerWidget::zoomToRectangle(const QRectF& rectangle)
-{
-	qDebug() << "Zoom to rectangle" << rectangle;
-
-	resetView();
-	
-	const auto center	= rectangle.center();
-	const auto factorX	= (width() - 2 * _margin) / static_cast<float>(rectangle.width());
-	const auto factorY	= (height() - 2 * _margin) / static_cast<float>(rectangle.height());
-
-	zoomBy(factorX < factorY ? factorX : factorY);
-
-	auto* imageQuad = _renderer->shape<ImageQuad>("ImageQuad");
-
-	pan(_zoom * -QPointF(center.x(), imageQuad->size().height() - center.y()));
-
-	update();
-}
-
-void ImageViewerWidget::zoomToSelection()
-{
-	auto* currentImageDataSet = _imageViewerPlugin->currentImages();
-
-	if (currentImageDataSet == nullptr)
-		return;
-
-	qDebug() << "Zoom to selection";
-
-	zoomToRectangle(QRectF(currentImageDataSet->selectionBounds(true)));
-}
-
-void ImageViewerWidget::resetView()
-{
-	qDebug() << "Reset view";
-
-	_pan.setX(0);
-	_pan.setY(0);
-
-	_zoom = 1.f;
-
-	update();
-}
-
 void ImageViewerWidget::publishSelection()
 {	
 	qDebug() << "Publish selection";
@@ -577,8 +483,8 @@ QMenu* ImageViewerWidget::viewMenu()
 	zoomToSelectionAction->setEnabled(_imageViewerPlugin->noSelectedPixels() > 0);
 	resetWindowLevelAction->setEnabled(_renderer->imageQuad()->windowNormalized() < 1.f && _renderer->imageQuad()->levelNormalized() != 0.5f);
 
-	connect(zoomToExtentsAction, &QAction::triggered, this, &ImageViewerWidget::zoomExtents);
-	connect(zoomToSelectionAction, &QAction::triggered, this, &ImageViewerWidget::zoomToSelection);
+	connect(zoomToExtentsAction, &QAction::triggered, this->_renderer.get(), &Renderer::zoomExtents);
+	connect(zoomToSelectionAction, &QAction::triggered, this->_renderer.get(), &Renderer::zoomToSelection);
 	connect(resetWindowLevelAction, &QAction::triggered, [&]() { _renderer->imageQuad()->resetWindowLevel();  });
 
 	viewMenu->addAction(zoomToExtentsAction);
@@ -634,28 +540,6 @@ QMenu* ImageViewerWidget::selectionMenu()
 	return selectionMenu;
 }
 
-QMatrix4x4 ImageViewerWidget::modelView() const
-{
-	QMatrix4x4 model, view;
-
-	model.scale(_zoom, _zoom, 1.0f);
-	model.translate(_pan.x(), _pan.y());
-	view.lookAt(QVector3D(0, 0, -1), QVector3D(0, 0, 0), QVector3D(0, -1, 0));
-
-	return view * model;
-}
-
-QMatrix4x4 ImageViewerWidget::projection() const
-{
-	const auto halfSize = size() / 2;
-
-	QMatrix4x4 projection;
-
-	projection.ortho(-halfSize.width(), halfSize.width(), -halfSize.height(), halfSize.height(), -100.0f, +100.0f);
-
-	return projection;
-}
-
 /*
 InteractionMode ImageViewerWidget::interactionMode() const
 {
@@ -687,21 +571,3 @@ void ImageViewerWidget::setInteractionMode(const InteractionMode& interactionMod
 	_interactionMode = interactionMode;
 }
 */
-
-std::vector<QVector3D> ImageViewerWidget::mousePositionsWorld() const
-{
-	
-	auto mousePositionsWorld = std::vector<QVector3D>();
-	/*
-	for (const auto& mousePosition : _mousePositions)
-	{
-		mousePositionsWorld.push_back(screenToWorld(mousePosition));
-	}
-	*/
-	return mousePositionsWorld;
-}
-
-bool ImageViewerWidget::selecting() const
-{
-	return _selecting;
-}

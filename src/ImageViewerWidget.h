@@ -39,9 +39,6 @@ public:
 	~ImageViewerWidget() override;
 
 public:
-	/** Returns mouse event positions in three-dimensional world coordinates */
-	std::vector<QVector3D> mousePositionsWorld() const;
-
 	/** Whether the user is currently selecting */
 	bool selecting() const;
 
@@ -124,44 +121,6 @@ private:
 	 */
 	void wheelEvent(QWheelEvent* wheelEvent) Q_DECL_OVERRIDE;
 	
-public:
-	/**
-	 * Move the view horizontally/vertically
-	 * @param delta Amount to move
-	 */
-	void pan(const QPointF& delta);
-
-	/** Return the current zoom level */
-	float zoom() const;
-
-	/**
-	 * Zoom the view
-	 * @param factor Factor to zoom by
-	 */
-	void zoomBy(const float& factor);
-
-	/**
-	 * Zoom at position
-	 * @param position Position to zoom around
-	 * @param factor Factor to zoom by
-	 */
-	void zoomAt(const QPointF& position, const float& factor);
-
-	/** Zoom to extents of the rendered image quad */
-	void zoomExtents();
-
-	/**
-	 * Zoom to rectangle
-	 * @param rectangle Rectangle to zoom to
-	 */
-	void zoomToRectangle(const QRectF& rectangle);
-
-	/** Zoom to selected pixels */
-	void zoomToSelection();
-
-	/** Reset the view */
-	void resetView();
-
 private:
 	/** Returns the context menu */
 	QMenu* contextMenu();
@@ -172,21 +131,9 @@ private:
 	/** Returns the selection menu */
 	QMenu* selectionMenu();
 
-public:
-	/** Returns the model view matrix */
-	QMatrix4x4 modelView() const;
-
-	/** Returns the projection matrix */
-	QMatrix4x4 projection() const;
-
 private:
 	ImageViewerPlugin*						_imageViewerPlugin;			/** Pointer to image viewer plugin */
 	QSharedPointer<Renderer>				_renderer;					/** Selection renderer */
 	InteractionMode							_interactionMode;			/** Type of interaction e.g. navigation, selection and window/level */
-	QPointF									_pan;						/** Move view horizontally/vertically */
-	float									_zoom;						/** Zoom view in/out */
-	float									_zoomSensitivity;			/** Zoom sensitivity */
-	int										_margin;					/** Margin between image and viewer widget boundaries */
-	bool									_selecting;					/** Whether selection is taking place */
 	std::unique_ptr <QOpenGLDebugLogger>	_openglDebugLogger;			/** OpenGL debug logger (on in debug mode) */
 };

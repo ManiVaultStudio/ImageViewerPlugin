@@ -1,10 +1,10 @@
 #pragma once
 
+#include "renderers/Renderer.h"
 #include "ImageData/ImageData.h"
 
 #include "Common.h"
 
-#include "StackedRenderer.h"
 #include "Shape.h"
 
 class ImageQuad;
@@ -20,17 +20,16 @@ class QWheelEvent;
  * Selection renderer class
  * @author Thomas Kroes
  */
-class Renderer : public StackedRenderer
+class Renderer : public QObject, public hdps::Renderer
 {
 	Q_OBJECT
 
 public:
 	/**
 	 * Constructor
-	 * @param depth Depth (layer) to render content at
-	 * @param imageViewerWidget Pointer to image viewer widget
+	 * @param parent Parent widget
 	 */
-	Renderer(const float& depth, ImageViewerWidget* imageViewerWidget);
+	Renderer(QWidget* parent);
 
 public:
 	/** Renders the content */
@@ -46,7 +45,7 @@ public:
 	void destroy() override;
 
 	/** Return whether the renderer is initialized */
-	bool isInitialized() const override;
+	bool isInitialized() const;
 
 	/**
 	 * Invoked when the mouse button is pressed
@@ -78,6 +77,49 @@ public:
 	 * @param screenPoint Point in screen coordinates
 	*/
 	QVector3D screenToWorld(const QMatrix4x4& modelViewMatrix, const QMatrix4x4& projectionMatrix, const QPointF& screenPoint) const;
+
+	/** Returns the model view matrix */
+	QMatrix4x4 modelView() const;
+
+	/** Returns the projection matrix */
+	QMatrix4x4 projection() const;
+
+	/**
+	 * Move the view horizontally/vertically
+	 * @param delta Amount to move
+	 */
+	void pan(const QPointF& delta);
+
+	/** Return the current zoom level */
+	float zoom() const;
+
+	/**
+	 * Zoom the view
+	 * @param factor Factor to zoom by
+	 */
+	void zoomBy(const float& factor);
+
+	/**
+	 * Zoom at position
+	 * @param position Position to zoom around
+	 * @param factor Factor to zoom by
+	 */
+	void zoomAt(const QPointF& position, const float& factor);
+
+	/** Zoom to extents of the rendered image quad */
+	void zoomExtents();
+
+	/**
+	 * Zoom to rectangle
+	 * @param rectangle Rectangle to zoom to
+	 */
+	void zoomToRectangle(const QRectF& rectangle);
+
+	/** Zoom to selected pixels */
+	void zoomToSelection();
+
+	/** Reset the view */
+	void resetView();
 
 public:
 	/**
@@ -213,8 +255,12 @@ signals:
 	void dirty();
 
 protected:
-	ImageViewerWidget*						_imageViewerWidget;		/** Pointer to image viewer widget */
+	QWidget*								_parent;				/** Pointer to parent widget */
 	QMap<QString, QSharedPointer<Shape>>	_shapes;				/** Shapes map */
+	QPointF									_pan;					/** Move view horizontally/vertically */
+	float									_zoom;					/** Zoom view in/out */
+	float									_zoomSensitivity;		/** Zoom sensitivity */
+	int										_margin;				/** Margin between image and viewer widget boundaries */
 	SelectionType							_selectionType;			/** Type of selection e.g. rectangle, brush */
 	SelectionModifier						_selectionModifier;		/** The selection modifier determines if and how new selections are combined with existing selections e.g. add, replace and remove */
 	float									_brushRadius;			/** Brush radius */
