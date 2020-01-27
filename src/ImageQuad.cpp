@@ -19,7 +19,7 @@ ImageQuad::ImageQuad(Renderer* renderer, const QString& name, const float& z /*=
 	_levelNormalized(),
 	_window(1.0f),
 	_level(0.5f),
-	_mousePosition()
+	_mousePositions()
 {
 	_mouseEvents = static_cast<int>(MouseEvent::Press) | static_cast<int>(MouseEvent::Release) | static_cast<int>(MouseEvent::Move);
 }
@@ -138,6 +138,8 @@ void ImageQuad::setWindowLevel(const float& window, const float& level)
 	qDebug() << "Set window/level" << _windowNormalized << _levelNormalized;
 
 	emit windowLevelChanged(_window, _level);
+
+	emit changed(this);
 }
 
 void ImageQuad::resetWindowLevel()
@@ -149,7 +151,8 @@ void ImageQuad::onMousePressEvent(QMouseEvent* mouseEvent)
 {
 	//qDebug() << "Mouse press event for" << _name;
 
-	_mousePosition = mouseEvent->pos();
+	_mousePositions.clear();
+	_mousePositions.push_back(mouseEvent->pos());
 }
 
 void ImageQuad::onMouseReleaseEvent(QMouseEvent* mouseEvent)
@@ -161,12 +164,25 @@ void ImageQuad::onMouseMoveEvent(QMouseEvent* mouseEvent)
 {
 	//qDebug() << "Mouse move event for" << _name;
 
-	const auto deltaWindow	= (mouseEvent->pos().x() - _mousePosition.x()) / 150.f;
-	const auto deltaLevel	= -(mouseEvent->pos().y() - _mousePosition.y()) / 150.f;
-	const auto window		= std::clamp(windowNormalized() + deltaWindow, 0.0f, 1.0f);
-	const auto level		= std::clamp(levelNormalized() + deltaLevel, 0.0f, 1.0f);
+	_mousePositions.push_back(mouseEvent->pos());
 
-	_mousePosition = mouseEvent->pos();
+	if (_mousePositions.size() > 1)
+		update();
+}
+
+QVector<QPoint> ImageQuad::mousePositions() const
+{
+	return _mousePositions;
+}
+
+void ImageQuad::update()
+{
+	const auto mousePosition0	= _mousePositions[_mousePositions.size() - 2];
+	const auto mousePosition1	= _mousePositions.back();
+	const auto deltaWindow		= (mousePosition1.x() - mousePosition0.x()) / 150.f;
+	const auto deltaLevel		= -(mousePosition1.y() - mousePosition0.y()) / 150.f;
+	const auto window			= std::clamp(windowNormalized() + deltaWindow, 0.0f, 1.0f);
+	const auto level			= std::clamp(levelNormalized() + deltaLevel, 0.0f, 1.0f);
 
 	setWindowLevel(window, level);
 }

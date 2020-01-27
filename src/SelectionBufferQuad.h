@@ -13,7 +13,12 @@ class SelectionBufferQuad : public Quad
 	Q_OBJECT
 
 public:
-	/** Constructor */
+	/**
+	 * Constructor
+	 * @param renderer Renderer
+	 * @param name Name of the shape
+	 * @param z Depth at which to draw the shape
+	 */
 	SelectionBufferQuad(Renderer* renderer, const QString& name, const float& z = 0.f);
 
 	/** Renders the selection buffer quad */
@@ -46,12 +51,6 @@ public:
 	 */
 	void setOpacity(const float& opacity);
 
-	/** Updates the selection buffer
-	 * @param mousePositions Mouse positions in world coordinates
-	 * @param selectionType Selection type
-	 */
-	void update();
-
 	/** Reset the (temporary) selection buffer */
 	void reset();
 
@@ -73,7 +72,13 @@ public:
 	/** Deactivate the shape */
 	void deactivate() override;
 
+	/** Returns the mouse positions in world coordinates */
+	QVector<QVector3D> mousePositions() const;
+
 protected:
+	/** Updates the internals of the shape */
+	void update() override;
+	
 	/** Adds the OpenGL shader programs that the shape needs */
 	void addShaderPrograms();
 

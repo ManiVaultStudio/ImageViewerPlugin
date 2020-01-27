@@ -241,6 +241,7 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 		case Qt::LeftButton:
 		{
 			if (_imageViewerPlugin->allowsPixelSelection()) {
+				_renderer->setInteractionMode(InteractionMode::Selection);
 				_renderer->selectionBufferQuad()->activate();
 				_renderer->selectionOutline()->activate();
 				_renderer->selectionOutline()->reset();
@@ -252,6 +253,7 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 
 		case Qt::RightButton:
 		{
+			_renderer->setInteractionMode(InteractionMode::WindowLevel);
 			_renderer->imageQuad()->activate();
 			break;
 		}
@@ -272,14 +274,13 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 	if (!_renderer->isInitialized())
 		return;
 
-	/*
-	if (mouseEvent->button() == Qt::RightButton && _mousePositions.size() == 0 && _interactionMode != InteractionMode::Selection)
-	{
-		contextMenu()->exec(mapToGlobal(mouseEvent->pos()));
-	}
-	*/
-
 	makeCurrent();
+
+	if (mouseEvent->button() == Qt::RightButton)
+	{
+		if (_renderer->interactionMode() == InteractionMode::WindowLevel && _renderer->imageQuad()->mousePositions().size() == 1)
+			contextMenu()->exec(mapToGlobal(mouseEvent->pos()));
+	}
 
 	switch (mouseEvent->button())
 	{
@@ -295,6 +296,7 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 
 		case Qt::RightButton:
 		{
+			_renderer->setInteractionMode(InteractionMode::Selection);
 			_renderer->imageQuad()->deactivate();
 			break;
 		}
@@ -303,7 +305,7 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 			break;
 		
 	}
-	
+
 	_renderer->mouseReleaseEvent(mouseEvent);
 
 	doneCurrent();
@@ -321,8 +323,6 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 	_renderer->mouseMoveEvent(mouseEvent);
 
 	doneCurrent();
-
-	update();
 }
 
 void ImageViewerWidget::wheelEvent(QWheelEvent* wheelEvent) {
@@ -335,53 +335,6 @@ void ImageViewerWidget::wheelEvent(QWheelEvent* wheelEvent) {
 	_renderer->mouseWheelEvent(wheelEvent);
 
 	doneCurrent();
-	/*
-	qDebug() << "Mouse wheel event" << interactionModeTypeName(_interactionMode);
-
-	switch (_interactionMode)
-	{
-		case InteractionMode::Navigation:
-		{
-			const auto world_x = (wheelEvent->posF().x() - _pan.x()) / _zoom;
-			const auto world_y = (wheelEvent->posF().y() - _pan.y()) / _zoom;
-
-			auto zoomCenter = wheelEvent->posF();
-
-			//zoomCenter.setY(height() - wheelEvent->posF().y());
-
-			if (wheelEvent->delta() > 0) {
-				zoomAt(zoomCenter, 1.f - _zoomSensitivity);
-			}
-			else {
-				zoomAt(zoomCenter, 1.f + _zoomSensitivity);
-			}
-
-			update();
-			break;
-		}
-
-		case InteractionMode::Selection:
-		{
-			if (_renderer->selectionType() == SelectionType::Brush) {
-				if (wheelEvent->delta() > 0) {
-					_renderer->brushSizeIncrease();
-				}
-				else {
-					_renderer->brushSizeDecrease();
-				}
-
-				_renderer->selectionOutline()->update(mousePositionsWorld(), _renderer->selectionType(), _renderer->brushRadius());
-
-				update();
-			}
-
-			break;
-		}
-
-		default:
-			break;
-	}
-	*/
 }
 
 void ImageViewerWidget::publishSelection()

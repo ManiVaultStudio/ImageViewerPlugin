@@ -86,6 +86,54 @@ void Renderer::mouseMoveEvent(QMouseEvent* mouseEvent)
 		if (shape->isActive() && shape->handlesMouseMoveEvents())
 			shape->onMouseMoveEvent(mouseEvent);
 	}
+
+	/*
+	qDebug() << "Mouse wheel event" << interactionModeTypeName(_interactionMode);
+
+	switch (_interactionMode)
+	{
+		case InteractionMode::Navigation:
+		{
+			const auto world_x = (wheelEvent->posF().x() - _pan.x()) / _zoom;
+			const auto world_y = (wheelEvent->posF().y() - _pan.y()) / _zoom;
+
+			auto zoomCenter = wheelEvent->posF();
+
+			//zoomCenter.setY(height() - wheelEvent->posF().y());
+
+			if (wheelEvent->delta() > 0) {
+				zoomAt(zoomCenter, 1.f - _zoomSensitivity);
+			}
+			else {
+				zoomAt(zoomCenter, 1.f + _zoomSensitivity);
+			}
+
+			update();
+			break;
+		}
+
+		case InteractionMode::Selection:
+		{
+			if (_renderer->selectionType() == SelectionType::Brush) {
+				if (wheelEvent->delta() > 0) {
+					_renderer->brushSizeIncrease();
+				}
+				else {
+					_renderer->brushSizeDecrease();
+				}
+
+				_renderer->selectionOutline()->update(mousePositionsWorld(), _renderer->selectionType(), _renderer->brushRadius());
+
+				update();
+			}
+
+			break;
+		}
+
+		default:
+			break;
+	}
+	*/
 }
 
 void Renderer::mouseReleaseEvent(QMouseEvent* mouseEvent)

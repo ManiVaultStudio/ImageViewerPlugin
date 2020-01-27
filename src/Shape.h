@@ -93,7 +93,7 @@ public:
 
 	/** Returns the model > view > projection matrix */
 	QMatrix4x4 modelViewProjectionMatrix() const;
-
+	
 	/** Renders the shape */
 	virtual void render();
 
@@ -210,6 +210,9 @@ protected:
 	 * @param name Name of the OpenGL shader program
 	 */
 	virtual void configureShaderProgram(const QString& name);
+
+	/** Updates the internal representation of the shape (e.g. vertex buffers and shader programs) */
+	virtual void update();
 
 	/**
 	 * Retrieves an OpenGL shader program by name

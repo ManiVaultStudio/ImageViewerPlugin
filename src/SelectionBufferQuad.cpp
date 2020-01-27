@@ -100,48 +100,15 @@ void SelectionBufferQuad::setOpacity(const float& opacity)
 	emit opacityChanged(_color.alphaF());
 }
 
-void SelectionBufferQuad::addShaderPrograms()
-{
-	qDebug() << "Add OpenGL shader programs to" << _name << "shape";
-
-	addShaderProgram("Quad", QSharedPointer<QOpenGLShaderProgram>::create());
-
-	auto quadProgram = shaderProgram("Quad");
-
-	quadProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, selectionOverlayVertexShaderSource.c_str());
-	quadProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, selectionOverlayFragmentShaderSource.c_str());
-	quadProgram->link();
-
-	addShaderProgram("SelectionBuffer", QSharedPointer<QOpenGLShaderProgram>::create());
-
-	auto selectionBufferProgram = shaderProgram("SelectionBuffer");
-
-	selectionBufferProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, selectionBufferVertexShaderSource.c_str());
-	selectionBufferProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, selectionBufferFragmentShaderSource.c_str());
-	selectionBufferProgram->link();
-}
-
-void SelectionBufferQuad::configureShaderProgram(const QString& name)
-{
-	Quad::configureShaderProgram(name);
-
-	auto quadProgram = shaderProgram("Quad");
-
-	if (name == "Quad") {
-		quadProgram->setUniformValue("overlayTexture", 0);
-		quadProgram->setUniformValue("color", _color);
-	}
-}
-
 void SelectionBufferQuad::update()
 {
-	qDebug() << "Set mouse position for" << _name;
+	Quad::update();
 
 	auto selectionBufferFBO = fbo("SelectionBuffer");
 
 	if (!selectionBufferFBO->bind())
 		return;
-	
+
 	glViewport(0, 0, selectionBufferFBO->width(), selectionBufferFBO->height());
 
 	QMatrix4x4 transform;
@@ -163,8 +130,8 @@ void SelectionBufferQuad::update()
 			selectionBufferProgram->setUniformValue("transform", transform);
 			selectionBufferProgram->setUniformValue("selectionType", static_cast<int>(_renderer->selectionType()));
 
-			auto imageWidth		= static_cast<float>(selectionBufferFBO->size().width());
-			auto imageHeight	= static_cast<float>(selectionBufferFBO->size().height());
+			auto imageWidth = static_cast<float>(selectionBufferFBO->size().width());
+			auto imageHeight = static_cast<float>(selectionBufferFBO->size().height());
 
 			selectionBufferProgram->setUniformValue("imageSize", imageWidth, imageHeight);
 
@@ -172,16 +139,14 @@ void SelectionBufferQuad::update()
 			{
 				case SelectionType::Rectangle:
 				{
-					const auto rectangleTopLeft			= _mousePositions.front();
-					const auto rectangleBottomRight		= _mousePositions.back();
-					const auto rectangleTopLeftUV		= QVector2D(rectangleTopLeft.x() / static_cast<float>(selectionBufferFBO->width()), rectangleTopLeft.y() / static_cast<float>(selectionBufferFBO->height()));
-					const auto rectangleBottomRightUV	= QVector2D(rectangleBottomRight.x() / static_cast<float>(selectionBufferFBO->width()), rectangleBottomRight.y() / static_cast<float>(selectionBufferFBO->height()));
+					const auto rectangleTopLeft = _mousePositions.front();
+					const auto rectangleBottomRight = _mousePositions.back();
+					const auto rectangleTopLeftUV = QVector2D(rectangleTopLeft.x() / static_cast<float>(selectionBufferFBO->width()), rectangleTopLeft.y() / static_cast<float>(selectionBufferFBO->height()));
+					const auto rectangleBottomRightUV = QVector2D(rectangleBottomRight.x() / static_cast<float>(selectionBufferFBO->width()), rectangleBottomRight.y() / static_cast<float>(selectionBufferFBO->height()));
 
-					auto rectangleUV	= std::make_pair(rectangleTopLeftUV, rectangleBottomRightUV);
-					auto topLeft		= QVector2D(rectangleTopLeftUV.x(), rectangleTopLeftUV.y());
-					auto bottomRight	= QVector2D(rectangleBottomRightUV.x(), rectangleBottomRightUV.y());
-
-					qDebug() << rectangleTopLeftUV << rectangleBottomRightUV;
+					auto rectangleUV = std::make_pair(rectangleTopLeftUV, rectangleBottomRightUV);
+					auto topLeft = QVector2D(rectangleTopLeftUV.x(), rectangleTopLeftUV.y());
+					auto bottomRight = QVector2D(rectangleBottomRightUV.x(), rectangleBottomRightUV.y());
 
 					if (rectangleBottomRightUV.x() < rectangleTopLeftUV.x()) {
 						topLeft.setX(rectangleBottomRightUV.x());
@@ -201,8 +166,8 @@ void SelectionBufferQuad::update()
 
 				case SelectionType::Brush:
 				{
-					const auto brushCenter			= _mousePositions[_mousePositions.size() - 1];
-					const auto previousBrushCenter	= _mousePositions.size() > 1 ? _mousePositions[_mousePositions.size() - 2] : brushCenter;
+					const auto brushCenter = _mousePositions[_mousePositions.size() - 1];
+					const auto previousBrushCenter = _mousePositions.size() > 1 ? _mousePositions[_mousePositions.size() - 2] : brushCenter;
 
 					selectionBufferProgram->setUniformValue("previousBrushCenter", previousBrushCenter.x(), previousBrushCenter.y());
 					selectionBufferProgram->setUniformValue("currentBrushCenter", brushCenter.x(), brushCenter.y());
@@ -242,6 +207,39 @@ void SelectionBufferQuad::update()
 	selectionBufferFBO->release();
 
 	emit changed(this);
+}
+
+void SelectionBufferQuad::addShaderPrograms()
+{
+	qDebug() << "Add OpenGL shader programs to" << _name << "shape";
+
+	addShaderProgram("Quad", QSharedPointer<QOpenGLShaderProgram>::create());
+
+	auto quadProgram = shaderProgram("Quad");
+
+	quadProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, selectionOverlayVertexShaderSource.c_str());
+	quadProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, selectionOverlayFragmentShaderSource.c_str());
+	quadProgram->link();
+
+	addShaderProgram("SelectionBuffer", QSharedPointer<QOpenGLShaderProgram>::create());
+
+	auto selectionBufferProgram = shaderProgram("SelectionBuffer");
+
+	selectionBufferProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, selectionBufferVertexShaderSource.c_str());
+	selectionBufferProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, selectionBufferFragmentShaderSource.c_str());
+	selectionBufferProgram->link();
+}
+
+void SelectionBufferQuad::configureShaderProgram(const QString& name)
+{
+	Quad::configureShaderProgram(name);
+
+	auto quadProgram = shaderProgram("Quad");
+
+	if (name == "Quad") {
+		quadProgram->setUniformValue("overlayTexture", 0);
+		quadProgram->setUniformValue("color", _color);
+	}
 }
 
 void SelectionBufferQuad::reset()
@@ -344,4 +342,9 @@ void SelectionBufferQuad::deactivate()
 	Quad::deactivate();
 
 	_mousePositions.clear();
+}
+
+QVector<QVector3D> SelectionBufferQuad::mousePositions() const
+{
+	return _mousePositions;
 }

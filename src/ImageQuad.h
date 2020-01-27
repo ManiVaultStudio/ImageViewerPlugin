@@ -64,7 +64,13 @@ public:
 	/** Invoked when the mouse pointer is moved */
 	void onMouseMoveEvent(QMouseEvent* mouseEvent) override;
 
+	/** Returns the mouse positions in screen coordinates */
+	QVector<QPoint> mousePositions() const;
+
 protected:
+	/** Updates the internals of the shape */
+	void update() override;
+
 	/** Adds the OpenGL shader programs that the shape needs */
 	void addShaderPrograms();
 
@@ -100,13 +106,13 @@ signals:
 	void sizeChanged(const QSize& size);
 
 protected:
-	std::uint16_t	_imageMin;				/** Minimum pixel value in the image */
-	std::uint16_t	_imageMax;				/** Maximum pixel value in the image  */
-	float			_minPixelValue;			/** Window minimum pixel value */
-	float			_maxPixelValue;			/** Window maximum pixel value */
-	float			_windowNormalized;		/** Normalized display window */
-	float			_levelNormalized;		/** Normalized display level */
-	float			_window;				/** Display window */
-	float			_level;					/** Display level */
-	QPoint			_mousePosition;			/** Mouse position */
+	std::uint16_t		_imageMin;				/** Minimum pixel value in the image */
+	std::uint16_t		_imageMax;				/** Maximum pixel value in the image  */
+	float				_minPixelValue;			/** Window minimum pixel value */
+	float				_maxPixelValue;			/** Window maximum pixel value */
+	float				_windowNormalized;		/** Normalized display window */
+	float				_levelNormalized;		/** Normalized display level */
+	float				_window;				/** Display window */
+	float				_level;					/** Display level */
+	QVector<QPoint>		_mousePositions;		/** Recorded mouse positions in screen coordinates */
 };

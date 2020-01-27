@@ -111,7 +111,7 @@ void Polyline2D::setZ(const float& z)
 
 void Polyline2D::setPoints(QVector<QVector2D> points)
 {
-	qDebug() << "Set polyline points";
+	//qDebug() << "Set polyline points";
 
 	if (_closed && points.size() > 2) {
 		points.append(points.first());

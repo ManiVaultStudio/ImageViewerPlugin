@@ -58,6 +58,8 @@ void SelectionOutline::setViewRectangle(const QRect& viewRectangle)
 
 void SelectionOutline::update()
 {
+	Polyline2D::update();
+
 	auto polylineShaderProgram = shaderProgram("Polyline");
 
 	if (polylineShaderProgram->bind()) {
@@ -203,6 +205,7 @@ void SelectionOutline::onMouseMoveEvent(QMouseEvent* mouseEvent)
 	
 	if (_renderer->selectionType() != SelectionType::Polygon) {
 		_mousePositions.push_back(_renderer->screenToWorld(_modelViewMatrix, _projectionMatrix, QPointF(mouseEvent->pos())));
+
 		update();
 	}
 }
@@ -223,6 +226,11 @@ void SelectionOutline::deactivate()
 	Polyline2D::deactivate();
 
 	_mousePositions.clear();
+}
+
+QVector<QVector3D> SelectionOutline::mousePositions() const
+{
+	return _mousePositions;
 }
 
 void SelectionOutline::addShaderPrograms()

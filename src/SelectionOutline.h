@@ -15,7 +15,10 @@ class SelectionOutline : public Polyline2D
 
 public:
 	/** Default constructor
+	 * @param renderer Renderer
 	 * @param name Name of the bounds polyline
+	 * @param z Depth at which to draw the shape
+	 * @param color Line color
 	 */
 	SelectionOutline(Renderer* renderer, const QString& name = "SelectionOutline", const float& z = 0.f, const QColor& color = QColor(255, 153, 0, 150));
 
@@ -53,9 +56,12 @@ public:
 	/** Deactivate the shape */
 	void deactivate() override;
 
+	/** Returns the mouse positions in world coordinates */
+	QVector<QVector3D> mousePositions() const;
+
 protected:
-	/** Updates the selection buffer */
-	void update();
+	/** Updates the internals of the shape */
+	void update() override;
 
 	/** Adds the OpenGL shader programs that the shape needs */
 	void addShaderPrograms();

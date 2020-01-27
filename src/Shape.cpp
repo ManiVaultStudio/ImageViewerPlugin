@@ -216,6 +216,11 @@ void Shape::configureShaderProgram(const QString& name)
 	qDebug() << "Configure shader program" << name << "for" << _name << "not implemented";
 }
 
+void Shape::update()
+{
+	qDebug() << "Updating" << _name;
+}
+
 QSharedPointer<QOpenGLShaderProgram> Shape::shaderProgram(const QString& name)
 {
 	return _shaderPrograms[name];
