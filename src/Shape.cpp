@@ -151,7 +151,7 @@ void Shape::setProjectionMatrix(const QMatrix4x4& projectionMatrix)
 
 QMatrix4x4 Shape::modelViewProjectionMatrix() const
 {
-	return _modelViewMatrix * _projectionMatrix;
+	return _projectionMatrix * _modelViewMatrix;
 }
 
 void Shape::render()

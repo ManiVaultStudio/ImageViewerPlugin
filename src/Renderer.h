@@ -101,10 +101,10 @@ public:
 
 	/**
 	 * Zoom at position
-	 * @param position Position to zoom around
+	 * @param position Position to zoom around in screen coordinates
 	 * @param factor Factor to zoom by
 	 */
-	void zoomAt(const QPointF& position, const float& factor);
+	void zoomAround(const QPointF& position, const float& factor);
 
 	/** Zoom to extents of the rendered image quad */
 	void zoomExtents();

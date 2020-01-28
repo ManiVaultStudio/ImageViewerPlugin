@@ -144,18 +144,18 @@ void Renderer::mouseWheelEvent(QWheelEvent* wheelEvent)
 	{
 		case InteractionMode::Navigation:
 		{
-			const auto world_x = (wheelEvent->posF().x() - _pan.x()) / _zoom;
-			const auto world_y = (wheelEvent->posF().y() - _pan.y()) / _zoom;
+			//const auto world_x = (wheelEvent->posF().x() - _pan.x()) / _zoom;
+			//const auto world_y = (wheelEvent->posF().y() - _pan.y()) / _zoom;
 
 			auto zoomCenter = wheelEvent->posF();
 
 			//zoomCenter.setY(height() - wheelEvent->posF().y());
 
 			if (wheelEvent->delta() > 0) {
-				zoomAt(zoomCenter, 1.f - _zoomSensitivity);
+				zoomAround(zoomCenter, 1.f - _zoomSensitivity);
 			}
 			else {
-				zoomAt(zoomCenter, 1.f + _zoomSensitivity);
+				zoomAround(zoomCenter, 1.f + _zoomSensitivity);
 			}
 
 			emit dirty();
@@ -192,6 +192,7 @@ QMatrix4x4 Renderer::modelView() const
 
 	model.scale(_zoom, _zoom, 1.0f);
 	model.translate(_pan.x(), _pan.y());
+
 	view.lookAt(QVector3D(0, 0, -1), QVector3D(0, 0, 0), QVector3D(0, -1, 0));
 
 	return view * model;
@@ -210,7 +211,7 @@ QMatrix4x4 Renderer::projection() const
 
 void Renderer::pan(const QPointF& delta)
 {
-	qDebug() << "Pan" << delta;
+	qDebug() << "Pan by" << delta;
 
 	_pan.setX(_pan.x() + (delta.x() / _zoom));
 	_pan.setY(_pan.y() + (delta.y() / _zoom));
@@ -227,16 +228,30 @@ void Renderer::zoomBy(const float& factor)
 
 	qDebug() << "Zoom by" << _zoom;
 
-	_pan.setX(_pan.x() * factor);
-	_pan.setY(_pan.y() * factor);
+	//_pan.setX(_pan.x() * factor);
+	//_pan.setY(_pan.y() * factor);
 }
 
-void Renderer::zoomAt(const QPointF& screenPosition, const float& factor) {
+void Renderer::zoomAround(const QPointF& position, const float& factor) {
 
-	qDebug() << "Zoom at" << screenPosition << factor;
+	if (factor == 0.f)
+		return;
 
-	//pan(QPointF(-screenPosition.x(), -screenPosition.y()));
+	qDebug() << "Zoom at" << position << "by" << factor;
+
+	const auto oldZoom = _zoom;
+
+	
 	zoomBy(factor);
+
+	const auto zoomChange = _zoom - oldZoom;
+
+	qDebug() << "zoomChange" << zoomChange;
+
+	//pan(position);
+
+	pan(-QPointF(position.x() * _zoom, position.y() * _zoom));
+	
 	//pan(QPointF(screenPosition.x(), screenPosition.y()));
 }
 
@@ -265,7 +280,7 @@ void Renderer::zoomToRectangle(const QRectF& rectangle)
 	zoomBy(factorX < factorY ? factorX : factorY);
 	auto* imageQuad = shape<ImageQuad>("ImageQuad");
 
-	//pan(_zoom * -QPointF(center.x(), imageQuad->size().height() - center.y()));
+	pan(_zoom * -QPointF(center.x(), imageQuad->size().height() - center.y()));
 	
 	emit dirty();
 }
