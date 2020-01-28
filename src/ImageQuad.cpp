@@ -68,7 +68,7 @@ void ImageQuad::setImage(std::shared_ptr<QImage> image)
 	texture("Quad")->allocateStorage();
 	texture("Quad")->setData(QOpenGLTexture::PixelFormat::RGBA, QOpenGLTexture::PixelType::UInt16, image->bits());
 
-	setRectangle(QRectF(0, 0, image->width(), image->height()));
+	setRectangle(QRectF(QPointF(0.f, 0.f), QSizeF(static_cast<float>(image->width()), static_cast<float>(image->height()))));
 
 	resetWindowLevel();
 

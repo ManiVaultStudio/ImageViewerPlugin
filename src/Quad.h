@@ -29,15 +29,6 @@ public:
 	/** Returns the quad size */
 	QSizeF size() const;
 
-	/** Return position along z-axis */
-	float z() const;
-
-	/**
-	 * Set position along z-axis
-	 * @param z Position along z-axis
-	 */
-	void setZ(const float& z);
-
 protected:
 	/**
 	 * Set quad rectangle
@@ -86,15 +77,8 @@ signals:
 	 */
 	void sizeChanged(const QSizeF& size);
 
-	/**
-	 * Signals that z changed
-	 * @param z Position along z-axis
-	 */
-	void zChanged(const float& z);
-
 protected:
 	QRectF					_rectangle;				/** Rectangle (in world space) that defines the quad */
-	float					_z;						/** Position along z-axis */
 	QVector<GLfloat>		_vertexData;			/** Quad vertex data */
 	static std::uint32_t	_vertexAttribute;		/** Quad vertex attribute location */
 	static std::uint32_t	_textureAttribute;		/** Quad texture attribute location */

@@ -11,9 +11,9 @@
 #include "SelectionBufferQuad.h"
 #include "SelectionOutline.h"
 
-Renderer::Renderer(QWidget* parent) :
+Renderer::Renderer(QWidget* parentWidget) :
 	hdps::Renderer(),
-	_parent(parent),
+	_parentWidget(parentWidget),
 	_shapes(),
 	_interactionMode(InteractionMode::Selection),
 	_mouseEvents(),
@@ -144,14 +144,11 @@ void Renderer::mouseWheelEvent(QWheelEvent* wheelEvent)
 	{
 		case InteractionMode::Navigation:
 		{
-			//const auto world_x = (wheelEvent->posF().x() - _pan.x()) / _zoom;
-			//const auto world_y = (wheelEvent->posF().y() - _pan.y()) / _zoom;
-
 			auto zoomCenter = wheelEvent->posF();
 
-			//zoomCenter.setY(height() - wheelEvent->posF().y());
+			zoomCenter.setY(_parentWidget->height() - wheelEvent->posF().y());
 
-			if (wheelEvent->delta() > 0) {
+			if (wheelEvent->delta() < 0) {
 				zoomAround(zoomCenter, 1.f - _zoomSensitivity);
 			}
 			else {
@@ -183,38 +180,36 @@ void Renderer::mouseWheelEvent(QWheelEvent* wheelEvent)
 
 QVector3D Renderer::screenToWorld(const QMatrix4x4& modelViewMatrix, const QMatrix4x4& projectionMatrix, const QPointF& screenPoint) const
 {
-	return QVector3D(screenPoint.x(), _parent->height()- screenPoint.y(), 0).unproject(modelViewMatrix, projectionMatrix, QRect(0, 0, _parent->width(), _parent->height()));
+	return QVector3D(screenPoint.x(), _parentWidget->height()- screenPoint.y(), 0).unproject(modelViewMatrix, projectionMatrix, QRect(0, 0, _parentWidget->width(), _parentWidget->height()));
 }
 
-QMatrix4x4 Renderer::modelView() const
+QMatrix4x4 Renderer::viewMatrix() const
 {
-	QMatrix4x4 model, view;
+	QMatrix4x4 matrix;
 
-	model.scale(_zoom, _zoom, 1.0f);
-	model.translate(_pan.x(), _pan.y());
+	matrix.lookAt(QVector3D(_pan.x(), _pan.y(), -1), QVector3D(_pan.x(), _pan.y(), 0), QVector3D(0, -1, 0));
+	matrix.scale(_zoom);
 
-	view.lookAt(QVector3D(0, 0, -1), QVector3D(0, 0, 0), QVector3D(0, -1, 0));
-
-	return view * model;
+	return matrix;
 }
 
-QMatrix4x4 Renderer::projection() const
+QMatrix4x4 Renderer::projectionMatrix() const
 {
-	const auto halfSize = _parent->size() / 2;
+	const auto halfSize = _parentWidget->size() / 2;
 
-	QMatrix4x4 projection;
+	QMatrix4x4 matrix;
 
-	projection.ortho(-halfSize.width(), halfSize.width(), -halfSize.height(), halfSize.height(), -100.0f, +100.0f);
+	matrix.ortho(-halfSize.width(), halfSize.width(), -halfSize.height(), halfSize.height(), -1000.0f, +1000.0f);
 
-	return projection;
+	return matrix;
 }
 
 void Renderer::pan(const QPointF& delta)
 {
 	qDebug() << "Pan by" << delta;
 
-	_pan.setX(_pan.x() + (delta.x() / _zoom));
-	_pan.setY(_pan.y() + (delta.y() / _zoom));
+	_pan.setX(_pan.x() - delta.x());
+	_pan.setY(_pan.y() - delta.y());
 }
 
 float Renderer::zoom() const
@@ -232,27 +227,44 @@ void Renderer::zoomBy(const float& factor)
 	//_pan.setY(_pan.y() * factor);
 }
 
-void Renderer::zoomAround(const QPointF& position, const float& factor) {
+void Renderer::zoomAround(const QPointF& screenPoint, const float& factor) {
 
 	if (factor == 0.f)
 		return;
 
-	qDebug() << "Zoom at" << position << "by" << factor;
-
 	const auto oldZoom = _zoom;
 
-	
 	zoomBy(factor);
 
+	/*
+	qDebug() << "Zoom at" << screenPoint << "by" << factor;
+
+	qDebug() << screenToWorld(viewMatrix(), projectionMatrix(), screenPoint) << _pan;
+
+	return;
+	const auto oldZoom = _zoom;
+	
+	//pan(-position);
+	
+	//pan(position);
+
+	const auto p0 = screenToWorld(modelView(), projection(), screenPoint - QPointF(0, 1));
+	const auto p1 = screenToWorld(modelView(), projection(), screenPoint);
+
+	zoomBy(factor);
+	
 	const auto zoomChange = _zoom - oldZoom;
 
-	qDebug() << "zoomChange" << zoomChange;
+	//qDebug() << "zoomChange" << zoomChange;
 
 	//pan(position);
 
-	pan(-QPointF(position.x() * _zoom, position.y() * _zoom));
+	const auto translate = ((p0 - p1).length() / zoomChange);
+
+	pan(QPointF(-translate, 0.f));
 	
 	//pan(QPointF(screenPosition.x(), screenPosition.y()));
+	*/
 }
 
 void Renderer::zoomExtents()
@@ -274,13 +286,13 @@ void Renderer::zoomToRectangle(const QRectF& rectangle)
 	resetView();
 
 	const auto center	= rectangle.center();
-	const auto factorX	= (_parent->width() - 2 * _margin) / static_cast<float>(rectangle.width());
-	const auto factorY	= (_parent->height() - 2 * _margin) / static_cast<float>(rectangle.height());
+	const auto factorX	= (_parentWidget->width() - 2 * _margin) / static_cast<float>(rectangle.width());
+	const auto factorY	= (_parentWidget->height() - 2 * _margin) / static_cast<float>(rectangle.height());
 	
 	zoomBy(factorX < factorY ? factorX : factorY);
 	auto* imageQuad = shape<ImageQuad>("ImageQuad");
 
-	pan(_zoom * -QPointF(center.x(), imageQuad->size().height() - center.y()));
+	//pan(_zoom * -QPointF(center.x(), imageQuad->size().height() - center.y()));
 	
 	emit dirty();
 }
@@ -336,7 +348,9 @@ void Renderer::setColorImage(std::shared_ptr<QImage> colorImage)
 
 void Renderer::setSelectionImage(std::shared_ptr<QImage> selectionImage, const QRect& selectionBounds)
 {
-	const auto worldSelectionBounds = QRect(selectionBounds.left(), selectionImage->height() - selectionBounds.bottom() - 1, selectionBounds.width() + 1, selectionBounds.height() + 1);
+	auto worldSelectionBounds = QRect(selectionBounds.left(), selectionImage->height() - selectionBounds.bottom() - 1, selectionBounds.width() + 1, selectionBounds.height() + 1);
+
+	worldSelectionBounds.translate(QPoint(-0.5f * static_cast<float>(selectionImage->width()), -0.5f * static_cast<float>(selectionImage->height())));
 
 	shape<SelectionQuad>("SelectionQuad")->setImage(selectionImage);
 	shape<SelectionBounds>("SelectionBounds")->setBounds(worldSelectionBounds);
@@ -382,12 +396,12 @@ void Renderer::setInteractionMode(const InteractionMode& interactionMode)
 	switch (interactionMode)
 	{
 		case InteractionMode::Navigation:
-			_parent->setCursor(Qt::OpenHandCursor);
+			_parentWidget->setCursor(Qt::OpenHandCursor);
 			break;
 
 		case InteractionMode::Selection:
 		case InteractionMode::None:
-			_parent->setCursor(Qt::ArrowCursor);
+			_parentWidget->setCursor(Qt::ArrowCursor);
 			break;
 
 		default:
@@ -523,12 +537,7 @@ void Renderer::renderShapes()
 {
 	//qDebug() << "Render" << _shapes.size() << "shapes";
 
-	//qDebug() << modelView();
-	//qDebug() << projection();
-
 	for (auto key : _shapes.keys()) {
-		_shapes[key]->setModelView(modelView());
-		_shapes[key]->setProjectionMatrix(projection());
 		_shapes[key]->render();
 	}
 }

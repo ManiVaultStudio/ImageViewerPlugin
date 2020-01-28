@@ -19,6 +19,12 @@ public:
 	 */
 	SelectionBounds(Renderer* renderer, const QString& name, const float& z = 0.f, const QColor& color = QColor(255, 153, 0, 150));
 
+	/**
+	 * Sets the size
+	 * @param size Size
+	 */
+	void setSize(const QSize& size);
+
 	/** Set bounds
 	 * @param bounds Bounds
 	 */

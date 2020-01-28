@@ -61,7 +61,7 @@ void SelectionBufferQuad::setSize(const QSize& size)
 		_fbos["SelectionBuffer"] = QSharedPointer<QOpenGLFramebufferObject>::create(_size.width(), _size.height());
 	}
 
-	setRectangle(QRectF(0, 0, _size.width(), _size.height()));
+	setRectangle(QRectF(QPointF(), QSizeF(static_cast<float>(_size.width()), static_cast<float>(_size.height()))));
 
 	emit sizeChanged(_size);
 }
@@ -274,7 +274,7 @@ void SelectionBufferQuad::onMousePressEvent(QMouseEvent* mouseEvent)
 	}
 
 	if (mouseEvent->button() == Qt::LeftButton) {
-		_mousePositions.push_back(_renderer->screenToWorld(_modelViewMatrix, _projectionMatrix, mouseEvent->pos()));
+		_mousePositions.push_back(_renderer->screenToWorld(modelViewMatrix(), _renderer->projectionMatrix(), mouseEvent->pos()));
 	}
 
 	update();
@@ -317,7 +317,7 @@ void SelectionBufferQuad::onMouseMoveEvent(QMouseEvent* mouseEvent)
 	//qDebug() << "Mouse move event for" << _name;
 
 	if (_renderer->selectionType() != SelectionType::Polygon) {
-		_mousePositions.push_back(_renderer->screenToWorld(_modelViewMatrix, _projectionMatrix, QPointF(mouseEvent->pos())));
+		_mousePositions.push_back(_renderer->screenToWorld(modelViewMatrix(), _renderer->projectionMatrix(), QPointF(mouseEvent->pos())));
 		update();
 	}
 }

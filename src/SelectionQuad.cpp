@@ -25,7 +25,7 @@ void SelectionQuad::setImage(std::shared_ptr<QImage> image)
 	texture("Quad")->setMinMagFilters(QOpenGLTexture::Nearest, QOpenGLTexture::Nearest);
 	texture("Quad")->setWrapMode(QOpenGLTexture::ClampToEdge);
 
-	setRectangle(QRectF(0, 0, image->width(), image->height()));
+	setRectangle(QRectF(QPointF(), QSizeF(static_cast<float>(image->width()), static_cast<float>(image->height()))));
 
 	emit changed(this);
 }

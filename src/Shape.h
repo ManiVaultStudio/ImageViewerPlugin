@@ -73,23 +73,26 @@ public:
 	/** Returns whether the shape should be rendered */
 	virtual bool canRender() const;
 	
+	/** Returns the model matrix */
+	QMatrix4x4 modelMatrix() const;
+
+	/**
+	 * Sets the model matrix
+	 * @param modelMatrix Model matrix
+	 */
+	void setModelMatrix(const QMatrix4x4& modelMatrix);
+
+	/** Returns the translation */
+	QVector3D translation() const;
+
+	/**
+	 * Set translation
+	 * @param translation Translation
+	 */
+	void setTranslation(const QVector3D& translation);
+
 	/** Returns the model > view matrix */
 	QMatrix4x4 modelViewMatrix() const;
-
-	/**
-	 * Sets the model > view matrix
-	 * @param modelViewMatrix Model > view matrix
-	 */
-	void setModelView(const QMatrix4x4& modelViewMatrix);
-
-	/** Returns the projection matrix */
-	QMatrix4x4 projectionMatrix() const;
-
-	/**
-	 * Sets the projection matrix
-	 * @param projectionMatrix Projection matrix
-	 */
-	void setProjectionMatrix(const QMatrix4x4& projectionMatrix);
 
 	/** Returns the model > view > projection matrix */
 	QMatrix4x4 modelViewProjectionMatrix() const;
@@ -288,15 +291,10 @@ signals:
 	 */
 	void enabledChanged(const bool& enabled);
 
-	/** Signals that the model > view matrix changed
-	 * @param modelView Model > view matrix
+	/** Signals that the model matrix changed
+	 * @param modelMatrix Model matrix
 	 */
-	void modelViewMatrixChanged(const QMatrix4x4& modelViewMatrix);
-
-	/** Signals that the projection matrix changed
-	 * @param projectionMatrix Projection matrix
-	 */
-	void projectionMatrixChanged(const QMatrix4x4& projectionMatrix);
+	void modelMatrixChanged(const QMatrix4x4& modelMatrix);
 
 	/** Signals that the shape changed */
 	void changed(Shape* shape);
@@ -308,8 +306,7 @@ protected:
 	int															_mouseEvents;				/** Defines which type of mouse events should be processed by the shape */
 	bool														_initialized;				/** Whether the shape is initialized or not */
 	bool														_enabled;					/** Whether the shape is enabled or not */
-	QMatrix4x4													_modelViewMatrix;			/** Model > view matrix */
-	QMatrix4x4													_projectionMatrix;			/** Projection matrix */
+	QMatrix4x4													_modelMatrix;				/** Model matrix */
 	QMap<QString, QSharedPointer<QOpenGLShaderProgram>>			_shaderPrograms;			/** OpenGL shader program */
 	QMap<QString, QSharedPointer<QOpenGLVertexArrayObject>>		_vaos;						/** OpenGL Vertex Array Object (VAO) */
 	QMap<QString, QSharedPointer<QOpenGLBuffer>>				_vbos;						/** OpenGL Vertex Buffer Object (VBO) */

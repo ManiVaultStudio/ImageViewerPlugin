@@ -7,6 +7,8 @@
 #include <QOpenGLFramebufferObject>
 #include <QDebug>
 
+#include "Renderer.h"
+
 Shape::Shape(Renderer* renderer, const QString& name) :
 	_renderer(renderer),
 	_name(name),
@@ -14,8 +16,7 @@ Shape::Shape(Renderer* renderer, const QString& name) :
 	_mouseEvents(static_cast<int>(MouseEvent::None)),
 	_initialized(false),
 	_enabled(true),
-	_modelViewMatrix(),
-	_projectionMatrix(),
+	_modelMatrix(),
 	_shaderPrograms(),
 	_vaos(),
 	_vbos(),
@@ -115,43 +116,43 @@ bool Shape::canRender() const
 	return isEnabled() && isInitialized();
 }
 
-QMatrix4x4 Shape::modelViewMatrix() const
+QMatrix4x4 Shape::modelMatrix() const
 {
-	return _modelViewMatrix;
+	return _modelMatrix;
 }
 
-void Shape::setModelView(const QMatrix4x4& modelViewMatrix)
+void Shape::setModelMatrix(const QMatrix4x4& modelMatrix)
 {
-	if (modelViewMatrix == _modelViewMatrix)
+	if (modelMatrix == _modelMatrix)
 		return;
 
-	_modelViewMatrix = modelViewMatrix;
+	_modelMatrix = modelMatrix;
 
 	//qDebug() << "Set model > view matrix for" << _name;
 
-	emit modelViewMatrixChanged(_modelViewMatrix);
+	emit modelMatrixChanged(_modelMatrix);
 }
 
-QMatrix4x4 Shape::projectionMatrix() const
+QVector3D Shape::translation() const
 {
-	return _projectionMatrix;
+	const auto translationColumn = _modelMatrix.column(3);
+
+	return QVector3D(translationColumn.x(), translationColumn.y(), translationColumn.z());
 }
 
-void Shape::setProjectionMatrix(const QMatrix4x4& projectionMatrix)
+void Shape::setTranslation(const QVector3D& translation)
 {
-	if (projectionMatrix == _projectionMatrix)
-		return;
+	_modelMatrix.setColumn(3, QVector4D(translation.x(), translation.y(), translation.z(), 1.f));
+}
 
-	_projectionMatrix = projectionMatrix;
-
-	//qDebug() << "Set projection matrix for" << _name;
-
-	emit projectionMatrixChanged(_projectionMatrix);
+QMatrix4x4 Shape::modelViewMatrix() const
+{
+	return _renderer->viewMatrix() * _modelMatrix;
 }
 
 QMatrix4x4 Shape::modelViewProjectionMatrix() const
 {
-	return _projectionMatrix * _modelViewMatrix;
+	return _renderer->projectionMatrix() * modelViewMatrix();
 }
 
 void Shape::render()

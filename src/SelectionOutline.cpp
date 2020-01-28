@@ -161,7 +161,7 @@ void SelectionOutline::onMousePressEvent(QMouseEvent* mouseEvent)
 	}
 	
 	if (mouseEvent->button() == Qt::LeftButton) {
-		_mousePositions.push_back(_renderer->screenToWorld(_modelViewMatrix, _projectionMatrix, mouseEvent->pos()));
+		_mousePositions.push_back(_renderer->screenToWorld(modelViewMatrix(), _renderer->projectionMatrix(), mouseEvent->pos()));
 	}
 
 	update();
@@ -204,7 +204,7 @@ void SelectionOutline::onMouseMoveEvent(QMouseEvent* mouseEvent)
 	//qDebug() << "Mouse move event for" << _name;
 	
 	if (_renderer->selectionType() != SelectionType::Polygon) {
-		_mousePositions.push_back(_renderer->screenToWorld(_modelViewMatrix, _projectionMatrix, QPointF(mouseEvent->pos())));
+		_mousePositions.push_back(_renderer->screenToWorld(modelViewMatrix(), _renderer->projectionMatrix(), QPointF(mouseEvent->pos())));
 
 		update();
 	}

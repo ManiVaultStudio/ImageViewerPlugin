@@ -15,6 +15,10 @@ SelectionBounds::SelectionBounds(Renderer* renderer, const QString& name, const 
 {
 }
 
+void SelectionBounds::setSize(const QSize& size)
+{
+}
+
 void SelectionBounds::setBounds(const QRectF& bounds)
 {
 	if (bounds == _bounds)

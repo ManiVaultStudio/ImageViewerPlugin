@@ -12,10 +12,11 @@ std::uint32_t Quad::_textureAttribute	= 1;
 Quad::Quad(Renderer* renderer, const QString& name, const float& z /*= 0.f*/) :
 	Shape(renderer, name),
 	_rectangle(),
-	_z(z),
 	_vertexData()
 {
 	_vertexData.resize(20);
+
+	setTranslation(QVector3D(0.f, 0.f, z));
 }
 
 void Quad::initialize()
@@ -95,23 +96,6 @@ QSizeF Quad::size() const
 	return _rectangle.size();
 }
 
-float Quad::z() const
-{
-	return _z;
-}
-
-void Quad::setZ(const float& z)
-{
-	if (z == _z)
-		return;
-
-	_z = z;
-
-	qDebug() << "Set position along z-axis" << _z << "for" << _name;
-
-	emit zChanged(_z);
-}
-
 void Quad::setRectangle(const QRectF& rectangle)
 {
 	if (rectangle == _rectangle)
@@ -119,7 +103,9 @@ void Quad::setRectangle(const QRectF& rectangle)
 
 	_rectangle = rectangle;
 
-	qDebug() << "Set quad rectangle" << _rectangle;
+	//qDebug() << "Set quad rectangle" << _rectangle;
+
+	setTranslation(QVector3D(-0.5f * rectangle.width(), -0.5f * rectangle.bottom(), _modelMatrix.column(3).z()));
 
 	emit rectangleChanged(_rectangle);
 	emit sizeChanged(_rectangle.size());
@@ -160,11 +146,7 @@ void Quad::configureShaderProgram(const QString& name)
 	auto quadProgram = shaderProgram("Quad");
 
 	if (name == "Quad") {
-		QMatrix4x4 translate;
-
-		translate.translate(0.f, 0.f, _z);
-
-		quadProgram->setUniformValue("transform", modelViewProjectionMatrix() * translate);
+		quadProgram->setUniformValue("transform", modelViewProjectionMatrix());
 	}
 }
 
@@ -174,10 +156,10 @@ void Quad::createQuad()
 	const float height	= _rectangle.height();
 
 	const float coordinates[4][3] = {
-	  { width, height, 0.0f },
-	  { 0.0f, height, 0.0f },
-	  { 0.0f, 0.0f, 0.0f },
-	  { width, 0.0f, 0.0f }
+	  { _rectangle.right(),		_rectangle.bottom(),	0.0f },
+	  { _rectangle.left(),		_rectangle.bottom(),	0.0f },
+	  { _rectangle.left(),		_rectangle.top(),		0.0f },
+	  { _rectangle.right(),		_rectangle.top(),		0.0f }
 	};
 
 	for (int j = 0; j < 4; ++j)

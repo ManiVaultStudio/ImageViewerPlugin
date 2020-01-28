@@ -27,9 +27,9 @@ class Renderer : public QObject, public hdps::Renderer
 public:
 	/**
 	 * Constructor
-	 * @param parent Parent widget
+	 * @param parentWidget Parent widget
 	 */
-	Renderer(QWidget* parent);
+	Renderer(QWidget* parentWidget);
 
 public:
 	/** Renders the content */
@@ -78,11 +78,11 @@ public:
 	*/
 	QVector3D screenToWorld(const QMatrix4x4& modelViewMatrix, const QMatrix4x4& projectionMatrix, const QPointF& screenPoint) const;
 
-	/** Returns the model view matrix */
-	QMatrix4x4 modelView() const;
+	/** Returns the view matrix */
+	QMatrix4x4 viewMatrix() const;
 
 	/** Returns the projection matrix */
-	QMatrix4x4 projection() const;
+	QMatrix4x4 projectionMatrix() const;
 
 	/**
 	 * Move the view horizontally/vertically
@@ -100,11 +100,11 @@ public:
 	void zoomBy(const float& factor);
 
 	/**
-	 * Zoom at position
-	 * @param position Position to zoom around in screen coordinates
+	 * Zoom around screen point
+	 * @param screenPoint Point in screen coordinates
 	 * @param factor Factor to zoom by
 	 */
-	void zoomAround(const QPointF& position, const float& factor);
+	void zoomAround(const QPointF& screenPoint, const float& factor);
 
 	/** Zoom to extents of the rendered image quad */
 	void zoomExtents();
@@ -267,7 +267,7 @@ signals:
 	void dirty();
 
 protected:
-	QWidget*								_parent;				/** Pointer to parent widget */
+	QWidget*								_parentWidget;			/** Pointer to parent widget */
 	QMap<QString, QSharedPointer<Shape>>	_shapes;				/** Shapes map */
 	InteractionMode							_interactionMode;		/** Type of interaction e.g. navigation, selection and window/level */
 	QVector<QSharedPointer<QMouseEvent>>	_mouseEvents;			/** Recorded mouse events during interaction */
