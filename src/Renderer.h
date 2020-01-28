@@ -157,7 +157,10 @@ public:
 	 * @param name Name of the shape
 	 */
 	template<typename T>
-	T* shape(const QString& name);
+	T* shape(const QString& name)
+	{
+		return dynamic_cast<T*>(_shapes[name].get());
+	}
 
 	/** Returns the interaction mode */
 	InteractionMode interactionMode() const;
@@ -267,6 +270,7 @@ protected:
 	QWidget*								_parent;				/** Pointer to parent widget */
 	QMap<QString, QSharedPointer<Shape>>	_shapes;				/** Shapes map */
 	InteractionMode							_interactionMode;		/** Type of interaction e.g. navigation, selection and window/level */
+	QVector<QSharedPointer<QMouseEvent>>	_mouseEvents;			/** Recorded mouse events during interaction */
 	QPointF									_pan;					/** Move view horizontally/vertically */
 	float									_zoom;					/** Zoom view in/out */
 	float									_zoomSensitivity;		/** Zoom sensitivity */

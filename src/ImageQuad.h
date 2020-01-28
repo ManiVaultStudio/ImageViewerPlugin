@@ -98,13 +98,6 @@ signals:
 	 */
 	void windowLevelChanged(const float& window, const float& level);
 
-	/**
-	 * Invoked when the size changed
-	 * @param window Display window
-	 * @param level Display level
-	 */
-	void sizeChanged(const QSize& size);
-
 protected:
 	std::uint16_t		_imageMin;				/** Minimum pixel value in the image */
 	std::uint16_t		_imageMax;				/** Maximum pixel value in the image  */

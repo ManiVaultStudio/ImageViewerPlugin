@@ -33,10 +33,9 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	setMouseTracking(true);
 
 	connect(_renderer.get(), &Renderer::dirty, this, &ImageViewerWidget::onRendererDirty);
+
 	connect(_renderer->selectionBufferQuad(), &SelectionBufferQuad::selectionEnded, this, &ImageViewerWidget::publishSelection);
 
-	connect(_imageViewerPlugin, &ImageViewerPlugin::currentDatasetChanged, this, &ImageViewerWidget::onCurrentDatasetChanged);
-	connect(_imageViewerPlugin, &ImageViewerPlugin::currentImageIdChanged, this, &ImageViewerWidget::onCurrentImageIdChanged);
 	connect(_imageViewerPlugin, &ImageViewerPlugin::selectionImageChanged, this, [&](std::shared_ptr<QImage> image, const QRect& bounds) {
 		makeCurrent();
 		_renderer->setSelectionImage(image, bounds);
@@ -111,11 +110,7 @@ void ImageViewerWidget::initializeGL()
 
 void ImageViewerWidget::resizeGL(int w, int h)
 {
-	qDebug() << "Resizing image viewer";
-
-	_renderer->zoomExtents();
-
-	_renderer->resize(QSize(w, h));
+//	_renderer->resize(QSize(w, h));
 }
 
 void ImageViewerWidget::paintGL() {
@@ -129,16 +124,6 @@ void ImageViewerWidget::paintGL() {
 	for (const QOpenGLDebugMessage& message : _openglDebugLogger->loggedMessages())
 		qDebug() << message;
 #endif
-}
-
-void ImageViewerWidget::onCurrentDatasetChanged(const QString& currentDataset)
-{
-//	endSelection();
-}
-
-void ImageViewerWidget::onCurrentImageIdChanged(const std::int32_t& currentImageId)
-{
-//	endSelection();
 }
 
 void ImageViewerWidget::onRendererDirty()
@@ -186,13 +171,12 @@ void ImageViewerWidget::keyPressEvent(QKeyEvent* keyEvent)
 				break;
 
 			case Qt::Key::Key_Space:
-				//startNavigationMode();
+				_renderer->setInteractionMode(InteractionMode::Navigation);
 				break;
 
 			default:
 				break;
 		}
-		/**/
 	}
 
 	QOpenGLWidget::keyPressEvent(keyEvent);
@@ -218,7 +202,7 @@ void ImageViewerWidget::keyReleaseEvent(QKeyEvent* keyEvent)
 			}
 
 			case Qt::Key::Key_Space:
-				//endNavigationMode();
+				_renderer->setInteractionMode(InteractionMode::Selection);
 				break;
 
 			default:
@@ -240,7 +224,7 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 	{
 		case Qt::LeftButton:
 		{
-			if (_imageViewerPlugin->allowsPixelSelection()) {
+			if (_renderer->interactionMode() != InteractionMode::Navigation && _imageViewerPlugin->allowsPixelSelection()) {
 				_renderer->setInteractionMode(InteractionMode::Selection);
 				_renderer->selectionBufferQuad()->activate();
 				_renderer->selectionOutline()->activate();

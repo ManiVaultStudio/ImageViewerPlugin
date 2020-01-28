@@ -122,6 +122,7 @@ void Quad::setRectangle(const QRectF& rectangle)
 	qDebug() << "Set quad rectangle" << _rectangle;
 
 	emit rectangleChanged(_rectangle);
+	emit sizeChanged(_rectangle.size());
 
 	createQuad();
 }

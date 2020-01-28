@@ -11,17 +11,12 @@
 #include "SelectionBufferQuad.h"
 #include "SelectionOutline.h"
 
-template SelectionBounds* Renderer::shape<SelectionBounds>(const QString& name);
-template ImageQuad* Renderer::shape<ImageQuad>(const QString& name);
-template SelectionQuad* Renderer::shape<SelectionQuad>(const QString& name);
-template SelectionBufferQuad* Renderer::shape<SelectionBufferQuad>(const QString& name);
-template SelectionOutline* Renderer::shape<SelectionOutline>(const QString& name);
-
 Renderer::Renderer(QWidget* parent) :
 	hdps::Renderer(),
 	_parent(parent),
 	_shapes(),
 	_interactionMode(InteractionMode::Selection),
+	_mouseEvents(),
 	_pan(),
 	_zoom(1.f),
 	_zoomSensitivity(0.05f),
@@ -32,6 +27,9 @@ Renderer::Renderer(QWidget* parent) :
 	_brushRadiusDelta(1.f)
 {
 	createShapes();
+
+	// Reset the view when the image size changes
+	connect(shape<ImageQuad>("ImageQuad"), &ImageQuad::sizeChanged, this, [&]() { zoomExtents(); });
 }
 
 void Renderer::render()
@@ -44,7 +42,9 @@ void Renderer::render()
 
 void Renderer::resize(QSize renderSize)
 {
-	qDebug() << "Selection renderer resize";
+	qDebug() << "Renderer resize";
+
+	zoomExtents();
 }
 
 void Renderer::init()
@@ -68,6 +68,8 @@ void Renderer::mousePressEvent(QMouseEvent* mouseEvent)
 {
 	//qDebug() << "Mouse press event";
 
+	_mouseEvents.push_back(QSharedPointer<QMouseEvent>::create(*mouseEvent));
+
 	for (auto key : _shapes.keys()) {
 		auto shape = _shapes[key];
 
@@ -80,65 +82,42 @@ void Renderer::mouseMoveEvent(QMouseEvent* mouseEvent)
 {
 	//qDebug() << "Mouse move event";
 
+	switch (mouseEvent->buttons())
+	{
+		case Qt::LeftButton:
+		{
+			switch (_interactionMode)
+			{
+				case InteractionMode::Navigation:
+				{
+					const auto previous	= _mouseEvents[_mouseEvents.size() - 2];
+					const auto current	= _mouseEvents[_mouseEvents.size() - 1];
+					const auto delta	= current->pos() - previous->pos();
+					
+					pan(QPointF(delta.x(), delta.y()));
+
+					emit dirty();
+					break;
+				}
+			}
+		}
+	}
+
+	_mouseEvents.push_back(QSharedPointer<QMouseEvent>::create(*mouseEvent));
+
 	for (auto key : _shapes.keys()) {
 		auto shape = _shapes[key];
 
 		if (shape->isActive() && shape->handlesMouseMoveEvents())
 			shape->onMouseMoveEvent(mouseEvent);
 	}
-
-	/*
-	qDebug() << "Mouse wheel event" << interactionModeTypeName(_interactionMode);
-
-	switch (_interactionMode)
-	{
-		case InteractionMode::Navigation:
-		{
-			const auto world_x = (wheelEvent->posF().x() - _pan.x()) / _zoom;
-			const auto world_y = (wheelEvent->posF().y() - _pan.y()) / _zoom;
-
-			auto zoomCenter = wheelEvent->posF();
-
-			//zoomCenter.setY(height() - wheelEvent->posF().y());
-
-			if (wheelEvent->delta() > 0) {
-				zoomAt(zoomCenter, 1.f - _zoomSensitivity);
-			}
-			else {
-				zoomAt(zoomCenter, 1.f + _zoomSensitivity);
-			}
-
-			update();
-			break;
-		}
-
-		case InteractionMode::Selection:
-		{
-			if (_renderer->selectionType() == SelectionType::Brush) {
-				if (wheelEvent->delta() > 0) {
-					_renderer->brushSizeIncrease();
-				}
-				else {
-					_renderer->brushSizeDecrease();
-				}
-
-				_renderer->selectionOutline()->update(mousePositionsWorld(), _renderer->selectionType(), _renderer->brushRadius());
-
-				update();
-			}
-
-			break;
-		}
-
-		default:
-			break;
-	}
-	*/
 }
 
 void Renderer::mouseReleaseEvent(QMouseEvent* mouseEvent)
 {
 	//qDebug() << "Mouse release event";
+
+	_mouseEvents.push_back(QSharedPointer<QMouseEvent>::create(*mouseEvent));
 
 	for (auto key : _shapes.keys()) {
 		auto shape = _shapes[key];
@@ -159,13 +138,46 @@ void Renderer::mouseWheelEvent(QWheelEvent* wheelEvent)
 			shape->onMouseWheelEvent(wheelEvent);
 	}
 
-	if (selectionType() == SelectionType::Brush) {
-		if (wheelEvent->delta() > 0) {
-			brushSizeIncrease();
+//	qDebug() << "Mouse wheel event" << interactionModeTypeName(_interactionMode);
+
+	switch (_interactionMode)
+	{
+		case InteractionMode::Navigation:
+		{
+			const auto world_x = (wheelEvent->posF().x() - _pan.x()) / _zoom;
+			const auto world_y = (wheelEvent->posF().y() - _pan.y()) / _zoom;
+
+			auto zoomCenter = wheelEvent->posF();
+
+			//zoomCenter.setY(height() - wheelEvent->posF().y());
+
+			if (wheelEvent->delta() > 0) {
+				zoomAt(zoomCenter, 1.f - _zoomSensitivity);
+			}
+			else {
+				zoomAt(zoomCenter, 1.f + _zoomSensitivity);
+			}
+
+			emit dirty();
+			break;
 		}
-		else {
-			brushSizeDecrease();
+
+		case InteractionMode::Selection:
+		{
+			if (selectionType() == SelectionType::Brush) {
+				if (wheelEvent->delta() > 0) {
+					brushSizeIncrease();
+				}
+				else {
+					brushSizeDecrease();
+				}
+			}
+
+			break;
 		}
+
+		default:
+			break;
 	}
 }
 
@@ -213,7 +225,7 @@ void Renderer::zoomBy(const float& factor)
 {
 	_zoom *= factor;
 
-	qDebug() << "Zoom" << _zoom;
+	qDebug() << "Zoom by" << _zoom;
 
 	_pan.setX(_pan.x() * factor);
 	_pan.setY(_pan.y() * factor);
@@ -230,34 +242,31 @@ void Renderer::zoomAt(const QPointF& screenPosition, const float& factor) {
 
 void Renderer::zoomExtents()
 {
-	/*
-	if (_imageViewerPlugin->currentDatasetName().isEmpty())
-		return;
+	qDebug() << "Zoom extents";
 
-	qDebug() << "Zoom extents" << _zoom;
+	const auto imageQuadSize = shape<ImageQuad>("ImageQuad")->size();
 
-	auto* imageQuad = _renderer->shape<ImageQuad>("ImageQuad");
-
-	zoomToRectangle(QRectF(QPointF(), QSizeF(imageQuad->size().width(), imageQuad->size().height())));
-	*/
+	zoomToRectangle(QRectF(QPointF(), imageQuadSize));
 }
 
 void Renderer::zoomToRectangle(const QRectF& rectangle)
 {
+	if (!rectangle.isValid())
+		return;
+
 	qDebug() << "Zoom to rectangle" << rectangle;
 
 	resetView();
 
-	const auto center = rectangle.center();
-	const auto factorX = (_parent->width() - 2 * _margin) / static_cast<float>(rectangle.width());
-	const auto factorY = (_parent->height() - 2 * _margin) / static_cast<float>(rectangle.height());
-
+	const auto center	= rectangle.center();
+	const auto factorX	= (_parent->width() - 2 * _margin) / static_cast<float>(rectangle.width());
+	const auto factorY	= (_parent->height() - 2 * _margin) / static_cast<float>(rectangle.height());
+	
 	zoomBy(factorX < factorY ? factorX : factorY);
-
 	auto* imageQuad = shape<ImageQuad>("ImageQuad");
 
-	pan(_zoom * -QPointF(center.x(), imageQuad->size().height() - center.y()));
-
+	//pan(_zoom * -QPointF(center.x(), imageQuad->size().height() - center.y()));
+	
 	emit dirty();
 }
 
@@ -283,8 +292,6 @@ void Renderer::resetView()
 	_pan.setY(0);
 
 	_zoom = 1.f;
-
-	emit dirty();
 }
 
 void Renderer::setColorImage(std::shared_ptr<QImage> colorImage)
@@ -343,12 +350,6 @@ SelectionBufferQuad* Renderer::selectionBufferQuad()
 SelectionOutline* Renderer::selectionOutline()
 {
 	return shape<SelectionOutline>("SelectionOutline");
-}
-
-template<typename T>
-T* Renderer::shape(const QString& name)
-{
-	return dynamic_cast<T*>(_shapes[name].get());
 }
 
 InteractionMode Renderer::interactionMode() const
@@ -506,6 +507,9 @@ void Renderer::initializeShapes()
 void Renderer::renderShapes()
 {
 	//qDebug() << "Render" << _shapes.size() << "shapes";
+
+	//qDebug() << modelView();
+	//qDebug() << projection();
 
 	for (auto key : _shapes.keys()) {
 		_shapes[key]->setModelView(modelView());

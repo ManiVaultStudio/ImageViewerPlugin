@@ -72,8 +72,6 @@ void ImageQuad::setImage(std::shared_ptr<QImage> image)
 
 	resetWindowLevel();
 
-	sizeChanged(image->size());
-
 	emit changed(this);
 }
 
@@ -177,6 +175,8 @@ QVector<QPoint> ImageQuad::mousePositions() const
 
 void ImageQuad::update()
 {
+	Quad::update();
+
 	const auto mousePosition0	= _mousePositions[_mousePositions.size() - 2];
 	const auto mousePosition1	= _mousePositions.back();
 	const auto deltaWindow		= (mousePosition1.x() - mousePosition0.x()) / 150.f;

@@ -59,18 +59,6 @@ public:
 
 public:
 	/**
-	 * Invoked when the current dataset changes
-	 * @param currentDataset Current dataset name
-	 */
-	void onCurrentDatasetChanged(const QString& currentDataset);
-
-	/**
-	 * Invoked when the current image index changes
-	 * @param currentImageId Current image index
-	 */
-	void onCurrentImageIdChanged(const std::int32_t& currentImageId);
-
-	/**
 	 * Invoked when the renderer becomes dirty */
 	void onRendererDirty();
 	

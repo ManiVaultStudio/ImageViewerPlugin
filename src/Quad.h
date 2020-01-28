@@ -81,6 +81,12 @@ signals:
 	void rectangleChanged(const QRectF& rectangle);
 
 	/**
+	 * Invoked when the quad size changed
+	 * @param size Quad size
+	 */
+	void sizeChanged(const QSizeF& size);
+
+	/**
 	 * Signals that z changed
 	 * @param z Position along z-axis
 	 */

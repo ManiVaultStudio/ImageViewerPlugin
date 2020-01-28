@@ -127,11 +127,9 @@ void Shape::setModelView(const QMatrix4x4& modelViewMatrix)
 
 	_modelViewMatrix = modelViewMatrix;
 
-	qDebug() << "Set model > view matrix for" << _name;
+	//qDebug() << "Set model > view matrix for" << _name;
 
 	emit modelViewMatrixChanged(_modelViewMatrix);
-	
-	emit changed(this);
 }
 
 QMatrix4x4 Shape::projectionMatrix() const
@@ -146,11 +144,9 @@ void Shape::setProjectionMatrix(const QMatrix4x4& projectionMatrix)
 
 	_projectionMatrix = projectionMatrix;
 
-	qDebug() << "Set projection matrix for" << _name;
+	//qDebug() << "Set projection matrix for" << _name;
 
 	emit projectionMatrixChanged(_projectionMatrix);
-
-	emit changed(this);
 }
 
 QMatrix4x4 Shape::modelViewProjectionMatrix() const
