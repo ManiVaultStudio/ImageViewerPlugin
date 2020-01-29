@@ -19,12 +19,6 @@ public:
 	 */
 	SelectionBounds(Renderer* renderer, const QString& name, const float& z = 0.f, const QColor& color = QColor(255, 153, 0, 150));
 
-	/**
-	 * Sets the size
-	 * @param size Size
-	 */
-	void setSize(const QSize& size);
-
 	/** Set bounds
 	 * @param bounds Bounds
 	 */
@@ -36,15 +30,6 @@ public:
 	void setColor(const QColor& color);
 
 protected:
-	/** Adds the OpenGL shader programs that the shape needs */
-	void addShaderPrograms();
-
-	/** Adds the OpenGL vertex array objects that the shape needs */
-	void addVAOs();
-
-	/** Adds the OpenGL vertex buffer objects that the shape needs */
-	void addVBOs();
-
 	/** Adds the OpenGL textures that the shape needs */
 	void addTextures();
 

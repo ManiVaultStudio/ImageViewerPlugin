@@ -47,6 +47,9 @@ public:
 	/** Return whether the renderer is initialized */
 	bool isInitialized() const;
 
+	/** Returns mouse events that were recorded during interaction */
+	QVector<QSharedPointer<QMouseEvent>> mouseEvents() const;
+
 	/**
 	 * Invoked when the mouse button is pressed
 	 * @param mouseEvent Mouse event
@@ -71,12 +74,11 @@ public:
 	 */
 	void mouseWheelEvent(QWheelEvent* wheelEvent);
 
-	/** Convert screen coordinate to world coordinates
+	/** Convert screen points to world point
 	 * @param modelViewMatrix Model > view matrix
-	 * @param projectionMatrix Projection matrix
 	 * @param screenPoint Point in screen coordinates
 	*/
-	QVector3D screenToWorld(const QMatrix4x4& modelViewMatrix, const QMatrix4x4& projectionMatrix, const QPointF& screenPoint) const;
+	QVector3D screenToWorld(const QMatrix4x4& modelViewMatrix, const QPointF& screenPoint) const;
 
 	/** Returns the view matrix */
 	QMatrix4x4 viewMatrix() const;

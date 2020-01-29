@@ -36,16 +36,16 @@ public:
 	 */
 	void setLineWidth(const float& lineWidth);
 
-	/** Return position along z-axis */
-	float z() const;
-
-	/**
-	 * Set position along z-axis
-	 * @param z Position along z-axis
-	 */
-	void setZ(const float& z);
-
 protected:
+	/** Adds the OpenGL shader programs that the shape needs */
+	void addShaderPrograms();
+
+	/** Adds the OpenGL vertex array objects that the shape needs */
+	void addVAOs();
+
+	/** Adds the OpenGL vertex buffer objects that the shape needs */
+	void addVBOs();
+
 	/**
 	 * Set polyline points
 	 * @param points Points in world coordinates
@@ -71,18 +71,11 @@ signals:
 	 */
 	void lineWidthChanged(const float& lineWidth);
 
-	/**
-	 * Signals that z changed
-	 * @param z Position along z-axis
-	 */
-	void zChanged(const float& z);
-
 protected:
-	float					_z;						/** Position along z-axis */
 	bool					_closed;				/** Whether to close the polyline or not */
 	float					_lineWidth;				/** Line width in world space */
 	float					_textureScale;			/** Texture scale */
 	std::uint32_t			_noPoints;				/** Number of points */
+
 	static std::uint32_t	_vertexAttribute;		/** Quad vertex attribute location */
-	static std::uint32_t	_textureAttribute;		/** Quad texture attribute location */
 };

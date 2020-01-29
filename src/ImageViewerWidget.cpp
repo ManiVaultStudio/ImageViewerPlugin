@@ -225,8 +225,6 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 				_renderer->setInteractionMode(InteractionMode::Selection);
 				_renderer->selectionBufferQuad()->activate();
 				_renderer->selectionOutline()->activate();
-				_renderer->selectionOutline()->reset();
-				_renderer->selectionBufferQuad()->reset();
 			}
 
 			break;
@@ -265,16 +263,6 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 
 	switch (mouseEvent->button())
 	{
-		case Qt::LeftButton:
-		{
-			if (_imageViewerPlugin->allowsPixelSelection()) {
-				_renderer->selectionOutline()->reset();
-				_renderer->selectionBufferQuad()->reset();
-			}
-
-			break;
-		}
-
 		case Qt::RightButton:
 		{
 			_renderer->setInteractionMode(InteractionMode::Selection);

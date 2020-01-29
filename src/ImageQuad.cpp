@@ -21,7 +21,7 @@ ImageQuad::ImageQuad(Renderer* renderer, const QString& name, const float& z /*=
 	_level(0.5f),
 	_mousePositions()
 {
-	_mouseEvents = static_cast<int>(MouseEvent::Press) | static_cast<int>(MouseEvent::Release) | static_cast<int>(MouseEvent::Move);
+	_handleMouseEvents = static_cast<int>(MouseEvent::Press) | static_cast<int>(MouseEvent::Release) | static_cast<int>(MouseEvent::Move);
 }
 
 void ImageQuad::setImage(std::shared_ptr<QImage> image)

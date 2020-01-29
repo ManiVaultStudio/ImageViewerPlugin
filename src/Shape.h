@@ -303,7 +303,7 @@ protected:
 	Renderer*													_renderer;					/** Pointer to renderer */
 	QString														_name;						/** Name of the shape */
 	bool														_active;					/** Shapes is being interacted with */
-	int															_mouseEvents;				/** Defines which type of mouse events should be processed by the shape */
+	int															_handleMouseEvents;			/** Defines which type of mouse events should be processed by the shape */
 	bool														_initialized;				/** Whether the shape is initialized or not */
 	bool														_enabled;					/** Whether the shape is enabled or not */
 	QMatrix4x4													_modelMatrix;				/** Model matrix */

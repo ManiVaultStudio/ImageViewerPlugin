@@ -56,21 +56,9 @@ public:
 	/** Deactivate the shape */
 	void deactivate() override;
 
-	/** Returns the mouse positions in world coordinates */
-	QVector<QVector3D> mousePositions() const;
-
 protected:
 	/** Updates the internals of the shape */
 	void update() override;
-
-	/** Adds the OpenGL shader programs that the shape needs */
-	void addShaderPrograms();
-
-	/** Adds the OpenGL vertex array objects that the shape needs */
-	void addVAOs();
-
-	/** Adds the OpenGL vertex buffer objects that the shape needs */
-	void addVBOs();
 
 	/** Adds the OpenGL textures that the shape needs */
 	void addTextures();
@@ -95,7 +83,7 @@ signals:
 	void viewRectangleChanged(const QRect& viewRectangle);
 
 protected:
-	QColor					_color;				/** Color */
-	QRect					_viewRectangle;		/** View rectangle */
-	QVector<QVector3D>		_mousePositions;	/** Recorded mouse positions in world coordinates */
+	QColor									_color;				/** Color */
+	QRect									_viewRectangle;		/** View rectangle */
+	QVector<QSharedPointer<QMouseEvent>>	_mouseEvents;		/** Recorded mouse events during interaction */
 };

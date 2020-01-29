@@ -45,3 +45,15 @@ const std::string selectionBoundsVertexShaderSource =
 const std::string selectionBoundsFragmentShaderSource =
 #include "SelectionBoundsFragment.glsl"
 ;
+
+const std::string polyline2DVertexShaderSource =
+#include "Polyline2DVertex.glsl"
+;
+
+const std::string polyline2DGeometryShaderSource =
+#include "Polyline2DGeometry.glsl"
+;
+
+const std::string polyline2DFragmentShaderSource =
+#include "Polyline2DFragment.glsl"
+;

@@ -64,10 +64,16 @@ bool Renderer::isInitialized() const
 	return _shapes["ImageQuad"]->isInitialized();
 }
 
+QVector<QSharedPointer<QMouseEvent>> Renderer::mouseEvents() const
+{
+	return _mouseEvents;
+}
+
 void Renderer::mousePressEvent(QMouseEvent* mouseEvent)
 {
 	//qDebug() << "Mouse press event";
 
+	_mouseEvents.clear();
 	_mouseEvents.push_back(QSharedPointer<QMouseEvent>::create(*mouseEvent));
 
 	for (auto key : _shapes.keys()) {
@@ -76,6 +82,20 @@ void Renderer::mousePressEvent(QMouseEvent* mouseEvent)
 		if (shape->isActive() && shape->handlesMousePressEvents())
 			shape->onMousePressEvent(mouseEvent);
 	}
+}
+
+void Renderer::mouseReleaseEvent(QMouseEvent* mouseEvent)
+{
+	//qDebug() << "Mouse release event";
+
+	for (auto key : _shapes.keys()) {
+		auto shape = _shapes[key];
+
+		if (shape->isActive() && shape->handlesMouseReleaseEvents())
+			shape->onMouseReleaseEvent(mouseEvent);
+	}
+
+	_mouseEvents.clear();
 }
 
 void Renderer::mouseMoveEvent(QMouseEvent* mouseEvent)
@@ -90,10 +110,10 @@ void Renderer::mouseMoveEvent(QMouseEvent* mouseEvent)
 			{
 				case InteractionMode::Navigation:
 				{
-					const auto previous	= _mouseEvents[_mouseEvents.size() - 2];
-					const auto current	= _mouseEvents[_mouseEvents.size() - 1];
-					const auto delta	= current->pos() - previous->pos();
-					
+					const auto previous = _mouseEvents[_mouseEvents.size() - 2];
+					const auto current = _mouseEvents[_mouseEvents.size() - 1];
+					const auto delta = current->pos() - previous->pos();
+
 					pan(QPointF(delta.x(), delta.y()));
 
 					emit dirty();
@@ -110,20 +130,6 @@ void Renderer::mouseMoveEvent(QMouseEvent* mouseEvent)
 
 		if (shape->isActive() && shape->handlesMouseMoveEvents())
 			shape->onMouseMoveEvent(mouseEvent);
-	}
-}
-
-void Renderer::mouseReleaseEvent(QMouseEvent* mouseEvent)
-{
-	//qDebug() << "Mouse release event";
-
-	_mouseEvents.push_back(QSharedPointer<QMouseEvent>::create(*mouseEvent));
-
-	for (auto key : _shapes.keys()) {
-		auto shape = _shapes[key];
-
-		if (shape->isActive() && shape->handlesMouseReleaseEvents())
-			shape->onMouseReleaseEvent(mouseEvent);
 	}
 }
 
@@ -178,9 +184,9 @@ void Renderer::mouseWheelEvent(QWheelEvent* wheelEvent)
 	}
 }
 
-QVector3D Renderer::screenToWorld(const QMatrix4x4& modelViewMatrix, const QMatrix4x4& projectionMatrix, const QPointF& screenPoint) const
+QVector3D Renderer::screenToWorld(const QMatrix4x4& modelViewMatrix, const QPointF& screenPoint) const
 {
-	return QVector3D(screenPoint.x(), _parentWidget->height()- screenPoint.y(), 0).unproject(modelViewMatrix, projectionMatrix, QRect(0, 0, _parentWidget->width(), _parentWidget->height()));
+	return QVector3D(screenPoint.x(), _parentWidget->height()- screenPoint.y(), 0).unproject(modelViewMatrix, projectionMatrix(), QRect(0, 0, _parentWidget->width(), _parentWidget->height()));
 }
 
 QMatrix4x4 Renderer::viewMatrix() const

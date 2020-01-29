@@ -13,7 +13,7 @@ Shape::Shape(Renderer* renderer, const QString& name) :
 	_renderer(renderer),
 	_name(name),
 	_active(false),
-	_mouseEvents(static_cast<int>(MouseEvent::None)),
+	_handleMouseEvents(static_cast<int>(MouseEvent::None)),
 	_initialized(false),
 	_enabled(true),
 	_modelMatrix(),
@@ -290,22 +290,22 @@ void Shape::onMouseWheelEvent(QWheelEvent* wheelEvent)
 
 bool Shape::handlesMousePressEvents()
 {
-	return _mouseEvents & static_cast<int>(MouseEvent::Press);
+	return _handleMouseEvents & static_cast<int>(MouseEvent::Press);
 }
 
 bool Shape::handlesMouseReleaseEvents()
 {
-	return _mouseEvents & static_cast<int>(MouseEvent::Release);
+	return _handleMouseEvents & static_cast<int>(MouseEvent::Release);
 }
 
 bool Shape::handlesMouseMoveEvents()
 {
-	return _mouseEvents & static_cast<int>(MouseEvent::Move);
+	return _handleMouseEvents & static_cast<int>(MouseEvent::Move);
 }
 
 bool Shape::handlesMouseWheelEvents()
 {
-	return _mouseEvents & static_cast<int>(MouseEvent::Wheel);
+	return _handleMouseEvents & static_cast<int>(MouseEvent::Wheel);
 }
 
 bool Shape::isActive() const
