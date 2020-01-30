@@ -6,10 +6,10 @@
 #include <QColor>
 
 /**
- * OpenGL selection outline class
+ * Brush class
  * @author Thomas Kroes
  */
-class SelectionOutline : public Polyline2D
+class Brush : public Polyline2D
 {
 	Q_OBJECT
 
@@ -20,7 +20,7 @@ public:
 	 * @param z Depth at which to draw the shape
 	 * @param color Line color
 	 */
-	SelectionOutline(Renderer* renderer, const QString& name = "SelectionOutline", const float& z = 0.f, const QColor& color = QColor(255, 153, 0, 150));
+	Brush(Renderer* renderer, const QString& name = "Brush", const float& z = 0.f, const QColor& color = QColor(255, 153, 0, 150));
 
 	/** Invoked when a mouse button is pressed */
 	void onMousePressEvent(QMouseEvent* mouseEvent) override;
@@ -30,6 +30,12 @@ public:
 
 	/** Invoked when the mouse pointer is moved */
 	void onMouseMoveEvent(QMouseEvent* mouseEvent) override;
+
+	/** Activate the shape */
+	virtual void activate();
+
+	/** Deactivate the shape */
+	virtual void deactivate();
 
 protected:
 	/** Updates the internals of the shape */
@@ -42,8 +48,16 @@ protected:
 	 * Configure an OpenGL shader program (right after the shader program is bound in the render function)
 	 * @param name Name of the OpenGL shader program
 	 */
-	void configureShaderProgram(const QString& name) override;	
+	void configureShaderProgram(const QString& name) override;
+
+signals:
+	/**
+	 * Signals that the color changed
+	 * @param color Color
+	 */
+	void colorChanged(const QColor& color);
 
 protected:
+	QColor					_color;				/** Color */
 	QVector<QVector3D>		_mousePositions;	/** Recorded mouse positions in world coordinates */
 };

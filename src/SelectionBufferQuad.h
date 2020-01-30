@@ -33,15 +33,6 @@ public:
 	 */
 	void setSize(const QSize& size);
 
-	/** Returns the color */
-	QColor color() const;
-
-	/**
-	 * Sets the color
-	 * @param size Quad size
-	 */
-	void setColor(const QColor& color);
-
 	/** Returns the opacity */
 	float opacity() const;
 

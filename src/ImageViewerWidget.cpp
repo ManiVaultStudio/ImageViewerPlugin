@@ -31,15 +31,13 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 
 	connect(_renderer.get(), &Renderer::dirty, this, &ImageViewerWidget::onRendererDirty);
 
-	connect(_renderer->selectionBufferQuad(), &SelectionBufferQuad::selectionEnded, this, &ImageViewerWidget::publishSelection);
-
 	connect(_imageViewerPlugin, &ImageViewerPlugin::selectionImageChanged, this, [&](std::shared_ptr<QImage> image, const QRect& bounds) {
-		makeCurrent();
 		_renderer->setSelectionImage(image, bounds);
 	}, Qt::AutoConnection);
 
 	connect(_imageViewerPlugin, &ImageViewerPlugin::displayImageChanged, this, [&](std::shared_ptr<QImage> image) {
 		_renderer->setColorImage(image);
+
 	}, Qt::AutoConnection);
 
 	QSurfaceFormat surfaceFormat;
@@ -95,8 +93,10 @@ void ImageViewerWidget::initializeGL()
 	_imageViewerPlugin->computeDisplayImage();
 	_imageViewerPlugin->computeSelectionImage();
 
+	connect(_renderer->selectionBufferQuad(), &SelectionBufferQuad::selectionEnded, this, &ImageViewerWidget::publishSelection);
+
 #ifdef _DEBUG
-	_openglDebugLogger->initialize();
+//	_openglDebugLogger->initialize();
 #endif
 
 	doneCurrent();
@@ -114,10 +114,12 @@ void ImageViewerWidget::paintGL() {
 
 	_renderer->render();
 
+	/*
 #ifdef _DEBUG
 	for (const QOpenGLDebugMessage& message : _openglDebugLogger->loggedMessages())
 		qDebug() << message;
 #endif
+*/
 }
 
 void ImageViewerWidget::onRendererDirty()
@@ -218,8 +220,6 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 		{
 			if (_renderer->interactionMode() != InteractionMode::Navigation && _imageViewerPlugin->allowsPixelSelection()) {
 				_renderer->setInteractionMode(InteractionMode::Selection);
-				_renderer->selectionBufferQuad()->activate();
-				_renderer->selectionOutline()->activate();
 			}
 
 			break;
@@ -248,8 +248,8 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 
 	if (mouseEvent->button() == Qt::RightButton)
 	{
-		if (_renderer->interactionMode() == InteractionMode::WindowLevel && _renderer->imageQuad()->mousePositions().size() == 1)
-			contextMenu()->exec(mapToGlobal(mouseEvent->pos()));
+		//if (_renderer->interactionMode() == InteractionMode::WindowLevel && _renderer->imageQuad()->mousePositions().size() == 1)
+		//	contextMenu()->exec(mapToGlobal(mouseEvent->pos()));
 	}
 
 	switch (mouseEvent->button())

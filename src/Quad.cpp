@@ -172,6 +172,8 @@ void Quad::createQuad()
 		_vertexData[j * 5 + 4] = j == 2 || j == 3;
 	}
 
+	bindOpenGLContext();
+
 	vbo("Quad")->bind();
 	{
 		vbo("Quad")->allocate(_vertexData.constData(), _vertexData.count() * sizeof(GLfloat));

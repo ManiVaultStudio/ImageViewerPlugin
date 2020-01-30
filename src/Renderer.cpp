@@ -10,6 +10,7 @@
 #include "SelectionQuad.h"
 #include "SelectionBufferQuad.h"
 #include "SelectionOutline.h"
+#include "Brush.h"
 
 Renderer::Renderer(QOpenGLWidget* parentWidget) :
 	hdps::Renderer(),
@@ -28,7 +29,6 @@ Renderer::Renderer(QOpenGLWidget* parentWidget) :
 {
 	createShapes();
 
-	// Reset the view when the image size changes
 	connect(shape<ImageQuad>("ImageQuad"), &ImageQuad::sizeChanged, this, [&]() { zoomExtents(); });
 }
 
@@ -49,8 +49,6 @@ void Renderer::resize(QSize renderSize)
 
 void Renderer::init()
 {
-	//hdps::Renderer::init();
-
 	initializeShapes();
 }
 
@@ -79,7 +77,7 @@ void Renderer::mousePressEvent(QMouseEvent* mouseEvent)
 	for (auto key : _shapes.keys()) {
 		auto shape = _shapes[key];
 
-		if (shape->isEnabled() && shape->isActive() && shape->handlesMousePressEvents())
+		if (shape->shouldReceiveMousePressEvents())
 			shape->onMousePressEvent(mouseEvent);
 	}
 }
@@ -91,7 +89,7 @@ void Renderer::mouseReleaseEvent(QMouseEvent* mouseEvent)
 	for (auto key : _shapes.keys()) {
 		auto shape = _shapes[key];
 
-		if (shape->isEnabled() && shape->isActive() && shape->handlesMouseReleaseEvents())
+		if (shape->shouldReceiveMouseReleaseEvents())
 			shape->onMouseReleaseEvent(mouseEvent);
 	}
 
@@ -133,7 +131,7 @@ void Renderer::mouseMoveEvent(QMouseEvent* mouseEvent)
 	for (auto key : _shapes.keys()) {
 		auto shape = _shapes[key];
 
-		if (shape->isEnabled() && shape->isActive() && shape->handlesMouseMoveEvents())
+		if (shape->shouldReceiveMouseMoveEvents())
 			shape->onMouseMoveEvent(mouseEvent);
 	}
 }
@@ -182,7 +180,7 @@ void Renderer::mouseWheelEvent(QWheelEvent* wheelEvent)
 	for (auto key : _shapes.keys()) {
 		auto shape = _shapes[key];
 
-		if (shape->isEnabled() && shape->isActive() && shape->handlesMouseWheelEvents())
+		if (shape->shouldReceiveMouseWheelEvents())
 			shape->onMouseWheelEvent(wheelEvent);
 	}
 }
@@ -313,6 +311,8 @@ void Renderer::resetView()
 
 void Renderer::setColorImage(std::shared_ptr<QImage> colorImage)
 {
+	bindOpenGLContext();
+
 	auto* imageQuadShape = shape<ImageQuad>("ImageQuad");
 
 	const auto previousImageSize = imageQuadShape->size();
@@ -320,7 +320,7 @@ void Renderer::setColorImage(std::shared_ptr<QImage> colorImage)
 	imageQuadShape->setImage(colorImage);
 
 	if (previousImageSize != colorImage->size()) {
-		shape<SelectionBufferQuad>("SelectionBufferQuad")->setSize(colorImage->size());
+		//shape<SelectionBufferQuad>("SelectionBufferQuad")->setSize(colorImage->size());
 
 		const auto brushRadius = 0.05f * static_cast<float>(std::min(colorImage->width(), colorImage->height()));
 
@@ -342,7 +342,7 @@ void Renderer::setSelectionImage(std::shared_ptr<QImage> selectionImage, const Q
 
 	worldSelectionBounds.translate(QPoint(-0.5f * static_cast<float>(selectionImage->width()), -0.5f * static_cast<float>(selectionImage->height())));
 
-	shape<SelectionQuad>("SelectionQuad")->setImage(selectionImage);
+//	shape<SelectionQuad>("SelectionQuad")->setImage(selectionImage);
 	shape<SelectionBounds>("SelectionBounds")->setBounds(worldSelectionBounds);
 }
 
@@ -383,6 +383,11 @@ void Renderer::setInteractionMode(const InteractionMode& interactionMode)
 
 	qDebug() << "Set interaction mode to" << interactionModeTypeName(interactionMode);
 
+	if (_interactionMode == InteractionMode::Selection) {
+		shape<SelectionOutline>("SelectionOutline")->deactivate();
+		shape<SelectionBufferQuad>("SelectionBufferQuad")->deactivate();
+	}
+
 	switch (interactionMode)
 	{
 		case InteractionMode::Navigation:
@@ -391,8 +396,10 @@ void Renderer::setInteractionMode(const InteractionMode& interactionMode)
 
 		case InteractionMode::Selection:
 		case InteractionMode::None:
+		{
 			_parentWidget->setCursor(Qt::ArrowCursor);
 			break;
+		}
 
 		default:
 			break;
@@ -411,11 +418,55 @@ void Renderer::setSelectionType(const SelectionType& selectionType)
 	if (selectionType == _selectionType)
 		return;
 
+	switch (_selectionType)
+	{
+		case SelectionType::None:
+			break;
+
+		case SelectionType::Rectangle:
+			break;
+
+		case SelectionType::Brush:
+			shape<Brush>("Brush")->deactivate();
+			shape<Brush>("Brush")->disable();
+			break;
+
+		case SelectionType::Lasso:
+			break;
+
+		case SelectionType::Polygon:
+			break;
+
+		default:
+			break;
+	}
+
 	_selectionType = selectionType;
 
 	qDebug() << "Set selection type to" << selectionTypeName(_selectionType);
 
-	shape<SelectionOutline>("SelectionOutline")->reset();
+	switch (_selectionType)
+	{
+		case SelectionType::None:
+			break;
+
+		case SelectionType::Rectangle:
+			break;
+
+		case SelectionType::Brush:
+			shape<Brush>("Brush")->enable();
+			shape<Brush>("Brush")->activate();
+			break;
+
+		case SelectionType::Lasso:
+			break;
+
+		case SelectionType::Polygon:
+			break;
+
+		default:
+			break;
+	}
 
 	emit selectionTypeChanged(_selectionType);
 }
@@ -518,17 +569,20 @@ void Renderer::createShapes()
 	addShape("SelectionQuad", QSharedPointer<SelectionQuad>::create(this, "SelectionQuad", 1.f));
 	addShape("SelectionBounds", QSharedPointer<SelectionBounds>::create(this, "SelectionBounds", 0.f));
 	addShape("SelectionOutline", QSharedPointer<SelectionOutline>::create(this, "SelectionOutline", 0.f));
+	addShape("Brush", QSharedPointer<Brush>::create(this, "Brush", 0.f));
 
 	//_shapes["ImageQuad"]->setEnabled(false);
-	//_shapes["SelectionBufferQuad"]->setEnabled(false);
-	//_shapes["SelectionQuad"]->setEnabled(false);
-	//_shapes["SelectionBounds"]->setEnabled(false);
-	//_shapes["SelectionOutline"]->setEnabled(false);
+	_shapes["SelectionBufferQuad"]->setEnabled(false);
+	_shapes["SelectionQuad"]->setEnabled(false);
+	_shapes["SelectionBounds"]->setEnabled(false);
+	_shapes["SelectionOutline"]->setEnabled(false);
 }
 
 void Renderer::initializeShapes()
 {
 	//qDebug() << "Initializing" << _shapes.size() << "shapes";
+
+	bindOpenGLContext();
 
 	for (auto key : _shapes.keys()) {
 		_shapes[key]->initialize();

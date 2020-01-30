@@ -14,10 +14,11 @@
 SelectionBufferQuad::SelectionBufferQuad(Renderer* renderer, const QString& name, const float& z /*= 0.f*/) :
 	Quad(renderer, name, z),
 	_size(),
-	_color(255, 153, 0, 40),
 	_mousePositions()
 {
-	_handleMouseEvents = static_cast<int>(MouseEvent::Press) | static_cast<int>(MouseEvent::Release) | static_cast<int>(MouseEvent::Move);
+	_color = QColor(255, 153, 0, 40);
+
+	_receiveMouseEvents = static_cast<int>(MouseEvent::Press) | static_cast<int>(MouseEvent::Release) | static_cast<int>(MouseEvent::Move);
 }
 
 void SelectionBufferQuad::render()
@@ -54,6 +55,8 @@ void SelectionBufferQuad::setSize(const QSize& size)
 
 	qDebug() << "Set size to" << _size << "for" << _name;
 
+	bindOpenGLContext();
+
 	if (!_fbos.contains("SelectionBuffer")) {
 		_fbos.insert("SelectionBuffer", QSharedPointer<QOpenGLFramebufferObject>::create(_size.width(), _size.height()));
 	}
@@ -64,23 +67,6 @@ void SelectionBufferQuad::setSize(const QSize& size)
 	setRectangle(QRectF(QPointF(), QSizeF(static_cast<float>(_size.width()), static_cast<float>(_size.height()))));
 
 	emit sizeChanged(_size);
-}
-
-QColor SelectionBufferQuad::color() const
-{
-	return _color;
-}
-
-void SelectionBufferQuad::setColor(const QColor& color)
-{
-	if (color == _color)
-		return;
-
-	_color = color;
-
-	qDebug() << "Set color to" << _color << "for" << _name;
-
-	emit colorChanged(_color);
 }
 
 float SelectionBufferQuad::opacity() const
@@ -103,6 +89,8 @@ void SelectionBufferQuad::setOpacity(const float& opacity)
 void SelectionBufferQuad::update()
 {
 	Quad::update();
+
+	releaseOpenGLContext();
 
 	auto selectionBufferFBO = fbo("SelectionBuffer");
 
@@ -266,6 +254,9 @@ QSharedPointer<QImage> SelectionBufferQuad::selectionBufferImage() const
 
 void SelectionBufferQuad::onMousePressEvent(QMouseEvent* mouseEvent)
 {
+	if (!mayProcessMousePressEvent())
+		return;
+
 	Quad::onMousePressEvent(mouseEvent);
 
 	if (_renderer->selectionType() != SelectionType::Polygon) {
@@ -281,6 +272,9 @@ void SelectionBufferQuad::onMousePressEvent(QMouseEvent* mouseEvent)
 
 void SelectionBufferQuad::onMouseReleaseEvent(QMouseEvent* mouseEvent)
 {
+	if (!mayProcessMouseReleaseEvent())
+		return;
+
 	Quad::onMouseReleaseEvent(mouseEvent);
 
 	switch (mouseEvent->button())
@@ -314,6 +308,9 @@ void SelectionBufferQuad::onMouseReleaseEvent(QMouseEvent* mouseEvent)
 
 void SelectionBufferQuad::onMouseMoveEvent(QMouseEvent* mouseEvent)
 {
+	if (!mayProcessMouseMoveEvent())
+		return;
+
 	Quad::onMouseMoveEvent(mouseEvent);
 
 	if (_renderer->selectionType() != SelectionType::Polygon) {

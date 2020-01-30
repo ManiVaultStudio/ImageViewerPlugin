@@ -13,7 +13,7 @@ Shape::Shape(Renderer* renderer, const QString& name) :
 	_renderer(renderer),
 	_name(name),
 	_active(false),
-	_handleMouseEvents(static_cast<int>(MouseEvent::None)),
+	_receiveMouseEvents(static_cast<int>(MouseEvent::None)),
 	_initialized(false),
 	_enabled(true),
 	_modelMatrix(),
@@ -31,13 +31,15 @@ void Shape::destroy()
 {
 	qDebug() << "Destroy shape" << _name;
 
+	bindOpenGLContext();
+	
 	for (auto key : _vaos.keys())
 	{
 		_vaos[key]->destroy();
 		_vaos[key]->release();
 	}
 
-	for (auto key :_vbos.keys())
+	for (auto key : _vbos.keys())
 	{
 		_vbos[key]->destroy();
 		_vbos[key]->release();
@@ -58,6 +60,8 @@ void Shape::destroy()
 void Shape::initialize()
 {
 	qDebug() << "Initialize the" << _name << "shape";
+
+	bindOpenGLContext();
 
 	addShaderPrograms();
 	addVAOs();
@@ -109,6 +113,16 @@ void Shape::setEnabled(const bool& enabled)
 	emit enabledChanged(enabled);
 
 	emit changed(this);
+}
+
+void Shape::enable()
+{
+	setEnabled(true);
+}
+
+void Shape::disable()
+{
+	setEnabled(false);
 }
 
 bool Shape::canRender() const
@@ -218,6 +232,38 @@ void Shape::update()
 	qDebug() << "Updating" << _name;
 }
 
+bool Shape::mayProcessMousePressEvent() const
+{
+	if (!shouldReceiveMousePressEvents())
+		return false;
+
+	return _enabled && _active;
+}
+
+bool Shape::mayProcessMouseReleaseEvent() const
+{
+	if (!shouldReceiveMouseReleaseEvents())
+		return false;
+
+	return _enabled && _active;
+}
+
+bool Shape::mayProcessMouseMoveEvent() const
+{
+	if (!shouldReceiveMouseMoveEvents())
+		return false;
+
+	return _enabled && _active;
+}
+
+bool Shape::mayProcessMouseWheelEvent() const
+{
+	if (!shouldReceiveMouseWheelEvents())
+		return false;
+
+	return _enabled && _active;
+}
+
 QSharedPointer<QOpenGLShaderProgram> Shape::shaderProgram(const QString& name)
 {
 	return _shaderPrograms[name];
@@ -270,42 +316,42 @@ const QSharedPointer<QOpenGLFramebufferObject> Shape::fbo(const QString& name) c
 
 void Shape::onMousePressEvent(QMouseEvent* mouseEvent)
 {
-	qDebug() << "Mouse press event in" << _name;
+	//qDebug() << "Mouse press event in" << _name;
 }
 
 void Shape::onMouseReleaseEvent(QMouseEvent* mouseEvent)
 {
-	qDebug() << "Mouse release event in" << _name;
+	//qDebug() << "Mouse release event in" << _name;
 }
 
 void Shape::onMouseMoveEvent(QMouseEvent* mouseEvent)
 {
-	qDebug() << "Mouse move event in" << _name;
+	//qDebug() << "Mouse move event in" << _name;
 }
 
 void Shape::onMouseWheelEvent(QWheelEvent* wheelEvent)
 {
-	qDebug() << "Mouse wheel event in" << _name;
+	//qDebug() << "Mouse wheel event in" << _name;
 }
 
-bool Shape::handlesMousePressEvents()
+bool Shape::shouldReceiveMousePressEvents() const
 {
-	return _handleMouseEvents & static_cast<int>(MouseEvent::Press);
+	return _receiveMouseEvents & static_cast<int>(MouseEvent::Press);
 }
 
-bool Shape::handlesMouseReleaseEvents()
+bool Shape::shouldReceiveMouseReleaseEvents() const
 {
-	return _handleMouseEvents & static_cast<int>(MouseEvent::Release);
+	return _receiveMouseEvents & static_cast<int>(MouseEvent::Release);
 }
 
-bool Shape::handlesMouseMoveEvents()
+bool Shape::shouldReceiveMouseMoveEvents() const
 {
-	return _handleMouseEvents & static_cast<int>(MouseEvent::Move);
+	return _receiveMouseEvents & static_cast<int>(MouseEvent::Move);
 }
 
-bool Shape::handlesMouseWheelEvents()
+bool Shape::shouldReceiveMouseWheelEvents() const
 {
-	return _handleMouseEvents & static_cast<int>(MouseEvent::Wheel);
+	return _receiveMouseEvents & static_cast<int>(MouseEvent::Wheel);
 }
 
 bool Shape::isActive() const
@@ -338,4 +384,21 @@ void Shape::bindOpenGLContext()
 void Shape::releaseOpenGLContext()
 {
 	_renderer->releaseOpenGLContext();
+}
+
+QColor Shape::color() const
+{
+	return _color;
+}
+
+void Shape::setColor(const QColor& color)
+{
+	if (color == _color)
+		return;
+
+	qDebug() << "Set selection bounds shape color";
+
+	_color = color;
+
+	emit colorChanged(_color);
 }

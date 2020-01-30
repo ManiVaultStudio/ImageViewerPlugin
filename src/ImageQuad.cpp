@@ -21,12 +21,14 @@ ImageQuad::ImageQuad(Renderer* renderer, const QString& name, const float& z /*=
 	_level(0.5f),
 	_mousePositions()
 {
-	_handleMouseEvents = static_cast<int>(MouseEvent::Press) | static_cast<int>(MouseEvent::Release) | static_cast<int>(MouseEvent::Move);
+	_receiveMouseEvents = static_cast<int>(MouseEvent::Press) | static_cast<int>(MouseEvent::Release) | static_cast<int>(MouseEvent::Move);
 }
 
 void ImageQuad::setImage(std::shared_ptr<QImage> image)
 {
 	qDebug() << "Set image for" << _name;
+
+	bindOpenGLContext();
 
 	std::uint16_t* pixels = (std::uint16_t*)image->bits();
 
@@ -147,6 +149,9 @@ void ImageQuad::resetWindowLevel()
 
 void ImageQuad::onMousePressEvent(QMouseEvent* mouseEvent)
 {
+	if (!mayProcessMousePressEvent())
+		return;
+
 	//qDebug() << "Mouse press event for" << _name;
 
 	_mousePositions.clear();
@@ -155,11 +160,17 @@ void ImageQuad::onMousePressEvent(QMouseEvent* mouseEvent)
 
 void ImageQuad::onMouseReleaseEvent(QMouseEvent* mouseEvent)
 {
+	if (!mayProcessMouseReleaseEvent())
+		return;
+
 	//qDebug() << "Mouse release event for" << _name;
 }
 
 void ImageQuad::onMouseMoveEvent(QMouseEvent* mouseEvent)
 {
+	if (!mayProcessMouseMoveEvent())
+		return;
+
 	//qDebug() << "Mouse move event for" << _name;
 
 	_mousePositions.push_back(mouseEvent->pos());

@@ -3,6 +3,7 @@
 #include "Common.h"
 
 #include <QObject>
+#include <QColor>
 #include <QMatrix4x4>
 #include <QMap>
 #include <QSharedPointer>
@@ -69,6 +70,12 @@ public:
 	 * @param enabled Whether the shape is enabled or not
 	 */
 	void setEnabled(const bool& enabled);
+
+	/** Enables the shape */
+	void enable();
+
+	/** Disables the shape */
+	void disable();
 
 	/** Returns whether the shape can be rendered */
 	virtual bool canRender() const;
@@ -160,28 +167,28 @@ public:
 	virtual void onMouseWheelEvent(QWheelEvent* wheelEvent);
 
 	/**
-	 * Determines whether this shape handles mouse press events  
-	 * @return Whether this shape handles mouse press events
+	 * Determines whether this shape should receive mouse press events  
+	 * @return Whether this shape should receive mouse press events
 	 */
-	bool handlesMousePressEvents();
+	bool shouldReceiveMousePressEvents() const;
 
 	/**
-	 * Determines whether this shape handles mouse release events
-	 * @return Whether this shape handles mouse release events
+	 * Determines whether this shape should receive release events
+	 * @return Whether this shape should receive mouse release events
 	 */
-	bool handlesMouseReleaseEvents();
+	bool shouldReceiveMouseReleaseEvents() const;
 
 	/**
-	 * Determines whether this shape handles mouse move events
-	 * @return Whether this shape handles mouse move events
+	 * Determines whether this shape should receive mouse move events
+	 * @return Whether this shape should receive mouse move events
 	 */
-	bool handlesMouseMoveEvents();
+	bool shouldReceiveMouseMoveEvents() const;
 
 	/**
-	 * Determines whether this shape handles mouse wheel events
-	 * @return Whether this shape handles mouse wheel events
+	 * Determines whether this shape should receive mouse wheel events
+	 * @return Whether this shape should receive mouse wheel events
 	 */
-	bool handlesMouseWheelEvents();
+	bool shouldReceiveMouseWheelEvents() const;
 	
 	/** Returns whether the shape is active e.g. interaction with the mouse */
 	bool isActive() const;
@@ -197,6 +204,14 @@ public:
 
 	/** Releases the OpenGL context */
 	void releaseOpenGLContext();
+
+	/** Returns the render color */
+	QColor color() const;
+
+	/** Sets the render color
+	 * @param color Color
+	 */
+	void setColor(const QColor& color);
 
 protected:
 	/** Adds the OpenGL shader programs that the shape needs */
@@ -222,6 +237,22 @@ protected:
 
 	/** Updates the internal representation of the shape (e.g. vertex buffers and shader programs) */
 	virtual void update();
+
+	/**
+	 * Determines whether this shape may process mouse press events (e.g. is the shape enabled and/or active) */
+	bool mayProcessMousePressEvent() const;
+
+	/**
+	 * Determines whether this shape may process mouse release events (e.g. is the shape enabled and/or active) */
+	bool mayProcessMouseReleaseEvent() const;
+
+	/**
+	 * Determines whether this shape may process mouse move events (e.g. is the shape enabled and/or active) */
+	bool mayProcessMouseMoveEvent() const;
+
+	/**
+	 * Determines whether this shape may process mouse wheel events (e.g. is the shape enabled and/or active) */
+	bool mayProcessMouseWheelEvent() const;
 
 	/**
 	 * Retrieves an OpenGL shader program by name
@@ -292,6 +323,12 @@ signals:
 	 */
 	void nameChanged(const QString& name);
 
+	/**
+	 * Signals that the render color changed
+	 * @param color Render color
+	 */
+	void colorChanged(const QColor& color);
+
 	/** Signals that the shape has been enabled or disabled
 	 * @param enabled Whether the shape is enabled or not
 	 */
@@ -309,7 +346,8 @@ protected:
 	Renderer*													_renderer;					/** Pointer to renderer */
 	QString														_name;						/** Name of the shape */
 	bool														_active;					/** Shapes is being interacted with */
-	int															_handleMouseEvents;			/** Defines which type of mouse events should be processed by the shape */
+	QColor														_color;						/** Shape color */
+	int															_receiveMouseEvents;		/** Defines which type of mouse events should be received by the shape */
 	bool														_initialized;				/** Whether the shape is initialized or not */
 	bool														_enabled;					/** Whether the shape is enabled or not */
 	QMatrix4x4													_modelMatrix;				/** Model matrix */

@@ -9,9 +9,9 @@
 #include "Shaders.h"
 
 SelectionQuad::SelectionQuad(Renderer* renderer, const QString& name, const float& z /*= 0.f*/) :
-	Quad(renderer, name, z),
-	_color(255, 0, 0, 200)
+	Quad(renderer, name, z)
 {
+	_color = QColor(255, 0, 0, 200);
 }
 
 void SelectionQuad::setImage(std::shared_ptr<QImage> image)

@@ -157,6 +157,8 @@ void Polyline2D::setPoints(QVector<PolylinePoint2D> points)
 
 	_points = points;
 
+	bindOpenGLContext();
+
 	vbo("Polyline")->bind();
 	{
 		vbo("Polyline")->setUsagePattern(QOpenGLBuffer::DynamicDraw);
@@ -168,6 +170,7 @@ void Polyline2D::setPoints(QVector<PolylinePoint2D> points)
 void Polyline2D::reset()
 {
 	setPoints(QVector<PolylinePoint2D>());
+	update();
 }
 
 void Polyline2D::configureShaderProgram(const QString& name)
