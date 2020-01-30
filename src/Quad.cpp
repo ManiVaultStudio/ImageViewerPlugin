@@ -156,10 +156,10 @@ void Quad::createQuad()
 	const float height	= _rectangle.height();
 
 	const float coordinates[4][3] = {
-	  { _rectangle.right(),		_rectangle.bottom(),	0.0f },
-	  { _rectangle.left(),		_rectangle.bottom(),	0.0f },
-	  { _rectangle.left(),		_rectangle.top(),		0.0f },
-	  { _rectangle.right(),		_rectangle.top(),		0.0f }
+		{ _rectangle.left(),		_rectangle.top(),		0.0f },
+		{ _rectangle.right(),		_rectangle.top(),		0.0f },
+		{ _rectangle.right(),		_rectangle.bottom(),	0.0f },
+		{ _rectangle.left(),		_rectangle.bottom(),	0.0f }
 	};
 
 	for (int j = 0; j < 4; ++j)

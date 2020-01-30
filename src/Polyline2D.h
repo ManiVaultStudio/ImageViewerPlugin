@@ -3,7 +3,23 @@
 #include "Shape.h"
 
 /**
- * OpenGL polyline 2D class
+ * Two-dimensional polyline point class
+ * @author Thomas Kroes
+ */
+struct PolylinePoint2D
+{
+	QVector3D				_position;				/** Point position */
+	QVector3D				_lineWidth;				/** Line width at point */
+	QVector2D				_texture;				/** Texture coordinates at point (at the moment only the u component is used) */
+
+	/** Attribute locations */
+	static std::uint32_t	_positionAttribute;		/** Position attribute location */
+	static std::uint32_t	_lineWidthAttribute;	/** Line width attribute location */
+	static std::uint32_t	_textureAttribute;		/** Line width attribute location */
+};
+
+/**
+ * Two-dimensional polyline class
  * @author Thomas Kroes
  */
 class Polyline2D : public Shape
