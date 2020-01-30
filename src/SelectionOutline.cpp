@@ -15,7 +15,7 @@ SelectionOutline::SelectionOutline(Renderer* renderer, const QString& name /*= "
 	Polyline2D(renderer, name, z, true, 0.005f),
 	_color(color),
 	_viewRectangle(),
-	_mouseEvents()
+	_mousePositions()
 {
 	_handleMouseEvents = static_cast<int>(MouseEvent::Press) | static_cast<int>(MouseEvent::Release) | static_cast<int>(MouseEvent::Move);
 
@@ -77,30 +77,30 @@ void SelectionOutline::update()
 
 		outlineStippleTexture->bind();
 		{
-			QVector<QPointF> screenPoints;
+			QVector<QVector3D> positions;
 
 			switch (_renderer->selectionType())
 			{
 				case SelectionType::Rectangle:
 				{
-					if (_mouseEvents.size() >= 2) {
-						const auto start	= _mouseEvents.front()->pos();
-						const auto end		= _mouseEvents.back()->pos();
+					if (_mousePositions.size() >= 2) {
+						const auto start	= _mousePositions.front();
+						const auto end		= _mousePositions.back();
 
-						screenPoints.append(QPointF(start.x(), start.y()));
-						screenPoints.append(QPointF(start.x(), start.y()));
-						screenPoints.append(QPointF(end.x(), start.y()));
-						screenPoints.append(QPointF(end.x(), end.y()));
-						screenPoints.append(QPointF(start.x(), end.y()));
-						screenPoints.append(QPointF(start.x(), start.y()));
+						positions.append(QVector3D(start.x(),	start.y(),	0.f));
+						positions.append(QVector3D(start.x(),	start.y(),	0.f));
+						positions.append(QVector3D(end.x(),		start.y(),	0.f));
+						positions.append(QVector3D(end.x(),		end.y(),	0.f));
+						positions.append(QVector3D(start.x(),	end.y(),	0.f));
+						positions.append(QVector3D(start.x(),	start.y(),	0.f));
 					}
 					break;
 				}
 
 				case SelectionType::Brush:
 				{
-					if (_mouseEvents.size() >= 1) {
-						const auto brushCenter	= _mouseEvents.back()->pos();
+					if (_mousePositions.size() >= 1) {
+						const auto brushCenter	= _mousePositions.back();
 						const auto noSegments	= 128u;
 
 						std::vector<GLfloat> vertexCoordinates;
@@ -114,7 +114,7 @@ void SelectionOutline::update()
 							const auto x		= brushRadius * cosf(theta);
 							const auto y		= brushRadius * sinf(theta);
 
-							screenPoints.append(QPointF(brushCenter.x() + x, brushCenter.y() + y));
+							positions.append(QVector3D(brushCenter.x() + x, brushCenter.y() + y, 0.f));
 						}
 					}
 
@@ -124,9 +124,9 @@ void SelectionOutline::update()
 				case SelectionType::Lasso:
 				case SelectionType::Polygon:
 				{
-					if (_mouseEvents.size() >= 2) {
-						for (const auto& mouseEvent : _mouseEvents) {
-							screenPoints.append(QPointF(mouseEvent->pos().x(), mouseEvent->pos().y()));
+					if (_mousePositions.size() >= 2) {
+						for (const auto& mousePosition : _mousePositions) {
+							positions.append(QVector3D(mousePosition.x(), mousePosition.y(), 0.f));
 						}
 					}
 					break;
@@ -136,17 +136,13 @@ void SelectionOutline::update()
 					break;
 			}
 
-			QVector<QVector2D> points;
+			QVector<PolylinePoint2D> polylinePoints;
 
-			for (auto screenPoint : screenPoints) {
-				auto worldP = _renderer->screenToWorld(modelViewMatrix(), screenPoint);
-
-				points.push_back(QVector2D(worldP.x(), worldP.y()));
+			for (auto position : positions) {
+				polylinePoints.push_back(PolylinePoint2D(position, QVector2D(0.f, 0.f), _lineWidth));
 			}
 
-			
-
-			setPoints(points);
+			setPoints(polylinePoints);
 		}
 		outlineStippleTexture->release();
 
@@ -166,11 +162,11 @@ void SelectionOutline::onMousePressEvent(QMouseEvent* mouseEvent)
 	//qDebug() << "Mouse press event for" << _name;
 
 	if (_renderer->selectionType() != SelectionType::Polygon) {
-		_mouseEvents.clear();
+		_mousePositions.clear();
 	}
 	
 	if (mouseEvent->button() == Qt::LeftButton) {
-		_mouseEvents.push_back(QSharedPointer<QMouseEvent>::create(*mouseEvent));
+		_mousePositions.push_back(_renderer->screenToWorld(modelViewMatrix(), mouseEvent->pos()));
 	}
 
 	update();
@@ -212,13 +208,12 @@ void SelectionOutline::onMouseMoveEvent(QMouseEvent* mouseEvent)
 	//qDebug() << "Mouse move event for" << _name;
 	
 	if (_renderer->selectionType() != SelectionType::Polygon) {
-		_mouseEvents.push_back(QSharedPointer<QMouseEvent>::create(*mouseEvent));
+		_mousePositions.push_back(_renderer->screenToWorld(modelViewMatrix(), mouseEvent->pos()));
+		update();
 	}
 	else {
-		_mouseEvents.back().reset(new QMouseEvent(*mouseEvent));
+		_mousePositions.back() = _renderer->screenToWorld(modelViewMatrix(), mouseEvent->pos());
 	}
-
-	update();
 }
 
 void SelectionOutline::activate()

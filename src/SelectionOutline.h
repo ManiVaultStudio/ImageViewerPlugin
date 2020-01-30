@@ -83,7 +83,7 @@ signals:
 	void viewRectangleChanged(const QRect& viewRectangle);
 
 protected:
-	QColor									_color;				/** Color */
-	QRect									_viewRectangle;		/** View rectangle */
-	QVector<QSharedPointer<QMouseEvent>>	_mouseEvents;		/** Recorded mouse events during interaction */
+	QColor				_color;				/** Color */
+	QRect				_viewRectangle;		/** View rectangle */
+	QVector<QVector3D>	_mousePositions;	/** Recorded mouse positions in world coordinates */
 };

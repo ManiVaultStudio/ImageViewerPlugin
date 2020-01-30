@@ -2,20 +2,27 @@
 
 #include "Shape.h"
 
+#include <QVector2D>
+#include <QVector3D>
+
 /**
  * Two-dimensional polyline point class
  * @author Thomas Kroes
  */
 struct PolylinePoint2D
 {
-	QVector3D				_position;				/** Point position */
-	QVector3D				_lineWidth;				/** Line width at point */
-	QVector2D				_texture;				/** Texture coordinates at point (at the moment only the u component is used) */
+	PolylinePoint2D();
+	PolylinePoint2D(const QVector3D& position, const QVector2D& textureCoordinate, const float& lineWidth);
+
+	/** Attributes */
+	QVector3D				_position;						/** Point position */
+	QVector2D				_textureCoordinate;				/** Texture coordinates at point (at the moment only the U component is used) */
+	float					_lineWidth;						/** Line width at point */
 
 	/** Attribute locations */
-	static std::uint32_t	_positionAttribute;		/** Position attribute location */
-	static std::uint32_t	_lineWidthAttribute;	/** Line width attribute location */
-	static std::uint32_t	_textureAttribute;		/** Line width attribute location */
+	static std::uint32_t	_positionAttribute;				/** Position attribute location */
+	static std::uint32_t	_textureCoordinateAttribute;	/** Line width attribute location */
+	static std::uint32_t	_lineWidthAttribute;			/** Line width attribute location */
 };
 
 /**
@@ -52,6 +59,9 @@ public:
 	 */
 	void setLineWidth(const float& lineWidth);
 
+	/** Returns whether the shape can be rendered */
+	bool canRender() const override;
+
 protected:
 	/** Adds the OpenGL shader programs that the shape needs */
 	void addShaderPrograms();
@@ -66,7 +76,10 @@ protected:
 	 * Set polyline points
 	 * @param points Points in world coordinates
 	 */
-	void setPoints(QVector<QVector2D> points);
+	void setPoints(QVector<PolylinePoint2D> points);
+
+	/** Resets the points */
+	virtual void reset();
 
 	/**
 	 * Configure an OpenGL shader program (right after the shader program is bound in the render function)
@@ -88,10 +101,9 @@ signals:
 	void lineWidthChanged(const float& lineWidth);
 
 protected:
-	bool					_closed;				/** Whether to close the polyline or not */
-	float					_lineWidth;				/** Line width in world space */
-	float					_textureScale;			/** Texture scale */
-	std::uint32_t			_noPoints;				/** Number of points */
-
-	static std::uint32_t	_vertexAttribute;		/** Quad vertex attribute location */
+	bool						_closed;				/** Whether to close the polyline or not */
+	float						_lineWidth;				/** Line width in world space */
+	float						_textureScale;			/** Texture scale */
+	//std::uint32_t				_noPoints;				/** Number of points */
+	QVector<PolylinePoint2D>	_points;				/** Points */
 };

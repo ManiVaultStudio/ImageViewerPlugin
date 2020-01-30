@@ -70,7 +70,7 @@ public:
 	 */
 	void setEnabled(const bool& enabled);
 
-	/** Returns whether the shape should be rendered */
+	/** Returns whether the shape can be rendered */
 	virtual bool canRender() const;
 	
 	/** Returns the model matrix */

@@ -510,7 +510,7 @@ void Renderer::createShapes()
 	addShape("SelectionOutline", QSharedPointer<SelectionOutline>::create(this, "SelectionOutline", 0.f));
 
 	//_shapes["ImageQuad"]->setEnabled(false);
-	_shapes["SelectionBufferQuad"]->setEnabled(false);
+	//_shapes["SelectionBufferQuad"]->setEnabled(false);
 	_shapes["SelectionQuad"]->setEnabled(false);
 	_shapes["SelectionBounds"]->setEnabled(false);
 	//_shapes["SelectionOutline"]->setEnabled(false);

@@ -25,14 +25,14 @@ void SelectionBounds::setBounds(const QRectF& bounds)
 	const auto p0 = _bounds.topLeft();
 	const auto p1 = _bounds.bottomRight() - QPointF(1.f, 1.f);
 
-	QVector<QVector2D> points;
+	QVector<PolylinePoint2D> points;
 
-	points.append(QVector2D(p0.x(), p0.y()));
-	points.append(QVector2D(p0.x(), p0.y()));
-	points.append(QVector2D(p1.x(), p0.y()));
-	points.append(QVector2D(p1.x(), p1.y()));
-	points.append(QVector2D(p0.x(), p1.y()));
-	points.append(QVector2D(p0.x(), p1.y()));
+	points.append(PolylinePoint2D(QVector3D(p0.x(), p0.y(), 0.f), QVector2D(), _lineWidth));
+	points.append(PolylinePoint2D(QVector3D(p0.x(), p0.y(), 0.f), QVector2D(), _lineWidth));
+	points.append(PolylinePoint2D(QVector3D(p1.x(), p0.y(), 0.f), QVector2D(), _lineWidth));
+	points.append(PolylinePoint2D(QVector3D(p1.x(), p1.y(), 0.f), QVector2D(), _lineWidth));
+	points.append(PolylinePoint2D(QVector3D(p0.x(), p1.y(), 0.f), QVector2D(), _lineWidth));
+	points.append(PolylinePoint2D(QVector3D(p0.x(), p1.y(), 0.f), QVector2D(), _lineWidth));
 
 	setPoints(points);
 
