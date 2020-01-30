@@ -16,6 +16,8 @@ class ImageViewerWidget;
 class QMouseEvent;
 class QWheelEvent;
 
+class QOpenGLWidget;
+
 /**
  * Selection renderer class
  * @author Thomas Kroes
@@ -27,9 +29,9 @@ class Renderer : public QObject, public hdps::Renderer
 public:
 	/**
 	 * Constructor
-	 * @param parentWidget Parent widget
+	 * @param parentWidget Parent OpenGL widget
 	 */
-	Renderer(QWidget* parentWidget);
+	Renderer(QOpenGLWidget* parentWidget);
 
 public:
 	/** Renders the content */
@@ -215,6 +217,12 @@ public:
 	/** Decrease the brush size by _brushRadiusDelta */
 	void brushSizeDecrease();
 
+	/** Binds the OpenGL context */
+	void bindOpenGLContext();
+
+	/** Releases the OpenGL context */
+	void releaseOpenGLContext();
+
 protected:
 	/**
 	 * Invoked when a shape has changed
@@ -269,7 +277,7 @@ signals:
 	void dirty();
 
 protected:
-	QWidget*								_parentWidget;			/** Pointer to parent widget */
+	QOpenGLWidget*							_parentWidget;			/** Pointer to parent widget */
 	QMap<QString, QSharedPointer<Shape>>	_shapes;				/** Shapes map */
 	InteractionMode							_interactionMode;		/** Type of interaction e.g. navigation, selection and window/level */
 	QVector<QSharedPointer<QMouseEvent>>	_mouseEvents;			/** Recorded mouse events during interaction */

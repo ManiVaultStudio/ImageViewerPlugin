@@ -270,22 +270,22 @@ const QSharedPointer<QOpenGLFramebufferObject> Shape::fbo(const QString& name) c
 
 void Shape::onMousePressEvent(QMouseEvent* mouseEvent)
 {
-	qDebug() << "Mouse press event not implemented in" << _name;
+	qDebug() << "Mouse press event in" << _name;
 }
 
 void Shape::onMouseReleaseEvent(QMouseEvent* mouseEvent)
 {
-	qDebug() << "Mouse release event not implemented in" << _name;
+	qDebug() << "Mouse release event in" << _name;
 }
 
 void Shape::onMouseMoveEvent(QMouseEvent* mouseEvent)
 {
-	qDebug() << "Mouse move event not implemented in" << _name;
+	qDebug() << "Mouse move event in" << _name;
 }
 
 void Shape::onMouseWheelEvent(QWheelEvent* wheelEvent)
 {
-	qDebug() << "Mouse wheel event not implemented in" << _name;
+	qDebug() << "Mouse wheel event in" << _name;
 }
 
 bool Shape::handlesMousePressEvents()
@@ -328,4 +328,14 @@ void Shape::deactivate()
 	_active = false;
 
 	qDebug() << "Deactivated" << _name;
+}
+
+void Shape::bindOpenGLContext()
+{
+	_renderer->bindOpenGLContext();
+}
+
+void Shape::releaseOpenGLContext()
+{
+	_renderer->releaseOpenGLContext();
 }

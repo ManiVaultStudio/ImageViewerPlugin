@@ -152,14 +152,9 @@ void SelectionOutline::update()
 	emit changed(this);
 }
 
-void SelectionOutline::reset()
-{
-	qDebug() << "Reset" << _name;
-}
-
 void SelectionOutline::onMousePressEvent(QMouseEvent* mouseEvent)
 {
-	//qDebug() << "Mouse press event for" << _name;
+	Polyline2D::onMousePressEvent(mouseEvent);
 
 	if (_renderer->selectionType() != SelectionType::Polygon) {
 		_mousePositions.clear();
@@ -174,13 +169,14 @@ void SelectionOutline::onMousePressEvent(QMouseEvent* mouseEvent)
 
 void SelectionOutline::onMouseReleaseEvent(QMouseEvent* mouseEvent)
 {
-	//qDebug() << "Mouse release event for" << _name;
+	Polyline2D::onMouseReleaseEvent(mouseEvent);
 
 	switch (mouseEvent->button())
 	{
 		case Qt::LeftButton:
 		{
 			if (_renderer->selectionType() != SelectionType::Polygon) {
+				reset();
 				deactivate();
 			}
 
@@ -190,6 +186,7 @@ void SelectionOutline::onMouseReleaseEvent(QMouseEvent* mouseEvent)
 		case Qt::RightButton: 
 		{
 			if (_renderer->selectionType() == SelectionType::Polygon) {
+				reset();
 				deactivate();
 			}
 
@@ -205,7 +202,7 @@ void SelectionOutline::onMouseReleaseEvent(QMouseEvent* mouseEvent)
 
 void SelectionOutline::onMouseMoveEvent(QMouseEvent* mouseEvent)
 {
-	//qDebug() << "Mouse move event for" << _name;
+	Polyline2D::onMouseMoveEvent(mouseEvent);
 	
 	if (_renderer->selectionType() != SelectionType::Polygon) {
 		_mousePositions.push_back(_renderer->screenToWorld(modelViewMatrix(), mouseEvent->pos()));

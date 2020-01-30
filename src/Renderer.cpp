@@ -11,7 +11,7 @@
 #include "SelectionBufferQuad.h"
 #include "SelectionOutline.h"
 
-Renderer::Renderer(QWidget* parentWidget) :
+Renderer::Renderer(QOpenGLWidget* parentWidget) :
 	hdps::Renderer(),
 	_parentWidget(parentWidget),
 	_shapes(),
@@ -79,7 +79,7 @@ void Renderer::mousePressEvent(QMouseEvent* mouseEvent)
 	for (auto key : _shapes.keys()) {
 		auto shape = _shapes[key];
 
-		if (shape->isActive() && shape->handlesMousePressEvents())
+		if (shape->isEnabled() && shape->isActive() && shape->handlesMousePressEvents())
 			shape->onMousePressEvent(mouseEvent);
 	}
 }
@@ -91,7 +91,7 @@ void Renderer::mouseReleaseEvent(QMouseEvent* mouseEvent)
 	for (auto key : _shapes.keys()) {
 		auto shape = _shapes[key];
 
-		if (shape->isActive() && shape->handlesMouseReleaseEvents())
+		if (shape->isEnabled() && shape->isActive() && shape->handlesMouseReleaseEvents())
 			shape->onMouseReleaseEvent(mouseEvent);
 	}
 
@@ -133,7 +133,7 @@ void Renderer::mouseMoveEvent(QMouseEvent* mouseEvent)
 	for (auto key : _shapes.keys()) {
 		auto shape = _shapes[key];
 
-		if (shape->isActive() && shape->handlesMouseMoveEvents())
+		if (shape->isEnabled() && shape->isActive() && shape->handlesMouseMoveEvents())
 			shape->onMouseMoveEvent(mouseEvent);
 	}
 }
@@ -141,15 +141,6 @@ void Renderer::mouseMoveEvent(QMouseEvent* mouseEvent)
 void Renderer::mouseWheelEvent(QWheelEvent* wheelEvent)
 {
 	//qDebug() << "Mouse wheel event";
-
-	for (auto key : _shapes.keys()) {
-		auto shape = _shapes[key];
-
-		if (shape->isActive() && shape->handlesMouseWheelEvents())
-			shape->onMouseWheelEvent(wheelEvent);
-	}
-
-//	qDebug() << "Mouse wheel event" << interactionModeTypeName(_interactionMode);
 
 	switch (_interactionMode)
 	{
@@ -186,6 +177,13 @@ void Renderer::mouseWheelEvent(QWheelEvent* wheelEvent)
 
 		default:
 			break;
+	}
+
+	for (auto key : _shapes.keys()) {
+		auto shape = _shapes[key];
+
+		if (shape->isEnabled() && shape->isActive() && shape->handlesMouseWheelEvents())
+			shape->onMouseWheelEvent(wheelEvent);
 	}
 }
 
@@ -417,6 +415,8 @@ void Renderer::setSelectionType(const SelectionType& selectionType)
 
 	qDebug() << "Set selection type to" << selectionTypeName(_selectionType);
 
+	shape<SelectionOutline>("SelectionOutline")->reset();
+
 	emit selectionTypeChanged(_selectionType);
 }
 
@@ -485,6 +485,16 @@ void Renderer::brushSizeDecrease()
 	setBrushRadius(_brushRadius - _brushRadiusDelta);
 }
 
+void Renderer::bindOpenGLContext()
+{
+	_parentWidget->makeCurrent();
+}
+
+void Renderer::releaseOpenGLContext()
+{
+	_parentWidget->doneCurrent();
+}
+
 void Renderer::onShapeChanged(Shape* shape)
 {
 	//qDebug() << "Shape" << shape->name() << "changed";
@@ -511,8 +521,8 @@ void Renderer::createShapes()
 
 	//_shapes["ImageQuad"]->setEnabled(false);
 	//_shapes["SelectionBufferQuad"]->setEnabled(false);
-	_shapes["SelectionQuad"]->setEnabled(false);
-	_shapes["SelectionBounds"]->setEnabled(false);
+	//_shapes["SelectionQuad"]->setEnabled(false);
+	//_shapes["SelectionBounds"]->setEnabled(false);
 	//_shapes["SelectionOutline"]->setEnabled(false);
 }
 

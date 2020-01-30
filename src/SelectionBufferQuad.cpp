@@ -15,7 +15,7 @@ SelectionBufferQuad::SelectionBufferQuad(Renderer* renderer, const QString& name
 	Quad(renderer, name, z),
 	_size(),
 	_color(255, 153, 0, 40),
-	_mouseEvents()
+	_mousePositions()
 {
 	_handleMouseEvents = static_cast<int>(MouseEvent::Press) | static_cast<int>(MouseEvent::Release) | static_cast<int>(MouseEvent::Move);
 }
@@ -60,7 +60,7 @@ void SelectionBufferQuad::setSize(const QSize& size)
 	else {
 		_fbos["SelectionBuffer"] = QSharedPointer<QOpenGLFramebufferObject>::create(_size.width(), _size.height());
 	}
-
+	
 	setRectangle(QRectF(QPointF(), QSizeF(static_cast<float>(_size.width()), static_cast<float>(_size.height()))));
 
 	emit sizeChanged(_size);
@@ -134,18 +134,12 @@ void SelectionBufferQuad::update()
 			selectionBufferProgram->setUniformValue("selectionType", static_cast<int>(_renderer->selectionType()));
 			selectionBufferProgram->setUniformValue("imageSize", imageWidth, imageHeight);
 
-			QVector<QVector3D> mousePositionsWorld;
-
-			for (auto mouseEvent : _mouseEvents) {
-				mousePositionsWorld.push_back(_renderer->screenToWorld(modelViewMatrix(), mouseEvent->pos()));
-			}
-
 			switch (_renderer->selectionType())
 			{
 				case SelectionType::Rectangle:
 				{
-					const auto rectangleTopLeft			= mousePositionsWorld.front();
-					const auto rectangleBottomRight		= mousePositionsWorld.back();
+					const auto rectangleTopLeft			= _mousePositions.front();
+					const auto rectangleBottomRight		= _mousePositions.back();
 					const auto rectangleTopLeftUV		= QVector2D(rectangleTopLeft.x() / static_cast<float>(selectionBufferFBO->width()), rectangleTopLeft.y() / static_cast<float>(selectionBufferFBO->height()));
 					const auto rectangleBottomRightUV	= QVector2D(rectangleBottomRight.x() / static_cast<float>(selectionBufferFBO->width()), rectangleBottomRight.y() / static_cast<float>(selectionBufferFBO->height()));
 
@@ -171,8 +165,8 @@ void SelectionBufferQuad::update()
 
 				case SelectionType::Brush:
 				{
-					const auto brushCenter			= mousePositionsWorld[mousePositionsWorld.size() - 1];
-					const auto previousBrushCenter	= mousePositionsWorld.size() > 1 ? mousePositionsWorld[mousePositionsWorld.size() - 2] : brushCenter;
+					const auto brushCenter			= _mousePositions[_mousePositions.size() - 1];
+					const auto previousBrushCenter	= _mousePositions.size() > 1 ? _mousePositions[_mousePositions.size() - 2] : brushCenter;
 
 					selectionBufferProgram->setUniformValue("previousBrushCenter", previousBrushCenter.x(), previousBrushCenter.y());
 					selectionBufferProgram->setUniformValue("currentBrushCenter", brushCenter.x(), brushCenter.y());
@@ -186,9 +180,9 @@ void SelectionBufferQuad::update()
 				{
 					QList<QVector2D> points;
 
-					points.reserve(static_cast<std::int32_t>(mousePositionsWorld.size()));
+					points.reserve(static_cast<std::int32_t>(_mousePositions.size()));
 
-					for (const auto& mousePosition : mousePositionsWorld) {
+					for (const auto& mousePosition : _mousePositions) {
 						points.push_back(QVector2D(mousePosition.x(), mousePosition.y()));
 					}
 
@@ -272,14 +266,14 @@ QSharedPointer<QImage> SelectionBufferQuad::selectionBufferImage() const
 
 void SelectionBufferQuad::onMousePressEvent(QMouseEvent* mouseEvent)
 {
-	//qDebug() << "Mouse press event for" << _name;
+	Quad::onMousePressEvent(mouseEvent);
 
 	if (_renderer->selectionType() != SelectionType::Polygon) {
-		_mouseEvents.clear();
+		_mousePositions.clear();
 	}
 
 	if (mouseEvent->button() == Qt::LeftButton) {
-		_mouseEvents.push_back(QSharedPointer<QMouseEvent>::create(*mouseEvent));
+		_mousePositions.push_back(_renderer->screenToWorld(modelViewMatrix(), mouseEvent->pos()));
 	}
 
 	update();
@@ -287,13 +281,14 @@ void SelectionBufferQuad::onMousePressEvent(QMouseEvent* mouseEvent)
 
 void SelectionBufferQuad::onMouseReleaseEvent(QMouseEvent* mouseEvent)
 {
-	//qDebug() << "Mouse release event for" << _name;
+	Quad::onMouseReleaseEvent(mouseEvent);
 
 	switch (mouseEvent->button())
 	{
 		case Qt::LeftButton:
 		{
 			if (_renderer->selectionType() != SelectionType::Polygon) {
+				reset();
 				deactivate();
 			}
 
@@ -303,6 +298,7 @@ void SelectionBufferQuad::onMouseReleaseEvent(QMouseEvent* mouseEvent)
 		case Qt::RightButton:
 		{
 			if (_renderer->selectionType() == SelectionType::Polygon) {
+				reset();
 				deactivate();
 			}
 
@@ -318,16 +314,15 @@ void SelectionBufferQuad::onMouseReleaseEvent(QMouseEvent* mouseEvent)
 
 void SelectionBufferQuad::onMouseMoveEvent(QMouseEvent* mouseEvent)
 {
-	//qDebug() << "Mouse move event for" << _name;
+	Quad::onMouseMoveEvent(mouseEvent);
 
 	if (_renderer->selectionType() != SelectionType::Polygon) {
-		_mouseEvents.push_back(QSharedPointer<QMouseEvent>::create(*mouseEvent));
+		_mousePositions.push_back(_renderer->screenToWorld(modelViewMatrix(), mouseEvent->pos()));
+		update();
 	}
 	else {
-		_mouseEvents.back().reset(new QMouseEvent(*mouseEvent));
+		_mousePositions.back() = _renderer->screenToWorld(modelViewMatrix(), mouseEvent->pos());
 	}
-
-	update();
 }
 
 void SelectionBufferQuad::activate()

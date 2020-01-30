@@ -66,7 +66,7 @@ void Quad::render()
 	Shape::render();
 	
 	//qDebug() << "Render" << _name << "shape";
-
+	bindOpenGLContext();
 	if (isTextured()) {
 		texture("Quad")->bind();
 	}

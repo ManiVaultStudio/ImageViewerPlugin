@@ -36,13 +36,10 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	connect(_imageViewerPlugin, &ImageViewerPlugin::selectionImageChanged, this, [&](std::shared_ptr<QImage> image, const QRect& bounds) {
 		makeCurrent();
 		_renderer->setSelectionImage(image, bounds);
-		doneCurrent();
 	}, Qt::AutoConnection);
 
 	connect(_imageViewerPlugin, &ImageViewerPlugin::displayImageChanged, this, [&](std::shared_ptr<QImage> image) {
-		makeCurrent();
 		_renderer->setColorImage(image);
-		doneCurrent();
 	}, Qt::AutoConnection);
 
 	QSurfaceFormat surfaceFormat;
@@ -74,11 +71,7 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 
 ImageViewerWidget::~ImageViewerWidget()
 {
-	makeCurrent();
-
 	_renderer->destroy();
-
-	doneCurrent();
 }
 
 void ImageViewerWidget::initializeGL()
@@ -87,6 +80,8 @@ void ImageViewerWidget::initializeGL()
 
 	initializeOpenGLFunctions();
 
+	makeCurrent();
+	
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
 	glEnable(GL_BLEND);
@@ -99,10 +94,12 @@ void ImageViewerWidget::initializeGL()
 
 	_imageViewerPlugin->computeDisplayImage();
 	_imageViewerPlugin->computeSelectionImage();
-	
+
 #ifdef _DEBUG
 	_openglDebugLogger->initialize();
 #endif
+
+	doneCurrent();
 }
 
 void ImageViewerWidget::resizeGL(int w, int h)
@@ -215,8 +212,6 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 	if (!_renderer->isInitialized())
 		return;
 
-	makeCurrent();
-
 	switch (mouseEvent->button())
 	{
 		case Qt::LeftButton:
@@ -243,8 +238,6 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 
 	_renderer->mousePressEvent(mouseEvent);
 
-	doneCurrent();
-
 	QOpenGLWidget::mousePressEvent(mouseEvent);
 }
 
@@ -252,8 +245,6 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 
 	if (!_renderer->isInitialized())
 		return;
-
-	makeCurrent();
 
 	if (mouseEvent->button() == Qt::RightButton)
 	{
@@ -277,8 +268,6 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 
 	_renderer->mouseReleaseEvent(mouseEvent);
 
-	doneCurrent();
-
 	QOpenGLWidget::mouseReleaseEvent(mouseEvent);
 }
 
@@ -287,11 +276,9 @@ void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
 	if (!_renderer->isInitialized())
 		return;
 
-	makeCurrent();
-
 	_renderer->mouseMoveEvent(mouseEvent);
 
-	doneCurrent();
+	QOpenGLWidget::mouseMoveEvent(mouseEvent);
 }
 
 void ImageViewerWidget::wheelEvent(QWheelEvent* wheelEvent) {
@@ -299,11 +286,7 @@ void ImageViewerWidget::wheelEvent(QWheelEvent* wheelEvent) {
 	if (!_renderer->isInitialized())
 		return;
 
-	makeCurrent();
-
 	_renderer->mouseWheelEvent(wheelEvent);
-
-	doneCurrent();
 }
 
 void ImageViewerWidget::publishSelection()

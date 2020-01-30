@@ -192,6 +192,12 @@ public:
 	/** Deactivate the shape */
 	virtual void deactivate();
 
+	/** Binds the OpenGL context */
+	void bindOpenGLContext();
+
+	/** Releases the OpenGL context */
+	void releaseOpenGLContext();
+
 protected:
 	/** Adds the OpenGL shader programs that the shape needs */
 	virtual void addShaderPrograms() {};

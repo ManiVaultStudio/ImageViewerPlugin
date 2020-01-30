@@ -38,9 +38,6 @@ public:
 	 */
 	void setViewRectangle(const QRect& viewRectangle);
 
-	/** Reset the outline */
-	void reset();
-
 	/** Invoked when a mouse button is pressed */
 	void onMousePressEvent(QMouseEvent* mouseEvent) override;
 

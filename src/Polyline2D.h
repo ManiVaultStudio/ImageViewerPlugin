@@ -62,6 +62,9 @@ public:
 	/** Returns whether the shape can be rendered */
 	bool canRender() const override;
 
+	/** Resets the polyline */
+	virtual void reset();
+
 protected:
 	/** Adds the OpenGL shader programs that the shape needs */
 	void addShaderPrograms();
@@ -77,9 +80,6 @@ protected:
 	 * @param points Points in world coordinates
 	 */
 	void setPoints(QVector<PolylinePoint2D> points);
-
-	/** Resets the points */
-	virtual void reset();
 
 	/**
 	 * Configure an OpenGL shader program (right after the shader program is bound in the render function)

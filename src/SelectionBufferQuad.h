@@ -109,7 +109,7 @@ signals:
 	void selectionEnded();
 
 protected:
-	QSize									_size;				/** Size of the quad */
-	QColor									_color;				/** Selection color */
-	QVector<QSharedPointer<QMouseEvent>>	_mouseEvents;		/** Recorded mouse events during interaction */
+	QSize				_size;				/** Size of the quad */
+	QColor				_color;				/** Selection color */
+	QVector<QVector3D>	_mousePositions;	/** Recorded mouse positions in world coordinates */
 };
