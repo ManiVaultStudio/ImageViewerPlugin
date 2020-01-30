@@ -110,13 +110,18 @@ void Renderer::mouseMoveEvent(QMouseEvent* mouseEvent)
 			{
 				case InteractionMode::Navigation:
 				{
-					const auto previous = _mouseEvents[_mouseEvents.size() - 2];
-					const auto current = _mouseEvents[_mouseEvents.size() - 1];
-					const auto delta = current->pos() - previous->pos();
+					const auto noMouseEvents = _mouseEvents.size();
 
-					pan(QPointF(delta.x(), delta.y()));
+					if (noMouseEvents >= 2) {
+						const auto previous	= _mouseEvents[noMouseEvents - 2];
+						const auto current	= _mouseEvents[noMouseEvents - 1];
+						const auto delta	= current->pos() - previous->pos();
 
-					emit dirty();
+						pan(QPointF(delta.x(), delta.y()));
+
+						emit dirty();
+					}
+					
 					break;
 				}
 			}
@@ -191,12 +196,12 @@ QVector3D Renderer::screenToWorld(const QMatrix4x4& modelViewMatrix, const QPoin
 
 QMatrix4x4 Renderer::viewMatrix() const
 {
-	QMatrix4x4 matrix;
+	QMatrix4x4 lookAt, scale;
 
-	matrix.lookAt(QVector3D(_pan.x(), _pan.y(), -1), QVector3D(_pan.x(), _pan.y(), 0), QVector3D(0, -1, 0));
-	matrix.scale(_zoom);
+	lookAt.lookAt(QVector3D(_pan.x(), _pan.y(), -1), QVector3D(_pan.x(), _pan.y(), 0), QVector3D(0, 1, 0));
+	scale.scale(_zoom);
 
-	return matrix;
+	return lookAt * scale;
 }
 
 QMatrix4x4 Renderer::projectionMatrix() const
@@ -214,8 +219,8 @@ void Renderer::pan(const QPointF& delta)
 {
 	qDebug() << "Pan by" << delta;
 
-	_pan.setX(_pan.x() - delta.x());
-	_pan.setY(_pan.y() - delta.y());
+	_pan.setX(_pan.x() + delta.x());
+	_pan.setY(_pan.y() + delta.y());
 }
 
 float Renderer::zoom() const
@@ -238,15 +243,25 @@ void Renderer::zoomAround(const QPointF& screenPoint, const float& factor) {
 	if (factor == 0.f)
 		return;
 
-	const auto oldZoom = _zoom;
-
 	zoomBy(factor);
+	
+//	qDebug() << "Zoom at" << screenPoint << "by" << factor;
 
+	auto pAnchor = screenPoint * projectionMatrix();// *viewMatrix();
+	auto vPan		= _pan - pAnchor;
+	auto vPanScaled	= factor * vPan;
+	auto vPanNew	= vPanScaled - vPan;
+
+	qDebug() << "zoomAround";
+	qDebug() << "_pan" << _pan;
+	qDebug() << "vPan" << vPan;
+	qDebug() << "pAnchor:" << pAnchor;
+	qDebug() << "vPanScaled" << vPanScaled;
+	//qDebug() << "Zoom around:" << screenPoint;
+	qDebug() << "_zoom:" << _zoom;
+
+	pan(vPan);// -(screenPoint - _pan)));
 	/*
-	qDebug() << "Zoom at" << screenPoint << "by" << factor;
-
-	qDebug() << screenToWorld(viewMatrix(), projectionMatrix(), screenPoint) << _pan;
-
 	return;
 	const auto oldZoom = _zoom;
 	
@@ -254,9 +269,9 @@ void Renderer::zoomAround(const QPointF& screenPoint, const float& factor) {
 	
 	//pan(position);
 
-	const auto p0 = screenToWorld(modelView(), projection(), screenPoint - QPointF(0, 1));
+	const auto p0 = screenToWorld(modelViewMa(), projection(), screenPoint - QPointF(0, 1));
 	const auto p1 = screenToWorld(modelView(), projection(), screenPoint);
-
+	
 	zoomBy(factor);
 	
 	const auto zoomChange = _zoom - oldZoom;

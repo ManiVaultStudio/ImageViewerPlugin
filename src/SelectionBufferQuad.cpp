@@ -294,7 +294,6 @@ void SelectionBufferQuad::onMouseReleaseEvent(QMouseEvent* mouseEvent)
 		case Qt::LeftButton:
 		{
 			if (_renderer->selectionType() != SelectionType::Polygon) {
-				
 				deactivate();
 			}
 
