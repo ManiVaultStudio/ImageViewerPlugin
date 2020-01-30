@@ -4,13 +4,12 @@
 #include <QOpenGLBuffer>
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLTexture>
-#include <QMouseEvent>
 #include <QDebug>
 
 #include "Shaders.h"
 
-ImageQuad::ImageQuad(Renderer* renderer, const QString& name, const float& z /*= 0.f*/) :
-	Quad(renderer, name, z),
+ImageQuad::ImageQuad(Actor* actor, const QString& name, const float& z /*= 0.f*/) :
+	Quad(actor, name, z),
 	_imageMin(),
 	_imageMax(),
 	_minPixelValue(),
@@ -18,10 +17,8 @@ ImageQuad::ImageQuad(Renderer* renderer, const QString& name, const float& z /*=
 	_windowNormalized(),
 	_levelNormalized(),
 	_window(1.0f),
-	_level(0.5f),
-	_mousePositions()
+	_level(0.5f)
 {
-	_receiveMouseEvents = static_cast<int>(MouseEvent::Press) | static_cast<int>(MouseEvent::Release) | static_cast<int>(MouseEvent::Move);
 }
 
 void ImageQuad::setImage(std::shared_ptr<QImage> image)
@@ -69,7 +66,7 @@ void ImageQuad::setImage(std::shared_ptr<QImage> image)
 	texture("Quad")->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
 	texture("Quad")->allocateStorage();
 	texture("Quad")->setData(QOpenGLTexture::PixelFormat::RGBA, QOpenGLTexture::PixelType::UInt16, image->bits());
-	
+
 	setRectangle(QRectF(QPointF(0.f, 0.f), QSizeF(static_cast<float>(image->width()), static_cast<float>(image->height()))));
 
 	resetWindowLevel();
@@ -125,15 +122,15 @@ void ImageQuad::setWindowLevel(const float& window, const float& level)
 	if (window == _windowNormalized && level == _levelNormalized)
 		return;
 
-	_windowNormalized	= std::clamp(window, 0.01f, 1.0f);
-	_levelNormalized	= std::clamp(level, 0.01f, 1.0f);
+	_windowNormalized = std::clamp(window, 0.01f, 1.0f);
+	_levelNormalized = std::clamp(level, 0.01f, 1.0f);
 
 	const auto maxWindow = static_cast<float>(_imageMax - _imageMin);
 
-	_level			= std::clamp(_imageMin + (_levelNormalized * maxWindow), static_cast<float>(_imageMin), static_cast<float>(_imageMax));
-	_window			= std::clamp(_windowNormalized * maxWindow, static_cast<float>(_imageMin), static_cast<float>(_imageMax));
-	_minPixelValue	= std::clamp(_level - (_window / 2.0f), static_cast<float>(_imageMin), static_cast<float>(_imageMax));
-	_maxPixelValue	= std::clamp(_level + (_window / 2.0f), static_cast<float>(_imageMin), static_cast<float>(_imageMax));
+	_level = std::clamp(_imageMin + (_levelNormalized * maxWindow), static_cast<float>(_imageMin), static_cast<float>(_imageMax));
+	_window = std::clamp(_windowNormalized * maxWindow, static_cast<float>(_imageMin), static_cast<float>(_imageMax));
+	_minPixelValue = std::clamp(_level - (_window / 2.0f), static_cast<float>(_imageMin), static_cast<float>(_imageMax));
+	_maxPixelValue = std::clamp(_level + (_window / 2.0f), static_cast<float>(_imageMin), static_cast<float>(_imageMax));
 
 	qDebug() << "Set window/level" << _windowNormalized << _levelNormalized;
 
@@ -145,57 +142,6 @@ void ImageQuad::setWindowLevel(const float& window, const float& level)
 void ImageQuad::resetWindowLevel()
 {
 	setWindowLevel(1.0f, 0.5f);
-}
-
-void ImageQuad::onMousePressEvent(QMouseEvent* mouseEvent)
-{
-	if (!mayProcessMousePressEvent())
-		return;
-
-	//qDebug() << "Mouse press event for" << _name;
-
-	_mousePositions.clear();
-	_mousePositions.push_back(mouseEvent->pos());
-}
-
-void ImageQuad::onMouseReleaseEvent(QMouseEvent* mouseEvent)
-{
-	if (!mayProcessMouseReleaseEvent())
-		return;
-
-	//qDebug() << "Mouse release event for" << _name;
-}
-
-void ImageQuad::onMouseMoveEvent(QMouseEvent* mouseEvent)
-{
-	if (!mayProcessMouseMoveEvent())
-		return;
-
-	//qDebug() << "Mouse move event for" << _name;
-
-	_mousePositions.push_back(mouseEvent->pos());
-
-	if (_mousePositions.size() > 1)
-		update();
-}
-
-QVector<QPoint> ImageQuad::mousePositions() const
-{
-	return _mousePositions;
-}
-
-void ImageQuad::update()
-{
-	Quad::update();
-
-	const auto mousePosition0	= _mousePositions[_mousePositions.size() - 2];
-	const auto mousePosition1	= _mousePositions.back();
-	const auto deltaWindow		= (mousePosition1.x() - mousePosition0.x()) / 150.f;
-	const auto deltaLevel		= -(mousePosition1.y() - mousePosition0.y()) / 150.f;
-	const auto window			= std::clamp(windowNormalized() + deltaWindow, 0.0f, 1.0f);
-	const auto level			= std::clamp(levelNormalized() + deltaLevel, 0.0f, 1.0f);
-
-	setWindowLevel(window, level);
 }
 
 void ImageQuad::addShaderPrograms()

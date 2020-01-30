@@ -1,4 +1,5 @@
 #include "Quad.h"
+#include "Actor.h"
 
 #include <QOpenGLShaderProgram>
 #include <QOpenGLBuffer>
@@ -9,14 +10,14 @@
 std::uint32_t Quad::_vertexAttribute	= 0;
 std::uint32_t Quad::_textureAttribute	= 1;
 
-Quad::Quad(Renderer* renderer, const QString& name, const float& z /*= 0.f*/) :
-	Shape(renderer, name),
+Quad::Quad(Actor* actor, const QString& name, const float& z /*= 0.f*/) :
+	Shape(actor, name),
 	_rectangle(),
 	_vertexData()
 {
 	_vertexData.resize(20);
 
-	setTranslation(QVector3D(0.f, 0.f, z));
+	_actor->setTranslation(QVector3D(0.f, 0.f, z));
 }
 
 void Quad::initialize()
@@ -105,7 +106,7 @@ void Quad::setRectangle(const QRectF& rectangle)
 
 	//qDebug() << "Set quad rectangle" << _rectangle;
 
-	setTranslation(QVector3D(-0.5f * rectangle.width(), -0.5f * rectangle.bottom(), _modelMatrix.column(3).z()));
+	_actor->setTranslation(QVector3D(-0.5f * rectangle.width(), -0.5f * rectangle.bottom(), _actor->modelMatrix().column(3).z()));
 
 	emit rectangleChanged(_rectangle);
 	emit sizeChanged(_rectangle.size());
@@ -146,7 +147,7 @@ void Quad::configureShaderProgram(const QString& name)
 	auto quadProgram = shaderProgram("Quad");
 
 	if (name == "Quad") {
-		quadProgram->setUniformValue("transform", modelViewProjectionMatrix());
+		quadProgram->setUniformValue("transform", _actor->modelViewProjectionMatrix());
 	}
 }
 

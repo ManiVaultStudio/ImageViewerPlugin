@@ -19,7 +19,7 @@ public:
 	 * @param name Name of the shape
 	 * @param z Depth at which to draw the shape
 	 */
-	SelectionBufferQuad(Renderer* renderer, const QString& name, const float& z = 0.f);
+	SelectionBufferQuad(Actor* actor, const QString& name, const float& z = 0.f);
 
 	/** Renders the selection buffer quad */
 	void render();
@@ -47,21 +47,6 @@ public:
 
 	/** Returns the current selection buffer image */
 	QSharedPointer<QImage> selectionBufferImage() const;
-
-	/** Invoked when a mouse button is pressed */
-	void onMousePressEvent(QMouseEvent* mouseEvent) override;
-
-	/** Invoked when a mouse button is released */
-	void onMouseReleaseEvent(QMouseEvent* mouseEvent) override;
-
-	/** Invoked when the mouse pointer is moved */
-	void onMouseMoveEvent(QMouseEvent* mouseEvent) override;
-
-	/** Activate the shape */
-	void activate() override;
-
-	/** Deactivate the shape */
-	void deactivate() override;
 
 protected:
 	/** Updates the internals of the shape */

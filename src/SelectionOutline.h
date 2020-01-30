@@ -20,16 +20,7 @@ public:
 	 * @param z Depth at which to draw the shape
 	 * @param color Line color
 	 */
-	SelectionOutline(Renderer* renderer, const QString& name = "SelectionOutline", const float& z = 0.f, const QColor& color = QColor(255, 153, 0, 150));
-
-	/** Invoked when a mouse button is pressed */
-	void onMousePressEvent(QMouseEvent* mouseEvent) override;
-
-	/** Invoked when a mouse button is released */
-	void onMouseReleaseEvent(QMouseEvent* mouseEvent) override;
-
-	/** Invoked when the mouse pointer is moved */
-	void onMouseMoveEvent(QMouseEvent* mouseEvent) override;
+	SelectionOutline(Actor* actor, const QString& name = "SelectionOutline", const float& z = 0.f, const QColor& color = QColor(255, 153, 0, 150));
 
 protected:
 	/** Updates the internals of the shape */

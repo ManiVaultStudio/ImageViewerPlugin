@@ -11,15 +11,13 @@
 
 #include "Renderer.h"
 
-Brush::Brush(Renderer* renderer, const QString& name /*= "Brush"*/, const float& z /*= 0.f*/, const QColor& color /*= QColor(255, 153, 0, 150)*/) :
-	Polyline2D(renderer, name, z, true, 0.05f),
+Brush::Brush(Actor* actor, const QString& name /*= "Brush"*/, const float& z /*= 0.f*/, const QColor& color /*= QColor(255, 153, 0, 150)*/) :
+	Polyline2D(actor, name, z, true, 0.05f),
 	_mousePositions()
 {
 	_color = color;
 
-	_receiveMouseEvents = static_cast<int>(MouseEvent::Press) | static_cast<int>(MouseEvent::Release) | static_cast<int>(MouseEvent::Move);
-
-	connect(renderer, &Renderer::brushRadiusChanged, this, &Brush::update);
+	connect(renderer(), &Renderer::brushRadiusChanged, this, &Brush::update);
 }
 
 void Brush::update()
@@ -41,7 +39,7 @@ void Brush::update()
 
 		vertexCoordinates.resize(noSegments * 3);
 
-		const auto brushRadius = _renderer->brushRadius() *_renderer->zoom();
+		const auto brushRadius = renderer()->brushRadius() *renderer()->zoom();
 
 		for (std::uint32_t s = 0; s < noSegments; s++) {
 			const auto theta = 2.0f * M_PI * float(s) / float(noSegments);
@@ -59,53 +57,6 @@ void Brush::update()
 	setPoints(polylinePoints);
 
 	emit changed(this);
-}
-
-void Brush::onMousePressEvent(QMouseEvent* mouseEvent)
-{
-	if (!mayProcessMousePressEvent())
-		return;
-
-	Polyline2D::onMousePressEvent(mouseEvent);
-
-	_mousePositions.clear();
-	_mousePositions.push_back(_renderer->screenToWorld(modelViewMatrix(), mouseEvent->pos()));
-}
-
-void Brush::onMouseReleaseEvent(QMouseEvent* mouseEvent)
-{
-	if (!mayProcessMouseReleaseEvent())
-		return;
-
-	Polyline2D::onMouseReleaseEvent(mouseEvent);
-
-	_mousePositions.clear();
-	update();
-}
-
-void Brush::onMouseMoveEvent(QMouseEvent* mouseEvent)
-{
-	if (!mayProcessMouseMoveEvent())
-		return;
-
-	Polyline2D::onMouseMoveEvent(mouseEvent);
-
-	_mousePositions.push_back(_renderer->screenToWorld(modelViewMatrix(), mouseEvent->pos()));
-	update();
-}
-
-void Brush::activate()
-{
-	Polyline2D::activate();
-
-	_mousePositions.clear();
-}
-
-void Brush::deactivate()
-{
-	Polyline2D::deactivate();
-
-	_mousePositions.clear();
 }
 
 void Brush::addTextures()
@@ -130,7 +81,7 @@ void Brush::configureShaderProgram(const QString& name)
 
 	if (name == "Polyline") {
 		shaderProgram("Polyline")->setUniformValue("lineTexture", 0);
-		shaderProgram("Polyline")->setUniformValue("transform", modelViewProjectionMatrix());
+		shaderProgram("Polyline")->setUniformValue("transform", _actor->modelViewProjectionMatrix());
 		shaderProgram("Polyline")->setUniformValue("lineWidth", _lineWidth);
 	}
 }

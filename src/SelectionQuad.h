@@ -14,7 +14,7 @@ class SelectionQuad : public Quad
 
 public:
 	/** Constructor */
-	SelectionQuad(Renderer* renderer, const QString& name, const float& z = 0.f);
+	SelectionQuad(Actor* actor, const QString& name, const float& z = 0.f);
 
 	/**
 	 * Sets the image

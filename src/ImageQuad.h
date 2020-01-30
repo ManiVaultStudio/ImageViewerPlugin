@@ -2,6 +2,8 @@
 
 #include "Quad.h"
 
+class Actor;
+
 /**
  * OpenGL Image quad class
  * @author Thomas Kroes
@@ -12,7 +14,7 @@ class ImageQuad : public Quad
 
 public:
 	/** Constructor */
-	ImageQuad(Renderer* renderer, const QString& name, const float& z = 0.f);
+	ImageQuad(Actor* actor, const QString& name, const float& z = 0.f);
 
 	/**
 	 * Sets the image
@@ -55,22 +57,7 @@ public:
 	/** Resets the display window and level */
 	void resetWindowLevel();
 
-	/** Invoked when a mouse button is pressed */
-	void onMousePressEvent(QMouseEvent* mouseEvent) override;
-
-	/** Invoked when a mouse button is released */
-	void onMouseReleaseEvent(QMouseEvent* mouseEvent) override;
-
-	/** Invoked when the mouse pointer is moved */
-	void onMouseMoveEvent(QMouseEvent* mouseEvent) override;
-
-	/** Returns the mouse positions in screen coordinates */
-	QVector<QPoint> mousePositions() const;
-
 protected:
-	/** Updates the internals of the shape */
-	void update() override;
-
 	/** Adds the OpenGL shader programs that the shape needs */
 	void addShaderPrograms();
 
@@ -107,5 +94,4 @@ protected:
 	float				_levelNormalized;		/** Normalized display level */
 	float				_window;				/** Display window */
 	float				_level;					/** Display level */
-	QVector<QPoint>		_mousePositions;		/** Recorded mouse positions in screen coordinates */
 };

@@ -51,6 +51,7 @@ ImageViewerPlugin::ImageViewerPlugin() :
 		updateWindowTitle();
 	}, Qt::AutoConnection);
 
+	/*
 	auto imageQuad = this->_imageViewerWidget->renderer()->imageQuad();
 
 	connect(imageQuad, &ImageQuad::windowLevelChanged, this, [&]() {
@@ -65,6 +66,7 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	connect(imageQuad, &ImageQuad::sizeChanged, [&]() {
 		updateWindowTitle();
 	});
+	*/
 }
 
 void ImageViewerPlugin::init()
@@ -416,10 +418,11 @@ void ImageViewerPlugin::updateWindowTitle()
 	//properties << QString("image=%1").arg(_imageNames.size() > 0 ? _imageNames[_currentImageId] : "");
 	//properties << QString("dimension=%1").arg(_dimensionNames.size() > 0 ? _dimensionNames[_currentDimensionId] : "");
 	
-	auto imageQuad = _imageViewerWidget->renderer()->imageQuad();
+	//auto imageQuad = _imageViewerWidget->renderer()->imageQuad();
 
-	const auto size = imageQuad->size();
+	//const auto size = imageQuad->size();
 
+	/*
 	properties << QString("width=%1").arg(QString::number(size.width()));
 	properties << QString("height=%1").arg(QString::number(size.height()));
 	properties << QString("window=%1").arg(QString::number(imageQuad->windowNormalized(), 'f', 2));
@@ -428,7 +431,8 @@ void ImageViewerPlugin::updateWindowTitle()
 	properties << QString("imageMax=%1").arg(QString::number(imageQuad->imageMax()));
 	properties << QString("noSelectedPixels=%1").arg(QString::number(selection().size()));
 	properties << QString("noPixels=%1").arg(QString::number(size.width() * size.height()));
-	
+	*/
+
 	setWindowTitle(QString("%1").arg(properties.join(", ")));
 }
 

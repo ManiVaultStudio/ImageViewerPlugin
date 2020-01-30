@@ -9,14 +9,11 @@
 
 #include "Renderer.h"
 
-Shape::Shape(Renderer* renderer, const QString& name) :
-	_renderer(renderer),
+Shape::Shape(Actor* actor, const QString& name) :
+	_actor(actor),
 	_name(name),
 	_active(false),
-	_receiveMouseEvents(static_cast<int>(MouseEvent::None)),
 	_initialized(false),
-	_enabled(true),
-	_modelMatrix(),
 	_shaderPrograms(),
 	_vaos(),
 	_vbos(),
@@ -96,86 +93,13 @@ void Shape::setName(const QString& name)
 	emit changed(this);
 }
 
-bool Shape::isEnabled() const
-{
-	return _enabled;
-}
-
-void Shape::setEnabled(const bool& enabled)
-{
-	if (enabled == _enabled)
-		return;
-
-	_enabled = enabled;
-
-	qDebug() << "Set " << _name << "shape" << (_enabled ? "enabled" : "disabled");
-
-	emit enabledChanged(enabled);
-
-	emit changed(this);
-}
-
-void Shape::enable()
-{
-	setEnabled(true);
-}
-
-void Shape::disable()
-{
-	setEnabled(false);
-}
-
 bool Shape::canRender() const
 {
-	return isEnabled() && isInitialized();
-}
-
-QMatrix4x4 Shape::modelMatrix() const
-{
-	return _modelMatrix;
-}
-
-void Shape::setModelMatrix(const QMatrix4x4& modelMatrix)
-{
-	if (modelMatrix == _modelMatrix)
-		return;
-
-	_modelMatrix = modelMatrix;
-
-	//qDebug() << "Set model > view matrix for" << _name;
-
-	emit modelMatrixChanged(_modelMatrix);
-}
-
-QVector3D Shape::translation() const
-{
-	const auto translationColumn = _modelMatrix.column(3);
-
-	return QVector3D(translationColumn.x(), translationColumn.y(), translationColumn.z());
-}
-
-void Shape::setTranslation(const QVector3D& translation)
-{
-	_modelMatrix.setColumn(3, QVector4D(translation.x(), translation.y(), translation.z(), 1.f));
-}
-
-QMatrix4x4 Shape::modelViewMatrix() const
-{
-	return _renderer->viewMatrix() * _modelMatrix;
-}
-
-QMatrix4x4 Shape::modelViewProjectionMatrix() const
-{
-	return _renderer->projectionMatrix() * modelViewMatrix();
+	return isInitialized();
 }
 
 void Shape::render()
 {
-}
-
-void Shape::log(const QString& event) const
-{
-	qDebug() << event.toLatin1().data();
 }
 
 bool Shape::bindShaderProgram(const QString& name)
@@ -232,38 +156,6 @@ void Shape::update()
 	qDebug() << "Updating" << _name;
 }
 
-bool Shape::mayProcessMousePressEvent() const
-{
-	if (!shouldReceiveMousePressEvents())
-		return false;
-
-	return _enabled && _active;
-}
-
-bool Shape::mayProcessMouseReleaseEvent() const
-{
-	if (!shouldReceiveMouseReleaseEvents())
-		return false;
-
-	return _enabled && _active;
-}
-
-bool Shape::mayProcessMouseMoveEvent() const
-{
-	if (!shouldReceiveMouseMoveEvents())
-		return false;
-
-	return _enabled && _active;
-}
-
-bool Shape::mayProcessMouseWheelEvent() const
-{
-	if (!shouldReceiveMouseWheelEvents())
-		return false;
-
-	return _enabled && _active;
-}
-
 QSharedPointer<QOpenGLShaderProgram> Shape::shaderProgram(const QString& name)
 {
 	return _shaderPrograms[name];
@@ -314,76 +206,14 @@ const QSharedPointer<QOpenGLFramebufferObject> Shape::fbo(const QString& name) c
 	return _fbos[name];
 }
 
-void Shape::onMousePressEvent(QMouseEvent* mouseEvent)
-{
-	//qDebug() << "Mouse press event in" << _name;
-}
-
-void Shape::onMouseReleaseEvent(QMouseEvent* mouseEvent)
-{
-	//qDebug() << "Mouse release event in" << _name;
-}
-
-void Shape::onMouseMoveEvent(QMouseEvent* mouseEvent)
-{
-	//qDebug() << "Mouse move event in" << _name;
-}
-
-void Shape::onMouseWheelEvent(QWheelEvent* wheelEvent)
-{
-	//qDebug() << "Mouse wheel event in" << _name;
-}
-
-bool Shape::shouldReceiveMousePressEvents() const
-{
-	return _receiveMouseEvents & static_cast<int>(MouseEvent::Press);
-}
-
-bool Shape::shouldReceiveMouseReleaseEvents() const
-{
-	return _receiveMouseEvents & static_cast<int>(MouseEvent::Release);
-}
-
-bool Shape::shouldReceiveMouseMoveEvents() const
-{
-	return _receiveMouseEvents & static_cast<int>(MouseEvent::Move);
-}
-
-bool Shape::shouldReceiveMouseWheelEvents() const
-{
-	return _receiveMouseEvents & static_cast<int>(MouseEvent::Wheel);
-}
-
-bool Shape::isActive() const
-{
-	return _active;
-}
-
-void Shape::activate()
-{
-	if (!_enabled)
-		return;
-
-	_active = true;
-
-	qDebug() << "Activated" << _name;
-}
-
-void Shape::deactivate()
-{
-	_active = false;
-
-	qDebug() << "Deactivated" << _name;
-}
-
 void Shape::bindOpenGLContext()
 {
-	_renderer->bindOpenGLContext();
+	renderer()->bindOpenGLContext();
 }
 
 void Shape::releaseOpenGLContext()
 {
-	_renderer->releaseOpenGLContext();
+	renderer()->releaseOpenGLContext();
 }
 
 QColor Shape::color() const
@@ -401,4 +231,9 @@ void Shape::setColor(const QColor& color)
 	_color = color;
 
 	emit colorChanged(_color);
+}
+
+Renderer* Shape::renderer()
+{
+	return _actor->renderer();
 }

@@ -11,15 +11,13 @@
 
 #include "Renderer.h"
 
-SelectionOutline::SelectionOutline(Renderer* renderer, const QString& name /*= "SelectionOutline"*/, const float& z /*= 0.f*/, const QColor& color /*= QColor(255, 153, 0, 150)*/) :
-	Polyline2D(renderer, name, z, true, 0.005f),
+SelectionOutline::SelectionOutline(Actor* actor, const QString& name /*= "SelectionOutline"*/, const float& z /*= 0.f*/, const QColor& color /*= QColor(255, 153, 0, 150)*/) :
+	Polyline2D(actor, name, z, true, 0.005f),
 	_mousePositions()
 {
 	_color = color;
 
-	_receiveMouseEvents = static_cast<int>(MouseEvent::Press) | static_cast<int>(MouseEvent::Release) | static_cast<int>(MouseEvent::Move);
-
-	connect(renderer, &Renderer::brushRadiusChanged, this, &SelectionOutline::update);
+	connect(renderer(), &Renderer::brushRadiusChanged, this, &SelectionOutline::update);
 }
 
 void SelectionOutline::update()
@@ -33,7 +31,7 @@ void SelectionOutline::update()
 
 	QVector<QVector3D> positions;
 
-	switch (_renderer->selectionType())
+	switch (renderer()->selectionType())
 	{
 		case SelectionType::Rectangle:
 		{
@@ -61,7 +59,7 @@ void SelectionOutline::update()
 
 				vertexCoordinates.resize(noSegments * 3);
 
-				const auto brushRadius = _renderer->brushRadius() *_renderer->zoom();
+				const auto brushRadius = renderer()->brushRadius() *renderer()->zoom();
 
 				for (std::uint32_t s = 0; s < noSegments; s++) {
 					const auto theta	= 2.0f * M_PI * float(s) / float(noSegments);
@@ -99,6 +97,7 @@ void SelectionOutline::update()
 	emit changed(this);
 }
 
+/*
 void SelectionOutline::onMousePressEvent(QMouseEvent* mouseEvent)
 {
 	if (!mayProcessMousePressEvent())
@@ -221,6 +220,7 @@ void SelectionOutline::onMouseMoveEvent(QMouseEvent* mouseEvent)
 			break;
 	}
 }
+*/
 
 void SelectionOutline::addTextures()
 {
@@ -244,7 +244,7 @@ void SelectionOutline::configureShaderProgram(const QString& name)
 
 	if (name == "Polyline") {
 		shaderProgram("Polyline")->setUniformValue("lineTexture", 0);
-		shaderProgram("Polyline")->setUniformValue("transform", modelViewProjectionMatrix());
+		shaderProgram("Polyline")->setUniformValue("transform", _actor->modelViewProjectionMatrix());
 		shaderProgram("Polyline")->setUniformValue("lineWidth", _lineWidth);
 	}
 }

@@ -15,7 +15,7 @@ class Quad : public Shape
 
 public:
 	/** Constructor */
-	Quad(Renderer* renderer, const QString& name, const float& z = 0.f);
+	Quad(Actor* actor, const QString& name, const float& z = 0.f);
 
 	/** Initialized the shape (must be called in appropriate OpenGL context) */
 	void initialize() override;

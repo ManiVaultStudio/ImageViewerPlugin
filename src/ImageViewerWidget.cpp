@@ -93,7 +93,7 @@ void ImageViewerWidget::initializeGL()
 	_imageViewerPlugin->computeDisplayImage();
 	_imageViewerPlugin->computeSelectionImage();
 
-	connect(_renderer->selectionBufferQuad(), &SelectionBufferQuad::selectionEnded, this, &ImageViewerWidget::publishSelection);
+	//connect(_renderer->selectionBufferQuad(), &SelectionBufferQuad::selectionEnded, this, &ImageViewerWidget::publishSelection);
 
 #ifdef _DEBUG
 //	_openglDebugLogger->initialize();
@@ -228,7 +228,6 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 		case Qt::RightButton:
 		{
 			_renderer->setInteractionMode(InteractionMode::WindowLevel);
-			_renderer->imageQuad()->activate();
 			break;
 		}
 
@@ -249,7 +248,7 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 	if (mouseEvent->button() == Qt::RightButton)
 	{
 		//if (_renderer->interactionMode() == InteractionMode::WindowLevel && _renderer->imageQuad()->mousePositions().size() == 1)
-		//	contextMenu()->exec(mapToGlobal(mouseEvent->pos()));
+		contextMenu()->exec(mapToGlobal(mouseEvent->pos()));
 	}
 
 	switch (mouseEvent->button())
@@ -257,7 +256,6 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 		case Qt::RightButton:
 		{
 			_renderer->setInteractionMode(InteractionMode::Selection);
-			_renderer->imageQuad()->deactivate();
 			break;
 		}
 		
@@ -293,6 +291,7 @@ void ImageViewerWidget::publishSelection()
 {	
 	qDebug() << "Publish selection";
 	
+	/*
 	const auto image = _renderer->selectionBufferQuad()->selectionBufferImage();
 
 	auto pixelCoordinates = std::vector<std::pair<std::uint32_t, std::uint32_t>>();
@@ -310,6 +309,7 @@ void ImageViewerWidget::publishSelection()
 	_imageViewerPlugin->selectPixels(pixelCoordinates, _renderer->selectionModifier());
 
 	_renderer->selectionBufferQuad()->reset();
+	*/
 
 	update();
 }
@@ -384,11 +384,11 @@ QMenu* ImageViewerWidget::viewMenu()
 	resetWindowLevelAction->setToolTip("Reset window/level to default values");
 
 	zoomToSelectionAction->setEnabled(_imageViewerPlugin->noSelectedPixels() > 0);
-	resetWindowLevelAction->setEnabled(_renderer->imageQuad()->windowNormalized() < 1.f && _renderer->imageQuad()->levelNormalized() != 0.5f);
+	//resetWindowLevelAction->setEnabled(_renderer->imageQuad()->windowNormalized() < 1.f && _renderer->imageQuad()->levelNormalized() != 0.5f);
 
 	connect(zoomToExtentsAction, &QAction::triggered, this->_renderer.get(), &Renderer::zoomExtents);
 	connect(zoomToSelectionAction, &QAction::triggered, this->_renderer.get(), &Renderer::zoomToSelection);
-	connect(resetWindowLevelAction, &QAction::triggered, [&]() { _renderer->imageQuad()->resetWindowLevel();  });
+	//connect(resetWindowLevelAction, &QAction::triggered, [&]() { _renderer->imageQuad()->resetWindowLevel();  });
 
 	viewMenu->addAction(zoomToExtentsAction);
 	viewMenu->addAction(zoomToSelectionAction);

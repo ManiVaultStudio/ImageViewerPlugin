@@ -5,7 +5,7 @@
 
 #include "Common.h"
 
-#include "Shape.h"
+#include "Actor.h"
 
 class ImageQuad;
 class SelectionBufferQuad;
@@ -157,13 +157,13 @@ public:
 	SelectionOutline* selectionOutline();
 
 	/**
-	 * Get shape by name
-	 * @param name Name of the shape
-	 */
+	* Get actor by name
+	* @param name Name of the actor
+	*/
 	template<typename T>
-	T* shape(const QString& name)
+	T* actor(const QString& name)
 	{
-		return dynamic_cast<T*>(_shapes[name].get());
+		return dynamic_cast<T*>(_actors[name].get());
 	}
 
 	/** Returns the interaction mode */
@@ -225,28 +225,28 @@ public:
 
 protected:
 	/**
-	 * Invoked when a shape has changed
-	 * shape Pointer to a shape
+	 * Invoked when an actor has changed
+	 * @param actor Actor
 	 */
-	void onShapeChanged(Shape* shape);
+	void onActorChanged(Actor* actor);
 
 private:
-	/** Add a shape
-	 * @param shape Shared pointer to shape
+	/** Add an actor
+	 * @param actor Shared pointer to actor
 	*/
-	void addShape(const QString& name, QSharedPointer<Shape> shape);
+	void addActor(const QString& name, QSharedPointer<Actor> actor);
 
 	/** Create shapes */
-	void createShapes();
+	void createActors();
 
 	/** Initialize shapes */
-	void initializeShapes();
+	void initializeActors();
 
 	/** Render shapes */
-	void renderShapes();
+	void renderActors();
 
 	/** Destroy shapes */
-	void destroyShapes();
+	void destroyActors();
 
 signals:
 	/**
@@ -278,7 +278,7 @@ signals:
 
 protected:
 	QOpenGLWidget*							_parentWidget;			/** Pointer to parent widget */
-	QMap<QString, QSharedPointer<Shape>>	_shapes;				/** Shapes map */
+	QMap<QString, QSharedPointer<Actor>>	_actors;				/** Actors map */
 	InteractionMode							_interactionMode;		/** Type of interaction e.g. navigation, selection and window/level */
 	QVector<QSharedPointer<QMouseEvent>>	_mouseEvents;			/** Recorded mouse events during interaction */
 	QPointF									_pan;					/** Move view horizontally/vertically */

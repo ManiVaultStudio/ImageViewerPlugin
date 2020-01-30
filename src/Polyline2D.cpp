@@ -20,18 +20,18 @@ PolylinePoint2D::PolylinePoint2D(const QVector3D& position, const QVector2D& tex
 {
 }
 
-std::uint32_t PolylinePoint2D::_positionAttribute	= 0;
+std::uint32_t PolylinePoint2D::_positionAttribute			= 0;
 std::uint32_t PolylinePoint2D::_textureCoordinateAttribute	= 1;
-std::uint32_t PolylinePoint2D::_lineWidthAttribute	= 2;
+std::uint32_t PolylinePoint2D::_lineWidthAttribute			= 2;
 
-Polyline2D::Polyline2D(Renderer* renderer, const QString& name, const float& z /*= 0.f*/, const bool& closed /*= true*/, const float& lineWidth /*= 1.f*/, const float& textureScale /*= 0.05f*/) :
-	Shape(renderer, name),
+Polyline2D::Polyline2D(Actor* actor, const QString& name, const float& z /*= 0.f*/, const bool& closed /*= true*/, const float& lineWidth /*= 1.f*/, const float& textureScale /*= 0.05f*/) :
+	Shape(actor, name),
 	_closed(closed),
 	_lineWidth(lineWidth),
 	_textureScale(textureScale),
 	_points()
 {
-	setTranslation(QVector3D(0.f, 0.f, z));
+	_actor->setTranslation(QVector3D(0.f, 0.f, z));
 }
 
 void Polyline2D::initialize()
@@ -179,7 +179,7 @@ void Polyline2D::configureShaderProgram(const QString& name)
 
 	if (name == "Polyline") {
 		shaderProgram("Polyline")->setUniformValue("lineTexture", 0);
-		shaderProgram("Polyline")->setUniformValue("transform", modelViewProjectionMatrix());
+		shaderProgram("Polyline")->setUniformValue("transform", _actor->modelViewProjectionMatrix());
 		shaderProgram("Polyline")->setUniformValue("lineWidth", _lineWidth);
 	}
 }

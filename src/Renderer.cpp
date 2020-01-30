@@ -5,31 +5,37 @@
 #include <QDebug>
 
 #include "Shaders.h"
-#include "ImageQuad.h"
+
+#include "ImageActor.h"
+
+
+#include "ImageActor.h"
+/*
 #include "SelectionBounds.h"
 #include "SelectionQuad.h"
 #include "SelectionBufferQuad.h"
 #include "SelectionOutline.h"
 #include "Brush.h"
+*/
 
 Renderer::Renderer(QOpenGLWidget* parentWidget) :
 	hdps::Renderer(),
 	_parentWidget(parentWidget),
-	_shapes(),
+	_actors(),
 	_interactionMode(InteractionMode::Selection),
 	_mouseEvents(),
 	_pan(),
 	_zoom(1.f),
-	_zoomSensitivity(0.05f),
+	_zoomSensitivity(0.1f),
 	_margin(25),
 	_selectionType(SelectionType::Rectangle),
 	_selectionModifier(SelectionModifier::Replace),
 	_brushRadius(10.0f),
 	_brushRadiusDelta(1.f)
 {
-	createShapes();
+	createActors();
 
-	connect(shape<ImageQuad>("ImageQuad"), &ImageQuad::sizeChanged, this, [&]() { zoomExtents(); });
+	//connect(shape<ImageQuad>("ImageQuad"), &ImageQuad::sizeChanged, this, [&]() { zoomExtents(); });
 }
 
 void Renderer::render()
@@ -37,7 +43,7 @@ void Renderer::render()
 	if (!isInitialized())
 		return;
 
-	renderShapes();
+	renderActors();
 }
 
 void Renderer::resize(QSize renderSize)
@@ -49,17 +55,17 @@ void Renderer::resize(QSize renderSize)
 
 void Renderer::init()
 {
-	initializeShapes();
+	initializeActors();
 }
 
 void Renderer::destroy()
 {
-	destroyShapes();
+	destroyActors();
 }
 
 bool Renderer::isInitialized() const
 {
-	return _shapes["ImageQuad"]->isInitialized();
+	return true;// _actors["Image"]->isInitialized();
 }
 
 QVector<QSharedPointer<QMouseEvent>> Renderer::mouseEvents() const
@@ -74,11 +80,11 @@ void Renderer::mousePressEvent(QMouseEvent* mouseEvent)
 	_mouseEvents.clear();
 	_mouseEvents.push_back(QSharedPointer<QMouseEvent>::create(*mouseEvent));
 
-	for (auto key : _shapes.keys()) {
-		auto shape = _shapes[key];
+	for (auto key : _actors.keys()) {
+		auto actor = _actors[key];
 
-		if (shape->shouldReceiveMousePressEvents())
-			shape->onMousePressEvent(mouseEvent);
+		if (actor->shouldReceiveMousePressEvents())
+			actor->onMousePressEvent(mouseEvent);
 	}
 }
 
@@ -86,11 +92,11 @@ void Renderer::mouseReleaseEvent(QMouseEvent* mouseEvent)
 {
 	//qDebug() << "Mouse release event";
 
-	for (auto key : _shapes.keys()) {
-		auto shape = _shapes[key];
+	for (auto key : _actors.keys()) {
+		auto actor = _actors[key];
 
-		if (shape->shouldReceiveMouseReleaseEvents())
-			shape->onMouseReleaseEvent(mouseEvent);
+		if (actor->shouldReceiveMouseReleaseEvents())
+			actor->onMouseReleaseEvent(mouseEvent);
 	}
 
 	_mouseEvents.clear();
@@ -128,11 +134,11 @@ void Renderer::mouseMoveEvent(QMouseEvent* mouseEvent)
 
 	_mouseEvents.push_back(QSharedPointer<QMouseEvent>::create(*mouseEvent));
 
-	for (auto key : _shapes.keys()) {
-		auto shape = _shapes[key];
+	for (auto key : _actors.keys()) {
+		auto actor = _actors[key];
 
-		if (shape->shouldReceiveMouseMoveEvents())
-			shape->onMouseMoveEvent(mouseEvent);
+		if (actor->shouldReceiveMouseMoveEvents())
+			actor->onMouseMoveEvent(mouseEvent);
 	}
 }
 
@@ -177,11 +183,11 @@ void Renderer::mouseWheelEvent(QWheelEvent* wheelEvent)
 			break;
 	}
 
-	for (auto key : _shapes.keys()) {
-		auto shape = _shapes[key];
+	for (auto key : _actors.keys()) {
+		auto actor = _actors[key];
 
-		if (shape->shouldReceiveMouseWheelEvents())
-			shape->onMouseWheelEvent(wheelEvent);
+		if (actor->shouldReceiveMouseWheelEvents())
+			actor->onMouseWheelEvent(wheelEvent);
 	}
 }
 
@@ -259,9 +265,7 @@ void Renderer::zoomExtents()
 {
 	qDebug() << "Zoom extents";
 
-	const auto imageQuadSize = shape<ImageQuad>("ImageQuad")->size();
-
-	zoomToRectangle(QRectF(QPointF(), imageQuadSize));
+	zoomToRectangle(QRectF(QPointF(), actor<ImageActor>("Image")->imageSize()));
 }
 
 void Renderer::zoomToRectangle(const QRectF& rectangle)
@@ -278,9 +282,6 @@ void Renderer::zoomToRectangle(const QRectF& rectangle)
 	const auto factorY	= (_parentWidget->height() - 2 * _margin) / static_cast<float>(rectangle.height());
 	
 	zoomBy(factorX < factorY ? factorX : factorY);
-	auto* imageQuad = shape<ImageQuad>("ImageQuad");
-
-	//pan(_zoom * -QPointF(center.x(), imageQuad->size().height() - center.y()));
 	
 	emit dirty();
 }
@@ -313,12 +314,13 @@ void Renderer::setColorImage(std::shared_ptr<QImage> colorImage)
 {
 	bindOpenGLContext();
 
-	auto* imageQuadShape = shape<ImageQuad>("ImageQuad");
+	auto* imageQuadActor = actor<ImageActor>("Image");
 
-	const auto previousImageSize = imageQuadShape->size();
+	const auto previousImageSize = imageQuadActor->imageSize();
 
-	imageQuadShape->setImage(colorImage);
+	imageQuadActor->setImage(colorImage);
 
+	/*
 	if (previousImageSize != colorImage->size()) {
 		//shape<SelectionBufferQuad>("SelectionBufferQuad")->setSize(colorImage->size());
 
@@ -327,13 +329,13 @@ void Renderer::setColorImage(std::shared_ptr<QImage> colorImage)
 		setBrushRadius(brushRadius);
 		setBrushRadiusDelta(0.2f * brushRadius);
 
-		/*
+		
 		const auto pWorld0 = _imageViewerWidget->screenToWorld(QPointF(0.0f, 0.0f));
 		const auto pWorld1 = _imageViewerWidget->screenToWorld(QPointF(1.f, 0.0f));
 
 		shape<SelectionBounds>("SelectionBounds")->setLineWidth(1);
-		*/
 	}
+	*/
 }
 
 void Renderer::setSelectionImage(std::shared_ptr<QImage> selectionImage, const QRect& selectionBounds)
@@ -343,22 +345,24 @@ void Renderer::setSelectionImage(std::shared_ptr<QImage> selectionImage, const Q
 	worldSelectionBounds.translate(QPoint(-0.5f * static_cast<float>(selectionImage->width()), -0.5f * static_cast<float>(selectionImage->height())));
 
 //	shape<SelectionQuad>("SelectionQuad")->setImage(selectionImage);
-	shape<SelectionBounds>("SelectionBounds")->setBounds(worldSelectionBounds);
+	//shape<SelectionBounds>("SelectionBounds")->setBounds(worldSelectionBounds);
 }
 
 float Renderer::selectionOpacity()
 {
-	return shape<SelectionQuad>("SelectionQuad")->opacity();
+	return 0.f;
+	//return shape<SelectionQuad>("SelectionQuad")->opacity();
 }
 
 void Renderer::setSelectionOpacity(const float& selectionOpacity)
 {
-	shape<SelectionQuad>("SelectionQuad")->setOpacity(selectionOpacity);
+	//shape<SelectionQuad>("SelectionQuad")->setOpacity(selectionOpacity);
 }
 
+/*
 ImageQuad* Renderer::imageQuad()
 {
-	return shape<ImageQuad>("ImageQuad");
+	return actor()<ImageQuad>("ImageQuad");
 }
 
 SelectionBufferQuad* Renderer::selectionBufferQuad()
@@ -370,6 +374,7 @@ SelectionOutline* Renderer::selectionOutline()
 {
 	return shape<SelectionOutline>("SelectionOutline");
 }
+*/
 
 InteractionMode Renderer::interactionMode() const
 {
@@ -383,6 +388,7 @@ void Renderer::setInteractionMode(const InteractionMode& interactionMode)
 
 	qDebug() << "Set interaction mode to" << interactionModeTypeName(interactionMode);
 
+	/*
 	if (_interactionMode == InteractionMode::Selection) {
 		shape<SelectionOutline>("SelectionOutline")->deactivate();
 		shape<SelectionBufferQuad>("SelectionBufferQuad")->deactivate();
@@ -404,7 +410,7 @@ void Renderer::setInteractionMode(const InteractionMode& interactionMode)
 		default:
 			break;
 	}
-
+	*/
 	_interactionMode = interactionMode;
 }
 
@@ -418,6 +424,7 @@ void Renderer::setSelectionType(const SelectionType& selectionType)
 	if (selectionType == _selectionType)
 		return;
 
+	/*
 	switch (_selectionType)
 	{
 		case SelectionType::None:
@@ -427,8 +434,8 @@ void Renderer::setSelectionType(const SelectionType& selectionType)
 			break;
 
 		case SelectionType::Brush:
-			shape<Brush>("Brush")->deactivate();
-			shape<Brush>("Brush")->disable();
+			actor<Brush>("Brush")->deactivate();
+			actor<Brush>("Brush")->disable();
 			break;
 
 		case SelectionType::Lasso:
@@ -467,6 +474,7 @@ void Renderer::setSelectionType(const SelectionType& selectionType)
 		default:
 			break;
 	}
+	*/
 
 	emit selectionTypeChanged(_selectionType);
 }
@@ -546,63 +554,58 @@ void Renderer::releaseOpenGLContext()
 	_parentWidget->doneCurrent();
 }
 
-void Renderer::onShapeChanged(Shape* shape)
+void Renderer::onActorChanged(Actor* actor)
 {
 	//qDebug() << "Shape" << shape->name() << "changed";
 
 	emit dirty();
 }
 
-void Renderer::addShape(const QString& name, QSharedPointer<Shape> shape)
+void Renderer::addActor(const QString& name, QSharedPointer<Actor> actor)
 {
-	_shapes.insert(name, shape);
+	_actors.insert(name, actor);
 
-	connect(shape.get(), &Shape::changed, this, &Renderer::onShapeChanged);
+	connect(actor.get(), &Actor::changed, this, &Renderer::onActorChanged);
 }
 
-void Renderer::createShapes()
+void Renderer::createActors()
 {
-	//qDebug() << "Creating shapes";
+	//qDebug() << "Creating actors";
 	
-	addShape("ImageQuad", QSharedPointer<ImageQuad>::create(this, "ImageQuad", 3.f));
-	addShape("SelectionBufferQuad", QSharedPointer<SelectionBufferQuad>::create(this, "SelectionBufferQuad", 2.f));
-	addShape("SelectionQuad", QSharedPointer<SelectionQuad>::create(this, "SelectionQuad", 1.f));
-	addShape("SelectionBounds", QSharedPointer<SelectionBounds>::create(this, "SelectionBounds", 0.f));
-	addShape("SelectionOutline", QSharedPointer<SelectionOutline>::create(this, "SelectionOutline", 0.f));
-	addShape("Brush", QSharedPointer<Brush>::create(this, "Brush", 0.f));
+	addActor("Image", QSharedPointer<ImageActor>::create(this, "Image"));
 
-	//_shapes["ImageQuad"]->setEnabled(false);
-	_shapes["SelectionBufferQuad"]->setEnabled(false);
-	_shapes["SelectionQuad"]->setEnabled(false);
-	_shapes["SelectionBounds"]->setEnabled(false);
-	_shapes["SelectionOutline"]->setEnabled(false);
+	actor<ImageActor>("Image")->activate();
 }
 
-void Renderer::initializeShapes()
+void Renderer::initializeActors()
 {
-	//qDebug() << "Initializing" << _shapes.size() << "shapes";
+	//qDebug() << "Initializing" << _actors.size() << "actor(s)";
 
 	bindOpenGLContext();
 
-	for (auto key : _shapes.keys()) {
-		_shapes[key]->initialize();
+	for (auto name : _actors.keys()) {
+		_actors[name]->initialize();
 	}
 }
 
-void Renderer::renderShapes()
+void Renderer::renderActors()
 {
-	//qDebug() << "Render" << _shapes.size() << "shapes";
+	//qDebug() << "Render" << _actors.size() << "actor(s)";
 
-	for (auto key : _shapes.keys()) {
-		_shapes[key]->render();
+	bindOpenGLContext();
+
+	for (auto name : _actors.keys()) {
+		_actors[name]->render();
 	}
 }
 
-void Renderer::destroyShapes()
+void Renderer::destroyActors()
 {
-	//qDebug() << "Destroying" << _shapes.size() << "shapes";
+	//qDebug() << "Destroying" << _actors.size() << "actor(s)";
 
-	for (auto key : _shapes.keys()) {
-		_shapes[key]->destroy();
+	bindOpenGLContext();
+
+	for (auto name : _actors.keys()) {
+		_actors[name]->destroy();
 	}
 }

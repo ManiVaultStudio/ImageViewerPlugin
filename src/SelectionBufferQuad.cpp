@@ -11,14 +11,12 @@
 #include "Renderer.h"
 #include "Shaders.h"
 
-SelectionBufferQuad::SelectionBufferQuad(Renderer* renderer, const QString& name, const float& z /*= 0.f*/) :
-	Quad(renderer, name, z),
+SelectionBufferQuad::SelectionBufferQuad(Actor* actor, const QString& name, const float& z /*= 0.f*/) :
+	Quad(actor, name, z),
 	_size(),
 	_mousePositions()
 {
 	_color = QColor(255, 153, 0, 40);
-
-	_receiveMouseEvents = static_cast<int>(MouseEvent::Press) | static_cast<int>(MouseEvent::Release) | static_cast<int>(MouseEvent::Move);
 }
 
 void SelectionBufferQuad::render()
@@ -117,12 +115,14 @@ void SelectionBufferQuad::update()
 			auto imageWidth = static_cast<float>(selectionBufferFBO->size().width());
 			auto imageHeight = static_cast<float>(selectionBufferFBO->size().height());
 
+			const auto selectionType = renderer()->selectionType();
+
 			selectionBufferProgram->setUniformValue("pixelSelectionTexture", 0);
 			selectionBufferProgram->setUniformValue("transform", transform);
-			selectionBufferProgram->setUniformValue("selectionType", static_cast<int>(_renderer->selectionType()));
+			selectionBufferProgram->setUniformValue("selectionType", static_cast<int>(selectionType));
 			selectionBufferProgram->setUniformValue("imageSize", imageWidth, imageHeight);
 
-			switch (_renderer->selectionType())
+			switch (selectionType)
 			{
 				case SelectionType::Rectangle:
 				{
@@ -158,7 +158,7 @@ void SelectionBufferQuad::update()
 
 					selectionBufferProgram->setUniformValue("previousBrushCenter", previousBrushCenter.x(), previousBrushCenter.y());
 					selectionBufferProgram->setUniformValue("currentBrushCenter", brushCenter.x(), brushCenter.y());
-					selectionBufferProgram->setUniformValue("brushRadius", _renderer->brushRadius());
+					selectionBufferProgram->setUniformValue("brushRadius", renderer()->brushRadius());
 
 					break;
 				}
@@ -252,6 +252,7 @@ QSharedPointer<QImage> SelectionBufferQuad::selectionBufferImage() const
 	return QSharedPointer<QImage>::create(selectionFBO->toImage());
 }
 
+/*
 void SelectionBufferQuad::onMousePressEvent(QMouseEvent* mouseEvent)
 {
 	if (!mayProcessMousePressEvent())
@@ -321,23 +322,4 @@ void SelectionBufferQuad::onMouseMoveEvent(QMouseEvent* mouseEvent)
 		_mousePositions.back() = _renderer->screenToWorld(modelViewMatrix(), mouseEvent->pos());
 	}
 }
-
-void SelectionBufferQuad::activate()
-{
-	if (isActive())
-		return;
-
-	Quad::activate();
-}
-
-void SelectionBufferQuad::deactivate()
-{
-	if (!isActive())
-		return;
-
-	emit selectionEnded();
-
-	reset();
-
-	Quad::deactivate();
-}
+*/

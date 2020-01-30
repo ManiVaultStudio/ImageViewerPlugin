@@ -20,22 +20,7 @@ public:
 	 * @param z Depth at which to draw the shape
 	 * @param color Line color
 	 */
-	Brush(Renderer* renderer, const QString& name = "Brush", const float& z = 0.f, const QColor& color = QColor(255, 153, 0, 150));
-
-	/** Invoked when a mouse button is pressed */
-	void onMousePressEvent(QMouseEvent* mouseEvent) override;
-
-	/** Invoked when a mouse button is released */
-	void onMouseReleaseEvent(QMouseEvent* mouseEvent) override;
-
-	/** Invoked when the mouse pointer is moved */
-	void onMouseMoveEvent(QMouseEvent* mouseEvent) override;
-
-	/** Activate the shape */
-	virtual void activate();
-
-	/** Deactivate the shape */
-	virtual void deactivate();
+	Brush(Actor* actor, const QString& name = "Brush", const float& z = 0.f, const QColor& color = QColor(255, 153, 0, 150));
 
 protected:
 	/** Updates the internals of the shape */

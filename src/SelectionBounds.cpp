@@ -6,8 +6,8 @@
 #include <QOpenGLTexture>
 #include <QDebug>
 
-SelectionBounds::SelectionBounds(Renderer* renderer, const QString& name, const float& z /*= 0.f*/, const QColor& color /*= QColor(255, 153, 0, 150)*/) :
-	Polyline2D(renderer, name, z, true, 0.005f),
+SelectionBounds::SelectionBounds(Actor* actor, const QString& name, const float& z /*= 0.f*/, const QColor& color /*= QColor(255, 153, 0, 150)*/) :
+	Polyline2D(actor, name, z, true, 0.005f),
 	_bounds(),
 	_color(color)
 {

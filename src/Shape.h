@@ -13,9 +13,8 @@ class QOpenGLBuffer;
 class QOpenGLVertexArrayObject;
 class QOpenGLTexture;
 class QOpenGLFramebufferObject;
-class QMouseEvent;
-class QWheelEvent;
 
+class Actor;
 class Renderer;
 
 /**
@@ -30,7 +29,7 @@ public:
 	/** Constructor
 	 * @param name Name of the shape
 	 */
-	Shape(Renderer* renderer, const QString& name);
+	Shape(Actor* actor, const QString& name);
 
 	/** Destructor */
 	~Shape();
@@ -62,56 +61,11 @@ public:
 	 */
 	void setName(const QString& name);
 
-	/** Returns whether the shape is enabled (visible) */
-	bool isEnabled() const;
-
-	/**
-	 * Sets whether the shape is enabled or not (visible)
-	 * @param enabled Whether the shape is enabled or not
-	 */
-	void setEnabled(const bool& enabled);
-
-	/** Enables the shape */
-	void enable();
-
-	/** Disables the shape */
-	void disable();
-
 	/** Returns whether the shape can be rendered */
 	virtual bool canRender() const;
 	
-	/** Returns the model matrix */
-	QMatrix4x4 modelMatrix() const;
-
-	/**
-	 * Sets the model matrix
-	 * @param modelMatrix Model matrix
-	 */
-	void setModelMatrix(const QMatrix4x4& modelMatrix);
-
-	/** Returns the translation */
-	QVector3D translation() const;
-
-	/**
-	 * Set translation
-	 * @param translation Translation
-	 */
-	void setTranslation(const QVector3D& translation);
-
-	/** Returns the model > view matrix */
-	QMatrix4x4 modelViewMatrix() const;
-
-	/** Returns the model > view > projection matrix */
-	QMatrix4x4 modelViewProjectionMatrix() const;
-	
 	/** Renders the shape */
 	virtual void render();
-
-	/**
-	 * Logs a message with the shape name prefix
-	 * @param event Event
-	 */
-	void log(const QString& event) const;
 
 	/**
 	 * Bind shader program in the current OpenGL context
@@ -154,51 +108,6 @@ public:
 	 */
 	void addFBO(const QString& name, QSharedPointer<QOpenGLFramebufferObject> fbo);
 
-	/** Invoked when a mouse button is pressed */
-	virtual void onMousePressEvent(QMouseEvent* mouseEvent);
-
-	/** Invoked when a mouse button is released */
-	virtual void onMouseReleaseEvent(QMouseEvent* mouseEvent);
-
-	/** Invoked when the mouse pointer is moved */
-	virtual void onMouseMoveEvent(QMouseEvent* mouseEvent);
-
-	/** Invoked when the mouse wheel is rotated */
-	virtual void onMouseWheelEvent(QWheelEvent* wheelEvent);
-
-	/**
-	 * Determines whether this shape should receive mouse press events  
-	 * @return Whether this shape should receive mouse press events
-	 */
-	bool shouldReceiveMousePressEvents() const;
-
-	/**
-	 * Determines whether this shape should receive release events
-	 * @return Whether this shape should receive mouse release events
-	 */
-	bool shouldReceiveMouseReleaseEvents() const;
-
-	/**
-	 * Determines whether this shape should receive mouse move events
-	 * @return Whether this shape should receive mouse move events
-	 */
-	bool shouldReceiveMouseMoveEvents() const;
-
-	/**
-	 * Determines whether this shape should receive mouse wheel events
-	 * @return Whether this shape should receive mouse wheel events
-	 */
-	bool shouldReceiveMouseWheelEvents() const;
-	
-	/** Returns whether the shape is active e.g. interaction with the mouse */
-	bool isActive() const;
-
-	/** Activate the shape */
-	virtual void activate();
-
-	/** Deactivate the shape */
-	virtual void deactivate();
-
 	/** Binds the OpenGL context */
 	void bindOpenGLContext();
 
@@ -212,6 +121,8 @@ public:
 	 * @param color Color
 	 */
 	void setColor(const QColor& color);
+
+	Renderer* renderer();
 
 protected:
 	/** Adds the OpenGL shader programs that the shape needs */
@@ -237,22 +148,6 @@ protected:
 
 	/** Updates the internal representation of the shape (e.g. vertex buffers and shader programs) */
 	virtual void update();
-
-	/**
-	 * Determines whether this shape may process mouse press events (e.g. is the shape enabled and/or active) */
-	bool mayProcessMousePressEvent() const;
-
-	/**
-	 * Determines whether this shape may process mouse release events (e.g. is the shape enabled and/or active) */
-	bool mayProcessMouseReleaseEvent() const;
-
-	/**
-	 * Determines whether this shape may process mouse move events (e.g. is the shape enabled and/or active) */
-	bool mayProcessMouseMoveEvent() const;
-
-	/**
-	 * Determines whether this shape may process mouse wheel events (e.g. is the shape enabled and/or active) */
-	bool mayProcessMouseWheelEvent() const;
 
 	/**
 	 * Retrieves an OpenGL shader program by name
@@ -343,14 +238,12 @@ signals:
 	void changed(Shape* shape);
 
 protected:
-	Renderer*													_renderer;					/** Pointer to renderer */
+	Actor*														_actor;						/** Pointer to actor */
 	QString														_name;						/** Name of the shape */
 	bool														_active;					/** Shapes is being interacted with */
 	QColor														_color;						/** Shape color */
-	int															_receiveMouseEvents;		/** Defines which type of mouse events should be received by the shape */
 	bool														_initialized;				/** Whether the shape is initialized or not */
 	bool														_enabled;					/** Whether the shape is enabled or not */
-	QMatrix4x4													_modelMatrix;				/** Model matrix */
 	QMap<QString, QSharedPointer<QOpenGLShaderProgram>>			_shaderPrograms;			/** OpenGL shader program */
 	QMap<QString, QSharedPointer<QOpenGLVertexArrayObject>>		_vaos;						/** OpenGL Vertex Array Object (VAO) */
 	QMap<QString, QSharedPointer<QOpenGLBuffer>>				_vbos;						/** OpenGL Vertex Buffer Object (VBO) */
