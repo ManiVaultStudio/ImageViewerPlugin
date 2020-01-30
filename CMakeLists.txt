@@ -21,16 +21,49 @@ endif(MSVC)
 find_package(OpenGL REQUIRED)
 find_package(Qt5 COMPONENTS Widgets WebEngineWidgets REQUIRED)
 
-file(GLOB H src/*.h)
-file(GLOB CPP src/*.cpp)
+set(PLUGIN
+    src/Common.h
+    src/Shaders.h
+	src/ImageViewerPlugin.h
+    src/ImageViewerPlugin.cpp
+	src/ImageViewerWidget.h
+    src/ImageViewerWidget.cpp
+	src/SettingsWidget.h
+    src/SettingsWidget.cpp
+	src/Renderer.h
+    src/Renderer.cpp
+)
+
+set(ACTORS
+    src/Actor.h
+    src/Actor.cpp
+	src/ImageActor.h
+    src/ImageActor.cpp
+)
+
+set(SHAPES
+    src/Shape.h
+    src/Shape.cpp
+	src/Quad.h
+    src/Quad.cpp
+	src/ImageQuad.h
+    src/ImageQuad.cpp
+	src/Brush.h
+    src/Brush.cpp
+	src/Polyline2D.h
+    src/Polyline2D.cpp
+)
+
 file(GLOB UIS src/*.ui)
 file(GLOB SHADERS src/*.glsl)
 file(GLOB JSON src/*.json)
 
-set(SOURCES ${H} ${CPP})
+set(SOURCES ${PLUGIN} ${ACTORS} ${SHAPES})
 set(AUX ${JSON})
 
-source_group(Plugin FILES ${SOURCES})
+source_group(Plugin FILES ${PLUGIN})
+source_group(Actors FILES ${ACTORS})
+source_group(Shapes FILES ${SHAPES})
 source_group(UI FILES ${UIS})
 source_group(Shaders FILES ${SHADERS})
 source_group(Aux FILES ${AUX})
