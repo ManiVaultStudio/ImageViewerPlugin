@@ -1,23 +1,62 @@
 #include "SelectionPickerActor.h"
+#include "Renderer.h"
 #include "SelectionImageQuad.h"
+#include "Polyline2D.h"
 
 #include <QKeyEvent>
 #include <QMenu>
+#include <QColor>
+#include <QOpenGLTexture>
 #include <QDebug>
+
+#include <QtMath>
 
 SelectionPickerActor::SelectionPickerActor(Renderer* renderer, const QString& name) :
 	Actor(renderer, name),
 	_imageSize(),
 	_selectionType(SelectionType::Rectangle),
 	_selectionModifier(SelectionModifier::Replace),
-	_brushRadius(10.0f),
-	_brushRadiusDelta(1.f)
+	_brushRadius(1.0f),
+	_brushRadiusDelta(1.f),
+	_mousePositions(),
+	_outlineLineWidth(0.0025f)
 {
-	_registeredEvents = static_cast<int>(ActorEvent::MousePress) | static_cast<int>(ActorEvent::MouseRelease) | static_cast<int>(ActorEvent::MouseMove) | static_cast<int>(ActorEvent::MouseWheel);
+	_registeredEvents |= static_cast<int>(ActorEvent::MousePress);
+	_registeredEvents |= static_cast<int>(ActorEvent::MouseRelease);
+	_registeredEvents |= static_cast<int>(ActorEvent::MouseMove);
+	_registeredEvents |= static_cast<int>(ActorEvent::MouseWheel);
+	_registeredEvents |= static_cast<int>(ActorEvent::KeyPress);
+	_registeredEvents |= static_cast<int>(ActorEvent::KeyRelease);
 
-//	connect(renderer(), &Renderer::brushRadiusChanged, this, &Brush::update);
+	addShape<Polyline2D>("Rectangle");
+	addShape<Polyline2D>("Brush");
+	addShape<Polyline2D>("Lasso");
+	addShape<Polyline2D>("Polygon");
+}
 
-//	addShape<SelectionImageQuad>("Quad");
+void SelectionPickerActor::initialize()
+{
+	Actor::initialize();
+
+	rectangleShape()->setLineWidth(_outlineLineWidth);
+	brushShape()->setLineWidth(_outlineLineWidth);
+	lassoShape()->setLineWidth(_outlineLineWidth);
+	polygonShape()->setLineWidth(_outlineLineWidth);
+
+	auto textureImage = QImage(1, 1, QImage::Format::Format_RGBA8888);
+
+	textureImage.setPixelColor(QPoint(0, 0), QColor(255, 0, 0));
+
+	auto texture = QSharedPointer<QOpenGLTexture>::create(textureImage);
+
+	texture->create();
+	texture->setWrapMode(QOpenGLTexture::Repeat);
+	texture->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
+
+	rectangleShape()->setTexture("Polyline", texture);
+	brushShape()->setTexture("Polyline", texture);
+	lassoShape()->setTexture("Polyline", texture);
+	polygonShape()->setTexture("Polyline", texture);
 }
 
 QSize SelectionPickerActor::imageSize() const
@@ -46,26 +85,39 @@ void SelectionPickerActor::setSelectionType(const SelectionType& selectionType)
 {
 	if (selectionType == _selectionType)
 		return;
-
-	/*
+	
 	switch (_selectionType)
 	{
 		case SelectionType::None:
 			break;
 
 		case SelectionType::Rectangle:
+		{
+			rectangleShape()->reset();
+			rectangleShape()->hide();
 			break;
+		}
 
 		case SelectionType::Brush:
-			actor<Brush>("Brush")->deactivate();
-			actor<Brush>("Brush")->disable();
+		{
+			brushShape()->reset();
+			brushShape()->hide();
 			break;
+		}
 
 		case SelectionType::Lasso:
+		{
+			lassoShape()->reset();
+			lassoShape()->hide();
 			break;
+		}
 
 		case SelectionType::Polygon:
+		{
+			polygonShape()->reset();
+			polygonShape()->hide();
 			break;
+		}
 
 		default:
 			break;
@@ -75,29 +127,7 @@ void SelectionPickerActor::setSelectionType(const SelectionType& selectionType)
 
 	qDebug() << "Set selection type to" << selectionTypeName(_selectionType);
 
-	switch (_selectionType)
-	{
-		case SelectionType::None:
-			break;
-
-		case SelectionType::Rectangle:
-			break;
-
-		case SelectionType::Brush:
-			shape<Brush>("Brush")->enable();
-			shape<Brush>("Brush")->activate();
-			break;
-
-		case SelectionType::Lasso:
-			break;
-
-		case SelectionType::Polygon:
-			break;
-
-		default:
-			break;
-	}
-	*/
+	startSelection();
 
 	emit selectionTypeChanged(_selectionType);
 }
@@ -136,6 +166,7 @@ void SelectionPickerActor::setBrushRadius(const float& brushRadius)
 	qDebug() << "Set brush radius to" << QString::number(_brushRadius, 'f', 1);
 
 	emit brushRadiusChanged(_brushRadius);
+	emit changed(this);
 }
 
 float SelectionPickerActor::brushRadiusDelta() const
@@ -169,31 +200,138 @@ void SelectionPickerActor::brushSizeDecrease()
 
 void SelectionPickerActor::onMousePressEvent(QMouseEvent* mouseEvent)
 {
-
+	addMousePosition(mouseEvent->pos());
 }
 
 void SelectionPickerActor::onMouseReleaseEvent(QMouseEvent* mouseEvent)
 {
+	switch (_selectionType)
+	{
+		case SelectionType::None:
+			break;
 
+		case SelectionType::Rectangle:
+		{
+			if (mouseEvent->button() == Qt::LeftButton) {
+				endSelection();
+				rectangleShape()->reset();
+			}
+			break;
+		}
+
+		case SelectionType::Brush:
+		{
+			//brushShape()->texture("Polyline")
+			break;
+		}
+
+		case SelectionType::Lasso:
+		{
+			if (mouseEvent->button() == Qt::LeftButton) {
+				endSelection();
+				lassoShape()->reset();
+			}
+			break;
+		}
+
+		case SelectionType::Polygon:
+		{
+			if (mouseEvent->button() == Qt::RightButton) {
+				endSelection();
+				polygonShape()->reset();
+			}
+			break;
+		}
+
+		default:
+			break;
+	}
 }
 
 void SelectionPickerActor::onMouseMoveEvent(QMouseEvent* mouseEvent)
 {
+	switch (_selectionType)
+	{
+		case SelectionType::None:
+			break;
 
+		case SelectionType::Rectangle:
+		{
+			if (mouseEvent->buttons() & Qt::LeftButton)
+			{
+				addMousePosition(mouseEvent->pos());
+
+				if (_mousePositions.size() >= 2)
+					updateRectangle();
+			}
+			break;
+		}
+
+		case SelectionType::Brush:
+		{
+			addMousePosition(mouseEvent->pos());
+			updateBrush();
+			break;
+		}
+
+		case SelectionType::Lasso:
+		{
+			if (mouseEvent->buttons() & Qt::LeftButton)
+			{
+				addMousePosition(mouseEvent->pos());
+
+				if (_mousePositions.size() >= 2)
+					updateLasso();
+			}
+			break;
+		}
+
+		case SelectionType::Polygon:
+		{
+			if (_mousePositions.size() == 1)
+			{
+				addMousePosition(mouseEvent->pos());
+				updatePolygon();
+			}
+
+			if (_mousePositions.size() >= 2)
+			{
+				_mousePositions.back() = mouseEvent->pos();
+				updatePolygon();
+			}
+			break;
+		}
+
+		default:
+			break;
+	}
 }
 
 void SelectionPickerActor::onMouseWheelEvent(QWheelEvent* wheelEvent)
 {
-	/*
-	if (selectionType() == SelectionType::Brush) {
-	if (wheelEvent->delta() > 0) {
-		brushSizeIncrease();
+	switch (_selectionType)
+	{
+		case SelectionType::None:
+			break;
+		case SelectionType::Rectangle:
+			break;
+		case SelectionType::Brush:
+		{
+			if (wheelEvent->delta() > 0) {
+				brushSizeIncrease();
+			}
+			else {
+				brushSizeDecrease();
+			}
+			break;
+		}
+		case SelectionType::Lasso:
+			break;
+		case SelectionType::Polygon:
+			break;
+		default:
+			break;
 	}
-	else {
-		brushSizeDecrease();
-	}
-	}
-	*/
 }
 
 void SelectionPickerActor::onKeyPressEvent(QKeyEvent* keyEvent)
@@ -287,4 +425,189 @@ QMenu* SelectionPickerActor::contextMenu()
 	selectionMenu->addAction(invertSelectionAction);
 
 	return selectionMenu;
+}
+
+Polyline2D* SelectionPickerActor::rectangleShape()
+{
+	return shape<Polyline2D>("Rectangle");
+}
+
+Polyline2D* SelectionPickerActor::brushShape()
+{
+	return shape<Polyline2D>("Brush");
+}
+
+Polyline2D* SelectionPickerActor::lassoShape()
+{
+	return shape<Polyline2D>("Lasso");
+}
+
+Polyline2D* SelectionPickerActor::polygonShape()
+{
+	return shape<Polyline2D>("Polygon");
+}
+
+void SelectionPickerActor::startSelection()
+{
+	switch (_selectionType)
+	{
+		case SelectionType::None:
+			break;
+
+		case SelectionType::Rectangle:
+			rectangleShape()->show();
+			break;
+
+		case SelectionType::Brush:
+			brushShape()->show();
+			break;
+
+		case SelectionType::Lasso:
+			lassoShape()->show();
+			break;
+
+		case SelectionType::Polygon:
+			polygonShape()->show();
+			break;
+
+		default:
+			break;
+	}
+
+	_mousePositions.clear();
+	_positions.clear();
+}
+
+void SelectionPickerActor::endSelection()
+{
+	_mousePositions.clear();
+	_positions.clear();
+}
+
+void SelectionPickerActor::addMousePosition(const QPoint& point)
+{
+	_mousePositions.append(point);
+	_positions.append(_renderer->screenToWorld(modelViewMatrix(), point));
+}
+
+void SelectionPickerActor::updateRectangle()
+{
+	if (_mousePositions.size() < 2)
+		return;
+
+	//qDebug() << "Update rectangle" << p0 << p1;
+
+	QVector<QVector3D> positions;
+
+	const auto start	= _renderer->screenToWorld(modelViewMatrix(), _mousePositions.first());
+	const auto end		= _renderer->screenToWorld(modelViewMatrix(), _mousePositions.back());
+
+	positions.append(QVector3D(start.x(), start.y(), 0.f));
+	positions.append(QVector3D(start.x(), start.y(), 0.f));
+	positions.append(QVector3D(end.x(), start.y(), 0.f));
+	positions.append(QVector3D(end.x(), end.y(), 0.f));
+	positions.append(QVector3D(start.x(), end.y(), 0.f));
+	positions.append(QVector3D(start.x(), start.y(), 0.f));
+
+	QVector<PolylinePoint2D> polylinePoints;
+
+	for (auto position : positions) {
+		polylinePoints.push_back(PolylinePoint2D(position, QVector2D(0.f, 0.f), _outlineLineWidth));
+	}
+
+	polylinePoints.insert(0, polylinePoints.first());
+	polylinePoints.append(polylinePoints.back());
+
+	rectangleShape()->setPoints(polylinePoints);
+}
+
+void SelectionPickerActor::updateBrush()
+{
+	if (_mousePositions.size() == 0)
+		return;
+
+	//qDebug() << "Update brush";
+
+	QVector<QVector3D> positions;
+
+	const auto brushCenter	= _positions.back();
+	const auto noSegments	= 128u;
+
+	std::vector<GLfloat> vertexCoordinates;
+
+	vertexCoordinates.resize(noSegments * 3);
+
+	const auto brushRadius = _brushRadius * renderer()->zoom();
+
+	for (std::uint32_t s = 0; s < noSegments; s++) {
+		const auto theta = 2.0f * M_PI * float(s) / float(noSegments);
+		const auto x = brushRadius * cosf(theta);
+		const auto y = brushRadius * sinf(theta);
+
+		positions.append(QVector3D(brushCenter.x() + x, brushCenter.y() + y, 0.f));
+	}
+
+	QVector<PolylinePoint2D> polylinePoints;
+
+	for (auto position : positions) {
+		polylinePoints.push_back(PolylinePoint2D(position, QVector2D(0.f, 0.f), _outlineLineWidth));
+	}
+
+	polylinePoints.insert(0, polylinePoints.first());
+	polylinePoints.append(polylinePoints.back());
+
+	brushShape()->setPoints(polylinePoints);
+}
+
+void SelectionPickerActor::updateLasso()
+{
+	if (_mousePositions.size() == 0)
+		return;
+
+	//qDebug() << "Update lasso" << p0 << p1;
+
+	QVector<QVector3D> positions;
+
+	for (auto mousePosition : _mousePositions) {
+		const auto pWorld = _renderer->screenToWorld(modelViewMatrix(), mousePosition);
+		positions.append(QVector3D(pWorld.x(), pWorld.y(), 0.f));
+	}
+
+	QVector<PolylinePoint2D> polylinePoints;
+
+	for (auto position : positions) {
+		polylinePoints.push_back(PolylinePoint2D(position, QVector2D(0.f, 0.f), _outlineLineWidth));
+	}
+
+	polylinePoints.insert(0, polylinePoints.first());
+	polylinePoints.append(polylinePoints.back());
+
+	lassoShape()->setPoints(polylinePoints);
+}
+
+void SelectionPickerActor::updatePolygon()
+{
+	if (_mousePositions.size() == 0)
+		return;
+
+	//qDebug() << "Update lasso" << p0 << p1;
+
+	QVector<QVector3D> positions;
+
+	for (auto mousePosition : _mousePositions) {
+		const auto pWorld = _renderer->screenToWorld(modelViewMatrix(), mousePosition);
+		positions.append(QVector3D(pWorld.x(), pWorld.y(), 0.f));
+	}
+
+	QVector<PolylinePoint2D> polylinePoints;
+
+	
+	for (auto position : positions) {
+		polylinePoints.push_back(PolylinePoint2D(position, QVector2D(0.f, 0.f), _outlineLineWidth));
+	}
+
+	polylinePoints.insert(0, polylinePoints.first());
+	polylinePoints.append(polylinePoints.back());
+
+	polygonShape()->setPoints(polylinePoints);
 }

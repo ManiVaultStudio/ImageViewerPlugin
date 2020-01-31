@@ -165,12 +165,13 @@ void Polyline2D::setPoints(QVector<PolylinePoint2D> points)
 		vbo("Polyline")->allocate(_points.constData(), _points.count() * sizeof(PolylinePoint2D));
 		vbo("Polyline")->release();
 	}
+
+	emit changed(this);
 }
 
 void Polyline2D::reset()
 {
 	setPoints(QVector<PolylinePoint2D>());
-	update();
 }
 
 void Polyline2D::configureShaderProgram(const QString& name)

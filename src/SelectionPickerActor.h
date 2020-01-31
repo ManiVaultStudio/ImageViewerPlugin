@@ -17,6 +17,7 @@ class QWheelEvent;
 class QMenu;
 
 class Renderer;
+class Polyline2D;
 
 /**
  * Selection picker actor class
@@ -28,6 +29,9 @@ class SelectionPickerActor : public Actor
 
 public:
 	SelectionPickerActor(Renderer* renderer, const QString& name);
+
+	/** Initialize the Actor (must be called in appropriate OpenGL context) */
+	virtual void initialize();
 
 	/** Returns the image size */
 	QSize imageSize() const;
@@ -101,6 +105,44 @@ public:
 	/** Returns the context menu */
 	QMenu* contextMenu();
 
+protected:
+	Polyline2D* rectangleShape();
+	Polyline2D* brushShape();
+	Polyline2D* lassoShape();
+	Polyline2D* polygonShape();
+
+private:
+	/** Starts the selection process */
+	void startSelection();
+
+	/** Ends the selection process */
+	void endSelection();
+
+	/**
+	 * TODO
+	 */
+	void addMousePosition(const QPoint& point);
+
+	/**
+	 * TODO
+	 */
+	void updateRectangle();
+
+	/**
+	 * TODO
+	 */
+	void updateBrush();
+
+	/**
+	 * TODO
+	 */
+	void updateLasso();
+
+	/**
+	 * TODO
+	 */
+	void updatePolygon();
+
 signals:
 	/**
 	 * Invoked when the image size changed
@@ -147,4 +189,8 @@ private:
 	SelectionModifier		_selectionModifier;		/** The selection modifier determines if and how new selections are combined with existing selections e.g. add, replace and remove */
 	float					_brushRadius;			/** Brush radius */
 	float					_brushRadiusDelta;		/** Selection brush size increase/decrease delta */
+	QVector<QPoint>			_mousePositions;		/** Recorded mouse positions in screen coordinates */
+	QVector<QVector3D>		_positions;				/** Recorded mouse positions in world coordinates */
+	float					_outlineLineWidth;		/** Line width of the outline geometry */
+
 };

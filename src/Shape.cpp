@@ -12,7 +12,7 @@
 Shape::Shape(Actor* actor, const QString& name) :
 	_actor(actor),
 	_name(name),
-	_active(false),
+	_visible(true),
 	_initialized(false),
 	_shaderPrograms(),
 	_vaos(),
@@ -93,9 +93,38 @@ void Shape::setName(const QString& name)
 	emit changed(this);
 }
 
+bool Shape::isVisible() const
+{
+	return _visible;
+}
+
+void Shape::setVisible(const bool& visible)
+{
+	if (visible == _visible)
+		return;
+
+	_visible = visible;
+
+	qDebug() << (_visible ? "Show" : "Hide") << _name;
+
+	emit visibilityChanged(_visible);
+
+	emit changed(this);
+}
+
+void Shape::show()
+{
+	setVisible(true);
+}
+
+void Shape::hide()
+{
+	setVisible(false);
+}
+
 bool Shape::canRender() const
 {
-	return isInitialized();
+	return isInitialized() && isVisible();
 }
 
 void Shape::render()

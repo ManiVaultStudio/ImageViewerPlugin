@@ -19,7 +19,7 @@ Actor::~Actor() = default;
 
 void Actor::destroy()
 {
-	qDebug() << "Destroy" << _name;
+	//qDebug() << "Destroy" << _name;
 
 	bindOpenGLContext();
 	
@@ -30,7 +30,7 @@ void Actor::destroy()
 
 void Actor::initialize()
 {
-	qDebug() << "Initialize" << _name;
+	//qDebug() << "Initialize" << _name;
 
 	bindOpenGLContext();
 
@@ -41,7 +41,10 @@ void Actor::initialize()
 
 void Actor::render()
 {
-	qDebug() << "Render" << _name;
+	if (!canRender())
+		return;
+
+	//qDebug() << "Render" << _name;
 
 	for (auto name : _shapes.keys()) {
 		_shapes[name]->render();
@@ -83,7 +86,7 @@ void Actor::setEnabled(const bool& enabled)
 
 	qDebug() << "Set " << _name << "shape" << (_enabled ? "enabled" : "disabled");
 
-	emit enabledChanged(enabled);
+	emit enabledChanged(_enabled);
 
 	emit changed(this);
 }
@@ -100,7 +103,7 @@ void Actor::disable()
 
 bool Actor::canRender() const
 {
-	return isEnabled();
+	return isEnabled() && isActive();
 }
 
 QMatrix4x4 Actor::modelMatrix() const

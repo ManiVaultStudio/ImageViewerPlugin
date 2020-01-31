@@ -18,7 +18,9 @@ ColorImageActor::ColorImageActor(Renderer* renderer, const QString& name) :
 	_window(1.0f),
 	_level(0.5f)
 {
-	_registeredEvents = static_cast<int>(ActorEvent::MousePress) | static_cast<int>(ActorEvent::MouseRelease) | static_cast<int>(ActorEvent::MouseMove);
+	_registeredEvents |= static_cast<int>(ActorEvent::MousePress);
+	_registeredEvents |= static_cast<int>(ActorEvent::MouseRelease);
+	_registeredEvents |= static_cast<int>(ActorEvent::MouseMove);
 
 	addShape<ColorImageQuad>("Quad");
 

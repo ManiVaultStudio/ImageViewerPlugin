@@ -38,14 +38,6 @@ const std::string selectionOutlineFragmentShaderSource =
 #include "SelectionOutlineFragment.glsl"
 ;
 
-const std::string selectionBoundsVertexShaderSource =
-#include "SelectionBoundsVertex.glsl"
-;
-
-const std::string selectionBoundsFragmentShaderSource =
-#include "SelectionBoundsFragment.glsl"
-;
-
 const std::string polyline2DVertexShaderSource =
 #include "Polyline2DVertex.glsl"
 ;

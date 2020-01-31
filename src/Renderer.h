@@ -73,6 +73,18 @@ public:
 	 */
 	void mouseWheelEvent(QWheelEvent* wheelEvent);
 
+	/**
+	 * Invoked when a key is pressed
+	 * @param keyEvent Key event
+	 */
+	void keyPressEvent(QKeyEvent* keyEvent);
+
+	/**
+	 * Invoked when a key is released
+	 * @param keyEvent Key event
+	 */
+	void keyReleaseEvent(QKeyEvent* keyEvent);
+
 	/** Convert screen points to world point
 	 * @param modelViewMatrix Model > view matrix
 	 * @param screenPoint Point in screen coordinates

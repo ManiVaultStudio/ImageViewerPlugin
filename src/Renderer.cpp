@@ -162,6 +162,65 @@ void Renderer::mouseWheelEvent(QWheelEvent* wheelEvent)
 	}
 }
 
+void Renderer::keyPressEvent(QKeyEvent* keyEvent)
+{
+	//qDebug() << "Key press event" << keyEvent;
+
+	if (keyEvent->isAutoRepeat())
+	{
+		keyEvent->ignore();
+	}
+	else
+	{
+
+		switch (keyEvent->key())
+		{
+			case Qt::Key::Key_Space:
+				setInteractionMode(InteractionMode::Navigation);
+				break;
+
+			default:
+				break;
+		}
+	}
+
+	for (auto key : _actors.keys()) {
+		auto actor = _actors[key];
+
+		if (actor->shouldReceiveKeyPressEvents())
+			actor->onKeyPressEvent(keyEvent);
+	}
+}
+
+void Renderer::keyReleaseEvent(QKeyEvent* keyEvent)
+{
+	//qDebug() << "Key release event" << keyEvent;
+
+	if (keyEvent->isAutoRepeat())
+	{
+		keyEvent->ignore();
+	}
+	else
+	{
+		switch (keyEvent->key())
+		{
+			case Qt::Key::Key_Space:
+				setInteractionMode(InteractionMode::Selection);
+				break;
+
+			default:
+				break;
+		}
+	}
+
+	for (auto key : _actors.keys()) {
+		auto actor = _actors[key];
+
+		if (actor->shouldReceiveKeyReleaseEvents())
+			actor->onKeyReleaseEvent(keyEvent);
+	}
+}
+
 QVector3D Renderer::screenToWorld(const QMatrix4x4& modelViewMatrix, const QPointF& screenPoint) const
 {
 	return QVector3D(screenPoint.x(), _parentWidget->height()- screenPoint.y(), 0).unproject(modelViewMatrix, projectionMatrix(), QRect(0, 0, _parentWidget->width(), _parentWidget->height()));
@@ -338,11 +397,12 @@ void Renderer::setInteractionMode(const InteractionMode& interactionMode)
 
 	qDebug() << "Set interaction mode to" << interactionModeTypeName(interactionMode);
 
-	/*
+	
 	if (_interactionMode == InteractionMode::Selection) {
-		shape<SelectionOutline>("SelectionOutline")->deactivate();
-		shape<SelectionBufferQuad>("SelectionBufferQuad")->deactivate();
+		actor<SelectionPickerActor>("SelectionPicker")->deactivate();
 	}
+
+	/*
 
 	switch (interactionMode)
 	{
@@ -362,6 +422,10 @@ void Renderer::setInteractionMode(const InteractionMode& interactionMode)
 	}
 	*/
 	_interactionMode = interactionMode;
+
+	if (_interactionMode == InteractionMode::Selection) {
+		actor<SelectionPickerActor>("SelectionPicker")->activate();
+	}
 }
 
 void Renderer::bindOpenGLContext()
@@ -415,7 +479,7 @@ void Renderer::initializeActors()
 
 void Renderer::renderActors()
 {
-	qDebug() << "Render" << _actors.size() << "actor(s)";
+	//qDebug() << "Render" << _actors.size() << "actor(s)";
 
 	bindOpenGLContext();
 

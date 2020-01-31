@@ -52,8 +52,6 @@ set(SHAPES
 	src/Quad.cpp
 	src/ColorImageQuad.h
 	src/ColorImageQuad.cpp
-	src/Brush.h
-	src/Brush.cpp
 	src/Polyline2D.h
 	src/Polyline2D.cpp
 	src/SelectionImageQuad.h

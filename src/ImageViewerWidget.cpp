@@ -135,49 +135,14 @@ void ImageViewerWidget::onRendererDirty()
 
 void ImageViewerWidget::keyPressEvent(QKeyEvent* keyEvent)
 {
-	//qDebug() << "Key press event" << keyEvent->key();
-
-	if (keyEvent->isAutoRepeat())
-	{
-		keyEvent->ignore();
-	}
-	else
-	{
-		
-		switch (keyEvent->key())
-		{
-			case Qt::Key::Key_Space:
-				_renderer->setInteractionMode(InteractionMode::Navigation);
-				break;
-
-			default:
-				break;
-		}
-	}
+	_renderer->keyPressEvent(keyEvent);
 
 	QOpenGLWidget::keyPressEvent(keyEvent);
 }
 
 void ImageViewerWidget::keyReleaseEvent(QKeyEvent* keyEvent)
 {
-	//qDebug() << "Key release event" << keyEvent->key();
-
-	if (keyEvent->isAutoRepeat())
-	{
-		keyEvent->ignore();
-	}
-	else
-	{
-		switch (keyEvent->key())
-		{
-			case Qt::Key::Key_Space:
-				_renderer->setInteractionMode(InteractionMode::Selection);
-				break;
-
-			default:
-				break;
-		}
-	}
+	_renderer->keyReleaseEvent(keyEvent);
 
 	QOpenGLWidget::keyReleaseEvent(keyEvent);
 }
@@ -215,7 +180,7 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent)
 	if (mouseEvent->button() == Qt::RightButton)
 	{
 		//if (_renderer->interactionMode() == InteractionMode::WindowLevel && _renderer->imageQuad()->mousePositions().size() == 1)
-		contextMenu()->exec(mapToGlobal(mouseEvent->pos()));
+		//contextMenu()->exec(mapToGlobal(mouseEvent->pos()));
 	}
 
 	switch (mouseEvent->button())

@@ -61,6 +61,21 @@ public:
 	 */
 	void setName(const QString& name);
 
+	/** Returns whether the shape is visible */
+	bool isVisible() const;
+
+	/**
+	 * Sets whether the shape is visible
+	 * @param visible Whether the shape is visible
+	 */
+	void setVisible(const bool& visible);
+
+	/** Shows the shape */
+	void show();
+
+	/** Hides the shape */
+	void hide();
+
 	/** Returns whether the shape can be rendered */
 	virtual bool canRender() const;
 	
@@ -224,10 +239,10 @@ signals:
 	 */
 	void colorChanged(const QColor& color);
 
-	/** Signals that the shape has been enabled or disabled
-	 * @param enabled Whether the shape is enabled or not
+	/** Signals that the visibility changed
+	 * @param visible Whether the shape is visible
 	 */
-	void enabledChanged(const bool& enabled);
+	void visibilityChanged(const bool& visible);
 
 	/** Signals that the model matrix changed
 	 * @param modelMatrix Model matrix
@@ -240,10 +255,9 @@ signals:
 protected:
 	Actor*														_actor;						/** Pointer to actor */
 	QString														_name;						/** Name of the shape */
-	bool														_active;					/** Shapes is being interacted with */
+	bool														_visible;					/** Whether the shape is visible or not */
 	QColor														_color;						/** Shape color */
 	bool														_initialized;				/** Whether the shape is initialized or not */
-	bool														_enabled;					/** Whether the shape is enabled or not */
 	QMap<QString, QSharedPointer<QOpenGLShaderProgram>>			_shaderPrograms;			/** OpenGL shader program */
 	QMap<QString, QSharedPointer<QOpenGLVertexArrayObject>>		_vaos;						/** OpenGL Vertex Array Object (VAO) */
 	QMap<QString, QSharedPointer<QOpenGLBuffer>>				_vbos;						/** OpenGL Vertex Buffer Object (VBO) */
