@@ -19,11 +19,7 @@ Renderer::Renderer(QOpenGLWidget* parentWidget) :
 	_pan(),
 	_zoom(1.f),
 	_zoomSensitivity(0.1f),
-	_margin(25),
-	_selectionType(SelectionType::Rectangle),
-	_selectionModifier(SelectionModifier::Replace),
-	_brushRadius(10.0f),
-	_brushRadiusDelta(1.f)
+	_margin(25)
 {
 	createActors();
 }
@@ -149,14 +145,7 @@ void Renderer::mouseWheelEvent(QWheelEvent* wheelEvent)
 
 		case InteractionMode::Selection:
 		{
-			if (selectionType() == SelectionType::Brush) {
-				if (wheelEvent->delta() > 0) {
-					brushSizeIncrease();
-				}
-				else {
-					brushSizeDecrease();
-				}
-			}
+			
 
 			break;
 		}
@@ -375,136 +364,6 @@ void Renderer::setInteractionMode(const InteractionMode& interactionMode)
 	_interactionMode = interactionMode;
 }
 
-SelectionType Renderer::selectionType() const
-{
-	return _selectionType;
-}
-
-void Renderer::setSelectionType(const SelectionType& selectionType)
-{
-	if (selectionType == _selectionType)
-		return;
-
-	/*
-	switch (_selectionType)
-	{
-		case SelectionType::None:
-			break;
-
-		case SelectionType::Rectangle:
-			break;
-
-		case SelectionType::Brush:
-			actor<Brush>("Brush")->deactivate();
-			actor<Brush>("Brush")->disable();
-			break;
-
-		case SelectionType::Lasso:
-			break;
-
-		case SelectionType::Polygon:
-			break;
-
-		default:
-			break;
-	}
-
-	_selectionType = selectionType;
-
-	qDebug() << "Set selection type to" << selectionTypeName(_selectionType);
-
-	switch (_selectionType)
-	{
-		case SelectionType::None:
-			break;
-
-		case SelectionType::Rectangle:
-			break;
-
-		case SelectionType::Brush:
-			shape<Brush>("Brush")->enable();
-			shape<Brush>("Brush")->activate();
-			break;
-
-		case SelectionType::Lasso:
-			break;
-
-		case SelectionType::Polygon:
-			break;
-
-		default:
-			break;
-	}
-	*/
-
-	emit selectionTypeChanged(_selectionType);
-}
-
-SelectionModifier Renderer::selectionModifier() const
-{
-	return _selectionModifier;
-}
-
-void Renderer::setSelectionModifier(const SelectionModifier& selectionModifier)
-{
-	if (selectionModifier == _selectionModifier)
-		return;
-
-	_selectionModifier = selectionModifier;
-
-	qDebug() << "Set selection modifier to" << selectionModifierName(selectionModifier);
-
-	emit selectionModifierChanged(_selectionModifier);
-}
-
-float Renderer::brushRadius() const
-{
-	return _brushRadius;
-}
-
-void Renderer::setBrushRadius(const float& brushRadius)
-{
-	const auto boundBrushRadius = qBound(1.0f, 100000.f, brushRadius);
-
-	if (boundBrushRadius == _brushRadius)
-		return;
-
-	_brushRadius = boundBrushRadius;
-
-	qDebug() << "Set brush radius to" << QString::number(_brushRadius, 'f', 1);
-
-	emit brushRadiusChanged(_brushRadius);
-}
-
-float Renderer::brushRadiusDelta() const
-{
-	return _brushRadiusDelta;
-}
-
-void Renderer::setBrushRadiusDelta(const float& brushRadiusDelta)
-{
-	const auto boundBrushRadiusDelta = qBound(0.1f, 10000.f, brushRadiusDelta);
-
-	if (boundBrushRadiusDelta == _brushRadiusDelta)
-		return;
-
-	_brushRadiusDelta = boundBrushRadiusDelta;
-
-	qDebug() << "Set brush radius delta" << _brushRadiusDelta;
-
-	emit brushRadiusDeltaChanged(_brushRadiusDelta);
-}
-
-void Renderer::brushSizeIncrease()
-{
-	setBrushRadius(_brushRadius + _brushRadiusDelta);
-}
-
-void Renderer::brushSizeDecrease()
-{
-	setBrushRadius(_brushRadius - _brushRadiusDelta);
-}
-
 void Renderer::bindOpenGLContext()
 {
 	_parentWidget->makeCurrent();
@@ -535,7 +394,7 @@ void Renderer::createActors()
 	
 	addActor("ColorImage", QSharedPointer<ColorImageActor>::create(this, "ColorImage"));
 	addActor("SelectionImage", QSharedPointer<SelectionImageActor>::create(this, "SelectionImage"));
-	addActor("SelectionPickerActor", QSharedPointer<SelectionPickerActor>::create(this, "SelectionImage"));
+	addActor("SelectionPicker", QSharedPointer<SelectionPickerActor>::create(this, "SelectionPicker"));
 
 	actor<ColorImageActor>("ColorImage")->activate();
 	//actor<ColorImageActor>("ColorImage")->activate();

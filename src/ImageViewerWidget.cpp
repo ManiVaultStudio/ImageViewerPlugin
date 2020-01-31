@@ -16,8 +16,7 @@
 #include "Renderer.h"
 
 #include "ColorImageActor.h"
-//#include "SelectionBufferQuad.h"
-//#include "SelectionOutline.h"
+#include "SelectionPickerActor.h"
 
 ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	QOpenGLFunctions(),
@@ -96,6 +95,10 @@ void ImageViewerWidget::initializeGL()
 
 	//connect(_renderer->selectionBufferQuad(), &SelectionBufferQuad::selectionEnded, this, &ImageViewerWidget::publishSelection);
 
+	connect(_renderer->actor<SelectionPickerActor>("SelectionPicker"), &SelectionPickerActor::selectAll, this, &ImageViewerWidget::onSelectAll);
+	connect(_renderer->actor<SelectionPickerActor>("SelectionPicker"), &SelectionPickerActor::selectNone, this, &ImageViewerWidget::onSelectNone);
+	connect(_renderer->actor<SelectionPickerActor>("SelectionPicker"), &SelectionPickerActor::invertSelection, this, &ImageViewerWidget::onInvertSelection);
+
 #ifdef _DEBUG
 //	_openglDebugLogger->initialize();
 #endif
@@ -143,30 +146,6 @@ void ImageViewerWidget::keyPressEvent(QKeyEvent* keyEvent)
 		
 		switch (keyEvent->key())
 		{
-			case Qt::Key::Key_R:
-				_renderer->setSelectionType(SelectionType::Rectangle);
-				break;
-
-			case Qt::Key::Key_B:
-				_renderer->setSelectionType(SelectionType::Brush);
-				break;
-
-			case Qt::Key::Key_L:
-				_renderer->setSelectionType(SelectionType::Lasso);
-				break;
-
-			case Qt::Key::Key_P:
-				_renderer->setSelectionType(SelectionType::Polygon);
-				break;
-
-			case Qt::Key::Key_Shift:
-				_renderer->setSelectionModifier(SelectionModifier::Add);
-				break;
-
-			case Qt::Key::Key_Control:
-				_renderer->setSelectionModifier(SelectionModifier::Remove);
-				break;
-
 			case Qt::Key::Key_Space:
 				_renderer->setInteractionMode(InteractionMode::Navigation);
 				break;
@@ -191,13 +170,6 @@ void ImageViewerWidget::keyReleaseEvent(QKeyEvent* keyEvent)
 	{
 		switch (keyEvent->key())
 		{
-			case Qt::Key::Key_Shift:
-			case Qt::Key::Key_Control:
-			{
-				_renderer->setSelectionModifier(SelectionModifier::Replace);
-				break;
-			}
-
 			case Qt::Key::Key_Space:
 				_renderer->setInteractionMode(InteractionMode::Selection);
 				break;
@@ -303,7 +275,7 @@ void ImageViewerWidget::publishSelection()
 	update();
 }
 
-void ImageViewerWidget::selectAll()
+void ImageViewerWidget::onSelectAll()
 {
 	qDebug() << "Select all";
 
@@ -312,7 +284,7 @@ void ImageViewerWidget::selectAll()
 	update();
 }
 
-void ImageViewerWidget::selectNone()
+void ImageViewerWidget::onSelectNone()
 {
 	qDebug() << "Select none";
 
@@ -321,7 +293,7 @@ void ImageViewerWidget::selectNone()
 	update();
 }
 
-void ImageViewerWidget::invertSelection()
+void ImageViewerWidget::onInvertSelection()
 {
 	qDebug() << "Invert selection";
 
@@ -342,7 +314,7 @@ QMenu* ImageViewerWidget::contextMenu()
 	if (_imageViewerPlugin->imageCollectionType() == ImageCollectionType::Stack) {
 		contextMenu->addMenu(viewMenu());
 		contextMenu->addSeparator();
-		contextMenu->addMenu(selectionMenu());
+		contextMenu->addMenu(_renderer->actor<SelectionPickerActor>("SelectionPicker")->contextMenu());
 
 		qDebug() << _imageViewerPlugin->noSelectedPixels();
 
@@ -390,49 +362,4 @@ QMenu* ImageViewerWidget::viewMenu()
 	viewMenu->addAction(resetWindowLevelAction);
 
 	return viewMenu;
-}
-
-QMenu* ImageViewerWidget::selectionMenu()
-{
-	auto* selectionMenu = new QMenu("Selection");
-
-	auto* rectangleSelectionAction	= new QAction("Rectangle");
-	auto* brushSelectionAction		= new QAction("Brush");
-	auto* lassoSelectionAction		= new QAction("Lasso", this);
-	auto* polygonSelectionAction	= new QAction("Polygon", this);
-	auto* selectNoneAction			= new QAction("Select none");
-	auto* selectAllAction			= new QAction("Select all");
-	auto* invertSelectionAction		= new QAction("Invert");
-
-	connect(rectangleSelectionAction, &QAction::triggered, [this]() { _renderer->setSelectionType(SelectionType::Rectangle); });
-	connect(brushSelectionAction, &QAction::triggered, [this]() { _renderer->setSelectionType(SelectionType::Brush); });
-	connect(lassoSelectionAction, &QAction::triggered, [this]() { _renderer->setSelectionType(SelectionType::Lasso); });
-	connect(polygonSelectionAction, &QAction::triggered, [this]() { _renderer->setSelectionType(SelectionType::Polygon); });
-
-	connect(selectAllAction, &QAction::triggered, [this]() { selectAll(); });
-	connect(selectNoneAction, &QAction::triggered, [this]() { selectNone(); });
-	connect(invertSelectionAction, &QAction::triggered, [this]() { invertSelection(); });
-
-	rectangleSelectionAction->setCheckable(true);
-	brushSelectionAction->setCheckable(true);
-	lassoSelectionAction->setCheckable(true);
-	polygonSelectionAction->setCheckable(true);
-
-	const auto selectionType = _renderer->selectionType();
-
-	rectangleSelectionAction->setChecked(selectionType == SelectionType::Rectangle);
-	brushSelectionAction->setChecked(selectionType == SelectionType::Brush);
-	lassoSelectionAction->setChecked(selectionType == SelectionType::Lasso);
-	polygonSelectionAction->setChecked(selectionType == SelectionType::Polygon);
-
-	selectionMenu->addAction(rectangleSelectionAction);
-	selectionMenu->addAction(brushSelectionAction);
-	selectionMenu->addAction(lassoSelectionAction);
-	selectionMenu->addAction(polygonSelectionAction);
-	selectionMenu->addSeparator();
-	selectionMenu->addAction(selectAllAction);
-	selectionMenu->addAction(selectNoneAction);
-	selectionMenu->addAction(invertSelectionAction);
-
-	return selectionMenu;
 }

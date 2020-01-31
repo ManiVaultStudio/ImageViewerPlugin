@@ -12,6 +12,7 @@
 
 class QMouseEvent;
 class QWheelEvent;
+class QKeyEvent;
 
 class Renderer;
 
@@ -108,29 +109,29 @@ public:
 	/** Invoked when the mouse wheel is rotated */
 	virtual void onMouseWheelEvent(QWheelEvent* wheelEvent);
 
-	/**
-	 * Determines whether this Actor should receive mouse press events  
-	 * @return Whether this Actor should receive mouse press events
-	 */
+	/** Invoked when a key is pressed */
+	virtual void onKeyPressEvent(QKeyEvent* keyEvent);
+
+	/** Invoked when a key is released */
+	virtual void onKeyReleaseEvent(QKeyEvent* keyEvent);
+
+	/** Returns whether this actor should receive mouse press events */
 	bool shouldReceiveMousePressEvents() const;
 
-	/**
-	 * Determines whether this Actor should receive release events
-	 * @return Whether this Actor should receive mouse release events
-	 */
+	/** Returns whether this actor should receive mouse release events */
 	bool shouldReceiveMouseReleaseEvents() const;
 
-	/**
-	 * Determines whether this Actor should receive mouse move events
-	 * @return Whether this Actor should receive mouse move events
-	 */
+	/** Returns whether this actor should receive mouse move events */
 	bool shouldReceiveMouseMoveEvents() const;
 
-	/**
-	 * Determines whether this Actor should receive mouse wheel events
-	 * @return Whether this Actor should receive mouse wheel events
-	 */
+	/** Returns whether this actor should receive mouse wheel events */
 	bool shouldReceiveMouseWheelEvents() const;
+
+	/** Returns whether this actor should receive key press events */
+	bool shouldReceiveKeyPressEvents() const;
+
+	/** Returns whether this actor should receive key release events */
+	bool shouldReceiveKeyReleaseEvents() const;
 	
 	/** Returns whether the Actor is active e.g. interaction with the mouse */
 	bool isActive() const;
@@ -184,21 +185,23 @@ public:
 	}
 
 protected:	
-	/**
-	 * Determines whether this Actor may process mouse press events (e.g. is the Actor enabled and/or active) */
+	/** Returns whether this actor may process mouse press events */
 	bool mayProcessMousePressEvent() const;
 
-	/**
-	 * Determines whether this Actor may process mouse release events (e.g. is the Actor enabled and/or active) */
+	/** Returns whether this actor may process mouse release events */
 	bool mayProcessMouseReleaseEvent() const;
 
-	/**
-	 * Determines whether this Actor may process mouse move events (e.g. is the Actor enabled and/or active) */
+	/** Returns whether this actor may process mouse move events */
 	bool mayProcessMouseMoveEvent() const;
 
-	/**
-	 * Determines whether this Actor may process mouse wheel events (e.g. is the Actor enabled and/or active) */
+	/** Returns whether this actor may process mouse wheel events */
 	bool mayProcessMouseWheelEvent() const;
+
+	/** Returns whether this actor may process key press events */
+	bool mayProcessKeyPressEvent() const;
+
+	/** Returns whether this actor may process key release events */
+	bool mayProcessKeyReleaseEvent() const;
 
 signals:
 	/** Signals that the Actor name changed

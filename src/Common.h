@@ -98,7 +98,11 @@ enum class ActorEvent
 	MouseRelease	= 1ul << 2,													/** Capture mouse release events */
 	MouseMove		= 1ul << 3,													/** Capture mouse move events */
 	MouseWheel		= 1ul << 4,													/** Capture mouse wheel events */
-	MouseAll		= MousePress | MouseRelease | MouseMove | MouseWheel		/** Capture all mouse events */
+	MouseAll		= MousePress | MouseRelease | MouseMove | MouseWheel,		/** Capture all mouse events */
+
+	KeyPress		= 1ul << 5,													/** Capture key press events */
+	KeyRelease		= 1ul << 6,													/** Capture key release events */
+
 };
 
 /**

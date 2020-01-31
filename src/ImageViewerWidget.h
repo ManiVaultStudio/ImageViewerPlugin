@@ -46,13 +46,13 @@ public:
 	void publishSelection();
 
 	/** Select all */
-	void selectAll();
+	void onSelectAll();
 
 	/** Select none */
-	void selectNone();
+	void onSelectNone();
 
 	/** Invert the selection */
-	void invertSelection();
+	void onInvertSelection();
 
 	/** Returns the renderer */
 	QSharedPointer<Renderer> renderer();
@@ -115,9 +115,6 @@ private:
 
 	/** Returns the view menu */
 	QMenu* viewMenu();
-
-	/** Returns the selection menu */
-	QMenu* selectionMenu();
 
 private:
 	ImageViewerPlugin*						_imageViewerPlugin;			/** Pointer to image viewer plugin */

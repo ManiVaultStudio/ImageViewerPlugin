@@ -174,6 +174,22 @@ bool Actor::mayProcessMouseWheelEvent() const
 	return _enabled && _active;
 }
 
+bool Actor::mayProcessKeyPressEvent() const
+{
+	if (!shouldReceiveKeyPressEvents())
+		return false;
+
+	return _enabled && _active;
+}
+
+bool Actor::mayProcessKeyReleaseEvent() const
+{
+	if (!shouldReceiveKeyReleaseEvents())
+		return false;
+
+	return _enabled && _active;
+}
+
 void Actor::onMousePressEvent(QMouseEvent* mouseEvent)
 {
 	//qDebug() << "Mouse press event in" << _name;
@@ -194,6 +210,16 @@ void Actor::onMouseWheelEvent(QWheelEvent* wheelEvent)
 	//qDebug() << "Mouse wheel event in" << _name;
 }
 
+void Actor::onKeyPressEvent(QKeyEvent* keyEvent)
+{
+	//qDebug() << "Key press event in" << _name;
+}
+
+void Actor::onKeyReleaseEvent(QKeyEvent* keyEvent)
+{
+	//qDebug() << "Key release event in" << _name;
+}
+
 bool Actor::shouldReceiveMousePressEvents() const
 {
 	return _registeredEvents & static_cast<int>(ActorEvent::MousePress);
@@ -212,6 +238,16 @@ bool Actor::shouldReceiveMouseMoveEvents() const
 bool Actor::shouldReceiveMouseWheelEvents() const
 {
 	return _registeredEvents & static_cast<int>(ActorEvent::MouseWheel);
+}
+
+bool Actor::shouldReceiveKeyPressEvents() const
+{
+	return _registeredEvents & static_cast<int>(ActorEvent::KeyPress);
+}
+
+bool Actor::shouldReceiveKeyReleaseEvents() const
+{
+	return _registeredEvents & static_cast<int>(ActorEvent::KeyRelease);
 }
 
 bool Actor::isActive() const

@@ -16,14 +16,13 @@ Brush::Brush(Actor* actor, const QString& name /*= "Brush"*/, const float& z /*=
 	_mousePositions()
 {
 	_color = color;
-
-	connect(renderer(), &Renderer::brushRadiusChanged, this, &Brush::update);
 }
 
 void Brush::update()
 {
 	Polyline2D::update();
 
+	/*
 	QVector<PolylinePoint2D> polylinePoints;
 
 	auto* outlineVBO = vbo("Polyline").get();
@@ -55,6 +54,7 @@ void Brush::update()
 	}
 
 	setPoints(polylinePoints);
+	*/
 
 	emit changed(this);
 }

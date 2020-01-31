@@ -172,48 +172,6 @@ public:
 	 */
 	void setInteractionMode(const InteractionMode& interactionMode);
 
-	/** Returns the selection type */
-	SelectionType selectionType() const;
-
-	/**
-	 * Sets the selection type
-	 * @param selectionType Selection type
-	 */
-	void setSelectionType(const SelectionType& selectionType);
-
-	/** Returns the selection modifier */
-	SelectionModifier selectionModifier() const;
-
-	/**
-	 * Sets the selection modifier
-	 * @param selectionModifier Selection modifier
-	 */
-	void setSelectionModifier(const SelectionModifier& selectionModifier);
-
-	/** Returns the brush radius */
-	float brushRadius() const;
-
-	/**
-	 * Sets the brush radius
-	 * @param brushRadius Brush radius
-	 */
-	void setBrushRadius(const float& brushRadius);
-
-	/** Returns the brush radius delta (amount to increasing/decreasing) */
-	float brushRadiusDelta() const;
-
-	/**
-	 * Sets the brush radius delta (amount to increasing/decreasing)
-	 * @param brushRadiusDelta Amount to add/remove
-	 */
-	void setBrushRadiusDelta(const float& brushRadiusDelta);
-
-	/** Increase the brush size by _brushRadiusDelta */
-	void brushSizeIncrease();
-
-	/** Decrease the brush size by _brushRadiusDelta */
-	void brushSizeDecrease();
-
 	/** Binds the OpenGL context */
 	void bindOpenGLContext();
 
@@ -246,30 +204,6 @@ private:
 	void destroyActors();
 
 signals:
-	/**
-	 * Signals the selection type changed
-	 * @param selectionType Selection type
-	 */
-	void selectionTypeChanged(const SelectionType& selectionType);
-
-	/**
-	 * Signals the selection modifier changed
-	 * @param selectionModifier Selection modifier
-	 */
-	void selectionModifierChanged(const SelectionModifier& selectionModifier);
-
-	/**
-	 * Invoked when the brush radius changed
-	 * @param brushRadius Brush radius
-	 */
-	void brushRadiusChanged(const float& brushRadius);
-
-	/**
-	 * Signals the brush radius delta changed
-	 * @param brushRadiusDelta Brush radius delta
-	 */
-	void brushRadiusDeltaChanged(const float& brushRadiusDelta);
-
 	/** Signals that the renderer just became dirty (one or more shapes need to be re-rendered) */
 	void dirty();
 
@@ -282,8 +216,4 @@ protected:
 	float									_zoom;					/** Zoom view in/out */
 	float									_zoomSensitivity;		/** Zoom sensitivity */
 	int										_margin;				/** Margin between image and viewer widget boundaries */
-	SelectionType							_selectionType;			/** Type of selection e.g. rectangle, brush */
-	SelectionModifier						_selectionModifier;		/** The selection modifier determines if and how new selections are combined with existing selections e.g. add, replace and remove */
-	float									_brushRadius;			/** Brush radius */
-	float									_brushRadiusDelta;		/** Selection brush size increase/decrease delta */
 };
