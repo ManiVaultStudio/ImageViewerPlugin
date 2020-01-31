@@ -67,7 +67,7 @@ void Brush::addTextures()
 
 	textureImage.setPixelColor(QPoint(0, 0), _color);
 
-	addTexture("Polyline", QSharedPointer<QOpenGLTexture>::create(textureImage));
+	setTexture("Polyline", QSharedPointer<QOpenGLTexture>::create(textureImage));
 
 	auto polylineTexture = texture("Polyline");
 

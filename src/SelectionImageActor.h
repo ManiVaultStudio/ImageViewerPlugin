@@ -19,12 +19,12 @@ class Renderer;
  * Selection overlay actor class
  * @author Thomas Kroes
  */
-class SelectionOverlayActor : public Actor
+class SelectionImageActor : public Actor
 {
 	Q_OBJECT
 
 public:
-	SelectionOverlayActor(Renderer* renderer, const QString& name);
+	SelectionImageActor(Renderer* renderer, const QString& name);
 
 	bool isInitialized() const;
 

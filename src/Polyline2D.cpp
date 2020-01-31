@@ -125,7 +125,7 @@ void Polyline2D::addShaderPrograms()
 {
 	qDebug() << "Add OpenGL shader programs to" << _name << "shape";
 
-	addShaderProgram("Polyline", QSharedPointer<QOpenGLShaderProgram>::create());
+	setShaderProgram("Polyline", QSharedPointer<QOpenGLShaderProgram>::create());
 
 	shaderProgram("Polyline")->addShaderFromSourceCode(QOpenGLShader::Vertex, polyline2DVertexShaderSource.c_str());
 	shaderProgram("Polyline")->addShaderFromSourceCode(QOpenGLShader::Geometry, polyline2DGeometryShaderSource.c_str());
@@ -137,7 +137,7 @@ void Polyline2D::addVAOs()
 {
 	qDebug() << "Add OpenGL VAO's to" << _name << "shape";
 
-	addVAO("Polyline", QSharedPointer<QOpenGLVertexArrayObject>::create());
+	setVAO("Polyline", QSharedPointer<QOpenGLVertexArrayObject>::create());
 
 	vao("Polyline")->create();
 }
@@ -146,7 +146,7 @@ void Polyline2D::addVBOs()
 {
 	qDebug() << "Add OpenGL VBO's to" << _name << "shape";
 
-	addVBO("Polyline", QSharedPointer<QOpenGLBuffer>::create());
+	setVBO("Polyline", QSharedPointer<QOpenGLBuffer>::create());
 
 	vbo("Polyline")->create();
 }

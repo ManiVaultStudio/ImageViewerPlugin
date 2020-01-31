@@ -78,35 +78,35 @@ public:
 	 * @param name Name of the shader program
 	 * @param shaderProgram Shared pointer to the shader program
 	 */
-	void addShaderProgram(const QString& name, QSharedPointer<QOpenGLShaderProgram> shaderProgram);
+	void setShaderProgram(const QString& name, QSharedPointer<QOpenGLShaderProgram> shaderProgram);
 
 	/**
 	 * Adds an OpenGL Vertex Array Object (VAO)
 	 * @param name Name of the VAO
 	 * @param vao Shared pointer to the VAO
 	 */
-	void addVAO(const QString& name, QSharedPointer<QOpenGLVertexArrayObject> vao);
+	void setVAO(const QString& name, QSharedPointer<QOpenGLVertexArrayObject> vao);
 
 	/**
 	 * Adds an OpenGL Vertex Buffer (VBO)
 	 * @param name Name of the VBO
 	 * @param vbo Shared pointer to the VBO
 	 */
-	void addVBO(const QString& name, QSharedPointer<QOpenGLBuffer> vbo);
+	void setVBO(const QString& name, QSharedPointer<QOpenGLBuffer> vbo);
 
 	/**
 	 * Adds an OpenGL texture
 	 * @param name Name of the texture
 	 * @param texture Shared pointer to the texture
 	 */
-	void addTexture(const QString& name, QSharedPointer<QOpenGLTexture> texture);
+	void setTexture(const QString& name, QSharedPointer<QOpenGLTexture> texture);
 
 	/**
 	 * Adds an OpenGL Frame Buffer Object (FBO)
 	 * @param name Name of the FBO
 	 * @param fbo Shared pointer to the FBO
 	 */
-	void addFBO(const QString& name, QSharedPointer<QOpenGLFramebufferObject> fbo);
+	void setFBO(const QString& name, QSharedPointer<QOpenGLFramebufferObject> fbo);
 
 	/** Binds the OpenGL context */
 	void bindOpenGLContext();

@@ -111,39 +111,64 @@ bool Shape::bindShaderProgram(const QString& name)
 	return bound;
 }
 
-void Shape::addShaderProgram(const QString& name, QSharedPointer<QOpenGLShaderProgram> shaderProgram)
+void Shape::setShaderProgram(const QString& name, QSharedPointer<QOpenGLShaderProgram> shaderProgram)
 {
-	qDebug() << "Add OpenGL shader program to" << _name << "shape";
-
-	_shaderPrograms.insert(name, shaderProgram);
+	if (_shaderPrograms.contains(name)) {
+		qDebug() << "Adding shader program to" << _name;
+		_shaderPrograms.insert(name, shaderProgram);
+	}
+	else {
+		qDebug() << "Overwriting shader program" << name << "in" << _name;
+		_shaderPrograms[name] = shaderProgram;
+	}
 }
 
-void Shape::addVAO(const QString& name, QSharedPointer<QOpenGLVertexArrayObject> vao)
+void Shape::setVAO(const QString& name, QSharedPointer<QOpenGLVertexArrayObject> vao)
 {
-	qDebug() << "Add OpenGL VAO to" << _name << "shape";
-
-	_vaos.insert(name, vao);
+	if (_vaos.contains(name)) {
+		qDebug() << "Adding vertex array object to" << _name;
+		_vaos.insert(name, vao);
+	}
+	else {
+		qDebug() << "Overwriting vertex array object" << name << "in" << _name;
+		_vaos[name] = vao;
+	}
 }
 
-void Shape::addVBO(const QString& name, QSharedPointer<QOpenGLBuffer> vbo)
+void Shape::setVBO(const QString& name, QSharedPointer<QOpenGLBuffer> vbo)
 {
-	qDebug() << "Add OpenGL VBO to" << _name << "shape";
-
-	_vbos.insert(name, vbo);
+	if (_vbos.contains(name)) {
+		qDebug() << "Adding vertex buffer object to" << _name;
+		_vbos.insert(name, vbo);
+	}
+	else {
+		qDebug() << "Overwriting vertex buffer object" << name << "in" << _name;
+		_vbos[name] = vbo;
+	}
 }
 
-void Shape::addTexture(const QString& name, QSharedPointer<QOpenGLTexture> texture)
+void Shape::setTexture(const QString& name, QSharedPointer<QOpenGLTexture> texture)
 {
-	qDebug() << "Add OpenGL texture to" << _name << "shape";
-
-	_textures.insert(name, texture);
+	if (_textures.contains(name)) {
+		qDebug() << "Adding texture to" << _name;
+		_textures.insert(name, texture);
+	}
+	else {
+		qDebug() << "Overwriting texture" << name << "in" << _name;
+		_textures[name] = texture;
+	}
 }
 
-void Shape::addFBO(const QString& name, QSharedPointer<QOpenGLFramebufferObject> fbo)
+void Shape::setFBO(const QString& name, QSharedPointer<QOpenGLFramebufferObject> fbo)
 {
-	qDebug() << "Add OpenGL texture to" << _name << "shape";
-
-	_fbos.insert(name, fbo);
+	if (_fbos.contains(name)) {
+		qDebug() << "Adding frame buffer object to" << _name;
+		_fbos.insert(name, fbo);
+	}
+	else {
+		qDebug() << "Overwriting frame buffer object" << name << "in" << _name;
+		_fbos[name] = fbo;
+	}
 }
 
 void Shape::configureShaderProgram(const QString& name)

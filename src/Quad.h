@@ -26,16 +26,16 @@ public:
 	/** Returns the quad rectangle */
 	QRectF rectangle() const;
 
-	/** Returns the quad size */
-	QSizeF size() const;
-
-protected:
 	/**
 	 * Set quad rectangle
 	 * @param rectangle Rectangle in world space
 	 */
 	void setRectangle(const QRectF& rectangle);
 
+	/** Returns the quad size */
+	QSizeF imageSize() const;
+
+protected:
 	/**
 	 * Determines whether the quad is textured
 	 * @return Whether the quad is textured

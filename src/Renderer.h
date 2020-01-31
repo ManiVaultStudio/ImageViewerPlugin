@@ -7,7 +7,7 @@
 
 #include "Actor.h"
 
-class ImageQuad;
+class ColorImageQuad;
 class SelectionBufferQuad;
 class SelectionOutline;
 
@@ -34,14 +34,14 @@ public:
 	Renderer(QOpenGLWidget* parentWidget);
 
 public:
-	/** Renders the content */
-	void render() override;
+	/** Initialize the renderer */
+	void init() override;
 
 	/** Resizes the renderer */
 	void resize(QSize renderSize) override;
 
-	/** Initialize the renderer */
-	void init() override;
+	/** Renders the content */
+	void render() override;
 
 	/** Destroys the renderer */
 	void destroy() override;
@@ -148,7 +148,7 @@ public:
 	void setSelectionOpacity(const float& selectionOpacity);
 
 	/** Returns the image quad */
-	ImageQuad* imageQuad();
+	ColorImageQuad* imageQuad();
 
 	/** Returns the selection buffer quad */
 	SelectionBufferQuad* selectionBufferQuad();

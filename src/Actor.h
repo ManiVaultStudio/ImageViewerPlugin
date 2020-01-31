@@ -177,7 +177,7 @@ public:
 
 		_shapes.insert(name, shape);
 
-		connect(shape.get(), &ImageQuad::changed, [&](Shape* shape) {
+		connect(shape.get(), &Shape::changed, [&](Shape* shape) {
 			emit changed(this);
 		});
 	}

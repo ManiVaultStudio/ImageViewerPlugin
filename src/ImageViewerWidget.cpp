@@ -14,9 +14,10 @@
 #include <QOpenGLDebugLogger>
 
 #include "Renderer.h"
-#include "ImageQuad.h"
-#include "SelectionBufferQuad.h"
-#include "SelectionOutline.h"
+
+#include "ColorImageActor.h"
+//#include "SelectionBufferQuad.h"
+//#include "SelectionOutline.h"
 
 ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	QOpenGLFunctions(),
@@ -384,11 +385,16 @@ QMenu* ImageViewerWidget::viewMenu()
 	resetWindowLevelAction->setToolTip("Reset window/level to default values");
 
 	zoomToSelectionAction->setEnabled(_imageViewerPlugin->noSelectedPixels() > 0);
-	//resetWindowLevelAction->setEnabled(_renderer->imageQuad()->windowNormalized() < 1.f && _renderer->imageQuad()->levelNormalized() != 0.5f);
+
+	auto* colorImageActor = _renderer->actor<ColorImageActor>("ColorImage");
+
+	resetWindowLevelAction->setEnabled(colorImageActor->windowNormalized() < 1.f && colorImageActor->levelNormalized() != 0.5f);
 
 	connect(zoomToExtentsAction, &QAction::triggered, this->_renderer.get(), &Renderer::zoomExtents);
 	connect(zoomToSelectionAction, &QAction::triggered, this->_renderer.get(), &Renderer::zoomToSelection);
-	//connect(resetWindowLevelAction, &QAction::triggered, [&]() { _renderer->imageQuad()->resetWindowLevel();  });
+	connect(resetWindowLevelAction, &QAction::triggered, [&]() {
+		_renderer->actor<ColorImageActor>("ColorImage")->resetWindowLevel();
+	});
 
 	viewMenu->addAction(zoomToExtentsAction);
 	viewMenu->addAction(zoomToSelectionAction);

@@ -2,7 +2,7 @@
 #include "ImageViewerWidget.h"
 #include "SettingsWidget.h"
 
-#include "ImageQuad.h"
+#include "ColorImageActor.h"
 
 #include <QDebug>
 #include <QFileInfo>
@@ -51,22 +51,19 @@ ImageViewerPlugin::ImageViewerPlugin() :
 		updateWindowTitle();
 	}, Qt::AutoConnection);
 
-	/*
-	auto imageQuad = this->_imageViewerWidget->renderer()->imageQuad();
+	auto* colorImageActor = this->_imageViewerWidget->renderer()->actor<ColorImageActor>("ColorImage");
 
-	connect(imageQuad, &ImageQuad::windowLevelChanged, this, [&]() {
+	connect(colorImageActor, &ColorImageActor::windowLevelChanged, this, [&]() {
 		updateWindowTitle();
 	}, Qt::AutoConnection);
-
 	
-	connect(imageQuad, &ImageQuad::imageMinMaxChanged, [&]() {
+	connect(colorImageActor, &ColorImageActor::imageMinMaxChanged, [&]() {
 		updateWindowTitle();
 	});
 
-	connect(imageQuad, &ImageQuad::sizeChanged, [&]() {
+	connect(colorImageActor, &ColorImageActor::imageSizeChanged, [&]() {
 		updateWindowTitle();
 	});
-	*/
 }
 
 void ImageViewerPlugin::init()

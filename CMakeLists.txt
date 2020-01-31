@@ -21,7 +21,7 @@ endif(MSVC)
 find_package(OpenGL REQUIRED)
 find_package(Qt5 COMPONENTS Widgets WebEngineWidgets REQUIRED)
 
-set(PLUGIN 
+set(PLUGIN
 	src/Common.h
 	src/Shaders.h
 	src/ImageViewerPlugin.h
@@ -37,10 +37,10 @@ set(PLUGIN
 set(ACTORS
 	src/Actor.h
 	src/Actor.cpp
-	src/ImageActor.h
-	src/ImageActor.cpp
-	src/SelectionOverlayActor.h
-	src/SelectionOverlayActor.cpp
+	src/ColorImageActor.h
+	src/ColorImageActor.cpp
+	src/SelectionImageActor.h
+	src/SelectionImageActor.cpp
 )
 
 set(SHAPES
@@ -48,8 +48,8 @@ set(SHAPES
 	src/Shape.cpp
 	src/Quad.h
 	src/Quad.cpp
-	src/ImageQuad.h
-	src/ImageQuad.cpp
+	src/ColorImageQuad.h
+	src/ColorImageQuad.cpp
 	src/Brush.h
 	src/Brush.cpp
 	src/Polyline2D.h

@@ -6,10 +6,9 @@
 
 #include "Shaders.h"
 
-#include "ImageActor.h"
+#include "ColorImageActor.h"
+#include "SelectionImageActor.h"
 
-
-#include "ImageActor.h"
 /*
 #include "SelectionBounds.h"
 #include "SelectionQuad.h"
@@ -34,16 +33,11 @@ Renderer::Renderer(QOpenGLWidget* parentWidget) :
 	_brushRadiusDelta(1.f)
 {
 	createActors();
-
-	//connect(shape<ImageQuad>("ImageQuad"), &ImageQuad::sizeChanged, this, [&]() { zoomExtents(); });
 }
 
-void Renderer::render()
+void Renderer::init()
 {
-	if (!isInitialized())
-		return;
-
-	renderActors();
+	initializeActors();
 }
 
 void Renderer::resize(QSize renderSize)
@@ -53,9 +47,12 @@ void Renderer::resize(QSize renderSize)
 	zoomExtents();
 }
 
-void Renderer::init()
+void Renderer::render()
 {
-	initializeActors();
+	if (!isInitialized())
+		return;
+
+	renderActors();
 }
 
 void Renderer::destroy()
@@ -265,7 +262,7 @@ void Renderer::zoomExtents()
 {
 	qDebug() << "Zoom extents";
 
-	zoomToRectangle(QRectF(QPointF(), actor<ImageActor>("Image")->imageSize()));
+	zoomToRectangle(QRectF(QPointF(), actor<ColorImageActor>("ColorImage")->imageSize()));
 }
 
 void Renderer::zoomToRectangle(const QRectF& rectangle)
@@ -314,11 +311,11 @@ void Renderer::setColorImage(std::shared_ptr<QImage> colorImage)
 {
 	bindOpenGLContext();
 
-	auto* imageQuadActor = actor<ImageActor>("Image");
+	auto* colorImageActor = actor<ColorImageActor>("ColorImage");
 
-	const auto previousImageSize = imageQuadActor->imageSize();
+	const auto previousImageSize = colorImageActor->imageSize();
 
-	imageQuadActor->setImage(colorImage);
+	colorImageActor->setImage(colorImage);
 
 	/*
 	if (previousImageSize != colorImage->size()) {
@@ -344,7 +341,9 @@ void Renderer::setSelectionImage(std::shared_ptr<QImage> selectionImage, const Q
 
 	worldSelectionBounds.translate(QPoint(-0.5f * static_cast<float>(selectionImage->width()), -0.5f * static_cast<float>(selectionImage->height())));
 
-//	shape<SelectionQuad>("SelectionQuad")->setImage(selectionImage);
+	auto* selectionImageActor = actor<SelectionImageActor>("SelectionImage");
+
+	actor<SelectionImageActor>("SelectionImage")->setImage(selectionImage);
 	//shape<SelectionBounds>("SelectionBounds")->setBounds(worldSelectionBounds);
 }
 
@@ -572,9 +571,11 @@ void Renderer::createActors()
 {
 	//qDebug() << "Creating actors";
 	
-	addActor("Image", QSharedPointer<ImageActor>::create(this, "Image"));
+	addActor("ColorImage", QSharedPointer<ColorImageActor>::create(this, "ColorImage"));
+	addActor("SelectionImage", QSharedPointer<SelectionImageActor>::create(this, "SelectionImage"));
 
-	actor<ImageActor>("Image")->activate();
+	actor<ColorImageActor>("ColorImage")->activate();
+	//actor<ColorImageActor>("ColorImage")->activate();
 }
 
 void Renderer::initializeActors()
@@ -586,6 +587,8 @@ void Renderer::initializeActors()
 	for (auto name : _actors.keys()) {
 		_actors[name]->initialize();
 	}
+
+	connect(actor<ColorImageActor>("ColorImage"), &ColorImageActor::imageSizeChanged, this, [&]() { zoomExtents(); });
 }
 
 void Renderer::renderActors()

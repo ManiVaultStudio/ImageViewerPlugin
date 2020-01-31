@@ -58,7 +58,7 @@ void SelectionImageQuad::addShaderPrograms()
 {
 	qDebug() << "Add OpenGL shader programs to" << _name << "shape";
 
-	addShaderProgram("Quad", QSharedPointer<QOpenGLShaderProgram>::create());
+	setShaderProgram("Quad", QSharedPointer<QOpenGLShaderProgram>::create());
 
 	shaderProgram("Quad")->addShaderFromSourceCode(QOpenGLShader::Vertex, selectionImageQuadVertexShaderSource.c_str());
 	shaderProgram("Quad")->addShaderFromSourceCode(QOpenGLShader::Fragment, selectionImageQuadFragmentShaderSource.c_str());
@@ -69,7 +69,7 @@ void SelectionImageQuad::addTextures()
 {
 	qDebug() << "Add OpenGL textures to" << _name << "shape";
 
-	addTexture("Quad", QSharedPointer<QOpenGLTexture>::create(QOpenGLTexture::Target2D));
+	setTexture("Quad", QSharedPointer<QOpenGLTexture>::create(QOpenGLTexture::Target2D));
 }
 
 void SelectionImageQuad::configureShaderProgram(const QString& name)

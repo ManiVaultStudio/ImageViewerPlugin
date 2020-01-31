@@ -1,26 +1,41 @@
 #pragma once
 
-#include "Quad.h"
+#include "Common.h"
 
-class Actor;
+#include <QObject>
+#include <QColor>
+#include <QMatrix4x4>
+#include <QMap>
+#include <QSharedPointer>
+
+#include "Actor.h"
+
+class QMouseEvent;
+class QWheelEvent;
+
+class Renderer;
 
 /**
- * OpenGL Image quad class
+ * Color image actor class
  * @author Thomas Kroes
  */
-class ImageQuad : public Quad
+class ColorImageActor : public Actor
 {
 	Q_OBJECT
 
 public:
-	/** Constructor */
-	ImageQuad(Actor* actor, const QString& name, const float& z = 0.f);
+	ColorImageActor(Renderer* renderer, const QString& name);
+
+	bool isInitialized() const;
 
 	/**
-	 * Sets the image
-	 * @param image Image
+	 * Sets the color image
+	 * @param image Color image
 	 */
 	void setImage(std::shared_ptr<QImage> image);
+
+	/** Returns the image size */
+	QSize imageSize();
 
 	/** Returns the color image size */
 	QSize size() const;
@@ -60,18 +75,14 @@ public:
 	/** Resets the display window and level */
 	void resetWindowLevel();
 
-protected:
-	/** Adds the OpenGL shader programs that the shape needs */
-	void addShaderPrograms();
+	/** Invoked when a mouse button is pressed */
+	void onMousePressEvent(QMouseEvent* mouseEvent) override;
 
-	/** Adds the OpenGL textures that the shape needs */
-	void addTextures();
+	/** Invoked when a mouse button is released */
+	void onMouseReleaseEvent(QMouseEvent* mouseEvent) override;
 
-	/**
-	 * Configure an OpenGL shader program (right after the shader program is bound in the render function)
-	 * @param name Name of the OpenGL shader program
-	 */
-	void configureShaderProgram(const QString& name) override;
+	/** Invoked when the mouse pointer is moved */
+	void onMouseMoveEvent(QMouseEvent* mouseEvent) override;
 
 signals:
 	/**
@@ -88,13 +99,18 @@ signals:
 	 */
 	void windowLevelChanged(const float& window, const float& level);
 
-protected:
+	/**
+	 * Invoked when the image size changed
+	 * @param imageSize Image size
+	 */
+	void imageSizeChanged(const QSizeF& imageSize);
+
+private:
 	std::uint16_t		_imageMin;				/** Minimum pixel value in the image */
-	std::uint16_t		_imageMax;				/** Maximum pixel value in the image  */
-	float				_minPixelValue;			/** Window minimum pixel value */
-	float				_maxPixelValue;			/** Window maximum pixel value */
+	std::uint16_t		_imageMax;				/** Maximum pixel value in the image */
 	float				_windowNormalized;		/** Normalized display window */
 	float				_levelNormalized;		/** Normalized display level */
 	float				_window;				/** Display window */
 	float				_level;					/** Display level */
+	QVector<QPoint>		_mousePositions;		/** Recorded mouse positions in screen coordinates */
 };

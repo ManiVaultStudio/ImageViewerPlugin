@@ -92,7 +92,7 @@ QRectF Quad::rectangle() const
 	return _rectangle;
 }
 
-QSizeF Quad::size() const
+QSizeF Quad::imageSize() const
 {
 	return _rectangle.size();
 }
@@ -123,7 +123,7 @@ void Quad::addVAOs()
 {
 	qDebug() << "Add OpenGL VAO's to" << _name << "shape";
 
-	addVAO("Quad", QSharedPointer<QOpenGLVertexArrayObject>::create());
+	setVAO("Quad", QSharedPointer<QOpenGLVertexArrayObject>::create());
 
 	vao("Quad")->create();
 }
@@ -132,7 +132,7 @@ void Quad::addVBOs()
 {
 	qDebug() << "Add OpenGL VBO's to" << _name << "shape";
 
-	addVBO("Quad", QSharedPointer<QOpenGLBuffer>::create());
+	setVBO("Quad", QSharedPointer<QOpenGLBuffer>::create());
 
 	vbo("Quad")->create();
 }
