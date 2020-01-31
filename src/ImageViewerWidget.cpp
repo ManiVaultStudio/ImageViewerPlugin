@@ -212,9 +212,6 @@ void ImageViewerWidget::keyReleaseEvent(QKeyEvent* keyEvent)
 
 void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 {
-	if (!_renderer->isInitialized())
-		return;
-
 	switch (mouseEvent->button())
 	{
 		case Qt::LeftButton:
@@ -241,11 +238,8 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 	QOpenGLWidget::mousePressEvent(mouseEvent);
 }
 
-void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
-
-	if (!_renderer->isInitialized())
-		return;
-
+void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent)
+{
 	if (mouseEvent->button() == Qt::RightButton)
 	{
 		//if (_renderer->interactionMode() == InteractionMode::WindowLevel && _renderer->imageQuad()->mousePositions().size() == 1)
@@ -270,21 +264,15 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent) {
 	QOpenGLWidget::mouseReleaseEvent(mouseEvent);
 }
 
-void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent) {
-
-	if (!_renderer->isInitialized())
-		return;
-
+void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent)
+{
 	_renderer->mouseMoveEvent(mouseEvent);
 
 	QOpenGLWidget::mouseMoveEvent(mouseEvent);
 }
 
-void ImageViewerWidget::wheelEvent(QWheelEvent* wheelEvent) {
-
-	if (!_renderer->isInitialized())
-		return;
-
+void ImageViewerWidget::wheelEvent(QWheelEvent* wheelEvent)
+{
 	_renderer->mouseWheelEvent(wheelEvent);
 }
 

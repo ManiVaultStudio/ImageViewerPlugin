@@ -9,7 +9,7 @@
 SelectionImageActor::SelectionImageActor(Renderer* renderer, const QString& name) :
 	Actor(renderer, name)
 {
-	_receiveMouseEvents = static_cast<int>(MouseEvent::Press) | static_cast<int>(MouseEvent::Release) | static_cast<int>(MouseEvent::Move);
+	_registeredEvents = static_cast<int>(ActorEvent::MousePress) | static_cast<int>(ActorEvent::MouseRelease) | static_cast<int>(ActorEvent::MouseMove);
 
 	addShape<SelectionImageQuad>("Quad");
 }

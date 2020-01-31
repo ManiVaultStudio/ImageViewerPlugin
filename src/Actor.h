@@ -45,12 +45,6 @@ public:
 	/** Renders the Actor */
 	virtual void render();
 
-	/**
-	 * Determines whether the Actor is properly initialized (all buffers etc. are setup correctly)
-	 * @return Whether the Actor is initialized
-	 */
-	bool isInitialized() const;
-
 	/** Returns the Actor name */
 	QString name() const;
 
@@ -102,7 +96,6 @@ public:
 	/** Returns the model > view > projection matrix */
 	QMatrix4x4 modelViewProjectionMatrix() const;
 
-
 	/** Invoked when a mouse button is pressed */
 	virtual void onMousePressEvent(QMouseEvent* mouseEvent);
 
@@ -147,6 +140,14 @@ public:
 
 	/** Deactivate the Actor */
 	virtual void deactivate();
+
+	/** Returns the render opacity */
+	float opacity() const;
+
+	/** Sets the render opacity
+	 * @param opacity Render opacity
+	*/
+	void setOpacity(const float& opacity);
 
 	/** Binds the OpenGL context */
 	void bindOpenGLContext();
@@ -200,9 +201,6 @@ protected:
 	bool mayProcessMouseWheelEvent() const;
 
 signals:
-	/** Signals that the Actor has been successfully initialized */
-	void initialized();
-
 	/** Signals that the Actor name changed
 	 * @param name New Actor name
 	 */
@@ -212,6 +210,11 @@ signals:
 	 * @param enabled Whether the Actor is enabled or not
 	 */
 	void enabledChanged(const bool& enabled);
+
+	/** Signals that the opacity changed
+	 * @param opacity Opacity
+	 */
+	void opacityChanged(const float& opacity);
 
 	/** Signals that the model matrix changed
 	 * @param modelMatrix Model matrix
@@ -224,10 +227,10 @@ signals:
 protected:
 	Renderer*								_renderer;					/** Pointer to renderer */
 	QString									_name;						/** Name of the Actor */
-	bool									_active;					/** Actors is being interacted with */
-	int										_receiveMouseEvents;		/** Defines which type of mouse events should be received by the Actor */
-	bool									_initialized;				/** Whether the Actor is initialized or not */
 	bool									_enabled;					/** Whether the Actor is enabled or not */
+	bool									_active;					/** Actors is being interacted with */
+	int										_registeredEvents;			/** Defines which (mouse) events should be received by the actor */
+	float									_opacity;					/** Render opacity */
 	QMatrix4x4								_modelMatrix;				/** Model matrix */
 	QMap<QString, QSharedPointer<Shape>>	_shapes;					/** Shapes map */
 };

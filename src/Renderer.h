@@ -46,9 +46,6 @@ public:
 	/** Destroys the renderer */
 	void destroy() override;
 
-	/** Return whether the renderer is initialized */
-	bool isInitialized() const;
-
 	/** Returns mouse events that were recorded during interaction */
 	QVector<QSharedPointer<QMouseEvent>> mouseEvents() const;
 

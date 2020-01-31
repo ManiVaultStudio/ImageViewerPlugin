@@ -8,8 +8,7 @@ Actor::Actor(Renderer* renderer, const QString& name) :
 	_renderer(renderer),
 	_name(name),
 	_active(false),
-	_receiveMouseEvents(static_cast<int>(MouseEvent::None)),
-	_initialized(false),
+	_registeredEvents(static_cast<int>(ActorEvent::None)),
 	_enabled(true),
 	_modelMatrix(),
 	_shapes()
@@ -45,11 +44,6 @@ void Actor::render()
 	for (auto name : _shapes.keys()) {
 		_shapes[name]->render();
 	}
-}
-
-bool Actor::isInitialized() const
-{
-	return _initialized;
 }
 
 QString Actor::name() const
@@ -104,7 +98,7 @@ void Actor::disable()
 
 bool Actor::canRender() const
 {
-	return isEnabled() && isInitialized();
+	return isEnabled();
 }
 
 QMatrix4x4 Actor::modelMatrix() const
@@ -200,22 +194,22 @@ void Actor::onMouseWheelEvent(QWheelEvent* wheelEvent)
 
 bool Actor::shouldReceiveMousePressEvents() const
 {
-	return _receiveMouseEvents & static_cast<int>(MouseEvent::Press);
+	return _registeredEvents & static_cast<int>(ActorEvent::MousePress);
 }
 
 bool Actor::shouldReceiveMouseReleaseEvents() const
 {
-	return _receiveMouseEvents & static_cast<int>(MouseEvent::Release);
+	return _registeredEvents & static_cast<int>(ActorEvent::MouseRelease);
 }
 
 bool Actor::shouldReceiveMouseMoveEvents() const
 {
-	return _receiveMouseEvents & static_cast<int>(MouseEvent::Move);
+	return _registeredEvents & static_cast<int>(ActorEvent::MouseMove);
 }
 
 bool Actor::shouldReceiveMouseWheelEvents() const
 {
-	return _receiveMouseEvents & static_cast<int>(MouseEvent::Wheel);
+	return _registeredEvents & static_cast<int>(ActorEvent::MouseWheel);
 }
 
 bool Actor::isActive() const
@@ -238,6 +232,25 @@ void Actor::deactivate()
 	_active = false;
 
 	qDebug() << "Deactivated" << _name;
+}
+
+float Actor::opacity() const
+{
+	return _opacity;
+}
+
+void Actor::setOpacity(const float& opacity)
+{
+	if (opacity == _opacity)
+		return;
+
+	_opacity = opacity;
+
+	qDebug() << "Set opacity to" << QString::number(opacity, 'f', 2) << "for" << _name;
+
+	emit opacityChanged(_opacity);
+
+	emit changed(this);
 }
 
 void Actor::bindOpenGLContext()

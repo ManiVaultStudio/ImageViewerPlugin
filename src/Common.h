@@ -88,44 +88,44 @@ inline QString selectionTypeName(const SelectionType& selectionType)
 }
 
 /**
- * Mouse event
- * Defines mouse events for use in shapes
+ * Actor events
+ * Defines actor event types
  */
-enum class MouseEvent
+enum class ActorEvent
 {
-	None		= 1ul << 0,								/** Don't capture mouse events */
-	Press		= 1ul << 1,								/** Capture mouse press events */
-	Release		= 1ul << 2,								/** Capture mouse release events */
-	Move		= 1ul << 3,								/** Capture mouse move events */
-	Wheel		= 1ul << 4,								/** Capture mouse wheel events */
-	All			= Press | Release | Move | Wheel		/** Capture all mouse events */
+	None			= 1ul << 0,													/** Don't capture mouse events */
+	MousePress		= 1ul << 1,													/** Capture mouse press events */
+	MouseRelease	= 1ul << 2,													/** Capture mouse release events */
+	MouseMove		= 1ul << 3,													/** Capture mouse move events */
+	MouseWheel		= 1ul << 4,													/** Capture mouse wheel events */
+	MouseAll		= MousePress | MouseRelease | MouseMove | MouseWheel		/** Capture all mouse events */
 };
 
 /**
- * Returns the string-based name of the mouse event
- * @param mouseEvent Mouse event
+ * Returns the string-based name of the actor event
+ * @param actorEvent Actor event
  */
-inline QString mouseEventName(const MouseEvent& mouseEvent)
+inline QString actorEventName(const ActorEvent& actorEvent)
 {
-	switch (mouseEvent)
+	switch (actorEvent)
 	{
-		case MouseEvent::None:
+		case ActorEvent::None:
 			return "None";
 
-		case MouseEvent::Press:
-			return "Press";
+		case ActorEvent::MousePress:
+			return "MousePress";
 
-		case MouseEvent::Release:
-			return "Release";
+		case ActorEvent::MouseRelease:
+			return "MouseRelease";
 
-		case MouseEvent::Move:
-			return "Move";
+		case ActorEvent::MouseMove:
+			return "MouseMove";
 
-		case MouseEvent::Wheel:
-			return "Wheel";
+		case ActorEvent::MouseWheel:
+			return "MouseWheel";
 
-		case MouseEvent::All:
-			return "All";
+		case ActorEvent::MouseAll:
+			return "MouseAll";
 
 		default:
 			break;

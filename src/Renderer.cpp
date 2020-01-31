@@ -9,14 +9,6 @@
 #include "ColorImageActor.h"
 #include "SelectionImageActor.h"
 
-/*
-#include "SelectionBounds.h"
-#include "SelectionQuad.h"
-#include "SelectionBufferQuad.h"
-#include "SelectionOutline.h"
-#include "Brush.h"
-*/
-
 Renderer::Renderer(QOpenGLWidget* parentWidget) :
 	hdps::Renderer(),
 	_parentWidget(parentWidget),
@@ -58,11 +50,6 @@ void Renderer::render()
 void Renderer::destroy()
 {
 	destroyActors();
-}
-
-bool Renderer::isInitialized() const
-{
-	return true;// _actors["Image"]->isInitialized();
 }
 
 QVector<QSharedPointer<QMouseEvent>> Renderer::mouseEvents() const
@@ -349,13 +336,12 @@ void Renderer::setSelectionImage(std::shared_ptr<QImage> selectionImage, const Q
 
 float Renderer::selectionOpacity()
 {
-	return 0.f;
-	//return shape<SelectionQuad>("SelectionQuad")->opacity();
+	return actor<SelectionImageActor>("SelectionImage")->opacity();
 }
 
 void Renderer::setSelectionOpacity(const float& selectionOpacity)
 {
-	//shape<SelectionQuad>("SelectionQuad")->setOpacity(selectionOpacity);
+	actor<SelectionImageActor>("SelectionImage")->setOpacity(selectionOpacity);
 }
 
 /*
