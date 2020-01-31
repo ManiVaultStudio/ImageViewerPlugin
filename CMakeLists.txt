@@ -12,7 +12,7 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
 if(MSVC)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /DWIN32 /EHsc /MP" )
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /DWIN32 /EHsc /MP" )
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /LTCG /NODEFAULTLIB:LIBCMT")
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MDd")
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MD")
@@ -21,37 +21,41 @@ endif(MSVC)
 find_package(OpenGL REQUIRED)
 find_package(Qt5 COMPONENTS Widgets WebEngineWidgets REQUIRED)
 
-set(PLUGIN
-    src/Common.h
-    src/Shaders.h
+set(PLUGIN 
+	src/Common.h
+	src/Shaders.h
 	src/ImageViewerPlugin.h
-    src/ImageViewerPlugin.cpp
+	src/ImageViewerPlugin.cpp
 	src/ImageViewerWidget.h
-    src/ImageViewerWidget.cpp
+	src/ImageViewerWidget.cpp
 	src/SettingsWidget.h
-    src/SettingsWidget.cpp
+	src/SettingsWidget.cpp
 	src/Renderer.h
-    src/Renderer.cpp
+	src/Renderer.cpp
 )
 
 set(ACTORS
-    src/Actor.h
-    src/Actor.cpp
+	src/Actor.h
+	src/Actor.cpp
 	src/ImageActor.h
-    src/ImageActor.cpp
+	src/ImageActor.cpp
+	src/SelectionOverlayActor.h
+	src/SelectionOverlayActor.cpp
 )
 
 set(SHAPES
-    src/Shape.h
-    src/Shape.cpp
+	src/Shape.h
+	src/Shape.cpp
 	src/Quad.h
-    src/Quad.cpp
+	src/Quad.cpp
 	src/ImageQuad.h
-    src/ImageQuad.cpp
+	src/ImageQuad.cpp
 	src/Brush.h
-    src/Brush.cpp
+	src/Brush.cpp
 	src/Polyline2D.h
-    src/Polyline2D.cpp
+	src/Polyline2D.cpp
+	src/SelectionImageQuad.h
+	src/SelectionImageQuad.cpp
 )
 
 file(GLOB UIS src/*.ui)
@@ -68,7 +72,7 @@ source_group(UI FILES ${UIS})
 source_group(Shaders FILES ${SHADERS})
 source_group(Aux FILES ${AUX})
 
-include_directories("$ENV{HDPS_INSTALL_DIR}/$<CONFIGURATION>/include/")
+include_directories("$ENV{HDPS_INSTALL_DIR}/$<CONFIGURATION>/include/" )
 
 add_library(${PROJECT} SHARED ${SOURCES} ${UIS} ${SHADERS} ${AUX})
 

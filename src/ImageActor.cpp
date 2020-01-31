@@ -13,7 +13,7 @@ ImageActor::ImageActor(Renderer* renderer, const QString& name) :
 {
 	_receiveMouseEvents = static_cast<int>(MouseEvent::Press) | static_cast<int>(MouseEvent::Release) | static_cast<int>(MouseEvent::Move);
 
-	addShape<ImageQuad>("ImageQuad");
+	addShape<ImageQuad>("Quad");
 }
 
 bool ImageActor::isInitialized() const
@@ -23,23 +23,22 @@ bool ImageActor::isInitialized() const
 
 void ImageActor::setImage(std::shared_ptr<QImage> image)
 {
-	shape<ImageQuad>("ImageQuad")->setImage(image);
+	shape<ImageQuad>("Quad")->setImage(image);
 }
 
 QSize ImageActor::imageSize()
 {
-	const auto size = shape<ImageQuad>("ImageQuad")->size();
-	return QSize(size.width(), size.height());
+	return dynamic_cast<ImageQuad*>(_shapes["Quad"].get())->size();
 }
 
 float ImageActor::windowNormalized()
 {
-	return shape<ImageQuad>("ImageQuad")->windowNormalized();
+	return shape<ImageQuad>("Quad")->windowNormalized();
 }
 
 float ImageActor::levelNormalized()
 {
-	return shape<ImageQuad>("ImageQuad")->levelNormalized();
+	return shape<ImageQuad>("Quad")->levelNormalized();
 }
 
 void ImageActor::onMousePressEvent(QMouseEvent* mouseEvent)
@@ -71,7 +70,7 @@ void ImageActor::onMouseMoveEvent(QMouseEvent* mouseEvent)
 	_mousePositions.push_back(mouseEvent->pos());
 
 	if (_mousePositions.size() > 1 && mouseEvent->buttons() & Qt::RightButton) {
-		auto* imageQuad = shape<ImageQuad>("ImageQuad");
+		auto* imageQuad = shape<ImageQuad>("Quad");
 
 		const auto mousePosition0	= _mousePositions[_mousePositions.size() - 2];
 		const auto mousePosition1	= _mousePositions.back();
@@ -80,6 +79,6 @@ void ImageActor::onMouseMoveEvent(QMouseEvent* mouseEvent)
 		const auto window			= std::clamp(imageQuad->windowNormalized() + deltaWindow, 0.0f, 1.0f);
 		const auto level			= std::clamp(imageQuad->levelNormalized() + deltaLevel, 0.0f, 1.0f);
 
-		shape<ImageQuad>("ImageQuad")->setWindowLevel(window, level);
+		shape<ImageQuad>("Quad")->setWindowLevel(window, level);
 	}
 }

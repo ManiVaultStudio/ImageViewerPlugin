@@ -1,4 +1,4 @@
-#include "SelectionQuad.h"
+#include "SelectionImageQuad.h"
 
 #include <QOpenGLShaderProgram>
 #include <QOpenGLBuffer>
@@ -8,13 +8,18 @@
 
 #include "Shaders.h"
 
-SelectionQuad::SelectionQuad(Actor* actor, const QString& name, const float& z /*= 0.f*/) :
+SelectionImageQuad::SelectionImageQuad(Actor* actor, const QString& name, const float& z /*= 0.f*/) :
 	Quad(actor, name, z)
 {
 	_color = QColor(255, 0, 0, 200);
 }
 
-void SelectionQuad::setImage(std::shared_ptr<QImage> image)
+QSize SelectionImageQuad::size() const
+{
+	return QSize(static_cast<int>(_rectangle.width()), static_cast<int>(_rectangle.height()));
+}
+
+void SelectionImageQuad::setImage(std::shared_ptr<QImage> image)
 {
 	qDebug() << "Set selection image for" << _name;
 
@@ -30,12 +35,12 @@ void SelectionQuad::setImage(std::shared_ptr<QImage> image)
 	emit changed(this);
 }
 
-float SelectionQuad::opacity() const
+float SelectionImageQuad::opacity() const
 {
 	return _color.alphaF();
 }
 
-void SelectionQuad::setOpacity(const float& opacity)
+void SelectionImageQuad::setOpacity(const float& opacity)
 {
 	if (opacity == _color.alphaF())
 		return;
@@ -49,25 +54,25 @@ void SelectionQuad::setOpacity(const float& opacity)
 	emit changed(this);
 }
 
-void SelectionQuad::addShaderPrograms()
+void SelectionImageQuad::addShaderPrograms()
 {
 	qDebug() << "Add OpenGL shader programs to" << _name << "shape";
 
 	addShaderProgram("Quad", QSharedPointer<QOpenGLShaderProgram>::create());
 
-	shaderProgram("Quad")->addShaderFromSourceCode(QOpenGLShader::Vertex, selectionVertexShaderSource.c_str());
-	shaderProgram("Quad")->addShaderFromSourceCode(QOpenGLShader::Fragment, selectionFragmentShaderSource.c_str());
+	shaderProgram("Quad")->addShaderFromSourceCode(QOpenGLShader::Vertex, selectionImageQuadVertexShaderSource.c_str());
+	shaderProgram("Quad")->addShaderFromSourceCode(QOpenGLShader::Fragment, selectionImageQuadFragmentShaderSource.c_str());
 	shaderProgram("Quad")->link();
 }
 
-void SelectionQuad::addTextures()
+void SelectionImageQuad::addTextures()
 {
 	qDebug() << "Add OpenGL textures to" << _name << "shape";
 
 	addTexture("Quad", QSharedPointer<QOpenGLTexture>::create(QOpenGLTexture::Target2D));
 }
 
-void SelectionQuad::configureShaderProgram(const QString& name)
+void SelectionImageQuad::configureShaderProgram(const QString& name)
 {
 	Quad::configureShaderProgram(name);
 

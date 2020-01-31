@@ -74,6 +74,11 @@ void ImageQuad::setImage(std::shared_ptr<QImage> image)
 	emit changed(this);
 }
 
+QSize ImageQuad::size() const
+{
+	return QSize(static_cast<int>(_rectangle.width()), static_cast<int>(_rectangle.height()));
+}
+
 std::uint16_t ImageQuad::imageMin() const
 {
 	return _imageMin;

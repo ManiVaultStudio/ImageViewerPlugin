@@ -8,13 +8,16 @@
  * OpenGL Selection image quad class
  * @author Thomas Kroes
  */
-class SelectionQuad : public Quad
+class SelectionImageQuad : public Quad
 {
 	Q_OBJECT
 
 public:
 	/** Constructor */
-	SelectionQuad(Actor* actor, const QString& name, const float& z = 0.f);
+	SelectionImageQuad(Actor* actor, const QString& name, const float& z = 0.f);
+
+	/** Returns the selection image size */
+	QSize size() const;
 
 	/**
 	 * Sets the image
