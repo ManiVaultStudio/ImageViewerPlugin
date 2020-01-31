@@ -41,9 +41,6 @@ void Renderer::resize(QSize renderSize)
 
 void Renderer::render()
 {
-	if (!isInitialized())
-		return;
-
 	renderActors();
 }
 
@@ -222,18 +219,13 @@ void Renderer::zoomBy(const float& factor)
 	qDebug() << "Zoom by" << factor << "to" << _zoom;
 
 	_zoom *= factor;
-
-	
-
-	//_pan.setX(_pan.x() * factor);
-	//_pan.setY(_pan.y() * factor);
 }
 
 void Renderer::zoomAround(const QPointF& screenPoint, const float& factor)
 {
 	zoomBy(factor);
 
-	//	qDebug() << "Zoom at" << screenPoint << "by" << factor;
+	qDebug() << "Zoom around" << screenPoint << "by" << factor;
 
 	const auto pWorld			= screenToWorld(viewMatrix(), screenPoint);
 	const auto pAnchor			= pWorld;
@@ -579,7 +571,7 @@ void Renderer::initializeActors()
 
 void Renderer::renderActors()
 {
-	//qDebug() << "Render" << _actors.size() << "actor(s)";
+	qDebug() << "Render" << _actors.size() << "actor(s)";
 
 	bindOpenGLContext();
 

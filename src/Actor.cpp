@@ -41,6 +41,8 @@ void Actor::initialize()
 
 void Actor::render()
 {
+	qDebug() << "Render" << _name;
+
 	for (auto name : _shapes.keys()) {
 		_shapes[name]->render();
 	}

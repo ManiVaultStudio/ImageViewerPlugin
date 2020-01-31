@@ -25,15 +25,6 @@ public:
 	 */
 	void setImage(std::shared_ptr<QImage> image);
 
-	/** Returns the opacity */
-	float opacity() const;
-
-	/**
-	 * Sets the opacity
-	 * @param opacity Opacity
-	 */
-	void setOpacity(const float& opacity);
-
 protected:
 	/** Adds the OpenGL shader programs that the shape needs */
 	void addShaderPrograms();
@@ -46,13 +37,6 @@ protected:
 	 * @param name Name of the OpenGL shader program
 	 */
 	void configureShaderProgram(const QString& name) override;
-
-signals:
-	/**
-	 * Invoked when the opacity has changed
-	 * @param opacity Selection opacity
-	 */
-	void opacityChanged(const float& opacity);
 
 protected:
 	QColor		_color;		/** Selection color */

@@ -8,10 +8,12 @@
 
 #include "Shaders.h"
 
+#include "Actor.h"
+
 SelectionImageQuad::SelectionImageQuad(Actor* actor, const QString& name, const float& z /*= 0.f*/) :
 	Quad(actor, name, z)
 {
-	_color = QColor(255, 0, 0, 200);
+	_color = QColor(255, 0, 0, 255);
 }
 
 QSize SelectionImageQuad::size() const
@@ -31,25 +33,6 @@ void SelectionImageQuad::setImage(std::shared_ptr<QImage> image)
 	texture("Quad")->setWrapMode(QOpenGLTexture::ClampToEdge);
 
 	setRectangle(QRectF(QPointF(), QSizeF(static_cast<float>(image->width()), static_cast<float>(image->height()))));
-
-	emit changed(this);
-}
-
-float SelectionImageQuad::opacity() const
-{
-	return _color.alphaF();
-}
-
-void SelectionImageQuad::setOpacity(const float& opacity)
-{
-	if (opacity == _color.alphaF())
-		return;
-
-	_color.setAlphaF(opacity);
-
-	qDebug() << "Set opacity" << _color.alphaF();
-
-	emit opacityChanged(_color.alphaF());
 
 	emit changed(this);
 }
@@ -77,6 +60,8 @@ void SelectionImageQuad::configureShaderProgram(const QString& name)
 	Quad::configureShaderProgram(name);
 
 	auto quadProgram = shaderProgram("Quad");
+
+	_color.setAlphaF(_actor->opacity());
 
 	if (name == "Quad") {
 		quadProgram->setUniformValue("selectionTexture", 0);
