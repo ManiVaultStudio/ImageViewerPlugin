@@ -16,7 +16,7 @@ class QWheelEvent;
 class Renderer;
 
 /**
- * Selection overlay actor class
+ * Selection image actor class
  * @author Thomas Kroes
  */
 class SelectionImageActor : public Actor
@@ -26,14 +26,12 @@ class SelectionImageActor : public Actor
 public:
 	SelectionImageActor(Renderer* renderer, const QString& name);
 
-	bool isInitialized() const;
-
 	/**
 	 * Sets the image
 	 * @param image Image
 	 */
 	void setImage(std::shared_ptr<QImage> image);
 
-	/** Returns the color image size */
+	/** Returns the image size */
 	QSize imageSize() const;
 };

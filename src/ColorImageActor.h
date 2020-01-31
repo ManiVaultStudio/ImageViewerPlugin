@@ -26,11 +26,9 @@ class ColorImageActor : public Actor
 public:
 	ColorImageActor(Renderer* renderer, const QString& name);
 
-	bool isInitialized() const;
-
 	/**
-	 * Sets the color image
-	 * @param image Color image
+	 * Sets the image
+	 * @param image Image
 	 */
 	void setImage(std::shared_ptr<QImage> image);
 

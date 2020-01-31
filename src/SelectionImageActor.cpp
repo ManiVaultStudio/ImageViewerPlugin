@@ -15,11 +15,6 @@ SelectionImageActor::SelectionImageActor(Renderer* renderer, const QString& name
 	addShape<SelectionImageQuad>("Quad");
 }
 
-bool SelectionImageActor::isInitialized() const
-{
-	return true;
-}
-
 void SelectionImageActor::setImage(std::shared_ptr<QImage> image)
 {
 	shape<SelectionImageQuad>("Quad")->setImage(image);

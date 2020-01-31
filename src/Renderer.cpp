@@ -8,6 +8,7 @@
 
 #include "ColorImageActor.h"
 #include "SelectionImageActor.h"
+#include "SelectionPickerActor.h"
 
 Renderer::Renderer(QOpenGLWidget* parentWidget) :
 	hdps::Renderer(),
@@ -336,23 +337,6 @@ void Renderer::setSelectionOpacity(const float& selectionOpacity)
 	actor<SelectionImageActor>("SelectionImage")->setOpacity(selectionOpacity);
 }
 
-/*
-ImageQuad* Renderer::imageQuad()
-{
-	return actor()<ImageQuad>("ImageQuad");
-}
-
-SelectionBufferQuad* Renderer::selectionBufferQuad()
-{
-	return shape<SelectionBufferQuad>("SelectionBufferQuad");
-}
-
-SelectionOutline* Renderer::selectionOutline()
-{
-	return shape<SelectionOutline>("SelectionOutline");
-}
-*/
-
 InteractionMode Renderer::interactionMode() const
 {
 	return _interactionMode;
@@ -551,6 +535,7 @@ void Renderer::createActors()
 	
 	addActor("ColorImage", QSharedPointer<ColorImageActor>::create(this, "ColorImage"));
 	addActor("SelectionImage", QSharedPointer<SelectionImageActor>::create(this, "SelectionImage"));
+	addActor("SelectionPickerActor", QSharedPointer<SelectionPickerActor>::create(this, "SelectionImage"));
 
 	actor<ColorImageActor>("ColorImage")->activate();
 	//actor<ColorImageActor>("ColorImage")->activate();

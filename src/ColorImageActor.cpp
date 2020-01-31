@@ -27,11 +27,6 @@ ColorImageActor::ColorImageActor(Renderer* renderer, const QString& name) :
 	});
 }
 
-bool ColorImageActor::isInitialized() const
-{
-	return true;
-}
-
 void ColorImageActor::setImage(std::shared_ptr<QImage> image)
 {
 	qDebug() << "Set image for" << _name;

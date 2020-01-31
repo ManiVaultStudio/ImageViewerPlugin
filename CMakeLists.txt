@@ -41,6 +41,8 @@ set(ACTORS
 	src/ColorImageActor.cpp
 	src/SelectionImageActor.h
 	src/SelectionImageActor.cpp
+	src/SelectionPickerActor.h
+	src/SelectionPickerActor.cpp
 )
 
 set(SHAPES
