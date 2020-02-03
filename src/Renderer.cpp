@@ -145,8 +145,6 @@ void Renderer::mouseWheelEvent(QWheelEvent* wheelEvent)
 		{
 			auto zoomCenter = wheelEvent->posF();
 
-			//zoomCenter.setY(_parentWidget->height() - wheelEvent->posF().y());
-
 			if (wheelEvent->delta() < 0) {
 				zoomAround(zoomCenter, 1.f - _zoomSensitivity);
 			}
@@ -264,7 +262,7 @@ QMatrix4x4 Renderer::projectionMatrix() const
 
 void Renderer::pan(const QPointF& delta)
 {
-	qDebug() << "Pan by" << delta;
+	//qDebug() << "Pan by" << delta;
 
 	_pan.setX(_pan.x() + delta.x());
 	_pan.setY(_pan.y() + delta.y());
@@ -417,8 +415,6 @@ void Renderer::setInteractionMode(const InteractionMode& interactionMode)
 		actor<SelectionPickerActor>("SelectionPicker")->deactivate();
 	}
 
-	/*
-
 	switch (interactionMode)
 	{
 		case InteractionMode::Navigation:
@@ -435,7 +431,7 @@ void Renderer::setInteractionMode(const InteractionMode& interactionMode)
 		default:
 			break;
 	}
-	*/
+	
 	_interactionMode = interactionMode;
 
 	if (_interactionMode == InteractionMode::Selection) {

@@ -20,6 +20,7 @@
 ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	QOpenGLFunctions(),
 	_imageViewerPlugin(imageViewerPlugin),
+	_initialMousePosition(),
 	_renderer(QSharedPointer<Renderer>::create(this)),
 	_openglDebugLogger(std::make_unique<QOpenGLDebugLogger>())
 {
@@ -150,6 +151,8 @@ void ImageViewerWidget::keyReleaseEvent(QKeyEvent* keyEvent)
 
 void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 {
+	_initialMousePosition = mouseEvent->pos();
+
 	switch (mouseEvent->button())
 	{
 		case Qt::LeftButton:
@@ -180,8 +183,21 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent)
 {
 	if (mouseEvent->button() == Qt::RightButton)
 	{
-		//if (_renderer->interactionMode() == InteractionMode::WindowLevel && _renderer->imageQuad()->mousePositions().size() == 1)
-		//contextMenu()->exec(mapToGlobal(mouseEvent->pos()));
+		switch (_renderer->interactionMode())
+		{
+			case InteractionMode::Selection:
+			case InteractionMode::WindowLevel:
+			{
+				if (mouseEvent->pos() == _initialMousePosition) {
+					contextMenu()->exec(mapToGlobal(mouseEvent->pos()));
+				}
+
+				break;
+			}
+
+			default:
+				break;
+		}
 	}
 
 	switch (mouseEvent->button())

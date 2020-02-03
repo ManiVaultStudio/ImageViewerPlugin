@@ -39,9 +39,6 @@ public:
 	~ImageViewerWidget() override;
 
 public:
-	/** Whether the user is currently selecting */
-	bool selecting() const;
-
 	/** Publish selection to HDPS */
 	void publishSelection();
 
@@ -113,11 +110,9 @@ private:
 	/** Returns the context menu */
 	QMenu* contextMenu();
 
-	/** Returns the view menu */
-	QMenu* viewMenu();
-
 private:
 	ImageViewerPlugin*						_imageViewerPlugin;			/** Pointer to image viewer plugin */
+	QPoint									_initialMousePosition;		/** Initial mouse position */
 	QSharedPointer<Renderer>				_renderer;					/** Selection renderer */
 	std::unique_ptr <QOpenGLDebugLogger>	_openglDebugLogger;			/** OpenGL debug logger (on in debug mode) */
 };
