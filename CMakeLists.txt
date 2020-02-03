@@ -34,37 +34,11 @@ set(PLUGIN
 	src/Renderer.cpp
 )
 
-set(ACTORS
-	src/Actor.h
-	src/Actor.cpp
-	src/ColorImageActor.h
-	src/ColorImageActor.cpp
-	src/SelectionImageActor.h
-	src/SelectionImageActor.cpp
-	src/SelectionPickerActor.h
-	src/SelectionPickerActor.cpp
-)
-
-set(PROPS
-	src/Prop.h
-	src/Prop.cpp
-	src/ColorImage.h
-	src/ColorImage.cpp
-	src/SelectionImage.h
-	src/SelectionImage.cpp
-)
-
-set(SHAPES
-	src/Shape.h
-	src/Shape.cpp
-	src/Quad.h
-	src/Quad.cpp
-	src/Polyline2D.h
-	src/Polyline2D.cpp
-)
-
+file(GLOB ACTORS src/actors/*.h src/actors/*.cpp)
+file(GLOB PROPS src/props/*.h src/props/*.cpp)
+file(GLOB SHAPES src/shapes/*.h src/shapes/*.cpp)
 file(GLOB UIS src/*.ui)
-file(GLOB SHADERS src/*.glsl)
+file(GLOB SHADERS src/props/*.glsl)
 file(GLOB JSON src/*.json)
 
 set(SOURCES ${PLUGIN} ${ACTORS} ${PROPS} ${SHAPES})

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Common.h"
+#include "../Common.h"
 
 #include <QMatrix4x4>
 #include <QMap>
