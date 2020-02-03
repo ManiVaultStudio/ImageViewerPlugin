@@ -27,7 +27,14 @@ Renderer::Renderer(QOpenGLWidget* parentWidget) :
 
 void Renderer::init()
 {
-	initializeActors();
+	try
+	{
+		initializeActors();
+	}
+	catch (const std::exception& e)
+	{
+		qDebug() << "Render failed...";
+	}
 }
 
 void Renderer::resize(QSize renderSize)
@@ -39,7 +46,14 @@ void Renderer::resize(QSize renderSize)
 
 void Renderer::render()
 {
-	renderActors();
+	try
+	{
+		renderActors();
+	}
+	catch (const std::exception& e)
+	{
+		qDebug() << "Render failed...";
+	}
 }
 
 void Renderer::destroy()
@@ -370,20 +384,20 @@ void Renderer::setSelectionImage(std::shared_ptr<QImage> selectionImage, const Q
 
 	worldSelectionBounds.translate(QPoint(-0.5f * static_cast<float>(selectionImage->width()), -0.5f * static_cast<float>(selectionImage->height())));
 
-	auto* selectionImageActor = actor<SelectionImageActor>("SelectionImage");
+	auto* selectionImageActor = actor<SelectionImageActor>("SelectionImageActor");
 
-	actor<SelectionImageActor>("SelectionImage")->setImage(selectionImage);
+	actor<SelectionImageActor>("SelectionImageActor")->setImage(selectionImage);
 	//shape<SelectionBounds>("SelectionBounds")->setBounds(worldSelectionBounds);
 }
 
 float Renderer::selectionOpacity()
 {
-	return actor<SelectionImageActor>("SelectionImage")->opacity();
+	return actor<SelectionImageActor>("SelectionImageActor")->opacity();
 }
 
 void Renderer::setSelectionOpacity(const float& selectionOpacity)
 {
-	actor<SelectionImageActor>("SelectionImage")->setOpacity(selectionOpacity);
+	actor<SelectionImageActor>("SelectionImageActor")->setOpacity(selectionOpacity);
 }
 
 InteractionMode Renderer::interactionMode() const
@@ -458,10 +472,14 @@ void Renderer::createActors()
 	//qDebug() << "Creating actors";
 	
 	addActor("ColorImageActor", QSharedPointer<ColorImageActor>::create(this, "ColorImageActor"));
-	addActor("SelectionImage", QSharedPointer<SelectionImageActor>::create(this, "SelectionImage"));
+	addActor("SelectionImageActor", QSharedPointer<SelectionImageActor>::create(this, "SelectionImageActor"));
 	addActor("SelectionPicker", QSharedPointer<SelectionPickerActor>::create(this, "SelectionPicker"));
 
 	actor<ColorImageActor>("ColorImageActor")->activate();
+	actor<SelectionImageActor>("SelectionImageActor")->activate();
+
+	actor<ColorImageActor>("ColorImageActor")->setTranslation(QVector3D(0, 0, 0));
+	actor<SelectionImageActor>("SelectionImageActor")->setTranslation(QVector3D(0, 0, -1));
 }
 
 void Renderer::initializeActors()

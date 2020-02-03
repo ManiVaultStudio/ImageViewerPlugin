@@ -34,4 +34,11 @@ public:
 
 	/** Returns the image size */
 	QSize imageSize() const;
+
+signals:
+	/**
+	 * Invoked when the image size changed
+	 * @param imageSize Image size
+	 */
+	void imageSizeChanged(const QSizeF& imageSize);
 };

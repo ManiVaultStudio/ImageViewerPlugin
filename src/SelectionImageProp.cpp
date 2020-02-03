@@ -1,5 +1,6 @@
 #include "SelectionImageProp.h"
 #include "QuadShape.h"
+#include "Actor.h"
 
 #include <QOpenGLShaderProgram>
 #include <QOpenGLBuffer>
@@ -19,26 +20,30 @@ SelectionImageProp::SelectionImageProp(Actor* actor, const QString& name) :
 	Prop(actor, name)
 {
 	_color = QColor(255, 0, 0, 255);
+
+	addShape<QuadShape>("QuadShape");
+	addShaderProgram("QuadShape");
+	addTexture("QuadShape", QOpenGLTexture::Target2D);
+
+	connect(shape<QuadShape>("QuadShape"), &QuadShape::rectangleChanged, this, [&](const QRectF& rectangle) {
+		_matrix.setColumn(3, QVector4D(-0.5f * rectangle.width(), -0.5f * rectangle.height(), _matrix.column(3).z(), 1.f));
+
+		emit imageSizeChanged(imageSize());
+	});
 }
 
 void SelectionImageProp::setImage(std::shared_ptr<QImage> image)
 {
-	qDebug() << "Set selection image for" << _name;
+	const auto quadShapeTexture = _textures["QuadShape"];
 
-	/*
-	auto quadTexture = texture("Quad");
+	quadShapeTexture->destroy();
+	quadShapeTexture->setData(*image.get());
+	quadShapeTexture->setMinMagFilters(QOpenGLTexture::Nearest, QOpenGLTexture::Nearest);
+	quadShapeTexture->setWrapMode(QOpenGLTexture::ClampToEdge);
 
-	texture("Quad")->destroy();
-	texture("Quad")->setData(*image.get());
-	texture("Quad")->setMinMagFilters(QOpenGLTexture::Nearest, QOpenGLTexture::Nearest);
-	texture("Quad")->setWrapMode(QOpenGLTexture::ClampToEdge);
-
-	setRectangle(QRectF(QPointF(), QSizeF(static_cast<float>(image->width()), static_cast<float>(image->height()))));
+	shape<QuadShape>("QuadShape")->setRectangle(QRectF(QPointF(0.f, 0.f), QSizeF(static_cast<float>(image->width()), static_cast<float>(image->height()))));
 
 	emit changed(this);
-	*/
-
-	emit sizeChanged(image->size());
 }
 
 QSize SelectionImageProp::imageSize() const
@@ -46,7 +51,7 @@ QSize SelectionImageProp::imageSize() const
 	if (!_initialized)
 		return QSize();
 
-	const auto quadRectangle = dynamic_cast<QuadShape*>(_shapes["Quad"].get())->rectangle();
+	const auto quadRectangle = dynamic_cast<QuadShape*>(_shapes["QuadShape"].get())->rectangle();
 
 	return QSize(static_cast<int>(quadRectangle.width()), static_cast<int>(quadRectangle.height()));
 }
@@ -55,68 +60,70 @@ void SelectionImageProp::initialize()
 {
 	Prop::initialize();
 
-	_shapes["Quad"] = QSharedPointer<QuadShape>::create(this, "Quad");
+	const auto quadShapeShaderProgram = _shaderPrograms["QuadShape"];
 
-	_shaderPrograms["Quad"] = QSharedPointer<QOpenGLShaderProgram>::create();
+	quadShapeShaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSource.c_str());
+	quadShapeShaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSource.c_str());
 
-	_shaderPrograms["Quad"]->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSource.c_str());
-	_shaderPrograms["Quad"]->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSource.c_str());
-
-	if (!_shaderPrograms["Quad"]->link()) {
-		throw std::exception("Unable to link selection image quad shader program");
+	if (!quadShapeShaderProgram->link()) {
+		throw std::exception("Unable to link color image quad shader program");
 	}
 
-	_textures["Quad"] = QSharedPointer<QOpenGLTexture>::create(QOpenGLTexture::Target2D);
+	const auto stride = 5 * sizeof(GLfloat);
 
-	_textures["Quad"]->setWrapMode(QOpenGLTexture::Repeat);
-	_textures["Quad"]->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
+	auto quadShape = shape<QuadShape>("QuadShape");
+
+	if (quadShapeShaderProgram->bind()) {
+		quadShape->vao().bind();
+		quadShape->vbo().bind();
+
+		quadShapeShaderProgram->enableAttributeArray(QuadShape::_vertexAttribute);
+		quadShapeShaderProgram->enableAttributeArray(QuadShape::_textureAttribute);
+		quadShapeShaderProgram->setAttributeBuffer(QuadShape::_vertexAttribute, GL_FLOAT, 0, 3, stride);
+		quadShapeShaderProgram->setAttributeBuffer(QuadShape::_textureAttribute, GL_FLOAT, 3 * sizeof(GLfloat), 2, stride);
+		quadShapeShaderProgram->release();
+
+		quadShape->vao().release();
+		quadShape->vbo().release();
+	}
+	else {
+		throw std::exception("Unable to bind color image quad shader program");
+	}
+
+	const auto quadShapeTexture = _textures["QuadShape"];
+
+	quadShapeTexture->setWrapMode(QOpenGLTexture::Repeat);
+	quadShapeTexture->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
 
 	_initialized = true;
 }
 
 void SelectionImageProp::render()
 {
-	/*
-	auto quadProgram = shaderProgram("Quad");
+	if (!canRender())
+		return;
 
-	if (name == "Quad") {
-		quadProgram->setUniformValue("imageTexture", 0);
-		quadProgram->setUniformValue("minPixelValue", _minPixelValue);
-		quadProgram->setUniformValue("maxPixelValue", _maxPixelValue);
+	Prop::render();
+
+	const auto quadShape = _shapes["QuadShape"];
+	const auto quadShapeShaderProgram = _shaderPrograms["QuadShape"];
+	const auto quadShapeTexture = _textures["QuadShape"];
+
+	quadShapeTexture->bind();
+
+	if (quadShapeShaderProgram->bind()) {
+		auto color = _color;
+
+		color.setAlphaF(actor()->opacity());
+
+		quadShapeShaderProgram->setUniformValue("imageTexture", 0);
+		quadShapeShaderProgram->setUniformValue("color", color);
+		quadShapeShaderProgram->setUniformValue("transform", actor()->modelViewProjectionMatrix() * _matrix);
+
+		quadShape->render();
+
+		quadShapeShaderProgram->release();
 	}
-	*/
+
+	quadShapeTexture->release();
 }
-
-/*
-void SelectionImage::addShaderPrograms()
-{
-	qDebug() << "Add OpenGL shader programs to" << _name << "shape";
-
-	setShaderProgram("Quad", QSharedPointer<QOpenGLShaderProgram>::create());
-
-	shaderProgram("Quad")->addShaderFromSourceCode(QOpenGLShader::Vertex, SelectionImageVertexShaderSource.c_str());
-	shaderProgram("Quad")->addShaderFromSourceCode(QOpenGLShader::Fragment, SelectionImageFragmentShaderSource.c_str());
-	shaderProgram("Quad")->link();
-}
-
-void SelectionImage::addTextures()
-{
-	qDebug() << "Add OpenGL textures to" << _name << "shape";
-
-	setTexture("Quad", QSharedPointer<QOpenGLTexture>::create(QOpenGLTexture::Target2D));
-}
-
-void SelectionImage::configureShaderProgram(const QString& name)
-{
-	Quad::configureShaderProgram(name);
-
-	auto quadProgram = shaderProgram("Quad");
-
-	_color.setAlphaF(_actor->opacity());
-
-	if (name == "Quad") {
-		quadProgram->setUniformValue("selectionTexture", 0);
-		quadProgram->setUniformValue("color", _color);
-	}
-}
-*/

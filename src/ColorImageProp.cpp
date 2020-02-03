@@ -42,6 +42,8 @@ void ColorImageProp::setImage(std::shared_ptr<QImage> image)
 	quadShapeTexture->setData(QOpenGLTexture::PixelFormat::RGBA, QOpenGLTexture::PixelType::UInt16, image->bits());
 
 	shape<QuadShape>("QuadShape")->setRectangle(QRectF(QPointF(0.f, 0.f), QSizeF(static_cast<float>(image->width()), static_cast<float>(image->height()))));
+
+	emit changed(this);
 }
 
 QSize ColorImageProp::imageSize() const

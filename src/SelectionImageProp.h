@@ -43,7 +43,7 @@ signals:
 	 * Signals that the image size changed
 	 * @para size Image size
 	 */
-	void sizeChanged(const QSize& size);
+	void imageSizeChanged(const QSize& imageSize);
 
 private:
 	QColor		_color;		/** Selection color */
