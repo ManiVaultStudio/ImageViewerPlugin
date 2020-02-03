@@ -15,8 +15,8 @@ class ImageViewerWidget;
 
 class QMouseEvent;
 class QWheelEvent;
-
 class QOpenGLWidget;
+class QMenu;
 
 /**
  * Selection renderer class
@@ -133,6 +133,9 @@ public:
 
 	/** Reset the view */
 	void resetView();
+
+	/** Returns the context menu */
+	QMenu* contextMenu();
 
 public:
 	/**

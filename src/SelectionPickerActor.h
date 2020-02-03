@@ -17,7 +17,7 @@ class QWheelEvent;
 class QMenu;
 
 class Renderer;
-class Polyline2D;
+class PolylineShape;
 
 /**
  * Selection picker actor class

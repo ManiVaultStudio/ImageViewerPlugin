@@ -9,7 +9,7 @@
  * Quad shape class
  * @author Thomas Kroes
  */
-class Quad : public Shape
+class QuadShape : public Shape
 {
 	Q_OBJECT
 
@@ -18,7 +18,7 @@ public:
 	 * @param prop Parent prop
 	 * @param name Name of the shape
 	 */
-	Quad(Prop* prop, const QString& name);
+	QuadShape(Prop* prop, const QString& name);
 
 	/** Returns the quad rectangle */
 	QRectF rectangle() const;
@@ -36,6 +36,9 @@ protected:
 	/** Initializes the shape */
 	void initialize() override;
 
+	/** Renders the shape */
+	void render() override;
+
 private:
 	/**
 	 * Creates the OpenGL quad buffers
@@ -50,15 +53,11 @@ signals:
 	 */
 	void rectangleChanged(const QRectF& rectangle);
 
-	/**
-	 * Invoked when the quad size changed
-	 * @param size Quad size
-	 */
-	void sizeChanged(const QSizeF& size);
+public:
+	static std::uint32_t	_vertexAttribute;		/** Quad vertex attribute location */
+	static std::uint32_t	_textureAttribute;		/** Quad texture attribute location */
 
 protected:
 	QRectF					_rectangle;				/** Rectangle (in world space) that defines the quad */
 	QVector<GLfloat>		_vertexData;			/** Quad vertex data */
-	static std::uint32_t	_vertexAttribute;		/** Quad vertex attribute location */
-	static std::uint32_t	_textureAttribute;		/** Quad texture attribute location */
 };

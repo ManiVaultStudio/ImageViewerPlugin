@@ -1,26 +1,29 @@
-#include "Polyline2D.h"
+#include "PolylineShape.h"
 #include "Prop.h"
 
 #include <QOpenGLBuffer>
 #include <QOpenGLVertexArrayObject>
 #include <QDebug>
 
-PolylinePoint2D::PolylinePoint2D()
+PolylineShape::Point::Point() :
+	_position(),
+	_textureCoordinate(),
+	_lineWidth()
 {
 }
 
-PolylinePoint2D::PolylinePoint2D(const QVector3D& position, const QVector2D& textureCoordinate, const float& lineWidth) :
+PolylineShape::Point::Point(const QVector3D& position, const QVector2D& textureCoordinate, const float& lineWidth) :
 	_position(position),
 	_textureCoordinate(textureCoordinate),
 	_lineWidth(lineWidth)
 {
 }
 
-std::uint32_t PolylinePoint2D::_positionAttribute			= 0;
-std::uint32_t PolylinePoint2D::_textureCoordinateAttribute	= 1;
-std::uint32_t PolylinePoint2D::_lineWidthAttribute			= 2;
+std::uint32_t PolylineShape::Point::_positionAttribute				= 0;
+std::uint32_t PolylineShape::Point::_textureCoordinateAttribute		= 1;
+std::uint32_t PolylineShape::Point::_lineWidthAttribute				= 2;
 
-Polyline2D::Polyline2D(Prop* prop, const QString& name) :
+PolylineShape::PolylineShape(Prop* prop, const QString& name) :
 	Shape(prop, name),
 	_closed(true),
 	_lineWidth(0.1f),
@@ -29,7 +32,7 @@ Polyline2D::Polyline2D(Prop* prop, const QString& name) :
 {
 }
 
-void Polyline2D::initialize()
+void PolylineShape::initialize()
 {
 	Shape::initialize();
 
@@ -62,12 +65,12 @@ void Polyline2D::initialize()
 	*/
 }
 
-float Polyline2D::lineWidth() const
+float PolylineShape::lineWidth() const
 {
 	return _lineWidth;
 }
 
-void Polyline2D::setLineWidth(const float& lineWidth)
+void PolylineShape::setLineWidth(const float& lineWidth)
 {
 	if (lineWidth == _lineWidth)
 		return;
@@ -79,7 +82,7 @@ void Polyline2D::setLineWidth(const float& lineWidth)
 	emit lineWidthChanged(_lineWidth);
 }
 
-void Polyline2D::setPoints(QVector<PolylinePoint2D> points /*= QVector<PolylinePoint2D>()*/)
+void PolylineShape::setPoints(QVector<Point> points /*= QVector<PolylinePoint2D>()*/)
 {
 	//qDebug() << "Set polyline points";
 
@@ -88,7 +91,7 @@ void Polyline2D::setPoints(QVector<PolylinePoint2D> points /*= QVector<PolylineP
 	_vbo.bind();
 	{
 		_vbo.setUsagePattern(QOpenGLBuffer::DynamicDraw);
-		_vbo.allocate(_points.constData(), _points.count() * sizeof(PolylinePoint2D));
+		_vbo.allocate(_points.constData(), _points.count() * sizeof(Point));
 		_vbo.release();
 	}
 }

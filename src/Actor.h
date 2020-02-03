@@ -34,18 +34,6 @@ public:
 	/** Destructor */
 	~Actor();
 
-	/**
-	 * Performs a cleanup e.g. removes various OpenGL buffers
-	 * Must be called in the correct OpenGL context (the context from which initializeGL() is called)
-	 */
-	virtual void destroy();
-
-	/** Initialize the Actor (must be called in appropriate OpenGL context) */
-	virtual void initialize();
-
-	/** Renders the Actor */
-	virtual void render();
-
 	/** Returns the Actor name */
 	QString name() const;
 
@@ -184,7 +172,16 @@ public:
 		});
 	}
 
-protected:	
+protected:
+	/** Destroys the actor */
+	virtual void destroy();
+
+	/** Initializes the actor */
+	virtual void initialize();
+
+	/** Renders the actor */
+	virtual void render();
+
 	/** Returns whether this actor may process mouse press events */
 	bool mayProcessMousePressEvent() const;
 
@@ -236,4 +233,6 @@ protected:
 	float									_opacity;				/** Render opacity */
 	QMatrix4x4								_modelMatrix;			/** Model matrix */
 	QMap<QString, QSharedPointer<Prop>>		_props;					/** Props  map */
+
+	friend class Renderer;
 };

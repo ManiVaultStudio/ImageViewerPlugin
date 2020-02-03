@@ -45,6 +45,15 @@ public:
 	/** Returns the renderer */
 	Renderer* renderer();
 
+	/** Returns the full shape name (actor_name::prop_name::shape_name */
+	QString fullName();
+
+	/** Renders the shape */
+	virtual void render();
+
+	QOpenGLVertexArrayObject& vao() { return _vao; }
+	QOpenGLBuffer& vbo() { return _vbo; }
+
 protected:
 	/** Initializes the shape */
 	virtual void initialize();
@@ -52,13 +61,12 @@ protected:
 	/** Destroys the shape */
 	virtual void destroy();
 
-	/** Returns the full shape name e.g. Actor::Prop::Shape */
-	QString fullName();
-
 protected:
 	Prop*						_prop;				/** Parent prop */
 	QString						_name;				/** Name of the shape */
 	bool						_initialized;		/** Whether the shape is initialized or not */
 	QOpenGLVertexArrayObject	_vao;				/** OpenGL Vertex Array Object (VAO) */
 	QOpenGLBuffer				_vbo;				/** OpenGL Vertex Buffer Object (VBO) */
+
+	friend class Prop;
 };

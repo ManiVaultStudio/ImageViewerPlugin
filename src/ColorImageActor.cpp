@@ -1,12 +1,10 @@
 #include "ColorImageActor.h"
+#include "ColorImageProp.h"
+#include "Renderer.h"
 
 #include <QMouseEvent>
 #include <QOpenGLTexture>
 #include <QDebug>
-
-#include "Renderer.h"
-
-#include "ColorImage.h"
 
 ColorImageActor::ColorImageActor(Renderer* renderer, const QString& name) :
 	Actor(renderer, name),
@@ -22,11 +20,9 @@ ColorImageActor::ColorImageActor(Renderer* renderer, const QString& name) :
 	_registeredEvents |= static_cast<int>(ActorEvent::MouseRelease);
 	_registeredEvents |= static_cast<int>(ActorEvent::MouseMove);
 
-	addProp<ColorImage>("Quad");
+	addProp<ColorImageProp>("ColorImageProp");
 
-	connect(prop<ColorImage>("Quad"), &ColorImage::sizeChanged, this, [&](const QSizeF& imageSize) {
-		emit imageSizeChanged(QSizeF(imageSize.width(), imageSize.height()));
-	});
+	connect(prop<ColorImageProp>("ColorImageProp"), &ColorImageProp::imageSizeChanged, this, &ColorImageActor::imageSizeChanged);
 }
 
 void ColorImageActor::setImage(std::shared_ptr<QImage> image)
@@ -66,20 +62,7 @@ void ColorImageActor::setImage(std::shared_ptr<QImage> image)
 	const auto imageMin = static_cast<float>(_imageMin);
 	const auto imageMax = static_cast<float>(_imageMax);
 
-	auto* colorImageQuad = shape<ColorImageQuad>("Quad");
-
-	auto texture = QSharedPointer<QOpenGLTexture>::create(QOpenGLTexture::Target2D);
-
-	texture->create();
-	texture->setSize(image->size().width(), image->size().height());
-	texture->setFormat(QOpenGLTexture::RGBA16_UNorm);
-	texture->setWrapMode(QOpenGLTexture::ClampToEdge);
-	texture->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
-	texture->allocateStorage();
-	texture->setData(QOpenGLTexture::PixelFormat::RGBA, QOpenGLTexture::PixelType::UInt16, image->bits());
-
-	colorImageQuad->setTexture("Quad", texture);
-	colorImageQuad->setRectangle(QRectF(QPointF(0.f, 0.f), QSizeF(static_cast<float>(image->width()), static_cast<float>(image->height()))));
+	prop<ColorImageProp>("ColorImageProp")->setImage(image);
 
 	resetWindowLevel();
 
@@ -88,7 +71,7 @@ void ColorImageActor::setImage(std::shared_ptr<QImage> image)
 
 QSize ColorImageActor::imageSize()
 {
-	return dynamic_cast<ColorImageQuad*>(_props["Quad"].get())->imageSize();
+	return dynamic_cast<ColorImageProp*>(_props["ColorImageProp"].get())->imageSize();
 }
 
 float ColorImageActor::windowNormalized() const
@@ -117,10 +100,10 @@ void ColorImageActor::setWindowLevel(const float& window, const float& level)
 	const auto minPixelValue	= std::clamp(_level - (_window / 2.0f), static_cast<float>(_imageMin), static_cast<float>(_imageMax));
 	const auto maxPixelValue	= std::clamp(_level + (_window / 2.0f), static_cast<float>(_imageMin), static_cast<float>(_imageMax));
 
-	auto* colorImageQuad = shape<ColorImageQuad>("Quad");
+	auto* quad = prop<ColorImageProp>("ColorImageProp");
 
-	colorImageQuad->setMinPixelValue(minPixelValue);
-	colorImageQuad->setMaxPixelValue(maxPixelValue);
+	quad->setMinPixelValue(minPixelValue);
+	quad->setMaxPixelValue(maxPixelValue);
 
 	qDebug() << "Set window/level" << _windowNormalized << _levelNormalized;
 
@@ -163,8 +146,6 @@ void ColorImageActor::onMouseMoveEvent(QMouseEvent* mouseEvent)
 	_mousePositions.push_back(mouseEvent->pos());
 
 	if (_mousePositions.size() > 1 && mouseEvent->buttons() & Qt::RightButton) {
-		auto* imageQuad = shape<ColorImageQuad>("Quad");
-
 		const auto mousePosition0	= _mousePositions[_mousePositions.size() - 2];
 		const auto mousePosition1	= _mousePositions.back();
 		const auto deltaWindow		= (mousePosition1.x() - mousePosition0.x()) / 150.f;

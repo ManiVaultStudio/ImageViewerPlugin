@@ -1,25 +1,23 @@
 #include "SelectionImageActor.h"
-
-#include <QDebug>
-
+#include "SelectionImageProp.h"
 #include "Renderer.h"
 
-#include "SelectionImage.h"
+#include <QDebug>
 
 SelectionImageActor::SelectionImageActor(Renderer* renderer, const QString& name) :
 	Actor(renderer, name)
 {
 	_opacity = 0.5f;
 
-	addProp<SelectionImage>("Quad");
+	addProp<SelectionImageProp>("Quad");
 }
 
 void SelectionImageActor::setImage(std::shared_ptr<QImage> image)
 {
-	prop<SelectionImage>("Quad")->setImage(image);
+	prop<SelectionImageProp>("Quad")->setImage(image);
 }
 
 QSize SelectionImageActor::imageSize() const
 {
-	return dynamic_cast<SelectionImage*>(_props["Quad"].get())->imageSize();
+	return dynamic_cast<SelectionImageProp*>(_props["Quad"].get())->imageSize();
 }

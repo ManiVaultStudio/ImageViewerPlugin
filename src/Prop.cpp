@@ -23,16 +23,29 @@ Prop::~Prop() = default;
 
 void Prop::destroy()
 {
-	qDebug() << "Destroy prop" << _name;
+	//qDebug() << "Destroy" << fullName();
 
-	bindOpenGLContext();
+	renderer()->bindOpenGLContext();
+
+	for (auto shape : _shapes) {
+		shape->destroy();
+	}
 }
 
 void Prop::initialize()
 {
-	qDebug() << "Initialize the" << _name << "Prop";
+	//qDebug() << "Initialize" << fullName();
 
-	bindOpenGLContext();
+	renderer()->bindOpenGLContext();
+
+	for (auto shape : _shapes) {
+		shape->initialize();
+	}
+}
+
+void Prop::render()
+{
+	//qDebug() << "Render" << fullName();
 }
 
 bool Prop::isInitialized() const
@@ -50,15 +63,11 @@ void Prop::setName(const QString& name)
 	if (name == _name)
 		return;
 
-	const auto oldName = _name;
+	const auto oldName = fullName();
 
 	_name = name;
 
-	qDebug() << "Rename" << oldName << "to" << _name;
-
-	emit nameChanged(_name);
-
-	emit changed(this);
+	qDebug() << "Rename" << oldName << "to" << fullName();
 }
 
 bool Prop::isVisible() const
@@ -73,7 +82,7 @@ void Prop::setVisible(const bool& visible)
 
 	_visible = visible;
 
-	qDebug() << (_visible ? "Show" : "Hide") << _name;
+	qDebug() << (_visible ? "Show" : "Hide") << fullName();
 
 	emit visibilityChanged(_visible);
 
@@ -100,22 +109,12 @@ Actor* Prop::actor()
 	return _actor;
 }
 
-void Prop::render()
-{
-	qDebug() << "Render" << _name << "prop";
-}
-
-void Prop::bindOpenGLContext()
-{
-	renderer()->bindOpenGLContext();
-}
-
-void Prop::releaseOpenGLContext()
-{
-	renderer()->releaseOpenGLContext();
-}
-
 Renderer* Prop::renderer()
 {
 	return _actor->renderer();
+}
+
+QString Prop::fullName()
+{
+	return QString("%2::%3").arg(actor()->name(), _name);
 }

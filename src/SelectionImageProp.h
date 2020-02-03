@@ -10,7 +10,7 @@ class Actor;
  * Selection image prop class
  * @author Thomas Kroes
  */
-class SelectionImage : public Prop
+class SelectionImageProp : public Prop
 {
 	Q_OBJECT
 
@@ -19,17 +19,17 @@ public:
 	 * @param actor Parent actor
 	 * @param name Name of the prop
 	 */
-	SelectionImage(Actor* actor, const QString& name);
+	SelectionImageProp(Actor* actor, const QString& name);
 
 public:
-	/** Returns the image size */
-	QSize imageSize() const;
-
 	/**
 	 * Sets the image
 	 * @param image Image
 	 */
 	void setImage(std::shared_ptr<QImage> image);
+
+	/** Returns the image size */
+	QSize imageSize() const;
 
 protected:
 	/** Initializes the prop */
@@ -37,6 +37,13 @@ protected:
 
 	/** Renders the prop */
 	void render() override;
+
+signals:
+	/**
+	 * Signals that the image size changed
+	 * @para size Image size
+	 */
+	void sizeChanged(const QSize& size);
 
 private:
 	QColor		_color;		/** Selection color */

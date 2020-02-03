@@ -8,7 +8,7 @@ class Actor;
  * Color image prop class
  * @author Thomas Kroes
  */
-class ColorImage : public Prop
+class ColorImageProp : public Prop
 {
 	Q_OBJECT
 
@@ -17,9 +17,15 @@ public:
 	 * @param actor Parent actor
 	 * @param name Name of the prop
 	 */
-	ColorImage(Actor* actor, const QString& name);
+	ColorImageProp(Actor* actor, const QString& name);
 
 public:
+	/**
+	 * Sets the image
+	 * @param image Image
+	 */
+	void setImage(std::shared_ptr<QImage> image);
+
 	/** Returns the color image size */
 	QSize imageSize() const;
 
@@ -41,6 +47,13 @@ protected:
 
 	/** Renders the prop */
 	void render() override;
+
+signals:
+	/**
+	 * Signals that the image size changed
+	 * @para size Image size
+	 */
+	void imageSizeChanged(const QSize& imageSize);
 
 private:
 	float	_minPixelValue;			/** Window minimum pixel value */

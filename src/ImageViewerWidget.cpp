@@ -15,7 +15,6 @@
 
 #include "Renderer.h"
 
-#include "ColorImageActor.h"
 #include "SelectionPickerActor.h"
 
 ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
@@ -95,9 +94,11 @@ void ImageViewerWidget::initializeGL()
 
 	//connect(_renderer->selectionBufferQuad(), &SelectionBufferQuad::selectionEnded, this, &ImageViewerWidget::publishSelection);
 
+	/*
 	connect(_renderer->actor<SelectionPickerActor>("SelectionPicker"), &SelectionPickerActor::selectAll, this, &ImageViewerWidget::onSelectAll);
 	connect(_renderer->actor<SelectionPickerActor>("SelectionPicker"), &SelectionPickerActor::selectNone, this, &ImageViewerWidget::onSelectNone);
 	connect(_renderer->actor<SelectionPickerActor>("SelectionPicker"), &SelectionPickerActor::invertSelection, this, &ImageViewerWidget::onInvertSelection);
+	*/
 
 #ifdef _DEBUG
 //	_openglDebugLogger->initialize();
@@ -277,7 +278,7 @@ QMenu* ImageViewerWidget::contextMenu()
 	auto* contextMenu = new QMenu();
 
 	if (_imageViewerPlugin->imageCollectionType() == ImageCollectionType::Stack) {
-		contextMenu->addMenu(viewMenu());
+		contextMenu->addMenu(_renderer->contextMenu());
 		contextMenu->addSeparator();
 		contextMenu->addMenu(_renderer->actor<SelectionPickerActor>("SelectionPicker")->contextMenu());
 
@@ -295,36 +296,4 @@ QMenu* ImageViewerWidget::contextMenu()
 	}
 
 	return contextMenu;
-}
-
-QMenu* ImageViewerWidget::viewMenu()
-{
-	auto* viewMenu = new QMenu("View");
-	
-	auto* zoomToExtentsAction = new QAction("Zoom extents");
-	auto* zoomToSelectionAction = new QAction("Zoom to selection");
-	auto* resetWindowLevelAction = new QAction("Reset window/level");
-
-	zoomToExtentsAction->setToolTip("Zoom to the boundaries of the image");
-	zoomToSelectionAction->setToolTip("Zoom to selection boundaries");
-	resetWindowLevelAction->setToolTip("Reset window/level to default values");
-
-	zoomToSelectionAction->setEnabled(_imageViewerPlugin->noSelectedPixels() > 0);
-
-	auto* colorImageActor = _renderer->actor<ColorImageActor>("ColorImage");
-
-	resetWindowLevelAction->setEnabled(colorImageActor->windowNormalized() < 1.f && colorImageActor->levelNormalized() != 0.5f);
-
-	connect(zoomToExtentsAction, &QAction::triggered, this->_renderer.get(), &Renderer::zoomExtents);
-	connect(zoomToSelectionAction, &QAction::triggered, this->_renderer.get(), &Renderer::zoomToSelection);
-	connect(resetWindowLevelAction, &QAction::triggered, [&]() {
-		_renderer->actor<ColorImageActor>("ColorImage")->resetWindowLevel();
-	});
-
-	viewMenu->addAction(zoomToExtentsAction);
-	viewMenu->addAction(zoomToSelectionAction);
-	viewMenu->addSeparator();
-	viewMenu->addAction(resetWindowLevelAction);
-
-	return viewMenu;
 }

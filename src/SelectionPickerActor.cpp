@@ -1,7 +1,5 @@
 #include "SelectionPickerActor.h"
 #include "Renderer.h"
-#include "SelectionImage.h"
-#include "Polyline2D.h"
 
 #include <QKeyEvent>
 #include <QMenu>

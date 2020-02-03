@@ -34,11 +34,11 @@ set(PLUGIN
 	src/Renderer.cpp
 )
 
-file(GLOB ACTORS src/actors/*.h src/actors/*.cpp)
-file(GLOB PROPS src/props/*.h src/props/*.cpp)
-file(GLOB SHAPES src/shapes/*.h src/shapes/*.cpp)
+file(GLOB ACTORS src/*Actor.h src/*Actor.cpp)
+file(GLOB PROPS src/*Prop.h src/*Prop.cpp)
+file(GLOB SHAPES src/*Shape.h src/*Shape.cpp)
 file(GLOB UIS src/*.ui)
-file(GLOB SHADERS src/props/*.glsl)
+file(GLOB SHADERS src/*.glsl)
 file(GLOB JSON src/*.json)
 
 set(SOURCES ${PLUGIN} ${ACTORS} ${PROPS} ${SHAPES})

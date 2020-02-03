@@ -2,6 +2,7 @@
 #include "ImageViewerWidget.h"
 
 #include <QtMath>
+#include <QMenu>
 #include <QDebug>
 
 #include "Shaders.h"
@@ -290,7 +291,7 @@ void Renderer::zoomExtents()
 {
 	qDebug() << "Zoom extents";
 
-	zoomToRectangle(QRectF(QPointF(), actor<ColorImageActor>("ColorImage")->imageSize()));
+	zoomToRectangle(QRectF(QPointF(), actor<ColorImageActor>("ColorImageActor")->imageSize()));
 }
 
 void Renderer::zoomToRectangle(const QRectF& rectangle)
@@ -339,7 +340,7 @@ void Renderer::setColorImage(std::shared_ptr<QImage> colorImage)
 {
 	bindOpenGLContext();
 
-	auto* colorImageActor = actor<ColorImageActor>("ColorImage");
+	auto* colorImageActor = actor<ColorImageActor>("ColorImageActor");
 
 	const auto previousImageSize = colorImageActor->imageSize();
 
@@ -456,11 +457,11 @@ void Renderer::createActors()
 {
 	//qDebug() << "Creating actors";
 	
-	addActor("ColorImage", QSharedPointer<ColorImageActor>::create(this, "ColorImage"));
+	addActor("ColorImageActor", QSharedPointer<ColorImageActor>::create(this, "ColorImageActor"));
 	addActor("SelectionImage", QSharedPointer<SelectionImageActor>::create(this, "SelectionImage"));
 	addActor("SelectionPicker", QSharedPointer<SelectionPickerActor>::create(this, "SelectionPicker"));
 
-//	actor<ColorImageActor>("ColorImage")->activate();
+	actor<ColorImageActor>("ColorImageActor")->activate();
 }
 
 void Renderer::initializeActors()
@@ -473,7 +474,7 @@ void Renderer::initializeActors()
 		_actors[name]->initialize();
 	}
 
-	connect(actor<ColorImageActor>("ColorImage"), &ColorImageActor::imageSizeChanged, this, [&]() { zoomExtents(); });
+	connect(actor<ColorImageActor>("ColorImageActor"), &ColorImageActor::imageSizeChanged, this, [&]() { zoomExtents(); });
 }
 
 void Renderer::renderActors()
@@ -496,4 +497,36 @@ void Renderer::destroyActors()
 	for (auto name : _actors.keys()) {
 		_actors[name]->destroy();
 	}
+}
+
+QMenu* Renderer::contextMenu()
+{
+	auto* viewMenu = new QMenu("View");
+
+	auto* zoomToExtentsAction = new QAction("Zoom extents");
+	auto* zoomToSelectionAction = new QAction("Zoom to selection");
+	auto* resetWindowLevelAction = new QAction("Reset window/level");
+
+	zoomToExtentsAction->setToolTip("Zoom to the boundaries of the image");
+	zoomToSelectionAction->setToolTip("Zoom to selection boundaries");
+	resetWindowLevelAction->setToolTip("Reset window/level to default values");
+
+	//zoomToSelectionAction->setEnabled(_imageViewerPlugin->noSelectedPixels() > 0);
+
+	auto* colorImageActor = actor<ColorImageActor>("ColorImageActor");
+
+	resetWindowLevelAction->setEnabled(colorImageActor->windowNormalized() < 1.f && colorImageActor->levelNormalized() != 0.5f);
+
+	connect(zoomToExtentsAction, &QAction::triggered, this, &Renderer::zoomExtents);
+	connect(zoomToSelectionAction, &QAction::triggered, this, &Renderer::zoomToSelection);
+	connect(resetWindowLevelAction, &QAction::triggered, [&]() {
+		actor<ColorImageActor>("ColorImageActor")->resetWindowLevel();
+	});
+
+	viewMenu->addAction(zoomToExtentsAction);
+	viewMenu->addAction(zoomToSelectionAction);
+	viewMenu->addSeparator();
+	viewMenu->addAction(resetWindowLevelAction);
+
+	return viewMenu;
 }

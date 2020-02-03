@@ -22,6 +22,6 @@ void main(void)
 		fragmentColor[c]	= float(clamp(fraction / range, 0.0, 1.0));
 	}
 
-	fragmentColor.a = 0.2f;
+	fragmentColor.a = 1.0f;
 }
 )"

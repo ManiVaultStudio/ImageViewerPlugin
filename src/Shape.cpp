@@ -17,9 +17,26 @@ Shape::Shape(Prop* prop, const QString& name) :
 
 Shape::~Shape() = default;
 
+QString Shape::fullName()
+{
+	return QString("%1::%2::%3").arg(prop()->actor()->name(), prop()->name(), _name);
+}
+
+void Shape::initialize()
+{
+	//qDebug() << "Initialize" << fullName();
+
+	renderer()->bindOpenGLContext();
+
+	_vao.create();
+	_vbo.create();
+}
+
 void Shape::destroy()
 {
-	qDebug() << "Destroy" << fullName();
+	//qDebug() << "Destroy" << fullName();
+
+	renderer()->bindOpenGLContext();
 
 	_vao.destroy();
 	_vao.release();
@@ -28,17 +45,9 @@ void Shape::destroy()
 	_vbo.release();
 }
 
-QString Shape::fullName()
+void Shape::render()
 {
-	return QString("%1::%2::%3").arg(prop()->actor()->name(), prop()->name(), _name);
-}
-
-void Shape::initialize()
-{
-	qDebug() << "Initialize" << fullName();
-
-	_vao.create();
-	_vbo.create();
+	//qDebug() << "Render" << fullName();
 }
 
 bool Shape::isInitialized() const

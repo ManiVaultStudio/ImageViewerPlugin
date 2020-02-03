@@ -51,7 +51,7 @@ ImageViewerPlugin::ImageViewerPlugin() :
 		updateWindowTitle();
 	}, Qt::AutoConnection);
 
-	auto* colorImageActor = this->_imageViewerWidget->renderer()->actor<ColorImageActor>("ColorImage");
+	auto* colorImageActor = this->_imageViewerWidget->renderer()->actor<ColorImageActor>("ColorImageActor");
 
 	connect(colorImageActor, &ColorImageActor::windowLevelChanged, this, [&]() {
 		updateWindowTitle();

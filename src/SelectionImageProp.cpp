@@ -1,5 +1,5 @@
-#include "SelectionImage.h"
-#include "Quad.h"
+#include "SelectionImageProp.h"
+#include "QuadShape.h"
 
 #include <QOpenGLShaderProgram>
 #include <QOpenGLBuffer>
@@ -15,23 +15,13 @@ const std::string fragmentShaderSource =
 #include "SelectionImageFragment.glsl"
 ;
 
-SelectionImage::SelectionImage(Actor* actor, const QString& name) :
+SelectionImageProp::SelectionImageProp(Actor* actor, const QString& name) :
 	Prop(actor, name)
 {
 	_color = QColor(255, 0, 0, 255);
 }
 
-QSize SelectionImage::imageSize() const
-{
-	if (!_initialized)
-		return QSize();
-
-	const auto quadRectangle = dynamic_cast<Quad*>(_shapes["Quad"].get())->rectangle();
-
-	return QSize(static_cast<int>(quadRectangle.width()), static_cast<int>(quadRectangle.height()));
-}
-
-void SelectionImage::setImage(std::shared_ptr<QImage> image)
+void SelectionImageProp::setImage(std::shared_ptr<QImage> image)
 {
 	qDebug() << "Set selection image for" << _name;
 
@@ -47,13 +37,25 @@ void SelectionImage::setImage(std::shared_ptr<QImage> image)
 
 	emit changed(this);
 	*/
+
+	emit sizeChanged(image->size());
 }
 
-void SelectionImage::initialize()
+QSize SelectionImageProp::imageSize() const
+{
+	if (!_initialized)
+		return QSize();
+
+	const auto quadRectangle = dynamic_cast<QuadShape*>(_shapes["Quad"].get())->rectangle();
+
+	return QSize(static_cast<int>(quadRectangle.width()), static_cast<int>(quadRectangle.height()));
+}
+
+void SelectionImageProp::initialize()
 {
 	Prop::initialize();
 
-	_shapes["Quad"] = QSharedPointer<Quad>::create(this, "Quad");
+	_shapes["Quad"] = QSharedPointer<QuadShape>::create(this, "Quad");
 
 	_shaderPrograms["Quad"] = QSharedPointer<QOpenGLShaderProgram>::create();
 
@@ -72,7 +74,7 @@ void SelectionImage::initialize()
 	_initialized = true;
 }
 
-void SelectionImage::render()
+void SelectionImageProp::render()
 {
 	/*
 	auto quadProgram = shaderProgram("Quad");

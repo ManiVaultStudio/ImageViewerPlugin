@@ -1,14 +1,12 @@
 #pragma once
 
-#include "../Common.h"
+#include "Common.h"
 
 #include <QMatrix4x4>
 #include <QMap>
 #include <QSharedPointer>
-
-class QOpenGLShaderProgram;
-class QOpenGLTexture;
-class QOpenGLFramebufferObject;
+#include <QOpenGLShaderProgram>
+#include <QOpenGLTexture>
 
 class Renderer;
 class Actor;
@@ -68,6 +66,9 @@ public:
 	/** Returns the renderer */
 	Renderer* renderer();
 
+	/** Returns the full shape name (actor_name::prop_name::shape_name */
+	QString fullName();
+
 protected:
 	/** Initializes the prop */
 	virtual void initialize();
@@ -75,14 +76,8 @@ protected:
 	/** Destroys the prop */
 	virtual void destroy();
 
-	/** Renders the actor */
+	/** Renders the prop */
 	virtual void render();
-
-	/** Binds the OpenGL context */
-	void bindOpenGLContext();
-
-	/** Releases the OpenGL context */
-	void releaseOpenGLContext();
 
 	/**
 	* Get shape by name
@@ -95,24 +90,36 @@ protected:
 	}
 
 	/**
-	* Get shape by name
+	* Add shape by name
 	* @param name Name of the shape
 	*/
 	template<typename T>
-	const T* shape(const QString& name)
+	void addShape(const QString& name)
 	{
-		return dynamic_cast<T*>(_shapes[name].get());
+		auto shape = QSharedPointer<T>::create(this, name);
+
+		_shapes.insert(name, shape);
+	}
+
+	/**
+	* Add shader program by name
+	* @param name Name of the shader program
+	*/
+	void addShaderProgram(const QString& name)
+	{
+		_shaderPrograms.insert(name, QSharedPointer<QOpenGLShaderProgram>::create());
+	}
+
+	/**
+	* Add texture by name
+	* @param name Name of the texture
+	*/
+	void addTexture(const QString& name, const QOpenGLTexture::Target& target)
+	{
+		_textures.insert(name, QSharedPointer<QOpenGLTexture>::create(target));
 	}
 
 signals:
-	/** Signals that the prop has been successfully initialized */
-	void initialized();
-
-	/** Signals that the prop name changed
-	 * @param name New prop name
-	 */
-	void nameChanged(const QString& name);
-
 	/** Signals that the visibility changed
 	 * @param visible Whether the prop is visible or not
 	 */
