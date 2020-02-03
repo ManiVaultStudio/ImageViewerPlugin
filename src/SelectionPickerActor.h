@@ -105,12 +105,6 @@ public:
 	/** Returns the context menu */
 	QMenu* contextMenu();
 
-protected:
-	Polyline2D* rectangleShape();
-	Polyline2D* brushShape();
-	Polyline2D* lassoShape();
-	Polyline2D* polygonShape();
-
 private:
 	/** Starts the selection process */
 	void startSelection();
@@ -123,26 +117,12 @@ private:
 	 */
 	void addMousePosition(const QPoint& point);
 
-	/**
-	 * TODO
-	 */
+	/*
 	void updateRectangle();
-
-	/**
-	 * TODO
-	 */
 	void updateBrush();
-
-	/**
-	 * TODO
-	 */
 	void updateLasso();
-
-	/**
-	 * TODO
-	 */
 	void updatePolygon();
-
+	*/
 signals:
 	/**
 	 * Invoked when the image size changed

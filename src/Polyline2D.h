@@ -2,6 +2,7 @@
 
 #include "Shape.h"
 
+#include <QVector>
 #include <QVector2D>
 #include <QVector3D>
 
@@ -26,7 +27,7 @@ struct PolylinePoint2D
 };
 
 /**
- * Two-dimensional polyline class
+ * Two-dimensional polyline shape class
  * @author Thomas Kroes
  */
 class Polyline2D : public Shape
@@ -34,21 +35,14 @@ class Polyline2D : public Shape
 	Q_OBJECT
 
 public:
-	/**
-	 * Constructor
-	 * @param name Name of the polyline
-	 * @param z Position along the z-axis
-	 * @param closed Whether to close the polyline or not
-	 * @param lineWidth Line width
-	 * @param textureScale Scale of the texture in the U direction
+	/** Constructor
+	 * @param prop Parent prop
+	 * @param name Name of the shape
 	 */
-	Polyline2D(Actor* actor, const QString& name, const float& z = 0.f, const bool& closed = true, const float& lineWidth = 1.f, const float& textureScale = 0.05f);
+	Polyline2D(Prop* prop, const QString& name);
 
 	/** Initialized the shape (must be called in appropriate OpenGL context) */
 	void initialize() override;
-
-	/** Renders the polyline */
-	void render() override;
 
 	/** Returns the line width in world space */
 	float lineWidth() const;
@@ -59,39 +53,14 @@ public:
 	 */
 	void setLineWidth(const float& lineWidth);
 
-	/** Returns whether the shape can be rendered */
-	bool canRender() const override;
-
 	/**
 	 * Set polyline points
 	 * @param points Points in world coordinates
 	 */
-	void setPoints(QVector<PolylinePoint2D> points);
+	void setPoints(QVector<PolylinePoint2D> points = QVector<PolylinePoint2D>());
 
 	/** Resets the polyline */
 	virtual void reset();
-
-protected:
-	/** Adds the OpenGL shader programs that the shape needs */
-	void addShaderPrograms();
-
-	/** Adds the OpenGL vertex array objects that the shape needs */
-	void addVAOs();
-
-	/** Adds the OpenGL vertex buffer objects that the shape needs */
-	void addVBOs();
-
-	/**
-	 * Configure an OpenGL shader program (right after the shader program is bound in the render function)
-	 * @param name Name of the OpenGL shader program
-	 */
-	void configureShaderProgram(const QString& name) override;
-
-	/**
-	 * Determines whether the polyline is textured
-	 * @return Whether the polyline is textured
-	 */
-	bool isTextured() const;
 
 signals:
 	/**
@@ -104,6 +73,5 @@ protected:
 	bool						_closed;				/** Whether to close the polyline or not */
 	float						_lineWidth;				/** Line width in world space */
 	float						_textureScale;			/** Texture scale */
-	//std::uint32_t				_noPoints;				/** Number of points */
 	QVector<PolylinePoint2D>	_points;				/** Points */
 };

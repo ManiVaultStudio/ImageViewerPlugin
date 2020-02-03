@@ -32,12 +32,6 @@ public:
 	/** Destructor */
 	~Prop();
 
-	/** Performs a cleanup before the prop is deleted */
-	virtual void destroy();
-
-	/** Initializes the prop */
-	virtual void initialize();
-
 	/** Returns whether the prop is initialized */
 	bool isInitialized() const;
 
@@ -67,8 +61,21 @@ public:
 
 	/** Returns whether the prop can be rendered */
 	virtual bool canRender() const;
-	
-	/** Renders the prop */
+
+	/** Returns the actor */
+	Actor* actor();
+
+	/** Returns the renderer */
+	Renderer* renderer();
+
+protected:
+	/** Initializes the prop */
+	virtual void initialize();
+
+	/** Destroys the prop */
+	virtual void destroy();
+
+	/** Renders the actor */
 	virtual void render();
 
 	/** Binds the OpenGL context */
@@ -77,8 +84,25 @@ public:
 	/** Releases the OpenGL context */
 	void releaseOpenGLContext();
 
-	/** Returns the renderer in which this prop resides */
-	Renderer* renderer();
+	/**
+	* Get shape by name
+	* @param name Name of the shape
+	*/
+	template<typename T>
+	T* shape(const QString& name)
+	{
+		return dynamic_cast<T*>(_shapes[name].get());
+	}
+
+	/**
+	* Get shape by name
+	* @param name Name of the shape
+	*/
+	template<typename T>
+	const T* shape(const QString& name)
+	{
+		return dynamic_cast<T*>(_shapes[name].get());
+	}
 
 signals:
 	/** Signals that the prop has been successfully initialized */
@@ -106,4 +130,6 @@ protected:
 	QMap<QString, QSharedPointer<QOpenGLShaderProgram>>		_shaderPrograms;		/** OpenGL shader programs */
 	QMap<QString, QSharedPointer<QOpenGLTexture>>			_textures;				/** OpenGL textures */
 	QMap<QString, QSharedPointer<Shape>>					_shapes;				/** Shapes */
+
+	friend class Actor;
 };

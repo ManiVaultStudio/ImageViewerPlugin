@@ -11,7 +11,7 @@ Actor::Actor(Renderer* renderer, const QString& name) :
 	_registeredEvents(static_cast<int>(ActorEvent::None)),
 	_enabled(true),
 	_modelMatrix(),
-	_shapes()
+	_props()
 {
 }
 
@@ -23,8 +23,8 @@ void Actor::destroy()
 
 	bindOpenGLContext();
 	
-	for (auto name : _shapes.keys()) {
-		_shapes[name]->destroy();
+	for (auto name : _props.keys()) {
+		_props[name]->destroy();
 	}
 }
 
@@ -34,8 +34,8 @@ void Actor::initialize()
 
 	bindOpenGLContext();
 
-	for (auto name : _shapes.keys()) {
-		_shapes[name]->initialize();
+	for (auto name : _props.keys()) {
+		_props[name]->initialize();
 	}
 }
 
@@ -46,8 +46,8 @@ void Actor::render()
 
 	//qDebug() << "Render" << _name;
 
-	for (auto name : _shapes.keys()) {
-		_shapes[name]->render();
+	for (auto name : _props.keys()) {
+		_props[name]->render();
 	}
 }
 

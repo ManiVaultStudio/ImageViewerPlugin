@@ -2,11 +2,11 @@
 
 #include "Shape.h"
 
+#include <QRect>
 #include <QVector>
-#include <QOpenGLBuffer>
 
 /**
- * OpenGL Quad class
+ * Quad shape class
  * @author Thomas Kroes
  */
 class Quad : public Shape
@@ -14,14 +14,11 @@ class Quad : public Shape
 	Q_OBJECT
 
 public:
-	/** Constructor */
-	Quad(Actor* actor, const QString& name, const float& z = 0.f);
-
-	/** Initialized the shape (must be called in appropriate OpenGL context) */
-	void initialize() override;
-
-	/** Renders the quad */
-	void render();
+	/** Constructor
+	 * @param prop Parent prop
+	 * @param name Name of the shape
+	 */
+	Quad(Prop* prop, const QString& name);
 
 	/** Returns the quad rectangle */
 	QRectF rectangle() const;
@@ -36,26 +33,8 @@ public:
 	QSizeF imageSize() const;
 
 protected:
-	/**
-	 * Determines whether the quad is textured
-	 * @return Whether the quad is textured
-	 */
-	bool isTextured() const;
-
-	/** Adds the OpenGL vertex array objects that the shape needs */
-	void addVAOs();
-
-	/** Adds the OpenGL vertex buffer objects that the shape needs */
-	void addVBOs();
-
-	/** Returns whether the shape can be rendered */
-	virtual bool canRender() const;
-
-	/**
-	 * Configure an OpenGL shader program (right after the shader program is bound in the render function)
-	 * @param name Name of the OpenGL shader program
-	 */
-	void configureShaderProgram(const QString& name) override;
+	/** Initializes the shape */
+	void initialize() override;
 
 private:
 	/**

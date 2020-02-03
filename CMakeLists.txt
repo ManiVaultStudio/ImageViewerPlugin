@@ -48,6 +48,10 @@ set(ACTORS
 set(PROPS
 	src/Prop.h
 	src/Prop.cpp
+	src/ColorImage.h
+	src/ColorImage.cpp
+	src/SelectionImage.h
+	src/SelectionImage.cpp
 )
 
 set(SHAPES
@@ -55,12 +59,8 @@ set(SHAPES
 	src/Shape.cpp
 	src/Quad.h
 	src/Quad.cpp
-	src/ColorImageQuad.h
-	src/ColorImageQuad.cpp
 	src/Polyline2D.h
 	src/Polyline2D.cpp
-	src/SelectionImageQuad.h
-	src/SelectionImageQuad.cpp
 )
 
 file(GLOB UIS src/*.ui)

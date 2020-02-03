@@ -95,6 +95,11 @@ bool Prop::canRender() const
 	return isInitialized() && isVisible();
 }
 
+Actor* Prop::actor()
+{
+	return _actor;
+}
+
 void Prop::render()
 {
 	qDebug() << "Render" << _name << "prop";

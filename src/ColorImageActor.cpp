@@ -6,7 +6,7 @@
 
 #include "Renderer.h"
 
-#include "ColorImageQuad.h"
+#include "ColorImage.h"
 
 ColorImageActor::ColorImageActor(Renderer* renderer, const QString& name) :
 	Actor(renderer, name),
@@ -22,9 +22,9 @@ ColorImageActor::ColorImageActor(Renderer* renderer, const QString& name) :
 	_registeredEvents |= static_cast<int>(ActorEvent::MouseRelease);
 	_registeredEvents |= static_cast<int>(ActorEvent::MouseMove);
 
-	addShape<ColorImageQuad>("Quad");
+	addProp<ColorImage>("Quad");
 
-	connect(shape<ColorImageQuad>("Quad"), &ColorImageQuad::sizeChanged, this, [&](const QSizeF& imageSize) {
+	connect(prop<ColorImage>("Quad"), &ColorImage::sizeChanged, this, [&](const QSizeF& imageSize) {
 		emit imageSizeChanged(QSizeF(imageSize.width(), imageSize.height()));
 	});
 }
@@ -88,7 +88,7 @@ void ColorImageActor::setImage(std::shared_ptr<QImage> image)
 
 QSize ColorImageActor::imageSize()
 {
-	return dynamic_cast<ColorImageQuad*>(_shapes["Quad"].get())->imageSize();
+	return dynamic_cast<ColorImageQuad*>(_props["Quad"].get())->imageSize();
 }
 
 float ColorImageActor::windowNormalized() const

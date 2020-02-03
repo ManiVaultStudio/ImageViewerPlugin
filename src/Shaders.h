@@ -1,25 +1,9 @@
-const std::string imageQuadFragmentShaderSource =
-#include "ImageQuadFragment.glsl"
-;
-
-const std::string imageQuadVertexShaderSource =
-#include "ImageQuadVertex.glsl"
-;
-
 const std::string selectionBufferFragmentShaderSource =
 #include "SelectionBufferFragment.glsl"
 ;
 
 const std::string selectionBufferVertexShaderSource =
 #include "SelectionBufferVertex.glsl"
-;
-
-const std::string selectionImageQuadFragmentShaderSource =
-#include "SelectionImageQuadFragment.glsl"
-;
-
-const std::string selectionImageQuadVertexShaderSource =
-#include "SelectionImageQuadVertex.glsl"
 ;
 
 const std::string selectionFragmentShaderSource =

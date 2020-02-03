@@ -1,6 +1,6 @@
 #include "SelectionPickerActor.h"
 #include "Renderer.h"
-#include "SelectionImageQuad.h"
+#include "SelectionImage.h"
 #include "Polyline2D.h"
 
 #include <QKeyEvent>
@@ -28,16 +28,19 @@ SelectionPickerActor::SelectionPickerActor(Renderer* renderer, const QString& na
 	_registeredEvents |= static_cast<int>(ActorEvent::KeyPress);
 	_registeredEvents |= static_cast<int>(ActorEvent::KeyRelease);
 
+	/*
 	addShape<Polyline2D>("Rectangle");
 	addShape<Polyline2D>("Brush");
 	addShape<Polyline2D>("Lasso");
 	addShape<Polyline2D>("Polygon");
+	*/
 }
 
 void SelectionPickerActor::initialize()
 {
 	Actor::initialize();
 
+	/*
 	rectangleShape()->setLineWidth(_outlineLineWidth);
 	brushShape()->setLineWidth(_outlineLineWidth);
 	lassoShape()->setLineWidth(_outlineLineWidth);
@@ -57,6 +60,7 @@ void SelectionPickerActor::initialize()
 	brushShape()->setTexture("Polyline", texture);
 	lassoShape()->setTexture("Polyline", texture);
 	polygonShape()->setTexture("Polyline", texture);
+	*/
 }
 
 QSize SelectionPickerActor::imageSize() const
@@ -83,6 +87,7 @@ SelectionType SelectionPickerActor::selectionType() const
 
 void SelectionPickerActor::setSelectionType(const SelectionType& selectionType)
 {
+	/*
 	if (selectionType == _selectionType)
 		return;
 	
@@ -130,6 +135,7 @@ void SelectionPickerActor::setSelectionType(const SelectionType& selectionType)
 	startSelection();
 
 	emit selectionTypeChanged(_selectionType);
+	*/
 }
 
 SelectionModifier SelectionPickerActor::selectionModifier() const
@@ -205,6 +211,7 @@ void SelectionPickerActor::onMousePressEvent(QMouseEvent* mouseEvent)
 
 void SelectionPickerActor::onMouseReleaseEvent(QMouseEvent* mouseEvent)
 {
+	/*
 	switch (_selectionType)
 	{
 		case SelectionType::None:
@@ -214,7 +221,7 @@ void SelectionPickerActor::onMouseReleaseEvent(QMouseEvent* mouseEvent)
 		{
 			if (mouseEvent->button() == Qt::LeftButton) {
 				endSelection();
-				rectangleShape()->reset();
+				rectangle()->reset();
 			}
 			break;
 		}
@@ -246,10 +253,12 @@ void SelectionPickerActor::onMouseReleaseEvent(QMouseEvent* mouseEvent)
 		default:
 			break;
 	}
+	*/
 }
 
 void SelectionPickerActor::onMouseMoveEvent(QMouseEvent* mouseEvent)
 {
+	/*
 	switch (_selectionType)
 	{
 		case SelectionType::None:
@@ -305,10 +314,12 @@ void SelectionPickerActor::onMouseMoveEvent(QMouseEvent* mouseEvent)
 		default:
 			break;
 	}
+	*/
 }
 
 void SelectionPickerActor::onMouseWheelEvent(QWheelEvent* wheelEvent)
 {
+	/*
 	switch (_selectionType)
 	{
 		case SelectionType::None:
@@ -332,6 +343,7 @@ void SelectionPickerActor::onMouseWheelEvent(QWheelEvent* wheelEvent)
 		default:
 			break;
 	}
+	*/
 }
 
 void SelectionPickerActor::onKeyPressEvent(QKeyEvent* keyEvent)
@@ -427,35 +439,17 @@ QMenu* SelectionPickerActor::contextMenu()
 	return selectionMenu;
 }
 
-Polyline2D* SelectionPickerActor::rectangleShape()
-{
-	return shape<Polyline2D>("Rectangle");
-}
-
-Polyline2D* SelectionPickerActor::brushShape()
-{
-	return shape<Polyline2D>("Brush");
-}
-
-Polyline2D* SelectionPickerActor::lassoShape()
-{
-	return shape<Polyline2D>("Lasso");
-}
-
-Polyline2D* SelectionPickerActor::polygonShape()
-{
-	return shape<Polyline2D>("Polygon");
-}
 
 void SelectionPickerActor::startSelection()
 {
+	/*
 	switch (_selectionType)
 	{
 		case SelectionType::None:
 			break;
 
 		case SelectionType::Rectangle:
-			rectangleShape()->show();
+			rectangle()->show();
 			break;
 
 		case SelectionType::Brush:
@@ -476,6 +470,7 @@ void SelectionPickerActor::startSelection()
 
 	_mousePositions.clear();
 	_positions.clear();
+	*/
 }
 
 void SelectionPickerActor::endSelection()
@@ -490,6 +485,7 @@ void SelectionPickerActor::addMousePosition(const QPoint& point)
 	_positions.append(_renderer->screenToWorld(modelViewMatrix(), point));
 }
 
+/*
 void SelectionPickerActor::updateRectangle()
 {
 	if (_mousePositions.size() < 2)
@@ -518,7 +514,7 @@ void SelectionPickerActor::updateRectangle()
 	polylinePoints.insert(0, polylinePoints.first());
 	polylinePoints.append(polylinePoints.back());
 
-	rectangleShape()->setPoints(polylinePoints);
+	rectangle()->setPoints(polylinePoints);
 }
 
 void SelectionPickerActor::updateBrush()
@@ -611,3 +607,4 @@ void SelectionPickerActor::updatePolygon()
 
 	polygonShape()->setPoints(polylinePoints);
 }
+*/

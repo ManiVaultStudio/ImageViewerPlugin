@@ -8,7 +8,7 @@
 #include <QMap>
 #include <QSharedPointer>
 
-#include "Shape.h"
+#include "Prop.h"
 
 class QMouseEvent;
 class QWheelEvent;
@@ -159,27 +159,27 @@ public:
 	Renderer* renderer();
 
 	/**
-	* Get shape by name
-	* @param name Name of the shape
+	* Get pointer to prop by name
+	* @param name Name of the prop
 	*/
 	template<typename T>
-	T* shape(const QString& name)
+	T* prop(const QString& name)
 	{
-		return dynamic_cast<T*>(_shapes[name].get());
+		return dynamic_cast<T*>(_props[name].get());
 	}
 
 	/**
-	* Add shape by name
-	* @param name Name of the shape
+	* Add prop by name
+	* @param name Name of the prop
 	*/
 	template<typename T>
-	void addShape(const QString& name)
+	void addProp(const QString& name)
 	{
-		auto shape = QSharedPointer<T>::create(this, name);
+		auto prop = QSharedPointer<T>::create(this, name);
 
-		_shapes.insert(name, shape);
+		_props.insert(name, prop);
 
-		connect(shape.get(), &Shape::changed, [&](Shape* shape) {
+		connect(prop.get(), &Prop::changed, [&](Prop* shape) {
 			emit changed(this);
 		});
 	}
@@ -228,12 +228,12 @@ signals:
 	void changed(Actor* Actor);
 
 protected:
-	Renderer*								_renderer;					/** Pointer to renderer */
-	QString									_name;						/** Name of the Actor */
-	bool									_enabled;					/** Whether the Actor is enabled or not */
-	bool									_active;					/** Actors is being interacted with */
-	int										_registeredEvents;			/** Defines which (mouse) events should be received by the actor */
-	float									_opacity;					/** Render opacity */
-	QMatrix4x4								_modelMatrix;				/** Model matrix */
-	QMap<QString, QSharedPointer<Shape>>	_shapes;					/** Shapes map */
+	Renderer*								_renderer;				/** Pointer to renderer */
+	QString									_name;					/** Name of the Actor */
+	bool									_enabled;				/** Whether the Actor is enabled or not */
+	bool									_active;				/** Actors is being interacted with */
+	int										_registeredEvents;		/** Defines which (mouse) events should be received by the actor */
+	float									_opacity;				/** Render opacity */
+	QMatrix4x4								_modelMatrix;			/** Model matrix */
+	QMap<QString, QSharedPointer<Prop>>		_props;					/** Props  map */
 };

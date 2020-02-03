@@ -1,29 +1,24 @@
 #include "Quad.h"
-#include "Actor.h"
+#include "Prop.h"
 
-#include <QOpenGLShaderProgram>
-#include <QOpenGLBuffer>
-#include <QOpenGLVertexArrayObject>
-#include <QOpenGLTexture>
 #include <QDebug>
 
 std::uint32_t Quad::_vertexAttribute	= 0;
 std::uint32_t Quad::_textureAttribute	= 1;
 
-Quad::Quad(Actor* actor, const QString& name, const float& z /*= 0.f*/) :
-	Shape(actor, name),
+Quad::Quad(Prop* prop, const QString& name) :
+	Shape(prop, name),
 	_rectangle(),
 	_vertexData()
 {
 	_vertexData.resize(20);
-
-	_actor->setTranslation(QVector3D(0.f, 0.f, z));
 }
 
 void Quad::initialize()
 {
 	Shape::initialize();
 
+	/*
 	if (!_shaderPrograms.contains("Quad") || !_vaos.contains("Quad") || !_vbos.contains("Quad"))
 		return;
 
@@ -57,8 +52,10 @@ void Quad::initialize()
 
 		_initialized = true;
 	}
+	*/
 }
 
+/*
 void Quad::render()
 {
 	if (!canRender())
@@ -87,6 +84,8 @@ void Quad::render()
 	}
 }
 
+*/
+
 QRectF Quad::rectangle() const
 {
 	return _rectangle;
@@ -105,50 +104,14 @@ void Quad::setRectangle(const QRectF& rectangle)
 	_rectangle = rectangle;
 
 	//qDebug() << "Set quad rectangle" << _rectangle;
-
-	_actor->setTranslation(QVector3D(-0.5f * rectangle.width(), -0.5f * rectangle.bottom(), _actor->modelMatrix().column(3).z()));
+	/*
+	prop()->setTranslation(QVector3D(-0.5f * rectangle.width(), -0.5f * rectangle.bottom(), _actor->modelMatrix().column(3).z()));
 
 	emit rectangleChanged(_rectangle);
 	emit sizeChanged(_rectangle.size());
 
 	createQuad();
-}
-
-bool Quad::isTextured() const
-{
-	return texture("Quad").get() != nullptr && texture("Quad")->isCreated();
-}
-
-void Quad::addVAOs()
-{
-	qDebug() << "Add OpenGL VAO's to" << _name << "shape";
-
-	setVAO("Quad", QSharedPointer<QOpenGLVertexArrayObject>::create());
-
-	vao("Quad")->create();
-}
-
-void Quad::addVBOs()
-{
-	qDebug() << "Add OpenGL VBO's to" << _name << "shape";
-
-	setVBO("Quad", QSharedPointer<QOpenGLBuffer>::create());
-
-	vbo("Quad")->create();
-}
-
-bool Quad::canRender() const
-{
-	return Shape::canRender() && _rectangle.isValid();
-}
-
-void Quad::configureShaderProgram(const QString& name)
-{
-	auto quadProgram = shaderProgram("Quad");
-
-	if (name == "Quad") {
-		quadProgram->setUniformValue("transform", _actor->modelViewProjectionMatrix());
-	}
+	*/
 }
 
 void Quad::createQuad()
@@ -173,11 +136,20 @@ void Quad::createQuad()
 		_vertexData[j * 5 + 4] = j == 2 || j == 3;
 	}
 
-	bindOpenGLContext();
-
-	vbo("Quad")->bind();
+	_vbo.bind();
 	{
-		vbo("Quad")->allocate(_vertexData.constData(), _vertexData.count() * sizeof(GLfloat));
-		vbo("Quad")->release();
+		_vbo.allocate(_vertexData.constData(), _vertexData.count() * sizeof(GLfloat));
+		_vbo.release();
 	}
 }
+
+/*
+void Quad::configureShaderProgram(const QString& name)
+{
+	auto quadProgram = shaderProgram("Quad");
+
+	if (name == "Quad") {
+		quadProgram->setUniformValue("transform", _actor->modelViewProjectionMatrix());
+	}
+}
+*/

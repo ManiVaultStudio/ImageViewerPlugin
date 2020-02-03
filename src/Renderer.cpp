@@ -460,8 +460,7 @@ void Renderer::createActors()
 	addActor("SelectionImage", QSharedPointer<SelectionImageActor>::create(this, "SelectionImage"));
 	addActor("SelectionPicker", QSharedPointer<SelectionPickerActor>::create(this, "SelectionPicker"));
 
-	actor<ColorImageActor>("ColorImage")->activate();
-	//actor<ColorImageActor>("ColorImage")->activate();
+//	actor<ColorImageActor>("ColorImage")->activate();
 }
 
 void Renderer::initializeActors()
