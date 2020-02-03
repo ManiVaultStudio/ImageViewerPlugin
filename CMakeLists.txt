@@ -45,6 +45,11 @@ set(ACTORS
 	src/SelectionPickerActor.cpp
 )
 
+set(PROPS
+	src/Prop.h
+	src/Prop.cpp
+)
+
 set(SHAPES
 	src/Shape.h
 	src/Shape.cpp
@@ -62,11 +67,12 @@ file(GLOB UIS src/*.ui)
 file(GLOB SHADERS src/*.glsl)
 file(GLOB JSON src/*.json)
 
-set(SOURCES ${PLUGIN} ${ACTORS} ${SHAPES})
+set(SOURCES ${PLUGIN} ${ACTORS} ${PROPS} ${SHAPES})
 set(AUX ${JSON})
 
 source_group(Plugin FILES ${PLUGIN})
 source_group(Actors FILES ${ACTORS})
+source_group(Props FILES ${PROPS})
 source_group(Shapes FILES ${SHAPES})
 source_group(UI FILES ${UIS})
 source_group(Shaders FILES ${SHADERS})
