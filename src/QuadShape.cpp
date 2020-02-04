@@ -27,37 +27,18 @@ void QuadShape::initialize()
 		}
 		_vbo.release();
 	}
-	
+}
 
-	/*
-	auto quadVAO = vao("Quad");
-	auto quadVBO = vbo("Quad");
-
-	auto quadShaderProgram = shaderProgram("Quad");
-
-	if (quadShaderProgram->isLinked() && quadShaderProgram->bind()) {
-		const auto stride = 5 * sizeof(GLfloat);
-
-		quadVAO->bind();
-		quadVBO->bind();
-
-		quadShaderProgram->enableAttributeArray(Quad::_vertexAttribute);
-		quadShaderProgram->enableAttributeArray(Quad::_textureAttribute);
-		quadShaderProgram->setAttributeBuffer(Quad::_vertexAttribute, GL_FLOAT, 0, 3, stride);
-		quadShaderProgram->setAttributeBuffer(Quad::_textureAttribute, GL_FLOAT, 3 * sizeof(GLfloat), 2, stride);
-
-		quadVAO->release();
-		quadVBO->release();
-
-		quadShaderProgram->release();
-
-		_initialized = true;
-	}
-	*/
+bool QuadShape::canRender() const
+{
+	return !_rectangle.isNull();
 }
 
 void QuadShape::render()
 {
+	if (!canRender())
+		return;
+
 	Shape::render();
 
 	_vao.bind();

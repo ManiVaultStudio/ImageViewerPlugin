@@ -293,7 +293,7 @@ QMenu* ImageViewerWidget::contextMenu()
 	if (_imageViewerPlugin->imageCollectionType() == ImageCollectionType::Stack) {
 		contextMenu->addMenu(_renderer->contextMenu());
 		contextMenu->addSeparator();
-		contextMenu->addMenu(_renderer->actor<SelectionPickerActor>("SelectionPickerActor")->contextMenu());
+		contextMenu->addMenu(_renderer->actorByName<SelectionPickerActor>("SelectionPickerActor")->contextMenu());
 
 		qDebug() << _imageViewerPlugin->noSelectedPixels();
 

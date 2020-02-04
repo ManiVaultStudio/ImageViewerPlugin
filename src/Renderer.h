@@ -160,7 +160,7 @@ public:
 	* @param name Name of the actor
 	*/
 	template<typename T>
-	T* actor(const QString& name)
+	T* actorByName(const QString& name)
 	{
 		return dynamic_cast<T*>(_actors[name].get());
 	}

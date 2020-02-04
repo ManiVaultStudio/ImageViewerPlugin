@@ -31,6 +31,25 @@ PolylineShape::PolylineShape(Prop* prop, const QString& name) :
 {
 }
 
+bool PolylineShape::canRender() const
+{
+	return _points.size() > 1;
+}
+
+void PolylineShape::render()
+{
+	if (!canRender())
+		return;
+
+	qDebug() << "Render" << _name << "shape";
+
+	_vao.bind();
+	{
+		glDrawArrays(GL_LINE_STRIP_ADJACENCY, 0, _points.size());
+	}
+	_vao.release();
+}
+
 void PolylineShape::setPoints(QVector<Point> points /*= QVector<PolylinePoint2D>()*/)
 {
 	//qDebug() << "Set polyline points";
@@ -45,22 +64,6 @@ void PolylineShape::setPoints(QVector<Point> points /*= QVector<PolylinePoint2D>
 			_vbo.allocate(_points.constData(), _points.count() * sizeof(Point));
 		}
 		_vbo.release();
-	}
-	_vao.release();
-}
-
-void PolylineShape::render()
-{
-	if (_points.size() <= 1)
-		return;
-
-	Shape::render();
-
-	qDebug() << "Render" << _name << "shape";
-
-	_vao.bind();
-	{
-		glDrawArrays(GL_LINE_STRIP_ADJACENCY, 0, _points.size());
 	}
 	_vao.release();
 }

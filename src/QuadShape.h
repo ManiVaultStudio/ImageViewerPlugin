@@ -20,6 +20,18 @@ public:
 	 */
 	QuadShape(Prop* prop, const QString& name);
 
+// Inherited public members
+public:
+	/** Initializes the shape */
+	void initialize() override;
+
+	/** Returns if the shape can be rendered */
+	bool canRender() const override;
+
+	/** Renders the shape */
+	void render() override;
+
+public:
 	/** Returns the quad rectangle */
 	QRectF rectangle() const;
 
@@ -31,13 +43,6 @@ public:
 
 	/** Returns the quad size */
 	QSizeF imageSize() const;
-
-	/** Renders the shape */
-	void render() override;
-
-protected:
-	/** Initializes the shape */
-	void initialize() override;
 
 private:
 	/**

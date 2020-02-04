@@ -25,6 +25,10 @@ void SelectionRectangleProp::setRectangle(const QRect& rectangle)
 
 	_rectangle = normalizedRectangle;
 
+	if (_rectangle.isNull()) {
+		setPoints(QVector<QVector3D>());
+	}
+
 	QVector<QVector3D> points;
 
 	const auto start = renderer()->screenToWorld(actor()->modelViewMatrix(), _rectangle.topLeft());

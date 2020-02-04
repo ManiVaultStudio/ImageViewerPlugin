@@ -19,7 +19,8 @@ const std::string fragmentShaderSource =
 
 PolylineProp::PolylineProp(Actor* actor, const QString& name) :
 	Prop(actor, name),
-	_lineWidth(0.1f)
+	_lineWidth(0.01f),
+	_lineColor(255, 160, 70)
 {
 	addShape<PolylineShape>("PolylineShape");
 	addShaderProgram("PolylineShape");
@@ -29,6 +30,9 @@ PolylineProp::PolylineProp(Actor* actor, const QString& name) :
 bool PolylineProp::canRender() const
 {
 	if (!Prop::canRender())
+		return false;
+
+	if (!shapeByName<PolylineShape>("PolylineShape")->canRender())
 		return false;
 
 	if (_lineWidth <= 0.f)
@@ -67,12 +71,12 @@ void PolylineProp::setLineWidth(const float& lineWidth)
 	updateShapes();
 }
 
-float PolylineProp::lineColor()
+QColor PolylineProp::lineColor()
 {
 	return _lineColor;
 }
 
-void PolylineProp::setLineColor(const float& lineColor)
+void PolylineProp::setLineColor(const QColor& lineColor)
 {
 	if (lineColor == _lineColor)
 		return;
@@ -125,8 +129,9 @@ void PolylineProp::initialize()
 
 	const auto texture = textureByName("Polyline");
 
-	texture->setWrapMode(QOpenGLTexture::Repeat);
-	texture->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
+	texture->create();
+
+	updateTextures();
 
 	_initialized = true;
 }
@@ -145,17 +150,17 @@ void PolylineProp::render()
 	const auto texture			= textureByName("Polyline");
 
 	texture->bind();
+	{
+		if (shaderProgram->bind()) {
+			shaderProgram->setUniformValue("transform", actor()->modelViewProjectionMatrix() * _matrix);
+			shaderProgram->setUniformValue("lineTexture", 0);
+			shaderProgram->setUniformValue("lineWidth", _lineWidth);
 
-	if (shaderProgram->bind()) {
-		shaderProgram->setUniformValue("transform", actor()->modelViewProjectionMatrix() * _matrix);
-		shaderProgram->setUniformValue("imageTexture", 0);
-		shaderProgram->setUniformValue("lineWidth", _lineWidth);
+			shape->render();
 
-		shape->render();
-
-		shaderProgram->release();
+			shaderProgram->release();
+		}
 	}
-
 	texture->release();
 }
 
@@ -169,8 +174,10 @@ void PolylineProp::updateShapes()
 		polylinePoints.push_back(PolylineShape::Point(point, QVector2D(0.f, 0.f), _lineWidth));
 	}
 
-	polylinePoints.insert(0, polylinePoints.first());
-	polylinePoints.append(polylinePoints.back());
+	if (!_points.isEmpty()) {
+		polylinePoints.insert(0, polylinePoints.first());
+		polylinePoints.append(polylinePoints.back());
+	}
 
 	shapeByName<PolylineShape>("PolylineShape")->setPoints(polylinePoints);
 

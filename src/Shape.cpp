@@ -9,7 +9,6 @@
 Shape::Shape(Prop* prop, const QString& name) :
 	_prop(prop),
 	_name(name),
-	_initialized(false),
 	_vao(),
 	_vbo()
 {
@@ -48,11 +47,6 @@ void Shape::destroy()
 void Shape::render()
 {
 	//qDebug() << "Render" << fullName();
-}
-
-bool Shape::isInitialized() const
-{
-	return _initialized;
 }
 
 QString Shape::name() const

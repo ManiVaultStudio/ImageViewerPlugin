@@ -38,12 +38,12 @@ public:
 	void setLineWidth(const float& lineWidth);
 
 	/** Returns the line color */
-	float lineColor();
+	QColor lineColor();
 
 	/** Sets the line color
 	 * @param lineColor Line color
 	 */
-	void setLineColor(const float& lineColor);
+	void setLineColor(const QColor& lineColor);
 
 protected:
 	/** Initializes the prop */
@@ -61,5 +61,5 @@ protected:
 private:
 	QVector<QVector3D>		_points;		/** Polyline points */
 	float					_lineWidth;		/** Line width */
-	float					_lineColor;		/** Line color */
+	QColor					_lineColor;		/** Line color */
 };

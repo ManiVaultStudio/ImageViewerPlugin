@@ -304,7 +304,7 @@ void Renderer::zoomExtents()
 {
 	qDebug() << "Zoom extents";
 
-	zoomToRectangle(QRectF(QPointF(), actor<ColorImageActor>("ColorImageActor")->imageSize()));
+	zoomToRectangle(QRectF(QPointF(), actorByName<ColorImageActor>("ColorImageActor")->imageSize()));
 }
 
 void Renderer::zoomToRectangle(const QRectF& rectangle)
@@ -351,7 +351,7 @@ void Renderer::setColorImage(std::shared_ptr<QImage> colorImage)
 {
 	bindOpenGLContext();
 
-	auto* colorImageActor = actor<ColorImageActor>("ColorImageActor");
+	auto* colorImageActor = actorByName<ColorImageActor>("ColorImageActor");
 
 	const auto previousImageSize = colorImageActor->imageSize();
 
@@ -381,19 +381,17 @@ void Renderer::setSelectionImage(std::shared_ptr<QImage> selectionImage, const Q
 
 	worldSelectionBounds.translate(QPoint(-0.5f * static_cast<float>(selectionImage->width()), -0.5f * static_cast<float>(selectionImage->height())));
 
-	auto* selectionImageActor = actor<SelectionImageActor>("SelectionImageActor");
-
-	actor<SelectionImageActor>("SelectionImageActor")->setImage(selectionImage);
+	actorByName<SelectionImageActor>("SelectionImageActor")->setImage(selectionImage);
 }
 
 float Renderer::selectionOpacity()
 {
-	return actor<SelectionImageActor>("SelectionImageActor")->opacity();
+	return actorByName<SelectionImageActor>("SelectionImageActor")->opacity();
 }
 
 void Renderer::setSelectionOpacity(const float& selectionOpacity)
 {
-	actor<SelectionImageActor>("SelectionImageActor")->setOpacity(selectionOpacity);
+	actorByName<SelectionImageActor>("SelectionImageActor")->setOpacity(selectionOpacity);
 }
 
 InteractionMode Renderer::interactionMode() const
@@ -410,7 +408,7 @@ void Renderer::setInteractionMode(const InteractionMode& interactionMode)
 
 	
 	if (_interactionMode == InteractionMode::Selection) {
-		actor<SelectionPickerActor>("SelectionPickerActor")->hide();
+		actorByName<SelectionPickerActor>("SelectionPickerActor")->hide();
 	}
 
 	switch (interactionMode)
@@ -433,7 +431,7 @@ void Renderer::setInteractionMode(const InteractionMode& interactionMode)
 	_interactionMode = interactionMode;
 
 	if (_interactionMode == InteractionMode::Selection) {
-		actor<SelectionPickerActor>("SelectionPickerActor")->show();
+		actorByName<SelectionPickerActor>("SelectionPickerActor")->show();
 	}
 }
 
@@ -469,12 +467,13 @@ void Renderer::createActors()
 	addActor("SelectionImageActor", QSharedPointer<SelectionImageActor>::create(this, "SelectionImageActor"));
 	addActor("SelectionPickerActor", QSharedPointer<SelectionPickerActor>::create(this, "SelectionPickerActor"));
 
-	actor<ColorImageActor>("ColorImageActor")->show();
-	actor<SelectionImageActor>("SelectionImageActor")->show();
-	actor<SelectionPickerActor>("SelectionPickerActor")->show();
+	actorByName<ColorImageActor>("ColorImageActor")->show();
+	actorByName<SelectionImageActor>("SelectionImageActor")->show();
+	actorByName<SelectionPickerActor>("SelectionPickerActor")->show();
 
-	actor<ColorImageActor>("ColorImageActor")->setTranslation(QVector3D(0, 0, 0));
-	actor<SelectionImageActor>("SelectionImageActor")->setTranslation(QVector3D(0, 0, -1));
+	actorByName<ColorImageActor>("ColorImageActor")->setTranslation(QVector3D(0, 0, 0));
+	actorByName<SelectionImageActor>("SelectionImageActor")->setTranslation(QVector3D(0, 0, -1));
+	actorByName<SelectionPickerActor>("SelectionPickerActor")->setTranslation(QVector3D(0, 0, -2));
 }
 
 void Renderer::initializeActors()
@@ -487,7 +486,7 @@ void Renderer::initializeActors()
 		_actors[name]->initialize();
 	}
 
-	connect(actor<ColorImageActor>("ColorImageActor"), &ColorImageActor::imageSizeChanged, this, [&]() { zoomExtents(); });
+	connect(actorByName<ColorImageActor>("ColorImageActor"), &ColorImageActor::imageSizeChanged, this, [&]() { zoomExtents(); });
 }
 
 void Renderer::renderActors()
@@ -526,14 +525,14 @@ QMenu* Renderer::contextMenu()
 
 	zoomToSelectionAction->setEnabled(_parentWidget->imageViewerPlugin()->noSelectedPixels() > 0);
 
-	auto* colorImageActor = actor<ColorImageActor>("ColorImageActor");
+	auto* colorImageActor = actorByName<ColorImageActor>("ColorImageActor");
 
 	resetWindowLevelAction->setEnabled(colorImageActor->windowNormalized() < 1.f && colorImageActor->levelNormalized() != 0.5f);
 
 	connect(zoomToExtentsAction, &QAction::triggered, this, &Renderer::zoomExtents);
 	connect(zoomToSelectionAction, &QAction::triggered, this, &Renderer::zoomToSelection);
 	connect(resetWindowLevelAction, &QAction::triggered, [&]() {
-		actor<ColorImageActor>("ColorImageActor")->resetWindowLevel();
+		actorByName<ColorImageActor>("ColorImageActor")->resetWindowLevel();
 	});
 
 	viewMenu->addAction(zoomToExtentsAction);

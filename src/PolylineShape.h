@@ -50,15 +50,20 @@ public:
 	 */
 	PolylineShape(Prop* prop, const QString& name);
 
+// Inherited public members
+public:
+	/** Returns if the shape can be rendered */
+	bool canRender() const override;
+
+	/** Renders the shape */
+	void render() override;
+
 public:
 	/**
 	 * Set polyline points
 	 * @param points Points in world coordinates
 	 */
 	void setPoints(QVector<Point> points = QVector<Point>());
-
-	/** Renders the shape */
-	virtual void render();
 	
 protected:
 	bool				_closed;				/** Whether to close the polyline or not */
