@@ -121,14 +121,14 @@ public:
 	/** Returns whether this actor should receive key release events */
 	bool shouldReceiveKeyReleaseEvents() const;
 	
-	/** Returns whether the Actor is active e.g. interaction with the mouse */
-	bool isActive() const;
+	/** Returns whether the actor is visible */
+	bool isVisible() const;
 
-	/** Activate the Actor */
-	virtual void activate();
+	/** Show the actor */
+	virtual void show();
 
-	/** Deactivate the Actor */
-	virtual void deactivate();
+	/** Hide the actor */
+	virtual void hide();
 
 	/** Returns the render opacity */
 	float opacity() const;
@@ -228,7 +228,7 @@ protected:
 	Renderer*								_renderer;				/** Pointer to renderer */
 	QString									_name;					/** Name of the Actor */
 	bool									_enabled;				/** Whether the Actor is enabled or not */
-	bool									_active;				/** Actors is being interacted with */
+	bool									_visible;				/** Actors is being interacted with */
 	int										_registeredEvents;		/** Defines which (mouse) events should be received by the actor */
 	float									_opacity;				/** Render opacity */
 	QMatrix4x4								_modelMatrix;			/** Model matrix */

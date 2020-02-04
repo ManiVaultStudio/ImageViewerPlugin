@@ -410,7 +410,7 @@ void Renderer::setInteractionMode(const InteractionMode& interactionMode)
 
 	
 	if (_interactionMode == InteractionMode::Selection) {
-		actor<SelectionPickerActor>("SelectionPickerActor")->deactivate();
+		actor<SelectionPickerActor>("SelectionPickerActor")->hide();
 	}
 
 	switch (interactionMode)
@@ -433,7 +433,7 @@ void Renderer::setInteractionMode(const InteractionMode& interactionMode)
 	_interactionMode = interactionMode;
 
 	if (_interactionMode == InteractionMode::Selection) {
-		actor<SelectionPickerActor>("SelectionPickerActor")->activate();
+		actor<SelectionPickerActor>("SelectionPickerActor")->show();
 	}
 }
 
@@ -469,9 +469,9 @@ void Renderer::createActors()
 	addActor("SelectionImageActor", QSharedPointer<SelectionImageActor>::create(this, "SelectionImageActor"));
 	addActor("SelectionPickerActor", QSharedPointer<SelectionPickerActor>::create(this, "SelectionPickerActor"));
 
-	actor<ColorImageActor>("ColorImageActor")->activate();
-	actor<SelectionImageActor>("SelectionImageActor")->activate();
-	actor<SelectionPickerActor>("SelectionPickerActor")->activate();
+	actor<ColorImageActor>("ColorImageActor")->show();
+	actor<SelectionImageActor>("SelectionImageActor")->show();
+	actor<SelectionPickerActor>("SelectionPickerActor")->show();
 
 	actor<ColorImageActor>("ColorImageActor")->setTranslation(QVector3D(0, 0, 0));
 	actor<SelectionImageActor>("SelectionImageActor")->setTranslation(QVector3D(0, 0, -1));

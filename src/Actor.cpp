@@ -7,7 +7,7 @@
 Actor::Actor(Renderer* renderer, const QString& name) :
 	_renderer(renderer),
 	_name(name),
-	_active(false),
+	_visible(false),
 	_registeredEvents(static_cast<int>(ActorEvent::None)),
 	_enabled(true),
 	_modelMatrix(),
@@ -103,7 +103,7 @@ void Actor::disable()
 
 bool Actor::canRender() const
 {
-	return isEnabled() && isActive();
+	return isEnabled() && isVisible();
 }
 
 QMatrix4x4 Actor::modelMatrix() const
@@ -150,7 +150,7 @@ bool Actor::mayProcessMousePressEvent() const
 	if (!shouldReceiveMousePressEvents())
 		return false;
 
-	return _enabled && _active;
+	return _enabled && _visible;
 }
 
 bool Actor::mayProcessMouseReleaseEvent() const
@@ -158,7 +158,7 @@ bool Actor::mayProcessMouseReleaseEvent() const
 	if (!shouldReceiveMouseReleaseEvents())
 		return false;
 
-	return _enabled && _active;
+	return _enabled && _visible;
 }
 
 bool Actor::mayProcessMouseMoveEvent() const
@@ -166,7 +166,7 @@ bool Actor::mayProcessMouseMoveEvent() const
 	if (!shouldReceiveMouseMoveEvents())
 		return false;
 
-	return _enabled && _active;
+	return _enabled && _visible;
 }
 
 bool Actor::mayProcessMouseWheelEvent() const
@@ -174,7 +174,7 @@ bool Actor::mayProcessMouseWheelEvent() const
 	if (!shouldReceiveMouseWheelEvents())
 		return false;
 
-	return _enabled && _active;
+	return _enabled && _visible;
 }
 
 bool Actor::mayProcessKeyPressEvent() const
@@ -182,7 +182,7 @@ bool Actor::mayProcessKeyPressEvent() const
 	if (!shouldReceiveKeyPressEvents())
 		return false;
 
-	return _enabled && _active;
+	return _enabled && _visible;
 }
 
 bool Actor::mayProcessKeyReleaseEvent() const
@@ -190,7 +190,7 @@ bool Actor::mayProcessKeyReleaseEvent() const
 	if (!shouldReceiveKeyReleaseEvents())
 		return false;
 
-	return _enabled && _active;
+	return _enabled && _visible;
 }
 
 void Actor::onMousePressEvent(QMouseEvent* mouseEvent)
@@ -253,24 +253,24 @@ bool Actor::shouldReceiveKeyReleaseEvents() const
 	return _registeredEvents & static_cast<int>(ActorEvent::KeyRelease);
 }
 
-bool Actor::isActive() const
+bool Actor::isVisible() const
 {
-	return _active;
+	return _visible;
 }
 
-void Actor::activate()
+void Actor::show()
 {
 	if (!_enabled)
 		return;
 
-	_active = true;
+	_visible = true;
 
 	qDebug() << "Activated" << _name;
 }
 
-void Actor::deactivate()
+void Actor::hide()
 {
-	_active = false;
+	_visible = false;
 
 	qDebug() << "Deactivated" << _name;
 }
