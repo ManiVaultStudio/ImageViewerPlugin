@@ -41,7 +41,7 @@ void PolylineShape::render()
 	if (!canRender())
 		return;
 
-	qDebug() << "Render" << _name << "shape";
+	//qDebug() << "Render" << _name << "shape";
 
 	_vao.bind();
 	{

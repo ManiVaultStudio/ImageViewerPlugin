@@ -20,7 +20,7 @@ const std::string fragmentShaderSource =
 PolylineProp::PolylineProp(Actor* actor, const QString& name) :
 	Prop(actor, name),
 	_lineWidth(0.01f),
-	_lineColor(255, 160, 70)
+	_lineColor(255, 160, 0, 100)
 {
 	addShape<PolylineShape>("PolylineShape");
 	addShaderProgram("PolylineShape");
@@ -143,7 +143,7 @@ void PolylineProp::render()
 
 	Prop::render();
 
-	qDebug() << "Render" << fullName();
+	//qDebug() << "Render" << fullName();
 
 	const auto shape			= shapeByName<PolylineShape>("PolylineShape");
 	const auto shaderProgram	= shaderProgramByName("PolylineShape");
@@ -166,7 +166,7 @@ void PolylineProp::render()
 
 void PolylineProp::updateShapes()
 {
-	qDebug() << "Update shapes" << fullName();
+	//qDebug() << "Update shapes" << fullName();
 
 	QVector<PolylineShape::Point> polylinePoints;
 
@@ -186,11 +186,11 @@ void PolylineProp::updateShapes()
 
 void PolylineProp::updateTextures()
 {
-	qDebug() << "Update textures" << fullName();
+	//qDebug() << "Update textures" << fullName();
 
 	auto textureImage = QImage(1, 1, QImage::Format::Format_RGBA8888);
 
-	textureImage.setPixelColor(QPoint(0, 0), QColor(255, 0, 0));
+	textureImage.setPixelColor(QPoint(0, 0), _lineColor);
 
 	auto texture = textureByName("Polyline");
 
