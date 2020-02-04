@@ -50,24 +50,16 @@ public:
 	 */
 	PolylineShape(Prop* prop, const QString& name);
 
-	/** Initialized the shape (must be called in appropriate OpenGL context) */
-	void initialize() override;
-
-	/** Returns the line width in world space */
-	float lineWidth() const;
-
-	/**
-	 * Sets the line width
-	 * @param lineWidth Line width in world space
-	 */
-	void setLineWidth(const float& lineWidth);
-
+public:
 	/**
 	 * Set polyline points
 	 * @param points Points in world coordinates
 	 */
 	void setPoints(QVector<Point> points = QVector<Point>());
 
+	/** Renders the shape */
+	virtual void render();
+	
 protected:
 	bool				_closed;				/** Whether to close the polyline or not */
 	float				_textureScale;			/** Texture scale */

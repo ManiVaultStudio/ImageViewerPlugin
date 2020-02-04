@@ -409,7 +409,6 @@ QMenu* SelectionPickerActor::contextMenu()
 	return selectionMenu;
 }
 
-
 void SelectionPickerActor::startSelection()
 {
 	switch (_selectionType)

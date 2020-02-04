@@ -23,7 +23,7 @@ PolylineProp::PolylineProp(Actor* actor, const QString& name) :
 {
 	addShape<PolylineShape>("PolylineShape");
 	addShaderProgram("PolylineShape");
-	addTexture("PolylineShape", QOpenGLTexture::Target2D);
+	addTexture("Polyline", QOpenGLTexture::Target2D);
 }
 
 bool PolylineProp::canRender() const
@@ -142,7 +142,7 @@ void PolylineProp::render()
 
 	const auto shape			= shapeByName<PolylineShape>("PolylineShape");
 	const auto shaderProgram	= shaderProgramByName("PolylineShape");
-	const auto texture			= textureByName("PolylineShape");
+	const auto texture			= textureByName("Polyline");
 
 	texture->bind();
 
@@ -173,6 +173,8 @@ void PolylineProp::updateShapes()
 	polylinePoints.append(polylinePoints.back());
 
 	shapeByName<PolylineShape>("PolylineShape")->setPoints(polylinePoints);
+
+	emit changed(this);
 }
 
 void PolylineProp::updateTextures()
@@ -190,4 +192,6 @@ void PolylineProp::updateTextures()
 	texture->setWrapMode(QOpenGLTexture::Repeat);
 	texture->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
 	texture->setData(textureImage);
+
+	emit changed(this);
 }
