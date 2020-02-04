@@ -1,4 +1,8 @@
 #include "SelectionPickerActor.h"
+#include "SelectionRectangleProp.h"
+#include "SelectionBrushProp.h"
+#include "SelectionLassoProp.h"
+#include "SelectionPolygonProp.h"
 #include "Renderer.h"
 
 #include <QKeyEvent>
@@ -26,12 +30,10 @@ SelectionPickerActor::SelectionPickerActor(Renderer* renderer, const QString& na
 	_registeredEvents |= static_cast<int>(ActorEvent::KeyPress);
 	_registeredEvents |= static_cast<int>(ActorEvent::KeyRelease);
 
-	/*
-	addShape<Polyline2D>("Rectangle");
-	addShape<Polyline2D>("Brush");
-	addShape<Polyline2D>("Lasso");
-	addShape<Polyline2D>("Polygon");
-	*/
+	addProp<SelectionRectangleProp>("SelectionRectangleProp");
+	addProp<SelectionBrushProp>("SelectionBrushProp");
+	addProp<SelectionLassoProp>("SelectionLassoProp");
+	addProp<SelectionPolygonProp>("SelectionPolygonProp");
 }
 
 void SelectionPickerActor::initialize()
@@ -85,45 +87,12 @@ SelectionType SelectionPickerActor::selectionType() const
 
 void SelectionPickerActor::setSelectionType(const SelectionType& selectionType)
 {
-	/*
 	if (selectionType == _selectionType)
 		return;
 	
-	switch (_selectionType)
+	for (auto propName : _props.keys())
 	{
-		case SelectionType::None:
-			break;
-
-		case SelectionType::Rectangle:
-		{
-			rectangleShape()->reset();
-			rectangleShape()->hide();
-			break;
-		}
-
-		case SelectionType::Brush:
-		{
-			brushShape()->reset();
-			brushShape()->hide();
-			break;
-		}
-
-		case SelectionType::Lasso:
-		{
-			lassoShape()->reset();
-			lassoShape()->hide();
-			break;
-		}
-
-		case SelectionType::Polygon:
-		{
-			polygonShape()->reset();
-			polygonShape()->hide();
-			break;
-		}
-
-		default:
-			break;
+		_props.value(propName)->hide();
 	}
 
 	_selectionType = selectionType;
@@ -133,7 +102,6 @@ void SelectionPickerActor::setSelectionType(const SelectionType& selectionType)
 	startSelection();
 
 	emit selectionTypeChanged(_selectionType);
-	*/
 }
 
 SelectionModifier SelectionPickerActor::selectionModifier() const
@@ -209,7 +177,6 @@ void SelectionPickerActor::onMousePressEvent(QMouseEvent* mouseEvent)
 
 void SelectionPickerActor::onMouseReleaseEvent(QMouseEvent* mouseEvent)
 {
-	/*
 	switch (_selectionType)
 	{
 		case SelectionType::None:
@@ -219,7 +186,7 @@ void SelectionPickerActor::onMouseReleaseEvent(QMouseEvent* mouseEvent)
 		{
 			if (mouseEvent->button() == Qt::LeftButton) {
 				endSelection();
-				rectangle()->reset();
+				selectionRectangleProp()->setRectangle(QRect());
 			}
 			break;
 		}
@@ -232,31 +199,33 @@ void SelectionPickerActor::onMouseReleaseEvent(QMouseEvent* mouseEvent)
 
 		case SelectionType::Lasso:
 		{
+			/*
 			if (mouseEvent->button() == Qt::LeftButton) {
 				endSelection();
 				lassoShape()->reset();
 			}
+			*/
 			break;
 		}
 
 		case SelectionType::Polygon:
 		{
+			/*
 			if (mouseEvent->button() == Qt::RightButton) {
 				endSelection();
 				polygonShape()->reset();
 			}
+			*/
 			break;
 		}
 
 		default:
 			break;
 	}
-	*/
 }
 
 void SelectionPickerActor::onMouseMoveEvent(QMouseEvent* mouseEvent)
 {
-	/*
 	switch (_selectionType)
 	{
 		case SelectionType::None:
@@ -269,20 +238,23 @@ void SelectionPickerActor::onMouseMoveEvent(QMouseEvent* mouseEvent)
 				addMousePosition(mouseEvent->pos());
 
 				if (_mousePositions.size() >= 2)
-					updateRectangle();
+					selectionRectangleProp()->setRectangle(QRect(_mousePositions.first(), _mousePositions.back()));
 			}
 			break;
 		}
 
 		case SelectionType::Brush:
 		{
+			/*
 			addMousePosition(mouseEvent->pos());
 			updateBrush();
+			*/
 			break;
 		}
 
 		case SelectionType::Lasso:
 		{
+			/*
 			if (mouseEvent->buttons() & Qt::LeftButton)
 			{
 				addMousePosition(mouseEvent->pos());
@@ -290,11 +262,13 @@ void SelectionPickerActor::onMouseMoveEvent(QMouseEvent* mouseEvent)
 				if (_mousePositions.size() >= 2)
 					updateLasso();
 			}
+			*/
 			break;
 		}
 
 		case SelectionType::Polygon:
 		{
+			/*
 			if (_mousePositions.size() == 1)
 			{
 				addMousePosition(mouseEvent->pos());
@@ -306,18 +280,17 @@ void SelectionPickerActor::onMouseMoveEvent(QMouseEvent* mouseEvent)
 				_mousePositions.back() = mouseEvent->pos();
 				updatePolygon();
 			}
+			*/
 			break;
 		}
 
 		default:
 			break;
 	}
-	*/
 }
 
 void SelectionPickerActor::onMouseWheelEvent(QWheelEvent* wheelEvent)
 {
-	/*
 	switch (_selectionType)
 	{
 		case SelectionType::None:
@@ -341,7 +314,6 @@ void SelectionPickerActor::onMouseWheelEvent(QWheelEvent* wheelEvent)
 		default:
 			break;
 	}
-	*/
 }
 
 void SelectionPickerActor::onKeyPressEvent(QKeyEvent* keyEvent)
@@ -440,26 +412,25 @@ QMenu* SelectionPickerActor::contextMenu()
 
 void SelectionPickerActor::startSelection()
 {
-	/*
 	switch (_selectionType)
 	{
 		case SelectionType::None:
 			break;
 
 		case SelectionType::Rectangle:
-			rectangle()->show();
+			selectionRectangleProp()->show();
 			break;
 
 		case SelectionType::Brush:
-			brushShape()->show();
+			//brushShape()->show();
 			break;
 
 		case SelectionType::Lasso:
-			lassoShape()->show();
+			//lassoShape()->show();
 			break;
 
 		case SelectionType::Polygon:
-			polygonShape()->show();
+			//polygonShape()->show();
 			break;
 
 		default:
@@ -468,7 +439,6 @@ void SelectionPickerActor::startSelection()
 
 	_mousePositions.clear();
 	_positions.clear();
-	*/
 }
 
 void SelectionPickerActor::endSelection()
@@ -481,6 +451,11 @@ void SelectionPickerActor::addMousePosition(const QPoint& point)
 {
 	_mousePositions.append(point);
 	_positions.append(_renderer->screenToWorld(modelViewMatrix(), point));
+}
+
+SelectionRectangleProp* SelectionPickerActor::selectionRectangleProp()
+{
+	return prop<SelectionRectangleProp>("SelectionRectangleProp");
 }
 
 /*

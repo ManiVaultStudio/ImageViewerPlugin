@@ -32,12 +32,12 @@ public:
 	/** Returns the quad size */
 	QSizeF imageSize() const;
 
+	/** Renders the shape */
+	void render() override;
+
 protected:
 	/** Initializes the shape */
 	void initialize() override;
-
-	/** Renders the shape */
-	void render() override;
 
 private:
 	/**

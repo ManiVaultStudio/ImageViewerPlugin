@@ -68,16 +68,8 @@ public:
 	 */
 	void setPoints(QVector<Point> points = QVector<Point>());
 
-signals:
-	/**
-	 * Signals that the line width changed
-	 * @param lineWidth Line width in world space
-	 */
-	void lineWidthChanged(const float& lineWidth);
-
 protected:
 	bool				_closed;				/** Whether to close the polyline or not */
-	float				_lineWidth;				/** Line width in world space */
 	float				_textureScale;			/** Texture scale */
 	QVector<Point>		_points;				/** Points */
 };

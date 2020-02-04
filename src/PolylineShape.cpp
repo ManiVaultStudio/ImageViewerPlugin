@@ -26,7 +26,6 @@ std::uint32_t PolylineShape::Point::_lineWidthAttribute				= 2;
 PolylineShape::PolylineShape(Prop* prop, const QString& name) :
 	Shape(prop, name),
 	_closed(true),
-	_lineWidth(0.1f),
 	_textureScale(1.0f),
 	_points()
 {
@@ -63,23 +62,6 @@ void PolylineShape::initialize()
 		_initialized = true;
 	}
 	*/
-}
-
-float PolylineShape::lineWidth() const
-{
-	return _lineWidth;
-}
-
-void PolylineShape::setLineWidth(const float& lineWidth)
-{
-	if (lineWidth == _lineWidth)
-		return;
-
-	qDebug() << "Set polyline line width to" << QString::number(lineWidth, 'f', 1);
-
-	_lineWidth = lineWidth;
-
-	emit lineWidthChanged(_lineWidth);
 }
 
 void PolylineShape::setPoints(QVector<Point> points /*= QVector<PolylinePoint2D>()*/)

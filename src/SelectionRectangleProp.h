@@ -1,19 +1,17 @@
 #pragma once
 
-#include "Prop.h"
+#include "PolylineProp.h"
+
+#include <QRect>
 
 class Actor;
-
-#include <QColor>
 
 /**
  * Selection rectangle prop class
  * @author Thomas Kroes
  */
-class SelectionRectangleProp : public Prop
+class SelectionRectangleProp : public PolylineProp
 {
-	Q_OBJECT
-
 public:
 	/** Constructor
 	 * @param actor Parent actor
@@ -22,21 +20,14 @@ public:
 	SelectionRectangleProp(Actor* actor, const QString& name);
 
 public:
+	/** Returns the selection rectangle */
+	QRect rectangle();
 
-protected:
-	/** Initializes the prop */
-	void initialize() override;
-
-	/** Renders the prop */
-	void render() override;
-
-signals:
-	/**
-	 * Signals that the image size changed
-	 * @para size Image size
+	/** Sets the selection rectangle
+	 * @param rectangle Selection rectangle
 	 */
-	void imageSizeChanged(const QSize& imageSize);
+	void setRectangle(const QRect& rectangle);
 
 private:
-	QColor		_color;		/** Selection color */
+	QRect		_rectangle;		/** Selection rectangle in screen space */
 };

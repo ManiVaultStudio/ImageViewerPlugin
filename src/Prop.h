@@ -84,9 +84,37 @@ protected:
 	* @param name Name of the shape
 	*/
 	template<typename T>
-	T* shape(const QString& name)
+	T* shapeByName(const QString& name)
 	{
 		return dynamic_cast<T*>(_shapes[name].get());
+	}
+
+	/**
+	* Get shape by name
+	* @param name Name of the shape
+	*/
+	template<typename T>
+	const T* shapeByName(const QString& name) const
+	{
+		return dynamic_cast<T*>(_shapes[name].get());
+	}
+
+	/**
+	* Get shader program by name
+	* @param name Name of the shader program
+	*/
+	QSharedPointer<QOpenGLShaderProgram> shaderProgramByName(const QString& name)
+	{
+		return _shaderPrograms.value(name);
+	}
+
+	/**
+	* Get texture by name
+	* @param name Name of the texture
+	*/
+	QSharedPointer<QOpenGLTexture> textureByName(const QString& name)
+	{
+		return _textures.value(name);
 	}
 
 	/**
@@ -134,6 +162,8 @@ protected:
 	QString													_name;					/** Name of the prop */
 	bool													_visible;				/** Whether the prop is visible or not */
 	QMatrix4x4												_matrix;				/** Transformation matrix */
+
+private:
 	QMap<QString, QSharedPointer<QOpenGLShaderProgram>>		_shaderPrograms;		/** OpenGL shader programs */
 	QMap<QString, QSharedPointer<QOpenGLTexture>>			_textures;				/** OpenGL textures */
 	QMap<QString, QSharedPointer<Shape>>					_shapes;				/** Shapes */

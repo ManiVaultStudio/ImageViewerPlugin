@@ -5,7 +5,6 @@ layout (triangle_strip, max_vertices = 4) out;
 
 out vec4 g_color;
 
-uniform mat4 _ModelToClip;
 uniform float lineWidth;
 
 vec3 halfAngle(vec3 vA, vec3 vB) 

@@ -1,5 +1,4 @@
-#include "SelectionImageProp.h"
-#include "QuadShape.h"
+#include "SelectionLassoProp.h"
 #include "Actor.h"
 
 #include <QOpenGLShaderProgram>
@@ -16,50 +15,16 @@ const std::string fragmentShaderSource =
 #include "SelectionImageFragment.glsl"
 ;
 
-SelectionImageProp::SelectionImageProp(Actor* actor, const QString& name) :
+SelectionLassoProp::SelectionLassoProp(Actor* actor, const QString& name) :
 	Prop(actor, name)
 {
-	_color = QColor(255, 0, 0, 255);
-
-	addShape<QuadShape>("QuadShape");
-	addShaderProgram("QuadShape");
-	addTexture("QuadShape", QOpenGLTexture::Target2D);
-
-	connect(shape<QuadShape>("QuadShape"), &QuadShape::rectangleChanged, this, [&](const QRectF& rectangle) {
-		_matrix.setColumn(3, QVector4D(-0.5f * rectangle.width(), -0.5f * rectangle.height(), _matrix.column(3).z(), 1.f));
-
-		emit imageSizeChanged(imageSize());
-	});
 }
 
-void SelectionImageProp::setImage(std::shared_ptr<QImage> image)
-{
-	const auto quadShapeTexture = _textures["QuadShape"];
-
-	quadShapeTexture->destroy();
-	quadShapeTexture->setData(*image.get());
-	quadShapeTexture->setMinMagFilters(QOpenGLTexture::Nearest, QOpenGLTexture::Nearest);
-	quadShapeTexture->setWrapMode(QOpenGLTexture::ClampToEdge);
-
-	shape<QuadShape>("QuadShape")->setRectangle(QRectF(QPointF(0.f, 0.f), QSizeF(static_cast<float>(image->width()), static_cast<float>(image->height()))));
-
-	emit changed(this);
-}
-
-QSize SelectionImageProp::imageSize() const
-{
-	if (!_initialized)
-		return QSize();
-
-	const auto quadRectangle = dynamic_cast<QuadShape*>(_shapes["QuadShape"].get())->rectangle();
-
-	return QSize(static_cast<int>(quadRectangle.width()), static_cast<int>(quadRectangle.height()));
-}
-
-void SelectionImageProp::initialize()
+void SelectionLassoProp::initialize()
 {
 	Prop::initialize();
 
+	/*
 	const auto quadShapeShaderProgram = _shaderPrograms["QuadShape"];
 
 	quadShapeShaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSource.c_str());
@@ -96,10 +61,12 @@ void SelectionImageProp::initialize()
 	quadShapeTexture->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
 
 	_initialized = true;
+	*/
 }
 
-void SelectionImageProp::render()
+void SelectionLassoProp::render()
 {
+	/*
 	if (!canRender())
 		return;
 
@@ -126,4 +93,5 @@ void SelectionImageProp::render()
 	}
 
 	quadShapeTexture->release();
+	*/
 }

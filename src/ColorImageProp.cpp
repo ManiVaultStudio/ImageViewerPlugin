@@ -21,7 +21,7 @@ ColorImageProp::ColorImageProp(Actor* actor, const QString& name) :
 	addShaderProgram("QuadShape");
 	addTexture("QuadShape", QOpenGLTexture::Target2D);
 
-	connect(shape<QuadShape>("QuadShape"), &QuadShape::rectangleChanged, this, [&](const QRectF& rectangle) {
+	connect(shapeByName<QuadShape>("QuadShape"), &QuadShape::rectangleChanged, this, [&](const QRectF& rectangle) {
 		_matrix.setColumn(3, QVector4D(-0.5f * rectangle.width(), -0.5f * rectangle.height(), _matrix.column(3).z(), 1.f));
 
 		emit imageSizeChanged(imageSize());
@@ -30,18 +30,18 @@ ColorImageProp::ColorImageProp(Actor* actor, const QString& name) :
 
 void ColorImageProp::setImage(std::shared_ptr<QImage> image)
 {
-	const auto quadShapeTexture = _textures["QuadShape"];
+	const auto texture = textureByName("QuadShape");
 
-	quadShapeTexture->destroy();
-	quadShapeTexture->create();
-	quadShapeTexture->setSize(image->size().width(), image->size().height());
-	quadShapeTexture->setFormat(QOpenGLTexture::RGBA16_UNorm);
-	quadShapeTexture->setWrapMode(QOpenGLTexture::ClampToEdge);
-	quadShapeTexture->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
-	quadShapeTexture->allocateStorage();
-	quadShapeTexture->setData(QOpenGLTexture::PixelFormat::RGBA, QOpenGLTexture::PixelType::UInt16, image->bits());
+	texture->destroy();
+	texture->create();
+	texture->setSize(image->size().width(), image->size().height());
+	texture->setFormat(QOpenGLTexture::RGBA16_UNorm);
+	texture->setWrapMode(QOpenGLTexture::ClampToEdge);
+	texture->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
+	texture->allocateStorage();
+	texture->setData(QOpenGLTexture::PixelFormat::RGBA, QOpenGLTexture::PixelType::UInt16, image->bits());
 
-	shape<QuadShape>("QuadShape")->setRectangle(QRectF(QPointF(0.f, 0.f), QSizeF(static_cast<float>(image->width()), static_cast<float>(image->height()))));
+	shapeByName<QuadShape>("QuadShape")->setRectangle(QRectF(QPointF(0.f, 0.f), QSizeF(static_cast<float>(image->width()), static_cast<float>(image->height()))));
 
 	emit changed(this);
 }
@@ -51,7 +51,7 @@ QSize ColorImageProp::imageSize() const
 	if (!_initialized)
 		return QSize();
 	
-	const auto quadRectangle = dynamic_cast<QuadShape*>(_shapes["QuadShape"].get())->rectangle();
+	const auto quadRectangle = shapeByName<QuadShape>("QuadShape")->rectangle();
 
 	return QSize(static_cast<int>(quadRectangle.width()), static_cast<int>(quadRectangle.height()));
 }
@@ -76,40 +76,40 @@ void ColorImageProp::initialize()
 {
 	Prop::initialize();
 
-	const auto quadShapeShaderProgram = _shaderPrograms["QuadShape"];
+	const auto shaderProgram = shaderProgramByName("QuadShape");
 
-	quadShapeShaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSource.c_str());
-	quadShapeShaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSource.c_str());
+	shaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSource.c_str());
+	shaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSource.c_str());
 
-	if (!quadShapeShaderProgram->link()) {
+	if (!shaderProgram->link()) {
 		throw std::exception("Unable to link color image quad shader program");
 	}
 
 	const auto stride = 5 * sizeof(GLfloat);
 
-	auto quadShape = shape<QuadShape>("QuadShape");
+	auto shape = shapeByName<QuadShape>("QuadShape");
 
-	if (quadShapeShaderProgram->bind()) {
-		quadShape->vao().bind();
-		quadShape->vbo().bind();
+	if (shaderProgram->bind()) {
+		shape->vao().bind();
+		shape->vbo().bind();
 
-		quadShapeShaderProgram->enableAttributeArray(QuadShape::_vertexAttribute);
-		quadShapeShaderProgram->enableAttributeArray(QuadShape::_textureAttribute);
-		quadShapeShaderProgram->setAttributeBuffer(QuadShape::_vertexAttribute, GL_FLOAT, 0, 3, stride);
-		quadShapeShaderProgram->setAttributeBuffer(QuadShape::_textureAttribute, GL_FLOAT, 3 * sizeof(GLfloat), 2, stride);
-		quadShapeShaderProgram->release();
+		shaderProgram->enableAttributeArray(QuadShape::_vertexAttribute);
+		shaderProgram->enableAttributeArray(QuadShape::_textureAttribute);
+		shaderProgram->setAttributeBuffer(QuadShape::_vertexAttribute, GL_FLOAT, 0, 3, stride);
+		shaderProgram->setAttributeBuffer(QuadShape::_textureAttribute, GL_FLOAT, 3 * sizeof(GLfloat), 2, stride);
+		shaderProgram->release();
 
-		quadShape->vao().release();
-		quadShape->vbo().release();
+		shape->vao().release();
+		shape->vbo().release();
 	}
 	else {
 		throw std::exception("Unable to bind color image quad shader program");
 	}
 
-	const auto quadShapeTexture = _textures["QuadShape"];
+	const auto texture = textureByName("QuadShape");
 
-	quadShapeTexture->setWrapMode(QOpenGLTexture::Repeat);
-	quadShapeTexture->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
+	texture->setWrapMode(QOpenGLTexture::Repeat);
+	texture->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
 
 	_initialized = true;
 }
@@ -121,22 +121,22 @@ void ColorImageProp::render()
 
 	Prop::render();
 
-	const auto quadShape				= _shapes["QuadShape"];
-	const auto quadShapeShaderProgram	= _shaderPrograms["QuadShape"];
-	const auto quadShapeTexture			= _textures["QuadShape"];
+	const auto shape			= shapeByName<QuadShape>("QuadShape");
+	const auto shaderProgram	= shaderProgramByName("QuadShape");
+	const auto texture			= textureByName("QuadShape");
 
-	quadShapeTexture->bind();
+	texture->bind();
 
-	if (quadShapeShaderProgram->bind()) {
-		quadShapeShaderProgram->setUniformValue("imageTexture", 0);
-		quadShapeShaderProgram->setUniformValue("minPixelValue", _minPixelValue);
-		quadShapeShaderProgram->setUniformValue("maxPixelValue", _maxPixelValue);
-		quadShapeShaderProgram->setUniformValue("transform", actor()->modelViewProjectionMatrix() * _matrix);
+	if (shaderProgram->bind()) {
+		shaderProgram->setUniformValue("imageTexture", 0);
+		shaderProgram->setUniformValue("minPixelValue", _minPixelValue);
+		shaderProgram->setUniformValue("maxPixelValue", _maxPixelValue);
+		shaderProgram->setUniformValue("transform", actor()->modelViewProjectionMatrix() * _matrix);
 
-		quadShape->render();
+		shape->render();
 
-		quadShapeShaderProgram->release();
+		shaderProgram->release();
 	}
 
-	quadShapeTexture->release();
+	texture->release();
 }

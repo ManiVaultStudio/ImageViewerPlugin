@@ -17,7 +17,7 @@ class QWheelEvent;
 class QMenu;
 
 class Renderer;
-class PolylineShape;
+class SelectionRectangleProp;
 
 /**
  * Selection picker actor class
@@ -117,12 +117,9 @@ private:
 	 */
 	void addMousePosition(const QPoint& point);
 
-	/*
-	void updateRectangle();
-	void updateBrush();
-	void updateLasso();
-	void updatePolygon();
-	*/
+	/** Returns a pointer to the selection rectangle prop */
+	SelectionRectangleProp* selectionRectangleProp();
+
 signals:
 	/**
 	 * Invoked when the image size changed
