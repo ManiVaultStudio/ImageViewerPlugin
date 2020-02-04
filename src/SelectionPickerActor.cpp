@@ -454,7 +454,7 @@ void SelectionPickerActor::addMousePosition(const QPoint& point)
 
 SelectionRectangleProp* SelectionPickerActor::selectionRectangleProp()
 {
-	return prop<SelectionRectangleProp>("SelectionRectangleProp");
+	return propByName<SelectionRectangleProp>("SelectionRectangleProp");
 }
 
 /*

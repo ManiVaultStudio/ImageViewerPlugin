@@ -14,7 +14,7 @@ SelectionImageActor::SelectionImageActor(Renderer* renderer, const QString& name
 
 void SelectionImageActor::setImage(std::shared_ptr<QImage> image)
 {
-	prop<SelectionImageProp>("ColorImageProp")->setImage(image);
+	propByName<SelectionImageProp>("ColorImageProp")->setImage(image);
 }
 
 QSize SelectionImageActor::imageSize() const

@@ -151,7 +151,7 @@ public:
 	* @param name Name of the prop
 	*/
 	template<typename T>
-	T* prop(const QString& name)
+	T* propByName(const QString& name)
 	{
 		return dynamic_cast<T*>(_props[name].get());
 	}

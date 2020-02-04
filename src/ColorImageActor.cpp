@@ -22,7 +22,7 @@ ColorImageActor::ColorImageActor(Renderer* renderer, const QString& name) :
 
 	addProp<ColorImageProp>("ColorImageProp");
 
-	connect(prop<ColorImageProp>("ColorImageProp"), &ColorImageProp::imageSizeChanged, this, &ColorImageActor::imageSizeChanged);
+	connect(propByName<ColorImageProp>("ColorImageProp"), &ColorImageProp::imageSizeChanged, this, &ColorImageActor::imageSizeChanged);
 }
 
 void ColorImageActor::setImage(std::shared_ptr<QImage> image)
@@ -62,7 +62,7 @@ void ColorImageActor::setImage(std::shared_ptr<QImage> image)
 	const auto imageMin = static_cast<float>(_imageMin);
 	const auto imageMax = static_cast<float>(_imageMax);
 
-	prop<ColorImageProp>("ColorImageProp")->setImage(image);
+	propByName<ColorImageProp>("ColorImageProp")->setImage(image);
 
 	resetWindowLevel();
 
@@ -100,7 +100,7 @@ void ColorImageActor::setWindowLevel(const float& window, const float& level)
 	const auto minPixelValue	= std::clamp(_level - (_window / 2.0f), static_cast<float>(_imageMin), static_cast<float>(_imageMax));
 	const auto maxPixelValue	= std::clamp(_level + (_window / 2.0f), static_cast<float>(_imageMin), static_cast<float>(_imageMax));
 
-	auto* quad = prop<ColorImageProp>("ColorImageProp");
+	auto quad = propByName<ColorImageProp>("ColorImageProp");
 
 	quad->setMinPixelValue(minPixelValue);
 	quad->setMaxPixelValue(maxPixelValue);

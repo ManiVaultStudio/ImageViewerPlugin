@@ -410,7 +410,7 @@ void Renderer::setInteractionMode(const InteractionMode& interactionMode)
 
 	
 	if (_interactionMode == InteractionMode::Selection) {
-		actor<SelectionPickerActor>("SelectionPicker")->deactivate();
+		actor<SelectionPickerActor>("SelectionPickerActor")->deactivate();
 	}
 
 	switch (interactionMode)
@@ -433,7 +433,7 @@ void Renderer::setInteractionMode(const InteractionMode& interactionMode)
 	_interactionMode = interactionMode;
 
 	if (_interactionMode == InteractionMode::Selection) {
-		actor<SelectionPickerActor>("SelectionPicker")->activate();
+		actor<SelectionPickerActor>("SelectionPickerActor")->activate();
 	}
 }
 
