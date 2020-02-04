@@ -123,9 +123,13 @@ private:
 	PolylineProp* selectionRectangleProp();
 
 	/** Returns a pointer to the selection brush prop */
-	SelectionBrushProp* selectionBrushProp();
+	PolylineProp* selectionBrushProp();
 
+	/** Updates the selection rectangle */
 	void updateSelectionRectangle();
+
+	/** Updates the selection brush */
+	void updateSelectionBrush();
 
 signals:
 	/**
@@ -176,5 +180,4 @@ private:
 	QVector<QPoint>			_mousePositions;		/** Recorded mouse positions in screen coordinates */
 	QVector<QVector3D>		_positions;				/** Recorded mouse positions in world coordinates */
 	float					_outlineLineWidth;		/** Line width of the outline geometry */
-
 };

@@ -9,6 +9,7 @@
 #include <QMenu>
 #include <QColor>
 #include <QOpenGLTexture>
+#include <QGuiApplication>
 #include <QDebug>
 
 #include <QtMath>
@@ -31,7 +32,7 @@ SelectionPickerActor::SelectionPickerActor(Renderer* renderer, const QString& na
 	_registeredEvents |= static_cast<int>(ActorEvent::KeyRelease);
 
 	addProp<PolylineProp>("SelectionRectangleProp");
-	addProp<SelectionBrushProp>("SelectionBrushProp");
+	addProp<PolylineProp>("SelectionBrushProp");
 	addProp<SelectionLassoProp>("SelectionLassoProp");
 	addProp<SelectionPolygonProp>("SelectionPolygonProp");
 }
@@ -194,6 +195,10 @@ void SelectionPickerActor::onMouseReleaseEvent(QMouseEvent* mouseEvent)
 
 		case SelectionType::Brush:
 		{
+			if (mouseEvent->button() == Qt::LeftButton) {
+				endSelection();
+				updateSelectionRectangle();
+			}
 			break;
 		}
 
@@ -244,7 +249,7 @@ void SelectionPickerActor::onMouseMoveEvent(QMouseEvent* mouseEvent)
 		case SelectionType::Brush:
 		{
 			addMousePosition(mouseEvent->pos());
-			selectionBrushProp()->setBrushCenter(mouseEvent->pos());
+			updateSelectionBrush();
 			break;
 		}
 
@@ -396,11 +401,12 @@ void SelectionPickerActor::endSelection()
 {
 	_mousePositions.clear();
 	_positions.clear();
-
+	/*
 	for (auto propName : _props.keys())
 	{
 		_props.value(propName)->hide();
 	}
+	*/
 }
 
 void SelectionPickerActor::addMousePosition(const QPoint& point)
@@ -413,9 +419,9 @@ PolylineProp* SelectionPickerActor::selectionRectangleProp()
 	return propByName<PolylineProp>("SelectionRectangleProp");
 }
 
-SelectionBrushProp* SelectionPickerActor::selectionBrushProp()
+PolylineProp* SelectionPickerActor::selectionBrushProp()
 {
-	return propByName<SelectionBrushProp>("SelectionBrushProp");
+	return propByName<PolylineProp>("SelectionBrushProp");
 }
 
 void SelectionPickerActor::updateSelectionRectangle()
@@ -441,6 +447,36 @@ void SelectionPickerActor::updateSelectionRectangle()
 	points.append(QVector3D(start.x(), start.y(), 0.f));
 
 	selectionRectangleProp()->setPoints(points);
+}
+
+void SelectionPickerActor::updateSelectionBrush()
+{
+	QVector<QVector3D> points;
+
+	const auto brushCenter	= renderer()->screenToWorld(modelViewMatrix(), _mousePositions.back());
+	const auto noSegments	= 128u;
+
+	std::vector<GLfloat> vertexCoordinates;
+
+	vertexCoordinates.resize(noSegments * 3);
+
+	const auto brushRadius = _brushRadius * renderer()->zoom();
+
+	for (std::uint32_t s = 0; s < noSegments; s++) {
+		const auto theta = 2.0f * M_PI * float(s) / float(noSegments);
+		const auto x = brushRadius * cosf(theta);
+		const auto y = brushRadius * sinf(theta);
+
+		points.append(QVector3D(brushCenter.x() + x, brushCenter.y() + y, 0.f));
+	}
+
+	points.insert(0, points.back());
+
+	const auto leftButtonDown = QGuiApplication::mouseButtons() & Qt::LeftButton;
+
+	selectionBrushProp()->setLineColor(leftButtonDown ? QColor(255, 165, 0, 150) : QColor(255, 165, 0, 30));
+	selectionBrushProp()->setLineWidth(leftButtonDown ? 0.01f : 0.005f);
+	selectionBrushProp()->setPoints(points);
 }
 
 QMenu* SelectionPickerActor::contextMenu()
