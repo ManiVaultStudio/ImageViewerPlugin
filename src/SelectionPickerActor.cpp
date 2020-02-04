@@ -458,37 +458,6 @@ SelectionRectangleProp* SelectionPickerActor::selectionRectangleProp()
 }
 
 /*
-void SelectionPickerActor::updateRectangle()
-{
-	if (_mousePositions.size() < 2)
-		return;
-
-	//qDebug() << "Update rectangle" << p0 << p1;
-
-	QVector<QVector3D> positions;
-
-	const auto start	= _renderer->screenToWorld(modelViewMatrix(), _mousePositions.first());
-	const auto end		= _renderer->screenToWorld(modelViewMatrix(), _mousePositions.back());
-
-	positions.append(QVector3D(start.x(), start.y(), 0.f));
-	positions.append(QVector3D(start.x(), start.y(), 0.f));
-	positions.append(QVector3D(end.x(), start.y(), 0.f));
-	positions.append(QVector3D(end.x(), end.y(), 0.f));
-	positions.append(QVector3D(start.x(), end.y(), 0.f));
-	positions.append(QVector3D(start.x(), start.y(), 0.f));
-
-	QVector<PolylinePoint2D> polylinePoints;
-
-	for (auto position : positions) {
-		polylinePoints.push_back(PolylinePoint2D(position, QVector2D(0.f, 0.f), _outlineLineWidth));
-	}
-
-	polylinePoints.insert(0, polylinePoints.first());
-	polylinePoints.append(polylinePoints.back());
-
-	rectangle()->setPoints(polylinePoints);
-}
-
 void SelectionPickerActor::updateBrush()
 {
 	if (_mousePositions.size() == 0)

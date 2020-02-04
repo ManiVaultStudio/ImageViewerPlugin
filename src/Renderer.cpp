@@ -471,6 +471,7 @@ void Renderer::createActors()
 
 	actor<ColorImageActor>("ColorImageActor")->activate();
 	actor<SelectionImageActor>("SelectionImageActor")->activate();
+	actor<SelectionPickerActor>("SelectionPickerActor")->activate();
 
 	actor<ColorImageActor>("ColorImageActor")->setTranslation(QVector3D(0, 0, 0));
 	actor<SelectionImageActor>("SelectionImageActor")->setTranslation(QVector3D(0, 0, -1));
