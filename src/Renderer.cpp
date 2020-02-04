@@ -1,5 +1,6 @@
 #include "Renderer.h"
 #include "ImageViewerWidget.h"
+#include "ImageViewerPlugin.h"
 
 #include <QtMath>
 #include <QMenu>
@@ -11,7 +12,7 @@
 #include "SelectionImageActor.h"
 #include "SelectionPickerActor.h"
 
-Renderer::Renderer(QOpenGLWidget* parentWidget) :
+Renderer::Renderer(ImageViewerWidget* parentWidget) :
 	hdps::Renderer(),
 	_parentWidget(parentWidget),
 	_actors(),
@@ -326,8 +327,7 @@ void Renderer::zoomToRectangle(const QRectF& rectangle)
 
 void Renderer::zoomToSelection()
 {
-	/*
-	auto* currentImageDataSet = _imageViewerPlugin->currentImages();
+	auto* currentImageDataSet = _parentWidget->imageViewerPlugin()->currentImages();
 
 	if (currentImageDataSet == nullptr)
 		return;
@@ -335,7 +335,6 @@ void Renderer::zoomToSelection()
 	qDebug() << "Zoom to selection";
 
 	zoomToRectangle(QRectF(currentImageDataSet->selectionBounds(true)));
-	*/
 }
 
 void Renderer::resetView()
@@ -385,7 +384,6 @@ void Renderer::setSelectionImage(std::shared_ptr<QImage> selectionImage, const Q
 	auto* selectionImageActor = actor<SelectionImageActor>("SelectionImageActor");
 
 	actor<SelectionImageActor>("SelectionImageActor")->setImage(selectionImage);
-	//shape<SelectionBounds>("SelectionBounds")->setBounds(worldSelectionBounds);
 }
 
 float Renderer::selectionOpacity()
@@ -469,7 +467,7 @@ void Renderer::createActors()
 	
 	addActor("ColorImageActor", QSharedPointer<ColorImageActor>::create(this, "ColorImageActor"));
 	addActor("SelectionImageActor", QSharedPointer<SelectionImageActor>::create(this, "SelectionImageActor"));
-	addActor("SelectionPicker", QSharedPointer<SelectionPickerActor>::create(this, "SelectionPicker"));
+	addActor("SelectionPickerActor", QSharedPointer<SelectionPickerActor>::create(this, "SelectionPickerActor"));
 
 	actor<ColorImageActor>("ColorImageActor")->activate();
 	actor<SelectionImageActor>("SelectionImageActor")->activate();
@@ -525,7 +523,7 @@ QMenu* Renderer::contextMenu()
 	zoomToSelectionAction->setToolTip("Zoom to selection boundaries");
 	resetWindowLevelAction->setToolTip("Reset window/level to default values");
 
-	//zoomToSelectionAction->setEnabled(_imageViewerPlugin->noSelectedPixels() > 0);
+	zoomToSelectionAction->setEnabled(_parentWidget->imageViewerPlugin()->noSelectedPixels() > 0);
 
 	auto* colorImageActor = actor<ColorImageActor>("ColorImageActor");
 

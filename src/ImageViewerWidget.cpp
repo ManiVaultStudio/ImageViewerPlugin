@@ -2,14 +2,11 @@
 #include "ImageViewerPlugin.h"
 
 #include <vector>
-#include <set>
 #include <algorithm>
 
 #include <QSize>
 #include <QDebug>
 #include <QMenu>
-#include <QList>
-#include <QtMath>
 #include <QGuiApplication>
 #include <QOpenGLDebugLogger>
 

@@ -1,8 +1,8 @@
 #include "ImageViewerPlugin.h"
 #include "ImageViewerWidget.h"
 #include "SettingsWidget.h"
-
 #include "ColorImageActor.h"
+#include "Renderer.h"
 
 #include <QDebug>
 #include <QFileInfo>

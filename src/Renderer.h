@@ -7,10 +7,6 @@
 
 #include "Actor.h"
 
-class ColorImageQuad;
-class SelectionBufferQuad;
-class SelectionOutline;
-
 class ImageViewerWidget;
 
 class QMouseEvent;
@@ -29,9 +25,9 @@ class Renderer : public QObject, public hdps::Renderer
 public:
 	/**
 	 * Constructor
-	 * @param parentWidget Parent OpenGL widget
+	 * @param parentWidget Parent image viewer widget
 	 */
-	Renderer(QOpenGLWidget* parentWidget);
+	Renderer(ImageViewerWidget* parentWidget);
 
 public:
 	/** Initialize the renderer */
@@ -159,15 +155,6 @@ public:
 	 */
 	void setSelectionOpacity(const float& selectionOpacity);
 
-	/** Returns the image quad */
-	ColorImageQuad* imageQuad();
-
-	/** Returns the selection buffer quad */
-	SelectionBufferQuad* selectionBufferQuad();
-
-	/** Returns the selection outline */
-	SelectionOutline* selectionOutline();
-
 	/**
 	* Get actor by name
 	* @param name Name of the actor
@@ -223,7 +210,7 @@ signals:
 	void dirty();
 
 protected:
-	QOpenGLWidget*							_parentWidget;			/** Pointer to parent widget */
+	ImageViewerWidget*						_parentWidget;			/** Pointer to parent widget */
 	QMap<QString, QSharedPointer<Actor>>	_actors;				/** Actors map */
 	InteractionMode							_interactionMode;		/** Type of interaction e.g. navigation, selection and window/level */
 	QVector<QSharedPointer<QMouseEvent>>	_mouseEvents;			/** Recorded mouse events during interaction */

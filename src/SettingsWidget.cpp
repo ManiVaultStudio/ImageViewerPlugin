@@ -1,6 +1,7 @@
 #include "SettingsWidget.h"
 #include "ImageViewerPlugin.h"
 #include "ImageViewerWidget.h"
+#include "Renderer.h"
 
 #include "ui_SettingsWidget.h"
 

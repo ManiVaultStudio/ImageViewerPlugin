@@ -2,8 +2,6 @@
 
 #include "Common.h"
 
-#include "Renderer.h"
-
 #include "ImageData/ImageData.h"
 
 #include <memory>
@@ -18,6 +16,7 @@
 class QMenu;
 
 class ImageViewerPlugin;
+class Renderer;
 
 /**
  * Image viewer widget class
@@ -53,6 +52,8 @@ public:
 
 	/** Returns the renderer */
 	QSharedPointer<Renderer> renderer();
+
+	ImageViewerPlugin* imageViewerPlugin() { return _imageViewerPlugin; };
 
 public:
 	/**
@@ -105,7 +106,7 @@ private:
 	 * @param wheelEvent Mouse wheel event
 	 */
 	void wheelEvent(QWheelEvent* wheelEvent) Q_DECL_OVERRIDE;
-	
+
 private:
 	/** Returns the context menu */
 	QMenu* contextMenu();
