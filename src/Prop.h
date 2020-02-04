@@ -57,9 +57,6 @@ public:
 	/** Hides the prop */
 	void hide();
 
-	/** Returns whether the prop can be rendered */
-	virtual bool canRender() const;
-
 	/** Returns the actor */
 	Actor* actor();
 
@@ -76,8 +73,17 @@ protected:
 	/** Destroys the prop */
 	virtual void destroy();
 
+	/** Returns whether the prop can be rendered */
+	virtual bool canRender() const;
+
 	/** Renders the prop */
 	virtual void render();
+
+	/** Update shapes */
+	virtual void updateShapes() {};
+
+	/** Update textures */
+	virtual void updateTextures() {};
 
 	/**
 	* Get shape by name

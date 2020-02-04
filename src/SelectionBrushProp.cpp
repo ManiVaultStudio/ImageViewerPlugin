@@ -1,24 +1,40 @@
 #include "SelectionBrushProp.h"
-#include "QuadShape.h"
 #include "Actor.h"
+#include "Renderer.h"
+#include "PolylineShape.h"
 
 #include <QOpenGLShaderProgram>
 #include <QOpenGLBuffer>
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLTexture>
+#include <QtMath>
 #include <QDebug>
 
-const std::string vertexShaderSource =
-#include "SelectionImageVertex.glsl"
-;
-
-const std::string fragmentShaderSource =
-#include "SelectionImageFragment.glsl"
-;
-
 SelectionBrushProp::SelectionBrushProp(Actor* actor, const QString& name) :
-	Prop(actor, name)
+	PolylineProp(actor, name),
+	_brushCenter(),
+	_brushRadius(1.f)
 {
+}
+
+void SelectionBrushProp::setBrushCenter(const QPoint& brushCenter)
+{
+	if (brushCenter == _brushCenter)
+		return;
+
+	_brushCenter = brushCenter;
+
+	updateShapes();
+}
+
+void SelectionBrushProp::setBrushRadius(const float& brushRadius)
+{
+	if (brushRadius == _brushRadius)
+		return;
+
+	_brushRadius = brushRadius;
+
+	updateShapes();
 }
 
 void SelectionBrushProp::initialize()
@@ -61,8 +77,9 @@ void SelectionBrushProp::initialize()
 	quadShapeTexture->setWrapMode(QOpenGLTexture::Repeat);
 	quadShapeTexture->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
 
-	_initialized = true;
 	*/
+
+	_initialized = true;
 }
 
 void SelectionBrushProp::render()
@@ -70,7 +87,7 @@ void SelectionBrushProp::render()
 	if (!canRender())
 		return;
 
-	Prop::render();
+	PolylineProp::render();
 /*
 	const auto quadShape = _shapes["QuadShape"];
 	const auto quadShapeShaderProgram = _shaderPrograms["QuadShape"];
@@ -94,4 +111,35 @@ void SelectionBrushProp::render()
 
 	quadShapeTexture->release();
 	*/
+}
+
+void SelectionBrushProp::updateShapes()
+{
+	PolylineProp::updateShapes();
+
+	QVector<QVector3D> points;
+
+	const auto brushCenter	= renderer()->screenToWorld(actor()->modelViewMatrix(), _brushCenter);
+	const auto noSegments	= 32u;
+
+	std::vector<GLfloat> vertexCoordinates;
+
+	vertexCoordinates.resize(noSegments * 3);
+
+	const auto brushRadius = _brushRadius * renderer()->zoom();
+
+	for (std::uint32_t s = 0; s < noSegments; s++) {
+		const auto theta = 2.0f * M_PI * float(s) / float(noSegments);
+		const auto x = brushRadius * cosf(theta);
+		const auto y = brushRadius * sinf(theta);
+
+		points.append(QVector3D(brushCenter.x() + x, brushCenter.y() + y, 0.f));
+	}
+
+	setPoints(points);
+}
+
+void SelectionBrushProp::updateTextures()
+{
+	PolylineProp::updateTextures();
 }

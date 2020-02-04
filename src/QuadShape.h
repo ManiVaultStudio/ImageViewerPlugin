@@ -20,7 +20,6 @@ public:
 	 */
 	QuadShape(Prop* prop, const QString& name);
 
-// Inherited public members
 public:
 	/** Initializes the shape */
 	void initialize() override;

@@ -50,7 +50,6 @@ public:
 	 */
 	PolylineShape(Prop* prop, const QString& name);
 
-// Inherited public members
 public:
 	/** Returns if the shape can be rendered */
 	bool canRender() const override;

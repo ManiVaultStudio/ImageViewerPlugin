@@ -17,7 +17,9 @@ class QWheelEvent;
 class QMenu;
 
 class Renderer;
+class PolylineProp;
 class SelectionRectangleProp;
+class SelectionBrushProp;
 
 /**
  * Selection picker actor class
@@ -118,7 +120,12 @@ private:
 	void addMousePosition(const QPoint& point);
 
 	/** Returns a pointer to the selection rectangle prop */
-	SelectionRectangleProp* selectionRectangleProp();
+	PolylineProp* selectionRectangleProp();
+
+	/** Returns a pointer to the selection brush prop */
+	SelectionBrushProp* selectionBrushProp();
+
+	void updateSelectionRectangle();
 
 signals:
 	/**

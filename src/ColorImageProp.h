@@ -41,6 +41,7 @@ public:
 	 */
 	void setMaxPixelValue(const float& maxPixelValue);
 
+
 protected:
 	/** Initializes the prop */
 	void initialize() override;

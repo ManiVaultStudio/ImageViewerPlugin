@@ -53,12 +53,12 @@ protected:
 	void render() override;
 
 	/** Update shapes */
-	void updateShapes();
+	void updateShapes() override;
 
 	/** Update textures */
-	void updateTextures();
+	void updateTextures() override;
 
-private:
+protected:
 	QVector<QVector3D>		_points;		/** Polyline points */
 	float					_lineWidth;		/** Line width */
 	QColor					_lineColor;		/** Line color */
