@@ -81,17 +81,36 @@ public:
 	 */
 	void keyReleaseEvent(QKeyEvent* keyEvent);
 
-	/** Convert screen points to world point
+	/** Convert point in screen coordinates to point in world coordinates
 	 * @param modelViewMatrix Model > view matrix
 	 * @param screenPoint Point in screen coordinates
-	*/
+	 * @return Point in world coordinates
+	 */
 	QVector3D screenToWorld(const QMatrix4x4& modelViewMatrix, const QPointF& screenPoint) const;
+
+	/** Convert position in world coordinates to point in normalized screen coordinates
+	 * @param position Position in world coordinates
+	 * @return Point in normalized screen coordinates
+	 */
+	QVector2D worldToScreen(const QVector3D& position) const;
+
+	/** Convert position in world coordinates to point in normalized screen coordinates
+	 * @param position Position in world coordinates
+	 * @return Point in normalized screen coordinates
+	 */
+	QVector2D screenPositionToNormalizedScreenPosition(const QVector2D& position) const;
 
 	/** Returns the view matrix */
 	QMatrix4x4 viewMatrix() const;
 
 	/** Returns the projection matrix */
 	QMatrix4x4 projectionMatrix() const;
+
+	/** Convert screen units to normalized screen units
+	 * @param lineWidth Line width in screen coordinates
+	 * @return Line width in normalized screen coordinates
+	 */
+	float lineWidthNDC(const float& lineWidth) const;
 
 	/**
 	 * Move the view horizontally/vertically

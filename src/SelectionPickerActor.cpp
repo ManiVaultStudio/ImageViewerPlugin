@@ -10,6 +10,7 @@
 #include <QColor>
 #include <QOpenGLTexture>
 #include <QGuiApplication>
+#include <QVector3D>
 #include <QDebug>
 
 #include <QtMath>
@@ -19,8 +20,8 @@ SelectionPickerActor::SelectionPickerActor(Renderer* renderer, const QString& na
 	_imageSize(),
 	_selectionType(SelectionType::Rectangle),
 	_selectionModifier(SelectionModifier::Replace),
-	_brushRadius(1.0f),
-	_brushRadiusDelta(1.f),
+	_brushRadius(100.0f),
+	_brushRadiusDelta(10.f),
 	_mousePositions(),
 	_outlineLineWidth(0.0025f)
 {
@@ -33,35 +34,22 @@ SelectionPickerActor::SelectionPickerActor(Renderer* renderer, const QString& na
 
 	addProp<PolylineProp>("SelectionRectangleProp");
 	addProp<PolylineProp>("SelectionBrushProp");
-	addProp<SelectionLassoProp>("SelectionLassoProp");
-	addProp<SelectionPolygonProp>("SelectionPolygonProp");
+	addProp<PolylineProp>("SelectionLassoProp");
+	addProp<PolylineProp>("PolygonSegmentsProp");
+	addProp<PolylineProp>("PolygonClosingSegmentProp");
 }
 
 void SelectionPickerActor::initialize()
 {
 	Actor::initialize();
 
-	/*
-	rectangleShape()->setLineWidth(_outlineLineWidth);
-	brushShape()->setLineWidth(_outlineLineWidth);
-	lassoShape()->setLineWidth(_outlineLineWidth);
-	polygonShape()->setLineWidth(_outlineLineWidth);
+	rectangleProp()->setLineWidth(renderer()->lineWidthNDC(5.f));
+	selectionBrushProp()->setLineWidth(renderer()->lineWidthNDC(3.f));
+	polygonSegmentsProp()->setLineWidth(renderer()->lineWidthNDC(5.f));
+	polygonClosingSegmentProp()->setLineWidth(renderer()->lineWidthNDC(2.f));
 
-	auto textureImage = QImage(1, 1, QImage::Format::Format_RGBA8888);
-
-	textureImage.setPixelColor(QPoint(0, 0), QColor(255, 0, 0));
-
-	auto texture = QSharedPointer<QOpenGLTexture>::create(textureImage);
-
-	texture->create();
-	texture->setWrapMode(QOpenGLTexture::Repeat);
-	texture->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
-
-	rectangleShape()->setTexture("Polyline", texture);
-	brushShape()->setTexture("Polyline", texture);
-	lassoShape()->setTexture("Polyline", texture);
-	polygonShape()->setTexture("Polyline", texture);
-	*/
+	polygonSegmentsProp()->setLineColor(QColor(255, 165, 0, 220));
+	polygonClosingSegmentProp()->setLineColor(QColor(255, 165, 0, 50));
 }
 
 QSize SelectionPickerActor::imageSize() const
@@ -129,7 +117,7 @@ float SelectionPickerActor::brushRadius() const
 
 void SelectionPickerActor::setBrushRadius(const float& brushRadius)
 {
-	const auto boundBrushRadius = qBound(1.0f, 100000.f, brushRadius);
+	const auto boundBrushRadius = qBound(1.0f, 1000.f, brushRadius);
 
 	if (boundBrushRadius == _brushRadius)
 		return;
@@ -138,8 +126,8 @@ void SelectionPickerActor::setBrushRadius(const float& brushRadius)
 
 	qDebug() << "Set brush radius to" << QString::number(_brushRadius, 'f', 1);
 
-	emit brushRadiusChanged(_brushRadius);
-	emit changed(this);
+	if (_selectionType == SelectionType::Brush)
+		updateSelectionBrush();
 }
 
 float SelectionPickerActor::brushRadiusDelta() const
@@ -215,12 +203,10 @@ void SelectionPickerActor::onMouseReleaseEvent(QMouseEvent* mouseEvent)
 
 		case SelectionType::Polygon:
 		{
-			/*
 			if (mouseEvent->button() == Qt::RightButton) {
 				endSelection();
-				polygonShape()->reset();
+				updateSelectionPolygon();
 			}
-			*/
 			break;
 		}
 
@@ -269,19 +255,17 @@ void SelectionPickerActor::onMouseMoveEvent(QMouseEvent* mouseEvent)
 
 		case SelectionType::Polygon:
 		{
-			/*
 			if (_mousePositions.size() == 1)
 			{
 				addMousePosition(mouseEvent->pos());
-				updatePolygon();
+				updateSelectionPolygon();
 			}
 
 			if (_mousePositions.size() >= 2)
 			{
 				_mousePositions.back() = mouseEvent->pos();
-				updatePolygon();
+				updateSelectionPolygon();
 			}
-			*/
 			break;
 		}
 
@@ -374,7 +358,7 @@ void SelectionPickerActor::startSelection()
 			break;
 
 		case SelectionType::Rectangle:
-			selectionRectangleProp()->show();
+			rectangleProp()->show();
 			break;
 
 		case SelectionType::Brush:
@@ -386,15 +370,16 @@ void SelectionPickerActor::startSelection()
 			break;
 
 		case SelectionType::Polygon:
-			//polygonShape()->show();
+			polygonSegmentsProp()->show();
+			polygonClosingSegmentProp()->show();
 			break;
 
 		default:
 			break;
 	}
 
-	_mousePositions.clear();
-	_positions.clear();
+	//_mousePositions.clear();
+	//_positions.clear();
 }
 
 void SelectionPickerActor::endSelection()
@@ -414,7 +399,7 @@ void SelectionPickerActor::addMousePosition(const QPoint& point)
 	_mousePositions.append(point);
 	_positions.append(_renderer->screenToWorld(modelViewMatrix(), point));
 }
-PolylineProp* SelectionPickerActor::selectionRectangleProp()
+PolylineProp* SelectionPickerActor::rectangleProp()
 {
 	return propByName<PolylineProp>("SelectionRectangleProp");
 }
@@ -424,21 +409,41 @@ PolylineProp* SelectionPickerActor::selectionBrushProp()
 	return propByName<PolylineProp>("SelectionBrushProp");
 }
 
+PolylineProp* SelectionPickerActor::polygonSegmentsProp()
+{
+	return propByName<PolylineProp>("PolygonSegmentsProp");
+}
+
+PolylineProp* SelectionPickerActor::polygonClosingSegmentProp()
+{
+	return propByName<PolylineProp>("PolygonClosingSegmentProp");
+}
+
 void SelectionPickerActor::updateSelectionRectangle()
 {
 	QVector<QVector3D> points;
 
 	if (_mousePositions.size() < 2)
 	{
-		selectionRectangleProp()->setPoints(points);
+		rectangleProp()->setPoints(points);
+		emit changed(this);
 		return;
 	}
 
-	auto rectangle = QRect(_mousePositions.first(), _mousePositions.back()).normalized();
+	// Get first and last recorded mouse position in world coordinates
+	const auto pWorldA	= _positions.first();
+	const auto pWorldB	= _positions.back();
 
-	const auto start	= renderer()->screenToWorld(modelViewMatrix(), rectangle.topLeft());
-	const auto end		= renderer()->screenToWorld(modelViewMatrix(), rectangle.bottomRight());
+	// Create a normalized rectangle
+	auto rectangle = QRectF(QPointF(pWorldA.x(), pWorldA.y()), QPointF(pWorldB.x(), pWorldB.y())).normalized();
 
+	// Compute rectangle start and end in screen coordinates
+	const auto topLeft		= rectangle.topLeft();
+	const auto bottomRight	= rectangle.bottomRight();
+	const auto start		= renderer()->worldToScreen(QVector3D(topLeft.x(), topLeft.y(), 0.f));
+	const auto end			= renderer()->worldToScreen(QVector3D(bottomRight.x(), bottomRight.y(), 0.f));
+
+	// Create polyline points
 	points.append(QVector3D(start.x(), start.y(), 0.f));
 	points.append(QVector3D(start.x(), start.y(), 0.f));
 	points.append(QVector3D(end.x(), start.y(), 0.f));
@@ -446,37 +451,78 @@ void SelectionPickerActor::updateSelectionRectangle()
 	points.append(QVector3D(start.x(), end.y(), 0.f));
 	points.append(QVector3D(start.x(), start.y(), 0.f));
 
-	selectionRectangleProp()->setPoints(points);
+	rectangleProp()->setPoints(points);
+
+	emit changed(this);
 }
 
 void SelectionPickerActor::updateSelectionBrush()
 {
 	QVector<QVector3D> points;
 
-	const auto brushCenter	= renderer()->screenToWorld(modelViewMatrix(), _mousePositions.back());
+	const auto pCenter		= QVector2D(_mousePositions.back().x(), _mousePositions.back().y());
 	const auto noSegments	= 128u;
 
 	std::vector<GLfloat> vertexCoordinates;
 
 	vertexCoordinates.resize(noSegments * 3);
 
-	const auto brushRadius = _brushRadius * renderer()->zoom();
-
 	for (std::uint32_t s = 0; s < noSegments; s++) {
-		const auto theta = 2.0f * M_PI * float(s) / float(noSegments);
-		const auto x = brushRadius * cosf(theta);
-		const auto y = brushRadius * sinf(theta);
+		const auto theta	= 2.0f * M_PI * float(s) / float(noSegments);
+		const auto pBrush	= QVector2D(_brushRadius * cosf(theta), _brushRadius * sinf(theta));
 
-		points.append(QVector3D(brushCenter.x() + x, brushCenter.y() + y, 0.f));
+		points.append(renderer()->screenPositionToNormalizedScreenPosition(pCenter + pBrush));
 	}
 
 	points.insert(0, points.back());
 
 	const auto leftButtonDown = QGuiApplication::mouseButtons() & Qt::LeftButton;
 
-	selectionBrushProp()->setLineColor(leftButtonDown ? QColor(255, 165, 0, 150) : QColor(255, 165, 0, 30));
-	selectionBrushProp()->setLineWidth(leftButtonDown ? 0.01f : 0.005f);
+	selectionBrushProp()->setLineColor(leftButtonDown ? QColor(255, 165, 0, 150) : QColor(255, 165, 0, 50));
+	//selectionBrushProp()->setLineWidth(leftButtonDown ? renderer()->lineWidthNDC(3.0f) : renderer()->lineWidthNDC(1.5f));
 	selectionBrushProp()->setPoints(points);
+
+	emit changed(this);
+}
+
+void SelectionPickerActor::updateSelectionLasso()
+{
+	emit changed(this);
+}
+
+void SelectionPickerActor::updateSelectionPolygon()
+{
+	const auto noMousePositions = _mousePositions.size();
+
+	if (noMousePositions < 2)
+	{
+		polygonSegmentsProp()->setPoints(QVector<QVector3D>());
+		polygonClosingSegmentProp()->setPoints(QVector<QVector3D>());
+		return;
+	}
+
+	if (noMousePositions >= 2) {
+		QVector<QVector3D> points;
+
+		for (auto position : _positions) {
+			points.append(renderer()->worldToScreen(position));
+		}
+
+		polygonSegmentsProp()->setPoints(points);
+	}
+	
+	if (noMousePositions >= 3) {
+		QVector<QVector3D> points;
+
+		points.append(renderer()->worldToScreen(_positions[1]));
+		points.append(renderer()->worldToScreen(_positions[0]));
+		points.append(renderer()->worldToScreen(_positions[noMousePositions - 2]));
+		points.append(renderer()->worldToScreen(_positions[noMousePositions - 1]));
+
+		polygonClosingSegmentProp()->setPoints(points);
+	}
+
+	emit changed(this);
 }
 
 QMenu* SelectionPickerActor::contextMenu()

@@ -182,7 +182,7 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent)
 	{
 		switch (_renderer->interactionMode())
 		{
-			case InteractionMode::Selection:
+			//case InteractionMode::Selection:
 			case InteractionMode::WindowLevel:
 			{
 				if (mouseEvent->pos() == _initialMousePosition) {

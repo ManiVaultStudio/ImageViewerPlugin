@@ -152,7 +152,7 @@ void PolylineProp::render()
 	texture->bind();
 	{
 		if (shaderProgram->bind()) {
-			shaderProgram->setUniformValue("transform", actor()->modelViewProjectionMatrix() * _matrix);
+			shaderProgram->setUniformValue("transform", actor()->renderer()->projectionMatrix().inverted());
 			shaderProgram->setUniformValue("lineTexture", 0);
 			shaderProgram->setUniformValue("lineWidth", _lineWidth);
 
@@ -180,8 +180,6 @@ void PolylineProp::updateShapes()
 	}
 
 	shapeByName<PolylineShape>("PolylineShape")->setPoints(polylinePoints);
-
-	emit changed(this);
 }
 
 void PolylineProp::updateTextures()
@@ -199,6 +197,4 @@ void PolylineProp::updateTextures()
 	texture->setWrapMode(QOpenGLTexture::Repeat);
 	texture->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
 	texture->setData(textureImage);
-
-	emit changed(this);
 }

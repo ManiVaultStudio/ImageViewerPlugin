@@ -240,6 +240,23 @@ QVector3D Renderer::screenToWorld(const QMatrix4x4& modelViewMatrix, const QPoin
 	return QVector3D(screenPoint.x(), _parentWidget->height()- screenPoint.y(), 0).unproject(modelViewMatrix, projectionMatrix(), QRect(0, 0, _parentWidget->width(), _parentWidget->height()));
 }
 
+QVector2D Renderer::worldToScreen(const QVector3D& position) const
+{
+	const auto clipSpacePos	= projectionMatrix() * (viewMatrix() * QVector4D(position, 1.0));
+	const auto ndcSpacePos	= clipSpacePos.toVector3D() / clipSpacePos.w();
+	const auto viewSize		= QVector2D(_parentWidget->width(), _parentWidget->height());
+
+	return ndcSpacePos.toVector2D();
+	//return ndcSpacePos.toVector2D() * viewSize;
+	//return ((ndcSpacePos.toVector2D() + QVector2D(1.f, 1.f)) / QVector2D(2.f, 2.f)) * viewSize;
+}
+
+QVector2D Renderer::screenPositionToNormalizedScreenPosition(const QVector2D& position) const
+{
+	const auto viewSize = QVector2D(_parentWidget->width(), _parentWidget->height());
+	return QVector2D(-1.f, -1.f) + 2.f * (QVector2D(position.x(), _parentWidget->height() - position.y()) / viewSize);
+}
+
 QMatrix4x4 Renderer::viewMatrix() const
 {
 	QMatrix4x4 lookAt, scale;
@@ -259,6 +276,11 @@ QMatrix4x4 Renderer::projectionMatrix() const
 	matrix.ortho(-halfSize.width(), halfSize.width(), -halfSize.height(), halfSize.height(), -1000.0f, +1000.0f);
 
 	return matrix;
+}
+
+float Renderer::lineWidthNDC(const float& lineWidth) const
+{
+	return 2.f * (lineWidth / static_cast<float>(std::min(_parentWidget->width(), _parentWidget->height())));
 }
 
 void Renderer::pan(const QPointF& delta)

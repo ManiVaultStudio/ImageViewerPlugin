@@ -120,16 +120,28 @@ private:
 	void addMousePosition(const QPoint& point);
 
 	/** Returns a pointer to the selection rectangle prop */
-	PolylineProp* selectionRectangleProp();
+	PolylineProp* rectangleProp();
 
 	/** Returns a pointer to the selection brush prop */
 	PolylineProp* selectionBrushProp();
+
+	/** Returns a pointer to the polygon segments prop */
+	PolylineProp* polygonSegmentsProp();
+
+	/** Returns a pointer to the polygon closing segment prop */
+	PolylineProp* polygonClosingSegmentProp();
 
 	/** Updates the selection rectangle */
 	void updateSelectionRectangle();
 
 	/** Updates the selection brush */
 	void updateSelectionBrush();
+
+	/** Updates the selection lasso */
+	void updateSelectionLasso();
+
+	/** Updates the selection polygon */
+	void updateSelectionPolygon();
 
 signals:
 	/**
