@@ -165,6 +165,11 @@ public:
 	/** Hide the actor */
 	virtual void hide();
 
+	/** Set visible
+	 * @param visible Visible
+	 */
+	virtual void setVisible(const bool& visible);
+
 	/** Returns the render opacity */
 	float opacity() const;
 

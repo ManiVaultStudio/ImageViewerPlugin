@@ -126,6 +126,8 @@ void ColorImageActor::onMousePressEvent(QMouseEvent* mouseEvent)
 	_mouseEvents.clear();
 
 	addMouseEvent(mouseEvent);
+
+	emit startWindowLevel();
 }
 
 void ColorImageActor::onMouseReleaseEvent(QMouseEvent* mouseEvent)
@@ -134,6 +136,8 @@ void ColorImageActor::onMouseReleaseEvent(QMouseEvent* mouseEvent)
 		return;
 
 	//qDebug() << "Mouse release event for" << _name;
+
+	emit endWindowLevel();
 }
 
 void ColorImageActor::onMouseMoveEvent(QMouseEvent* mouseEvent)

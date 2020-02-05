@@ -95,18 +95,14 @@ void Renderer::mouseReleaseEvent(QMouseEvent* mouseEvent)
 			switch (interactionMode())
 			{
 				case InteractionMode::Navigation:
+				case InteractionMode::WindowLevel:
 					break;
 
 				case InteractionMode::None:
 					showContextMenu = true;
 
 				case InteractionMode::Selection:
-					qDebug() << actorByName<SelectionPickerActor>("SelectionPickerActor")->mouseEvents().size();
-					showContextMenu = actorByName<SelectionPickerActor>("SelectionPickerActor")->mouseEvents().size() == 1;
-					break;
-
-				case InteractionMode::WindowLevel:
-					//showContextMenu = mouseEvent->pos() == _initialMousePosition;
+					showContextMenu = !actorByName<SelectionPickerActor>("SelectionPickerActor")->isSelecting();
 					break;
 
 				default:
@@ -139,6 +135,11 @@ void Renderer::mouseReleaseEvent(QMouseEvent* mouseEvent)
 void Renderer::mouseMoveEvent(QMouseEvent* mouseEvent)
 {
 	//qDebug() << "Mouse move event";
+
+	if (mouseEvent->buttons() & Qt::RightButton) {
+		if (mouseEvent->pos() != _mouseEvents.first()->pos())
+			setInteractionMode(InteractionMode::WindowLevel);
+	}
 
 	switch (mouseEvent->buttons())
 	{
@@ -226,7 +227,6 @@ void Renderer::keyPressEvent(QKeyEvent* keyEvent)
 	}
 	else
 	{
-
 		switch (keyEvent->key())
 		{
 			case Qt::Key::Key_Space:
@@ -501,12 +501,9 @@ void Renderer::setInteractionMode(const InteractionMode& interactionMode)
 	
 	_interactionMode = interactionMode;
 
-	if (_interactionMode == InteractionMode::Selection) {
-		actorByName<SelectionPickerActor>("SelectionPickerActor")->show();
-	}
-	else {
-		actorByName<SelectionPickerActor>("SelectionPickerActor")->hide();
-	}
+	actorByName<ColorImageActor>("ColorImageActor")->setEnabled(_interactionMode == InteractionMode::WindowLevel);
+	actorByName<SelectionPickerActor>("SelectionPickerActor")->setEnabled(_interactionMode == InteractionMode::Selection);
+	actorByName<SelectionPickerActor>("SelectionPickerActor")->setVisible(_interactionMode == InteractionMode::Selection);
 }
 
 void Renderer::bindOpenGLContext()
@@ -548,6 +545,10 @@ void Renderer::createActors()
 	actorByName<ColorImageActor>("ColorImageActor")->setTranslation(QVector3D(0, 0, 0));
 	actorByName<SelectionImageActor>("SelectionImageActor")->setTranslation(QVector3D(0, 0, -1));
 	actorByName<SelectionPickerActor>("SelectionPickerActor")->setTranslation(QVector3D(0, 0, -2));
+
+	connect(actorByName<ColorImageActor>("ColorImageActor"), &ColorImageActor::endWindowLevel, [&]() {
+		setInteractionMode(InteractionMode::None);
+	});
 }
 
 void Renderer::initializeActors()

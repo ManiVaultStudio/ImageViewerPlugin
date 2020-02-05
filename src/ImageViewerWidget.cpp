@@ -179,11 +179,6 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent)
 
 void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent)
 {
-	if (mouseEvent->buttons() & Qt::RightButton) {
-		if (mouseEvent->pos() != _initialMousePosition)
-			_renderer->setInteractionMode(InteractionMode::WindowLevel);
-	}
-
 	_renderer->mouseMoveEvent(mouseEvent);
 
 	QOpenGLWidget::mouseMoveEvent(mouseEvent);

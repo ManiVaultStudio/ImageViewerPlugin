@@ -31,8 +31,8 @@ SelectionPickerActor::SelectionPickerActor(Renderer* renderer, const QString& na
 	_registeredEvents |= static_cast<int>(ActorEvent::KeyPress);
 	_registeredEvents |= static_cast<int>(ActorEvent::KeyRelease);
 
-	addProp<PolylineProp>("SelectionRectangleProp");
-	addProp<PolylineProp>("SelectionBrushProp");
+	addProp<PolylineProp>("RectangleProp");
+	addProp<PolylineProp>("BrushProp");
 	addProp<PolylineProp>("LassoProp");
 	addProp<PolylineProp>("PolygonSegmentsProp");
 	addProp<PolylineProp>("PolygonClosingSegmentProp");
@@ -594,12 +594,12 @@ void SelectionPickerActor::updateSelectionPolygon()
 
 PolylineProp* SelectionPickerActor::rectangleProp()
 {
-	return propByName<PolylineProp>("SelectionRectangleProp");
+	return propByName<PolylineProp>("RectangleProp");
 }
 
 PolylineProp* SelectionPickerActor::brushProp()
 {
-	return propByName<PolylineProp>("SelectionBrushProp");
+	return propByName<PolylineProp>("BrushProp");
 }
 
 PolylineProp* SelectionPickerActor::lassoProp()

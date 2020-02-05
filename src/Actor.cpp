@@ -105,7 +105,7 @@ void Actor::disable()
 
 bool Actor::canRender() const
 {
-	return isEnabled() && isVisible();
+	return isVisible();
 }
 
 QMatrix4x4 Actor::modelMatrix() const
@@ -280,14 +280,22 @@ void Actor::show()
 
 	_visible = true;
 
-	qDebug() << "Activated" << _name;
+	qDebug() << "Show" << _name;
 }
 
 void Actor::hide()
 {
 	_visible = false;
 
-	qDebug() << "Deactivated" << _name;
+	qDebug() << "Hide" << _name;
+}
+
+void Actor::setVisible(const bool& visible)
+{
+	if (visible)
+		show();
+	else
+		hide();
 }
 
 float Actor::opacity() const

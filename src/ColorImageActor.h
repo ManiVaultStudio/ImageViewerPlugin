@@ -103,6 +103,12 @@ signals:
 	 */
 	void imageSizeChanged(const QSizeF& imageSize);
 
+	/** Invoked when window/level adjustment starts */
+	void startWindowLevel();
+
+	/** Invoked when window/level adjustment end */
+	void endWindowLevel();
+
 private:
 	std::uint16_t		_imageMin;				/** Minimum pixel value in the image */
 	std::uint16_t		_imageMax;				/** Maximum pixel value in the image */
