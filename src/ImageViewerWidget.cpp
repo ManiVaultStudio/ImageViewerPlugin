@@ -182,7 +182,10 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent)
 {
 	if (mouseEvent->button() == Qt::RightButton && _renderer->allowsContextMenu()) {
-		_renderer->contextMenu()->exec(mapToGlobal(mouseEvent->pos()));
+		auto contextMenu = _renderer->contextMenu();
+
+
+		contextMenu->exec(mapToGlobal(mouseEvent->pos()));
 	}
 
 	_renderer->mouseReleaseEvent(mouseEvent);

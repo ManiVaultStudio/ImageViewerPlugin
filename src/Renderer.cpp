@@ -364,6 +364,7 @@ void Renderer::zoomToRectangle(const QRectF& rectangle)
 
 void Renderer::zoomToSelection()
 {
+	/*
 	auto* currentImageDataSet = _parentWidget->imageViewerPlugin()->currentImages();
 
 	if (currentImageDataSet == nullptr)
@@ -372,6 +373,7 @@ void Renderer::zoomToSelection()
 	qDebug() << "Zoom to selection";
 
 	zoomToRectangle(QRectF(currentImageDataSet->selectionBounds(true)));
+	*/
 }
 
 void Renderer::resetView()
@@ -568,38 +570,6 @@ SelectionImageActor* Renderer::selectionImageActor()
 
 QMenu* Renderer::viewMenu()
 {
-	auto* viewMenu = new QMenu("View");
-
-	auto* zoomToExtentsAction = new QAction("Zoom extents");
-	auto* zoomToSelectionAction = new QAction("Zoom to selection");
-	auto* resetWindowLevelAction = new QAction("Reset window/level");
-
-	zoomToExtentsAction->setToolTip("Zoom to the boundaries of the image");
-	zoomToSelectionAction->setToolTip("Zoom to selection boundaries");
-	resetWindowLevelAction->setToolTip("Reset window/level to default values");
-
-	zoomToSelectionAction->setEnabled(_parentWidget->imageViewerPlugin()->noSelectedPixels() > 0);
-
-	auto* colorImageActor = actorByName<ColorImageActor>("ColorImageActor");
-
-	resetWindowLevelAction->setEnabled(colorImageActor->windowNormalized() < 1.f && colorImageActor->levelNormalized() != 0.5f);
-
-	connect(zoomToExtentsAction, &QAction::triggered, this, &Renderer::zoomExtents);
-	connect(zoomToSelectionAction, &QAction::triggered, this, &Renderer::zoomToSelection);
-	connect(resetWindowLevelAction, &QAction::triggered, [&]() {
-		actorByName<ColorImageActor>("ColorImageActor")->resetWindowLevel();
-	});
-
-	viewMenu->addAction(zoomToExtentsAction);
-	viewMenu->addAction(zoomToSelectionAction);
-	viewMenu->addSeparator();
-	viewMenu->addAction(resetWindowLevelAction);
-
-	return viewMenu;
-}
-
-QMenu* Renderer::contextMenu()
-{
 	auto* menu = new QMenu("View");
 
 	auto* zoomToExtentsAction = new QAction("Zoom extents");
@@ -624,6 +594,17 @@ QMenu* Renderer::contextMenu()
 	menu->addAction(resetWindowLevelAction);
 
 	return menu;
+}
+
+QMenu* Renderer::contextMenu()
+{
+	auto* menu = new QMenu("Context");
+
+	menu->addMenu(viewMenu());
+
+	return menu;
+
+	//zoomToSelectionAction->setEnabled(_parentWidget->imageViewerPlugin()->noSelectedPixels() > 0);
 }
 
 QSize Renderer::viewSize() const
