@@ -152,7 +152,7 @@ void PolylineProp::render()
 	texture->bind();
 	{
 		if (shaderProgram->bind()) {
-			shaderProgram->setUniformValue("transform", actor()->renderer()->projectionMatrix().inverted());
+			shaderProgram->setUniformValue("screenSpaceToClipSpace", renderer()->screenSpaceToClipSpaceMatrix());
 			shaderProgram->setUniformValue("lineTexture", 0);
 			shaderProgram->setUniformValue("lineWidth", _lineWidth);
 

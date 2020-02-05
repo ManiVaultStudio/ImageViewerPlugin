@@ -5,7 +5,8 @@ layout (triangle_strip, max_vertices = 4) out;
 
 out vec4 g_color;
 
-uniform float lineWidth;
+uniform mat4	screenSpaceToClipSpace;		// Projection matrix
+uniform float	lineWidth;					// Line width
 
 vec3 halfAngle(vec3 vA, vec3 vB) 
 { 
@@ -18,6 +19,7 @@ vec3 halfAngle(vec3 pA, vec3 pB, vec3 pC)
 }
 
 void main() {
+	// Viewport pop
     vec3 pPrevious	= gl_in[0].gl_Position.xyz;
     vec3 pStart		= gl_in[1].gl_Position.xyz;
     vec3 pEnd		= gl_in[2].gl_Position.xyz;
@@ -41,23 +43,28 @@ void main() {
 	float startInvScale = dot(startLhs, lhs);
 	float endInvScale = dot(endLhs, lhs);
 
-	startLhs	*= 0.5 * lineWidth;
-	endLhs		*= 0.5 * lineWidth;
+	float halfLineWidth = 0.5 * lineWidth;
 
-	gl_Position = vec4(pStart + startLhs / startInvScale, 1.0);
-	g_color = vec4(1);
+	startLhs	*= halfLineWidth;
+	endLhs		*= halfLineWidth;
+
+	vec3 vOffsetStart	= startLhs / startInvScale;
+	vec3 vOffsetEnd		= endLhs / endInvScale;
+
+	gl_Position		= screenSpaceToClipSpace * vec4(pStart + vOffsetStart, 1.0);
+	g_color			= vec4(1);
 	EmitVertex();
 	
-	gl_Position = vec4(pStart - startLhs / startInvScale, 1.0);
-	g_color = vec4(1);
+	gl_Position		= screenSpaceToClipSpace * vec4(pStart - vOffsetStart, 1.0);
+	g_color			= vec4(1);
 	EmitVertex();
 	
-	gl_Position = vec4(pEnd + endLhs / endInvScale, 1.0);
-	g_color = vec4(1);
+	gl_Position		= screenSpaceToClipSpace * vec4(pEnd + vOffsetEnd, 1.0);
+	g_color			= vec4(1);
 	EmitVertex();
 
-	gl_Position = vec4(pEnd - endLhs / endInvScale, 1.0);
-	g_color = vec4(1);
+	gl_Position		= screenSpaceToClipSpace * vec4(pEnd - vOffsetEnd, 1.0);
+	g_color			= vec4(1);
 	EmitVertex();
 
     EndPrimitive();

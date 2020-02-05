@@ -43,8 +43,8 @@ void SelectionPickerActor::initialize()
 {
 	Actor::initialize();
 
-	rectangleProp()->setLineWidth(renderer()->lineWidthNDC(5.f));
-	selectionBrushProp()->setLineWidth(renderer()->lineWidthNDC(3.f));
+	rectangleProp()->setLineWidth(1);
+	selectionBrushProp()->setLineWidth(renderer()->lineWidthNDC(5.f));
 	polygonSegmentsProp()->setLineWidth(renderer()->lineWidthNDC(5.f));
 	polygonClosingSegmentProp()->setLineWidth(renderer()->lineWidthNDC(2.f));
 
@@ -397,7 +397,7 @@ void SelectionPickerActor::endSelection()
 void SelectionPickerActor::addMousePosition(const QPoint& point)
 {
 	_mousePositions.append(point);
-	_positions.append(_renderer->screenToWorld(modelViewMatrix(), point));
+	_positions.append(_renderer->screenPointToWorldPosition(modelViewMatrix(), point));
 }
 PolylineProp* SelectionPickerActor::rectangleProp()
 {
@@ -440,8 +440,8 @@ void SelectionPickerActor::updateSelectionRectangle()
 	// Compute rectangle start and end in screen coordinates
 	const auto topLeft		= rectangle.topLeft();
 	const auto bottomRight	= rectangle.bottomRight();
-	const auto start		= renderer()->worldToScreen(QVector3D(topLeft.x(), topLeft.y(), 0.f));
-	const auto end			= renderer()->worldToScreen(QVector3D(bottomRight.x(), bottomRight.y(), 0.f));
+	const auto start		= renderer()->worldPositionToScreenPoint(QVector3D(topLeft.x(), topLeft.y(), 0.f));
+	const auto end			= renderer()->worldPositionToScreenPoint(QVector3D(bottomRight.x(), bottomRight.y(), 0.f));
 
 	// Create polyline points
 	points.append(QVector3D(start.x(), start.y(), 0.f));
@@ -471,7 +471,7 @@ void SelectionPickerActor::updateSelectionBrush()
 		const auto theta	= 2.0f * M_PI * float(s) / float(noSegments);
 		const auto pBrush	= QVector2D(_brushRadius * cosf(theta), _brushRadius * sinf(theta));
 
-		points.append(renderer()->screenPositionToNormalizedScreenPosition(pCenter + pBrush));
+		points.append(renderer()->screenPointToNormalizedScreenPoint(pCenter + pBrush));
 	}
 
 	points.insert(0, points.back());
@@ -505,7 +505,7 @@ void SelectionPickerActor::updateSelectionPolygon()
 		QVector<QVector3D> points;
 
 		for (auto position : _positions) {
-			points.append(renderer()->worldToScreen(position));
+			points.append(renderer()->worldPositionToNormalizedScreenPoint(position));
 		}
 
 		polygonSegmentsProp()->setPoints(points);
@@ -514,10 +514,10 @@ void SelectionPickerActor::updateSelectionPolygon()
 	if (noMousePositions >= 3) {
 		QVector<QVector3D> points;
 
-		points.append(renderer()->worldToScreen(_positions[1]));
-		points.append(renderer()->worldToScreen(_positions[0]));
-		points.append(renderer()->worldToScreen(_positions[noMousePositions - 2]));
-		points.append(renderer()->worldToScreen(_positions[noMousePositions - 1]));
+		points.append(renderer()->worldPositionToNormalizedScreenPoint(_positions[1]));
+		points.append(renderer()->worldPositionToNormalizedScreenPoint(_positions[0]));
+		points.append(renderer()->worldPositionToNormalizedScreenPoint(_positions[noMousePositions - 2]));
+		points.append(renderer()->worldPositionToNormalizedScreenPoint(_positions[noMousePositions - 1]));
 
 		polygonClosingSegmentProp()->setPoints(points);
 	}

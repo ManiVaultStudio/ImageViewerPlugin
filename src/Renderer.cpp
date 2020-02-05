@@ -235,26 +235,39 @@ void Renderer::keyReleaseEvent(QKeyEvent* keyEvent)
 	}
 }
 
-QVector3D Renderer::screenToWorld(const QMatrix4x4& modelViewMatrix, const QPointF& screenPoint) const
+QVector3D Renderer::screenPointToWorldPosition(const QMatrix4x4& modelViewMatrix, const QPointF& screenPoint) const
 {
 	return QVector3D(screenPoint.x(), _parentWidget->height()- screenPoint.y(), 0).unproject(modelViewMatrix, projectionMatrix(), QRect(0, 0, _parentWidget->width(), _parentWidget->height()));
 }
 
-QVector2D Renderer::worldToScreen(const QVector3D& position) const
+QVector2D Renderer::worldPositionToNormalizedScreenPoint(const QVector3D& position) const
 {
-	const auto clipSpacePos	= projectionMatrix() * (viewMatrix() * QVector4D(position, 1.0));
-	const auto ndcSpacePos	= clipSpacePos.toVector3D() / clipSpacePos.w();
-	const auto viewSize		= QVector2D(_parentWidget->width(), _parentWidget->height());
-
-	return ndcSpacePos.toVector2D();
-	//return ndcSpacePos.toVector2D() * viewSize;
-	//return ((ndcSpacePos.toVector2D() + QVector2D(1.f, 1.f)) / QVector2D(2.f, 2.f)) * viewSize;
+	const auto clipSpacePos = projectionMatrix() * (viewMatrix() * QVector4D(position, 1.0));
+	return (clipSpacePos.toVector3D() / clipSpacePos.w()).toVector2D();
 }
 
-QVector2D Renderer::screenPositionToNormalizedScreenPosition(const QVector2D& position) const
+QVector2D Renderer::worldPositionToScreenPoint(const QVector3D& position) const
+{
+	const auto normalizedScreenPoint	= worldPositionToNormalizedScreenPoint(position);
+	const auto viewSize					= QVector2D(_parentWidget->width(), _parentWidget->height());
+
+	return viewSize * ((QVector2D(1.0f, 1.0f) + normalizedScreenPoint) / 2.0f);
+}
+
+QVector2D Renderer::screenPointToNormalizedScreenPoint(const QVector2D& screenPoint) const
 {
 	const auto viewSize = QVector2D(_parentWidget->width(), _parentWidget->height());
-	return QVector2D(-1.f, -1.f) + 2.f * (QVector2D(position.x(), _parentWidget->height() - position.y()) / viewSize);
+	return QVector2D(-1.f, -1.f) + 2.f * (QVector2D(screenPoint.x(), _parentWidget->height() - screenPoint.y()) / viewSize);
+}
+
+QMatrix4x4 Renderer::screenSpaceToClipSpaceMatrix() const
+{
+	QMatrix4x4 translate, scale;
+
+	scale.scale(2.0f / static_cast<float>(_parentWidget->width()), 2.0f / static_cast<float>(_parentWidget->height()), 1.0f);
+	translate.translate(-1.0f, -1.0f, 0.0f);
+
+	return translate * scale;
 }
 
 QMatrix4x4 Renderer::viewMatrix() const
@@ -280,6 +293,7 @@ QMatrix4x4 Renderer::projectionMatrix() const
 
 float Renderer::lineWidthNDC(const float& lineWidth) const
 {
+	return (QVector3D(lineWidth, 0.0f, 0.0f) * projectionMatrix()).x();
 	return 2.f * (lineWidth / static_cast<float>(std::min(_parentWidget->width(), _parentWidget->height())));
 }
 
@@ -312,7 +326,7 @@ void Renderer::zoomAround(const QPointF& screenPoint, const float& factor)
 
 	qDebug() << "Zoom around" << screenPoint << "by" << factor;
 
-	const auto pWorld			= screenToWorld(viewMatrix(), screenPoint);
+	const auto pWorld			= screenPointToWorldPosition(viewMatrix(), screenPoint);
 	const auto pAnchor			= pWorld;
 	const auto pPanOld			= QVector3D(_pan.x(), _pan.y(), 0.f);
 	const auto vPanOld			= pPanOld - pAnchor;
@@ -563,4 +577,9 @@ QMenu* Renderer::contextMenu()
 	viewMenu->addAction(resetWindowLevelAction);
 
 	return viewMenu;
+}
+
+QSize Renderer::viewSize() const
+{
+	return _parentWidget->size();
 }

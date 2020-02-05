@@ -82,23 +82,32 @@ public:
 	void keyReleaseEvent(QKeyEvent* keyEvent);
 
 	/** Convert point in screen coordinates to point in world coordinates
-	 * @param modelViewMatrix Model > view matrix
-	 * @param screenPoint Point in screen coordinates
-	 * @return Point in world coordinates
+	 * @param modelViewMatrix Model-view matrix
+	 * @param screenPoint Point in screen coordinates [0..width, 0..height]
+	 * @return Position in world coordinates
 	 */
-	QVector3D screenToWorld(const QMatrix4x4& modelViewMatrix, const QPointF& screenPoint) const;
+	QVector3D screenPointToWorldPosition(const QMatrix4x4& modelViewMatrix, const QPointF& screenPoint) const;
 
 	/** Convert position in world coordinates to point in normalized screen coordinates
 	 * @param position Position in world coordinates
-	 * @return Point in normalized screen coordinates
+	 * @return Point in normalized screen coordinates [-1..1, -1..1]
 	 */
-	QVector2D worldToScreen(const QVector3D& position) const;
+	QVector2D worldPositionToNormalizedScreenPoint(const QVector3D& position) const;
 
-	/** Convert position in world coordinates to point in normalized screen coordinates
+	/** Convert position in world coordinates to point in screen coordinates
 	 * @param position Position in world coordinates
-	 * @return Point in normalized screen coordinates
+	 * @return Point in screen coordinates [0..width, 0..height]
 	 */
-	QVector2D screenPositionToNormalizedScreenPosition(const QVector2D& position) const;
+	QVector2D worldPositionToScreenPoint(const QVector3D& position) const;
+
+	/** Convert point in screen coordinates to point in normalized screen coordinates
+	 * @param screenPoint Point in screen coordinates [0..width, 0..height]
+	 * @return Point in normalized screen coordinates [-1..1, -1..1]
+	 */
+	QVector2D screenPointToNormalizedScreenPoint(const QVector2D& screenPoint) const;
+
+	/** Returns the matrix that converts screen space [0..width, 0..height] to clip space [-1..1, -1..1] */
+	QMatrix4x4 screenSpaceToClipSpaceMatrix() const;
 
 	/** Returns the view matrix */
 	QMatrix4x4 viewMatrix() const;
@@ -152,6 +161,8 @@ public:
 	/** Returns the context menu */
 	QMenu* contextMenu();
 
+	/** Returns the view size */
+	QSize viewSize() const;
 public:
 	/**
 	 * Sets the color image
