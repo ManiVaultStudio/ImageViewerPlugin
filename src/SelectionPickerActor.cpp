@@ -113,7 +113,6 @@ void SelectionPickerActor::setSelectionType(const SelectionType& selectionType)
 
 	startSelection();
 
-	rectangleProp()->setVisible(_selectionType == SelectionType::Rectangle);
 	brushProp()->setVisible(_selectionType == SelectionType::Brush);
 	lassoProp()->setVisible(_selectionType == SelectionType::Lasso);
 	polygonSegmentsProp()->setVisible(_selectionType == SelectionType::Polygon);
@@ -190,9 +189,31 @@ void SelectionPickerActor::brushSizeDecrease()
 
 void SelectionPickerActor::onMousePressEvent(QMouseEvent* mouseEvent)
 {
-	if (mouseEvent->button() == Qt::LeftButton) {
-		addMouseEvent(mouseEvent);
-		startSelection();
+	switch (_selectionType)
+	{
+		case SelectionType::None:
+			break;
+
+		case SelectionType::Rectangle:
+			if (mouseEvent->button() == Qt::LeftButton) {
+				startSelection();
+				addMouseEvent(mouseEvent);
+				rectangleProp()->setVisible(true);
+				break;
+			}
+
+		case SelectionType::Brush:
+			startSelection();
+			break;
+
+		case SelectionType::Lasso:
+			break;
+
+		case SelectionType::Polygon:
+			break;
+
+		default:
+			break;
 	}
 }
 
@@ -206,6 +227,7 @@ void SelectionPickerActor::onMouseReleaseEvent(QMouseEvent* mouseEvent)
 		case SelectionType::Rectangle:
 		{
 			if (mouseEvent->button() == Qt::LeftButton) {
+				rectangleProp()->setVisible(false);
 				endSelection();
 			}
 			break;

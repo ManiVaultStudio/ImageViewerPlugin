@@ -17,7 +17,6 @@
 ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	QOpenGLFunctions(),
 	_imageViewerPlugin(imageViewerPlugin),
-	_initialMousePosition(),
 	_renderer(QSharedPointer<Renderer>::create(this)),
 	_openglDebugLogger(std::make_unique<QOpenGLDebugLogger>())
 {
@@ -108,7 +107,7 @@ void ImageViewerWidget::initializeGL()
 	});
 
 #ifdef _DEBUG
-//	_openglDebugLogger->initialize();
+	_openglDebugLogger->initialize();
 #endif
 
 	doneCurrent();
@@ -126,12 +125,10 @@ void ImageViewerWidget::paintGL() {
 
 	_renderer->render();
 
-	/*
 #ifdef _DEBUG
 	for (const QOpenGLDebugMessage& message : _openglDebugLogger->loggedMessages())
 		qDebug() << message;
 #endif
-*/
 }
 
 void ImageViewerWidget::onRendererDirty()
@@ -157,8 +154,6 @@ void ImageViewerWidget::keyReleaseEvent(QKeyEvent* keyEvent)
 
 void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 {
-	_initialMousePosition = mouseEvent->pos();
-
 	switch (mouseEvent->button())
 	{
 		case Qt::LeftButton:
@@ -182,10 +177,7 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent)
 {
 	if (mouseEvent->button() == Qt::RightButton && _renderer->allowsContextMenu()) {
-		auto contextMenu = _renderer->contextMenu();
-
-
-		contextMenu->exec(mapToGlobal(mouseEvent->pos()));
+		contextMenu()->exec(mapToGlobal(mouseEvent->pos()));
 	}
 
 	_renderer->mouseReleaseEvent(mouseEvent);
@@ -239,22 +231,17 @@ QSharedPointer<Renderer> ImageViewerWidget::renderer()
 
 QMenu* ImageViewerWidget::contextMenu()
 {
-	auto* contextMenu = new QMenu();
+	auto contextMenu = _renderer->contextMenu();
 
 	if (_imageViewerPlugin->imageCollectionType() == ImageCollectionType::Stack) {
-		contextMenu->addMenu(_renderer->contextMenu());
+		auto* createSubsetFromSelectionAction = new QAction("Create subset from selection");
+
+		createSubsetFromSelectionAction->setEnabled(_imageViewerPlugin->noSelectedPixels() > 0);
+
+		connect(createSubsetFromSelectionAction, &QAction::triggered, _imageViewerPlugin, &ImageViewerPlugin::createSubsetFromSelection);
+
 		contextMenu->addSeparator();
-		contextMenu->addMenu(_renderer->actorByName<SelectionPickerActor>("SelectionPickerActor")->contextMenu());
-
-		if (_imageViewerPlugin->noSelectedPixels() > 0) {
-			contextMenu->addSeparator();
-
-			auto* createSubsetFromSelectionAction = new QAction("Create subset from selection");
-
-			connect(createSubsetFromSelectionAction, &QAction::triggered, _imageViewerPlugin, &ImageViewerPlugin::createSubsetFromSelection);
-
-			contextMenu->addAction(createSubsetFromSelectionAction);
-		}
+		contextMenu->addAction(createSubsetFromSelectionAction);
 	}
 
 	return contextMenu;

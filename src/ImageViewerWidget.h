@@ -104,7 +104,6 @@ private:
 
 private:
 	ImageViewerPlugin*						_imageViewerPlugin;			/** Pointer to image viewer plugin */
-	QPoint									_initialMousePosition;		/** Initial mouse position */
 	QSharedPointer<Renderer>				_renderer;					/** Selection renderer */
 	std::unique_ptr <QOpenGLDebugLogger>	_openglDebugLogger;			/** OpenGL debug logger (on in debug mode) */
 };

@@ -573,23 +573,23 @@ QMenu* Renderer::viewMenu()
 	auto* menu = new QMenu("View");
 
 	auto* zoomToExtentsAction = new QAction("Zoom extents");
-	auto* zoomToSelectionAction = new QAction("Zoom to selection");
+	//auto* zoomToSelectionAction = new QAction("Zoom to selection");
 	auto* resetWindowLevelAction = new QAction("Reset window/level");
 
 	zoomToExtentsAction->setToolTip("Zoom to the boundaries of the image");
-	zoomToSelectionAction->setToolTip("Zoom to selection boundaries");
+	//zoomToSelectionAction->setToolTip("Zoom to selection boundaries");
 	resetWindowLevelAction->setToolTip("Reset window/level to default values");
 
 	resetWindowLevelAction->setEnabled(colorImageActor()->windowNormalized() < 1.f && colorImageActor()->levelNormalized() != 0.5f);
 
 	connect(zoomToExtentsAction, &QAction::triggered, this, &Renderer::zoomExtents);
-	connect(zoomToSelectionAction, &QAction::triggered, this, &Renderer::zoomToSelection);
+	//connect(zoomToSelectionAction, &QAction::triggered, this, &Renderer::zoomToSelection);
 	connect(resetWindowLevelAction, &QAction::triggered, [&]() {
 		actorByName<ColorImageActor>("ColorImageActor")->resetWindowLevel();
 	});
 
 	menu->addAction(zoomToExtentsAction);
-	menu->addAction(zoomToSelectionAction);
+	//menu->addAction(zoomToSelectionAction);
 	menu->addSeparator();
 	menu->addAction(resetWindowLevelAction);
 
@@ -601,10 +601,10 @@ QMenu* Renderer::contextMenu()
 	auto* menu = new QMenu("Context");
 
 	menu->addMenu(viewMenu());
+	menu->addSeparator();
+	menu->addMenu(selectionPickerActor()->contextMenu());
 
 	return menu;
-
-	//zoomToSelectionAction->setEnabled(_parentWidget->imageViewerPlugin()->noSelectedPixels() > 0);
 }
 
 QSize Renderer::viewSize() const
