@@ -30,10 +30,48 @@ class SelectionPickerActor : public Actor
 	Q_OBJECT
 
 public:
+	/**
+	 * Mouse point class
+	 * @author Thomas Kroes
+	 */
+	class MouseEvent
+	{
+	public:
+		/** Default constructor */
+		MouseEvent() {};
+
+		/**
+		 * Constructor
+		 * @param screenPoint Point in screen coordinates [0..width, 0..height]
+		 * @param worldPosition Position in world space
+		 */
+		MouseEvent(const QPoint& screenPoint, const QVector3D& worldPosition) :
+			_screenPoint(screenPoint),
+			_worldPosition(worldPosition)
+		{
+		}
+
+		QVector2D screenPoint() const {
+			return _screenPoint;
+		}
+
+		QVector3D worldPosition() const {
+			return _worldPosition;
+		}
+
+	private:
+		QVector2D		_screenPoint;		/** Point in screen coordinates */
+		QVector3D		_worldPosition;		/** World position */
+	};
+
+public:
 	SelectionPickerActor(Renderer* renderer, const QString& name);
 
-	/** Initialize the Actor (must be called in appropriate OpenGL context) */
-	virtual void initialize();
+	/** Show the actor */
+	void show() override;
+
+	/** Hide the actor */
+	void hide() override;
 
 	/** Returns the image size */
 	QSize imageSize() const;
@@ -108,6 +146,9 @@ public:
 	QMenu* contextMenu();
 
 private:
+	/** Initialize the actor */
+	void initialize();
+
 	/** Starts the selection process */
 	void startSelection();
 
@@ -115,9 +156,10 @@ private:
 	void endSelection();
 
 	/**
-	 * TODO
+	 * Records a mouse event
+	 * @param mouseEvent Mouse event
 	 */
-	void addMousePosition(const QPoint& point);
+	void addMouseEvent(QMouseEvent* mouseEvent);
 
 	/** Returns a pointer to the selection rectangle prop */
 	PolylineProp* rectangleProp();
@@ -189,7 +231,6 @@ private:
 	SelectionModifier		_selectionModifier;		/** The selection modifier determines if and how new selections are combined with existing selections e.g. add, replace and remove */
 	float					_brushRadius;			/** Brush radius */
 	float					_brushRadiusDelta;		/** Selection brush size increase/decrease delta */
-	QVector<QPoint>			_mousePositions;		/** Recorded mouse positions in screen coordinates */
-	QVector<QVector3D>		_positions;				/** Recorded mouse positions in world coordinates */
+	QVector<MouseEvent>		_mouseEvents;			/** Recorded mouse events */
 	float					_outlineLineWidth;		/** Line width of the outline geometry */
 };

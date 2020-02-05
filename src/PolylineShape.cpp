@@ -5,13 +5,6 @@
 #include <QOpenGLVertexArrayObject>
 #include <QDebug>
 
-PolylineShape::Point::Point() :
-	_position(),
-	_textureCoordinate(),
-	_lineWidth()
-{
-}
-
 PolylineShape::Point::Point(const QVector3D& position, const QVector2D& textureCoordinate, const float& lineWidth) :
 	_position(position),
 	_textureCoordinate(textureCoordinate),

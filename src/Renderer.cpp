@@ -86,6 +86,45 @@ void Renderer::mouseReleaseEvent(QMouseEvent* mouseEvent)
 {
 	//qDebug() << "Mouse release event";
 
+	auto showContextMenu = false;
+
+	switch (mouseEvent->button())
+	{
+		case Qt::RightButton:
+		{
+			switch (interactionMode())
+			{
+				case InteractionMode::Navigation:
+					break;
+
+				case InteractionMode::None:
+					showContextMenu = true;
+
+				case InteractionMode::Selection:
+					//showContextMenu = actorByName<SelectionPickerActor>("SelectionPickerActor")->;
+					break;
+
+				case InteractionMode::WindowLevel:
+					//showContextMenu = mouseEvent->pos() == _initialMousePosition;
+					break;
+
+				default:
+					break;
+			}
+
+			//_renderer->setInteractionMode(InteractionMode::Selection);
+			break;
+		}
+
+		default:
+			break;
+	}
+
+	if (showContextMenu) {
+		setInteractionMode(InteractionMode::None);
+		contextMenu()->exec(_parentWidget->mapToGlobal(mouseEvent->pos()));
+	}
+
 	for (auto key : _actors.keys()) {
 		auto actor = _actors[key];
 
@@ -442,11 +481,6 @@ void Renderer::setInteractionMode(const InteractionMode& interactionMode)
 
 	qDebug() << "Set interaction mode to" << interactionModeTypeName(interactionMode);
 
-	
-	if (_interactionMode == InteractionMode::Selection) {
-		actorByName<SelectionPickerActor>("SelectionPickerActor")->hide();
-	}
-
 	switch (interactionMode)
 	{
 		case InteractionMode::Navigation:
@@ -468,6 +502,9 @@ void Renderer::setInteractionMode(const InteractionMode& interactionMode)
 
 	if (_interactionMode == InteractionMode::Selection) {
 		actorByName<SelectionPickerActor>("SelectionPickerActor")->show();
+	}
+	else {
+		actorByName<SelectionPickerActor>("SelectionPickerActor")->hide();
 	}
 }
 

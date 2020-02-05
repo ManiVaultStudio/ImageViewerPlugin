@@ -19,10 +19,11 @@ public:
 	 * Polyline point class
 	 * @author Thomas Kroes
 	 */
-	struct Point
+	class Point
 	{
+	public:
 		/** Default constructor */
-		Point();
+		Point() {};
 
 		/**
 		 * Constructor
@@ -32,15 +33,15 @@ public:
 		 */
 		Point(const QVector3D& position, const QVector2D& textureCoordinate, const float& lineWidth);
 
-		/** Attributes */
-		QVector3D				_position;						/** Point position */
-		QVector2D				_textureCoordinate;				/** Texture coordinates at point (at the moment only the U component is used) */
-		float					_lineWidth;						/** Line width at point */
-
 		/** Attribute locations */
 		static std::uint32_t	_positionAttribute;				/** Position attribute location */
 		static std::uint32_t	_textureCoordinateAttribute;	/** Line width attribute location */
 		static std::uint32_t	_lineWidthAttribute;			/** Line width attribute location */
+
+	private:
+		QVector3D				_position;						/** Point position */
+		QVector2D				_textureCoordinate;				/** Texture coordinates at point (at the moment only the U component is used) */
+		float					_lineWidth;						/** Line width at point */
 	};
 
 public:

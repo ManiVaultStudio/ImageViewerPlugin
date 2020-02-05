@@ -161,12 +161,6 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 			break;
 		}
 
-		case Qt::RightButton:
-		{
-			_renderer->setInteractionMode(InteractionMode::WindowLevel);
-			break;
-		}
-
 		default:
 			break;
 	}
@@ -178,38 +172,6 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 
 void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent)
 {
-	if (mouseEvent->button() == Qt::RightButton)
-	{
-		switch (_renderer->interactionMode())
-		{
-			//case InteractionMode::Selection:
-			case InteractionMode::WindowLevel:
-			{
-				if (mouseEvent->pos() == _initialMousePosition) {
-					contextMenu()->exec(mapToGlobal(mouseEvent->pos()));
-				}
-
-				break;
-			}
-
-			default:
-				break;
-		}
-	}
-
-	switch (mouseEvent->button())
-	{
-		case Qt::RightButton:
-		{
-			_renderer->setInteractionMode(InteractionMode::Selection);
-			break;
-		}
-		
-		default:
-			break;
-		
-	}
-
 	_renderer->mouseReleaseEvent(mouseEvent);
 
 	QOpenGLWidget::mouseReleaseEvent(mouseEvent);
@@ -217,6 +179,11 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent)
 
 void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent)
 {
+	if (mouseEvent->buttons() & Qt::RightButton) {
+		if (mouseEvent->pos() != _initialMousePosition)
+			_renderer->setInteractionMode(InteractionMode::WindowLevel);
+	}
+
 	_renderer->mouseMoveEvent(mouseEvent);
 
 	QOpenGLWidget::mouseMoveEvent(mouseEvent);
