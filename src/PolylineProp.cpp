@@ -182,33 +182,25 @@ void PolylineProp::render()
 
 void PolylineProp::updateShapes()
 {
-	if (_points.size() < 2)
-		return;
-
 	//qDebug() << "Update shapes" << fullName();
 
 	QVector<PolylineShape::Point> polylinePoints;
 
-	for (auto point : _points) {
-		polylinePoints.push_back(PolylineShape::Point(point, QVector2D(0.f, 0.f), _lineWidth));
-	}
-	
-	if (_closed) {
-		polylinePoints.insert(0, polylinePoints.back());
-		polylinePoints.append(polylinePoints[1]);
-		polylinePoints.append(polylinePoints[2]);
-	}
-	else {
-		polylinePoints.insert(0, polylinePoints.first());
-		polylinePoints.append(polylinePoints.back());
-	}
+	if (_points.size() >= 2) {
+		for (auto point : _points) {
+			polylinePoints.append(PolylineShape::Point(point, QVector2D(0.f, 0.f), _lineWidth));
+		}
 
-	/*
-	if (!polylinePoints.size() > 3) {
-		polylinePoints.insert(0, polylinePoints[polylinePoints.size() - 2]);
-		polylinePoints.append(polylinePoints[1]);
+		if (_closed) {
+			polylinePoints.insert(0, polylinePoints.back());
+			polylinePoints.append(polylinePoints[1]);
+			polylinePoints.append(polylinePoints[2]);
+		}
+		else {
+			polylinePoints.insert(0, polylinePoints.first());
+			polylinePoints.append(polylinePoints.back());
+		}
 	}
-	*/
 
 	shapeByName<PolylineShape>("PolylineShape")->setPoints(polylinePoints);
 }

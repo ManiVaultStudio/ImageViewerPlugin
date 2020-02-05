@@ -43,13 +43,16 @@ void SelectionPickerActor::initialize()
 {
 	Actor::initialize();
 
-	rectangleProp()->setLineWidth(20);
+	rectangleProp()->setLineWidth(2);
 	selectionBrushProp()->setLineWidth(2);
-	polygonSegmentsProp()->setLineWidth(renderer()->lineWidthNDC(5.f));
-	polygonClosingSegmentProp()->setLineWidth(renderer()->lineWidthNDC(2.f));
 
-	polygonSegmentsProp()->setLineColor(QColor(255, 165, 0, 220));
-	polygonClosingSegmentProp()->setLineColor(QColor(255, 165, 0, 50));
+	polygonSegmentsProp()->setClosed(false);
+	polygonSegmentsProp()->setLineWidth(2.0f);
+	polygonSegmentsProp()->setLineColor(QColor(255, 165, 0, 200));
+	
+	polygonClosingSegmentProp()->setClosed(false);
+	polygonClosingSegmentProp()->setLineWidth(1.5f);
+	polygonClosingSegmentProp()->setLineColor(QColor(255, 165, 0, 100));
 }
 
 QSize SelectionPickerActor::imageSize() const
@@ -267,6 +270,7 @@ void SelectionPickerActor::onMouseMoveEvent(QMouseEvent* mouseEvent)
 			if (_mousePositions.size() >= 2)
 			{
 				_mousePositions.back() = mouseEvent->pos();
+				_positions.back() = renderer()->screenPointToWorldPosition(modelViewMatrix(), mouseEvent->pos());
 				updateSelectionPolygon();
 			}
 			break;
@@ -505,6 +509,8 @@ void SelectionPickerActor::updateSelectionLasso()
 
 void SelectionPickerActor::updateSelectionPolygon()
 {
+	qDebug() << _mousePositions;
+
 	const auto noMousePositions = _mousePositions.size();
 
 	if (noMousePositions < 2)
@@ -518,8 +524,11 @@ void SelectionPickerActor::updateSelectionPolygon()
 		QVector<QVector3D> points;
 
 		for (auto position : _positions) {
-			points.append(renderer()->worldPositionToNormalizedScreenPoint(position));
+			points.append(renderer()->worldPositionToScreenPoint(position));
 		}
+
+		points.insert(0, points.first());
+		points.append(points.last());
 
 		polygonSegmentsProp()->setPoints(points);
 	}
@@ -527,10 +536,10 @@ void SelectionPickerActor::updateSelectionPolygon()
 	if (noMousePositions >= 3) {
 		QVector<QVector3D> points;
 
-		points.append(renderer()->worldPositionToNormalizedScreenPoint(_positions[1]));
-		points.append(renderer()->worldPositionToNormalizedScreenPoint(_positions[0]));
-		points.append(renderer()->worldPositionToNormalizedScreenPoint(_positions[noMousePositions - 2]));
-		points.append(renderer()->worldPositionToNormalizedScreenPoint(_positions[noMousePositions - 1]));
+		points.append(renderer()->worldPositionToScreenPoint(_positions.first()));
+		points.append(renderer()->worldPositionToScreenPoint(_positions.first()));
+		points.append(renderer()->worldPositionToScreenPoint(_positions.last()));
+		points.append(renderer()->worldPositionToScreenPoint(_positions.last()));
 
 		polygonClosingSegmentProp()->setPoints(points);
 	}
