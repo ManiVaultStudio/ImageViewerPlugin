@@ -1,5 +1,6 @@
 #include "Actor.h"
 
+#include <QMouseEvent>
 #include <QDebug>
 
 #include "Renderer.h"
@@ -11,7 +12,8 @@ Actor::Actor(Renderer* renderer, const QString& name) :
 	_registeredEvents(static_cast<int>(ActorEvent::None)),
 	_enabled(true),
 	_modelMatrix(),
-	_props()
+	_props(),
+	_mouseEvents()
 {
 }
 
@@ -193,6 +195,11 @@ bool Actor::mayProcessKeyReleaseEvent() const
 	return _enabled && _visible;
 }
 
+QVector<Actor::MouseEvent> Actor::mouseEvents()
+{
+	return _mouseEvents;
+}
+
 void Actor::onMousePressEvent(QMouseEvent* mouseEvent)
 {
 	//qDebug() << "Mouse press event in" << _name;
@@ -251,6 +258,14 @@ bool Actor::shouldReceiveKeyPressEvents() const
 bool Actor::shouldReceiveKeyReleaseEvents() const
 {
 	return _registeredEvents & static_cast<int>(ActorEvent::KeyRelease);
+}
+
+void Actor::addMouseEvent(QMouseEvent* mouseEvent)
+{
+	const auto screenPoint		= mouseEvent->pos();
+	const auto worldPosition	= _renderer->screenPointToWorldPosition(modelViewMatrix(), screenPoint);
+
+	_mouseEvents.append(MouseEvent(screenPoint, worldPosition));
 }
 
 bool Actor::isVisible() const

@@ -30,41 +30,6 @@ class SelectionPickerActor : public Actor
 	Q_OBJECT
 
 public:
-	/**
-	 * Mouse point class
-	 * @author Thomas Kroes
-	 */
-	class MouseEvent
-	{
-	public:
-		/** Default constructor */
-		MouseEvent() {};
-
-		/**
-		 * Constructor
-		 * @param screenPoint Point in screen coordinates [0..width, 0..height]
-		 * @param worldPosition Position in world space
-		 */
-		MouseEvent(const QPoint& screenPoint, const QVector3D& worldPosition) :
-			_screenPoint(screenPoint),
-			_worldPosition(worldPosition)
-		{
-		}
-
-		QVector2D screenPoint() const {
-			return _screenPoint;
-		}
-
-		QVector3D worldPosition() const {
-			return _worldPosition;
-		}
-
-	private:
-		QVector2D		_screenPoint;		/** Point in screen coordinates */
-		QVector3D		_worldPosition;		/** World position */
-	};
-
-public:
 	SelectionPickerActor(Renderer* renderer, const QString& name);
 
 	/** Show the actor */
@@ -155,12 +120,6 @@ private:
 	/** Ends the selection process */
 	void endSelection();
 
-	/**
-	 * Records a mouse event
-	 * @param mouseEvent Mouse event
-	 */
-	void addMouseEvent(QMouseEvent* mouseEvent);
-
 	/** Returns a pointer to the selection rectangle prop */
 	PolylineProp* rectangleProp();
 
@@ -231,6 +190,4 @@ private:
 	SelectionModifier		_selectionModifier;		/** The selection modifier determines if and how new selections are combined with existing selections e.g. add, replace and remove */
 	float					_brushRadius;			/** Brush radius */
 	float					_brushRadiusDelta;		/** Selection brush size increase/decrease delta */
-	QVector<MouseEvent>		_mouseEvents;			/** Recorded mouse events */
-	float					_outlineLineWidth;		/** Line width of the outline geometry */
 };

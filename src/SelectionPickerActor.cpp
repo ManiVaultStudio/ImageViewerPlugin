@@ -21,9 +21,7 @@ SelectionPickerActor::SelectionPickerActor(Renderer* renderer, const QString& na
 	_selectionType(SelectionType::Rectangle),
 	_selectionModifier(SelectionModifier::Replace),
 	_brushRadius(100.0f),
-	_brushRadiusDelta(10.f),
-	_mouseEvents(),
-	_outlineLineWidth(0.0025f)
+	_brushRadiusDelta(10.f)
 {
 	_registeredEvents |= static_cast<int>(ActorEvent::MousePress);
 	_registeredEvents |= static_cast<int>(ActorEvent::MouseRelease);
@@ -450,14 +448,6 @@ void SelectionPickerActor::endSelection()
 		_props.value(propName)->hide();
 	}
 	*/
-}
-
-void SelectionPickerActor::addMouseEvent(QMouseEvent* mouseEvent)
-{
-	const auto screenPoint		= mouseEvent->pos();
-	const auto worldPosition	= _renderer->screenPointToWorldPosition(modelViewMatrix(), screenPoint);
-
-	_mouseEvents.append(MouseEvent(screenPoint, worldPosition));
 }
 
 void SelectionPickerActor::updateSelectionRectangle()

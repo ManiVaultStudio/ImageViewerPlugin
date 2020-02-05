@@ -25,6 +25,41 @@ class Actor : public QObject
 	Q_OBJECT
 
 public:
+	/**
+	 * Mouse point class
+	 * @author Thomas Kroes
+	 */
+	class MouseEvent
+	{
+	public:
+		/** Default constructor */
+		MouseEvent() {};
+
+		/**
+		 * Constructor
+		 * @param screenPoint Point in screen coordinates [0..width, 0..height]
+		 * @param worldPosition Position in world space
+		 */
+		MouseEvent(const QPoint& screenPoint, const QVector3D& worldPosition) :
+			_screenPoint(screenPoint),
+			_worldPosition(worldPosition)
+		{
+		}
+
+		QVector2D screenPoint() const {
+			return _screenPoint;
+		}
+
+		QVector3D worldPosition() const {
+			return _worldPosition;
+		}
+
+	private:
+		QVector2D		_screenPoint;		/** Point in screen coordinates */
+		QVector3D		_worldPosition;		/** World position */
+	};
+
+public:
 	/** Constructor
 	 * @param renderer Renderer
 	 * @param name Name of the actor
@@ -200,6 +235,15 @@ protected:
 	/** Returns whether this actor may process key release events */
 	bool mayProcessKeyReleaseEvent() const;
 
+	/** Returns the recorded mouse events */
+	QVector<MouseEvent> mouseEvents();
+
+	/**
+	 * Records a mouse event
+	 * @param mouseEvent Mouse event
+	 */
+	void addMouseEvent(QMouseEvent* mouseEvent);
+
 signals:
 	/** Signals that the Actor name changed
 	 * @param name New Actor name
@@ -233,6 +277,7 @@ protected:
 	float									_opacity;				/** Render opacity */
 	QMatrix4x4								_modelMatrix;			/** Model matrix */
 	QMap<QString, QSharedPointer<Prop>>		_props;					/** Props  map */
+	QVector<MouseEvent>						_mouseEvents;			/** Recorded mouse events */
 
 	friend class Renderer;
 };
