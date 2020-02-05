@@ -101,7 +101,8 @@ void Renderer::mouseReleaseEvent(QMouseEvent* mouseEvent)
 					showContextMenu = true;
 
 				case InteractionMode::Selection:
-					//showContextMenu = actorByName<SelectionPickerActor>("SelectionPickerActor")->;
+					qDebug() << actorByName<SelectionPickerActor>("SelectionPickerActor")->mouseEvents().size();
+					showContextMenu = actorByName<SelectionPickerActor>("SelectionPickerActor")->mouseEvents().size() == 1;
 					break;
 
 				case InteractionMode::WindowLevel:

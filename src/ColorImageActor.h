@@ -82,9 +82,6 @@ public:
 	/** Invoked when the mouse pointer is moved */
 	void onMouseMoveEvent(QMouseEvent* mouseEvent) override;
 
-	/** Returns the mouse positions */
-	QVector<QPoint> mousePositions() const { return _mousePositions; };
-
 signals:
 	/**
 	 * Invoked when the image minimum and/or maximum pixel values change
@@ -113,5 +110,4 @@ private:
 	float				_levelNormalized;		/** Normalized display level */
 	float				_window;				/** Display window */
 	float				_level;					/** Display level */
-	QVector<QPoint>		_mousePositions;		/** Recorded mouse positions in screen coordinates */
 };

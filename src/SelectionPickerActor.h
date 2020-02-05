@@ -110,6 +110,9 @@ public:
 	/** Returns the context menu */
 	QMenu* contextMenu();
 
+	/** Returns whether selection is taking place */
+	bool isSelecting() const;
+
 private:
 	/** Initialize the actor */
 	void initialize();
@@ -120,11 +123,17 @@ private:
 	/** Ends the selection process */
 	void endSelection();
 
+	/** Updates the selection geometry */
+	void update();
+
 	/** Returns a pointer to the selection rectangle prop */
 	PolylineProp* rectangleProp();
 
 	/** Returns a pointer to the selection brush prop */
-	PolylineProp* selectionBrushProp();
+	PolylineProp* brushProp();
+
+	/** Returns a pointer to the lasso prop */
+	PolylineProp* lassoProp();
 
 	/** Returns a pointer to the polygon segments prop */
 	PolylineProp* polygonSegmentsProp();
@@ -190,4 +199,5 @@ private:
 	SelectionModifier		_selectionModifier;		/** The selection modifier determines if and how new selections are combined with existing selections e.g. add, replace and remove */
 	float					_brushRadius;			/** Brush radius */
 	float					_brushRadiusDelta;		/** Selection brush size increase/decrease delta */
+	bool					_selecting;				/** Whether selection is taking place */
 };

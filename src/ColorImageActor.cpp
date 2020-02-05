@@ -10,7 +10,6 @@ ColorImageActor::ColorImageActor(Renderer* renderer, const QString& name) :
 	Actor(renderer, name),
 	_imageMin(),
 	_imageMax(),
-	_mousePositions(),
 	_windowNormalized(),
 	_levelNormalized(),
 	_window(1.0f),
@@ -124,8 +123,9 @@ void ColorImageActor::onMousePressEvent(QMouseEvent* mouseEvent)
 
 	//qDebug() << "Mouse press event for" << _name;
 
-	_mousePositions.clear();
-	_mousePositions.push_back(mouseEvent->pos());
+	_mouseEvents.clear();
+
+	addMouseEvent(mouseEvent);
 }
 
 void ColorImageActor::onMouseReleaseEvent(QMouseEvent* mouseEvent)
@@ -143,15 +143,15 @@ void ColorImageActor::onMouseMoveEvent(QMouseEvent* mouseEvent)
 
 	//qDebug() << "Mouse move event for" << _name;
 
-	_mousePositions.push_back(mouseEvent->pos());
+	addMouseEvent(mouseEvent);
 
-	if (_mousePositions.size() > 1 && mouseEvent->buttons() & Qt::RightButton) {
-		const auto mousePosition0	= _mousePositions[_mousePositions.size() - 2];
-		const auto mousePosition1	= _mousePositions.back();
-		const auto deltaWindow		= (mousePosition1.x() - mousePosition0.x()) / 150.f;
-		const auto deltaLevel		= -(mousePosition1.y() - mousePosition0.y()) / 150.f;
-		const auto window			= std::clamp(_windowNormalized + deltaWindow, 0.0f, 1.0f);
-		const auto level			= std::clamp(_levelNormalized + deltaLevel, 0.0f, 1.0f);
+	if (_mouseEvents.size() > 1 && mouseEvent->buttons() & Qt::RightButton) {
+		const auto pScreen0		= _mouseEvents[_mouseEvents.size() - 2].screenPoint();
+		const auto pScreen1		= _mouseEvents.last().screenPoint();
+		const auto deltaWindow	= (pScreen1.x() - pScreen0.x()) / 150.f;
+		const auto deltaLevel	= -(pScreen1.y() - pScreen0.y()) / 150.f;
+		const auto window		= std::clamp(_windowNormalized + deltaWindow, 0.0f, 1.0f);
+		const auto level		= std::clamp(_levelNormalized + deltaLevel, 0.0f, 1.0f);
 
 		setWindowLevel(window, level);
 	}

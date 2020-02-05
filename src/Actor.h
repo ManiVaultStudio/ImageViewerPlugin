@@ -40,7 +40,7 @@ public:
 		 * @param screenPoint Point in screen coordinates [0..width, 0..height]
 		 * @param worldPosition Position in world space
 		 */
-		MouseEvent(const QPoint& screenPoint, const QVector3D& worldPosition) :
+		MouseEvent(const QPoint& screenPoint, const QVector3D& worldPosition = QVector3D()) :
 			_screenPoint(screenPoint),
 			_worldPosition(worldPosition)
 		{

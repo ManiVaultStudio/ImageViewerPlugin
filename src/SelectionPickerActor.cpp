@@ -21,7 +21,8 @@ SelectionPickerActor::SelectionPickerActor(Renderer* renderer, const QString& na
 	_selectionType(SelectionType::Rectangle),
 	_selectionModifier(SelectionModifier::Replace),
 	_brushRadius(100.0f),
-	_brushRadiusDelta(10.f)
+	_brushRadiusDelta(10.f),
+	_selecting(false)
 {
 	_registeredEvents |= static_cast<int>(ActorEvent::MousePress);
 	_registeredEvents |= static_cast<int>(ActorEvent::MouseRelease);
@@ -32,7 +33,7 @@ SelectionPickerActor::SelectionPickerActor(Renderer* renderer, const QString& na
 
 	addProp<PolylineProp>("SelectionRectangleProp");
 	addProp<PolylineProp>("SelectionBrushProp");
-	addProp<PolylineProp>("SelectionLassoProp");
+	addProp<PolylineProp>("LassoProp");
 	addProp<PolylineProp>("PolygonSegmentsProp");
 	addProp<PolylineProp>("PolygonClosingSegmentProp");
 }
@@ -61,7 +62,7 @@ void SelectionPickerActor::initialize()
 	Actor::initialize();
 
 	rectangleProp()->setLineWidth(2);
-	selectionBrushProp()->setLineWidth(2);
+	brushProp()->setLineWidth(2);
 
 	polygonSegmentsProp()->setClosed(false);
 	polygonSegmentsProp()->setLineWidth(2.0f);
@@ -382,6 +383,8 @@ void SelectionPickerActor::startSelection()
 {
 	qDebug() << "Start selection" << _name;
 
+	_selecting = true;
+
 	switch (_selectionType)
 	{
 		case SelectionType::None:
@@ -389,16 +392,14 @@ void SelectionPickerActor::startSelection()
 
 		case SelectionType::Rectangle:
 			rectangleProp()->show();
-			updateSelectionRectangle();
 			break;
 
 		case SelectionType::Brush:
-			selectionBrushProp()->show();
-			updateSelectionBrush();
+			brushProp()->show();
 			break;
 
 		case SelectionType::Lasso:
-			//lassoShape()->show();
+			lassoProp()->show();
 			break;
 
 		case SelectionType::Polygon:
@@ -409,6 +410,8 @@ void SelectionPickerActor::startSelection()
 		default:
 			break;
 	}
+
+	update();
 }
 
 void SelectionPickerActor::endSelection()
@@ -417,6 +420,40 @@ void SelectionPickerActor::endSelection()
 
 	_mouseEvents.clear();
 	
+	_selecting = false;
+	
+	update();
+
+	switch (_selectionType)
+	{
+		case SelectionType::None:
+			break;
+
+		case SelectionType::Rectangle:
+			rectangleProp()->hide();
+			break;
+
+		case SelectionType::Brush:
+			brushProp()->hide();
+			updateSelectionBrush();
+			break;
+
+		case SelectionType::Lasso:
+			//lassoShape()->show();
+			break;
+
+		case SelectionType::Polygon:
+			polygonSegmentsProp()->hide();
+			polygonClosingSegmentProp()->hide();
+			break;
+
+		default:
+			break;
+	}
+}
+
+void SelectionPickerActor::update()
+{
 	switch (_selectionType)
 	{
 		case SelectionType::None:
@@ -441,13 +478,6 @@ void SelectionPickerActor::endSelection()
 		default:
 			break;
 	}
-
-	/*
-	for (auto propName : _props.keys())
-	{
-		_props.value(propName)->hide();
-	}
-	*/
 }
 
 void SelectionPickerActor::updateSelectionRectangle()
@@ -519,9 +549,9 @@ void SelectionPickerActor::updateSelectionBrush()
 
 	const auto leftButtonDown = QGuiApplication::mouseButtons() & Qt::LeftButton;
 
-	selectionBrushProp()->setLineColor(leftButtonDown ? QColor(255, 165, 0, 150) : QColor(255, 165, 0, 50));
-	selectionBrushProp()->setLineWidth(leftButtonDown ? 4.0f : 2.0f);
-	selectionBrushProp()->setPoints(points);
+	brushProp()->setLineColor(leftButtonDown ? QColor(255, 165, 0, 150) : QColor(255, 165, 0, 50));
+	brushProp()->setLineWidth(leftButtonDown ? 4.0f : 2.0f);
+	brushProp()->setPoints(points);
 
 	emit changed(this);
 }
@@ -567,9 +597,14 @@ PolylineProp* SelectionPickerActor::rectangleProp()
 	return propByName<PolylineProp>("SelectionRectangleProp");
 }
 
-PolylineProp* SelectionPickerActor::selectionBrushProp()
+PolylineProp* SelectionPickerActor::brushProp()
 {
 	return propByName<PolylineProp>("SelectionBrushProp");
+}
+
+PolylineProp* SelectionPickerActor::lassoProp()
+{
+	return propByName<PolylineProp>("LassoProp");
 }
 
 PolylineProp* SelectionPickerActor::polygonSegmentsProp()
@@ -624,6 +659,11 @@ QMenu* SelectionPickerActor::contextMenu()
 	selectionMenu->addAction(invertSelectionAction);
 
 	return selectionMenu;
+}
+
+bool SelectionPickerActor::isSelecting() const
+{
+	return _selecting;
 }
 
 /*
