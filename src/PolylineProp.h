@@ -29,6 +29,14 @@ public:
 	/** Set polyline points */
 	void setPoints(const QVector<QVector3D>& points);
 
+	/** Returns whether the polyline is closed */
+	bool closed();
+
+	/** Sets whether the polyline is closed
+	 * @param closed Closed
+	 */
+	void setClosed(const bool& closed);
+
 	/** Returns the line width */
 	float lineWidth();
 
@@ -60,6 +68,7 @@ protected:
 
 protected:
 	QVector<QVector3D>		_points;		/** Polyline points */
+	bool					_closed;		/** Whether to close the polyline */
 	float					_lineWidth;		/** Line width */
 	QColor					_lineColor;		/** Line color */
 };

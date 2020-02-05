@@ -106,8 +106,8 @@ public:
 	 */
 	QVector2D screenPointToNormalizedScreenPoint(const QVector2D& screenPoint) const;
 
-	/** Returns the matrix that converts screen space [0..width, 0..height] to clip space [-1..1, -1..1] */
-	QMatrix4x4 screenSpaceToClipSpaceMatrix() const;
+	/** Returns the matrix that converts screen coordinates [0..width, 0..height] to normalized screen coordinates [-1..1, -1..1] */
+	QMatrix4x4 screenCoordinatesToNormalizedScreenCoordinatesMatrix() const;
 
 	/** Returns the view matrix */
 	QMatrix4x4 viewMatrix() const;

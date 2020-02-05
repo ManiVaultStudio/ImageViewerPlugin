@@ -19,6 +19,7 @@ const std::string fragmentShaderSource =
 
 PolylineProp::PolylineProp(Actor* actor, const QString& name) :
 	Prop(actor, name),
+	_closed(true),
 	_lineWidth(0.01f),
 	_lineColor(255, 160, 0, 100)
 {
@@ -52,6 +53,21 @@ void PolylineProp::setPoints(const QVector<QVector3D>& points)
 		return;
 
 	_points = points;
+
+	updateShapes();
+}
+
+bool PolylineProp::closed()
+{
+	return _closed;
+}
+
+void PolylineProp::setClosed(const bool& closed)
+{
+	if (closed == _closed)
+		return;
+
+	_closed = closed;
 
 	updateShapes();
 }
@@ -152,7 +168,7 @@ void PolylineProp::render()
 	texture->bind();
 	{
 		if (shaderProgram->bind()) {
-			shaderProgram->setUniformValue("screenSpaceToClipSpace", renderer()->screenSpaceToClipSpaceMatrix());
+			shaderProgram->setUniformValue("screenToNormalizedScreenMatrix", renderer()->screenCoordinatesToNormalizedScreenCoordinatesMatrix());
 			shaderProgram->setUniformValue("lineTexture", 0);
 			shaderProgram->setUniformValue("lineWidth", _lineWidth);
 
@@ -166,6 +182,9 @@ void PolylineProp::render()
 
 void PolylineProp::updateShapes()
 {
+	if (_points.size() < 2)
+		return;
+
 	//qDebug() << "Update shapes" << fullName();
 
 	QVector<PolylineShape::Point> polylinePoints;
@@ -173,11 +192,23 @@ void PolylineProp::updateShapes()
 	for (auto point : _points) {
 		polylinePoints.push_back(PolylineShape::Point(point, QVector2D(0.f, 0.f), _lineWidth));
 	}
-
-	if (!_points.isEmpty()) {
+	
+	if (_closed) {
+		polylinePoints.insert(0, polylinePoints.back());
+		polylinePoints.append(polylinePoints[1]);
+		polylinePoints.append(polylinePoints[2]);
+	}
+	else {
 		polylinePoints.insert(0, polylinePoints.first());
 		polylinePoints.append(polylinePoints.back());
 	}
+
+	/*
+	if (!polylinePoints.size() > 3) {
+		polylinePoints.insert(0, polylinePoints[polylinePoints.size() - 2]);
+		polylinePoints.append(polylinePoints[1]);
+	}
+	*/
 
 	shapeByName<PolylineShape>("PolylineShape")->setPoints(polylinePoints);
 }

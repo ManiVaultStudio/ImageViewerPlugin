@@ -260,7 +260,7 @@ QVector2D Renderer::screenPointToNormalizedScreenPoint(const QVector2D& screenPo
 	return QVector2D(-1.f, -1.f) + 2.f * (QVector2D(screenPoint.x(), _parentWidget->height() - screenPoint.y()) / viewSize);
 }
 
-QMatrix4x4 Renderer::screenSpaceToClipSpaceMatrix() const
+QMatrix4x4 Renderer::screenCoordinatesToNormalizedScreenCoordinatesMatrix() const
 {
 	QMatrix4x4 translate, scale;
 

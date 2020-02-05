@@ -5,8 +5,8 @@ layout (triangle_strip, max_vertices = 4) out;
 
 out vec4 g_color;
 
-uniform mat4	screenSpaceToClipSpace;		// Projection matrix
-uniform float	lineWidth;					// Line width
+uniform mat4	screenToNormalizedScreenMatrix;		// Projection matrix
+uniform float	lineWidth;							// Line width
 
 vec3 halfAngle(vec3 vA, vec3 vB) 
 { 
@@ -51,19 +51,19 @@ void main() {
 	vec3 vOffsetStart	= startLhs / startInvScale;
 	vec3 vOffsetEnd		= endLhs / endInvScale;
 
-	gl_Position		= screenSpaceToClipSpace * vec4(pStart + vOffsetStart, 1.0);
+	gl_Position		= screenToNormalizedScreenMatrix * vec4(pStart + vOffsetStart, 1.0);
 	g_color			= vec4(1);
 	EmitVertex();
 	
-	gl_Position		= screenSpaceToClipSpace * vec4(pStart - vOffsetStart, 1.0);
+	gl_Position		= screenToNormalizedScreenMatrix * vec4(pStart - vOffsetStart, 1.0);
 	g_color			= vec4(1);
 	EmitVertex();
 	
-	gl_Position		= screenSpaceToClipSpace * vec4(pEnd + vOffsetEnd, 1.0);
+	gl_Position		= screenToNormalizedScreenMatrix * vec4(pEnd + vOffsetEnd, 1.0);
 	g_color			= vec4(1);
 	EmitVertex();
 
-	gl_Position		= screenSpaceToClipSpace * vec4(pEnd - vOffsetEnd, 1.0);
+	gl_Position		= screenToNormalizedScreenMatrix * vec4(pEnd - vOffsetEnd, 1.0);
 	g_color			= vec4(1);
 	EmitVertex();
 
