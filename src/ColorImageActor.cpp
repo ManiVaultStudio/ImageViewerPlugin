@@ -122,7 +122,7 @@ void ColorImageActor::onMousePressEvent(QMouseEvent* mouseEvent)
 		return;
 
 	//qDebug() << "Mouse press event for" << _name;
-	qDebug() << _mouseEvents.size();
+	
 	_mouseEvents.clear();
 
 	addMouseEvent(mouseEvent);
@@ -156,7 +156,7 @@ void ColorImageActor::onMouseMoveEvent(QMouseEvent* mouseEvent)
 		const auto deltaLevel	= -(pScreen1.y() - pScreen0.y()) / 150.f;
 		const auto window		= std::clamp(_windowNormalized + deltaWindow, 0.0f, 1.0f);
 		const auto level		= std::clamp(_levelNormalized + deltaLevel, 0.0f, 1.0f);
-
+		
 		setWindowLevel(window, level);
 	}
 }

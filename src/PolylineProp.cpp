@@ -21,7 +21,7 @@ PolylineProp::PolylineProp(Actor* actor, const QString& name) :
 	Prop(actor, name),
 	_closed(true),
 	_lineWidth(0.01f),
-	_lineColor(255, 160, 0, 100)
+	_lineColor(255, 255, 255, 255)
 {
 	addShape<PolylineShape>("PolylineShape");
 	addShaderProgram("PolylineShape");

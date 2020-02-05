@@ -113,11 +113,6 @@ void ImageViewerWidget::initializeGL()
 	doneCurrent();
 }
 
-void ImageViewerWidget::resizeGL(int w, int h)
-{
-//	_renderer->resize(QSize(w, h));
-}
-
 void ImageViewerWidget::paintGL() {
 
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);

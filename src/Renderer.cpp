@@ -20,6 +20,8 @@ Renderer::Renderer(ImageViewerWidget* parentWidget) :
 	_zoomSensitivity(0.1f),
 	_margin(25)
 {
+	addNamedColor("SelectionOutline", QColor(239, 130, 13, 255));
+
 	createActors();
 }
 
@@ -68,6 +70,11 @@ void Renderer::mousePressEvent(QMouseEvent* mouseEvent)
 {
 	//qDebug() << "Mouse press event";
 
+	if (mouseEvent->buttons() & Qt::RightButton) {
+		if (_interactionMode != InteractionMode::Navigation)
+			setInteractionMode(InteractionMode::WindowLevel);
+	}
+
 	_mouseEvents.clear();
 	_mouseEvents.push_back(QSharedPointer<QMouseEvent>::create(*mouseEvent));
 
@@ -97,10 +104,12 @@ void Renderer::mouseMoveEvent(QMouseEvent* mouseEvent)
 {
 	//qDebug() << "Mouse move event";
 
+	/*
 	if (mouseEvent->buttons() & Qt::RightButton) {
 		if (_interactionMode != InteractionMode::Navigation && mouseEvent->pos() != _mouseEvents.first()->pos())
 			setInteractionMode(InteractionMode::WindowLevel);
 	}
+	*/
 
 	switch (mouseEvent->buttons())
 	{
@@ -619,7 +628,10 @@ bool Renderer::allowsContextMenu()
 	switch (interactionMode())
 	{
 		case InteractionMode::Navigation:
+			break;
+
 		case InteractionMode::WindowLevel:
+			return colorImageActor()->mouseEvents().size() == 1;
 			break;
 
 		case InteractionMode::None:
@@ -634,4 +646,22 @@ bool Renderer::allowsContextMenu()
 	}
 
 	return false;
+}
+
+void Renderer::addNamedColor(const QString& name, const QColor& color)
+{
+	_colorMap.insert(name, color);
+}
+
+QColor Renderer::colorByName(const QString& name, const std::uint32_t& alpha /*= 255*/) const
+{
+	if (!_colorMap.contains(name)) {
+		return QColor(255, 255, 255, alpha);
+	}
+
+	auto color = _colorMap.value(name);
+
+	color.setAlpha(alpha);
+
+	return color;
 }

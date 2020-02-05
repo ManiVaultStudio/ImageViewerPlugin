@@ -7,6 +7,8 @@
 
 #include "Actor.h"
 
+#include <QColor>
+
 class ImageViewerWidget;
 class ColorImageActor;
 class SelectionImageActor;
@@ -173,6 +175,18 @@ public:
 	/** Whether the display of a context menu is allowed */
 	bool allowsContextMenu();
 
+	/** Adds a named color
+	 * @param name Name of the color
+	 * @param color The color
+	 */
+	void addNamedColor(const QString& name, const QColor& color);
+
+	/** Returns a color by name
+	 * @param name Name of the color
+	 */
+	QColor colorByName(const QString& name, const std::uint32_t& alpha = 255) const;
+
+	/** Returns the parent widget */
 	QWidget* parentWidget() {
 		return reinterpret_cast<QWidget*>(_parentWidget);
 	}
@@ -275,4 +289,5 @@ protected:
 	float									_zoom;					/** Zoom view in/out */
 	float									_zoomSensitivity;		/** Zoom sensitivity */
 	int										_margin;				/** Margin between image and viewer widget boundaries */
+	QMap<QString, QColor>					_colorMap;				/** Color map */
 };

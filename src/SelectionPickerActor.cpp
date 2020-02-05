@@ -20,8 +20,8 @@ SelectionPickerActor::SelectionPickerActor(Renderer* renderer, const QString& na
 	_imageSize(),
 	_selectionType(SelectionType::Rectangle),
 	_selectionModifier(SelectionModifier::Replace),
-	_brushRadius(100.0f),
-	_brushRadiusDelta(10.f),
+	_brushRadius(40.0f),
+	_brushRadiusDelta(5.f),
 	_selecting(false)
 {
 	_registeredEvents |= static_cast<int>(ActorEvent::MousePress);
@@ -38,145 +38,75 @@ SelectionPickerActor::SelectionPickerActor(Renderer* renderer, const QString& na
 	addProp<PolylineProp>("PolygonClosingSegmentProp");
 }
 
-void SelectionPickerActor::show()
-{
-	Actor::show();
-
-	_mouseEvents.clear();
-
-	for (auto propName : _props.keys())
-	{
-		_props.value(propName)->hide();
-	}
-}
-
-void SelectionPickerActor::hide()
-{
-	Actor::hide();
-
-	_mouseEvents.clear();
-}
-
 void SelectionPickerActor::initialize()
 {
 	Actor::initialize();
 
-	rectangleProp()->setLineWidth(2);
-	brushProp()->setLineWidth(3);
+	rectangleProp()->setLineWidth(2.5f);
+	rectangleProp()->setLineColor(renderer()->colorByName("SelectionOutline", 200));
+
+	brushProp()->setLineWidth(2.5f);
 
 	polygonSegmentsProp()->setClosed(false);
-	polygonSegmentsProp()->setLineWidth(2.0f);
-	polygonSegmentsProp()->setLineColor(QColor(255, 165, 0, 200));
+	polygonSegmentsProp()->setLineWidth(3.5f);
+	polygonSegmentsProp()->setLineColor(renderer()->colorByName("SelectionOutline", 200));
 	
 	polygonClosingSegmentProp()->setClosed(false);
-	polygonClosingSegmentProp()->setLineWidth(1.5f);
-	polygonClosingSegmentProp()->setLineColor(QColor(255, 165, 0, 100));
+	polygonClosingSegmentProp()->setLineWidth(2.0f);
+	polygonClosingSegmentProp()->setLineColor(renderer()->colorByName("SelectionOutline", 100));
 }
 
-QSize SelectionPickerActor::imageSize() const
+void SelectionPickerActor::onKeyPressEvent(QKeyEvent* keyEvent)
 {
-	return _imageSize;
+	switch (keyEvent->key())
+	{
+		case Qt::Key::Key_R:
+			setSelectionType(SelectionType::Rectangle);
+			break;
+
+		case Qt::Key::Key_B:
+			setSelectionType(SelectionType::Brush);
+			break;
+
+		case Qt::Key::Key_L:
+			setSelectionType(SelectionType::Lasso);
+			break;
+
+		case Qt::Key::Key_P:
+			setSelectionType(SelectionType::Polygon);
+			break;
+
+		case Qt::Key::Key_Shift:
+			setSelectionModifier(SelectionModifier::Add);
+			break;
+
+		case Qt::Key::Key_Control:
+			setSelectionModifier(SelectionModifier::Remove);
+			break;
+
+		case Qt::Key::Key_Escape:
+			endSelection();
+			break;
+
+		default:
+			break;
+	}
 }
 
-void SelectionPickerActor::setImageSize(const QSize& imageSize)
+void SelectionPickerActor::onKeyReleaseEvent(QKeyEvent* keyEvent)
 {
-	if (imageSize == _imageSize)
-		return;
+	switch (keyEvent->key())
+	{
+		case Qt::Key::Key_Shift:
+		case Qt::Key::Key_Control:
+		{
+			setSelectionModifier(SelectionModifier::Replace);
+			break;
+		}
 
-	qDebug() << "Set image size";
-
-	_imageSize = imageSize;
-
-	emit imageSizeChanged(_imageSize);
-}
-
-SelectionType SelectionPickerActor::selectionType() const
-{
-	return _selectionType;
-}
-
-void SelectionPickerActor::setSelectionType(const SelectionType& selectionType)
-{
-	if (selectionType == _selectionType)
-		return;
-	
-	_selectionType = selectionType;
-
-	qDebug() << "Set selection type to" << selectionTypeName(_selectionType);
-
-	_mouseEvents.clear();
-
-	_selecting = false;
-
-	update();
-
-	emit selectionTypeChanged(_selectionType);
-}
-
-SelectionModifier SelectionPickerActor::selectionModifier() const
-{
-	return _selectionModifier;
-}
-
-void SelectionPickerActor::setSelectionModifier(const SelectionModifier& selectionModifier)
-{
-	if (selectionModifier == _selectionModifier)
-		return;
-
-	_selectionModifier = selectionModifier;
-
-	qDebug() << "Set selection modifier to" << selectionModifierName(selectionModifier);
-
-	emit selectionModifierChanged(_selectionModifier);
-}
-
-float SelectionPickerActor::brushRadius() const
-{
-	return _brushRadius;
-}
-
-void SelectionPickerActor::setBrushRadius(const float& brushRadius)
-{
-	const auto boundBrushRadius = qBound(1.0f, 1000.f, brushRadius);
-
-	if (boundBrushRadius == _brushRadius)
-		return;
-
-	_brushRadius = boundBrushRadius;
-
-	qDebug() << "Set brush radius to" << QString::number(_brushRadius, 'f', 1);
-
-	if (_selectionType == SelectionType::Brush)
-		updateSelectionBrush();
-}
-
-float SelectionPickerActor::brushRadiusDelta() const
-{
-	return _brushRadiusDelta;
-}
-
-void SelectionPickerActor::setBrushRadiusDelta(const float& brushRadiusDelta)
-{
-	const auto boundBrushRadiusDelta = qBound(0.1f, 10000.f, brushRadiusDelta);
-
-	if (boundBrushRadiusDelta == _brushRadiusDelta)
-		return;
-
-	_brushRadiusDelta = boundBrushRadiusDelta;
-
-	qDebug() << "Set brush radius delta" << _brushRadiusDelta;
-
-	emit brushRadiusDeltaChanged(_brushRadiusDelta);
-}
-
-void SelectionPickerActor::brushSizeIncrease()
-{
-	setBrushRadius(_brushRadius + _brushRadiusDelta);
-}
-
-void SelectionPickerActor::brushSizeDecrease()
-{
-	setBrushRadius(_brushRadius - _brushRadiusDelta);
+		default:
+			break;
+	}
 }
 
 void SelectionPickerActor::onMousePressEvent(QMouseEvent* mouseEvent)
@@ -351,59 +281,6 @@ void SelectionPickerActor::onMouseWheelEvent(QWheelEvent* wheelEvent)
 	update();
 }
 
-void SelectionPickerActor::onKeyPressEvent(QKeyEvent* keyEvent)
-{
-	switch (keyEvent->key())
-	{
-		case Qt::Key::Key_R:
-			setSelectionType(SelectionType::Rectangle);
-			break;
-
-		case Qt::Key::Key_B:
-			setSelectionType(SelectionType::Brush);
-			break;
-
-		case Qt::Key::Key_L:
-			setSelectionType(SelectionType::Lasso);
-			break;
-
-		case Qt::Key::Key_P:
-			setSelectionType(SelectionType::Polygon);
-			break;
-
-		case Qt::Key::Key_Shift:
-			setSelectionModifier(SelectionModifier::Add);
-			break;
-
-		case Qt::Key::Key_Control:
-			setSelectionModifier(SelectionModifier::Remove);
-			break;
-
-		case Qt::Key::Key_Escape:
-			endSelection();
-			break;
-
-		default:
-			break;
-	}
-}
-
-void SelectionPickerActor::onKeyReleaseEvent(QKeyEvent* keyEvent)
-{
-	switch (keyEvent->key())
-	{
-		case Qt::Key::Key_Shift:
-		case Qt::Key::Key_Control:
-		{
-			setSelectionModifier(SelectionModifier::Replace);
-			break;
-		}
-
-		default:
-			break;
-	}
-}
-
 void SelectionPickerActor::startSelection()
 {
 	qDebug() << "Start selection" << _name;
@@ -426,14 +303,28 @@ void SelectionPickerActor::endSelection()
 	update();
 }
 
+void SelectionPickerActor::show()
+{
+	Actor::show();
+	/*
+	_mouseEvents.clear();
+
+	for (auto propName : _props.keys())
+	{
+		_props.value(propName)->hide();
+	}
+	*/
+}
+
+void SelectionPickerActor::hide()
+{
+	Actor::hide();
+
+	_mouseEvents.clear();
+}
+
 void SelectionPickerActor::update()
 {
-	rectangleProp()->setVisible(_selectionType == SelectionType::Rectangle);
-	brushProp()->setVisible(_selectionType == SelectionType::Brush);
-	lassoProp()->setVisible(_selectionType == SelectionType::Lasso);
-	polygonSegmentsProp()->setVisible(_selectionType == SelectionType::Polygon);
-	polygonClosingSegmentProp()->setVisible(_selectionType == SelectionType::Polygon);
-
 	switch (_selectionType)
 	{
 		case SelectionType::None:
@@ -466,6 +357,7 @@ void SelectionPickerActor::updateSelectionRectangle()
 {
 	QVector<QVector3D> points;
 
+	// No need to draw a rectangle if less than two mouse events were recorded
 	if (_mouseEvents.size() < 2)
 	{
 		rectangleProp()->setPoints(points);
@@ -499,30 +391,30 @@ void SelectionPickerActor::updateSelectionBrush()
 {
 	QVector<QVector3D> points;
 
+	// Determine the center of the brush in screen coordinates
 	const auto mousePosition	= renderer()->parentWidget()->mapFromGlobal(QCursor::pos());
 	const auto pCenter			= QVector2D(mousePosition.x(), renderer()->viewSize().height() - mousePosition.y());
 	const auto noSegments		= 128u;
 
-	qDebug() << "updateSelectionBrush" << mousePosition;
-
 	std::vector<GLfloat> vertexCoordinates;
 
+	// Allocate vertices buffer
 	vertexCoordinates.resize(noSegments * 3);
 
+	// Generate polyline points in screen coordinates
 	for (std::uint32_t s = 0; s < noSegments; s++) {
-		const auto theta	= 2.0f * M_PI * float(s) / float(noSegments);
+		const auto theta	= 2.0f * M_PI * float(s) / static_cast<float>(noSegments);
 		const auto pBrush	= QVector2D(_brushRadius * cosf(theta), _brushRadius * sinf(theta));
 
 		points.append(pCenter + pBrush);
 	}
-
-	points.insert(0, points.back());
+	
+	brushProp()->setPoints(points);
 
 	const auto leftButtonDown = QGuiApplication::mouseButtons() & Qt::LeftButton;
-
-	brushProp()->setLineColor(leftButtonDown ? QColor(255, 165, 0, 150) : QColor(255, 165, 0, 50));
-	brushProp()->setLineWidth(leftButtonDown ? 4.0f : 2.0f);
-	brushProp()->setPoints(points);
+	
+	// Change the line color when the left mouse button is down
+	brushProp()->setLineColor(leftButtonDown ? renderer()->colorByName("SelectionOutline", 200) : renderer()->colorByName("SelectionOutline", 80));
 }
 
 void SelectionPickerActor::updateSelectionLasso()
@@ -533,8 +425,10 @@ void SelectionPickerActor::updateSelectionPolygon()
 {
 	const auto noMouseEvents = _mouseEvents.size();
 
+	// A polyline for n segments and one for the segment that closes the polygon
 	QVector<QVector3D> segmentsPoints, closingSegmentPoints;
 
+	// Handle edge case of only two mouse points
 	if (noMouseEvents >= 2) {
 		for (auto mouseEvent : _mouseEvents) {
 			segmentsPoints.append(renderer()->worldPositionToScreenPoint(mouseEvent.worldPosition()));
@@ -556,6 +450,116 @@ void SelectionPickerActor::updateSelectionPolygon()
 
 	polygonSegmentsProp()->setPoints(segmentsPoints);
 	polygonClosingSegmentProp()->setPoints(closingSegmentPoints);
+}
+
+QSize SelectionPickerActor::imageSize() const
+{
+	return _imageSize;
+}
+
+void SelectionPickerActor::setImageSize(const QSize& imageSize)
+{
+	if (imageSize == _imageSize)
+		return;
+
+	qDebug() << "Set image size";
+
+	_imageSize = imageSize;
+
+	emit imageSizeChanged(_imageSize);
+}
+
+SelectionType SelectionPickerActor::selectionType() const
+{
+	return _selectionType;
+}
+
+void SelectionPickerActor::setSelectionType(const SelectionType& selectionType)
+{
+	if (selectionType == _selectionType)
+		return;
+
+	_selectionType = selectionType;
+
+	qDebug() << "Set selection type to" << selectionTypeName(_selectionType);
+
+	_selecting = false;
+
+	rectangleProp()->setVisible(_selectionType == SelectionType::Rectangle);
+	brushProp()->setVisible(_selectionType == SelectionType::Brush);
+	lassoProp()->setVisible(_selectionType == SelectionType::Lasso);
+	polygonSegmentsProp()->setVisible(_selectionType == SelectionType::Polygon);
+	polygonClosingSegmentProp()->setVisible(_selectionType == SelectionType::Polygon);
+
+	update();
+
+	emit selectionTypeChanged(_selectionType);
+}
+
+SelectionModifier SelectionPickerActor::selectionModifier() const
+{
+	return _selectionModifier;
+}
+
+void SelectionPickerActor::setSelectionModifier(const SelectionModifier& selectionModifier)
+{
+	if (selectionModifier == _selectionModifier)
+		return;
+
+	_selectionModifier = selectionModifier;
+
+	qDebug() << "Set selection modifier to" << selectionModifierName(selectionModifier);
+
+	emit selectionModifierChanged(_selectionModifier);
+}
+
+float SelectionPickerActor::brushRadius() const
+{
+	return _brushRadius;
+}
+
+void SelectionPickerActor::setBrushRadius(const float& brushRadius)
+{
+	const auto boundBrushRadius = qBound(1.0f, 1000.f, brushRadius);
+
+	if (boundBrushRadius == _brushRadius)
+		return;
+
+	_brushRadius = boundBrushRadius;
+
+	qDebug() << "Set brush radius to" << QString::number(_brushRadius, 'f', 1);
+
+	if (_selectionType == SelectionType::Brush)
+		updateSelectionBrush();
+}
+
+float SelectionPickerActor::brushRadiusDelta() const
+{
+	return _brushRadiusDelta;
+}
+
+void SelectionPickerActor::setBrushRadiusDelta(const float& brushRadiusDelta)
+{
+	const auto boundBrushRadiusDelta = qBound(0.1f, 10000.f, brushRadiusDelta);
+
+	if (boundBrushRadiusDelta == _brushRadiusDelta)
+		return;
+
+	_brushRadiusDelta = boundBrushRadiusDelta;
+
+	qDebug() << "Set brush radius delta" << _brushRadiusDelta;
+
+	emit brushRadiusDeltaChanged(_brushRadiusDelta);
+}
+
+void SelectionPickerActor::brushSizeIncrease()
+{
+	setBrushRadius(_brushRadius + _brushRadiusDelta);
+}
+
+void SelectionPickerActor::brushSizeDecrease()
+{
+	setBrushRadius(_brushRadius - _brushRadiusDelta);
 }
 
 PolylineProp* SelectionPickerActor::rectangleProp()

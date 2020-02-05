@@ -89,6 +89,12 @@ public:
 	/** Decrease the brush size by _brushRadiusDelta */
 	void brushSizeDecrease();
 
+	/** Invoked when a key is pressed */
+	void onKeyPressEvent(QKeyEvent* keyEvent) override;
+
+	/** Invoked when a key is release */
+	void onKeyReleaseEvent(QKeyEvent* keyEvent) override;
+
 	/** Invoked when a mouse button is pressed */
 	void onMousePressEvent(QMouseEvent* mouseEvent) override;
 
@@ -100,12 +106,6 @@ public:
 
 	/** Invoked when the mouse wheel is rotated */
 	void onMouseWheelEvent(QWheelEvent* wheelEvent) override;
-
-	/** Invoked when a key is pressed */
-	void onKeyPressEvent(QKeyEvent* keyEvent) override;
-
-	/** Invoked when a key is release */
-	void onKeyReleaseEvent(QKeyEvent* keyEvent) override;
 
 	/** Returns the context menu */
 	QMenu* contextMenu();

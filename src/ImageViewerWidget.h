@@ -53,50 +53,47 @@ public:
 	
 private:
 	/** Initializes OpenGL */
-	void initializeGL() Q_DECL_OVERRIDE;
-
-	/** Invoked when the OpenGL window changes size */
-	void resizeGL(int w, int h) Q_DECL_OVERRIDE;
+	void initializeGL() override;
 
 	/** Paints the OpenGL content */
-	void paintGL() Q_DECL_OVERRIDE;
+	void paintGL() override;
 
 private:
 	/**
 	 * Invoked when a key is pressed
 	 * @param keyEvent Key event
 	 */
-	void keyPressEvent(QKeyEvent* keyEvent) Q_DECL_OVERRIDE;
+	void keyPressEvent(QKeyEvent* keyEvent) override;
 
 	/**
 	 * Invoked when a key is released
 	 * @param keyEvent Key event
 	 */
-	void keyReleaseEvent(QKeyEvent* keyEvent) Q_DECL_OVERRIDE;
+	void keyReleaseEvent(QKeyEvent* keyEvent) override;
 
 	/**
 	 * Invoked when the mouse button is pressed
 	 * @param mouseEvent Mouse event
 	 */
-	void mousePressEvent(QMouseEvent* mouseEvent) Q_DECL_OVERRIDE;
+	void mousePressEvent(QMouseEvent* mouseEvent) override;
 
 	/**
 	 * Invoked when the mouse pointer is moved
 	 * @param mouseEvent Mouse event
 	 */
-	void mouseMoveEvent(QMouseEvent* mouseEvent) Q_DECL_OVERRIDE;
+	void mouseMoveEvent(QMouseEvent* mouseEvent) override;
 
 	/**
 	 * Invoked when the mouse button is released
 	 * @param mouseEvent Mouse event
 	 */
-	void mouseReleaseEvent(QMouseEvent* mouseEvent) Q_DECL_OVERRIDE;
+	void mouseReleaseEvent(QMouseEvent* mouseEvent) override;
 
 	/**
 	 * Invoked when the mouse wheel is rotated
 	 * @param wheelEvent Mouse wheel event
 	 */
-	void wheelEvent(QWheelEvent* wheelEvent) Q_DECL_OVERRIDE;
+	void wheelEvent(QWheelEvent* wheelEvent) override;
 
 private:
 	/** Returns the context menu */
