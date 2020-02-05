@@ -113,6 +113,12 @@ void SelectionPickerActor::setSelectionType(const SelectionType& selectionType)
 
 	startSelection();
 
+	rectangleProp()->setVisible(_selectionType == SelectionType::Rectangle);
+	brushProp()->setVisible(_selectionType == SelectionType::Brush);
+	lassoProp()->setVisible(_selectionType == SelectionType::Lasso);
+	polygonSegmentsProp()->setVisible(_selectionType == SelectionType::Polygon);
+	polygonClosingSegmentProp()->setVisible(_selectionType == SelectionType::Polygon);
+
 	emit selectionTypeChanged(_selectionType);
 }
 
@@ -201,7 +207,6 @@ void SelectionPickerActor::onMouseReleaseEvent(QMouseEvent* mouseEvent)
 		{
 			if (mouseEvent->button() == Qt::LeftButton) {
 				endSelection();
-				updateSelectionRectangle();
 			}
 			break;
 		}
@@ -209,7 +214,6 @@ void SelectionPickerActor::onMouseReleaseEvent(QMouseEvent* mouseEvent)
 		case SelectionType::Brush:
 		{
 			if (mouseEvent->button() == Qt::LeftButton) {
-				updateSelectionBrush();
 				endSelection();
 			}
 			break;
@@ -230,7 +234,6 @@ void SelectionPickerActor::onMouseReleaseEvent(QMouseEvent* mouseEvent)
 		{
 			if (mouseEvent->button() == Qt::RightButton) {
 				endSelection();
-				updateSelectionPolygon();
 			}
 			break;
 		}
@@ -238,6 +241,8 @@ void SelectionPickerActor::onMouseReleaseEvent(QMouseEvent* mouseEvent)
 		default:
 			break;
 	}
+	
+	update();
 }
 
 void SelectionPickerActor::onMouseMoveEvent(QMouseEvent* mouseEvent)
@@ -252,7 +257,6 @@ void SelectionPickerActor::onMouseMoveEvent(QMouseEvent* mouseEvent)
 			if (mouseEvent->buttons() & Qt::LeftButton)
 			{
 				addMouseEvent(mouseEvent);
-				updateSelectionRectangle();
 			}
 			break;
 		}
@@ -260,7 +264,6 @@ void SelectionPickerActor::onMouseMoveEvent(QMouseEvent* mouseEvent)
 		case SelectionType::Brush:
 		{
 			addMouseEvent(mouseEvent);
-			updateSelectionBrush();
 			break;
 		}
 
@@ -283,13 +286,11 @@ void SelectionPickerActor::onMouseMoveEvent(QMouseEvent* mouseEvent)
 			if (_mouseEvents.size() == 1)
 			{
 				addMouseEvent(mouseEvent);
-				updateSelectionPolygon();
 			}
 
 			if (_mouseEvents.size() >= 2)
 			{
 				_mouseEvents.last() = MouseEvent(mouseEvent->pos(), renderer()->screenPointToWorldPosition(modelViewMatrix(), mouseEvent->pos()));
-				updateSelectionPolygon();
 			}
 			break;
 		}
@@ -297,6 +298,8 @@ void SelectionPickerActor::onMouseMoveEvent(QMouseEvent* mouseEvent)
 		default:
 			break;
 	}
+
+	update();
 }
 
 void SelectionPickerActor::onMouseWheelEvent(QWheelEvent* wheelEvent)
@@ -324,6 +327,8 @@ void SelectionPickerActor::onMouseWheelEvent(QWheelEvent* wheelEvent)
 		default:
 			break;
 	}
+
+	update();
 }
 
 void SelectionPickerActor::onKeyPressEvent(QKeyEvent* keyEvent)
@@ -383,33 +388,9 @@ void SelectionPickerActor::startSelection()
 {
 	qDebug() << "Start selection" << _name;
 
+	_mouseEvents.clear();
+
 	_selecting = true;
-
-	switch (_selectionType)
-	{
-		case SelectionType::None:
-			break;
-
-		case SelectionType::Rectangle:
-			rectangleProp()->show();
-			break;
-
-		case SelectionType::Brush:
-			brushProp()->show();
-			break;
-
-		case SelectionType::Lasso:
-			lassoProp()->show();
-			break;
-
-		case SelectionType::Polygon:
-			polygonSegmentsProp()->show();
-			polygonClosingSegmentProp()->show();
-			break;
-
-		default:
-			break;
-	}
 
 	update();
 }
@@ -423,33 +404,6 @@ void SelectionPickerActor::endSelection()
 	_selecting = false;
 	
 	update();
-
-	switch (_selectionType)
-	{
-		case SelectionType::None:
-			break;
-
-		case SelectionType::Rectangle:
-			rectangleProp()->hide();
-			break;
-
-		case SelectionType::Brush:
-			brushProp()->hide();
-			updateSelectionBrush();
-			break;
-
-		case SelectionType::Lasso:
-			//lassoShape()->show();
-			break;
-
-		case SelectionType::Polygon:
-			polygonSegmentsProp()->hide();
-			polygonClosingSegmentProp()->hide();
-			break;
-
-		default:
-			break;
-	}
 }
 
 void SelectionPickerActor::update()
@@ -505,17 +459,10 @@ void SelectionPickerActor::updateSelectionRectangle()
 	const auto end			= renderer()->worldPositionToScreenPoint(QVector3D(bottomRight.x(), bottomRight.y(), 0.f));
 
 	// Create polyline points
-	//points.append(QVector3D(start.x(), end.y(), 0.f));
 	points.append(QVector3D(start.x(), start.y(), 0.f));
 	points.append(QVector3D(end.x(), start.y(), 0.f));
 	points.append(QVector3D(end.x(), end.y(), 0.f));
 	points.append(QVector3D(start.x(), end.y(), 0.f));
-	//points.append(QVector3D(start.x(), start.y(), 0.f));
-	//points.append(QVector3D(end.x(), start.y(), 0.f));
-
-	//points.insert(0, points[points.size() - 1]);
-	//points.append(points[0]);
-	//points.append(points[1]);
 
 	rectangleProp()->setPoints(points);
 
@@ -637,7 +584,7 @@ QMenu* SelectionPickerActor::contextMenu()
 
 	connect(selectAllAction, &QAction::triggered, this, &SelectionPickerActor::selectAll);
 	connect(selectNoneAction, &QAction::triggered, this, &SelectionPickerActor::selectNone);
-	connect(invertSelectionAction, &QAction::triggered, this, &SelectionPickerActor::invertSelection);
+	connect(invertSelectionAction, &QAction::triggered, this, &SelectionPickerActor::selectInvert);
 
 	rectangleSelectionAction->setCheckable(true);
 	brushSelectionAction->setCheckable(true);
@@ -665,60 +612,3 @@ bool SelectionPickerActor::isSelecting() const
 {
 	return _selecting;
 }
-
-/*
-
-
-void SelectionPickerActor::updateLasso()
-{
-	if (_mousePositions.size() == 0)
-		return;
-
-	//qDebug() << "Update lasso" << p0 << p1;
-
-	QVector<QVector3D> positions;
-
-	for (auto mousePosition : _mousePositions) {
-		const auto pWorld = _renderer->screenToWorld(modelViewMatrix(), mousePosition);
-		positions.append(QVector3D(pWorld.x(), pWorld.y(), 0.f));
-	}
-
-	QVector<PolylinePoint2D> polylinePoints;
-
-	for (auto position : positions) {
-		polylinePoints.push_back(PolylinePoint2D(position, QVector2D(0.f, 0.f), _outlineLineWidth));
-	}
-
-	polylinePoints.insert(0, polylinePoints.first());
-	polylinePoints.append(polylinePoints.back());
-
-	lassoShape()->setPoints(polylinePoints);
-}
-
-void SelectionPickerActor::updatePolygon()
-{
-	if (_mousePositions.size() == 0)
-		return;
-
-	//qDebug() << "Update lasso" << p0 << p1;
-
-	QVector<QVector3D> positions;
-
-	for (auto mousePosition : _mousePositions) {
-		const auto pWorld = _renderer->screenToWorld(modelViewMatrix(), mousePosition);
-		positions.append(QVector3D(pWorld.x(), pWorld.y(), 0.f));
-	}
-
-	QVector<PolylinePoint2D> polylinePoints;
-
-	
-	for (auto position : positions) {
-		polylinePoints.push_back(PolylinePoint2D(position, QVector2D(0.f, 0.f), _outlineLineWidth));
-	}
-
-	polylinePoints.insert(0, polylinePoints.first());
-	polylinePoints.append(polylinePoints.back());
-
-	polygonShape()->setPoints(polylinePoints);
-}
-*/

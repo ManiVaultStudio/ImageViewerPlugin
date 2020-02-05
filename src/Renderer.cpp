@@ -1,12 +1,9 @@
 #include "Renderer.h"
 #include "ImageViewerWidget.h"
-#include "ImageViewerPlugin.h"
 
 #include <QtMath>
 #include <QMenu>
 #include <QDebug>
-
-#include "Shaders.h"
 
 #include "ColorImageActor.h"
 #include "SelectionImageActor.h"
@@ -86,42 +83,6 @@ void Renderer::mouseReleaseEvent(QMouseEvent* mouseEvent)
 {
 	//qDebug() << "Mouse release event";
 
-	auto showContextMenu = false;
-
-	switch (mouseEvent->button())
-	{
-		case Qt::RightButton:
-		{
-			switch (interactionMode())
-			{
-				case InteractionMode::Navigation:
-				case InteractionMode::WindowLevel:
-					break;
-
-				case InteractionMode::None:
-					showContextMenu = true;
-
-				case InteractionMode::Selection:
-					showContextMenu = !actorByName<SelectionPickerActor>("SelectionPickerActor")->isSelecting();
-					break;
-
-				default:
-					break;
-			}
-
-			//_renderer->setInteractionMode(InteractionMode::Selection);
-			break;
-		}
-
-		default:
-			break;
-	}
-
-	if (showContextMenu) {
-		setInteractionMode(InteractionMode::None);
-		contextMenu()->exec(_parentWidget->mapToGlobal(mouseEvent->pos()));
-	}
-
 	for (auto key : _actors.keys()) {
 		auto actor = _actors[key];
 
@@ -137,7 +98,7 @@ void Renderer::mouseMoveEvent(QMouseEvent* mouseEvent)
 	//qDebug() << "Mouse move event";
 
 	if (mouseEvent->buttons() & Qt::RightButton) {
-		if (mouseEvent->pos() != _mouseEvents.first()->pos())
+		if (_interactionMode != InteractionMode::Navigation && mouseEvent->pos() != _mouseEvents.first()->pos())
 			setInteractionMode(InteractionMode::WindowLevel);
 	}
 
@@ -538,17 +499,21 @@ void Renderer::createActors()
 	addActor("SelectionImageActor", QSharedPointer<SelectionImageActor>::create(this, "SelectionImageActor"));
 	addActor("SelectionPickerActor", QSharedPointer<SelectionPickerActor>::create(this, "SelectionPickerActor"));
 
-	actorByName<ColorImageActor>("ColorImageActor")->show();
-	actorByName<SelectionImageActor>("SelectionImageActor")->show();
-	actorByName<SelectionPickerActor>("SelectionPickerActor")->show();
+	colorImageActor()->show();
+	selectionImageActor()->show();
+	selectionPickerActor()->show();
 
-	actorByName<ColorImageActor>("ColorImageActor")->setTranslation(QVector3D(0, 0, 0));
-	actorByName<SelectionImageActor>("SelectionImageActor")->setTranslation(QVector3D(0, 0, -1));
-	actorByName<SelectionPickerActor>("SelectionPickerActor")->setTranslation(QVector3D(0, 0, -2));
+	colorImageActor()->setTranslation(QVector3D(0, 0, 0));
+	selectionImageActor()->setTranslation(QVector3D(0, 0, -1));
+	selectionPickerActor()->setTranslation(QVector3D(0, 0, -2));
 
-	connect(actorByName<ColorImageActor>("ColorImageActor"), &ColorImageActor::endWindowLevel, [&]() {
+	connect(colorImageActor(), &ColorImageActor::endWindowLevel, [&]() {
 		setInteractionMode(InteractionMode::None);
 	});
+
+	connect(selectionPickerActor(), &SelectionPickerActor::selectAll, this, &Renderer::selectAll);
+	connect(selectionPickerActor(), &SelectionPickerActor::selectNone, this, &Renderer::selectNone);
+	connect(selectionPickerActor(), &SelectionPickerActor::selectInvert, this, &Renderer::selectInvert);
 }
 
 void Renderer::initializeActors()
@@ -586,7 +551,22 @@ void Renderer::destroyActors()
 	}
 }
 
-QMenu* Renderer::contextMenu()
+ColorImageActor* Renderer::colorImageActor()
+{
+	return actorByName<ColorImageActor>("ColorImageActor");
+}
+
+SelectionPickerActor* Renderer::selectionPickerActor()
+{
+	return actorByName<SelectionPickerActor>("SelectionPickerActor");
+}
+
+SelectionImageActor* Renderer::selectionImageActor()
+{
+	return actorByName<SelectionImageActor>("SelectionImageActor");
+}
+
+QMenu* Renderer::viewMenu()
 {
 	auto* viewMenu = new QMenu("View");
 
@@ -618,7 +598,59 @@ QMenu* Renderer::contextMenu()
 	return viewMenu;
 }
 
+QMenu* Renderer::contextMenu()
+{
+	auto* menu = new QMenu("View");
+
+	auto* zoomToExtentsAction = new QAction("Zoom extents");
+	auto* zoomToSelectionAction = new QAction("Zoom to selection");
+	auto* resetWindowLevelAction = new QAction("Reset window/level");
+
+	zoomToExtentsAction->setToolTip("Zoom to the boundaries of the image");
+	zoomToSelectionAction->setToolTip("Zoom to selection boundaries");
+	resetWindowLevelAction->setToolTip("Reset window/level to default values");
+
+	resetWindowLevelAction->setEnabled(colorImageActor()->windowNormalized() < 1.f && colorImageActor()->levelNormalized() != 0.5f);
+
+	connect(zoomToExtentsAction, &QAction::triggered, this, &Renderer::zoomExtents);
+	connect(zoomToSelectionAction, &QAction::triggered, this, &Renderer::zoomToSelection);
+	connect(resetWindowLevelAction, &QAction::triggered, [&]() {
+		actorByName<ColorImageActor>("ColorImageActor")->resetWindowLevel();
+	});
+
+	menu->addAction(zoomToExtentsAction);
+	menu->addAction(zoomToSelectionAction);
+	menu->addSeparator();
+	menu->addAction(resetWindowLevelAction);
+
+	return menu;
+}
+
 QSize Renderer::viewSize() const
 {
 	return _parentWidget->size();
+}
+
+bool Renderer::allowsContextMenu()
+{
+	auto showContextMenu = false;
+
+	switch (interactionMode())
+	{
+		case InteractionMode::Navigation:
+		case InteractionMode::WindowLevel:
+			break;
+
+		case InteractionMode::None:
+			return true;
+
+		case InteractionMode::Selection:
+			return !selectionPickerActor()->isSelecting();
+			break;
+
+		default:
+			break;
+	}
+
+	return false;
 }

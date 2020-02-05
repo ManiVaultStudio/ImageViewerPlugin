@@ -41,15 +41,6 @@ public:
 	/** Publish selection to HDPS */
 	void publishSelection();
 
-	/** Select all */
-	void onSelectAll();
-
-	/** Select none */
-	void onSelectNone();
-
-	/** Invert the selection */
-	void onInvertSelection();
-
 	/** Returns the renderer */
 	QSharedPointer<Renderer> renderer();
 

@@ -184,14 +184,14 @@ signals:
 	 */
 	void brushRadiusDeltaChanged(const float& brushRadiusDelta);
 
-	/** Signals that all pixels need to be selected */
+	/** Signals that the pixel selection should include all pixels */
 	void selectAll();
 
-	/** Signals that no pixels need to be selected */
+	/** Signals that the pixel selection should include no pixels */
 	void selectNone();
 
-	/** Signals that pixel selection needs to be inverted */
-	void invertSelection();
+	/** Signals that the pixel selection needs to be inverted */
+	void selectInvert();
 
 private:
 	QSize					_imageSize;				/** Image size */

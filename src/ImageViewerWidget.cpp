@@ -91,12 +91,21 @@ void ImageViewerWidget::initializeGL()
 	_imageViewerPlugin->computeSelectionImage();
 
 	//connect(_renderer->selectionBufferQuad(), &SelectionBufferQuad::selectionEnded, this, &ImageViewerWidget::publishSelection);
+	
+	connect(_renderer.get(), &Renderer::selectAll, [&]() {
+		_imageViewerPlugin->selectPixels(std::vector<std::pair<std::uint32_t, std::uint32_t>>(), SelectionModifier::All);
+		update();
+	});
 
-	/*
-	connect(_renderer->actor<SelectionPickerActor>("SelectionPicker"), &SelectionPickerActor::selectAll, this, &ImageViewerWidget::onSelectAll);
-	connect(_renderer->actor<SelectionPickerActor>("SelectionPicker"), &SelectionPickerActor::selectNone, this, &ImageViewerWidget::onSelectNone);
-	connect(_renderer->actor<SelectionPickerActor>("SelectionPicker"), &SelectionPickerActor::invertSelection, this, &ImageViewerWidget::onInvertSelection);
-	*/
+	connect(_renderer.get(), &Renderer::selectNone, [&]() {
+		_imageViewerPlugin->selectPixels(std::vector<std::pair<std::uint32_t, std::uint32_t>>(), SelectionModifier::None);
+		update();
+	});
+
+	connect(_renderer.get(), &Renderer::selectInvert, [&]() {
+		_imageViewerPlugin->selectPixels(std::vector<std::pair<std::uint32_t, std::uint32_t>>(), SelectionModifier::Invert);
+		update();
+	});
 
 #ifdef _DEBUG
 //	_openglDebugLogger->initialize();
@@ -172,6 +181,10 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 
 void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent)
 {
+	if (mouseEvent->button() == Qt::RightButton && _renderer->allowsContextMenu()) {
+		_renderer->contextMenu()->exec(mapToGlobal(mouseEvent->pos()));
+	}
+
 	_renderer->mouseReleaseEvent(mouseEvent);
 
 	QOpenGLWidget::mouseReleaseEvent(mouseEvent);
@@ -216,33 +229,6 @@ void ImageViewerWidget::publishSelection()
 	update();
 }
 
-void ImageViewerWidget::onSelectAll()
-{
-	qDebug() << "Select all";
-
-	_imageViewerPlugin->selectPixels(std::vector<std::pair<std::uint32_t, std::uint32_t>>(), SelectionModifier::All);
-
-	update();
-}
-
-void ImageViewerWidget::onSelectNone()
-{
-	qDebug() << "Select none";
-
-	_imageViewerPlugin->selectPixels(std::vector<std::pair<std::uint32_t, std::uint32_t>>(), SelectionModifier::None);
-
-	update();
-}
-
-void ImageViewerWidget::onInvertSelection()
-{
-	qDebug() << "Invert selection";
-
-	_imageViewerPlugin->selectPixels(std::vector<std::pair<std::uint32_t, std::uint32_t>>(), SelectionModifier::Invert);
-
-	update();
-}
-
 QSharedPointer<Renderer> ImageViewerWidget::renderer()
 {
 	return _renderer;
@@ -256,8 +242,6 @@ QMenu* ImageViewerWidget::contextMenu()
 		contextMenu->addMenu(_renderer->contextMenu());
 		contextMenu->addSeparator();
 		contextMenu->addMenu(_renderer->actorByName<SelectionPickerActor>("SelectionPickerActor")->contextMenu());
-
-		qDebug() << _imageViewerPlugin->noSelectedPixels();
 
 		if (_imageViewerPlugin->noSelectedPixels() > 0) {
 			contextMenu->addSeparator();

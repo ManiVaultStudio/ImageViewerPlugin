@@ -122,7 +122,7 @@ void ColorImageActor::onMousePressEvent(QMouseEvent* mouseEvent)
 		return;
 
 	//qDebug() << "Mouse press event for" << _name;
-
+	qDebug() << _mouseEvents.size();
 	_mouseEvents.clear();
 
 	addMouseEvent(mouseEvent);

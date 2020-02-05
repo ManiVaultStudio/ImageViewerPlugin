@@ -8,6 +8,9 @@
 #include "Actor.h"
 
 class ImageViewerWidget;
+class ColorImageActor;
+class SelectionImageActor;
+class SelectionPickerActor;
 
 class QMouseEvent;
 class QWheelEvent;
@@ -158,11 +161,18 @@ public:
 	/** Reset the view */
 	void resetView();
 
+	/** Returns the view menu */
+	QMenu* viewMenu();
+
 	/** Returns the context menu */
 	QMenu* contextMenu();
 
 	/** Returns the view size */
 	QSize viewSize() const;
+
+	/** Whether the display of a context menu is allowed */
+	bool allowsContextMenu();
+
 public:
 	/**
 	 * Sets the color image
@@ -235,9 +245,22 @@ private:
 	/** Destroy shapes */
 	void destroyActors();
 
+	ColorImageActor* colorImageActor();
+	SelectionImageActor* selectionImageActor();
+	SelectionPickerActor* selectionPickerActor();
+
 signals:
 	/** Signals that the renderer just became dirty (one or more shapes need to be re-rendered) */
 	void dirty();
+
+	/** Signals that the pixel selection should include all pixels */
+	void selectAll();
+
+	/** Signals that the pixel selection should include no pixels */
+	void selectNone();
+
+	/** Signals that the pixel selection needs to be inverted */
+	void selectInvert();
 
 protected:
 	ImageViewerWidget*						_parentWidget;			/** Pointer to parent widget */
