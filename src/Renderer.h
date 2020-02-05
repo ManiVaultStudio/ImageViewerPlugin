@@ -173,6 +173,10 @@ public:
 	/** Whether the display of a context menu is allowed */
 	bool allowsContextMenu();
 
+	QWidget* parentWidget() {
+		return reinterpret_cast<QWidget*>(_parentWidget);
+	}
+
 public:
 	/**
 	 * Sets the color image
