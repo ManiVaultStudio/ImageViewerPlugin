@@ -12,12 +12,12 @@ const std::string quadFragmentShaderSource =
 #include "InterimSelectionQuadFragment.glsl"
 ;
 
-const std::string bufferVertexShaderSource =
-#include "InterimSelectionBufferVertex.glsl"
+const std::string offscreenBufferVertexShaderSource =
+#include "InterimSelectionOffscreenBufferVertex.glsl"
 ;
 
-const std::string bufferFragmentShaderSource =
-#include "InterimSelectionBufferFragment.glsl"
+const std::string offscreenBufferFragmentShaderSource =
+#include "InterimSelectionOffscreenBufferFragment.glsl"
 ;
 
 InterimSelectionProp::InterimSelectionProp(Actor* actor, const QString& name) :
@@ -28,62 +28,87 @@ InterimSelectionProp::InterimSelectionProp(Actor* actor, const QString& name) :
 
 void InterimSelectionProp::initialize()
 {
-	Prop::initialize();
+	try
+	{
+		Prop::initialize();
 
-	addShape<QuadShape>("QuadShape");
+		addShape<QuadShape>("Quad");
 
-	addShaderProgram("Quad");
-	
-	const auto quadShaderProgram = shaderProgramByName("Quad");
+		auto shape = shapeByName<QuadShape>("Quad");
 
-	quadShaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, quadVertexShaderSource.c_str());
-	quadShaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, quadFragmentShaderSource.c_str());
+		const auto stride = 5 * sizeof(GLfloat);
 
-	if (!quadShaderProgram->link()) {
-		throw std::exception("Unable to link interim selection prop quad shader program");
+		addShaderProgram("Quad");
+
+		const auto quadShaderProgram = shaderProgramByName("Quad");
+
+		if (!quadShaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, quadVertexShaderSource.c_str()))
+			throw std::exception("Unable to compile quad vertex shader");
+
+		if (!quadShaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, quadFragmentShaderSource.c_str()))
+			throw std::exception("Unable to compile quad fragment shader");
+
+		if (!quadShaderProgram->link())
+			throw std::exception("Unable to link quad shader program");
+
+		if (quadShaderProgram->bind()) {
+			shape->vao().bind();
+			shape->vbo().bind();
+
+			quadShaderProgram->enableAttributeArray(QuadShape::_vertexAttribute);
+			quadShaderProgram->enableAttributeArray(QuadShape::_textureAttribute);
+			quadShaderProgram->setAttributeBuffer(QuadShape::_vertexAttribute, GL_FLOAT, 0, 3, stride);
+			quadShaderProgram->setAttributeBuffer(QuadShape::_textureAttribute, GL_FLOAT, 3 * sizeof(GLfloat), 2, stride);
+
+			shape->vao().release();
+			shape->vbo().release();
+
+			quadShaderProgram->release();
+		}
+		else {
+			throw std::exception("Unable to bind quad shader program");
+		}
+
+		addShaderProgram("OffscreenBuffer");
+
+		const auto offscreenBufferShaderProgram = shaderProgramByName("OffscreenBuffer");
+
+		if (!offscreenBufferShaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, offscreenBufferVertexShaderSource.c_str()))
+			throw std::exception("Unable to compile off screen buffer vertex shader");
+
+		if (!offscreenBufferShaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, offscreenBufferFragmentShaderSource.c_str()))
+			throw std::exception("Unable to compile off screen buffer fragment shader");
+
+		if (!offscreenBufferShaderProgram->link())
+			throw std::exception("Unable to link off screen buffer shader program");
+
+		if (offscreenBufferShaderProgram->bind()) {
+			shape->vao().bind();
+			shape->vbo().bind();
+
+			offscreenBufferShaderProgram->enableAttributeArray(QuadShape::_vertexAttribute);
+			offscreenBufferShaderProgram->enableAttributeArray(QuadShape::_textureAttribute);
+			offscreenBufferShaderProgram->setAttributeBuffer(QuadShape::_vertexAttribute, GL_FLOAT, 0, 3, stride);
+			offscreenBufferShaderProgram->setAttributeBuffer(QuadShape::_textureAttribute, GL_FLOAT, 3 * sizeof(GLfloat), 2, stride);
+
+			shape->vao().release();
+			shape->vbo().release();
+
+			offscreenBufferShaderProgram->release();
+		}
+		else {
+			throw std::exception("Unable to bind off screen buffer shader program");
+		}
+
+		_initialized = true;
 	}
-
-	addShaderProgram("Buffer");
-
-	const auto bufferShaderProgram = shaderProgramByName("Buffer");
-
-	bufferShaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, bufferVertexShaderSource.c_str());
-	bufferShaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, bufferFragmentShaderSource.c_str());
-
-	if (!bufferShaderProgram->link()) {
-		throw std::exception("Unable to link interim selection prop buffer shader program");
+	catch (std::exception& e)
+	{
+		qDebug() << _name << "initialization failed:" << e.what();
 	}
-
-
-	/*
-	const auto stride = 5 * sizeof(GLfloat);
-
-	auto shape = shapeByName<QuadShape>("QuadShape");
-
-	if (shaderProgram->bind()) {
-		shape->vao().bind();
-		shape->vbo().bind();
-
-		shaderProgram->enableAttributeArray(QuadShape::_vertexAttribute);
-		shaderProgram->enableAttributeArray(QuadShape::_textureAttribute);
-		shaderProgram->setAttributeBuffer(QuadShape::_vertexAttribute, GL_FLOAT, 0, 3, stride);
-		shaderProgram->setAttributeBuffer(QuadShape::_textureAttribute, GL_FLOAT, 3 * sizeof(GLfloat), 2, stride);
-		shaderProgram->release();
-
-		shape->vao().release();
-		shape->vbo().release();
+	catch (...) {
+		qDebug() << _name << "initialization failed due to unhandled exception";
 	}
-	else {
-		throw std::exception("Unable to bind color image quad shader program");
-	}
-
-	const auto texture = textureByName("QuadShape");
-
-	texture->setWrapMode(QOpenGLTexture::Repeat);
-	texture->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
-
-	_initialized = true;
-	*/
 }
 
 void InterimSelectionProp::render()

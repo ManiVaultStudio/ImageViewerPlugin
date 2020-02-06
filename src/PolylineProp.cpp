@@ -104,52 +104,64 @@ void PolylineProp::setLineColor(const QColor& lineColor)
 
 void PolylineProp::initialize()
 {
-	Prop::initialize();
+	try
+	{
+		Prop::initialize();
 
-	qDebug() << "Initialize" << fullName();
+		const auto shaderProgram = shaderProgramByName("PolylineShape");
 
-	const auto shaderProgram = shaderProgramByName("PolylineShape");
+		if (!shaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSource.c_str()))
+			throw std::exception("Unable to compile vertex shader");
 
-	shaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSource.c_str());
-	shaderProgram->addShaderFromSourceCode(QOpenGLShader::Geometry, geometryShaderSource.c_str());
-	shaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSource.c_str());
+		if (!shaderProgram->addShaderFromSourceCode(QOpenGLShader::Geometry, geometryShaderSource.c_str()))
+			throw std::exception("Unable to compile geometry shader");
 
-	if (!shaderProgram->link()) {
-		throw std::exception("Unable to link polyline shader program");
+		if (!shaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSource.c_str()))
+			throw std::exception("Unable to compile fragment shader");
+
+		if (!shaderProgram->link())
+			throw std::exception("Unable to link shader program");
+
+		const auto stride = 5 * sizeof(GLfloat);
+
+		auto shape = shapeByName<PolylineShape>("PolylineShape");
+
+		if (shaderProgram->bind()) {
+			shape->vao().bind();
+			shape->vbo().bind();
+
+			shaderProgram->enableAttributeArray(PolylineShape::Point::_positionAttribute);
+			shaderProgram->enableAttributeArray(PolylineShape::Point::_textureCoordinateAttribute);
+			shaderProgram->enableAttributeArray(PolylineShape::Point::_lineWidthAttribute);
+
+			const auto stride = 6 * sizeof(GLfloat);
+
+			shaderProgram->setAttributeBuffer(PolylineShape::Point::_positionAttribute, GL_FLOAT, 0, 3, stride);
+			shaderProgram->setAttributeBuffer(PolylineShape::Point::_textureCoordinateAttribute, GL_FLOAT, 3, 3, stride);
+			shaderProgram->setAttributeBuffer(PolylineShape::Point::_lineWidthAttribute, GL_FLOAT, 5, 3, stride);
+
+			shape->vao().release();
+			shape->vbo().release();
+		}
+		else {
+			throw std::exception("Unable to bind shader program");
+		}
+
+		const auto texture = textureByName("Polyline");
+
+		texture->create();
+
+		updateTextures();
+
+		_initialized = true;
 	}
-
-	const auto stride = 5 * sizeof(GLfloat);
-
-	auto shape = shapeByName<PolylineShape>("PolylineShape");
-
-	if (shaderProgram->bind()) {
-		shape->vao().bind();
-		shape->vbo().bind();
-
-		shaderProgram->enableAttributeArray(PolylineShape::Point::_positionAttribute);
-		shaderProgram->enableAttributeArray(PolylineShape::Point::_textureCoordinateAttribute);
-		shaderProgram->enableAttributeArray(PolylineShape::Point::_lineWidthAttribute);
-
-		const auto stride = 6 * sizeof(GLfloat);
-
-		shaderProgram->setAttributeBuffer(PolylineShape::Point::_positionAttribute, GL_FLOAT, 0, 3, stride);
-		shaderProgram->setAttributeBuffer(PolylineShape::Point::_textureCoordinateAttribute, GL_FLOAT, 3, 3, stride);
-		shaderProgram->setAttributeBuffer(PolylineShape::Point::_lineWidthAttribute, GL_FLOAT, 5, 3, stride);
-
-		shape->vao().release();
-		shape->vbo().release();
+	catch (std::exception& e)
+	{
+		qDebug() << _name << "initialization failed:" << e.what();
 	}
-	else {
-		throw std::exception("Unable to bind color image quad shader program");
+	catch (...) {
+		qDebug() << _name << "initialization failed due to unhandled exception";
 	}
-
-	const auto texture = textureByName("Polyline");
-
-	texture->create();
-
-	updateTextures();
-
-	_initialized = true;
 }
 
 void PolylineProp::render()

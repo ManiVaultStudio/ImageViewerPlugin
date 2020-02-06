@@ -30,10 +30,12 @@ void Renderer::init()
 	try
 	{
 		initializeActors();
+
+		
 	}
 	catch (const std::exception& e)
 	{
-		qDebug() << "Render failed...";
+		qDebug() << "One or more  initialization failed:" << e.what();
 	}
 }
 
