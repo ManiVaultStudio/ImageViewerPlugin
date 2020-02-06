@@ -4,15 +4,21 @@
 
 #include <QDebug>
 
-/*
-const std::string vertexShaderSource =
-#include "SelectionImageVertex.glsl"
+const std::string quadVertexShaderSource =
+#include "InterimSelectionQuadVertex.glsl"
 ;
 
-const std::string fragmentShaderSource =
-#include "SelectionImageFragment.glsl"
+const std::string quadFragmentShaderSource =
+#include "InterimSelectionQuadFragment.glsl"
 ;
-*/
+
+const std::string bufferVertexShaderSource =
+#include "InterimSelectionBufferVertex.glsl"
+;
+
+const std::string bufferFragmentShaderSource =
+#include "InterimSelectionBufferFragment.glsl"
+;
 
 InterimSelectionProp::InterimSelectionProp(Actor* actor, const QString& name) :
 	Prop(actor, name),
@@ -25,19 +31,31 @@ void InterimSelectionProp::initialize()
 	Prop::initialize();
 
 	addShape<QuadShape>("QuadShape");
+
 	addShaderProgram("Quad");
-	addShaderProgram("SelectionBuffer");
+	
+	const auto quadShaderProgram = shaderProgramByName("Quad");
 
-	/*
-	const auto shaderProgram = shaderProgramByName("QuadShape");
+	quadShaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, quadVertexShaderSource.c_str());
+	quadShaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, quadFragmentShaderSource.c_str());
 
-	shaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSource.c_str());
-	shaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSource.c_str());
-
-	if (!shaderProgram->link()) {
-		throw std::exception("Unable to link color image quad shader program");
+	if (!quadShaderProgram->link()) {
+		throw std::exception("Unable to link interim selection prop quad shader program");
 	}
 
+	addShaderProgram("Buffer");
+
+	const auto bufferShaderProgram = shaderProgramByName("Buffer");
+
+	bufferShaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, bufferVertexShaderSource.c_str());
+	bufferShaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, bufferFragmentShaderSource.c_str());
+
+	if (!bufferShaderProgram->link()) {
+		throw std::exception("Unable to link interim selection prop buffer shader program");
+	}
+
+
+	/*
 	const auto stride = 5 * sizeof(GLfloat);
 
 	auto shape = shapeByName<QuadShape>("QuadShape");

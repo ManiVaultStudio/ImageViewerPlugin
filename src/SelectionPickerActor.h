@@ -195,10 +195,10 @@ signals:
 	void selectInvert();
 
 private:
-	QSize										_imageSize;				/** Image size */
-	SelectionType								_selectionType;			/** Type of selection e.g. rectangle, brush */
-	SelectionModifier							_selectionModifier;		/** The selection modifier determines if and how new selections are combined with existing selections e.g. add, replace and remove */
-	float										_brushRadius;			/** Brush radius */
-	float										_brushRadiusDelta;		/** Selection brush size increase/decrease delta */
-	bool										_selecting;				/** Whether selection is taking place */
+	QSize					_imageSize;				/** Image size */
+	SelectionType			_selectionType;			/** Type of selection e.g. rectangle, brush */
+	SelectionModifier		_selectionModifier;		/** The selection modifier determines if and how new selections are combined with existing selections e.g. add, replace and remove */
+	float					_brushRadius;			/** Brush radius */
+	float					_brushRadiusDelta;		/** Selection brush size increase/decrease delta */
+	bool					_selecting;				/** Whether selection is taking place */
 };
