@@ -1,8 +1,5 @@
 #include "SelectionPickerActor.h"
 #include "PolylineProp.h"
-#include "SelectionBrushProp.h"
-#include "SelectionLassoProp.h"
-#include "SelectionPolygonProp.h"
 #include "Renderer.h"
 
 #include <QKeyEvent>
@@ -22,7 +19,8 @@ SelectionPickerActor::SelectionPickerActor(Renderer* renderer, const QString& na
 	_selectionModifier(SelectionModifier::Replace),
 	_brushRadius(40.0f),
 	_brushRadiusDelta(5.f),
-	_selecting(false)
+	_selecting(false),
+	_fbo()
 {
 	_registeredEvents |= static_cast<int>(ActorEvent::MousePress);
 	_registeredEvents |= static_cast<int>(ActorEvent::MouseRelease);
@@ -467,6 +465,8 @@ void SelectionPickerActor::setImageSize(const QSize& imageSize)
 	_imageSize = imageSize;
 
 	emit imageSizeChanged(_imageSize);
+
+	_fbo = QSharedPointer<QOpenGLFramebufferObject>::create(_imageSize.width(), _imageSize.height());
 }
 
 SelectionType SelectionPickerActor::selectionType() const
