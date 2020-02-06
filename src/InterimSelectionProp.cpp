@@ -24,6 +24,9 @@ InterimSelectionProp::InterimSelectionProp(Actor* actor, const QString& name) :
 	Prop(actor, name),
 	_fbo()
 {
+	addShape<QuadShape>("Quad");
+	addShaderProgram("Quad");
+	addShaderProgram("OffscreenBuffer");
 }
 
 void InterimSelectionProp::initialize()
@@ -32,13 +35,9 @@ void InterimSelectionProp::initialize()
 	{
 		Prop::initialize();
 
-		addShape<QuadShape>("Quad");
-
 		auto shape = shapeByName<QuadShape>("Quad");
 
 		const auto stride = 5 * sizeof(GLfloat);
-
-		addShaderProgram("Quad");
 
 		const auto quadShaderProgram = shaderProgramByName("Quad");
 
@@ -68,8 +67,6 @@ void InterimSelectionProp::initialize()
 		else {
 			throw std::exception("Unable to bind quad shader program");
 		}
-
-		addShaderProgram("OffscreenBuffer");
 
 		const auto offscreenBufferShaderProgram = shaderProgramByName("OffscreenBuffer");
 

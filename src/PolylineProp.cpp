@@ -23,6 +23,9 @@ PolylineProp::PolylineProp(Actor* actor, const QString& name) :
 	_lineWidth(0.01f),
 	_lineColor(255, 255, 255, 255)
 {
+	addShape<PolylineShape>("PolylineShape");
+	addShaderProgram("PolylineShape");
+	addTexture("Polyline", QOpenGLTexture::Target2D);
 }
 
 bool PolylineProp::canRender() const
@@ -104,10 +107,6 @@ void PolylineProp::initialize()
 	try
 	{
 		Prop::initialize();
-
-		addShape<PolylineShape>("PolylineShape");
-		addShaderProgram("PolylineShape");
-		addTexture("Polyline", QOpenGLTexture::Target2D);
 
 		const auto shaderProgram = shaderProgramByName("PolylineShape");
 

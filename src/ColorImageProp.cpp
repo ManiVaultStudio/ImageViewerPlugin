@@ -17,20 +17,14 @@ ColorImageProp::ColorImageProp(Actor* actor, const QString& name) :
 	_minPixelValue(),
 	_maxPixelValue()
 {
-	addShape<QuadShape>("QuadShape");
-	addShaderProgram("QuadShape");
-	addTexture("QuadShape", QOpenGLTexture::Target2D);
-
-	connect(shapeByName<QuadShape>("QuadShape"), &QuadShape::rectangleChanged, this, [&](const QRectF& rectangle) {
-		_matrix.setColumn(3, QVector4D(-0.5f * rectangle.width(), -0.5f * rectangle.height(), _matrix.column(3).z(), 1.f));
-
-		emit imageSizeChanged(imageSize());
-	});
+	addShape<QuadShape>("Quad");
+	addShaderProgram("Quad");
+	addTexture("Quad", QOpenGLTexture::Target2D);
 }
 
 void ColorImageProp::setImage(std::shared_ptr<QImage> image)
 {
-	const auto texture = textureByName("QuadShape");
+	const auto texture = textureByName("Quad");
 
 	texture->destroy();
 	texture->create();
@@ -41,7 +35,7 @@ void ColorImageProp::setImage(std::shared_ptr<QImage> image)
 	texture->allocateStorage();
 	texture->setData(QOpenGLTexture::PixelFormat::RGBA, QOpenGLTexture::PixelType::UInt16, image->bits());
 
-	shapeByName<QuadShape>("QuadShape")->setRectangle(QRectF(QPointF(0.f, 0.f), QSizeF(static_cast<float>(image->width()), static_cast<float>(image->height()))));
+	shapeByName<QuadShape>("Quad")->setRectangle(QRectF(QPointF(0.f, 0.f), QSizeF(static_cast<float>(image->width()), static_cast<float>(image->height()))));
 
 	emit changed(this);
 }
@@ -51,7 +45,7 @@ QSize ColorImageProp::imageSize() const
 	if (!_initialized)
 		return QSize();
 
-	const auto quadRectangle = shapeByName<QuadShape>("QuadShape")->rectangle();
+	const auto quadRectangle = shapeByName<QuadShape>("Quad")->rectangle();
 
 	return QSize(static_cast<int>(quadRectangle.width()), static_cast<int>(quadRectangle.height()));
 }
@@ -78,7 +72,13 @@ void ColorImageProp::initialize()
 	{
 		Prop::initialize();
 
-		const auto shaderProgram = shaderProgramByName("QuadShape");
+		connect(shapeByName<QuadShape>("Quad"), &QuadShape::rectangleChanged, this, [&](const QRectF& rectangle) {
+			_matrix.setColumn(3, QVector4D(-0.5f * rectangle.width(), -0.5f * rectangle.height(), _matrix.column(3).z(), 1.f));
+
+			emit imageSizeChanged(imageSize());
+		});
+
+		const auto shaderProgram = shaderProgramByName("Quad");
 
 		if (!shaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSource.c_str()))
 			throw std::exception("Unable to compile quad vertex shader");
@@ -91,7 +91,7 @@ void ColorImageProp::initialize()
 
 		const auto stride = 5 * sizeof(GLfloat);
 
-		auto shape = shapeByName<QuadShape>("QuadShape");
+		auto shape = shapeByName<QuadShape>("Quad");
 
 		if (shaderProgram->bind()) {
 			shape->vao().bind();
@@ -110,7 +110,7 @@ void ColorImageProp::initialize()
 			throw std::exception("Unable to bind quad shader program");
 		}
 
-		const auto texture = textureByName("QuadShape");
+		const auto texture = textureByName("Quad");
 
 		texture->setWrapMode(QOpenGLTexture::Repeat);
 		texture->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
@@ -133,9 +133,9 @@ void ColorImageProp::render()
 
 	Prop::render();
 
-	const auto shape = shapeByName<QuadShape>("QuadShape");
-	const auto shaderProgram = shaderProgramByName("QuadShape");
-	const auto texture = textureByName("QuadShape");
+	const auto shape = shapeByName<QuadShape>("Quad");
+	const auto shaderProgram = shaderProgramByName("Quad");
+	const auto texture = textureByName("Quad");
 
 	texture->bind();
 
