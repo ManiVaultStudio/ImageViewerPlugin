@@ -1,13 +1,10 @@
-#include "SelectionBufferProp.h"
+#include "InterimSelectionProp.h"
 #include "QuadShape.h"
 #include "Actor.h"
 
-#include <QOpenGLShaderProgram>
-#include <QOpenGLBuffer>
-#include <QOpenGLVertexArrayObject>
-#include <QOpenGLTexture>
 #include <QDebug>
 
+/*
 const std::string vertexShaderSource =
 #include "SelectionImageVertex.glsl"
 ;
@@ -15,40 +12,18 @@ const std::string vertexShaderSource =
 const std::string fragmentShaderSource =
 #include "SelectionImageFragment.glsl"
 ;
+*/
 
-SelectionBufferProp::SelectionBufferProp(Actor* actor, const QString& name) :
-	Prop(actor, name)
+InterimSelectionProp::InterimSelectionProp(Actor* actor, const QString& name) :
+	Prop(actor, name),
+	_fbo()
 {
 	addShape<QuadShape>("QuadShape");
 	addShaderProgram("QuadShape");
 	addTexture("QuadShape", QOpenGLTexture::Target2D);
 }
 
-void SelectionBufferProp::setImage(std::shared_ptr<QImage> image)
-{
-	const auto texture = textureByName("QuadShape");
-
-	texture->destroy();
-	texture->setData(*image.get());
-	texture->setMinMagFilters(QOpenGLTexture::Nearest, QOpenGLTexture::Nearest);
-	texture->setWrapMode(QOpenGLTexture::ClampToEdge);
-
-	shapeByName<QuadShape>("QuadShape")->setRectangle(QRectF(QPointF(0.f, 0.f), QSizeF(static_cast<float>(image->width()), static_cast<float>(image->height()))));
-
-	emit changed(this);
-}
-
-QSize SelectionBufferProp::imageSize() const
-{
-	if (!_initialized)
-		return QSize();
-
-	const auto quadRectangle = shapeByName<QuadShape>("QuadShape")->rectangle();
-
-	return QSize(static_cast<int>(quadRectangle.width()), static_cast<int>(quadRectangle.height()));
-}
-
-void SelectionBufferProp::initialize()
+void InterimSelectionProp::initialize()
 {
 	Prop::initialize();
 
@@ -92,7 +67,7 @@ void SelectionBufferProp::initialize()
 	*/
 }
 
-void SelectionBufferProp::render()
+void InterimSelectionProp::render()
 {
 	/*
 	if (!canRender())
@@ -122,4 +97,14 @@ void SelectionBufferProp::render()
 
 	texture->release();
 	*/
+}
+
+void InterimSelectionProp::setImageSize(const QSize& imageSize)
+{
+	if (!_fbo.isNull() && imageSize == _fbo->size())
+		return;
+
+	qDebug() << "Set image size to" << imageSize;
+
+	_fbo.reset(new QOpenGLFramebufferObject(imageSize.width(), imageSize.height()));
 }

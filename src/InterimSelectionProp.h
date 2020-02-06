@@ -7,10 +7,10 @@ class Actor;
 #include <QOpenGLFramebufferObject>
 
 /**
- * Selection buffer prop class
+ * Interim selection buffer prop class
  * @author Thomas Kroes
  */
-class SelectionBufferProp : public Prop
+class InterimSelectionProp : public Prop
 {
 	Q_OBJECT
 
@@ -19,21 +19,22 @@ public:
 	 * @param actor Parent actor
 	 * @param name Name of the prop
 	 */
-	SelectionBufferProp(Actor* actor, const QString& name);
+	InterimSelectionProp(Actor* actor, const QString& name);
 
-public:
-	/**
-	 * Sets the image
-	 * @param image Image
-	 */
-	void setImage(std::shared_ptr<QImage> image);
+protected: // Inherited
 
-protected:
 	/** Initializes the prop */
 	void initialize() override;
 
 	/** Renders the prop */
 	void render() override;
+
+public:
+	/**
+	 * Sets the image size
+	 * @param imageSize Image size
+	 */
+	void setImageSize(const QSize& imageSize);
 
 private:
 	QSharedPointer<QOpenGLFramebufferObject>	_fbo;		/** Frame buffer object for off-screen computation of pixel selection */

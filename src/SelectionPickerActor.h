@@ -4,13 +4,12 @@
 
 #include "ImageData/ImageData.h"
 
-#include <QObject>
+#include "Actor.h"
+
 #include <QColor>
 #include <QMatrix4x4>
 #include <QMap>
 #include <QSharedPointer>
-
-#include "Actor.h"
 
 class QMouseEvent;
 class QWheelEvent;
@@ -18,8 +17,7 @@ class QMenu;
 
 class Renderer;
 class PolylineProp;
-class SelectionRectangleProp;
-class SelectionBrushProp;
+class InterimSelectionProp;
 
 /**
  * Selection picker actor class
@@ -141,6 +139,9 @@ private:
 	/** Returns a pointer to the polygon closing segment prop */
 	PolylineProp* polygonClosingSegmentProp();
 
+	/** Returns a pointer to the polygon closing segment prop */
+	InterimSelectionProp* interimSelectionProp();
+
 	/** Updates the selection rectangle */
 	void updateSelectionRectangle();
 
@@ -200,5 +201,4 @@ private:
 	float										_brushRadius;			/** Brush radius */
 	float										_brushRadiusDelta;		/** Selection brush size increase/decrease delta */
 	bool										_selecting;				/** Whether selection is taking place */
-	QSharedPointer<QOpenGLFramebufferObject>	_fbo;					/** Frame buffer object for off-screen computation of pixel selection */
 };

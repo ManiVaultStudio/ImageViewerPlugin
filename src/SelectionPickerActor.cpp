@@ -1,5 +1,6 @@
 #include "SelectionPickerActor.h"
 #include "PolylineProp.h"
+#include "InterimSelectionProp.h"
 #include "Renderer.h"
 
 #include <QKeyEvent>
@@ -19,8 +20,7 @@ SelectionPickerActor::SelectionPickerActor(Renderer* renderer, const QString& na
 	_selectionModifier(SelectionModifier::Replace),
 	_brushRadius(40.0f),
 	_brushRadiusDelta(5.f),
-	_selecting(false),
-	_fbo()
+	_selecting(false)
 {
 	_registeredEvents |= static_cast<int>(ActorEvent::MousePress);
 	_registeredEvents |= static_cast<int>(ActorEvent::MouseRelease);
@@ -34,6 +34,7 @@ SelectionPickerActor::SelectionPickerActor(Renderer* renderer, const QString& na
 	addProp<PolylineProp>("LassoProp");
 	addProp<PolylineProp>("PolygonSegmentsProp");
 	addProp<PolylineProp>("PolygonClosingSegmentProp");
+	addProp<InterimSelectionProp>("InterimSelectionProp");
 }
 
 void SelectionPickerActor::initialize()
@@ -465,8 +466,6 @@ void SelectionPickerActor::setImageSize(const QSize& imageSize)
 	_imageSize = imageSize;
 
 	emit imageSizeChanged(_imageSize);
-
-	_fbo = QSharedPointer<QOpenGLFramebufferObject>::create(_imageSize.width(), _imageSize.height());
 }
 
 SelectionType SelectionPickerActor::selectionType() const
