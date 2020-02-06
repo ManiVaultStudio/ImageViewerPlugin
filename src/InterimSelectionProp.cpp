@@ -18,14 +18,15 @@ InterimSelectionProp::InterimSelectionProp(Actor* actor, const QString& name) :
 	Prop(actor, name),
 	_fbo()
 {
-	addShape<QuadShape>("QuadShape");
-	addShaderProgram("QuadShape");
-	addTexture("QuadShape", QOpenGLTexture::Target2D);
 }
 
 void InterimSelectionProp::initialize()
 {
 	Prop::initialize();
+
+	addShape<QuadShape>("QuadShape");
+	addShaderProgram("Quad");
+	addShaderProgram("SelectionBuffer");
 
 	/*
 	const auto shaderProgram = shaderProgramByName("QuadShape");
