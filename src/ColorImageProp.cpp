@@ -22,50 +22,6 @@ ColorImageProp::ColorImageProp(Actor* actor, const QString& name) :
 	addTexture("Quad", QOpenGLTexture::Target2D);
 }
 
-void ColorImageProp::setImage(std::shared_ptr<QImage> image)
-{
-	const auto texture = textureByName("Quad");
-
-	texture->destroy();
-	texture->create();
-	texture->setSize(image->size().width(), image->size().height());
-	texture->setFormat(QOpenGLTexture::RGBA16_UNorm);
-	texture->setWrapMode(QOpenGLTexture::ClampToEdge);
-	texture->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
-	texture->allocateStorage();
-	texture->setData(QOpenGLTexture::PixelFormat::RGBA, QOpenGLTexture::PixelType::UInt16, image->bits());
-
-	shapeByName<QuadShape>("Quad")->setRectangle(QRectF(QPointF(0.f, 0.f), QSizeF(static_cast<float>(image->width()), static_cast<float>(image->height()))));
-
-	emit changed(this);
-}
-
-QSize ColorImageProp::imageSize() const
-{
-	if (!_initialized)
-		return QSize();
-
-	const auto quadRectangle = shapeByName<QuadShape>("Quad")->rectangle();
-
-	return QSize(static_cast<int>(quadRectangle.width()), static_cast<int>(quadRectangle.height()));
-}
-
-void ColorImageProp::setMinPixelValue(const float& minPixelValue)
-{
-	if (minPixelValue == _minPixelValue)
-		return;
-
-	_minPixelValue = minPixelValue;
-}
-
-void ColorImageProp::setMaxPixelValue(const float& maxPixelValue)
-{
-	if (maxPixelValue == _maxPixelValue)
-		return;
-
-	_maxPixelValue = maxPixelValue;
-}
-
 void ColorImageProp::initialize()
 {
 	try
@@ -151,4 +107,48 @@ void ColorImageProp::render()
 	}
 
 	texture->release();
+}
+
+void ColorImageProp::setImage(std::shared_ptr<QImage> image)
+{
+	const auto texture = textureByName("Quad");
+
+	texture->destroy();
+	texture->create();
+	texture->setSize(image->size().width(), image->size().height());
+	texture->setFormat(QOpenGLTexture::RGBA16_UNorm);
+	texture->setWrapMode(QOpenGLTexture::ClampToEdge);
+	texture->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
+	texture->allocateStorage();
+	texture->setData(QOpenGLTexture::PixelFormat::RGBA, QOpenGLTexture::PixelType::UInt16, image->bits());
+
+	shapeByName<QuadShape>("Quad")->setRectangle(QRectF(QPointF(0.f, 0.f), QSizeF(static_cast<float>(image->width()), static_cast<float>(image->height()))));
+
+	emit changed(this);
+}
+
+QSize ColorImageProp::imageSize() const
+{
+	if (!_initialized)
+		return QSize();
+
+	const auto quadRectangle = shapeByName<QuadShape>("Quad")->rectangle();
+
+	return QSize(static_cast<int>(quadRectangle.width()), static_cast<int>(quadRectangle.height()));
+}
+
+void ColorImageProp::setMinPixelValue(const float& minPixelValue)
+{
+	if (minPixelValue == _minPixelValue)
+		return;
+
+	_minPixelValue = minPixelValue;
+}
+
+void ColorImageProp::setMaxPixelValue(const float& maxPixelValue)
+{
+	if (maxPixelValue == _maxPixelValue)
+		return;
+
+	_maxPixelValue = maxPixelValue;
 }

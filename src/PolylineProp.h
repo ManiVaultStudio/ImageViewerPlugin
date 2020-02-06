@@ -19,10 +19,24 @@ public:
 	 */
 	PolylineProp(Actor* actor, const QString& name);
 
-public:
+protected: // Inherited
+
+	/** Initializes the prop */
+	void initialize() override;
+
 	/** Returns whether the prop can be rendered */
 	bool canRender() const override;
 
+	/** Renders the prop */
+	void render() override;
+
+	/** Update shapes */
+	void updateShapes() override;
+
+	/** Update textures */
+	void updateTextures() override;
+
+public:
 	/** Returns the polyline points */
 	QVector<QVector3D> points() const;
 
@@ -52,19 +66,6 @@ public:
 	 * @param lineColor Line color
 	 */
 	void setLineColor(const QColor& lineColor);
-
-protected:
-	/** Initializes the prop */
-	void initialize() override;
-
-	/** Renders the prop */
-	void render() override;
-
-	/** Update shapes */
-	void updateShapes() override;
-
-	/** Update textures */
-	void updateTextures() override;
 
 protected:
 	QVector<QVector3D>		_points;		/** Polyline points */

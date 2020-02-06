@@ -19,6 +19,14 @@ public:
 	 */
 	ColorImageProp(Actor* actor, const QString& name);
 
+protected: // Inherited
+
+	/** Initializes the prop */
+	void initialize() override;
+
+	/** Renders the prop */
+	void render() override;
+
 public:
 	/**
 	 * Sets the image
@@ -40,14 +48,6 @@ public:
 	 * @param maxPixelValue Maximum pixel value
 	 */
 	void setMaxPixelValue(const float& maxPixelValue);
-
-
-protected:
-	/** Initializes the prop */
-	void initialize() override;
-
-	/** Renders the prop */
-	void render() override;
 
 signals:
 	/**

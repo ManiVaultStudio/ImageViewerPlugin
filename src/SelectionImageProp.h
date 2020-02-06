@@ -21,6 +21,14 @@ public:
 	 */
 	SelectionImageProp(Actor* actor, const QString& name);
 
+protected: // Inherited
+
+	/** Initializes the prop */
+	void initialize() override;
+
+	/** Renders the prop */
+	void render() override;
+
 public:
 	/**
 	 * Sets the image
@@ -30,13 +38,6 @@ public:
 
 	/** Returns the image size */
 	QSize imageSize() const;
-
-protected:
-	/** Initializes the prop */
-	void initialize() override;
-
-	/** Renders the prop */
-	void render() override;
 
 signals:
 	/**

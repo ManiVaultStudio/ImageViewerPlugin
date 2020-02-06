@@ -28,80 +28,6 @@ PolylineProp::PolylineProp(Actor* actor, const QString& name) :
 	addTexture("Polyline", QOpenGLTexture::Target2D);
 }
 
-bool PolylineProp::canRender() const
-{
-	if (!Prop::canRender())
-		return false;
-
-	if (!shapeByName<PolylineShape>("PolylineShape")->canRender())
-		return false;
-
-	if (_lineWidth <= 0.f)
-		return false;
-
-	return true;
-}
-
-QVector<QVector3D> PolylineProp::points() const
-{
-	return _points;
-}
-
-void PolylineProp::setPoints(const QVector<QVector3D>& points)
-{
-	if (points == _points)
-		return;
-
-	_points = points;
-
-	updateShapes();
-}
-
-bool PolylineProp::closed()
-{
-	return _closed;
-}
-
-void PolylineProp::setClosed(const bool& closed)
-{
-	if (closed == _closed)
-		return;
-
-	_closed = closed;
-
-	updateShapes();
-}
-
-float PolylineProp::lineWidth()
-{
-	return _lineWidth;
-}
-
-void PolylineProp::setLineWidth(const float& lineWidth)
-{
-	if (lineWidth == _lineWidth)
-		return;
-
-	_lineWidth = lineWidth;
-
-	updateShapes();
-}
-
-QColor PolylineProp::lineColor()
-{
-	return _lineColor;
-}
-
-void PolylineProp::setLineColor(const QColor& lineColor)
-{
-	if (lineColor == _lineColor)
-		return;
-
-	_lineColor = lineColor;
-
-	updateTextures();
-}
-
 void PolylineProp::initialize()
 {
 	try
@@ -164,6 +90,20 @@ void PolylineProp::initialize()
 	}
 }
 
+bool PolylineProp::canRender() const
+{
+	if (!Prop::canRender())
+		return false;
+
+	if (!shapeByName<PolylineShape>("PolylineShape")->canRender())
+		return false;
+
+	if (_lineWidth <= 0.f)
+		return false;
+
+	return true;
+}
+
 void PolylineProp::render()
 {
 	if (!canRender())
@@ -173,9 +113,9 @@ void PolylineProp::render()
 
 	//qDebug() << "Render" << fullName();
 
-	const auto shape			= shapeByName<PolylineShape>("PolylineShape");
-	const auto shaderProgram	= shaderProgramByName("PolylineShape");
-	const auto texture			= textureByName("Polyline");
+	const auto shape = shapeByName<PolylineShape>("PolylineShape");
+	const auto shaderProgram = shaderProgramByName("PolylineShape");
+	const auto texture = textureByName("Polyline");
 
 	texture->bind();
 	{
@@ -232,4 +172,64 @@ void PolylineProp::updateTextures()
 	texture->setWrapMode(QOpenGLTexture::Repeat);
 	texture->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
 	texture->setData(textureImage);
+}
+
+QVector<QVector3D> PolylineProp::points() const
+{
+	return _points;
+}
+
+void PolylineProp::setPoints(const QVector<QVector3D>& points)
+{
+	if (points == _points)
+		return;
+
+	_points = points;
+
+	updateShapes();
+}
+
+bool PolylineProp::closed()
+{
+	return _closed;
+}
+
+void PolylineProp::setClosed(const bool& closed)
+{
+	if (closed == _closed)
+		return;
+
+	_closed = closed;
+
+	updateShapes();
+}
+
+float PolylineProp::lineWidth()
+{
+	return _lineWidth;
+}
+
+void PolylineProp::setLineWidth(const float& lineWidth)
+{
+	if (lineWidth == _lineWidth)
+		return;
+
+	_lineWidth = lineWidth;
+
+	updateShapes();
+}
+
+QColor PolylineProp::lineColor()
+{
+	return _lineColor;
+}
+
+void PolylineProp::setLineColor(const QColor& lineColor)
+{
+	if (lineColor == _lineColor)
+		return;
+
+	_lineColor = lineColor;
+
+	updateTextures();
 }
