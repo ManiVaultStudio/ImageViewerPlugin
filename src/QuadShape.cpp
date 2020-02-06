@@ -65,10 +65,6 @@ void QuadShape::setRectangle(const QRectF& rectangle)
 
 	_rectangle = rectangle;
 
-	//qDebug() << "Set quad rectangle" << _rectangle;
-	
-	emit rectangleChanged(_rectangle);
-
 	createQuad();
 }
 

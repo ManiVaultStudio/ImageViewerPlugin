@@ -37,16 +37,16 @@ void PolylineProp::initialize()
 		const auto shaderProgram = shaderProgramByName("PolylineShape");
 
 		if (!shaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSource.c_str()))
-			throw std::exception("Unable to compile vertex shader");
+			throw std::exception("Unable to compile polyline vertex shader");
 
 		if (!shaderProgram->addShaderFromSourceCode(QOpenGLShader::Geometry, geometryShaderSource.c_str()))
-			throw std::exception("Unable to compile geometry shader");
+			throw std::exception("Unable to compile polyline geometry shader");
 
 		if (!shaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSource.c_str()))
-			throw std::exception("Unable to compile fragment shader");
+			throw std::exception("Unable to compile polyline fragment shader");
 
 		if (!shaderProgram->link())
-			throw std::exception("Unable to link shader program");
+			throw std::exception("Unable to link polyline shader program");
 
 		const auto stride = 5 * sizeof(GLfloat);
 
@@ -70,7 +70,7 @@ void PolylineProp::initialize()
 			shape->vbo().release();
 		}
 		else {
-			throw std::exception("Unable to bind shader program");
+			throw std::exception("Unable to bind polyline shader program");
 		}
 
 		const auto texture = textureByName("Polyline");
@@ -106,30 +106,41 @@ bool PolylineProp::canRender() const
 
 void PolylineProp::render()
 {
-	if (!canRender())
-		return;
+	try {
+		if (!canRender())
+			return;
 
-	Prop::render();
+		Prop::render();
 
-	//qDebug() << "Render" << fullName();
+		const auto shape			= shapeByName<PolylineShape>("PolylineShape");
+		const auto shaderProgram	= shaderProgramByName("PolylineShape");
+		const auto texture			= textureByName("Polyline");
 
-	const auto shape = shapeByName<PolylineShape>("PolylineShape");
-	const auto shaderProgram = shaderProgramByName("PolylineShape");
-	const auto texture = textureByName("Polyline");
+		texture->bind();
+		{
+			if (shaderProgram->bind()) {
+				shaderProgram->setUniformValue("screenToNormalizedScreenMatrix", renderer()->screenCoordinatesToNormalizedScreenCoordinatesMatrix());
+				shaderProgram->setUniformValue("lineTexture", 0);
+				shaderProgram->setUniformValue("lineWidth", _lineWidth);
 
-	texture->bind();
-	{
-		if (shaderProgram->bind()) {
-			shaderProgram->setUniformValue("screenToNormalizedScreenMatrix", renderer()->screenCoordinatesToNormalizedScreenCoordinatesMatrix());
-			shaderProgram->setUniformValue("lineTexture", 0);
-			shaderProgram->setUniformValue("lineWidth", _lineWidth);
+				shape->render();
 
-			shape->render();
-
-			shaderProgram->release();
+				shaderProgram->release();
+			}
+			else {
+				throw std::exception("Unable to bind polyline shader program");
+			}
 		}
+
+		texture->release();
 	}
-	texture->release();
+	catch (std::exception& e)
+	{
+		qDebug() << _name << "render failed:" << e.what();
+	}
+	catch (...) {
+		qDebug() << _name << "render failed due to unhandled exception";
+	}
 }
 
 void PolylineProp::updateShapes()

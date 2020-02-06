@@ -26,6 +26,9 @@ protected: // Inherited
 	/** Initializes the prop */
 	void initialize() override;
 
+	/** Returns whether the prop can be rendered */
+	bool canRender() const override;
+
 	/** Renders the prop */
 	void render() override;
 
@@ -35,6 +38,9 @@ public:
 	 * @param imageSize Image size
 	 */
 	void setImageSize(const QSize& imageSize);
+
+	/** Updates the pixel selection buffer */
+	void update();
 
 private:
 	QSharedPointer<QOpenGLFramebufferObject>	_fbo;		/** Frame buffer object for off-screen computation of pixel selection */

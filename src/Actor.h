@@ -212,6 +212,9 @@ public:
 		});
 	}
 
+	/** Returns the recorded mouse events */
+	QVector<MouseEvent> mouseEvents();
+
 protected:
 	/** Destroys the actor */
 	virtual void destroy();
@@ -239,9 +242,6 @@ protected:
 
 	/** Returns whether this actor may process key release events */
 	bool mayProcessKeyReleaseEvent() const;
-
-	/** Returns the recorded mouse events */
-	QVector<MouseEvent> mouseEvents();
 
 	/**
 	 * Records a mouse event

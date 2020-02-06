@@ -24,12 +24,6 @@ SelectionImageProp::SelectionImageProp(Actor* actor, const QString& name) :
 	addShape<QuadShape>("Quad");
 	addShaderProgram("Quad");
 	addTexture("Quad", QOpenGLTexture::Target2D);
-
-	connect(shapeByName<QuadShape>("Quad"), &QuadShape::rectangleChanged, this, [&](const QRectF& rectangle) {
-		_matrix.setColumn(3, QVector4D(-0.5f * rectangle.width(), -0.5f * rectangle.height(), _matrix.column(3).z(), 1.f));
-
-		emit imageSizeChanged(imageSize());
-	});
 }
 
 void SelectionImageProp::initialize()
@@ -89,32 +83,44 @@ void SelectionImageProp::initialize()
 
 void SelectionImageProp::render()
 {
-	if (!canRender())
-		return;
+	try {
+		if (!canRender())
+			return;
 
-	Prop::render();
+		Prop::render();
 
-	const auto shape = shapeByName<QuadShape>("Quad");
-	const auto shaderProgram = shaderProgramByName("Quad");
-	const auto texture = textureByName("Quad");
+		const auto shape = shapeByName<QuadShape>("Quad");
+		const auto shaderProgram = shaderProgramByName("Quad");
+		const auto texture = textureByName("Quad");
 
-	texture->bind();
+		texture->bind();
 
-	if (shaderProgram->bind()) {
-		auto color = _color;
+		if (shaderProgram->bind()) {
+			auto color = _color;
 
-		color.setAlphaF(actor()->opacity());
+			color.setAlphaF(actor()->opacity());
 
-		shaderProgram->setUniformValue("imageTexture", 0);
-		shaderProgram->setUniformValue("color", color);
-		shaderProgram->setUniformValue("transform", actor()->modelViewProjectionMatrix() * _matrix);
+			shaderProgram->setUniformValue("imageTexture", 0);
+			shaderProgram->setUniformValue("color", color);
+			shaderProgram->setUniformValue("transform", actor()->modelViewProjectionMatrix() * _matrix);
 
-		shape->render();
+			shape->render();
 
-		shaderProgram->release();
+			shaderProgram->release();
+		}
+		else {
+			throw std::exception("Unable to bind quad shader program");
+		}
+
+		texture->release();
 	}
-
-	texture->release();
+	catch (std::exception& e)
+	{
+		qDebug() << _name << "render failed:" << e.what();
+	}
+	catch (...) {
+		qDebug() << _name << "render failed due to unhandled exception";
+	}
 }
 
 void SelectionImageProp::setImage(std::shared_ptr<QImage> image)
@@ -126,7 +132,11 @@ void SelectionImageProp::setImage(std::shared_ptr<QImage> image)
 	texture->setMinMagFilters(QOpenGLTexture::Nearest, QOpenGLTexture::Nearest);
 	texture->setWrapMode(QOpenGLTexture::ClampToEdge);
 
-	shapeByName<QuadShape>("Quad")->setRectangle(QRectF(QPointF(0.f, 0.f), QSizeF(static_cast<float>(image->width()), static_cast<float>(image->height()))));
+	const auto rectangle = QRectF(QPointF(0.f, 0.f), QSizeF(static_cast<float>(image->width()), static_cast<float>(image->height())));
+
+	shapeByName<QuadShape>("Quad")->setRectangle(rectangle);
+
+	_matrix.setColumn(3, QVector4D(-0.5f * rectangle.width(), -0.5f * rectangle.height(), _matrix.column(3).z(), 1.f));
 
 	emit changed(this);
 }

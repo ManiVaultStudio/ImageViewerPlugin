@@ -39,13 +39,6 @@ public:
 	/** Returns the image size */
 	QSize imageSize() const;
 
-signals:
-	/**
-	 * Signals that the image size changed
-	 * @para size Image size
-	 */
-	void imageSizeChanged(const QSize& imageSize);
-
 private:
 	QColor		_color;		/** Selection color */
 };

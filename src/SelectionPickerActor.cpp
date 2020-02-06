@@ -349,6 +349,8 @@ void SelectionPickerActor::update()
 			break;
 	}
 
+	interimSelectionProp()->update();
+
 	emit changed(this);
 }
 
@@ -464,6 +466,8 @@ void SelectionPickerActor::setImageSize(const QSize& imageSize)
 	qDebug() << "Set image size";
 
 	_imageSize = imageSize;
+
+	interimSelectionProp()->setImageSize(_imageSize);
 
 	emit imageSizeChanged(_imageSize);
 }
@@ -584,6 +588,11 @@ PolylineProp* SelectionPickerActor::polygonSegmentsProp()
 PolylineProp* SelectionPickerActor::polygonClosingSegmentProp()
 {
 	return propByName<PolylineProp>("PolygonClosingSegmentProp");
+}
+
+InterimSelectionProp* SelectionPickerActor::interimSelectionProp()
+{
+	return propByName<InterimSelectionProp>("InterimSelectionProp");
 }
 
 QMenu* SelectionPickerActor::contextMenu()

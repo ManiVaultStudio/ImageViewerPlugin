@@ -50,13 +50,6 @@ private:
 	 */
 	void createQuad();
 
-signals:
-	/**
-	 * Signals that the rectangle changed
-	 * @param rectangle Rectangle in world space
-	 */
-	void rectangleChanged(const QRectF& rectangle);
-
 public:
 	static std::uint32_t	_vertexAttribute;		/** Quad vertex attribute location */
 	static std::uint32_t	_textureAttribute;		/** Quad texture attribute location */

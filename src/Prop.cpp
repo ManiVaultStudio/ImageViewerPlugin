@@ -1,5 +1,6 @@
 #include "Prop.h"
 #include "Renderer.h"
+#include "Actor.h"
 #include "Shape.h"
 
 #include <QOpenGLShaderProgram>
@@ -117,4 +118,9 @@ Renderer* Prop::renderer()
 QString Prop::fullName()
 {
 	return QString("%2::%3").arg(actor()->name(), _name);
+}
+
+QMatrix4x4 Prop::propViewMatrix()
+{
+	return actor()->modelViewMatrix() * _matrix;
 }

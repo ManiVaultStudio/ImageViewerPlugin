@@ -1,6 +1,7 @@
 #include "InterimSelectionProp.h"
 #include "QuadShape.h"
-#include "Actor.h"
+#include "SelectionPickerActor.h"
+#include "Renderer.h"
 
 #include <QDebug>
 
@@ -108,36 +109,50 @@ void InterimSelectionProp::initialize()
 	}
 }
 
+bool InterimSelectionProp::canRender() const
+{
+	if (!Prop::canRender())
+		return false;
+
+	if (_fbo.isNull())
+		return false;
+
+	return _fbo->isValid();
+}
+
 void InterimSelectionProp::render()
 {
-	/*
-	if (!canRender())
-		return;
+	try {
+		if (!canRender())
+			return;
 
-	Prop::render();
+		Prop::render();
 
-	const auto shape			= shapeByName<QuadShape>("QuadShape");
-	const auto shaderProgram	= shaderProgramByName("QuadShape");
-	const auto texture			= textureByName("QuadShape");
+		const auto shape			= shapeByName<QuadShape>("Quad");
+		const auto shaderProgram	= shaderProgramByName("Quad");
 
-	texture->bind();
+		if (shaderProgram->bind()) {
+			glBindTexture(GL_TEXTURE_2D, _fbo->texture());
 
-	if (shaderProgram->bind()) {
-		auto color = _color;
+			shaderProgram->setUniformValue("offscreenBufferTexture", 0);
+			shaderProgram->setUniformValue("color", QColor(255, 0, 0, 120));
+			shaderProgram->setUniformValue("transform", actor()->modelViewProjectionMatrix() * _matrix);
 
-		color.setAlphaF(actor()->opacity());
+			shape->render();
 
-		shaderProgram->setUniformValue("imageTexture", 0);
-		shaderProgram->setUniformValue("color", color);
-		shaderProgram->setUniformValue("transform", actor()->modelViewProjectionMatrix() * _matrix);
-
-		shape->render();
-
-		shaderProgram->release();
+			shaderProgram->release();
+		}
+		else {
+			throw std::exception("Unable to bind quad shader program");
+		}
 	}
-
-	texture->release();
-	*/
+	catch (std::exception& e)
+	{
+		qDebug() << _name << "render failed:" << e.what();
+	}
+	catch (...) {
+		qDebug() << _name << "render failed due to unhandled exception";
+	}
 }
 
 void InterimSelectionProp::setImageSize(const QSize& imageSize)
@@ -147,5 +162,135 @@ void InterimSelectionProp::setImageSize(const QSize& imageSize)
 
 	qDebug() << "Set image size to" << imageSize;
 
+	const auto rectangle = QRectF(QPointF(0.f, 0.f), QSizeF(static_cast<float>(imageSize.width()), static_cast<float>(imageSize.height())));
+
+	shapeByName<QuadShape>("Quad")->setRectangle(rectangle);
+
 	_fbo.reset(new QOpenGLFramebufferObject(imageSize.width(), imageSize.height()));
+
+	_matrix.setColumn(3, QVector4D(-0.5f * rectangle.width(), -0.5f * rectangle.height(), 1.0f, 1.f));
+}
+
+void InterimSelectionProp::update()
+{
+	if (_fbo.isNull())
+		return;
+
+	renderer()->bindOpenGLContext();
+
+	try {
+		if (_fbo->bind()) {
+			glViewport(0, 0, _fbo->width(), _fbo->height());
+
+			QMatrix4x4 transform;
+
+			auto width = _fbo->width();
+
+			transform.ortho(0.0f, _fbo->width(), 0.0f, _fbo->height(), -1.0f, +1.0f);
+
+			auto shape = shapeByName<QuadShape>("Quad");
+
+			const auto offscreenBufferShaderProgram = shaderProgramByName("OffscreenBuffer");
+
+			auto selectionPickerActor = dynamic_cast<SelectionPickerActor*>(actor());
+
+			shape->vao().bind();
+			{
+				if (offscreenBufferShaderProgram->bind()) {
+					glBindTexture(GL_TEXTURE_2D, _fbo->texture());
+
+					offscreenBufferShaderProgram->setUniformValue("pixelSelectionTexture", 0);
+					offscreenBufferShaderProgram->setUniformValue("transform", transform);
+					offscreenBufferShaderProgram->setUniformValue("selectionType", static_cast<int>(selectionPickerActor->selectionType()));
+
+					auto imageWidth = static_cast<float>(_fbo->size().width());
+					auto imageHeight = static_cast<float>(_fbo->size().height());
+					auto mouseEvents = selectionPickerActor->mouseEvents();
+
+					offscreenBufferShaderProgram->setUniformValue("imageSize", imageWidth, imageHeight);
+
+					switch (selectionPickerActor->selectionType())
+					{
+						case SelectionType::Rectangle:
+						{
+							if (mouseEvents.size() < 2)
+								break;
+
+							const auto firstPoint				= mouseEvents.first().screenPoint();
+							const auto lastPoint				= mouseEvents.last().screenPoint();
+							const auto rectangleTopLeft			= renderer()->screenPointToWorldPosition(propViewMatrix(), QPointF(firstPoint.x(), firstPoint.y()));
+							const auto rectangleBottomRight		= renderer()->screenPointToWorldPosition(propViewMatrix(), QPointF(lastPoint.x(), lastPoint.y()));
+							const auto rectangleTopLeftUV		= QVector2D(rectangleTopLeft.x() / static_cast<float>(_fbo->width()), rectangleTopLeft.y() / static_cast<float>(_fbo->height()));
+							const auto rectangleBottomRightUV	= QVector2D(rectangleBottomRight.x() / static_cast<float>(_fbo->width()), rectangleBottomRight.y() / static_cast<float>(_fbo->height()));
+
+							auto rectangle = QRectF(QPointF(rectangleTopLeftUV.x(), rectangleTopLeftUV.y()), QPointF(rectangleBottomRightUV.x(), rectangleBottomRightUV.y())).normalized();
+							
+							offscreenBufferShaderProgram->setUniformValue("rectangleTopLeft", rectangle.topLeft());
+							offscreenBufferShaderProgram->setUniformValue("rectangleBottomRight", rectangle.bottomRight());
+							break;
+						}
+
+						case SelectionType::Brush:
+						{
+							if (mouseEvents.size() == 0)
+								break;
+							
+							const auto brushCenter			= renderer()->screenPointToWorldPosition(propViewMatrix(), QPointF(mouseEvents.last().screenPoint().x(), mouseEvents.last().screenPoint().y()));
+							const auto previousBrushCenter	= mouseEvents.size() > 1 ? renderer()->screenPointToWorldPosition(propViewMatrix(), QPointF(mouseEvents[mouseEvents.size() - 2].screenPoint().x(), mouseEvents[mouseEvents.size() - 2].screenPoint().y())) : brushCenter;
+
+							offscreenBufferShaderProgram->setUniformValue("previousBrushCenter", previousBrushCenter.x(), previousBrushCenter.y());
+							offscreenBufferShaderProgram->setUniformValue("currentBrushCenter", brushCenter.x(), brushCenter.y());
+							offscreenBufferShaderProgram->setUniformValue("brushRadius", selectionPickerActor->brushRadius());
+							
+							break;
+						}
+
+						case SelectionType::Lasso:
+						case SelectionType::Polygon:
+						{
+							/*
+							QList<QVector2D> points;
+
+							points.reserve(static_cast<std::int32_t>(_mousePositions.size()));
+
+							for (const auto& mousePosition : _mousePositions) {
+								points.push_back(QVector2D(mousePosition.x(), mousePosition.y()));
+							}
+
+							offscreenBufferShaderProgram->setUniformValueArray("points", &points[0], static_cast<std::int32_t>(points.size()));
+							offscreenBufferShaderProgram->setUniformValue("noPoints", static_cast<int>(points.size()));
+							*/
+							break;
+						}
+
+						default:
+							break;
+					}
+
+					glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+					offscreenBufferShaderProgram->release();
+				}
+				else
+				{
+					throw std::exception("Unable to bind off screen shader program");
+				}
+			}
+
+			shape->vao().release();
+
+			_fbo->release();
+		}
+		else
+		{
+			throw std::exception("Unable to bind frame buffer object");
+		}
+	}
+	catch (std::exception& e)
+	{
+		qDebug() << _name << "update failed:" << e.what();
+	}
+	catch (...) {
+		qDebug() << _name << "update failed due to unhandled exception";
+	}
 }

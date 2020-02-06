@@ -66,6 +66,9 @@ public:
 	/** Returns the full shape name (actor_name::prop_name::shape_name */
 	QString fullName();
 
+	/** Returns the prop-view matrix */
+	QMatrix4x4 propViewMatrix();
+
 protected:
 	/** Initializes the prop */
 	virtual void initialize();

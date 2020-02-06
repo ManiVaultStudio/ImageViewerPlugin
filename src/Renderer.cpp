@@ -401,11 +401,8 @@ void Renderer::setColorImage(std::shared_ptr<QImage> colorImage)
 {
 	bindOpenGLContext();
 
-	auto* colorImageActor = actorByName<ColorImageActor>("ColorImageActor");
-
-	const auto previousImageSize = colorImageActor->imageSize();
-
-	colorImageActor->setImage(colorImage);
+	colorImageActor()->setImage(colorImage);
+	selectionPickerActor()->setImageSize(colorImage->size());
 
 	/*
 	if (previousImageSize != colorImage->size()) {
