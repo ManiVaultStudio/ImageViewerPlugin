@@ -102,7 +102,7 @@ void SelectionImageProp::render()
 
 			shaderProgram->setUniformValue("imageTexture", 0);
 			shaderProgram->setUniformValue("color", color);
-			shaderProgram->setUniformValue("transform", actor()->modelViewProjectionMatrix() * _matrix);
+			shaderProgram->setUniformValue("transform", modelViewProjectionMatrix());
 
 			shape->render();
 
@@ -136,7 +136,11 @@ void SelectionImageProp::setImage(std::shared_ptr<QImage> image)
 
 	shapeByName<QuadShape>("Quad")->setRectangle(rectangle);
 
-	_matrix.setColumn(3, QVector4D(-0.5f * rectangle.width(), -0.5f * rectangle.height(), _matrix.column(3).z(), 1.f));
+	QMatrix4x4 matrix;
+
+	matrix.translate(-0.5f * rectangle.width(), -0.5f * rectangle.height(), 0.0f);
+
+	setMatrix(matrix);
 
 	emit changed(this);
 }

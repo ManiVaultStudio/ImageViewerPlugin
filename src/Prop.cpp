@@ -22,6 +22,17 @@ Prop::Prop(Actor* actor, const QString& name) :
 
 Prop::~Prop() = default;
 
+void Prop::initialize()
+{
+	//qDebug() << "Initialize" << fullName();
+
+	renderer()->bindOpenGLContext();
+
+	for (auto shape : _shapes) {
+		shape->initialize();
+	}
+}
+
 void Prop::destroy()
 {
 	//qDebug() << "Destroy" << fullName();
@@ -33,15 +44,9 @@ void Prop::destroy()
 	}
 }
 
-void Prop::initialize()
+bool Prop::canRender() const
 {
-	//qDebug() << "Initialize" << fullName();
-
-	renderer()->bindOpenGLContext();
-
-	for (auto shape : _shapes) {
-		shape->initialize();
-	}
+	return isInitialized() && isVisible();
 }
 
 void Prop::render()
@@ -100,9 +105,32 @@ void Prop::hide()
 	setVisible(false);
 }
 
-bool Prop::canRender() const
+QString Prop::fullName()
 {
-	return isInitialized() && isVisible();
+	return QString("%2::%3").arg(actor()->name(), _name);
+}
+
+QMatrix4x4 Prop::matrix() const
+{
+	return _matrix;
+}
+
+void Prop::setMatrix(const QMatrix4x4& matrix)
+{
+	if (matrix == _matrix)
+		return;
+
+	_matrix = matrix;
+}
+
+QMatrix4x4 Prop::modelViewMatrix()
+{
+	return actor()->modelViewMatrix() * _matrix;
+}
+
+QMatrix4x4 Prop::modelViewProjectionMatrix()
+{
+	return actor()->modelViewProjectionMatrix() * _matrix;
 }
 
 Actor* Prop::actor()
@@ -113,14 +141,4 @@ Actor* Prop::actor()
 Renderer* Prop::renderer()
 {
 	return _actor->renderer();
-}
-
-QString Prop::fullName()
-{
-	return QString("%2::%3").arg(actor()->name(), _name);
-}
-
-QMatrix4x4 Prop::propViewMatrix()
-{
-	return actor()->modelViewMatrix() * _matrix;
 }

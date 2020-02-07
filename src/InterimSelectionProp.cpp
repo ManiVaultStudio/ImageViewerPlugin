@@ -136,7 +136,7 @@ void InterimSelectionProp::render()
 
 			shaderProgram->setUniformValue("offscreenBufferTexture", 0);
 			shaderProgram->setUniformValue("color", QColor(255, 0, 0, 120));
-			shaderProgram->setUniformValue("transform", actor()->modelViewProjectionMatrix() * _matrix);
+			shaderProgram->setUniformValue("transform", modelViewProjectionMatrix());
 
 			shape->render();
 
@@ -168,7 +168,11 @@ void InterimSelectionProp::setImageSize(const QSize& imageSize)
 
 	_fbo.reset(new QOpenGLFramebufferObject(imageSize.width(), imageSize.height()));
 
-	_matrix.setColumn(3, QVector4D(-0.5f * rectangle.width(), -0.5f * rectangle.height(), 1.0f, 1.f));
+	QMatrix4x4 matrix;
+
+	matrix.translate(-0.5f * rectangle.width(), -0.5f * rectangle.height(), 1.0f);
+
+	setMatrix(matrix);
 }
 
 void InterimSelectionProp::update()
@@ -218,8 +222,8 @@ void InterimSelectionProp::update()
 
 							const auto firstPoint				= mouseEvents.first().screenPoint();
 							const auto lastPoint				= mouseEvents.last().screenPoint();
-							const auto rectangleTopLeft			= renderer()->screenPointToWorldPosition(propViewMatrix(), QPointF(firstPoint.x(), firstPoint.y()));
-							const auto rectangleBottomRight		= renderer()->screenPointToWorldPosition(propViewMatrix(), QPointF(lastPoint.x(), lastPoint.y()));
+							const auto rectangleTopLeft			= renderer()->screenPointToWorldPosition(modelViewMatrix(), QPointF(firstPoint.x(), firstPoint.y()));
+							const auto rectangleBottomRight		= renderer()->screenPointToWorldPosition(modelViewMatrix(), QPointF(lastPoint.x(), lastPoint.y()));
 							const auto rectangleTopLeftUV		= QVector2D(rectangleTopLeft.x() / static_cast<float>(_fbo->width()), rectangleTopLeft.y() / static_cast<float>(_fbo->height()));
 							const auto rectangleBottomRightUV	= QVector2D(rectangleBottomRight.x() / static_cast<float>(_fbo->width()), rectangleBottomRight.y() / static_cast<float>(_fbo->height()));
 
@@ -235,8 +239,8 @@ void InterimSelectionProp::update()
 							if (mouseEvents.size() == 0)
 								break;
 							
-							const auto brushCenter			= renderer()->screenPointToWorldPosition(propViewMatrix(), QPointF(mouseEvents.last().screenPoint().x(), mouseEvents.last().screenPoint().y()));
-							const auto previousBrushCenter	= mouseEvents.size() > 1 ? renderer()->screenPointToWorldPosition(propViewMatrix(), QPointF(mouseEvents[mouseEvents.size() - 2].screenPoint().x(), mouseEvents[mouseEvents.size() - 2].screenPoint().y())) : brushCenter;
+							const auto brushCenter			= renderer()->screenPointToWorldPosition(modelViewMatrix(), QPointF(mouseEvents.last().screenPoint().x(), mouseEvents.last().screenPoint().y()));
+							const auto previousBrushCenter	= mouseEvents.size() > 1 ? renderer()->screenPointToWorldPosition(modelViewMatrix(), QPointF(mouseEvents[mouseEvents.size() - 2].screenPoint().x(), mouseEvents[mouseEvents.size() - 2].screenPoint().y())) : brushCenter;
 
 							offscreenBufferShaderProgram->setUniformValue("previousBrushCenter", previousBrushCenter.x(), previousBrushCenter.y());
 							offscreenBufferShaderProgram->setUniformValue("currentBrushCenter", brushCenter.x(), brushCenter.y());

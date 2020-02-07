@@ -28,7 +28,7 @@ public:
 	Prop(Actor* actor, const QString& name);
 
 	/** Destructor */
-	~Prop();
+	virtual ~Prop();
 
 	/** Returns whether the prop is initialized */
 	bool isInitialized() const;
@@ -37,7 +37,7 @@ public:
 	QString name() const;
 
 	/**
-	 * Sets the name
+	 * Sets the prop name
 	 * @param name Prop name
 	 */
 	void setName(const QString& name);
@@ -57,17 +57,29 @@ public:
 	/** Hides the prop */
 	void hide();
 
-	/** Returns the actor */
+	/** Returns the full shape name (actor_name::prop_name::shape_name */
+	QString fullName();
+
+	/** Returns the prop matrix */
+	QMatrix4x4 matrix() const;
+
+	/**
+	 * Sets the prop matrix
+	 * @param matrix Matrix
+	 */
+	void setMatrix(const QMatrix4x4& matrix);
+
+	/** Returns the model-view matrix (viewMatrix * actorMatrix * propMatrix) */
+	QMatrix4x4 modelViewMatrix();
+
+	/** Returns the model-view-projection matrix (projectionMatrix * viewMatrix * actorMatrix * propMatrix) */
+	QMatrix4x4 modelViewProjectionMatrix();
+
+	/** Returns the parent actor */
 	Actor* actor();
 
 	/** Returns the renderer */
 	Renderer* renderer();
-
-	/** Returns the full shape name (actor_name::prop_name::shape_name */
-	QString fullName();
-
-	/** Returns the prop-view matrix */
-	QMatrix4x4 propViewMatrix();
 
 protected:
 	/** Initializes the prop */
@@ -170,9 +182,9 @@ protected:
 	bool													_initialized;			/** Whether the prop is ready for rendering */
 	QString													_name;					/** Name of the prop */
 	bool													_visible;				/** Whether the prop is visible or not */
-	QMatrix4x4												_matrix;				/** Transformation matrix */
 
 private:
+	QMatrix4x4												_matrix;				/** Transformation matrix */
 	QMap<QString, QSharedPointer<QOpenGLShaderProgram>>		_shaderPrograms;		/** OpenGL shader programs */
 	QMap<QString, QSharedPointer<QOpenGLTexture>>			_textures;				/** OpenGL textures */
 	QMap<QString, QSharedPointer<Shape>>					_shapes;				/** Shapes */

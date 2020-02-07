@@ -94,7 +94,7 @@ void ColorImageProp::render()
 			shaderProgram->setUniformValue("imageTexture", 0);
 			shaderProgram->setUniformValue("minPixelValue", _minPixelValue);
 			shaderProgram->setUniformValue("maxPixelValue", _maxPixelValue);
-			shaderProgram->setUniformValue("transform", actor()->modelViewProjectionMatrix() * _matrix);
+			shaderProgram->setUniformValue("transform", modelViewProjectionMatrix());
 
 			shape->render();
 
@@ -132,7 +132,11 @@ void ColorImageProp::setImage(std::shared_ptr<QImage> image)
 
 	shapeByName<QuadShape>("Quad")->setRectangle(rectangle);
 
-	_matrix.setColumn(3, QVector4D(-0.5f * rectangle.width(), -0.5f * rectangle.height(), _matrix.column(3).z(), 1.f));
+	QMatrix4x4 matrix;
+
+	matrix.translate(-0.5f * rectangle.width(), -0.5f * rectangle.height(), 0.0f);
+
+	setMatrix(matrix);
 
 	emit imageSizeChanged(rectangle.size().toSize());
 	emit changed(this);
