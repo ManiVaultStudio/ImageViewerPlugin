@@ -20,6 +20,7 @@ Renderer::Renderer(ImageViewerWidget* parentWidget) :
 	_zoomSensitivity(0.1f),
 	_margin(25)
 {
+	addNamedColor("InterimSelectionOverlayColor", QColor(239, 130, 13, 100));
 	addNamedColor("SelectionOutline", QColor(239, 130, 13, 255));
 
 	createActors();
@@ -653,7 +654,7 @@ void Renderer::addNamedColor(const QString& name, const QColor& color)
 	_colorMap.insert(name, color);
 }
 
-QColor Renderer::colorByName(const QString& name, const std::uint32_t& alpha /*= 255*/) const
+QColor Renderer::colorByName(const QString& name, const std::int32_t& alpha /*= -1*/) const
 {
 	if (!_colorMap.contains(name)) {
 		return QColor(255, 255, 255, alpha);
@@ -661,7 +662,8 @@ QColor Renderer::colorByName(const QString& name, const std::uint32_t& alpha /*=
 
 	auto color = _colorMap.value(name);
 
-	color.setAlpha(alpha);
+	if (alpha >= 0)
+		color.setAlpha(alpha);
 
 	return color;
 }

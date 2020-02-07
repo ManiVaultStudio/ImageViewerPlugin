@@ -125,7 +125,7 @@ void main(void)
 		case 2:
 		{
 			bool inBrush		= length(P - currentBrushCenter) < brushRadius;
-			bool prevInBrush	= texture(pixelSelectionTexture, vec2(uv.x, 1.f - uv.y)).r > 0;
+			bool prevInBrush	= texture(pixelSelectionTexture, vec2(1.0f - uv.x, uv.y)).r > 0;
 			
 			if (currentBrushCenter != previousBrushCenter) {
 				vec2 A		= currentBrushCenter - previousBrushCenter;

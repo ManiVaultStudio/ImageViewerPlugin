@@ -184,7 +184,7 @@ public:
 	/** Returns a color by name
 	 * @param name Name of the color
 	 */
-	QColor colorByName(const QString& name, const std::uint32_t& alpha = 255) const;
+	QColor colorByName(const QString& name, const std::int32_t& alpha = -1) const;
 
 	/** Returns the parent widget */
 	QWidget* parentWidget() {

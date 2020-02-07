@@ -18,7 +18,7 @@ SelectionPickerActor::SelectionPickerActor(Renderer* renderer, const QString& na
 	_imageSize(),
 	_selectionType(SelectionType::Rectangle),
 	_selectionModifier(SelectionModifier::Replace),
-	_brushRadius(40.0f),
+	_brushRadius(51.0f),
 	_brushRadiusDelta(5.f),
 	_selecting(false)
 {
@@ -290,6 +290,7 @@ void SelectionPickerActor::startSelection()
 	_selecting = true;
 
 	update();
+	interimSelectionProp()->reset();
 }
 
 void SelectionPickerActor::endSelection()
@@ -300,6 +301,8 @@ void SelectionPickerActor::endSelection()
 	
 	_selecting = false;
 	
+	interimSelectionProp()->reset();
+
 	update();
 }
 
@@ -350,7 +353,8 @@ void SelectionPickerActor::update()
 			break;
 	}
 
-	interimSelectionProp()->update();
+	if (_selecting)
+		interimSelectionProp()->update();
 
 	emit changed(this);
 }
@@ -403,10 +407,14 @@ void SelectionPickerActor::updateSelectionBrush()
 	// Allocate vertices buffer
 	vertexCoordinates.resize(noSegments * 3);
 
+	const auto pA			= renderer()->worldPositionToScreenPoint(QVector3D(0.0f, 0.0f, 0.0f));
+	const auto pB			= renderer()->worldPositionToScreenPoint(QVector3D(_brushRadius, 0.0f, 0.0f));
+	const auto brushRadius	= (pB - pA).length();
+
 	// Generate polyline points in screen coordinates
 	for (std::uint32_t s = 0; s < noSegments; s++) {
 		const auto theta	= 2.0f * M_PI * float(s) / static_cast<float>(noSegments);
-		const auto pBrush	= QVector2D(_brushRadius * cosf(theta), _brushRadius * sinf(theta));
+		const auto pBrush	= QVector2D(brushRadius * cosf(theta), brushRadius * sinf(theta));
 
 		points.append(pCenter + pBrush);
 	}

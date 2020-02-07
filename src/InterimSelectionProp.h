@@ -42,6 +42,9 @@ public:
 	/** Updates the pixel selection buffer */
 	void update();
 
+	/** Resets the pixel selection buffer */
+	void reset();
+
 private:
 	QSharedPointer<QOpenGLFramebufferObject>	_fbo;		/** Frame buffer object for off-screen computation of pixel selection */
 };

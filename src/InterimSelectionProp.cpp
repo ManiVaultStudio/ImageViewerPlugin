@@ -135,7 +135,7 @@ void InterimSelectionProp::render()
 			glBindTexture(GL_TEXTURE_2D, _fbo->texture());
 
 			shaderProgram->setUniformValue("offscreenBufferTexture", 0);
-			shaderProgram->setUniformValue("color", QColor(255, 0, 0, 120));
+			shaderProgram->setUniformValue("color", renderer()->colorByName("InterimSelectionOverlayColor"));
 			shaderProgram->setUniformValue("transform", modelViewProjectionMatrix());
 
 			shape->render();
@@ -188,8 +188,6 @@ void InterimSelectionProp::update()
 
 			QMatrix4x4 transform;
 
-			auto width = _fbo->width();
-
 			transform.ortho(0.0f, _fbo->width(), 0.0f, _fbo->height(), -1.0f, +1.0f);
 
 			auto shape = shapeByName<QuadShape>("Quad");
@@ -207,11 +205,10 @@ void InterimSelectionProp::update()
 					offscreenBufferShaderProgram->setUniformValue("transform", transform);
 					offscreenBufferShaderProgram->setUniformValue("selectionType", static_cast<int>(selectionPickerActor->selectionType()));
 
-					auto imageWidth = static_cast<float>(_fbo->size().width());
-					auto imageHeight = static_cast<float>(_fbo->size().height());
-					auto mouseEvents = selectionPickerActor->mouseEvents();
+					const auto fboSize		= QSizeF(static_cast<float>(_fbo->size().width()), static_cast<float>(_fbo->size().height()));
+					const auto mouseEvents	= selectionPickerActor->mouseEvents();
 
-					offscreenBufferShaderProgram->setUniformValue("imageSize", imageWidth, imageHeight);
+					offscreenBufferShaderProgram->setUniformValue("imageSize", fboSize.width(), fboSize.height());
 
 					const auto noMouseEvents = mouseEvents.size();
 
@@ -222,14 +219,13 @@ void InterimSelectionProp::update()
 							if (noMouseEvents < 2)
 								break;
 
-							const auto firstPoint				= mouseEvents.first().screenPoint();
-							const auto lastPoint				= mouseEvents.last().screenPoint();
-							const auto rectangleTopLeft			= renderer()->screenPointToWorldPosition(modelViewMatrix(), firstPoint);
-							const auto rectangleBottomRight		= renderer()->screenPointToWorldPosition(modelViewMatrix(), lastPoint);
-							const auto rectangleTopLeftUV		= QVector2D(rectangleTopLeft.x() / static_cast<float>(_fbo->width()), rectangleTopLeft.y() / static_cast<float>(_fbo->height()));
-							const auto rectangleBottomRightUV	= QVector2D(rectangleBottomRight.x() / static_cast<float>(_fbo->width()), rectangleBottomRight.y() / static_cast<float>(_fbo->height()));
-
-							auto rectangle = QRectF(QPointF(rectangleTopLeftUV.x(), rectangleTopLeftUV.y()), QPointF(rectangleBottomRightUV.x(), rectangleBottomRightUV.y())).normalized();
+							const auto pFirst					= mouseEvents.first().screenPoint();
+							const auto pLast					= mouseEvents.last().screenPoint();
+							const auto pRectangleTopLeft		= renderer()->screenPointToWorldPosition(modelViewMatrix(), pFirst);
+							const auto pRectangleBottomRight	= renderer()->screenPointToWorldPosition(modelViewMatrix(), pLast);
+							const auto pRectangleTopLeftUV		= QVector2D(pRectangleTopLeft.x() / fboSize.width(), pRectangleTopLeft.y() / fboSize.height());
+							const auto pRectangleBottomRightUV	= QVector2D(pRectangleBottomRight.x() / fboSize.width(), pRectangleBottomRight.y() / fboSize.height());
+							const auto rectangle				= QRectF(QPointF(pRectangleTopLeftUV.x(), pRectangleTopLeftUV.y()), QPointF(pRectangleBottomRightUV.x(), pRectangleBottomRightUV.y())).normalized();
 							
 							offscreenBufferShaderProgram->setUniformValue("rectangleTopLeft", rectangle.topLeft());
 							offscreenBufferShaderProgram->setUniformValue("rectangleBottomRight", rectangle.bottomRight());
@@ -241,18 +237,25 @@ void InterimSelectionProp::update()
 							if (noMouseEvents == 0)
 								break;
 							
+							offscreenBufferShaderProgram->setUniformValue("brushRadius", selectionPickerActor->brushRadius());
+
 							if (noMouseEvents == 1) {
 								const auto pMouseLast	= mouseEvents.last().screenPoint();
-								const auto brushCenter	= renderer()->screenPointToWorldPosition(modelViewMatrix(), pMouseLast);
-							}
-							
-							/*
-							const auto previousBrushCenter	= mouseEvents.size() > 1 ? renderer()->screenPointToWorldPosition(modelViewMatrix(), QPointF(mouseEvents[mouseEvents.size() - 2].screenPoint().x(), mouseEvents[mouseEvents.size() - 2].screenPoint().y())) : brushCenter;
+								const auto pBrush		= renderer()->screenPointToWorldPosition(modelViewMatrix(), pMouseLast).toVector2D();
 
-							offscreenBufferShaderProgram->setUniformValue("previousBrushCenter", previousBrushCenter.x(), previousBrushCenter.y());
-							offscreenBufferShaderProgram->setUniformValue("currentBrushCenter", brushCenter.x(), brushCenter.y());
-							offscreenBufferShaderProgram->setUniformValue("brushRadius", selectionPickerActor->brushRadius());
-							*/
+								offscreenBufferShaderProgram->setUniformValue("previousBrushCenter", pBrush);
+								offscreenBufferShaderProgram->setUniformValue("currentBrushCenter", pBrush);
+							}
+
+							if (noMouseEvents > 1) {
+								const auto pMousePrevious	= mouseEvents[noMouseEvents - 2].screenPoint();
+								const auto pMouseCurrent	= mouseEvents.last().screenPoint();
+								const auto pBrushPrevious	= renderer()->screenPointToWorldPosition(modelViewMatrix(), pMousePrevious).toVector2D();
+								const auto pBrushCurrent	= renderer()->screenPointToWorldPosition(modelViewMatrix(), pMouseCurrent).toVector2D();
+
+								offscreenBufferShaderProgram->setUniformValue("previousBrushCenter", pBrushPrevious);
+								offscreenBufferShaderProgram->setUniformValue("currentBrushCenter", pBrushCurrent);
+							}
 							break;
 						}
 
@@ -291,6 +294,8 @@ void InterimSelectionProp::update()
 			shape->vao().release();
 
 			_fbo->release();
+
+			_fbo->toImage().save("tommie.jpg");
 		}
 		else
 		{
@@ -304,4 +309,18 @@ void InterimSelectionProp::update()
 	catch (...) {
 		qDebug() << _name << "update failed due to unhandled exception";
 	}
+}
+
+void InterimSelectionProp::reset()
+{
+	qDebug() << "Reset" << _name;
+
+	if (!_fbo->bind())
+		return;
+
+	glViewport(0, 0, _fbo->width(), _fbo->height());
+	glClearColor(0.f, 0.f, 0.f, 0.f);
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	_fbo->release();
 }
