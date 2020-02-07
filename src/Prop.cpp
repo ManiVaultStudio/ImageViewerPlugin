@@ -46,6 +46,9 @@ void Prop::destroy()
 
 bool Prop::canRender() const
 {
+	if (!_actor->canRender())
+		return false;
+
 	return isInitialized() && isVisible();
 }
 

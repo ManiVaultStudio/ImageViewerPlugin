@@ -128,6 +128,8 @@ void InterimSelectionProp::render()
 
 		Prop::render();
 
+		qDebug() << "Render" << name();
+
 		const auto shape			= shapeByName<QuadShape>("Quad");
 		const auto shaderProgram	= shaderProgramByName("Quad");
 
@@ -180,11 +182,11 @@ void InterimSelectionProp::update()
 	if (_fbo.isNull())
 		return;
 
-	qDebug() << "Update" << _name << static_cast<int>(dynamic_cast<SelectionPickerActor*>(actor())->selectionType());
-
-	renderer()->bindOpenGLContext();
+	qDebug() << "Update" << _name;
 
 	try {
+		renderer()->bindOpenGLContext();
+
 		if (_fbo->bind()) {
 			glViewport(0, 0, _fbo->width(), _fbo->height());
 
@@ -207,12 +209,11 @@ void InterimSelectionProp::update()
 					offscreenBufferShaderProgram->setUniformValue("transform", transform);
 					offscreenBufferShaderProgram->setUniformValue("selectionType", static_cast<int>(selectionPickerActor->selectionType()));
 
-					const auto fboSize		= QSizeF(static_cast<float>(_fbo->size().width()), static_cast<float>(_fbo->size().height()));
-					const auto mouseEvents	= selectionPickerActor->mouseEvents();
+					const auto fboSize			= QSizeF(static_cast<float>(_fbo->size().width()), static_cast<float>(_fbo->size().height()));
+					const auto mouseEvents		= selectionPickerActor->mouseEvents();
+					const auto noMouseEvents	= mouseEvents.size();
 
 					offscreenBufferShaderProgram->setUniformValue("imageSize", fboSize.width(), fboSize.height());
-
-					const auto noMouseEvents = mouseEvents.size();
 
 					switch (selectionPickerActor->selectionType())
 					{
@@ -275,6 +276,8 @@ void InterimSelectionProp::update()
 								points.push_back(renderer()->screenPointToWorldPosition(modelViewMatrix(), mouseEvent.screenPoint()).toVector2D());
 							}
 
+							//qDebug() << points;
+
 							offscreenBufferShaderProgram->setUniformValueArray("points", &points[0], static_cast<std::int32_t>(points.size()));
 							offscreenBufferShaderProgram->setUniformValue("noPoints", static_cast<int>(points.size()));
 							break;
@@ -297,8 +300,6 @@ void InterimSelectionProp::update()
 			shape->vao().release();
 
 			_fbo->release();
-
-			_fbo->toImage().save("tommie.jpg");
 		}
 		else
 		{
@@ -316,16 +317,16 @@ void InterimSelectionProp::update()
 
 void InterimSelectionProp::reset()
 {
-	//qDebug() << "Reset" << _name;
-
-	renderer()->bindOpenGLContext();
+	qDebug() << "Reset" << _name;
 
 	try {
+		renderer()->bindOpenGLContext();
+
 		if (_fbo->bind()) {
 			glViewport(0, 0, _fbo->width(), _fbo->height());
 			glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 			glClear(GL_COLOR_BUFFER_BIT);
-			glFinish();
+			glFlush();
 
 			_fbo->release();
 		}

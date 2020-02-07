@@ -68,6 +68,8 @@ void SelectionPickerActor::initialize()
 
 void SelectionPickerActor::onKeyPressEvent(QKeyEvent* keyEvent)
 {
+	Actor::onKeyPressEvent(keyEvent);
+
 	switch (keyEvent->key())
 	{
 		case Qt::Key::Key_R:
@@ -105,6 +107,8 @@ void SelectionPickerActor::onKeyPressEvent(QKeyEvent* keyEvent)
 
 void SelectionPickerActor::onKeyReleaseEvent(QKeyEvent* keyEvent)
 {
+	Actor::onKeyReleaseEvent(keyEvent);
+
 	switch (keyEvent->key())
 	{
 		case Qt::Key::Key_Shift:
@@ -121,6 +125,8 @@ void SelectionPickerActor::onKeyReleaseEvent(QKeyEvent* keyEvent)
 
 void SelectionPickerActor::onMousePressEvent(QMouseEvent* mouseEvent)
 {
+	Actor::onMousePressEvent(mouseEvent);
+
 	switch (_selectionType)
 	{
 		case SelectionType::None:
@@ -136,12 +142,11 @@ void SelectionPickerActor::onMousePressEvent(QMouseEvent* mouseEvent)
 			}
 		}
 
+		/*
 		case SelectionType::Brush:
 		{
 			if (mouseEvent->button() == Qt::LeftButton) {
 				startSelection();
-				addMouseEvent(mouseEvent);
-				update();
 				break;
 			}
 		}
@@ -150,8 +155,6 @@ void SelectionPickerActor::onMousePressEvent(QMouseEvent* mouseEvent)
 		{
 			if (mouseEvent->button() == Qt::LeftButton) {
 				startSelection();
-				addMouseEvent(mouseEvent);
-				update();
 			}
 			break;
 		}
@@ -167,6 +170,7 @@ void SelectionPickerActor::onMousePressEvent(QMouseEvent* mouseEvent)
 			}
 			break;
 		}
+		*/
 
 		default:
 			break;
@@ -175,6 +179,8 @@ void SelectionPickerActor::onMousePressEvent(QMouseEvent* mouseEvent)
 
 void SelectionPickerActor::onMouseReleaseEvent(QMouseEvent* mouseEvent)
 {
+	Actor::onMouseReleaseEvent(mouseEvent);
+
 	switch (_selectionType)
 	{
 		case SelectionType::None:
@@ -184,11 +190,11 @@ void SelectionPickerActor::onMouseReleaseEvent(QMouseEvent* mouseEvent)
 		{
 			if (mouseEvent->button() == Qt::LeftButton) {
 				endSelection();
-				update();
 			}
 			break;
 		}
 
+		/*
 		case SelectionType::Brush:
 		{
 			if (mouseEvent->button() == Qt::LeftButton) {
@@ -215,6 +221,7 @@ void SelectionPickerActor::onMouseReleaseEvent(QMouseEvent* mouseEvent)
 			}
 			break;
 		}
+		*/
 
 		default:
 			break;
@@ -223,6 +230,8 @@ void SelectionPickerActor::onMouseReleaseEvent(QMouseEvent* mouseEvent)
 
 void SelectionPickerActor::onMouseMoveEvent(QMouseEvent* mouseEvent)
 {
+	Actor::onMouseMoveEvent(mouseEvent);
+
 	switch (_selectionType)
 	{
 		case SelectionType::None:
@@ -238,6 +247,7 @@ void SelectionPickerActor::onMouseMoveEvent(QMouseEvent* mouseEvent)
 			break;
 		}
 
+		/*
 		case SelectionType::Brush:
 		{
 			addMouseEvent(mouseEvent);
@@ -271,6 +281,7 @@ void SelectionPickerActor::onMouseMoveEvent(QMouseEvent* mouseEvent)
 			}
 			break;
 		}
+		*/
 
 		default:
 			break;
@@ -279,6 +290,8 @@ void SelectionPickerActor::onMouseMoveEvent(QMouseEvent* mouseEvent)
 
 void SelectionPickerActor::onMouseWheelEvent(QWheelEvent* wheelEvent)
 {
+	Actor::onMouseWheelEvent(wheelEvent);
+
 	switch (_selectionType)
 	{
 		case SelectionType::None:
@@ -305,30 +318,33 @@ void SelectionPickerActor::onMouseWheelEvent(QWheelEvent* wheelEvent)
 	}
 }
 
+void SelectionPickerActor::clearSelection()
+{
+	qDebug() << "Clear selection" << name();
+
+	_mouseEvents.clear();
+
+	interimSelectionProp()->reset();
+
+	emit changed(this);
+}
+
 void SelectionPickerActor::startSelection()
 {
 	qDebug() << "Start selection" << name();
 
-	_mouseEvents.clear();
+	clearSelection();
 
 	_selecting = true;
-
-	interimSelectionProp()->reset();
-
-	update();
 }
 
 void SelectionPickerActor::endSelection()
 {
 	qDebug() << "End selection" << name();
 
-	_mouseEvents.clear();
+	clearSelection();
 	
 	_selecting = false;
-	
-	interimSelectionProp()->reset();
-
-	update();
 }
 
 void SelectionPickerActor::show()
@@ -348,7 +364,7 @@ void SelectionPickerActor::hide()
 {
 	Actor::hide();
 
-	_mouseEvents.clear();
+	//_mouseEvents.clear();
 }
 
 void SelectionPickerActor::update()
@@ -389,31 +405,26 @@ void SelectionPickerActor::updateSelectionRectangle()
 	QVector<QVector3D> points;
 
 	// No need to draw a rectangle if less than two mouse events were recorded
-	if (_mouseEvents.size() < 2)
-	{
-		rectangleProp()->setPoints(points);
-		emit changed(this);
-		return;
+	if (_mouseEvents.size() >= 2) {
+		// Get first and last recorded mouse position in world coordinates
+		const auto pWorldA = _mouseEvents.first().worldPosition();
+		const auto pWorldB = _mouseEvents.last().worldPosition();
+
+		// Create a normalized rectangle
+		auto rectangle = QRectF(QPointF(pWorldA.x(), pWorldA.y()), QPointF(pWorldB.x(), pWorldB.y())).normalized();
+
+		// Compute rectangle start and end in screen coordinates
+		const auto topLeft = rectangle.topLeft();
+		const auto bottomRight = rectangle.bottomRight();
+		const auto start = renderer()->worldPositionToScreenPoint(QVector3D(topLeft.x(), topLeft.y(), 0.f));
+		const auto end = renderer()->worldPositionToScreenPoint(QVector3D(bottomRight.x(), bottomRight.y(), 0.f));
+
+		// Create polyline points
+		points.append(QVector3D(start.x(), start.y(), 0.f));
+		points.append(QVector3D(end.x(), start.y(), 0.f));
+		points.append(QVector3D(end.x(), end.y(), 0.f));
+		points.append(QVector3D(start.x(), end.y(), 0.f));
 	}
-
-	// Get first and last recorded mouse position in world coordinates
-	const auto pWorldA	= _mouseEvents.first().worldPosition();
-	const auto pWorldB	= _mouseEvents.last().worldPosition();
-
-	// Create a normalized rectangle
-	auto rectangle = QRectF(QPointF(pWorldA.x(), pWorldA.y()), QPointF(pWorldB.x(), pWorldB.y())).normalized();
-
-	// Compute rectangle start and end in screen coordinates
-	const auto topLeft		= rectangle.topLeft();
-	const auto bottomRight	= rectangle.bottomRight();
-	const auto start		= renderer()->worldPositionToScreenPoint(QVector3D(topLeft.x(), topLeft.y(), 0.f));
-	const auto end			= renderer()->worldPositionToScreenPoint(QVector3D(bottomRight.x(), bottomRight.y(), 0.f));
-
-	// Create polyline points
-	points.append(QVector3D(start.x(), start.y(), 0.f));
-	points.append(QVector3D(end.x(), start.y(), 0.f));
-	points.append(QVector3D(end.x(), end.y(), 0.f));
-	points.append(QVector3D(start.x(), end.y(), 0.f));
 
 	rectangleProp()->setPoints(points);
 }
@@ -516,8 +527,8 @@ void SelectionPickerActor::updateSelectionPolygon()
 
 void SelectionPickerActor::updateInterimSelectionProp()
 {
-	if (!_selecting)
-		return;
+//	if (!_selecting)
+//		return;
 
 	interimSelectionProp()->update();
 }
@@ -560,15 +571,13 @@ void SelectionPickerActor::setSelectionType(const SelectionType& selectionType)
 
 	qDebug() << "Set selection type to" << selectionTypeName(_selectionType);
 
-	_selecting = false;
+	clearSelection();
 
 	rectangleProp()->setVisible(_selectionType == SelectionType::Rectangle);
 	brushProp()->setVisible(_selectionType == SelectionType::Brush);
 	lassoSegmentsProp()->setVisible(_selectionType == SelectionType::Lasso);
 	polygonSegmentsProp()->setVisible(_selectionType == SelectionType::Polygon);
 	polygonClosingSegmentProp()->setVisible(_selectionType == SelectionType::Polygon);
-
-	update();
 
 	emit selectionTypeChanged(_selectionType);
 }

@@ -115,6 +115,9 @@ private:
 	/** Initialize the actor */
 	void initialize();
 
+	/** Clears the selection */
+	void clearSelection();
+
 	/** Starts the selection process */
 	void startSelection();
 
