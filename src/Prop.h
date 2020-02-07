@@ -60,20 +60,20 @@ public:
 	/** Returns the full shape name (actor_name::prop_name::shape_name */
 	QString fullName();
 
-	/** Returns the prop matrix */
-	QMatrix4x4 matrix() const;
+	/** Returns the model matrix */
+	QMatrix4x4 modelMatrix() const;
 
 	/**
-	 * Sets the prop matrix
-	 * @param matrix Matrix
+	 * Sets the model matrix
+	 * @param matrix Model matrix
 	 */
-	void setMatrix(const QMatrix4x4& matrix);
+	void setModelMatrix(const QMatrix4x4& modelMatrix);
 
-	/** Returns the model-view matrix (viewMatrix * actorMatrix * propMatrix) */
-	QMatrix4x4 modelViewMatrix();
+	/** Returns the model-view matrix (viewMatrix * actorMatrix * propModelMatrix) */
+	QMatrix4x4 modelViewMatrix() const;
 
-	/** Returns the model-view-projection matrix (projectionMatrix * viewMatrix * actorMatrix * propMatrix) */
-	QMatrix4x4 modelViewProjectionMatrix();
+	/** Returns the model-view-projection matrix (projectionMatrix * viewMatrix * actorModelMatrix * propModelMatrix) */
+	QMatrix4x4 modelViewProjectionMatrix() const;
 
 	/** Returns the parent actor */
 	Actor* actor();
@@ -174,6 +174,11 @@ signals:
 	 */
 	void visibilityChanged(const bool& visible);
 
+	/** Signals that the model matrix changed
+	 * @param modelMatrix Model matrix
+	 */
+	void modelMatrixChanged(const QMatrix4x4& modelMatrix);
+
 	/** Signals that the prop changed */
 	void changed(Prop* prop);
 
@@ -184,7 +189,7 @@ protected:
 	bool													_visible;				/** Whether the prop is visible or not */
 
 private:
-	QMatrix4x4												_matrix;				/** Transformation matrix */
+	QMatrix4x4												_modelMatrix;				/** Transformation matrix */
 	QMap<QString, QSharedPointer<QOpenGLShaderProgram>>		_shaderPrograms;		/** OpenGL shader programs */
 	QMap<QString, QSharedPointer<QOpenGLTexture>>			_textures;				/** OpenGL textures */
 	QMap<QString, QSharedPointer<Shape>>					_shapes;				/** Shapes */

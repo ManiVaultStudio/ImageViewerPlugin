@@ -68,9 +68,9 @@ void ColorImageActor::setImage(std::shared_ptr<QImage> image)
 	emit changed(this);
 }
 
-QSize ColorImageActor::imageSize()
+QSize ColorImageActor::imageSize() const
 {
-	return dynamic_cast<ColorImageProp*>(_props["ColorImageProp"].get())->imageSize();
+	return propByName<ColorImageProp>("ColorImageProp")->imageSize();
 }
 
 float ColorImageActor::windowNormalized() const

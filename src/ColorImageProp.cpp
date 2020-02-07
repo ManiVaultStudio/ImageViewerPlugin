@@ -132,11 +132,11 @@ void ColorImageProp::setImage(std::shared_ptr<QImage> image)
 
 	shapeByName<QuadShape>("Quad")->setRectangle(rectangle);
 
-	QMatrix4x4 matrix;
+	QMatrix4x4 modelMatrix;
 
-	matrix.translate(-0.5f * rectangle.width(), -0.5f * rectangle.height(), 0.0f);
+	modelMatrix.translate(-0.5f * rectangle.width(), -0.5f * rectangle.height(), 0.0f);
 
-	setMatrix(matrix);
+	setModelMatrix(modelMatrix);
 
 	emit imageSizeChanged(rectangle.size().toSize());
 	emit changed(this);

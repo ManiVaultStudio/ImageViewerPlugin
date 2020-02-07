@@ -513,9 +513,17 @@ void Renderer::createActors()
 	selectionImageActor()->show();
 	selectionPickerActor()->show();
 
-	colorImageActor()->setTranslation(QVector3D(0, 0, 0));
-	selectionImageActor()->setTranslation(QVector3D(0, 0, -1));
-	selectionPickerActor()->setTranslation(QVector3D(0, 0, -2));
+	QMatrix4x4 modelMatrix;
+
+	colorImageActor()->setModelMatrix(modelMatrix);
+
+	modelMatrix.translate(0.0f, 0.0f, -1.0f);
+
+	selectionImageActor()->setModelMatrix(modelMatrix);
+
+	modelMatrix.translate(0.0f, 0.0f, -1.0f);
+
+	selectionPickerActor()->setModelMatrix(modelMatrix);
 
 	connect(colorImageActor(), &ColorImageActor::endWindowLevel, [&]() {
 		setInteractionMode(InteractionMode::None);
@@ -593,7 +601,7 @@ QMenu* Renderer::viewMenu()
 	connect(zoomToExtentsAction, &QAction::triggered, this, &Renderer::zoomExtents);
 	//connect(zoomToSelectionAction, &QAction::triggered, this, &Renderer::zoomToSelection);
 	connect(resetWindowLevelAction, &QAction::triggered, [&]() {
-		actorByName<ColorImageActor>("ColorImageActor")->resetWindowLevel();
+		this->actorByName<ColorImageActor>("ColorImageActor")->resetWindowLevel();
 	});
 
 	menu->addAction(zoomToExtentsAction);

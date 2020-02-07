@@ -33,10 +33,7 @@ public:
 	void setImage(std::shared_ptr<QImage> image);
 
 	/** Returns the image size */
-	QSize imageSize();
-
-	/** Returns the color image size */
-	QSize size() const;
+	QSize imageSize() const;
 
 	/** Returns the minimum image pixel value */
 	std::uint16_t imageMin() const;

@@ -13,7 +13,7 @@ Prop::Prop(Actor* actor, const QString& name) :
 	_initialized(false),
 	_name(name),
 	_visible(true),
-	_matrix(),
+	_modelMatrix(),
 	_shaderPrograms(),
 	_textures(),
 	_shapes()
@@ -110,27 +110,29 @@ QString Prop::fullName()
 	return QString("%2::%3").arg(actor()->name(), _name);
 }
 
-QMatrix4x4 Prop::matrix() const
+QMatrix4x4 Prop::modelMatrix() const
 {
-	return _matrix;
+	return _modelMatrix;
 }
 
-void Prop::setMatrix(const QMatrix4x4& matrix)
+void Prop::setModelMatrix(const QMatrix4x4& modelMatrix)
 {
-	if (matrix == _matrix)
+	if (modelMatrix == _modelMatrix)
 		return;
 
-	_matrix = matrix;
+	_modelMatrix = modelMatrix;
+
+	emit modelMatrixChanged(_modelMatrix);
 }
 
-QMatrix4x4 Prop::modelViewMatrix()
+QMatrix4x4 Prop::modelViewMatrix() const
 {
-	return actor()->modelViewMatrix() * _matrix;
+	return _actor->modelViewMatrix() * _modelMatrix;
 }
 
-QMatrix4x4 Prop::modelViewProjectionMatrix()
+QMatrix4x4 Prop::modelViewProjectionMatrix() const
 {
-	return actor()->modelViewProjectionMatrix() * _matrix;
+	return _actor->modelViewProjectionMatrix() * _modelMatrix;
 }
 
 Actor* Prop::actor()

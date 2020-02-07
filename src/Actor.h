@@ -105,19 +105,10 @@ public:
 	 */
 	void setModelMatrix(const QMatrix4x4& modelMatrix);
 
-	/** Returns the translation */
-	QVector3D translation() const;
-
-	/**
-	 * Set translation
-	 * @param translation Translation
-	 */
-	void setTranslation(const QVector3D& translation);
-
-	/** Returns the model > view matrix */
+	/** Returns the model-view matrix (viewMatrix * actorModelMatrix) */
 	QMatrix4x4 modelViewMatrix() const;
 
-	/** Returns the model > view > projection matrix */
+	/** Returns the model-view-projection matrix (projectionMatrix * viewMatrix * actorModelMatrix) */
 	QMatrix4x4 modelViewProjectionMatrix() const;
 
 	/** Invoked when a mouse button is pressed */
@@ -186,16 +177,21 @@ public:
 
 	Renderer* renderer();
 
-	/**
-	* Get pointer to prop by name
-	* @param name Name of the prop
-	*/
+	/** Returns const pointer to prop by name */
 	template<typename T>
-	T* propByName(const QString& name)
+	const T* propByName(const QString& name) const
 	{
 		return dynamic_cast<T*>(_props[name].get());
 	}
 
+	/** Returns pointer to prop by name */
+	template<typename T>
+	T* propByName(const QString& name)
+	{
+		const auto constThis = const_cast<const Actor*>(this);
+		return const_cast<T*>(constThis->propByName<T>(name));
+	}
+	
 	/**
 	* Add prop by name
 	* @param name Name of the prop
@@ -279,10 +275,12 @@ protected:
 	bool									_enabled;				/** Whether the Actor is enabled or not */
 	bool									_visible;				/** Actors is being interacted with */
 	int										_registeredEvents;		/** Defines which (mouse) events should be received by the actor */
+	QVector<MouseEvent>						_mouseEvents;			/** Recorded mouse events */
+
+private:
 	float									_opacity;				/** Render opacity */
 	QMatrix4x4								_modelMatrix;			/** Model matrix */
-	QMap<QString, QSharedPointer<Prop>>		_props;					/** Props  map */
-	QVector<MouseEvent>						_mouseEvents;			/** Recorded mouse events */
+	QMap<QString, QSharedPointer<Prop>>		_props;					/** Props map */
 
 	friend class Renderer;
 };

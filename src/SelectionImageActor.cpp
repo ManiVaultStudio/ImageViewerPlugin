@@ -7,8 +7,6 @@
 SelectionImageActor::SelectionImageActor(Renderer* renderer, const QString& name) :
 	Actor(renderer, name)
 {
-	_opacity = 0.5f;
-
 	addProp<SelectionImageProp>("ColorImageProp");
 }
 
@@ -19,5 +17,5 @@ void SelectionImageActor::setImage(std::shared_ptr<QImage> image)
 
 QSize SelectionImageActor::imageSize() const
 {
-	return dynamic_cast<SelectionImageProp*>(_props["ColorImageProp"].get())->imageSize();
+	return propByName<SelectionImageProp>("ColorImageProp")->imageSize();
 }

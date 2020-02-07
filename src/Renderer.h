@@ -213,14 +213,19 @@ public:
 	 */
 	void setSelectionOpacity(const float& selectionOpacity);
 
-	/**
-	* Get actor by name
-	* @param name Name of the actor
-	*/
+	/** Returns const pointer to actor by name */
+	template<typename T>
+	const T* actorByName(const QString& name) const
+	{
+		return dynamic_cast<T*>(_actors[name].get());
+	}
+
+	/** Returns pointer to actor by name */
 	template<typename T>
 	T* actorByName(const QString& name)
 	{
-		return dynamic_cast<T*>(_actors[name].get());
+		const auto constThis = const_cast<const Renderer*>(this);
+		return const_cast<T*>(constThis->actorByName<T>(name));
 	}
 
 	/** Returns the interaction mode */
@@ -282,7 +287,6 @@ signals:
 
 protected:
 	ImageViewerWidget*						_parentWidget;			/** Pointer to parent widget */
-	QMap<QString, QSharedPointer<Actor>>	_actors;				/** Actors map */
 	InteractionMode							_interactionMode;		/** Type of interaction e.g. navigation, selection and window/level */
 	QVector<QSharedPointer<QMouseEvent>>	_mouseEvents;			/** Recorded mouse events during interaction */
 	QPointF									_pan;					/** Move view horizontally/vertically */
@@ -290,4 +294,7 @@ protected:
 	float									_zoomSensitivity;		/** Zoom sensitivity */
 	int										_margin;				/** Margin between image and viewer widget boundaries */
 	QMap<QString, QColor>					_colorMap;				/** Color map */
+
+private:
+	QMap<QString, QSharedPointer<Actor>>	_actors;				/** Actors map */
 };

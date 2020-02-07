@@ -168,11 +168,11 @@ void InterimSelectionProp::setImageSize(const QSize& imageSize)
 
 	_fbo.reset(new QOpenGLFramebufferObject(imageSize.width(), imageSize.height()));
 
-	QMatrix4x4 matrix;
+	QMatrix4x4 modelMatrix;
 
-	matrix.translate(-0.5f * rectangle.width(), -0.5f * rectangle.height(), 1.0f);
+	modelMatrix.translate(-0.5f * rectangle.width(), -0.5f * rectangle.height(), 1.0f);
 
-	setMatrix(matrix);
+	setModelMatrix(modelMatrix);
 }
 
 void InterimSelectionProp::update()

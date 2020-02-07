@@ -6,14 +6,16 @@
 #include "Renderer.h"
 
 Actor::Actor(Renderer* renderer, const QString& name) :
+	QObject(),
 	_renderer(renderer),
 	_name(name),
+	_enabled(true),
 	_visible(false),
 	_registeredEvents(static_cast<int>(ActorEvent::None)),
-	_enabled(true),
+	_mouseEvents(),
+	_opacity(1.0f),
 	_modelMatrix(),
-	_props(),
-	_mouseEvents()
+	_props()
 {
 }
 
@@ -120,21 +122,7 @@ void Actor::setModelMatrix(const QMatrix4x4& modelMatrix)
 
 	_modelMatrix = modelMatrix;
 
-	//qDebug() << "Set model > view matrix for" << _name;
-
 	emit modelMatrixChanged(_modelMatrix);
-}
-
-QVector3D Actor::translation() const
-{
-	const auto translationColumn = _modelMatrix.column(3);
-
-	return QVector3D(translationColumn.x(), translationColumn.y(), translationColumn.z());
-}
-
-void Actor::setTranslation(const QVector3D& translation)
-{
-	_modelMatrix.setColumn(3, QVector4D(translation.x(), translation.y(), translation.z(), 1.f));
 }
 
 QMatrix4x4 Actor::modelViewMatrix() const
