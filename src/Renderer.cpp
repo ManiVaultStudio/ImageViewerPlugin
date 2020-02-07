@@ -124,11 +124,11 @@ void Renderer::mouseMoveEvent(QMouseEvent* mouseEvent)
 					const auto noMouseEvents = _mouseEvents.size();
 
 					if (noMouseEvents >= 2) {
-						const auto previous	= _mouseEvents[noMouseEvents - 2];
-						const auto current	= _mouseEvents[noMouseEvents - 1];
-						const auto delta	= (current->pos() - previous->pos()) / _zoom;
+						const auto pPrevious	= QVector2D(_mouseEvents[noMouseEvents - 2]->pos());
+						const auto pCurrent		= QVector2D(_mouseEvents[noMouseEvents - 1]->pos());
+						const auto vDelta		= (pCurrent - pPrevious) / _zoom;
 
-						pan(QPointF(delta.x(), delta.y()));
+						pan(vDelta);
 
 						emit dirty();
 					}
@@ -157,23 +157,16 @@ void Renderer::mouseWheelEvent(QWheelEvent* wheelEvent)
 	{
 		case InteractionMode::Navigation:
 		{
-			auto zoomCenter = wheelEvent->posF();
+			const auto zoomCenter = QVector2D(wheelEvent->posF());
 
 			if (wheelEvent->delta() < 0) {
-				zoomAround(zoomCenter, 1.f - _zoomSensitivity);
+				zoomAround(zoomCenter, 1.0f - _zoomSensitivity);
 			}
 			else {
-				zoomAround(zoomCenter, 1.f + _zoomSensitivity);
+				zoomAround(zoomCenter, 1.0f + _zoomSensitivity);
 			}
 
 			emit dirty();
-			break;
-		}
-
-		case InteractionMode::Selection:
-		{
-			
-
 			break;
 		}
 
@@ -247,7 +240,7 @@ void Renderer::keyReleaseEvent(QKeyEvent* keyEvent)
 	}
 }
 
-QVector3D Renderer::screenPointToWorldPosition(const QMatrix4x4& modelViewMatrix, const QPointF& screenPoint) const
+QVector3D Renderer::screenPointToWorldPosition(const QMatrix4x4& modelViewMatrix, const QVector2D& screenPoint) const
 {
 	return QVector3D(screenPoint.x(), _parentWidget->height()- screenPoint.y(), 0).unproject(modelViewMatrix, projectionMatrix(), QRect(0, 0, _parentWidget->width(), _parentWidget->height()));
 }
@@ -309,7 +302,7 @@ float Renderer::lineWidthNDC(const float& lineWidth) const
 	return 2.f * (lineWidth / static_cast<float>(std::min(_parentWidget->width(), _parentWidget->height())));
 }
 
-void Renderer::pan(const QPointF& delta)
+void Renderer::pan(const QVector2D& delta)
 {
 	//qDebug() << "Pan by" << delta;
 
@@ -332,20 +325,20 @@ void Renderer::zoomBy(const float& factor)
 	_zoom *= factor;
 }
 
-void Renderer::zoomAround(const QPointF& screenPoint, const float& factor)
+void Renderer::zoomAround(const QVector2D& screenPoint, const float& factor)
 {
 	zoomBy(factor);
 
 	qDebug() << "Zoom around" << screenPoint << "by" << factor;
 
 	const auto pWorld			= screenPointToWorldPosition(viewMatrix(), screenPoint);
-	const auto pAnchor			= pWorld;
-	const auto pPanOld			= QVector3D(_pan.x(), _pan.y(), 0.f);
+	const auto pAnchor			= pWorld.toVector2D();
+	const auto pPanOld			= _pan;
 	const auto vPanOld			= pPanOld - pAnchor;
 	const auto vPanNew			= factor * vPanOld;
 	const auto vPanDelta		= vPanNew - vPanOld;
 
-	pan(-QPointF(vPanDelta.x(), vPanDelta.y()));
+	pan(-vPanDelta);
 }
 
 void Renderer::zoomExtents()

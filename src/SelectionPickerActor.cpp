@@ -239,7 +239,8 @@ void SelectionPickerActor::onMouseMoveEvent(QMouseEvent* mouseEvent)
 
 			if (_mouseEvents.size() >= 2)
 			{
-				_mouseEvents.last() = MouseEvent(mouseEvent->pos(), renderer()->screenPointToWorldPosition(modelViewMatrix(), mouseEvent->pos()));
+				const auto pScreen = QVector2D(mouseEvent->pos());
+				_mouseEvents.last() = MouseEvent(pScreen, renderer()->screenPointToWorldPosition(modelViewMatrix(), pScreen));
 			}
 			break;
 		}

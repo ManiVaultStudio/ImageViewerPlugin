@@ -91,7 +91,7 @@ public:
 	 * @param screenPoint Point in screen coordinates [0..width, 0..height]
 	 * @return Position in world coordinates
 	 */
-	QVector3D screenPointToWorldPosition(const QMatrix4x4& modelViewMatrix, const QPointF& screenPoint) const;
+	QVector3D screenPointToWorldPosition(const QMatrix4x4& modelViewMatrix, const QVector2D& screenPoint) const;
 
 	/** Convert position in world coordinates to point in normalized screen coordinates
 	 * @param position Position in world coordinates
@@ -130,7 +130,7 @@ public:
 	 * Move the view horizontally/vertically
 	 * @param delta Amount to move
 	 */
-	void pan(const QPointF& delta);
+	void pan(const QVector2D& delta);
 
 	/** Return the current zoom level */
 	float zoom() const;
@@ -146,7 +146,7 @@ public:
 	 * @param screenPoint Point in screen coordinates
 	 * @param factor Factor to zoom by
 	 */
-	void zoomAround(const QPointF& screenPoint, const float& factor);
+	void zoomAround(const QVector2D& screenPoint, const float& factor);
 
 	/** Zoom to extents of the rendered image quad */
 	void zoomExtents();
@@ -289,7 +289,7 @@ protected:
 	ImageViewerWidget*						_parentWidget;			/** Pointer to parent widget */
 	InteractionMode							_interactionMode;		/** Type of interaction e.g. navigation, selection and window/level */
 	QVector<QSharedPointer<QMouseEvent>>	_mouseEvents;			/** Recorded mouse events during interaction */
-	QPointF									_pan;					/** Move view horizontally/vertically */
+	QVector2D								_pan;					/** Move view horizontally/vertically */
 	float									_zoom;					/** Zoom view in/out */
 	float									_zoomSensitivity;		/** Zoom sensitivity */
 	int										_margin;				/** Margin between image and viewer widget boundaries */

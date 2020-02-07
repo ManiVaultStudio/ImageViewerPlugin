@@ -4,6 +4,7 @@
 
 #include <QObject>
 #include <QColor>
+#include <QVector2D>
 #include <QMatrix4x4>
 #include <QMap>
 #include <QSharedPointer>
@@ -40,7 +41,7 @@ public:
 		 * @param screenPoint Point in screen coordinates [0..width, 0..height]
 		 * @param worldPosition Position in world space
 		 */
-		MouseEvent(const QPoint& screenPoint, const QVector3D& worldPosition = QVector3D()) :
+		MouseEvent(const QVector2D& screenPoint, const QVector3D& worldPosition = QVector3D()) :
 			_screenPoint(screenPoint),
 			_worldPosition(worldPosition)
 		{

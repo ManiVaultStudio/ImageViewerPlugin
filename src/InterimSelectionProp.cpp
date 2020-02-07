@@ -224,8 +224,8 @@ void InterimSelectionProp::update()
 
 							const auto firstPoint				= mouseEvents.first().screenPoint();
 							const auto lastPoint				= mouseEvents.last().screenPoint();
-							const auto rectangleTopLeft			= renderer()->screenPointToWorldPosition(modelViewMatrix(), QPointF(firstPoint.x(), firstPoint.y()));
-							const auto rectangleBottomRight		= renderer()->screenPointToWorldPosition(modelViewMatrix(), QPointF(lastPoint.x(), lastPoint.y()));
+							const auto rectangleTopLeft			= renderer()->screenPointToWorldPosition(modelViewMatrix(), firstPoint);
+							const auto rectangleBottomRight		= renderer()->screenPointToWorldPosition(modelViewMatrix(), lastPoint);
 							const auto rectangleTopLeftUV		= QVector2D(rectangleTopLeft.x() / static_cast<float>(_fbo->width()), rectangleTopLeft.y() / static_cast<float>(_fbo->height()));
 							const auto rectangleBottomRightUV	= QVector2D(rectangleBottomRight.x() / static_cast<float>(_fbo->width()), rectangleBottomRight.y() / static_cast<float>(_fbo->height()));
 
@@ -243,15 +243,16 @@ void InterimSelectionProp::update()
 							
 							if (noMouseEvents == 1) {
 								const auto pMouseLast	= mouseEvents.last().screenPoint();
-								const auto brushCenter	= renderer()->screenPointToWorldPosition(modelViewMatrix(), QPointF(pMouseLast.x(), pMouseLast.y()));
+								const auto brushCenter	= renderer()->screenPointToWorldPosition(modelViewMatrix(), pMouseLast);
 							}
 							
+							/*
 							const auto previousBrushCenter	= mouseEvents.size() > 1 ? renderer()->screenPointToWorldPosition(modelViewMatrix(), QPointF(mouseEvents[mouseEvents.size() - 2].screenPoint().x(), mouseEvents[mouseEvents.size() - 2].screenPoint().y())) : brushCenter;
 
 							offscreenBufferShaderProgram->setUniformValue("previousBrushCenter", previousBrushCenter.x(), previousBrushCenter.y());
 							offscreenBufferShaderProgram->setUniformValue("currentBrushCenter", brushCenter.x(), brushCenter.y());
 							offscreenBufferShaderProgram->setUniformValue("brushRadius", selectionPickerActor->brushRadius());
-							
+							*/
 							break;
 						}
 

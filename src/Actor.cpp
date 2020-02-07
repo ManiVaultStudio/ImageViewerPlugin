@@ -250,7 +250,7 @@ bool Actor::shouldReceiveKeyReleaseEvents() const
 
 void Actor::addMouseEvent(QMouseEvent* mouseEvent)
 {
-	const auto screenPoint		= mouseEvent->pos();
+	const auto screenPoint		= QVector2D(mouseEvent->pos());
 	const auto worldPosition	= _renderer->screenPointToWorldPosition(modelViewMatrix(), screenPoint);
 
 	_mouseEvents.append(MouseEvent(screenPoint, worldPosition));
