@@ -128,7 +128,7 @@ void InterimSelectionProp::render()
 
 		Prop::render();
 
-		qDebug() << "Render" << name();
+		//qDebug() << "Render" << name();
 
 		const auto shape			= shapeByName<QuadShape>("Quad");
 		const auto shaderProgram	= shaderProgramByName("Quad");
@@ -182,7 +182,7 @@ void InterimSelectionProp::update()
 	if (_fbo.isNull())
 		return;
 
-	qDebug() << "Update" << _name;
+	//qDebug() << "Update" << _name;
 
 	try {
 		renderer()->bindOpenGLContext();
@@ -232,6 +232,8 @@ void InterimSelectionProp::update()
 							
 							offscreenBufferShaderProgram->setUniformValue("rectangleTopLeft", rectangle.topLeft());
 							offscreenBufferShaderProgram->setUniformValue("rectangleBottomRight", rectangle.bottomRight());
+
+							glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 							break;
 						}
 
@@ -259,6 +261,8 @@ void InterimSelectionProp::update()
 								offscreenBufferShaderProgram->setUniformValue("previousBrushCenter", pBrushPrevious);
 								offscreenBufferShaderProgram->setUniformValue("currentBrushCenter", pBrushCurrent);
 							}
+
+							glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 							break;
 						}
 
@@ -276,18 +280,16 @@ void InterimSelectionProp::update()
 								points.push_back(renderer()->screenPointToWorldPosition(modelViewMatrix(), mouseEvent.screenPoint()).toVector2D());
 							}
 
-							//qDebug() << points;
-
 							offscreenBufferShaderProgram->setUniformValueArray("points", &points[0], static_cast<std::int32_t>(points.size()));
 							offscreenBufferShaderProgram->setUniformValue("noPoints", static_cast<int>(points.size()));
+
+							glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 							break;
 						}
 
 						default:
 							break;
 					}
-
-					glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 					offscreenBufferShaderProgram->release();
 				}

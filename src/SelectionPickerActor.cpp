@@ -1,5 +1,6 @@
 #include "SelectionPickerActor.h"
 #include "PolylineProp.h"
+#include "DiskProp.h"
 #include "InterimSelectionProp.h"
 #include "Renderer.h"
 
@@ -31,6 +32,7 @@ SelectionPickerActor::SelectionPickerActor(Renderer* renderer, const QString& na
 
 	addProp<PolylineProp>("RectangleProp");
 	addProp<PolylineProp>("BrushProp");
+	addProp<DiskProp>("BrushDotProp");
 	addProp<PolylineProp>("LassoSegmentsProp");
 	addProp<PolylineProp>("LassoClosingSegmentProp");
 	addProp<PolylineProp>("PolygonSegmentsProp");
@@ -142,11 +144,12 @@ void SelectionPickerActor::onMousePressEvent(QMouseEvent* mouseEvent)
 			}
 		}
 
-		/*
 		case SelectionType::Brush:
 		{
 			if (mouseEvent->button() == Qt::LeftButton) {
 				startSelection();
+				addMouseEvent(mouseEvent);
+				update();
 				break;
 			}
 		}
@@ -170,7 +173,6 @@ void SelectionPickerActor::onMousePressEvent(QMouseEvent* mouseEvent)
 			}
 			break;
 		}
-		*/
 
 		default:
 			break;
@@ -194,16 +196,15 @@ void SelectionPickerActor::onMouseReleaseEvent(QMouseEvent* mouseEvent)
 			break;
 		}
 
-		/*
+		
 		case SelectionType::Brush:
 		{
 			if (mouseEvent->button() == Qt::LeftButton) {
 				endSelection();
-				update();
 			}
 			break;
 		}
-
+		
 		case SelectionType::Lasso:
 		{
 			if (mouseEvent->button() == Qt::LeftButton) {
@@ -221,7 +222,6 @@ void SelectionPickerActor::onMouseReleaseEvent(QMouseEvent* mouseEvent)
 			}
 			break;
 		}
-		*/
 
 		default:
 			break;
@@ -247,14 +247,14 @@ void SelectionPickerActor::onMouseMoveEvent(QMouseEvent* mouseEvent)
 			break;
 		}
 
-		/*
+		
 		case SelectionType::Brush:
 		{
 			addMouseEvent(mouseEvent);
 			update();
 			break;
 		}
-
+		/*
 		case SelectionType::Lasso:
 		{
 			if (mouseEvent->buttons() & Qt::LeftButton)
