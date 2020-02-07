@@ -282,7 +282,7 @@ void SelectionPickerActor::onMouseWheelEvent(QWheelEvent* wheelEvent)
 
 void SelectionPickerActor::startSelection()
 {
-	qDebug() << "Start selection" << _name;
+	qDebug() << "Start selection" << name();
 
 	_mouseEvents.clear();
 
@@ -293,7 +293,7 @@ void SelectionPickerActor::startSelection()
 
 void SelectionPickerActor::endSelection()
 {
-	qDebug() << "End selection" << _name;
+	qDebug() << "End selection" << name();
 
 	_mouseEvents.clear();
 	

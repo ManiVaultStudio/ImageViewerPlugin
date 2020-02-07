@@ -271,13 +271,13 @@ signals:
 
 protected:
 	Renderer*								_renderer;				/** Pointer to renderer */
-	QString									_name;					/** Name of the Actor */
-	bool									_enabled;				/** Whether the Actor is enabled or not */
-	bool									_visible;				/** Actors is being interacted with */
 	int										_registeredEvents;		/** Defines which (mouse) events should be received by the actor */
 	QVector<MouseEvent>						_mouseEvents;			/** Recorded mouse events */
 
 private:
+	QString									_name;					/** Name of the Actor */
+	bool									_enabled;				/** Whether the Actor is enabled or not */
+	bool									_visible;				/** Actors is being interacted with */
 	float									_opacity;				/** Render opacity */
 	QMatrix4x4								_modelMatrix;			/** Model matrix */
 	QMap<QString, QSharedPointer<Prop>>		_props;					/** Props map */

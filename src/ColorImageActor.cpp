@@ -26,7 +26,7 @@ ColorImageActor::ColorImageActor(Renderer* renderer, const QString& name) :
 
 void ColorImageActor::setImage(std::shared_ptr<QImage> image)
 {
-	qDebug() << "Set image for" << _name;
+	qDebug() << "Set image for" << name();
 
 	bindOpenGLContext();
 

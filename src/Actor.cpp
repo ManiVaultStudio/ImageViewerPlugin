@@ -8,11 +8,11 @@
 Actor::Actor(Renderer* renderer, const QString& name) :
 	QObject(),
 	_renderer(renderer),
+	_registeredEvents(static_cast<int>(ActorEvent::None)),
+	_mouseEvents(),
 	_name(name),
 	_enabled(true),
 	_visible(false),
-	_registeredEvents(static_cast<int>(ActorEvent::None)),
-	_mouseEvents(),
 	_opacity(1.0f),
 	_modelMatrix(),
 	_props()
