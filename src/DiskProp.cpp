@@ -19,6 +19,7 @@ const std::string fragmentShaderSource =
 
 DiskProp::DiskProp(Actor* actor, const QString& name) :
 	Prop(actor, name),
+	_radius(1.0f),
 	_color()
 {
 	addShape<DiskShape>("DiskShape");
@@ -87,7 +88,6 @@ bool DiskProp::canRender() const
 
 void DiskProp::render()
 {
-	/*
 	try {
 		if (!canRender())
 			return;
@@ -98,6 +98,7 @@ void DiskProp::render()
 		const auto shaderProgram	= shaderProgramByName("DiskShape");
 
 		if (shaderProgram->bind()) {
+			shaderProgram->setUniformValue("transform", modelViewProjectionMatrix());
 			shaderProgram->setUniformValue("screenToNormalizedScreenMatrix", renderer()->screenCoordinatesToNormalizedScreenCoordinatesMatrix());
 
 			shape->render();
@@ -105,7 +106,7 @@ void DiskProp::render()
 			shaderProgram->release();
 		}
 		else {
-			throw std::exception("Unable to bind polyline shader program");
+			throw std::exception("Unable to bind disk shader program");
 		}
 	}
 	catch (std::exception& e)
@@ -115,7 +116,6 @@ void DiskProp::render()
 	catch (...) {
 		qDebug() << _name << "render failed due to unhandled exception";
 	}
-	*/
 }
 
 void DiskProp::updateShapes()
@@ -126,7 +126,11 @@ void DiskProp::updateShapes()
 	const auto pB		= renderer()->worldPositionToScreenPoint(QVector3D(_radius, 0.0f, 0.0f));
 	const auto radius	= (pB - pA).length();
 
-	shapeByName<DiskShape>("DiskShape")->set(QVector3D(_center, 0.0f), radius);
+	QVector<QVector3D> centers;
+
+	centers << QVector3D(_center, 0.0f);
+	
+	shapeByName<DiskShape>("DiskShape")->setPoints(centers);
 }
 
 QVector2D DiskProp::center() const

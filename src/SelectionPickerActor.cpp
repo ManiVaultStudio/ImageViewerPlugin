@@ -32,7 +32,7 @@ SelectionPickerActor::SelectionPickerActor(Renderer* renderer, const QString& na
 
 	addProp<PolylineProp>("RectangleProp");
 	addProp<PolylineProp>("BrushProp");
-	addProp<DiskProp>("BrushDotProp");
+	addProp<DiskProp>("BrushCenter");
 	addProp<PolylineProp>("LassoSegmentsProp");
 	addProp<PolylineProp>("LassoClosingSegmentProp");
 	addProp<PolylineProp>("PolygonSegmentsProp");
@@ -461,6 +461,7 @@ void SelectionPickerActor::updateSelectionBrush()
 	
 	// Change the line color when the left mouse button is down
 	brushProp()->setLineColor(leftButtonDown ? renderer()->colorByName("SelectionOutline", 255) : renderer()->colorByName("SelectionOutline", 150));
+	brushCenterProp()->setCenter(renderer()->screenPointToWorldPosition(modelViewMatrix(), QVector2D(mousePosition)).toVector2D());
 }
 
 void SelectionPickerActor::updateSelectionLasso()
@@ -656,6 +657,11 @@ PolylineProp* SelectionPickerActor::rectangleProp()
 PolylineProp* SelectionPickerActor::brushProp()
 {
 	return propByName<PolylineProp>("BrushProp");
+}
+
+DiskProp* SelectionPickerActor::brushCenterProp()
+{
+	return propByName<DiskProp>("BrushCenter");
 }
 
 PolylineProp* SelectionPickerActor::lassoSegmentsProp()

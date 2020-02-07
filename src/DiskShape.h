@@ -29,15 +29,9 @@ public: // Inherited
 	/** Renders the shape */
 	void render() override;
 
-	/** Updates the shape */
-	void set(const QVector3D& center, const float& radius);
-
 public:
-	/** Returns the disk center */
-	QVector2D center() const;
-
-	/** Set disk center */
-	void setCenter(const QVector2D& center);
+	/** Sets the centers */
+	void setPoints(const QVector<QVector3D>& centers);
 
 	/** Returns the disk radius */
 	float radius();
@@ -48,5 +42,5 @@ public:
 	void setRadius(const float& radius);
 	
 protected:
-	QVector<QVector3D>		_vertices;	/** Radius of the disk */
+	QVector<QVector3D>		_points;	/** Points */
 };

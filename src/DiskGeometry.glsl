@@ -1,72 +1,38 @@
 R"(
 #version 330 core
-layout (lines_adjacency) in;
-layout (triangle_strip, max_vertices = 4) out;
+
+layout (points) in;
+layout (triangle_strip, max_vertices = 100) out;
 
 out vec4 g_color;
 
-uniform mat4	screenToNormalizedScreenMatrix;		// Projection matrix
-uniform float	lineWidth;							// Line width
+uniform mat4 screenToNormalizedScreenMatrix;		// Projection matrix
 
-vec3 halfAngle(vec3 vA, vec3 vB) 
-{ 
-    return normalize((vA + vB) * 0.5);
-}
-
-vec3 halfAngle(vec3 pA, vec3 pB, vec3 pC) 
-{ 
-    return halfAngle(normalize(pA - pB), normalize(pC - pB));
-}
+#define PI 3.1415926535897932384626433832795
+#define TWO_PI 2.0f * 3.1415926535897932384626433832795
 
 void main() {
-	// Viewport pop
-    vec3 pPrevious	= gl_in[0].gl_Position.xyz;
-    vec3 pStart		= gl_in[1].gl_Position.xyz;
-    vec3 pEnd		= gl_in[2].gl_Position.xyz;
-    vec3 pNext		= gl_in[3].gl_Position.xyz;
+	int noSegments = 8;
+	float brushRadius = 0.02;
 
-	vec3 vBiStart	= halfAngle(pPrevious, pStart, pEnd);
-	vec3 vBiEnd		= halfAngle(pStart, pEnd, pNext);
+	vec4 center = gl_in[0].gl_Position;
 
-	bool colStart	= length(pStart - pPrevious) < 0.0001;
-	bool colEnd		= length(pEnd - pNext) < 0.0001;
+	for (int s = 1; s < noSegments + 1; s++) {
+		float thetaPrevious	= (TWO_PI * float(s - 1)) / float(noSegments);
+		float thetaCurrent	= (TWO_PI * float(s)) / float(noSegments);
+		vec4 pVertexA		= vec4(brushRadius * cos(thetaPrevious), brushRadius * sin(thetaPrevious), 0.0, 0.0);
+		vec4 pVertexB		= vec4(brushRadius * cos(thetaCurrent), brushRadius * sin(thetaCurrent), 0.0, 0.0);
 
-	vec3 lhs		= cross(normalize(pEnd - pStart), vec3(0.0, 0.0, -1.0));
-	vec3 startLhs	= vBiStart * sign(dot(vBiStart, lhs));
-	vec3 endLhs		= vBiEnd * sign(dot(vBiEnd, lhs));
+		gl_Position = screenToNormalizedScreenMatrix * center;
+		EmitVertex();
 
-	if(colStart)
-		startLhs = lhs;
-	if(colEnd)
-		endLhs = lhs;
+		gl_Position = screenToNormalizedScreenMatrix * (center + pVertexA);
+		EmitVertex();
 
-	float startInvScale = dot(startLhs, lhs);
-	float endInvScale = dot(endLhs, lhs);
-
-	float halfLineWidth = 0.5 * lineWidth;
-
-	startLhs	*= halfLineWidth;
-	endLhs		*= halfLineWidth;
-
-	vec3 vOffsetStart	= startLhs / startInvScale;
-	vec3 vOffsetEnd		= endLhs / endInvScale;
-
-	gl_Position		= screenToNormalizedScreenMatrix * vec4(pStart + vOffsetStart, 1.0);
-	g_color			= vec4(1);
-	EmitVertex();
+		gl_Position = screenToNormalizedScreenMatrix * (center + pVertexB);
+		EmitVertex();
+	}
 	
-	gl_Position		= screenToNormalizedScreenMatrix * vec4(pStart - vOffsetStart, 1.0);
-	g_color			= vec4(1);
-	EmitVertex();
-	
-	gl_Position		= screenToNormalizedScreenMatrix * vec4(pEnd + vOffsetEnd, 1.0);
-	g_color			= vec4(1);
-	EmitVertex();
-
-	gl_Position		= screenToNormalizedScreenMatrix * vec4(pEnd - vOffsetEnd, 1.0);
-	g_color			= vec4(1);
-	EmitVertex();
-
-    EndPrimitive();
+	EndPrimitive();
 }
 )"
