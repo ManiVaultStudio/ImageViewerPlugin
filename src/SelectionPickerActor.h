@@ -130,8 +130,11 @@ private:
 	/** Returns a pointer to the selection brush prop */
 	PolylineProp* brushProp();
 
-	/** Returns a pointer to the lasso prop */
-	PolylineProp* lassoProp();
+	/** Returns a pointer to the lasso segments prop */
+	PolylineProp* lassoSegmentsProp();
+
+	/** Returns a pointer to the lasso segments prop */
+	PolylineProp* lassoClosingSegmentProp();
 
 	/** Returns a pointer to the polygon segments prop */
 	PolylineProp* polygonSegmentsProp();
@@ -142,17 +145,20 @@ private:
 	/** Returns a pointer to the polygon closing segment prop */
 	InterimSelectionProp* interimSelectionProp();
 
-	/** Updates the selection rectangle */
+	/** Updates the selection rectangle prop */
 	void updateSelectionRectangle();
 
-	/** Updates the selection brush */
+	/** Updates the selection brush prop */
 	void updateSelectionBrush();
 
-	/** Updates the selection lasso */
+	/** Updates the selection lasso prop */
 	void updateSelectionLasso();
 
-	/** Updates the selection polygon */
+	/** Updates the selection polygon prop */
 	void updateSelectionPolygon();
+
+	/** Updates the interim selection prop */
+	void updateInterimSelectionProp();
 
 signals:
 	/**

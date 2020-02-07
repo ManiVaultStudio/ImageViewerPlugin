@@ -20,7 +20,7 @@ Renderer::Renderer(ImageViewerWidget* parentWidget) :
 	_zoomSensitivity(0.1f),
 	_margin(25)
 {
-	addNamedColor("InterimSelectionOverlayColor", QColor(239, 130, 13, 100));
+	addNamedColor("InterimSelectionOverlayColor", QColor(239, 130, 13, 50));
 	addNamedColor("SelectionOutline", QColor(239, 130, 13, 255));
 
 	createActors();
@@ -49,14 +49,7 @@ void Renderer::resize(QSize renderSize)
 
 void Renderer::render()
 {
-	try
-	{
-		renderActors();
-	}
-	catch (const std::exception& e)
-	{
-		qDebug() << "Render failed...";
-	}
+	renderActors();
 }
 
 void Renderer::destroy()
@@ -397,23 +390,6 @@ void Renderer::setColorImage(std::shared_ptr<QImage> colorImage)
 
 	colorImageActor()->setImage(colorImage);
 	selectionPickerActor()->setImageSize(colorImage->size());
-
-	/*
-	if (previousImageSize != colorImage->size()) {
-		//shape<SelectionBufferQuad>("SelectionBufferQuad")->setSize(colorImage->size());
-
-		const auto brushRadius = 0.05f * static_cast<float>(std::min(colorImage->width(), colorImage->height()));
-
-		setBrushRadius(brushRadius);
-		setBrushRadiusDelta(0.2f * brushRadius);
-
-		
-		const auto pWorld0 = _imageViewerWidget->screenToWorld(QPointF(0.0f, 0.0f));
-		const auto pWorld1 = _imageViewerWidget->screenToWorld(QPointF(1.f, 0.0f));
-
-		shape<SelectionBounds>("SelectionBounds")->setLineWidth(1);
-	}
-	*/
 }
 
 void Renderer::setSelectionImage(std::shared_ptr<QImage> selectionImage, const QRect& selectionBounds)
@@ -483,7 +459,7 @@ void Renderer::releaseOpenGLContext()
 
 void Renderer::onActorChanged(Actor* actor)
 {
-	//qDebug() << "Shape" << shape->name() << "changed";
+	//qDebug() << "Actor" << actor->name() << "changed";
 
 	emit dirty();
 }

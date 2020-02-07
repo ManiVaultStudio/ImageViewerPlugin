@@ -180,6 +180,8 @@ void InterimSelectionProp::update()
 	if (_fbo.isNull())
 		return;
 
+	qDebug() << "Update" << _name << static_cast<int>(dynamic_cast<SelectionPickerActor*>(actor())->selectionType());
+
 	renderer()->bindOpenGLContext();
 
 	try {
@@ -262,18 +264,19 @@ void InterimSelectionProp::update()
 						case SelectionType::Lasso:
 						case SelectionType::Polygon:
 						{
-							/*
+							if (noMouseEvents < 2)
+								break;
+
 							QList<QVector2D> points;
 
-							points.reserve(static_cast<std::int32_t>(_mousePositions.size()));
+							points.reserve(static_cast<std::int32_t>(noMouseEvents));
 
-							for (const auto& mousePosition : _mousePositions) {
-								points.push_back(QVector2D(mousePosition.x(), mousePosition.y()));
+							for (const auto& mouseEvent : mouseEvents) {
+								points.push_back(renderer()->screenPointToWorldPosition(modelViewMatrix(), mouseEvent.screenPoint()).toVector2D());
 							}
 
 							offscreenBufferShaderProgram->setUniformValueArray("points", &points[0], static_cast<std::int32_t>(points.size()));
 							offscreenBufferShaderProgram->setUniformValue("noPoints", static_cast<int>(points.size()));
-							*/
 							break;
 						}
 
@@ -313,14 +316,29 @@ void InterimSelectionProp::update()
 
 void InterimSelectionProp::reset()
 {
-	qDebug() << "Reset" << _name;
+	//qDebug() << "Reset" << _name;
 
-	if (!_fbo->bind())
-		return;
+	renderer()->bindOpenGLContext();
 
-	glViewport(0, 0, _fbo->width(), _fbo->height());
-	glClearColor(0.f, 0.f, 0.f, 0.f);
-	glClear(GL_COLOR_BUFFER_BIT);
+	try {
+		if (_fbo->bind()) {
+			glViewport(0, 0, _fbo->width(), _fbo->height());
+			glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+			glClear(GL_COLOR_BUFFER_BIT);
+			glFinish();
 
-	_fbo->release();
+			_fbo->release();
+		}
+		else
+		{
+			throw std::exception("Unable to bind frame buffer object");
+		}
+	}
+	catch (std::exception& e)
+	{
+		qDebug() << _name << "reset failed:" << e.what();
+	}
+	catch (...) {
+		qDebug() << _name << "reset failed due to unhandled exception";
+	}
 }

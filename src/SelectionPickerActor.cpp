@@ -31,7 +31,8 @@ SelectionPickerActor::SelectionPickerActor(Renderer* renderer, const QString& na
 
 	addProp<PolylineProp>("RectangleProp");
 	addProp<PolylineProp>("BrushProp");
-	addProp<PolylineProp>("LassoProp");
+	addProp<PolylineProp>("LassoSegmentsProp");
+	addProp<PolylineProp>("LassoClosingSegmentProp");
 	addProp<PolylineProp>("PolygonSegmentsProp");
 	addProp<PolylineProp>("PolygonClosingSegmentProp");
 	addProp<InterimSelectionProp>("InterimSelectionProp");
@@ -41,15 +42,25 @@ void SelectionPickerActor::initialize()
 {
 	Actor::initialize();
 
+	// Configure rectangle selection prop
 	rectangleProp()->setLineWidth(2.5f);
 	rectangleProp()->setLineColor(renderer()->colorByName("SelectionOutline", 200));
 
+	// Configure brush selection prop
 	brushProp()->setLineWidth(2.5f);
 
+	// Configure lasso selection props
+	lassoSegmentsProp()->setClosed(false);
+	lassoSegmentsProp()->setLineWidth(3.5f);
+	lassoSegmentsProp()->setLineColor(renderer()->colorByName("SelectionOutline", 200));
+	lassoClosingSegmentProp()->setClosed(false);
+	lassoClosingSegmentProp()->setLineWidth(2.0f);
+	lassoClosingSegmentProp()->setLineColor(renderer()->colorByName("SelectionOutline", 100));
+
+	// Configure polygon selection props
 	polygonSegmentsProp()->setClosed(false);
 	polygonSegmentsProp()->setLineWidth(3.5f);
 	polygonSegmentsProp()->setLineColor(renderer()->colorByName("SelectionOutline", 200));
-	
 	polygonClosingSegmentProp()->setClosed(false);
 	polygonClosingSegmentProp()->setLineWidth(2.0f);
 	polygonClosingSegmentProp()->setLineColor(renderer()->colorByName("SelectionOutline", 100));
@@ -116,33 +127,50 @@ void SelectionPickerActor::onMousePressEvent(QMouseEvent* mouseEvent)
 			break;
 
 		case SelectionType::Rectangle:
+		{
 			if (mouseEvent->button() == Qt::LeftButton) {
 				startSelection();
 				addMouseEvent(mouseEvent);
+				update();
 				break;
 			}
+		}
 
 		case SelectionType::Brush:
+		{
 			if (mouseEvent->button() == Qt::LeftButton) {
 				startSelection();
 				addMouseEvent(mouseEvent);
+				update();
 				break;
 			}
+		}
 
 		case SelectionType::Lasso:
+		{
+			if (mouseEvent->button() == Qt::LeftButton) {
+				startSelection();
+				addMouseEvent(mouseEvent);
+				update();
+			}
 			break;
+		}
 
 		case SelectionType::Polygon:
+		{
 			if (mouseEvent->button() == Qt::LeftButton) {
+				if (!_selecting)
+					startSelection();
+
 				addMouseEvent(mouseEvent);
-				break;
+				update();
 			}
+			break;
+		}
 
 		default:
 			break;
 	}
-
-	update();
 }
 
 void SelectionPickerActor::onMouseReleaseEvent(QMouseEvent* mouseEvent)
@@ -156,6 +184,7 @@ void SelectionPickerActor::onMouseReleaseEvent(QMouseEvent* mouseEvent)
 		{
 			if (mouseEvent->button() == Qt::LeftButton) {
 				endSelection();
+				update();
 			}
 			break;
 		}
@@ -164,18 +193,17 @@ void SelectionPickerActor::onMouseReleaseEvent(QMouseEvent* mouseEvent)
 		{
 			if (mouseEvent->button() == Qt::LeftButton) {
 				endSelection();
+				update();
 			}
 			break;
 		}
 
 		case SelectionType::Lasso:
 		{
-			/*
 			if (mouseEvent->button() == Qt::LeftButton) {
 				endSelection();
-				lassoShape()->reset();
+				update();
 			}
-			*/
 			break;
 		}
 
@@ -183,6 +211,7 @@ void SelectionPickerActor::onMouseReleaseEvent(QMouseEvent* mouseEvent)
 		{
 			if (mouseEvent->button() == Qt::RightButton) {
 				endSelection();
+				update();
 			}
 			break;
 		}
@@ -190,8 +219,6 @@ void SelectionPickerActor::onMouseReleaseEvent(QMouseEvent* mouseEvent)
 		default:
 			break;
 	}
-	
-	update();
 }
 
 void SelectionPickerActor::onMouseMoveEvent(QMouseEvent* mouseEvent)
@@ -206,6 +233,7 @@ void SelectionPickerActor::onMouseMoveEvent(QMouseEvent* mouseEvent)
 			if (mouseEvent->buttons() & Qt::LeftButton)
 			{
 				addMouseEvent(mouseEvent);
+				update();
 			}
 			break;
 		}
@@ -213,20 +241,17 @@ void SelectionPickerActor::onMouseMoveEvent(QMouseEvent* mouseEvent)
 		case SelectionType::Brush:
 		{
 			addMouseEvent(mouseEvent);
+			update();
 			break;
 		}
 
 		case SelectionType::Lasso:
 		{
-			/*
 			if (mouseEvent->buttons() & Qt::LeftButton)
 			{
-				addMousePosition(mouseEvent->pos());
-
-				if (_mousePositions.size() >= 2)
-					updateLasso();
+				addMouseEvent(mouseEvent);
+				update();
 			}
-			*/
 			break;
 		}
 
@@ -235,12 +260,14 @@ void SelectionPickerActor::onMouseMoveEvent(QMouseEvent* mouseEvent)
 			if (_mouseEvents.size() == 1)
 			{
 				addMouseEvent(mouseEvent);
+				update();
 			}
 
 			if (_mouseEvents.size() >= 2)
 			{
 				const auto pScreen = QVector2D(mouseEvent->pos());
 				_mouseEvents.last() = MouseEvent(pScreen, renderer()->screenPointToWorldPosition(modelViewMatrix(), pScreen));
+				update();
 			}
 			break;
 		}
@@ -248,8 +275,6 @@ void SelectionPickerActor::onMouseMoveEvent(QMouseEvent* mouseEvent)
 		default:
 			break;
 	}
-
-	update();
 }
 
 void SelectionPickerActor::onMouseWheelEvent(QWheelEvent* wheelEvent)
@@ -268,6 +293,7 @@ void SelectionPickerActor::onMouseWheelEvent(QWheelEvent* wheelEvent)
 			else {
 				brushSizeDecrease();
 			}
+			update();
 			break;
 		}
 		case SelectionType::Lasso:
@@ -277,8 +303,6 @@ void SelectionPickerActor::onMouseWheelEvent(QWheelEvent* wheelEvent)
 		default:
 			break;
 	}
-
-	update();
 }
 
 void SelectionPickerActor::startSelection()
@@ -289,8 +313,9 @@ void SelectionPickerActor::startSelection()
 
 	_selecting = true;
 
-	update();
 	interimSelectionProp()->reset();
+
+	update();
 }
 
 void SelectionPickerActor::endSelection()
@@ -354,7 +379,7 @@ void SelectionPickerActor::update()
 	}
 
 	if (_selecting)
-		interimSelectionProp()->update();
+		updateInterimSelectionProp();
 
 	emit changed(this);
 }
@@ -424,11 +449,38 @@ void SelectionPickerActor::updateSelectionBrush()
 	const auto leftButtonDown = QGuiApplication::mouseButtons() & Qt::LeftButton;
 	
 	// Change the line color when the left mouse button is down
-	brushProp()->setLineColor(leftButtonDown ? renderer()->colorByName("SelectionOutline", 200) : renderer()->colorByName("SelectionOutline", 80));
+	brushProp()->setLineColor(leftButtonDown ? renderer()->colorByName("SelectionOutline", 255) : renderer()->colorByName("SelectionOutline", 150));
 }
 
 void SelectionPickerActor::updateSelectionLasso()
 {
+	const auto noMouseEvents = _mouseEvents.size();
+
+	// A polyline for n segments and one for the segment that closes the polygon
+	QVector<QVector3D> segmentsPoints, closingSegmentPoints;
+
+	// Handle edge case of only two mouse points
+	if (noMouseEvents >= 2) {
+		for (auto mouseEvent : _mouseEvents) {
+			segmentsPoints.append(renderer()->worldPositionToScreenPoint(mouseEvent.worldPosition()));
+		}
+
+		segmentsPoints.insert(0, segmentsPoints.first());
+		segmentsPoints.append(segmentsPoints.last());
+	}
+
+	if (noMouseEvents >= 3) {
+		const auto pFirst = _mouseEvents.first().worldPosition();
+		const auto pLast = _mouseEvents.last().worldPosition();
+
+		closingSegmentPoints.append(renderer()->worldPositionToScreenPoint(pFirst));
+		closingSegmentPoints.append(renderer()->worldPositionToScreenPoint(pFirst));
+		closingSegmentPoints.append(renderer()->worldPositionToScreenPoint(pLast));
+		closingSegmentPoints.append(renderer()->worldPositionToScreenPoint(pLast));
+	}
+
+	lassoSegmentsProp()->setPoints(segmentsPoints);
+	lassoClosingSegmentProp()->setPoints(closingSegmentPoints);
 }
 
 void SelectionPickerActor::updateSelectionPolygon()
@@ -462,6 +514,14 @@ void SelectionPickerActor::updateSelectionPolygon()
 	polygonClosingSegmentProp()->setPoints(closingSegmentPoints);
 }
 
+void SelectionPickerActor::updateInterimSelectionProp()
+{
+	if (!_selecting)
+		return;
+
+	interimSelectionProp()->update();
+}
+
 QSize SelectionPickerActor::imageSize() const
 {
 	return _imageSize;
@@ -475,6 +535,11 @@ void SelectionPickerActor::setImageSize(const QSize& imageSize)
 	qDebug() << "Set image size";
 
 	_imageSize = imageSize;
+
+	const auto brushRadius = 0.05f * static_cast<float>(std::min(imageSize.width(), imageSize.height()));
+
+	setBrushRadius(brushRadius);
+	setBrushRadiusDelta(0.2f * brushRadius);
 
 	interimSelectionProp()->setImageSize(_imageSize);
 
@@ -499,7 +564,7 @@ void SelectionPickerActor::setSelectionType(const SelectionType& selectionType)
 
 	rectangleProp()->setVisible(_selectionType == SelectionType::Rectangle);
 	brushProp()->setVisible(_selectionType == SelectionType::Brush);
-	lassoProp()->setVisible(_selectionType == SelectionType::Lasso);
+	lassoSegmentsProp()->setVisible(_selectionType == SelectionType::Lasso);
 	polygonSegmentsProp()->setVisible(_selectionType == SelectionType::Polygon);
 	polygonClosingSegmentProp()->setVisible(_selectionType == SelectionType::Polygon);
 
@@ -584,9 +649,14 @@ PolylineProp* SelectionPickerActor::brushProp()
 	return propByName<PolylineProp>("BrushProp");
 }
 
-PolylineProp* SelectionPickerActor::lassoProp()
+PolylineProp* SelectionPickerActor::lassoSegmentsProp()
 {
-	return propByName<PolylineProp>("LassoProp");
+	return propByName<PolylineProp>("LassoSegmentsProp");
+}
+
+PolylineProp* SelectionPickerActor::lassoClosingSegmentProp()
+{
+	return propByName<PolylineProp>("LassoClosingSegmentProp");
 }
 
 PolylineProp* SelectionPickerActor::polygonSegmentsProp()
