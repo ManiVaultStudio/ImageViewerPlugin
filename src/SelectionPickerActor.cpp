@@ -1,6 +1,6 @@
 #include "SelectionPickerActor.h"
 #include "PolylineProp.h"
-#include "DiskProp.h"
+#include "PointsProp.h"
 #include "InterimSelectionProp.h"
 #include "Renderer.h"
 
@@ -32,7 +32,7 @@ SelectionPickerActor::SelectionPickerActor(Renderer* renderer, const QString& na
 
 	addProp<PolylineProp>("RectangleProp");
 	addProp<PolylineProp>("BrushProp");
-	addProp<DiskProp>("BrushCenter");
+	addProp<PointsProp>("BrushCenter");
 	addProp<PolylineProp>("LassoSegmentsProp");
 	addProp<PolylineProp>("LassoClosingSegmentProp");
 	addProp<PolylineProp>("PolygonSegmentsProp");
@@ -70,6 +70,9 @@ void SelectionPickerActor::initialize()
 
 void SelectionPickerActor::onKeyPressEvent(QKeyEvent* keyEvent)
 {
+	if (!mayProcessKeyPressEvent())
+		return;
+
 	Actor::onKeyPressEvent(keyEvent);
 
 	switch (keyEvent->key())
@@ -109,6 +112,9 @@ void SelectionPickerActor::onKeyPressEvent(QKeyEvent* keyEvent)
 
 void SelectionPickerActor::onKeyReleaseEvent(QKeyEvent* keyEvent)
 {
+	if (!mayProcessKeyReleaseEvent())
+		return;
+
 	Actor::onKeyReleaseEvent(keyEvent);
 
 	switch (keyEvent->key())
@@ -127,6 +133,9 @@ void SelectionPickerActor::onKeyReleaseEvent(QKeyEvent* keyEvent)
 
 void SelectionPickerActor::onMousePressEvent(QMouseEvent* mouseEvent)
 {
+	if (!mayProcessMousePressEvent())
+		return;
+
 	Actor::onMousePressEvent(mouseEvent);
 
 	switch (_selectionType)
@@ -181,6 +190,9 @@ void SelectionPickerActor::onMousePressEvent(QMouseEvent* mouseEvent)
 
 void SelectionPickerActor::onMouseReleaseEvent(QMouseEvent* mouseEvent)
 {
+	if (!mayProcessMouseReleaseEvent())
+		return;
+
 	Actor::onMouseReleaseEvent(mouseEvent);
 
 	switch (_selectionType)
@@ -230,6 +242,9 @@ void SelectionPickerActor::onMouseReleaseEvent(QMouseEvent* mouseEvent)
 
 void SelectionPickerActor::onMouseMoveEvent(QMouseEvent* mouseEvent)
 {
+	if (!mayProcessMouseMoveEvent())
+		return;
+
 	Actor::onMouseMoveEvent(mouseEvent);
 
 	switch (_selectionType)
@@ -290,6 +305,9 @@ void SelectionPickerActor::onMouseMoveEvent(QMouseEvent* mouseEvent)
 
 void SelectionPickerActor::onMouseWheelEvent(QWheelEvent* wheelEvent)
 {
+	if (!mayProcessMouseWheelEvent())
+		return;
+
 	Actor::onMouseWheelEvent(wheelEvent);
 
 	switch (_selectionType)
@@ -461,7 +479,9 @@ void SelectionPickerActor::updateSelectionBrush()
 	
 	// Change the line color when the left mouse button is down
 	brushProp()->setLineColor(leftButtonDown ? renderer()->colorByName("SelectionOutline", 255) : renderer()->colorByName("SelectionOutline", 150));
-	brushCenterProp()->setCenter(renderer()->screenPointToWorldPosition(modelViewMatrix(), QVector2D(mousePosition)).toVector2D());
+
+	const auto mouseWorldPosition = renderer()->screenPointToWorldPosition(modelViewMatrix(), QVector2D(mousePosition));
+	brushCenterProp()->setPoints(QVector<PointsProp::Point>() << PointsProp::Point(QVector3D(pCenter, 0.0f), 10.0f, QVector4D(1.0f, 1.0f, 1.0f, 1.0f)));
 }
 
 void SelectionPickerActor::updateSelectionLasso()
@@ -576,6 +596,7 @@ void SelectionPickerActor::setSelectionType(const SelectionType& selectionType)
 
 	rectangleProp()->setVisible(_selectionType == SelectionType::Rectangle);
 	brushProp()->setVisible(_selectionType == SelectionType::Brush);
+	brushCenterProp()->setVisible(_selectionType == SelectionType::Brush);
 	lassoSegmentsProp()->setVisible(_selectionType == SelectionType::Lasso);
 	polygonSegmentsProp()->setVisible(_selectionType == SelectionType::Polygon);
 	polygonClosingSegmentProp()->setVisible(_selectionType == SelectionType::Polygon);
@@ -659,9 +680,9 @@ PolylineProp* SelectionPickerActor::brushProp()
 	return propByName<PolylineProp>("BrushProp");
 }
 
-DiskProp* SelectionPickerActor::brushCenterProp()
+PointsProp* SelectionPickerActor::brushCenterProp()
 {
-	return propByName<DiskProp>("BrushCenter");
+	return propByName<PointsProp>("BrushCenter");
 }
 
 PolylineProp* SelectionPickerActor::lassoSegmentsProp()

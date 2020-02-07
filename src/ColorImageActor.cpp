@@ -121,7 +121,7 @@ void ColorImageActor::onMousePressEvent(QMouseEvent* mouseEvent)
 	if (!mayProcessMousePressEvent())
 		return;
 
-	//qDebug() << "Mouse press event for" << _name;
+	Actor::onMousePressEvent(mouseEvent);
 	
 	_mouseEvents.clear();
 
@@ -135,7 +135,7 @@ void ColorImageActor::onMouseReleaseEvent(QMouseEvent* mouseEvent)
 	if (!mayProcessMouseReleaseEvent())
 		return;
 
-	//qDebug() << "Mouse release event for" << _name;
+	Actor::onMouseReleaseEvent(mouseEvent);
 
 	emit endWindowLevel();
 }
@@ -145,7 +145,7 @@ void ColorImageActor::onMouseMoveEvent(QMouseEvent* mouseEvent)
 	if (!mayProcessMouseMoveEvent())
 		return;
 
-	//qDebug() << "Mouse move event for" << _name;
+	Actor::onMouseMoveEvent(mouseEvent);
 
 	addMouseEvent(mouseEvent);
 

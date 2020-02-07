@@ -2,24 +2,28 @@ R"(
 #version 330 core
 
 layout (points) in;
-layout (triangle_strip, max_vertices = 100) out;
+layout (triangle_strip, max_vertices = 200) out;
 
 out vec4 g_color;
 
 uniform mat4 screenToNormalizedScreenMatrix;		// Projection matrix
 
-#define PI 3.1415926535897932384626433832795
-#define TWO_PI 2.0f * 3.1415926535897932384626433832795
+#define PI 3.14159265
+#define HALF_PI 1.57079
+#define TWO_PI 6.283185
+#define DEG_TO_RAD 0.01745329
+#define RAD_TO_DEG 57.2957786
 
 void main() {
-	int noSegments = 8;
-	float brushRadius = 0.02;
+	int noSegments = 32;
+	float brushRadius = 3.0;
 
 	vec4 center = gl_in[0].gl_Position;
+	float radDelta = TWO_PI / float(noSegments);
 
 	for (int s = 1; s < noSegments + 1; s++) {
-		float thetaPrevious	= (TWO_PI * float(s - 1)) / float(noSegments);
-		float thetaCurrent	= (TWO_PI * float(s)) / float(noSegments);
+		float thetaPrevious	= (s - 1) * radDelta;
+		float thetaCurrent	= s * radDelta;
 		vec4 pVertexA		= vec4(brushRadius * cos(thetaPrevious), brushRadius * sin(thetaPrevious), 0.0, 0.0);
 		vec4 pVertexB		= vec4(brushRadius * cos(thetaCurrent), brushRadius * sin(thetaCurrent), 0.0, 0.0);
 

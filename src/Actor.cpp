@@ -88,7 +88,7 @@ void Actor::setEnabled(const bool& enabled)
 
 	_enabled = enabled;
 
-	qDebug() << "Set " << _name << "shape" << (_enabled ? "enabled" : "disabled");
+	qDebug() << "Set " << _name << (_enabled ? "enabled" : "disabled");
 
 	emit enabledChanged(_enabled);
 

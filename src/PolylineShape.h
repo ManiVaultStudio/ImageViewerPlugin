@@ -23,7 +23,7 @@ public:
 	{
 	public:
 		/** Default constructor */
-		Point() {};
+		Point();
 
 		/**
 		 * Constructor

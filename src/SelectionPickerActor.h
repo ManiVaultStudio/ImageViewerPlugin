@@ -17,7 +17,7 @@ class QMenu;
 
 class Renderer;
 class PolylineProp;
-class DiskProp;
+class PointsProp;
 class InterimSelectionProp;
 
 /**
@@ -135,7 +135,7 @@ private:
 	PolylineProp* brushProp();
 
 	/** Returns a pointer to the selection brush prop */
-	DiskProp* brushCenterProp();
+	PointsProp* brushCenterProp();
 
 	/** Returns a pointer to the lasso segments prop */
 	PolylineProp* lassoSegmentsProp();
