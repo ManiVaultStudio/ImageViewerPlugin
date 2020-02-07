@@ -213,11 +213,13 @@ void InterimSelectionProp::update()
 
 					offscreenBufferShaderProgram->setUniformValue("imageSize", imageWidth, imageHeight);
 
+					const auto noMouseEvents = mouseEvents.size();
+
 					switch (selectionPickerActor->selectionType())
 					{
 						case SelectionType::Rectangle:
 						{
-							if (mouseEvents.size() < 2)
+							if (noMouseEvents < 2)
 								break;
 
 							const auto firstPoint				= mouseEvents.first().screenPoint();
@@ -236,10 +238,14 @@ void InterimSelectionProp::update()
 
 						case SelectionType::Brush:
 						{
-							if (mouseEvents.size() == 0)
+							if (noMouseEvents == 0)
 								break;
 							
-							const auto brushCenter			= renderer()->screenPointToWorldPosition(modelViewMatrix(), QPointF(mouseEvents.last().screenPoint().x(), mouseEvents.last().screenPoint().y()));
+							if (noMouseEvents == 1) {
+								const auto pMouseLast	= mouseEvents.last().screenPoint();
+								const auto brushCenter	= renderer()->screenPointToWorldPosition(modelViewMatrix(), QPointF(pMouseLast.x(), pMouseLast.y()));
+							}
+							
 							const auto previousBrushCenter	= mouseEvents.size() > 1 ? renderer()->screenPointToWorldPosition(modelViewMatrix(), QPointF(mouseEvents[mouseEvents.size() - 2].screenPoint().x(), mouseEvents[mouseEvents.size() - 2].screenPoint().y())) : brushCenter;
 
 							offscreenBufferShaderProgram->setUniformValue("previousBrushCenter", previousBrushCenter.x(), previousBrushCenter.y());
