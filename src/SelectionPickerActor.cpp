@@ -449,7 +449,7 @@ void SelectionPickerActor::updateSelectionRectangle()
 
 void SelectionPickerActor::updateSelectionBrush()
 {
-	QVector<QVector3D> points;
+	QVector<QVector3D> polylinePoints;
 
 	// Determine the center of the brush in screen coordinates
 	const auto mousePosition	= renderer()->parentWidget()->mapFromGlobal(QCursor::pos());
@@ -470,18 +470,22 @@ void SelectionPickerActor::updateSelectionBrush()
 		const auto theta	= 2.0f * M_PI * float(s) / static_cast<float>(noSegments);
 		const auto pBrush	= QVector2D(_brushRadius * cosf(theta), _brushRadius * sinf(theta));
 
-		points.append(pCenter + pBrush);
+		polylinePoints.append(pCenter + pBrush);
 	}
 	
-	brushProp()->setPoints(points);
+	brushProp()->setPoints(polylinePoints);
 
 	const auto leftButtonDown = QGuiApplication::mouseButtons() & Qt::LeftButton;
 	
 	// Change the line color when the left mouse button is down
 	brushProp()->setLineColor(leftButtonDown ? renderer()->colorByName("SelectionOutline", 255) : renderer()->colorByName("SelectionOutline", 150));
 
-	const auto mouseWorldPosition = renderer()->screenPointToWorldPosition(modelViewMatrix(), QVector2D(mousePosition));
-	brushCenterProp()->setPoints(QVector<PointsProp::Point>() << PointsProp::Point(QVector3D(pCenter, 0.0f), 1.0f, QVector4D(1.0f, 1.0f, 1.0f, 1.0f)));
+	QVector<PointsProp::Point> points;
+
+	points << PointsProp::Point(QVector3D(pCenter, 0.0f), 5.0f, renderer()->colorByName("SelectionOutline", 150));
+	points << PointsProp::Point(QVector3D(pCenter + QVector2D(10, 10), 0.0f), 2.0f, renderer()->colorByName("SelectionOutline", 250));
+
+	brushCenterProp()->setPoints(points);
 }
 
 void SelectionPickerActor::updateSelectionLasso()

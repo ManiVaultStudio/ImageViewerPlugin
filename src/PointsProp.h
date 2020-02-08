@@ -32,7 +32,7 @@ public:
 		 * @param radius Point radius
 		 * @param color Point color
 		 */
-		Point(const QVector3D& position, const float& radius, const QVector4D& color);
+		Point(const QVector3D& position, const float& radius, const QColor& color);
 
 		/** Attribute locations */
 		static std::uint32_t	_positionAttribute;		/** Point position attribute location */

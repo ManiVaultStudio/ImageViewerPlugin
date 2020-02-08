@@ -23,10 +23,10 @@ PointsProp::Point::Point():
 {
 }
 
-PointsProp::Point::Point(const QVector3D& position, const float& radius, const QVector4D& color) :
+PointsProp::Point::Point(const QVector3D& position, const float& radius, const QColor& color) :
 	_position(position),
 	_radius(radius),
-	_color(color)
+	_color(QVector4D(color.redF(), color.greenF(), color.blueF(), color.alphaF()))
 {
 }
 
@@ -75,9 +75,9 @@ void PointsProp::initialize()
 			shaderProgram->enableAttributeArray(Point::_positionAttribute);
 			shaderProgram->enableAttributeArray(Point::_radiusAttribute);
 			shaderProgram->enableAttributeArray(Point::_colorAttribute);
-			shaderProgram->setAttributeBuffer(Point::_positionAttribute, GL_FLOAT, 0, 3);
-			shaderProgram->setAttributeBuffer(Point::_radiusAttribute, GL_FLOAT, sizeof(QVector3D), 1);
-			shaderProgram->setAttributeBuffer(Point::_colorAttribute, GL_FLOAT, sizeof(QVector3D) + sizeof(float), 4);
+			shaderProgram->setAttributeBuffer(Point::_positionAttribute, GL_FLOAT, 0, 3, stride);
+			shaderProgram->setAttributeBuffer(Point::_radiusAttribute, GL_FLOAT, sizeof(QVector3D), 1, stride);
+			shaderProgram->setAttributeBuffer(Point::_colorAttribute, GL_FLOAT, sizeof(QVector3D) + sizeof(float), 4, stride);
 
 			_vao.release();
 			_vbo.release();
@@ -123,7 +123,6 @@ void PointsProp::render()
 			shaderProgram->setUniformValue("screenCoordinates", true);
 			shaderProgram->setUniformValue("noSegments", 32);
 			shaderProgram->setUniformValue("screenToNormalizedScreen", renderer()->screenToNormalizedScreenMatrix());
-			shaderProgram->setUniformValue("color", renderer()->colorByName("SelectionOutline"));
 
 			_vao.bind();
 			{

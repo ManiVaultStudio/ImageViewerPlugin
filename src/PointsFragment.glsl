@@ -1,12 +1,11 @@
 R"(
 #version 330
 
-uniform vec4 color;
-
-out vec4 fragmentColor;
+in vec4 geometryColor;		// Output from geometry shader
+out vec4 fragmentColor;		// Output fragment color
 
 void main(void)
 {
-	fragmentColor = color;
+	fragmentColor = geometryColor;
 }
 )"
