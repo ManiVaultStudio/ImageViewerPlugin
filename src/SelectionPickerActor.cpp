@@ -461,14 +461,14 @@ void SelectionPickerActor::updateSelectionBrush()
 	// Allocate vertices buffer
 	vertexCoordinates.resize(noSegments * 3);
 
-	const auto pA			= renderer()->worldPositionToScreenPoint(QVector3D(0.0f, 0.0f, 0.0f));
-	const auto pB			= renderer()->worldPositionToScreenPoint(QVector3D(_brushRadius, 0.0f, 0.0f));
+	const auto pA			= renderer()->screenPointToNormalizedScreenPoint(QVector2D(0.0f, 0.0f));
+	const auto pB			= renderer()->screenPointToNormalizedScreenPoint(QVector2D(_brushRadius, 0.0f));
 	const auto brushRadius	= (pB - pA).length();
 
 	// Generate polyline points in screen coordinates
 	for (std::uint32_t s = 0; s < noSegments; s++) {
 		const auto theta	= 2.0f * M_PI * float(s) / static_cast<float>(noSegments);
-		const auto pBrush	= QVector2D(brushRadius * cosf(theta), brushRadius * sinf(theta));
+		const auto pBrush	= QVector2D(_brushRadius * cosf(theta), _brushRadius * sinf(theta));
 
 		points.append(pCenter + pBrush);
 	}
@@ -481,7 +481,7 @@ void SelectionPickerActor::updateSelectionBrush()
 	brushProp()->setLineColor(leftButtonDown ? renderer()->colorByName("SelectionOutline", 255) : renderer()->colorByName("SelectionOutline", 150));
 
 	const auto mouseWorldPosition = renderer()->screenPointToWorldPosition(modelViewMatrix(), QVector2D(mousePosition));
-	brushCenterProp()->setPoints(QVector<PointsProp::Point>() << PointsProp::Point(QVector3D(pCenter, 0.0f), 10.0f, QVector4D(1.0f, 1.0f, 1.0f, 1.0f)));
+	brushCenterProp()->setPoints(QVector<PointsProp::Point>() << PointsProp::Point(QVector3D(pCenter, 0.0f), 1.0f, QVector4D(1.0f, 1.0f, 1.0f, 1.0f)));
 }
 
 void SelectionPickerActor::updateSelectionLasso()

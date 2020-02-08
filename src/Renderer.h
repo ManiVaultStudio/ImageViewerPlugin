@@ -112,19 +112,16 @@ public:
 	QVector2D screenPointToNormalizedScreenPoint(const QVector2D& screenPoint) const;
 
 	/** Returns the matrix that converts screen coordinates [0..width, 0..height] to normalized screen coordinates [-1..1, -1..1] */
-	QMatrix4x4 screenCoordinatesToNormalizedScreenCoordinatesMatrix() const;
+	QMatrix4x4 screenToNormalizedScreenMatrix() const;
+
+	/** Returns the matrix that converts normalized screen coordinates [-1..1, -1..1] to screen coordinates [0..width, 0..height] */
+	QMatrix4x4 normalizedScreenToScreenMatrix() const;
 
 	/** Returns the view matrix */
 	QMatrix4x4 viewMatrix() const;
 
 	/** Returns the projection matrix */
 	QMatrix4x4 projectionMatrix() const;
-
-	/** Convert screen units to normalized screen units
-	 * @param lineWidth Line width in screen coordinates
-	 * @return Line width in normalized screen coordinates
-	 */
-	float lineWidthNDC(const float& lineWidth) const;
 
 	/**
 	 * Move the view horizontally/vertically

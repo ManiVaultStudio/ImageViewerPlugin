@@ -119,7 +119,7 @@ void PolylineProp::render()
 		texture->bind();
 		{
 			if (shaderProgram->bind()) {
-				shaderProgram->setUniformValue("screenToNormalizedScreenMatrix", renderer()->screenCoordinatesToNormalizedScreenCoordinatesMatrix());
+				shaderProgram->setUniformValue("screenToNormalizedScreenMatrix", renderer()->screenToNormalizedScreenMatrix());
 				shaderProgram->setUniformValue("lineTexture", 0);
 				shaderProgram->setUniformValue("lineWidth", _lineWidth);
 

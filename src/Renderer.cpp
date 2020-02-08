@@ -259,14 +259,29 @@ QVector2D Renderer::screenPointToNormalizedScreenPoint(const QVector2D& screenPo
 	return QVector2D(-1.f, -1.f) + 2.f * (QVector2D(screenPoint.x(), _parentWidget->height() - screenPoint.y()) / viewSize);
 }
 
-QMatrix4x4 Renderer::screenCoordinatesToNormalizedScreenCoordinatesMatrix() const
+QMatrix4x4 Renderer::screenToNormalizedScreenMatrix() const
 {
 	QMatrix4x4 translate, scale;
 
-	scale.scale(2.0f / static_cast<float>(_parentWidget->width()), 2.0f / static_cast<float>(_parentWidget->height()), 1.0f);
 	translate.translate(-1.0f, -1.0f, 0.0f);
-
+	scale.scale(2.0f / static_cast<float>(_parentWidget->width()), 2.0f / static_cast<float>(_parentWidget->height()), 1.0f);
+	
 	return translate * scale;
+}
+
+QMatrix4x4 Renderer::normalizedScreenToScreenMatrix() const
+{
+	QMatrix4x4 translate, scale;
+
+	const auto size		= QSizeF(_parentWidget->size());
+	const auto halfSize = 0.5f * size;
+
+	
+	scale.scale(halfSize.width(), halfSize.height(), 1.0f);
+	translate.translate(size.width(), 1, 0.0f);
+
+	//return translate * screenToNormalizedScreenMatrix().inverted();
+	return translate * scale;// *;
 }
 
 QMatrix4x4 Renderer::viewMatrix() const
@@ -288,12 +303,6 @@ QMatrix4x4 Renderer::projectionMatrix() const
 	matrix.ortho(-halfSize.width(), halfSize.width(), -halfSize.height(), halfSize.height(), -1000.0f, +1000.0f);
 
 	return matrix;
-}
-
-float Renderer::lineWidthNDC(const float& lineWidth) const
-{
-	return (QVector3D(lineWidth, 0.0f, 0.0f) * projectionMatrix()).x();
-	return 2.f * (lineWidth / static_cast<float>(std::min(_parentWidget->width(), _parentWidget->height())));
 }
 
 void Renderer::pan(const QVector2D& delta)
