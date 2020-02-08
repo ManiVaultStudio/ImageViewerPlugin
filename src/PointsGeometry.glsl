@@ -4,8 +4,6 @@ R"(
 layout (points) in;
 layout (triangle_strip, max_vertices = 200) out;
 
-//in pointData vertexOut[1];		// Input points for geometry shader
-
 // Vertex shader output
 in PointData {
 	vec4 position;
@@ -13,9 +11,15 @@ in PointData {
 	vec4 color;
 } vertexOut[1];
 
-// out pointData frag;			// Output points for fragment shader
+// Geometry shader output
+out PointData {
+	vec4 position;
+	float radius;
+	vec4 color;
+} geometryOut;
 
-uniform mat4 screenToNormalizedScreenMatrix;	// Screen coordinates to normalized screen coordinates matrix
+uniform int		noSegments;					// No segments
+uniform mat4	screenToNormalizedScreen;	// Screen coordinates to normalized screen coordinates matrix
 
 // Constants
 #define PI			3.14159265
@@ -25,8 +29,6 @@ uniform mat4 screenToNormalizedScreenMatrix;	// Screen coordinates to normalized
 #define RAD_TO_DEG	57.2957786
 
 void main() {
-	int noSegments = 32;
-
 	vec4 position	= vertexOut[0].position;
 	float radius	= vertexOut[0].radius;
 	float radDelta = TWO_PI / float(noSegments);
@@ -39,13 +41,13 @@ void main() {
 		vec4 pVertexA		= vec4(radius * cos(thetaPrevious), radius * sin(thetaPrevious), 0.0, 0.0);
 		vec4 pVertexB		= vec4(radius * cos(thetaCurrent), radius * sin(thetaCurrent), 0.0, 0.0);
 
-		gl_Position = screenToNormalizedScreenMatrix * position;
+		gl_Position = screenToNormalizedScreen * position;
 		EmitVertex();
 
-		gl_Position = screenToNormalizedScreenMatrix * (position + pVertexA);
+		gl_Position = screenToNormalizedScreen * (position + pVertexA);
 		EmitVertex();
 
-		gl_Position = screenToNormalizedScreenMatrix * (position + pVertexB);
+		gl_Position = screenToNormalizedScreen * (position + pVertexB);
 		EmitVertex();
 	}
 	

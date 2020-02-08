@@ -121,7 +121,8 @@ void PointsProp::render()
 		if (shaderProgram->bind()) {
 			shaderProgram->setUniformValue("modelViewProjectionMatrix", modelViewProjectionMatrix() * renderer()->normalizedScreenToScreenMatrix());
 			shaderProgram->setUniformValue("screenCoordinates", true);
-			shaderProgram->setUniformValue("screenToNormalizedScreenMatrix", renderer()->screenToNormalizedScreenMatrix());
+			shaderProgram->setUniformValue("noSegments", 32);
+			shaderProgram->setUniformValue("screenToNormalizedScreen", renderer()->screenToNormalizedScreenMatrix());
 			shaderProgram->setUniformValue("color", renderer()->colorByName("SelectionOutline"));
 
 			_vao.bind();
