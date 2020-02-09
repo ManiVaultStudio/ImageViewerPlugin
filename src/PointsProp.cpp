@@ -38,7 +38,8 @@ PointsProp::PointsProp(Actor* actor, const QString& name) :
 	Prop(actor, name),
 	_points(),
 	_vao(),
-	_vbo()
+	_vbo(),
+	_noSegments(32)
 {
 	addShaderProgram("PointsShape");
 }
@@ -121,7 +122,7 @@ void PointsProp::render()
 		if (shaderProgram->bind()) {
 			shaderProgram->setUniformValue("modelViewProjectionMatrix", modelViewProjectionMatrix() * renderer()->normalizedScreenToScreenMatrix());
 			shaderProgram->setUniformValue("screenCoordinates", true);
-			shaderProgram->setUniformValue("noSegments", 32);
+			shaderProgram->setUniformValue("noSegments", _noSegments);
 			shaderProgram->setUniformValue("screenToNormalizedScreen", renderer()->screenToNormalizedScreenMatrix());
 
 			_vao.bind();
@@ -159,4 +160,14 @@ void PointsProp::setPoints(const QVector<Point>& points)
 		_vbo.release();
 	}
 	_vao.release();
+}
+
+std::uint32_t PointsProp::noSegments() const
+{
+	return _noSegments;
+}
+
+void PointsProp::setNoSegments(const std::uint32_t& noSegments)
+{
+	_noSegments = noSegments;
 }

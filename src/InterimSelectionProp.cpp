@@ -239,7 +239,7 @@ void InterimSelectionProp::update()
 
 						case SelectionType::Brush:
 						{
-							if (noMouseEvents == 0)
+							if (noMouseEvents <= 0)
 								break;
 							
 							const auto pBrushA			= renderer()->screenPointToWorldPosition(modelViewMatrix(), QVector2D(0.0f, 0.0f));

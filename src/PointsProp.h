@@ -67,8 +67,18 @@ public:
 	/** Set points */
 	void setPoints(const QVector<Point>& points);
 
+	/** Returns the number of segments */
+	std::uint32_t noSegments() const;
+
+	/**
+	 * Sets the number of segments
+	 * @param noSegments Number of segments
+	 */
+	void setNoSegments(const std::uint32_t& noSegments);
+
 protected:
-	QVector<Point>				_points;	/** Points */
-	QOpenGLVertexArrayObject	_vao;		/** OpenGL Vertex Array Object (VAO) */
-	QOpenGLBuffer				_vbo;		/** OpenGL Vertex Buffer Object (VBO) */
+	QVector<Point>				_points;		/** Points */
+	QOpenGLVertexArrayObject	_vao;			/** OpenGL Vertex Array Object (VAO) */
+	QOpenGLBuffer				_vbo;			/** OpenGL Vertex Buffer Object (VBO) */
+	std::uint32_t				_noSegments;	/** Number of segments */
 };
