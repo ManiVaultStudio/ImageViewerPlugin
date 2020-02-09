@@ -37,6 +37,7 @@ SelectionPickerActor::SelectionPickerActor(Renderer* renderer, const QString& na
 	addProp<PolylineProp>("LassoClosingSegmentProp");
 	addProp<PolylineProp>("PolygonSegmentsProp");
 	addProp<PolylineProp>("PolygonClosingSegmentProp");
+	addProp<PointsProp>("PolygonPointsProp");
 	addProp<InterimSelectionProp>("InterimSelectionProp");
 }
 
@@ -61,10 +62,10 @@ void SelectionPickerActor::initialize()
 
 	// Configure polygon selection props
 	polygonSegmentsProp()->setClosed(false);
-	polygonSegmentsProp()->setLineWidth(3.5f);
+	polygonSegmentsProp()->setLineWidth(2.5f);
 	polygonSegmentsProp()->setLineColor(renderer()->colorByName("SelectionOutline", 200));
 	polygonClosingSegmentProp()->setClosed(false);
-	polygonClosingSegmentProp()->setLineWidth(2.0f);
+	polygonClosingSegmentProp()->setLineWidth(1.5f);
 	polygonClosingSegmentProp()->setLineColor(renderer()->colorByName("SelectionOutline", 100));
 }
 
@@ -279,6 +280,7 @@ void SelectionPickerActor::onMouseMoveEvent(QMouseEvent* mouseEvent)
 			}
 			break;
 		}
+		*/
 
 		case SelectionType::Polygon:
 		{
@@ -296,7 +298,6 @@ void SelectionPickerActor::onMouseMoveEvent(QMouseEvent* mouseEvent)
 			}
 			break;
 		}
-		*/
 
 		default:
 			break;
@@ -477,13 +478,14 @@ void SelectionPickerActor::updateSelectionBrush()
 
 	const auto leftButtonDown = QGuiApplication::mouseButtons() & Qt::LeftButton;
 	
+	const auto color = leftButtonDown ? renderer()->colorByName("SelectionOutline", 255) : renderer()->colorByName("SelectionOutline", 150);
+
 	// Change the line color when the left mouse button is down
-	brushProp()->setLineColor(leftButtonDown ? renderer()->colorByName("SelectionOutline", 255) : renderer()->colorByName("SelectionOutline", 150));
+	brushProp()->setLineColor(color);
 
 	QVector<PointsProp::Point> points;
 
-	points << PointsProp::Point(QVector3D(pCenter, 0.0f), 5.0f, renderer()->colorByName("SelectionOutline", 150));
-	points << PointsProp::Point(QVector3D(pCenter + QVector2D(10, 10), 0.0f), 2.0f, renderer()->colorByName("SelectionOutline", 250));
+	points << PointsProp::Point(QVector3D(pCenter, 0.0f), 2.0f, color);
 
 	brushCenterProp()->setPoints(points);
 }
@@ -548,6 +550,14 @@ void SelectionPickerActor::updateSelectionPolygon()
 
 	polygonSegmentsProp()->setPoints(segmentsPoints);
 	polygonClosingSegmentProp()->setPoints(closingSegmentPoints);
+
+	QVector<PointsProp::Point> points;
+
+	for (auto mouseEvent : _mouseEvents) {
+		points << PointsProp::Point(QVector3D(renderer()->worldPositionToScreenPoint(mouseEvent.worldPosition()), 0.0f), 2.0f, renderer()->colorByName("SelectionOutline", 200));
+	}
+
+	polygonPointsProp()->setPoints(points);
 }
 
 void SelectionPickerActor::updateInterimSelectionProp()
@@ -707,6 +717,11 @@ PolylineProp* SelectionPickerActor::polygonSegmentsProp()
 PolylineProp* SelectionPickerActor::polygonClosingSegmentProp()
 {
 	return propByName<PolylineProp>("PolygonClosingSegmentProp");
+}
+
+PointsProp* SelectionPickerActor::polygonPointsProp()
+{
+	return propByName<PointsProp>("PolygonPointsProp");
 }
 
 InterimSelectionProp* SelectionPickerActor::interimSelectionProp()

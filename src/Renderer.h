@@ -3,8 +3,6 @@
 #include "renderers/Renderer.h"
 #include "ImageData/ImageData.h"
 
-#include "Common.h"
-
 #include "Actor.h"
 
 #include <QColor>

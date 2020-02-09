@@ -150,6 +150,9 @@ private:
 	PolylineProp* polygonClosingSegmentProp();
 
 	/** Returns a pointer to the polygon closing segment prop */
+	PointsProp* polygonPointsProp();
+
+	/** Returns a pointer to the polygon closing segment prop */
 	InterimSelectionProp* interimSelectionProp();
 
 	/** Updates the selection rectangle prop */

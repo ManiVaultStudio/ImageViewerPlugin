@@ -182,6 +182,9 @@ public:
 	template<typename T>
 	const T* propByName(const QString& name) const
 	{
+		if (!_props.contains(name))
+			throw std::exception(QString("%1 has no prop named %2").arg(_name, name).toLatin1());
+
 		return dynamic_cast<T*>(_props[name].get());
 	}
 
