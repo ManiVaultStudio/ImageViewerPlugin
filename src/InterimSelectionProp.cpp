@@ -242,7 +242,11 @@ void InterimSelectionProp::update()
 							if (noMouseEvents == 0)
 								break;
 							
-							offscreenBufferShaderProgram->setUniformValue("brushRadius", selectionPickerActor->brushRadius());
+							const auto pBrushA			= renderer()->screenPointToWorldPosition(modelViewMatrix(), QVector2D(0.0f, 0.0f));
+							const auto pBrushB			= renderer()->screenPointToWorldPosition(modelViewMatrix(), QVector2D(selectionPickerActor->brushRadius(), 0.0f));
+							const auto brushRadiusWorld = (pBrushB - pBrushA).length();
+								
+							offscreenBufferShaderProgram->setUniformValue("brushRadius", brushRadiusWorld);
 
 							if (noMouseEvents == 1) {
 								const auto pMouseLast	= mouseEvents.last().screenPoint();
