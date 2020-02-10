@@ -70,9 +70,6 @@ void QuadShape::setRectangle(const QRectF& rectangle)
 
 void QuadShape::createQuad()
 {
-	const float width	= _rectangle.width();
-	const float height	= _rectangle.height();
-
 	const float coordinates[4][3] = {
 		{ _rectangle.left(),		_rectangle.top(),		0.0f },
 		{ _rectangle.right(),		_rectangle.top(),		0.0f },

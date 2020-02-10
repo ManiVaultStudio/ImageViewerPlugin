@@ -280,8 +280,8 @@ protected:
 
 private:
 	QString									_name;					/** Name of the Actor */
-	bool									_enabled;				/** Whether the Actor is enabled or not */
-	bool									_visible;				/** Actors is being interacted with */
+	bool									_enabled;				/** Whether interaction with this actor is enabled */
+	bool									_visible;				/** Whether the actor is visible */
 	float									_opacity;				/** Render opacity */
 	QMatrix4x4								_modelMatrix;			/** Model matrix */
 	QMap<QString, QSharedPointer<Prop>>		_props;					/** Props map */

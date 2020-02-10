@@ -652,3 +652,29 @@ QColor Renderer::colorByName(const QString& name, const std::int32_t& alpha /*= 
 
 	return color;
 }
+
+SelectionType Renderer::selectionType() const
+{
+	return _selectionType;
+}
+
+void Renderer::setSelectionType(const SelectionType& selectionType)
+{
+	if (selectionType == _selectionType)
+		return;
+
+	_selectionType = selectionType;
+
+	qDebug() << "Set selection type to" << selectionTypeName(_selectionType);
+
+	clearSelection();
+
+	rectangleProp()->setVisible(_selectionType == SelectionType::Rectangle);
+	brushProp()->setVisible(_selectionType == SelectionType::Brush);
+	brushCenterProp()->setVisible(_selectionType == SelectionType::Brush);
+	lassoSegmentsProp()->setVisible(_selectionType == SelectionType::Lasso);
+	polygonSegmentsProp()->setVisible(_selectionType == SelectionType::Polygon);
+	polygonClosingSegmentProp()->setVisible(_selectionType == SelectionType::Polygon);
+
+	emit selectionTypeChanged(_selectionType);
+}

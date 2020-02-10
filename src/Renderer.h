@@ -186,6 +186,17 @@ public:
 		return reinterpret_cast<QWidget*>(_parentWidget);
 	}
 
+public: // Selection
+	
+	/** Returns the selection type */
+	SelectionType selectionType() const;
+
+	/**
+	 * Sets the selection type
+	 * @param selectionType Selection type
+	 */
+	void setSelectionType(const SelectionType& selectionType);
+
 public:
 	/**
 	 * Sets the color image
