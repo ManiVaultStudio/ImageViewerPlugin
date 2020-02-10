@@ -189,7 +189,7 @@ protected:
 	bool													_visible;				/** Whether the prop is visible or not */
 
 private:
-	QMatrix4x4												_modelMatrix;				/** Transformation matrix */
+	QMatrix4x4												_modelMatrix;			/** Transformation matrix */
 	QMap<QString, QSharedPointer<QOpenGLShaderProgram>>		_shaderPrograms;		/** OpenGL shader programs */
 	QMap<QString, QSharedPointer<QOpenGLTexture>>			_textures;				/** OpenGL textures */
 	QMap<QString, QSharedPointer<Shape>>					_shapes;				/** Shapes */

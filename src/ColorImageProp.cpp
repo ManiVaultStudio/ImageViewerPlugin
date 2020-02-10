@@ -5,11 +5,11 @@
 #include <QDebug>
 
 const std::string vertexShaderSource =
-#include "ImageQuadVertex.glsl"
+#include "ColorImageVertex.glsl"
 ;
 
 const std::string fragmentShaderSource =
-#include "ImageQuadFragment.glsl"
+#include "ColorImageFragment.glsl"
 ;
 
 ColorImageProp::ColorImageProp(Actor* actor, const QString& name) :
