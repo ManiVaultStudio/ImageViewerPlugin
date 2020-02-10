@@ -39,9 +39,9 @@ public:
 		static std::uint32_t	_lineWidthAttribute;			/** Line width attribute location */
 
 	private:
-		QVector3D				_position;						/** Point position */
-		QVector2D				_textureCoordinate;				/** Texture coordinates at point (at the moment only the U component is used) */
-		float					_lineWidth;						/** Line width at point */
+		QVector3D	_position;				/** Point position */
+		QVector2D	_textureCoordinate;		/** Texture coordinates at point (at the moment only the U component is used) */
+		float		_lineWidth;				/** Line width at point */
 	};
 
 public:
