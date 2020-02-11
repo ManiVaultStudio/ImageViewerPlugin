@@ -102,7 +102,6 @@ enum class ActorEvent
 
 	KeyPress		= 1ul << 5,													/** Capture key press events */
 	KeyRelease		= 1ul << 6,													/** Capture key release events */
-
 };
 
 /**

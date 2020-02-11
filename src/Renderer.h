@@ -4,6 +4,7 @@
 #include "ImageData/ImageData.h"
 
 #include "Actor.h"
+#include "Selection.h"
 
 #include <QColor>
 
@@ -186,16 +187,7 @@ public:
 		return reinterpret_cast<QWidget*>(_parentWidget);
 	}
 
-public: // Selection
-	
-	/** Returns the selection type */
-	SelectionType selectionType() const;
-
-	/**
-	 * Sets the selection type
-	 * @param selectionType Selection type
-	 */
-	void setSelectionType(const SelectionType& selectionType);
+	const Selection* pixelSelection() const;
 
 public:
 	/**
@@ -282,14 +274,41 @@ signals:
 	/** Signals that the renderer just became dirty (one or more shapes need to be re-rendered) */
 	void dirty();
 
-	/** Signals that the pixel selection should include all pixels */
-	void selectAll();
+	/**
+	 * Signals a key is pressed
+	 * @param keyEvent Key event
+	 */
+	void keyPress(QKeyEvent* keyEvent);
 
-	/** Signals that the pixel selection should include no pixels */
-	void selectNone();
+	/**
+	 * Signals a key is released
+	 * @param keyEvent Key event
+	 */
+	void keyRelease(QKeyEvent* keyEvent);
 
-	/** Signals that the pixel selection needs to be inverted */
-	void selectInvert();
+	/**
+	 * Signals the mouse button is pressed
+	 * @param mouseEvent Mouse event
+	 */
+	void mousePress(QMouseEvent* mouseEvent);
+
+	/**
+	 * Signals the mouse button is released
+	 * @param mouseEvent Mouse event
+	 */
+	void mouseRelease(QMouseEvent* mouseEvent);
+
+	/**
+	 * Invoked when the mouse pointer is moved
+	 * @param mouseEvent Mouse event
+	 */
+	void mouseMove(QMouseEvent* mouseEvent);
+
+	/**
+	 * Signals the mouse wheel is rotated
+	 * @param wheelEvent Mouse wheel event
+	 */
+	void mouseWheel(QWheelEvent* wheelEvent);
 
 protected:
 	ImageViewerWidget*						_parentWidget;			/** Pointer to parent widget */
@@ -300,6 +319,7 @@ protected:
 	float									_zoomSensitivity;		/** Zoom sensitivity */
 	int										_margin;				/** Margin between image and viewer widget boundaries */
 	QMap<QString, QColor>					_colorMap;				/** Color map */
+	Selection							_pixelSelection;
 
 private:
 	QMap<QString, QSharedPointer<Actor>>	_actors;				/** Actors map */

@@ -91,6 +91,7 @@ void ImageViewerWidget::initializeGL()
 
 	//connect(_renderer->selectionBufferQuad(), &SelectionBufferQuad::selectionEnded, this, &ImageViewerWidget::publishSelection);
 	
+	/*
 	connect(_renderer.get(), &Renderer::selectAll, [&]() {
 		_imageViewerPlugin->selectPixels(std::vector<std::pair<std::uint32_t, std::uint32_t>>(), SelectionModifier::All);
 		update();
@@ -105,6 +106,7 @@ void ImageViewerWidget::initializeGL()
 		_imageViewerPlugin->selectPixels(std::vector<std::pair<std::uint32_t, std::uint32_t>>(), SelectionModifier::Invert);
 		update();
 	});
+	*/
 
 #ifdef _DEBUG
 	_openglDebugLogger->initialize();

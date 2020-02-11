@@ -188,6 +188,34 @@ void Renderer::keyPressEvent(QKeyEvent* keyEvent)
 	{
 		switch (keyEvent->key())
 		{
+			case Qt::Key::Key_R:
+				_pixelSelection.setSelectionType(SelectionType::Rectangle);
+				break;
+
+			case Qt::Key::Key_B:
+				_pixelSelection.setSelectionType(SelectionType::Brush);
+				break;
+
+			case Qt::Key::Key_L:
+				_pixelSelection.setSelectionType(SelectionType::Lasso);
+				break;
+
+			case Qt::Key::Key_P:
+				_pixelSelection.setSelectionType(SelectionType::Polygon);
+				break;
+
+			case Qt::Key::Key_Shift:
+				_pixelSelection.setSelectionModifier(SelectionModifier::Add);
+				break;
+
+			case Qt::Key::Key_Control:
+				_pixelSelection.setSelectionModifier(SelectionModifier::Remove);
+				break;
+
+			case Qt::Key::Key_Escape:
+				_pixelSelection.abortSelection();
+				break;
+
 			case Qt::Key::Key_Space:
 				setInteractionMode(InteractionMode::Navigation);
 				break;
@@ -393,6 +421,11 @@ void Renderer::resetView()
 	_zoom = 1.f;
 }
 
+const Selection* Renderer::pixelSelection() const
+{
+	return &_pixelSelection;
+}
+
 void Renderer::setColorImage(std::shared_ptr<QImage> colorImage)
 {
 	bindOpenGLContext();
@@ -453,7 +486,7 @@ void Renderer::setInteractionMode(const InteractionMode& interactionMode)
 
 	actorByName<ColorImageActor>("ColorImageActor")->setEnabled(_interactionMode == InteractionMode::WindowLevel);
 	actorByName<SelectionPickerActor>("SelectionPickerActor")->setEnabled(_interactionMode == InteractionMode::Selection);
-	actorByName<SelectionPickerActor>("SelectionPickerActor")->setVisible(_interactionMode == InteractionMode::Selection);
+	//actorByName<SelectionPickerActor>("SelectionPickerActor")->setVisible(_interactionMode == InteractionMode::Selection);
 }
 
 void Renderer::bindOpenGLContext()
@@ -490,7 +523,7 @@ void Renderer::createActors()
 
 	colorImageActor()->show();
 	selectionImageActor()->show();
-	selectionPickerActor()->show();
+	selectionPickerActor()->hide();
 
 	QMatrix4x4 modelMatrix;
 
@@ -507,10 +540,6 @@ void Renderer::createActors()
 	connect(colorImageActor(), &ColorImageActor::endWindowLevel, [&]() {
 		setInteractionMode(InteractionMode::None);
 	});
-
-	connect(selectionPickerActor(), &SelectionPickerActor::selectAll, this, &Renderer::selectAll);
-	connect(selectionPickerActor(), &SelectionPickerActor::selectNone, this, &Renderer::selectNone);
-	connect(selectionPickerActor(), &SelectionPickerActor::selectInvert, this, &Renderer::selectInvert);
 }
 
 void Renderer::initializeActors()
@@ -651,30 +680,4 @@ QColor Renderer::colorByName(const QString& name, const std::int32_t& alpha /*= 
 		color.setAlpha(alpha);
 
 	return color;
-}
-
-SelectionType Renderer::selectionType() const
-{
-	return _selectionType;
-}
-
-void Renderer::setSelectionType(const SelectionType& selectionType)
-{
-	if (selectionType == _selectionType)
-		return;
-
-	_selectionType = selectionType;
-
-	qDebug() << "Set selection type to" << selectionTypeName(_selectionType);
-
-	clearSelection();
-
-	rectangleProp()->setVisible(_selectionType == SelectionType::Rectangle);
-	brushProp()->setVisible(_selectionType == SelectionType::Brush);
-	brushCenterProp()->setVisible(_selectionType == SelectionType::Brush);
-	lassoSegmentsProp()->setVisible(_selectionType == SelectionType::Lasso);
-	polygonSegmentsProp()->setVisible(_selectionType == SelectionType::Polygon);
-	polygonClosingSegmentProp()->setVisible(_selectionType == SelectionType::Polygon);
-
-	emit selectionTypeChanged(_selectionType);
 }

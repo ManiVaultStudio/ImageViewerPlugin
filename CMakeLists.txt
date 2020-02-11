@@ -32,6 +32,8 @@ set(PLUGIN
 	src/SettingsWidget.cpp
 	src/Renderer.h
 	src/Renderer.cpp
+	src/PixelSelection.h
+	src/PixelSelection.cpp
 )
 
 file(GLOB ACTORS src/*Actor.h src/*Actor.cpp)
