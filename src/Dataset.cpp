@@ -1,5 +1,6 @@
 #include "Dataset.h"
 
+#include <QFileInfo>
 #include <QDebug>
 
 Dataset::Dataset(const QString& name, Images* images) : 
@@ -7,56 +8,122 @@ Dataset::Dataset(const QString& name, Images* images) :
 	_name(name),
 	_images(images),
 	_imageNames(),
-	_currentImageId(0),
+	_currentImageIndex(0),
 	_dimensionNames(),
-	_currentDimensionId(0),
-	_average(false)
+	_currentDimensionIndex(0),
+	_average(false),
+	_selectionOpacity(0.5f)
 {
+	auto imageFileNames = QStringList();
+
+	for (const auto& imageFilePath : _images->imageFilePaths())
+	{
+		imageFileNames << QFileInfo(imageFilePath).fileName();
+	}
+
+	if (_images->imageCollectionType() == ImageCollectionType::Sequence) {
+		if (hasSelection()) {
+			auto images = QStringList();
+
+			for (auto& index : selection())
+			{
+				images << QString("%1").arg(imageFileNames[index]);
+			}
+
+			const auto imagesString = images.join(", ");
+
+			_imageNames << imagesString;
+		}
+		else {
+			if (_average) {
+				auto images = QStringList();
+
+				for (std::uint32_t i = 0; i < _images->noImages(); i++) {
+					images << QString("%1").arg(imageFileNames[i]);
+				}
+
+				const auto imagesString = images.join(", ");
+
+				_imageNames << imagesString;
+			}
+			else {
+				for (std::uint32_t i = 0; i < _images->noImages(); i++) {
+					_imageNames << QString("%1").arg(imageFileNames[i]);
+				}
+			}
+		}
+	}
+
+	if (_images->imageCollectionType() == ImageCollectionType::Stack) {
+		if (_average) {
+			_dimensionNames << imageFileNames.join(", ");
+		}
+		else {
+			_dimensionNames = imageFileNames;
+		}
+	}
 }
 
 Dataset::~Dataset() = default;
+
+QString Dataset::name() const
+{
+	return _name;
+}
 
 QSize Dataset::imageSize() const
 {
 	return _images->imageSize();
 }
 
+QStringList Dataset::imageNames() const
+{
+	return _imageNames;
+}
+
+QStringList Dataset::dimensionNames() const
+{
+	return _dimensionNames;
+}
+
 auto Dataset::currentImageId() const
 {
-	return _currentImageId;
+	return _currentImageIndex;
 }
 
 void Dataset::setCurrentImageId(const std::int32_t& currentImageIndex)
 {
-	if (currentImageIndex == _currentImageId)
+	if (currentImageIndex == _currentImageIndex)
 		return;
 
 	if (currentImageIndex < 0)
 		return;
 
-	_currentImageId = currentImageIndex;
+	_currentImageIndex = currentImageIndex;
 
-	qDebug() << "Set current image" << _currentImageId;
+	qDebug() << _name << "set current image index" << _currentImageIndex;
 
-	//TODO computeSelectionImage();
+	emit currentImageIndexChanged(_currentImageIndex);
 }
 
 auto Dataset::currentDimensionIndex() const
 {
-	return _currentDimensionId;
+	return _currentDimensionIndex;
 }
 
 void Dataset::setCurrentDimensionIndex(const std::int32_t& currentDimensionIndex)
 {
-	if (currentDimensionIndex == _currentDimensionId)
+	if (currentDimensionIndex == _currentDimensionIndex)
 		return;
 
 	if (currentDimensionIndex < 0)
 		return;
 
-	qDebug() << "Set current dimension index";
+	_currentDimensionIndex = currentDimensionIndex;
 
-	_currentDimensionId = currentDimensionIndex;
+	qDebug() << _name << "set current dimension index" << _currentDimensionIndex;
+
+	emit currentDimensionIndexChanged(_currentDimensionIndex);
 }
 
 bool Dataset::average() const
@@ -71,10 +138,36 @@ void Dataset::setAverage(const bool& average)
 
 	_average = average;
 
-	qDebug() << "Set average" << _average;
+	qDebug() << _name << "set average" << _average;
 
-	//computeDisplayImage();
-	//update();
+	emit averageChanged(_average);
+}
+
+bool Dataset::canAverage() const
+{
+	return _images->imageCollectionType() == ImageCollectionType::Sequence;
+}
+
+float Dataset::selectionOpacity() const
+{
+	return _selectionOpacity;
+}
+
+void Dataset::setSelectionOpacity(const float& selectionOpacity)
+{
+	if (selectionOpacity == _selectionOpacity)
+		return;
+
+	_selectionOpacity = selectionOpacity;
+
+	qDebug() << _name << "set selection opacity" << _selectionOpacity;
+
+	emit selectionOpacityChanged(_selectionOpacity);
+}
+
+ImageCollectionType Dataset::imageCollectionType() const
+{
+	return _images->imageCollectionType();
 }
 
 std::vector<std::uint32_t> Dataset::selection() const
@@ -110,72 +203,6 @@ void Dataset::createSubsetFromSelection()
 }
 
 /*
-void ImageViewerPlugin::update()
-{
-	if (_currentImages == nullptr)
-		return;
-
-	auto imageFileNames = QStringList();
-
-	foreach(const QString& imageFilePath, _currentImages->imageFilePaths())
-	{
-		imageFileNames << QFileInfo(imageFilePath).fileName();
-	}
-
-	if (imageCollectionType() == ImageCollectionType::Sequence) {
-		auto imageNames = QStringList();
-
-		if (hasSelection()) {
-			auto images = QStringList();
-
-			for (auto& index : selection())
-			{
-				images << QString("%1").arg(imageFileNames[index]);
-			}
-
-			const auto imagesString = images.join(", ");
-
-			imageNames << imagesString;
-		}
-		else {
-			if (_averageImages) {
-				auto images = QStringList();
-
-				for (std::uint32_t i = 0; i < _currentImages->noImages(); i++) {
-					images << QString("%1").arg(imageFileNames[i]);
-				}
-
-				const auto imagesString = images.join(", ");
-
-				imageNames << imagesString;
-			}
-			else {
-				for (std::uint32_t i = 0; i < _currentImages->noImages(); i++) {
-					imageNames << QString("%1").arg(imageFileNames[i]);
-				}
-			}
-		}
-
-		setImageNames(imageNames);
-		setDimensionNames(QStringList());
-	}
-
-	if (imageCollectionType() == ImageCollectionType::Stack) {
-		setImageNames(QStringList());
-
-		auto dimensionNames = QStringList();
-
-		if (_averageImages) {
-			dimensionNames << imageFileNames.join(", ");
-		}
-		else {
-			dimensionNames = imageFileNames;
-		}
-
-		setDimensionNames(dimensionNames);
-	}
-}
-
 void ImageViewerPlugin::computeDisplayImage()
 {
 	if (_currentImages == nullptr)

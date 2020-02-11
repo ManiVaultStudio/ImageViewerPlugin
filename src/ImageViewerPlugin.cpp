@@ -22,42 +22,6 @@ ImageViewerPlugin::ImageViewerPlugin() :
 
 	_imageViewerWidget	= new ImageViewerWidget(this);
 	_settingsWidget		= new SettingsWidget(&_datasets);
-
-	/*
-	connect(this, &ImageViewerPlugin::currentDatasetChanged, this, [&]() {
-		computeDisplayImage();
-		updateWindowTitle();
-	}, Qt::AutoConnection);
-
-	connect(this, &ImageViewerPlugin::currentImageIdChanged, this, [&]() {
-		computeDisplayImage();
-		updateWindowTitle();
-	}, Qt::AutoConnection);
-
-	connect(this, &ImageViewerPlugin::currentDimensionIdChanged, this, [&]() {
-		computeDisplayImage();
-		updateWindowTitle();
-	}, Qt::AutoConnection);
-
-	connect(this, &ImageViewerPlugin::averageImagesChanged, this, [&]() {
-		computeDisplayImage();
-		updateWindowTitle();
-	}, Qt::AutoConnection);
-
-	auto* colorImageActor = this->_imageViewerWidget->renderer()->actorByName<ColorImageActor>("ColorImageActor");
-
-	connect(colorImageActor, &ColorImageActor::windowLevelChanged, this, [&]() {
-		updateWindowTitle();
-	}, Qt::AutoConnection);
-	
-	connect(colorImageActor, &ColorImageActor::imageMinMaxChanged, [&]() {
-		updateWindowTitle();
-	});
-
-	connect(colorImageActor, &ColorImageActor::imageSizeChanged, [&]() {
-		updateWindowTitle();
-	});
-	*/
 }
 
 void ImageViewerPlugin::init()
@@ -125,18 +89,7 @@ void ImageViewerPlugin::dataRemoved(const QString dataset)
 
 void ImageViewerPlugin::selectionChanged(const QString dataset)
 {
-	/*
-	qDebug() << "Selection changed" << dataset;
-
-	update();
-
-	if (imageCollectionType() == ImageCollectionType::Sequence)
-		computeDisplayImage();
-	else
-		computeSelectionImage();
-
-	updateWindowTitle();
-	*/
+	emit _datasets.currentDataset()->selectionChanged();
 }
 
 hdps::DataTypes ImageViewerPlugin::supportedDataTypes() const

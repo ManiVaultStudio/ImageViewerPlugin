@@ -1,7 +1,7 @@
 #include "SettingsWidget.h"
 #include "ImageViewerPlugin.h"
 #include "ImageViewerWidget.h"
-#include "Renderer.h"
+#include "Datasets.h"
 
 #include "ui_SettingsWidget.h"
 
@@ -17,40 +17,26 @@ SettingsWidget::SettingsWidget(Datasets* datasets) :
 {
 	_ui->setupUi(this);
 	
-	// TODO: connect(_ui->datasetsComboBox, QOverload<const QString&>::of(&QComboBox::currentTextChanged), _imageViewerPlugin, &ImageViewerPlugin::setCurrentDatasetName);
-	// TODO: connect(_ui->imagesComboBox, QOverload<const int>::of(&QComboBox::currentIndexChanged), _imageViewerPlugin, &ImageViewerPlugin::setCurrentImageId);
-	// TODO: connect(_ui->dimensionsComboBox, QOverload<const int>::of(&QComboBox::currentIndexChanged), _imageViewerPlugin, &ImageViewerPlugin::setCurrentDimensionId);
-	// TODO: connect(_ui->averageImagesCheckBox, &QCheckBox::stateChanged, _imageViewerPlugin, [=](int state) { _imageViewerPlugin->setAverageImages(static_cast<bool>(state)); });
-	
-	// TODO: connect(_ui->selectionOpacitySlider, &QSlider::valueChanged, _datasets, [=](int value) {
-	// TODO: 	_datasets->imageViewerWidget()->renderer()->setSelectionOpacity(static_cast<float>(value) / 100.f);
-	// TODO: 	_datasets->imageViewerWidget()->update();
-	// TODO: });
+	connect(_ui->datasetsComboBox, QOverload<const QString&>::of(&QComboBox::currentTextChanged), _datasets, &Datasets::setCurrentDatasetName);
 
-	//TODO: connect(_ui->createSubsetFromSelectionPushButton, &QCheckBox::clicked, _imageViewerPlugin, &ImageViewerPlugin::createSubsetFromSelection);
+	connect(_ui->dimensionsComboBox, QOverload<const int>::of(&QComboBox::currentIndexChanged), [&](const int currentDimensionIndex) {
+		_datasets->currentDataset()->setCurrentDimensionIndex(currentDimensionIndex);
+	});
+
+	connect(_ui->averageImagesCheckBox, &QCheckBox::stateChanged, this, [&](int state) {
+		_datasets->currentDataset()->setAverage(static_cast<bool>(state));
+	});
+	
+	connect(_ui->selectionOpacitySlider, &QSlider::valueChanged, _datasets, [&](int value) {
+		_datasets->currentDataset()->setSelectionOpacity(static_cast<float>(value) / 100.f);
+	});
+	
+	connect(_ui->createSubsetFromSelectionPushButton, &QCheckBox::clicked, [&]() {
+		_datasets->currentDataset()->createSubsetFromSelection();
+	});
 	
 	connect(_datasets, &Datasets::namesChanged, this, &SettingsWidget::onDatasetNamesChanged);
-	// TODO: connect(_imageViewerPlugin, &ImageViewerPlugin::currentDatasetChanged, this, &SettingsWidget::onCurrentDatasetChanged);
-	// TODO: connect(_imageViewerPlugin, &ImageViewerPlugin::imageNamesChanged, this, &SettingsWidget::onImageNamesChanged);
-	// TODO: connect(_imageViewerPlugin, &ImageViewerPlugin::currentImageIdChanged, this, &SettingsWidget::onCurrentImageChanged);
-	// TODO: connect(_imageViewerPlugin, &ImageViewerPlugin::dimensionNamesChanged, this, &SettingsWidget::onDimensionNamesChanged);
-	// TODO: connect(_imageViewerPlugin, &ImageViewerPlugin::currentDimensionIdChanged, this, &SettingsWidget::onCurrentDimensionChanged);
-	//TODO: connect(_imageViewerPlugin, &ImageViewerPlugin::averageImagesChanged, this, &SettingsWidget::onAverageImagesChanged);
-	//TODO: connect(_imageViewerPlugin, &ImageViewerPlugin::selectionImageChanged, this, &SettingsWidget::onSelectionImageChanged);
-
-	const auto hasDatasets = _ui->datasetsComboBox->count() > 0;
-
-	if (!hasDatasets) {
-		_ui->currentDatasetLabel->setEnabled(false);
-		_ui->datasetsComboBox->setEnabled(false);
-		_ui->currentImageLabel->setEnabled(false);
-		_ui->imagesComboBox->setEnabled(false);
-		_ui->currentDimensionLabel->setEnabled(false);
-		_ui->dimensionsComboBox->setEnabled(false);
-		_ui->averageImagesCheckBox->setEnabled(false);
-
-		updateSelectionOpacityUI();
-	}
+	connect(_datasets, &Datasets::currentDatasetChanged, this, &SettingsWidget::onCurrentDatasetChanged);
 }
 
 SettingsWidget::~SettingsWidget() = default;
@@ -72,57 +58,39 @@ void SettingsWidget::onDatasetNamesChanged(const QStringList& datasetNames)
 	updateSelectionOpacityUI();
 }
 
-void SettingsWidget::onCurrentDatasetChanged(const QString& currentDataset)
+void SettingsWidget::onCurrentDatasetChanged(Dataset* previousDataset, Dataset* currentDataset)
 {
 	_ui->datasetsComboBox->blockSignals(true);
-
-	_ui->datasetsComboBox->setCurrentText(currentDataset);
-	
+	_ui->datasetsComboBox->setCurrentText(currentDataset->name());
 	_ui->datasetsComboBox->blockSignals(false);
 
-	//TODO: _ui->averageImagesCheckBox->setEnabled(_imageViewerPlugin->imageCollectionType() == ImageCollectionType::Sequence);
-}
+	_ui->averageImagesCheckBox->setEnabled(currentDataset->canAverage());
 
-void SettingsWidget::onImageNamesChanged(const QStringList& imageNames)
-{
-	//TODO: const auto enable = imageNames.size() > 0 && !_imageViewerPlugin->averageImages();
+	_ui->averageImagesCheckBox->blockSignals(true);
+	_ui->averageImagesCheckBox->setChecked(currentDataset->average());
+	_ui->averageImagesCheckBox->blockSignals(false);
+
+	const auto enable = currentDataset->imageNames().size() > 0 && !currentDataset->average();
 
 	_ui->imagesComboBox->blockSignals(true);
 
 	_ui->imagesComboBox->clear();
-	_ui->imagesComboBox->addItems(imageNames);
-	//TODO: _ui->imagesComboBox->setEnabled(enable);
-	
+	_ui->imagesComboBox->addItems(currentDataset->imageNames());
+	_ui->imagesComboBox->setEnabled(enable);
 	_ui->imagesComboBox->blockSignals(false);
 
-	//TODO: _ui->currentImageLabel->setEnabled(enable);
-	
-}
-
-void SettingsWidget::onCurrentImageChanged(const int& currentImage)
-{
-	_ui->imagesComboBox->blockSignals(true);
-
-	_ui->imagesComboBox->setCurrentIndex(currentImage);
-	
-	_ui->imagesComboBox->blockSignals(false);
-}
-
-void SettingsWidget::onDimensionNamesChanged(const QStringList& dimensionNames)
-{
-	/*
-	const auto enable = dimensionNames.size() > 0 && !_imageViewerPlugin->averageImages();
+	const auto dimensionNames = currentDataset->dimensionNames();
 
 	_ui->dimensionsComboBox->blockSignals(true);
-	
+
 	_ui->dimensionsComboBox->clear();
-	_ui->dimensionsComboBox->addItems(dimensionNames);
-	
-	switch (_imageViewerPlugin->imageCollectionType())
+	_ui->dimensionsComboBox->addItems(currentDataset->dimensionNames());
+
+	switch (currentDataset->imageCollectionType())
 	{
 		case ImageCollectionType::Sequence:
 		{
-			_ui->dimensionsComboBox->setEnabled(dimensionNames.size() > 0 && !_imageViewerPlugin->averageImages());
+			_ui->dimensionsComboBox->setEnabled(dimensionNames.size() > 0 && !currentDataset->average());
 			break;
 		}
 
@@ -136,29 +104,76 @@ void SettingsWidget::onDimensionNamesChanged(const QStringList& dimensionNames)
 		default:
 			break;
 	}
-	
+
 	_ui->dimensionsComboBox->blockSignals(false);
 
-	_ui->currentDimensionLabel->setEnabled(enable);
-	*/
-}
+	_ui->currentDimensionLabel->setEnabled(dimensionNames.size() > 0 && !currentDataset->average());
 
-void SettingsWidget::onCurrentDimensionChanged(const int& currentDimension)
-{
-	_ui->dimensionsComboBox->blockSignals(true);
+	_ui->selectionOpacitySlider->blockSignals(true);
+	_ui->selectionOpacitySlider->setValue(currentDataset->selectionOpacity() * 100.0f);
+	_ui->selectionOpacitySlider->blockSignals(false);
 
-	_ui->dimensionsComboBox->setCurrentIndex(currentDimension);
-	
-	_ui->dimensionsComboBox->blockSignals(false);
-}
+	if (currentDataset->imageCollectionType() == ImageCollectionType::Sequence) {
+		_ui->createSubsetFromSelectionPushButton->setEnabled(false);
+		_ui->selectionOpacityLabel->setEnabled(false);
+		_ui->selectionOpacitySlider->setEnabled(false);
+	}
+	else {
+		const auto hasSelection = currentDataset->hasSelection();
 
-void SettingsWidget::onAverageImagesChanged(const bool& averageImages)
-{
-	_ui->averageImagesCheckBox->blockSignals(true);
+		_ui->createSubsetFromSelectionPushButton->setEnabled(hasSelection);
+		_ui->selectionOpacityLabel->setEnabled(hasSelection);
+		_ui->selectionOpacitySlider->setEnabled(hasSelection);
+	}
 
-	_ui->averageImagesCheckBox->setChecked(averageImages);
+	if (previousDataset) {
+		disconnect(previousDataset, &Dataset::currentImageIndexChanged, this, nullptr);
+		disconnect(previousDataset, &Dataset::currentDimensionIndexChanged, this, nullptr);
+		disconnect(previousDataset, &Dataset::averageChanged, this, nullptr);
+		disconnect(previousDataset, &Dataset::selectionOpacityChanged, this, nullptr);
+		disconnect(previousDataset, &Dataset::selectionChanged, this, nullptr);
+	}
 
-	_ui->averageImagesCheckBox->blockSignals(false);
+	if (currentDataset) {
+		connect(currentDataset, &Dataset::currentImageIndexChanged, this, [&](const std::int32_t& currentImageIndex) {
+			_ui->imagesComboBox->blockSignals(true);
+			_ui->imagesComboBox->setCurrentIndex(currentImageIndex);
+			_ui->imagesComboBox->blockSignals(false);
+		});
+
+		connect(currentDataset, &Dataset::currentDimensionIndexChanged, this, [&](const std::int32_t& currentDimensionIndex) {
+			_ui->dimensionsComboBox->blockSignals(true);
+			_ui->dimensionsComboBox->setCurrentIndex(currentDimensionIndex);
+			_ui->dimensionsComboBox->blockSignals(false);
+		});
+
+		connect(currentDataset, &Dataset::averageChanged, this, [&](const bool& average) {
+			_ui->averageImagesCheckBox->blockSignals(true);
+			_ui->averageImagesCheckBox->setChecked(average);
+			_ui->averageImagesCheckBox->blockSignals(false);
+		});
+
+		connect(currentDataset, &Dataset::selectionOpacityChanged, this, [&](const float& selectionOpacity) {
+			_ui->selectionOpacitySlider->blockSignals(true);
+			_ui->selectionOpacitySlider->setValue(selectionOpacity * 100.0f);
+			_ui->selectionOpacitySlider->blockSignals(false);
+		});
+
+		connect(currentDataset, &Dataset::selectionChanged, this, [&]() {
+			if (_datasets->currentDataset()->imageCollectionType() == ImageCollectionType::Sequence) {
+				_ui->createSubsetFromSelectionPushButton->setEnabled(false);
+				_ui->selectionOpacityLabel->setEnabled(false);
+				_ui->selectionOpacitySlider->setEnabled(false);
+			}
+			else {
+				const auto hasSelection = _datasets->currentDataset()->hasSelection();
+
+				_ui->createSubsetFromSelectionPushButton->setEnabled(hasSelection);
+				_ui->selectionOpacityLabel->setEnabled(hasSelection);
+				_ui->selectionOpacitySlider->setEnabled(hasSelection);
+			}
+		});
+	}
 }
 
 void SettingsWidget::onSelectionImageChanged(std::shared_ptr<QImage> selectionImage, const QRect& selectionBounds)

@@ -24,8 +24,17 @@ public:
 	virtual ~Dataset();
 
 public:
-	/** Current image size */
+	/** Returns the dataset name */
+	QString name() const;
+
+	/** Returns the image size */
 	QSize imageSize() const;
+
+	/** Returns the image names */
+	QStringList imageNames() const;
+
+	/** Returns the dimension names */
+	QStringList dimensionNames() const;
 
 	/** Returns the current image index */
 	auto currentImageId() const;
@@ -54,6 +63,21 @@ public:
 	 */
 	void setAverage(const bool& averageImages);
 
+	/** Returns whether this data set can be averaged */
+	bool canAverage() const;
+
+	/** Returns the selection opacity */
+	float selectionOpacity() const;
+
+	/**
+	 * Sets the selection opacity
+	 * @param selectionOpacity Selection opacity
+	 */
+	void setSelectionOpacity(const float& selectionOpacity);
+
+	/** Returns the image collection type */
+	ImageCollectionType imageCollectionType() const;
+
 public: // Selection
 
 	/** Returns the selection */
@@ -80,6 +104,33 @@ public: // Selection
 
 signals:
 	/**
+	 * Signals the current image index changed
+	 * @param currentImageIndex Current image index
+	 */
+	void currentImageIndexChanged(const std::int32_t& currentImageIndex);
+
+	/**
+	 * Signals the current dimension index changed
+	 * @param currentDimensionIndex Current dimension index
+	 */
+	void currentDimensionIndexChanged(const std::int32_t& currentDimensionIndex);
+
+	/**
+	 * Signals the average parameter changed
+	 * @param average Whether to average images
+	 */
+	void averageChanged(const bool& average);
+
+	/**
+	 * Signals the selection opacity changed
+	 * @param selectionOpacity Selection opacity
+	 */
+	void selectionOpacityChanged(const float& selectionOpacity);
+
+	/** Signals the selection changed */
+	void selectionChanged();
+
+	/**
 	 * Signals the color image changed
 	 * @param colorImage Color image
 	 */
@@ -96,8 +147,9 @@ private:
 	QString			_name;						/** Dataset name */
 	Images*			_images;					/** Pointer to the Images HDPS data structure */
 	QStringList		_imageNames;				/** Image names */
-	std::int32_t	_currentImageId;			/** The index of the current image  */
+	std::int32_t	_currentImageIndex;			/** The index of the current image  */
 	QStringList		_dimensionNames;			/** Dimension names */
-	std::int32_t	_currentDimensionId;		/** The index of the current dimension */
+	std::int32_t	_currentDimensionIndex;		/** The index of the current dimension */
 	bool			_average;					/** Whether to average images */
+	float			_selectionOpacity;			/** Selection opacity */
 };

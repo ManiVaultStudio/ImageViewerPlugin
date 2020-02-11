@@ -40,37 +40,7 @@ private:
 	 * Invoked when current data set changes
 	 * @param currentDataset Current data set
 	 */
-	void onCurrentDatasetChanged(const QString& currentDataset);
-
-	/** 
-	 * Invoked when image names changes
-	 * @param imageNames Image names
-	 */
-	void onImageNamesChanged(const QStringList& imageNames);
-
-	/** 
-	 * Invoked when the current image changes
-	 * @param currentImage Current image index
-	 */
-	void onCurrentImageChanged(const int& currentImage);
-
-	/** 
-	 * Invoked when dimension names change
-	  * @param dimensionNames Dimension names
-	 */
-	void onDimensionNamesChanged(const QStringList& dimensionNames);
-
-	/** 
-	 * Invoked when the current dimension changes
-	 * @param currentDimension Current dimension index
-	 */
-	void onCurrentDimensionChanged(const int& currentDimension);
-
-	/**
-	 * Invoked when average images changes
-	 * @param averageImages Whether sequence images should be averaged
-	 */
-	void onAverageImagesChanged(const bool& averageImages);
+	void onCurrentDatasetChanged(Dataset* previousDataset, Dataset* currentDataset);
 
 	/** 
 	 * Invoked when the selection image changes
