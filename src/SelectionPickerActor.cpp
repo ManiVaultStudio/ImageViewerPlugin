@@ -410,8 +410,6 @@ void SelectionPickerActor::update()
 			break;
 	}
 
-	if (_selecting)
-		updateInterimSelectionProp();
 
 	emit changed(this);
 }

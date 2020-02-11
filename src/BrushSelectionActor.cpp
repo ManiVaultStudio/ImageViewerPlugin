@@ -354,8 +354,6 @@ void SelectionPickerActor::startSelection()
 	qDebug() << "Start selection" << name();
 
 	clearSelection();
-
-	_selecting = true;
 }
 
 void SelectionPickerActor::endSelection()
@@ -363,8 +361,6 @@ void SelectionPickerActor::endSelection()
 	qDebug() << "End selection" << name();
 
 	clearSelection();
-	
-	_selecting = false;
 }
 
 void SelectionPickerActor::show()
@@ -413,9 +409,6 @@ void SelectionPickerActor::update()
 		default:
 			break;
 	}
-
-	if (_selecting)
-		updateInterimSelectionProp();
 
 	emit changed(this);
 }
@@ -772,9 +765,4 @@ QMenu* SelectionPickerActor::contextMenu()
 	selectionMenu->addAction(invertSelectionAction);
 
 	return selectionMenu;
-}
-
-bool SelectionPickerActor::isSelecting() const
-{
-	return _selecting;
 }
