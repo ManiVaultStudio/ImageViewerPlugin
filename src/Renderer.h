@@ -4,7 +4,6 @@
 #include "ImageData/ImageData.h"
 
 #include "Actor.h"
-#include "CoordinateSelection.h"
 
 #include <QColor>
 
@@ -187,8 +186,6 @@ public:
 		return reinterpret_cast<QWidget*>(_parentWidget);
 	}
 
-	const CoordinateSelection* pixelSelection() const;
-
 public:
 	/**
 	 * Sets the color image
@@ -319,7 +316,6 @@ protected:
 	float									_zoomSensitivity;		/** Zoom sensitivity */
 	int										_margin;				/** Margin between image and viewer widget boundaries */
 	QMap<QString, QColor>					_colorMap;				/** Color map */
-	CoordinateSelection						_pixelSelection;
 
 private:
 	QMap<QString, QSharedPointer<Actor>>	_actors;				/** Actors map */

@@ -1,24 +1,24 @@
-#include "CoordinateSelection.h"
+#include "Selection.h"
 #include "Renderer.h"
 
 #include <QDebug>
 
-CoordinateSelection::CoordinateSelection(Renderer* renderer) :
-	_renderer(renderer),
+Selection::Selection(Actor* actor) :
+	_actor(actor),
 	_selectionType(SelectionType::None),
 	_selectionModifier(SelectionModifier::None),
 	_indices()
 {
 }
 
-CoordinateSelection::~CoordinateSelection() = default;
+Selection::~Selection() = default;
 
-SelectionType CoordinateSelection::selectionType() const
+SelectionType Selection::selectionType() const
 {
 	return _selectionType;
 }
 
-void CoordinateSelection::setSelectionType(const SelectionType& selectionType)
+void Selection::setSelectionType(const SelectionType& selectionType)
 {
 	if (selectionType == _selectionType)
 		return;
@@ -30,12 +30,12 @@ void CoordinateSelection::setSelectionType(const SelectionType& selectionType)
 	emit selectionTypeChanged(_selectionType);
 }
 
-SelectionModifier CoordinateSelection::selectionModifier() const
+SelectionModifier Selection::selectionModifier() const
 {
 	return _selectionModifier;
 }
 
-void CoordinateSelection::setSelectionModifier(const SelectionModifier& selectionModifier)
+void Selection::setSelectionModifier(const SelectionModifier& selectionModifier)
 {
 	if (selectionModifier == _selectionModifier)
 		return;
@@ -47,14 +47,14 @@ void CoordinateSelection::setSelectionModifier(const SelectionModifier& selectio
 	emit selectionModifierChanged(_selectionModifier);
 }
 
-void CoordinateSelection::abortSelection()
+void Selection::abortSelection()
 {
 	setSelectionType(SelectionType::None);
 	
 	emit selectionAborted();
 }
 
-void CoordinateSelection::setIndices(const QVector<std::uint32_t>& indices)
+void Selection::setIndices(const QVector<std::uint32_t>& indices)
 {
 	if (indices == indices)
 		return;
@@ -85,32 +85,32 @@ void CoordinateSelection::selectInvert()
 }
 */
 
-void CoordinateSelection::onKeyPress(QKeyEvent* keyEvent)
+void Selection::onKeyPress(QKeyEvent* keyEvent)
 {
 
 }
 
-void CoordinateSelection::onKeyRelease(QKeyEvent* keyEvent)
+void Selection::onKeyRelease(QKeyEvent* keyEvent)
 {
 
 }
 
-void CoordinateSelection::onMousePress(QMouseEvent* mouseEvent)
+void Selection::onMousePress(QMouseEvent* mouseEvent)
 {
 
 }
 
-void CoordinateSelection::onMouseRelease(QMouseEvent* mouseEvent)
+void Selection::onMouseRelease(QMouseEvent* mouseEvent)
 {
 
 }
 
-void CoordinateSelection::onMouseMove(QMouseEvent* mouseEvent)
+void Selection::onMouseMove(QMouseEvent* mouseEvent)
 {
 
 }
 
-void CoordinateSelection::onMouseWheel(QWheelEvent* wheelEvent)
+void Selection::onMouseWheel(QWheelEvent* wheelEvent)
 {
 
 }

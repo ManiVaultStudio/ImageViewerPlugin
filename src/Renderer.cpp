@@ -186,6 +186,7 @@ void Renderer::keyPressEvent(QKeyEvent* keyEvent)
 	}
 	else
 	{
+		/*
 		switch (keyEvent->key())
 		{
 			case Qt::Key::Key_R:
@@ -223,6 +224,7 @@ void Renderer::keyPressEvent(QKeyEvent* keyEvent)
 			default:
 				break;
 		}
+		*/
 	}
 
 	for (auto key : _actors.keys()) {
@@ -419,11 +421,6 @@ void Renderer::resetView()
 	_pan.setY(0);
 
 	_zoom = 1.f;
-}
-
-const CoordinateSelection* Renderer::pixelSelection() const
-{
-	return &_pixelSelection;
 }
 
 void Renderer::setColorImage(std::shared_ptr<QImage> colorImage)

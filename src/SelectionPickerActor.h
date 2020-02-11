@@ -1,10 +1,9 @@
 #pragma once
 
 #include "Common.h"
+#include "Actor.h"
 
 #include "ImageData/ImageData.h"
-
-#include "Actor.h"
 
 #include <QColor>
 #include <QMatrix4x4>
@@ -216,5 +215,4 @@ private:
 	SelectionModifier		_selectionModifier;		/** The selection modifier determines if and how new selections are combined with existing selections e.g. add, replace and remove */
 	float					_brushRadius;			/** Brush radius */
 	float					_brushRadiusDelta;		/** Selection brush size increase/decrease delta */
-	bool					_selecting;				/** Whether selection is taking place */
 };

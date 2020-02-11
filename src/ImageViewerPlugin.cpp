@@ -31,6 +31,7 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	_imageViewerWidget	= new ImageViewerWidget(this);
 	_settingsWidget		= new SettingsWidget(this);
 
+	/*
 	connect(this, &ImageViewerPlugin::currentDatasetChanged, this, [&]() {
 		computeDisplayImage();
 		updateWindowTitle();
@@ -64,6 +65,7 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	connect(colorImageActor, &ColorImageActor::imageSizeChanged, [&]() {
 		updateWindowTitle();
 	});
+	*/
 }
 
 void ImageViewerPlugin::init()

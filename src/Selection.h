@@ -4,26 +4,26 @@
 
 #include "ImageData/ImageData.h"
 
-class Renderer;
+class Actor;
 
 class QKeyEvent;
 class QMouseEvent;
 class QWheelEvent;
 
 /**
- * Coordinate selection class
+ * Selection class
  * @author Thomas Kroes
  */
-class CoordinateSelection : public QObject
+class Selection : public QObject
 {
 	Q_OBJECT
 
 public:
 	/** Constructor */
-	CoordinateSelection(Renderer* renderer);
+	Selection(Actor* actor);
 
 	/** Destructor */
-	~CoordinateSelection();
+	~Selection();
 
 public:
 	/** Returns the selection type */
@@ -129,8 +129,11 @@ signals:
 	void indicesChanged(const QVector<std::uint32_t>& indices);
 
 protected:
-	Renderer*					_renderer;				/** Parent renderer */
+	Actor*						_actor;					/** Parent renderer */
 	SelectionType				_selectionType;			/** Type of selection e.g. rectangle, brush */
 	SelectionModifier			_selectionModifier;		/** The selection modifier determines if and how new selections are combined with existing selections e.g. add, replace and remove */
 	QVector<std::uint32_t>		_indices;				/** Selected indices */
+
+	friend class Actor;
+	friend class Renderer;
 };

@@ -20,8 +20,7 @@ SelectionPickerActor::SelectionPickerActor(Renderer* renderer, const QString& na
 	_selectionType(SelectionType::Rectangle),
 	_selectionModifier(SelectionModifier::Replace),
 	_brushRadius(51.0f),
-	_brushRadiusDelta(5.f),
-	_selecting(false)
+	_brushRadiusDelta(5.f)
 {
 	_registeredEvents |= static_cast<int>(ActorEvent::MousePress);
 	_registeredEvents |= static_cast<int>(ActorEvent::MouseRelease);
@@ -175,11 +174,13 @@ void SelectionPickerActor::onMousePressEvent(QMouseEvent* mouseEvent)
 		case SelectionType::Polygon:
 		{
 			if (mouseEvent->button() == Qt::LeftButton) {
+				/*
 				if (!_selecting)
 					startSelection();
 
 				addMouseEvent(mouseEvent);
 				update();
+				*/
 			}
 			break;
 		}
@@ -353,8 +354,6 @@ void SelectionPickerActor::startSelection()
 	qDebug() << "Start selection" << name();
 
 	clearSelection();
-
-	_selecting = true;
 }
 
 void SelectionPickerActor::endSelection()
@@ -362,8 +361,6 @@ void SelectionPickerActor::endSelection()
 	qDebug() << "End selection" << name();
 
 	clearSelection();
-	
-	_selecting = false;
 }
 
 void SelectionPickerActor::show()

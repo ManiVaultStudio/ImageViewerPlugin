@@ -32,8 +32,8 @@ set(PLUGIN
 	src/SettingsWidget.cpp
 	src/Renderer.h
 	src/Renderer.cpp
-	src/PixelSelection.h
-	src/PixelSelection.cpp
+	src/Selection.h
+	src/Selection.cpp
 )
 
 file(GLOB ACTORS src/*Actor.h src/*Actor.cpp)
@@ -77,4 +77,4 @@ add_custom_command(TARGET ${PROJECT} POST_BUILD
     COMMAND "${CMAKE_COMMAND}" -E copy_if_different
 	"$<TARGET_FILE:${PROJECT}>"
 	"$ENV{HDPS_INSTALL_DIR}/$<CONFIGURATION>/Plugins/$<TARGET_FILE_NAME:${PROJECT}>"
-)
+) 
