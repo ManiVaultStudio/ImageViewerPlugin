@@ -1,9 +1,9 @@
-#include "Selection.h"
+#include "CoordinateSelection.h"
 #include "Renderer.h"
 
 #include <QDebug>
 
-Selection::Selection(Renderer* renderer) :
+CoordinateSelection::CoordinateSelection(Renderer* renderer) :
 	_renderer(renderer),
 	_selectionType(SelectionType::None),
 	_selectionModifier(SelectionModifier::None),
@@ -11,14 +11,14 @@ Selection::Selection(Renderer* renderer) :
 {
 }
 
-Selection::~Selection() = default;
+CoordinateSelection::~CoordinateSelection() = default;
 
-SelectionType Selection::selectionType() const
+SelectionType CoordinateSelection::selectionType() const
 {
 	return _selectionType;
 }
 
-void Selection::setSelectionType(const SelectionType& selectionType)
+void CoordinateSelection::setSelectionType(const SelectionType& selectionType)
 {
 	if (selectionType == _selectionType)
 		return;
@@ -30,12 +30,12 @@ void Selection::setSelectionType(const SelectionType& selectionType)
 	emit selectionTypeChanged(_selectionType);
 }
 
-SelectionModifier Selection::selectionModifier() const
+SelectionModifier CoordinateSelection::selectionModifier() const
 {
 	return _selectionModifier;
 }
 
-void Selection::setSelectionModifier(const SelectionModifier& selectionModifier)
+void CoordinateSelection::setSelectionModifier(const SelectionModifier& selectionModifier)
 {
 	if (selectionModifier == _selectionModifier)
 		return;
@@ -47,14 +47,14 @@ void Selection::setSelectionModifier(const SelectionModifier& selectionModifier)
 	emit selectionModifierChanged(_selectionModifier);
 }
 
-void Selection::abortSelection()
+void CoordinateSelection::abortSelection()
 {
 	setSelectionType(SelectionType::None);
 	
 	emit selectionAborted();
 }
 
-void Selection::setIndices(const QVector<std::uint32_t>& indices)
+void CoordinateSelection::setIndices(const QVector<std::uint32_t>& indices)
 {
 	if (indices == indices)
 		return;
@@ -66,49 +66,51 @@ void Selection::setIndices(const QVector<std::uint32_t>& indices)
 	emit indicesChanged(_indices);
 }
 
-void Selection::selectAll()
+/*
+void CoordinateSelection::selectAll()
 {
 	qDebug() << "Select all";
 }
 
-void Selection::selectNone()
+void CoordinateSelection::selectNone()
 {
 	qDebug() << "Selection clear";
 
 	setIndices(QVector<std::uint32_t>());
 }
 
-void Selection::selectInvert()
+void CoordinateSelection::selectInvert()
 {
 	qDebug() << "Selection invert";
 }
+*/
 
-void Selection::onKeyPress(QKeyEvent* keyEvent)
+void CoordinateSelection::onKeyPress(QKeyEvent* keyEvent)
 {
 
 }
 
-void Selection::onKeyRelease(QKeyEvent* keyEvent)
+void CoordinateSelection::onKeyRelease(QKeyEvent* keyEvent)
 {
 
 }
 
-void Selection::onMousePress(QMouseEvent* mouseEvent)
+void CoordinateSelection::onMousePress(QMouseEvent* mouseEvent)
 {
 
 }
 
-void Selection::onMouseRelease(QMouseEvent* mouseEvent)
+void CoordinateSelection::onMouseRelease(QMouseEvent* mouseEvent)
 {
 
 }
 
-void Selection::onMouseMove(QMouseEvent* mouseEvent)
+void CoordinateSelection::onMouseMove(QMouseEvent* mouseEvent)
 {
 
 }
 
-void Selection::onMouseWheel(QWheelEvent* wheelEvent)
+void CoordinateSelection::onMouseWheel(QWheelEvent* wheelEvent)
 {
 
 }

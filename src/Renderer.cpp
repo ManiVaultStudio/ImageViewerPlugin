@@ -421,7 +421,7 @@ void Renderer::resetView()
 	_zoom = 1.f;
 }
 
-const Selection* Renderer::pixelSelection() const
+const CoordinateSelection* Renderer::pixelSelection() const
 {
 	return &_pixelSelection;
 }

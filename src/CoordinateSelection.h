@@ -11,19 +11,19 @@ class QMouseEvent;
 class QWheelEvent;
 
 /**
- * Selection class
+ * Coordinate selection class
  * @author Thomas Kroes
  */
-class Selection : public QObject
+class CoordinateSelection : public QObject
 {
 	Q_OBJECT
 
 public:
 	/** Constructor */
-	Selection(Renderer* renderer);
+	CoordinateSelection(Renderer* renderer);
 
 	/** Destructor */
-	~Selection();
+	~CoordinateSelection();
 
 public:
 	/** Returns the selection type */
@@ -53,14 +53,14 @@ public:
 	 */
 	void setIndices(const QVector<std::uint32_t>& indices);
 
-	/** Select all pixels */
-	void selectAll();
+	/** Select all pixels 
+	void selectAll();*/
 
-	/** Clear the selection */
-	void selectNone();
+	/** Clear the selection 
+	void selectNone();*/
 
-	/** Invert the selection */
-	void selectInvert();
+	/** Invert the selection 
+	void selectInvert();*/
 
 private: // Event handlers
 
@@ -129,8 +129,8 @@ signals:
 	void indicesChanged(const QVector<std::uint32_t>& indices);
 
 protected:
-	Renderer*				_renderer;				/** Parent renderer */
-	SelectionType			_selectionType;			/** Type of selection e.g. rectangle, brush */
-	SelectionModifier		_selectionModifier;		/** The selection modifier determines if and how new selections are combined with existing selections e.g. add, replace and remove */
-	QVector<std::uint32_t>	_indices;				/** Selected indices */
+	Renderer*					_renderer;				/** Parent renderer */
+	SelectionType				_selectionType;			/** Type of selection e.g. rectangle, brush */
+	SelectionModifier			_selectionModifier;		/** The selection modifier determines if and how new selections are combined with existing selections e.g. add, replace and remove */
+	QVector<std::uint32_t>		_indices;				/** Selected indices */
 };
