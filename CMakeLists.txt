@@ -23,11 +23,12 @@ find_package(Qt5 COMPONENTS Widgets WebEngineWidgets REQUIRED)
 
 set(PLUGIN
 	src/Common.h
-	src/Shaders.h
+	src/Dataset.h
+	src/Dataset.cpp
+	src/Datasets.h
+	src/Datasets.cpp
 	src/ImageViewerPlugin.h
 	src/ImageViewerPlugin.cpp
-	src/ImagesDataset.h
-	src/ImagesDataset.cpp
 	src/ImageViewerWidget.h
 	src/ImageViewerWidget.cpp
 	src/SettingsWidget.h

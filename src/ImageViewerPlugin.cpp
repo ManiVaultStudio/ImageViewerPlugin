@@ -14,14 +14,7 @@ Q_PLUGIN_METADATA(IID "nl.tudelft.ImageViewerPlugin")
 ImageViewerPlugin::ImageViewerPlugin() : 
 	ViewPlugin("Image Viewer"),
 	_imageViewerWidget(nullptr),
-	_settingsWidget(nullptr),
-	_datasetNames(),
-	_currentDatasetName(),
-	_currentImages(nullptr),
-	_imageNames(),
-	_currentImageId(0),
-	_dimensionNames(),
-	_currentDimensionId(0)
+	_settingsWidget(nullptr)
 {
 	qRegisterMetaType<std::shared_ptr<QImage>>("std::shared_ptr<QImage>");
 
@@ -78,18 +71,6 @@ void ImageViewerPlugin::init()
 
 	addWidget(_imageViewerWidget);
 	addWidget(_settingsWidget);
-}
-
-
-
-
-
-QSize ImageViewerPlugin::imageSize() const
-{
-	if (_currentImages == nullptr)
-		return QSize();
-
-	return _currentImages->imageSize();
 }
 
 void ImageViewerPlugin::update()
@@ -224,126 +205,9 @@ void ImageViewerPlugin::computeSelectionImage()
 	*/
 }
 
-QStringList ImageViewerPlugin::datasetNames() const
-{
-	return _datasetNames;
-}
-
-Images* ImageViewerPlugin::currentImages()
-{
-	return _currentImages;
-}
-
-QString ImageViewerPlugin::currentDatasetName() const
-{
-	return _currentDatasetName;
-}
-
-void ImageViewerPlugin::setCurrentDatasetName(const QString& currentDatasetName)
-{
-	if (currentDatasetName == _currentDatasetName)
-		return;
-
-	qDebug() << "Set current data set name" << currentDatasetName;
-
-	_currentDatasetName = currentDatasetName;
-
-	_currentImages = &_core->requestData<Images>(_currentDatasetName);
-
-	emit currentDatasetChanged(_currentDatasetName);
-
-	update();
-
-	setCurrentImageId(0);
-	setCurrentDimensionId(0);
-
-	computeSelectionImage();
-
-	//updateWindowTitle();
-}
-
-auto ImageViewerPlugin::currentImageId() const
-{
-	return _currentImageId;
-}
-
-void ImageViewerPlugin::setCurrentImageId(const std::int32_t& currentImageId)
-{
-	if (currentImageId == _currentImageId)
-		return;
-
-	if (currentImageId < 0)
-		return;
-
-	qDebug() << "Set current image ID";
-
-	_currentImageId = currentImageId;
-
-	emit currentImageIdChanged(_currentImageId);
-
-	computeSelectionImage();
-
-	//updateWindowTitle();
-}
-
-auto ImageViewerPlugin::currentDimensionId() const
-{
-	return _currentDimensionId;
-}
-
-void ImageViewerPlugin::setCurrentDimensionId(const std::int32_t& currentDimensionId)
-{
-	if (currentDimensionId == _currentDimensionId)
-		return;
-
-	if (currentDimensionId < 0)
-		return;
-
-	qDebug() << "Set current dimension ID";
-
-	_currentDimensionId = currentDimensionId;
-
-	emit currentDimensionIdChanged(_currentDimensionId);
-
-	update();
-
-	//updateWindowTitle();
-}
-
 ImageViewerWidget* ImageViewerPlugin::imageViewerWidget()
 {
 	return _imageViewerWidget;
-}
-
-void ImageViewerPlugin::setDatasetNames(const QStringList& datasetNames)
-{
-	_datasetNames = datasetNames;
-
-	emit datasetNamesChanged(_datasetNames);
-}
-
-void ImageViewerPlugin::setImageNames(const QStringList& imageNames)
-{
-	if (imageNames == _imageNames)
-		return;
-
-	qDebug() << "Set image names";
-
-	_imageNames = imageNames;
-
-	emit imageNamesChanged(_imageNames);
-}
-
-void ImageViewerPlugin::setDimensionNames(const QStringList& dimensionNames)
-{
-	if (dimensionNames == _dimensionNames)
-		return;
-
-	qDebug() << "Set dimension names";
-
-	_dimensionNames = dimensionNames;
-
-	emit dimensionNamesChanged(_dimensionNames);
 }
 
 void ImageViewerPlugin::updateWindowTitle()
@@ -376,8 +240,7 @@ void ImageViewerPlugin::dataAdded(const QString dataset)
 {
 	qDebug() << "Data added" << dataset;
 
-	setDatasetNames(_datasetNames << dataset);
-	setCurrentDatasetName(dataset);
+	_datasets.add(dataset, QSharedPointer<Dataset>::create(dataset, &_core->requestData<Images>(dataset)));
 }
 
 void ImageViewerPlugin::dataChanged(const QString dataset)
@@ -389,9 +252,7 @@ void ImageViewerPlugin::dataRemoved(const QString dataset)
 {
 	qDebug() << "Data removed" << dataset;
 	
-	_datasetNames.removeAt(_datasetNames.indexOf(dataset));
-
-	emit datasetNamesChanged(_datasetNames);
+	// TODO: _datasetNames.removeAt(_datasetNames.indexOf(dataset));
 }
 
 void ImageViewerPlugin::selectionChanged(const QString dataset)

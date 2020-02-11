@@ -4,7 +4,7 @@
 
 #include "ImageData/Images.h"
 
-#include "Common.h"
+#include "Datasets.h"
 
 using hdps::plugin::ViewPluginFactory;
 using hdps::plugin::ViewPlugin;
@@ -44,10 +44,6 @@ public:
 	hdps::DataTypes supportedDataTypes() const Q_DECL_OVERRIDE;
 
 public:
-	/** Current image size */
-	QSize imageSize() const;
-
-public:
 	/** Update the internals */
 	void update();
 
@@ -58,112 +54,20 @@ public:
 	void computeSelectionImage();
 
 public:
-	/** Returns a list of available image data sets */
-	QStringList datasetNames() const;
-
-	/** Returns the current images */
-	Images* currentImages();
-
-	/** Returns the current dataset name */
-	QString currentDatasetName() const;
-
-	/**
-	 * Sets the current dataset name
-	 * @param currentDatasetName Current dataset name
-	 */
-	void setCurrentDatasetName(const QString& currentDatasetName);
-
-	/** Returns the current image index */
-	auto currentImageId() const;
-
-	/**
-	 * Sets the current image index
-	 * @param currentImageId Current image index
-	 */
-	void setCurrentImageId(const std::int32_t& currentImageId);
-
-	/** Returns the current dimension index */
-	auto currentDimensionId() const;
-
-	/**
-	 * Sets the current dimension index
-	 * @param currentDimensionId Current dimension index
-	 */
-	void setCurrentDimensionId(const std::int32_t& currentDimensionId);
-
 	/** Returns the image viewer widget */
 	ImageViewerWidget* imageViewerWidget();
-
-private:
-	/**
-	 * Set dataset names
-	 * @param datasetNames Data set names
-	 */
-	void setDatasetNames(const QStringList& datasetNames);
-
-	/**
-	 * Set image names
-	 * @param imageNames Image names
-	 */
-	void setImageNames(const QStringList& imageNames);
-
-	/**
-	 * Set dimension names
-	 * @param dimensionNames Dimension names
-	 */
-	void setDimensionNames(const QStringList& dimensionNames);
 
 	/** Update the window title with some useful meta data */
 	void updateWindowTitle();
 
 signals:
-	/**
-	 * Invoked when the dataset names change
-	 * @param datasetNames Dataset names
-	 */
-	void datasetNamesChanged(const QStringList& datasetNames);
-
-	/**
-	 * Invoked when the current dataset changes
-	 * @param currentDataset Current dataset name
-	 */
-	void currentDatasetChanged(const QString& currentDataset);
-
-	/**
-	 * Invoked when the image names change
-	 * @param imageNames Image names
-	 */
-	void imageNamesChanged(const QStringList& imageNames);
-
-	/**
-	 * Invoked when the current image index changes
-	 * @param currentImageId Current image index
-	 */
-	void currentImageIdChanged(const std::int32_t& currentImageId);
-
-	/**
-	 * Invoked when the dimension names change
-	 * @param dimensionNames Dimension names
-	 */
-	void dimensionNamesChanged(const QStringList& dimensionNames);
-
-	/**
-	 * Invoked when the current dimension index changes
-	 * @param currentDimensionId Current dimension index
-	 */
-	void currentDimensionIdChanged(const std::int32_t& currentDimensionId);
 
 private:
 	ImageViewerWidget*	_imageViewerWidget;			/** Pointer to image viewer widget */
 	SettingsWidget*		_settingsWidget;			/** Image viewer settings widget */
-	QStringList			_datasetNames;				/** Available datasets */
-	QString				_currentDatasetName;		/** Name of the currently displayed image dataset */
-	Images*				_currentImages;				/** Pointer to the Images HDPS data structure */
-	QStringList			_imageNames;				/** Image names */
-	std::int32_t		_currentImageId;			/** The index of the current image  */
-	QStringList			_dimensionNames;			/** Dimension names */
-	std::int32_t		_currentDimensionId;		/** The index of the current dimension */
+	Datasets			_datasets;					/** Loaded datasets */
 };
+
 
 /**
  * Image viewer plugin factory class

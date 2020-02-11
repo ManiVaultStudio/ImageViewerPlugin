@@ -8,18 +8,43 @@
  * Images dataset class
  * @author Thomas Kroes
  */
-class ImagesDataset : public QObject
+class Dataset : public QObject
 {
 	Q_OBJECT
 
 public:
-	/** Constructor */
-	ImagesDataset();
+	/**
+	 * Constructor
+	 * @param name Name of the dataset
+	 * @param images Pointer to HDPS images dataset
+	 */
+	Dataset(const QString& name, Images* images);
 
 	/** Destructor */
-	~ImagesDataset();
+	virtual ~Dataset();
 
 public:
+	/** Current image size */
+	QSize imageSize() const;
+
+	/** Returns the current image index */
+	auto currentImageId() const;
+
+	/**
+	 * Sets the current image index
+	 * @param currentImageIndex Current image index
+	 */
+	void setCurrentImageId(const std::int32_t& currentImageIndex);
+
+	/** Returns the current dimension index */
+	auto currentDimensionIndex() const;
+
+	/**
+	 * Sets the current dimension index
+	 * @param currentDimensionIndex Current dimension index
+	 */
+	void setCurrentDimensionIndex(const std::int32_t& currentDimensionIndex);
+
 	/** Returns whether images are averaged */
 	bool average() const;
 
@@ -68,6 +93,11 @@ signals:
 	void selectionImageChanged(QSharedPointer<QImage> selectionImage, const QRect& selectionBounds);
 
 private:
-	Images*		_images;		/** Pointer to the Images HDPS data structure */
-	bool		_average;		/** Whether to average images */
+	QString			_name;						/** Dataset name */
+	Images*			_images;					/** Pointer to the Images HDPS data structure */
+	QStringList		_imageNames;				/** Image names */
+	std::int32_t	_currentImageId;			/** The index of the current image  */
+	QStringList		_dimensionNames;			/** Dimension names */
+	std::int32_t	_currentDimensionId;		/** The index of the current dimension */
+	bool			_average;					/** Whether to average images */
 };
