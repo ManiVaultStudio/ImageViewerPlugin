@@ -767,8 +767,3 @@ QMenu* SelectionPickerActor::contextMenu()
 
 	return selectionMenu;
 }
-
-bool SelectionPickerActor::isSelecting() const
-{
-	return _selecting;
-}

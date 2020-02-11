@@ -108,9 +108,6 @@ public:
 	/** Returns the context menu */
 	QMenu* contextMenu();
 
-	/** Returns whether selection is taking place */
-	bool isSelecting() const;
-
 private:
 	/** Initialize the actor */
 	void initialize();

@@ -27,6 +27,7 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 
 	connect(_renderer.get(), &Renderer::dirty, this, &ImageViewerWidget::onRendererDirty);
 
+	/*
 	connect(_imageViewerPlugin, &ImageViewerPlugin::selectionImageChanged, this, [&](std::shared_ptr<QImage> image, const QRect& bounds) {
 		_renderer->setSelectionImage(image, bounds);
 	}, Qt::AutoConnection);
@@ -35,6 +36,7 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 		_renderer->setColorImage(image);
 
 	}, Qt::AutoConnection);
+	*/
 
 	QSurfaceFormat surfaceFormat;
 
@@ -151,6 +153,7 @@ void ImageViewerWidget::keyReleaseEvent(QKeyEvent* keyEvent)
 
 void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 {
+	/*
 	switch (mouseEvent->button())
 	{
 		case Qt::LeftButton:
@@ -167,7 +170,7 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 	}
 
 	_renderer->mousePressEvent(mouseEvent);
-
+	*/
 	QOpenGLWidget::mousePressEvent(mouseEvent);
 }
 
@@ -228,8 +231,9 @@ QSharedPointer<Renderer> ImageViewerWidget::renderer()
 
 QMenu* ImageViewerWidget::contextMenu()
 {
+	
 	auto contextMenu = _renderer->contextMenu();
-
+	/*
 	if (_imageViewerPlugin->imageCollectionType() == ImageCollectionType::Stack) {
 		auto* createSubsetFromSelectionAction = new QAction("Create subset from selection");
 
@@ -240,6 +244,7 @@ QMenu* ImageViewerWidget::contextMenu()
 		contextMenu->addSeparator();
 		contextMenu->addAction(createSubsetFromSelectionAction);
 	}
+	*/
 
 	return contextMenu;
 }

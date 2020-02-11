@@ -21,8 +21,7 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	_imageNames(),
 	_currentImageId(0),
 	_dimensionNames(),
-	_currentDimensionId(0),
-	_averageImages(false)
+	_currentDimensionId(0)
 {
 	qRegisterMetaType<std::shared_ptr<QImage>>("std::shared_ptr<QImage>");
 
@@ -81,31 +80,9 @@ void ImageViewerPlugin::init()
 	addWidget(_settingsWidget);
 }
 
-std::vector<std::uint32_t> ImageViewerPlugin::selection() const
-{
-	if (_currentImages == nullptr)
-		return std::vector<std::uint32_t>();
 
-	return _currentImages->indices();
-}
 
-bool ImageViewerPlugin::hasSelection() const
-{
-	return selection().size() > 0;
-}
 
-ImageCollectionType ImageViewerPlugin::imageCollectionType() const
-{
-	if (_currentImages == nullptr)
-		return ImageCollectionType::Undefined;
-
-	return _currentImages->imageCollectionType();
-}
-
-bool ImageViewerPlugin::allowsPixelSelection() const
-{
-	return imageCollectionType() == ImageCollectionType::Stack;
-}
 
 QSize ImageViewerPlugin::imageSize() const
 {
@@ -115,24 +92,9 @@ QSize ImageViewerPlugin::imageSize() const
 	return _currentImages->imageSize();
 }
 
-void ImageViewerPlugin::selectPixels(const std::vector<std::pair<std::uint32_t, std::uint32_t>>& pixelCoordinates, const SelectionModifier& selectionModifier)
-{
-	if (_currentImages == nullptr)
-		return;
-
-	_currentImages->selectPixels(pixelCoordinates, selectionModifier);
-}
-
-std::uint32_t ImageViewerPlugin::noSelectedPixels()
-{
-	if (_currentImages == nullptr)
-		return 0;
-
-	return _currentImages->noSelectedPixels();
-}
-
 void ImageViewerPlugin::update()
 {
+	/*
 	if (_currentImages == nullptr)
 		return;
 
@@ -195,10 +157,12 @@ void ImageViewerPlugin::update()
 
 		setDimensionNames(dimensionNames);
 	}
+	*/
 }
 
 void ImageViewerPlugin::computeDisplayImage()
 {
+	/*
 	if (_currentImages == nullptr)
 		return;
 
@@ -240,10 +204,12 @@ void ImageViewerPlugin::computeDisplayImage()
 		default:
 			break;
 	}
+	*/
 }
 
 void ImageViewerPlugin::computeSelectionImage()
 {
+	/*
 	if (_currentImages == nullptr)
 		return;
 
@@ -255,6 +221,7 @@ void ImageViewerPlugin::computeSelectionImage()
 	else {
 		emit selectionImageChanged(std::make_shared<QImage>(), QRect());
 	}
+	*/
 }
 
 QStringList ImageViewerPlugin::datasetNames() const
@@ -343,36 +310,6 @@ void ImageViewerPlugin::setCurrentDimensionId(const std::int32_t& currentDimensi
 	//updateWindowTitle();
 }
 
-bool ImageViewerPlugin::averageImages() const
-{
-	return _averageImages;
-}
-
-void ImageViewerPlugin::setAverageImages(const bool& averageImages)
-{
-	if (averageImages == _averageImages)
-		return;
-
-	_averageImages = averageImages;
-
-	qDebug() << "Set average images" << _averageImages;
-
-	emit averageImagesChanged(_averageImages);
-
-	computeDisplayImage();
-	update();
-}
-
-void ImageViewerPlugin::createSubsetFromSelection()
-{
-	if (_currentImages == nullptr)
-		return;
-
-	qDebug() << "Create subset from selection";
-
-	_currentImages->createSubset();
-}
-
 ImageViewerWidget* ImageViewerPlugin::imageViewerWidget()
 {
 	return _imageViewerWidget;
@@ -459,6 +396,7 @@ void ImageViewerPlugin::dataRemoved(const QString dataset)
 
 void ImageViewerPlugin::selectionChanged(const QString dataset)
 {
+	/*
 	qDebug() << "Selection changed" << dataset;
 
 	update();
@@ -469,6 +407,7 @@ void ImageViewerPlugin::selectionChanged(const QString dataset)
 		computeSelectionImage();
 
 	updateWindowTitle();
+	*/
 }
 
 hdps::DataTypes ImageViewerPlugin::supportedDataTypes() const

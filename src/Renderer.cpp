@@ -650,7 +650,7 @@ bool Renderer::allowsContextMenu()
 			return true;
 
 		case InteractionMode::Selection:
-			return !selectionPickerActor()->isSelecting();
+			//return !selectionPickerActor()->isSelecting();
 			break;
 
 		default:

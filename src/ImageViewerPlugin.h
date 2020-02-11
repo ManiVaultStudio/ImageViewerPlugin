@@ -44,30 +44,8 @@ public:
 	hdps::DataTypes supportedDataTypes() const Q_DECL_OVERRIDE;
 
 public:
-	/** Returns the selection */
-	std::vector<std::uint32_t> selection() const;
-
-	/** Returns whether a selection is present */
-	bool hasSelection() const;
-
-	/** Returns the the type of image collection e.g. sequence, stack*/
-	ImageCollectionType imageCollectionType() const;
-
-	/** Whether image data set can be selected */
-	bool allowsPixelSelection() const;
-
 	/** Current image size */
 	QSize imageSize() const;
-
-	/**
-	 * Select pixels in the high-dimensional image data
-	 * @param pixelCoordinates Pixel coordinates to select
-	 * @param selectionModifier Selection modifier
-	 */
-	void selectPixels(const std::vector<std::pair<std::uint32_t, std::uint32_t>>& pixelCoordinates, const SelectionModifier& selectionModifier);
-
-	/** Returns the number of selected pixels */
-	std::uint32_t noSelectedPixels();
 
 public:
 	/** Update the internals */
@@ -112,18 +90,6 @@ public:
 	 * @param currentDimensionId Current dimension index
 	 */
 	void setCurrentDimensionId(const std::int32_t& currentDimensionId);
-
-	/** Returns whether sequence images are averaged */
-	bool averageImages() const;
-
-	/**
-	 * Sets whether sequence images are averaged
-	 * @param averageImages Whether sequence images are averaged
-	 */
-	void setAverageImages(const bool& averageImages);
-
-	/** Creates an image subset from the current selection */
-	void createSubsetFromSelection();
 
 	/** Returns the image viewer widget */
 	ImageViewerWidget* imageViewerWidget();
@@ -187,25 +153,6 @@ signals:
 	 */
 	void currentDimensionIdChanged(const std::int32_t& currentDimensionId);
 
-	/**
-	 * Invoked when average images changes
-	 * @param averageImages Average images
-	 */
-	void averageImagesChanged(const bool& averageImages);
-
-	/**
-	 * Invoked when the display image changes
-	 * @param displayImage Display image
-	 */
-	void displayImageChanged(std::shared_ptr<QImage> displayImage);
-
-	/**
-	 * Invoked when the selection image changes
-	 * @param selectionImage Selection image
-	 * @param selectionBounds Bounds of the selected pixels in the selection image
-	 */
-	void selectionImageChanged(std::shared_ptr<QImage> selectionImage, const QRect& selectionBounds);
-
 private:
 	ImageViewerWidget*	_imageViewerWidget;			/** Pointer to image viewer widget */
 	SettingsWidget*		_settingsWidget;			/** Image viewer settings widget */
@@ -216,7 +163,6 @@ private:
 	std::int32_t		_currentImageId;			/** The index of the current image  */
 	QStringList			_dimensionNames;			/** Dimension names */
 	std::int32_t		_currentDimensionId;		/** The index of the current dimension */
-	bool				_averageImages;				/** Whether to average images (ImageCollectionType::Sequence) */
 };
 
 /**

@@ -26,6 +26,8 @@ set(PLUGIN
 	src/Shaders.h
 	src/ImageViewerPlugin.h
 	src/ImageViewerPlugin.cpp
+	src/ImagesDataset.h
+	src/ImagesDataset.cpp
 	src/ImageViewerWidget.h
 	src/ImageViewerWidget.cpp
 	src/SettingsWidget.h
