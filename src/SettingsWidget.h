@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Common.h"
+#include "Datasets.h"
 
 #include <memory>
 
@@ -22,9 +22,9 @@ class SettingsWidget : public QWidget
 public:
 	/**
 	 * Constructor
-	 * @param imageViewerPlugin Pointer to the image viewer plugin
+	 * @param datasets Pointer to datasets
 	 */
-	SettingsWidget(ImageViewerPlugin* imageViewerPlugin);
+	SettingsWidget(Datasets* datasets);
 
 	/** Destructor */
 	~SettingsWidget();
@@ -83,6 +83,6 @@ private:
 	void updateSelectionOpacityUI();
 
 private:
-	ImageViewerPlugin*						_imageViewerPlugin;		/** Pointer to the image viewer plugin */
-	std::unique_ptr<Ui::SettingsWidget>		_ui;					/** UI */
+	Datasets*								_datasets;		/** Pointer to datasets */
+	std::unique_ptr<Ui::SettingsWidget>		_ui;			/** UI */
 };

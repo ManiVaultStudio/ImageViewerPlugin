@@ -108,3 +108,132 @@ void Dataset::createSubsetFromSelection()
 
 	_images->createSubset();
 }
+
+/*
+void ImageViewerPlugin::update()
+{
+	if (_currentImages == nullptr)
+		return;
+
+	auto imageFileNames = QStringList();
+
+	foreach(const QString& imageFilePath, _currentImages->imageFilePaths())
+	{
+		imageFileNames << QFileInfo(imageFilePath).fileName();
+	}
+
+	if (imageCollectionType() == ImageCollectionType::Sequence) {
+		auto imageNames = QStringList();
+
+		if (hasSelection()) {
+			auto images = QStringList();
+
+			for (auto& index : selection())
+			{
+				images << QString("%1").arg(imageFileNames[index]);
+			}
+
+			const auto imagesString = images.join(", ");
+
+			imageNames << imagesString;
+		}
+		else {
+			if (_averageImages) {
+				auto images = QStringList();
+
+				for (std::uint32_t i = 0; i < _currentImages->noImages(); i++) {
+					images << QString("%1").arg(imageFileNames[i]);
+				}
+
+				const auto imagesString = images.join(", ");
+
+				imageNames << imagesString;
+			}
+			else {
+				for (std::uint32_t i = 0; i < _currentImages->noImages(); i++) {
+					imageNames << QString("%1").arg(imageFileNames[i]);
+				}
+			}
+		}
+
+		setImageNames(imageNames);
+		setDimensionNames(QStringList());
+	}
+
+	if (imageCollectionType() == ImageCollectionType::Stack) {
+		setImageNames(QStringList());
+
+		auto dimensionNames = QStringList();
+
+		if (_averageImages) {
+			dimensionNames << imageFileNames.join(", ");
+		}
+		else {
+			dimensionNames = imageFileNames;
+		}
+
+		setDimensionNames(dimensionNames);
+	}
+}
+
+void ImageViewerPlugin::computeDisplayImage()
+{
+	if (_currentImages == nullptr)
+		return;
+
+	switch (imageCollectionType()) {
+		case ImageCollectionType::Sequence:
+		{
+			auto ids = std::vector<std::uint32_t>();
+
+			if (hasSelection()) {
+				const auto pointSelection = selection();
+				ids = _averageImages ? pointSelection : std::vector<std::uint32_t>({ pointSelection.front() });
+			}
+			else
+			{
+				if (_averageImages) {
+					ids.resize(_currentImages->noImages());
+					std::iota(ids.begin(), ids.end(), 0);
+				}
+				else
+				{
+					ids = std::vector<std::uint32_t>({ static_cast<std::uint32_t>(_currentImageId) });
+				}
+			}
+
+			auto image = _currentImages->sequenceImage(ids);
+
+			emit displayImageChanged(image);
+			break;
+		}
+
+		case ImageCollectionType::Stack:
+		{
+			auto image = _currentImages->stackImage(_currentDimensionId);
+
+			emit displayImageChanged(image);
+			break;
+		}
+
+		default:
+			break;
+	}
+}
+
+void ImageViewerPlugin::computeSelectionImage()
+{
+	if (_currentImages == nullptr)
+		return;
+
+	qDebug() << "Compute selection image";
+
+	if (imageCollectionType() == ImageCollectionType::Stack) {
+		emit selectionImageChanged(_currentImages->selectionImage(), _currentImages->selectionBounds(true));
+	}
+	else {
+		emit selectionImageChanged(std::make_shared<QImage>(), QRect());
+	}
+	
+}
+*/

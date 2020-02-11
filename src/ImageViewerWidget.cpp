@@ -88,8 +88,8 @@ void ImageViewerWidget::initializeGL()
 
 	_renderer->init();
 
-	_imageViewerPlugin->computeDisplayImage();
-	_imageViewerPlugin->computeSelectionImage();
+	//_imageViewerPlugin->computeDisplayImage();
+	//_imageViewerPlugin->computeSelectionImage();
 
 	//connect(_renderer->selectionBufferQuad(), &SelectionBufferQuad::selectionEnded, this, &ImageViewerWidget::publishSelection);
 	

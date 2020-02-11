@@ -10,8 +10,9 @@
 #include <QCheckBox>
 #include <QLabel>
 
-SettingsWidget::SettingsWidget(ImageViewerPlugin* imageViewerPlugin) :
-	_imageViewerPlugin(imageViewerPlugin),
+SettingsWidget::SettingsWidget(Datasets* datasets) :
+	QWidget(),
+	_datasets(datasets),
 	_ui{ std::make_unique<Ui::SettingsWidget>() }
 {
 	_ui->setupUi(this);
@@ -20,14 +21,15 @@ SettingsWidget::SettingsWidget(ImageViewerPlugin* imageViewerPlugin) :
 	// TODO: connect(_ui->imagesComboBox, QOverload<const int>::of(&QComboBox::currentIndexChanged), _imageViewerPlugin, &ImageViewerPlugin::setCurrentImageId);
 	// TODO: connect(_ui->dimensionsComboBox, QOverload<const int>::of(&QComboBox::currentIndexChanged), _imageViewerPlugin, &ImageViewerPlugin::setCurrentDimensionId);
 	// TODO: connect(_ui->averageImagesCheckBox, &QCheckBox::stateChanged, _imageViewerPlugin, [=](int state) { _imageViewerPlugin->setAverageImages(static_cast<bool>(state)); });
-	connect(_ui->selectionOpacitySlider, &QSlider::valueChanged, _imageViewerPlugin, [=](int value) {
-		_imageViewerPlugin->imageViewerWidget()->renderer()->setSelectionOpacity(static_cast<float>(value) / 100.f);
-		_imageViewerPlugin->imageViewerWidget()->update();
-	});
+	
+	// TODO: connect(_ui->selectionOpacitySlider, &QSlider::valueChanged, _datasets, [=](int value) {
+	// TODO: 	_datasets->imageViewerWidget()->renderer()->setSelectionOpacity(static_cast<float>(value) / 100.f);
+	// TODO: 	_datasets->imageViewerWidget()->update();
+	// TODO: });
 
 	//TODO: connect(_ui->createSubsetFromSelectionPushButton, &QCheckBox::clicked, _imageViewerPlugin, &ImageViewerPlugin::createSubsetFromSelection);
 	
-	// TODO: connect(_imageViewerPlugin, &ImageViewerPlugin::datasetNamesChanged, this, &SettingsWidget::onDatasetNamesChanged);
+	connect(_datasets, &Datasets::namesChanged, this, &SettingsWidget::onDatasetNamesChanged);
 	// TODO: connect(_imageViewerPlugin, &ImageViewerPlugin::currentDatasetChanged, this, &SettingsWidget::onCurrentDatasetChanged);
 	// TODO: connect(_imageViewerPlugin, &ImageViewerPlugin::imageNamesChanged, this, &SettingsWidget::onImageNamesChanged);
 	// TODO: connect(_imageViewerPlugin, &ImageViewerPlugin::currentImageIdChanged, this, &SettingsWidget::onCurrentImageChanged);

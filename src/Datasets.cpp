@@ -19,6 +19,8 @@ void Datasets::add(const QString& name, const QSharedPointer<Dataset>& dataset)
 	_datasets.insert(name, dataset);
 
 	qDebug() << name << "added";
+
+	emit namesChanged(_datasets.keys());
 }
 
 void Datasets::setCurrentDatasetName(const QString& currentDatasetName)

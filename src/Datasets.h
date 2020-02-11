@@ -29,8 +29,8 @@ public:
 	void setCurrentDatasetName(const QString& currentDatasetName);
 
 signals:
-	/** Signals that the number of datasets changed */
-	void noDatasetsChanged();
+	/** Signals that dataset names changed */
+	void namesChanged(const QStringList& names);
 
 	/**
 	 * Signals the current dataset name changed

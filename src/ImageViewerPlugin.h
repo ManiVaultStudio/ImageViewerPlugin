@@ -25,6 +25,8 @@ public:
 	/** Constructor */
 	ImageViewerPlugin();
 
+public: // Inherited from ViewPlugin
+
 	/** Initializes the plugin */
 	void init() override;
 
@@ -44,23 +46,11 @@ public:
 	hdps::DataTypes supportedDataTypes() const Q_DECL_OVERRIDE;
 
 public:
-	/** Update the internals */
-	void update();
-
-	/** Compute the display image */
-	void computeDisplayImage();
-
-	/** Compute the selection image */
-	void computeSelectionImage();
-
-public:
 	/** Returns the image viewer widget */
 	ImageViewerWidget* imageViewerWidget();
 
 	/** Update the window title with some useful meta data */
 	void updateWindowTitle();
-
-signals:
 
 private:
 	ImageViewerWidget*	_imageViewerWidget;			/** Pointer to image viewer widget */
