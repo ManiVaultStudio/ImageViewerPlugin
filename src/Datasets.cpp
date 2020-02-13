@@ -40,6 +40,7 @@ void Datasets::setCurrentDatasetName(const QString& currentDatasetName)
 
 	emit currentDatasetNameChanged(previousDatasetName, _currentDatasetName);
 	emit currentDatasetChanged(datasetByName(previousDatasetName), datasetByName(currentDatasetName));
+
 	emit currentDataset()->selectionChanged();
 }
 

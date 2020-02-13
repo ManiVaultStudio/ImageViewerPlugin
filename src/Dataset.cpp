@@ -1,27 +1,29 @@
 #include "Dataset.h"
 
 #include <QFileInfo>
+#include <QMenu>
 #include <QDebug>
 
 Dataset::Dataset(const QString& name, Images* images) : 
 	QObject(),
 	_name(name),
-	_images(images),
+	_dataset(images),
 	_imageNames(),
 	_currentImageIndex(0),
 	_dimensionNames(),
 	_currentDimensionIndex(0),
 	_average(false),
-	_selectionOpacity(0.5f)
+	_selectionOpacity(0.5f),
+	_layers()
 {
 	auto imageFileNames = QStringList();
 
-	for (const auto& imageFilePath : _images->imageFilePaths())
+	for (const auto& imageFilePath : _dataset->imageFilePaths())
 	{
 		imageFileNames << QFileInfo(imageFilePath).fileName();
 	}
 
-	if (_images->imageCollectionType() == ImageCollectionType::Sequence) {
+	if (_dataset->imageCollectionType() == ImageCollectionType::Sequence) {
 		if (hasSelection()) {
 			auto images = QStringList();
 
@@ -38,7 +40,7 @@ Dataset::Dataset(const QString& name, Images* images) :
 			if (_average) {
 				auto images = QStringList();
 
-				for (std::uint32_t i = 0; i < _images->noImages(); i++) {
+				for (std::uint32_t i = 0; i < _dataset->noImages(); i++) {
 					images << QString("%1").arg(imageFileNames[i]);
 				}
 
@@ -47,14 +49,14 @@ Dataset::Dataset(const QString& name, Images* images) :
 				_imageNames << imagesString;
 			}
 			else {
-				for (std::uint32_t i = 0; i < _images->noImages(); i++) {
+				for (std::uint32_t i = 0; i < _dataset->noImages(); i++) {
 					_imageNames << QString("%1").arg(imageFileNames[i]);
 				}
 			}
 		}
 	}
 
-	if (_images->imageCollectionType() == ImageCollectionType::Stack) {
+	if (_dataset->imageCollectionType() == ImageCollectionType::Stack) {
 		if (_average) {
 			_dimensionNames << imageFileNames.join(", ");
 		}
@@ -73,7 +75,7 @@ QString Dataset::name() const
 
 QSize Dataset::imageSize() const
 {
-	return _images->imageSize();
+	return _dataset->imageSize();
 }
 
 QStringList Dataset::imageNames() const
@@ -104,6 +106,8 @@ void Dataset::setCurrentImageId(const std::int32_t& currentImageIndex)
 	qDebug() << _name << "set current image index" << _currentImageIndex;
 
 	emit currentImageIndexChanged(_currentImageIndex);
+
+	computeColorImage();
 }
 
 auto Dataset::currentDimensionIndex() const
@@ -124,6 +128,8 @@ void Dataset::setCurrentDimensionIndex(const std::int32_t& currentDimensionIndex
 	qDebug() << _name << "set current dimension index" << _currentDimensionIndex;
 
 	emit currentDimensionIndexChanged(_currentDimensionIndex);
+
+	computeColorImage();
 }
 
 bool Dataset::average() const
@@ -141,11 +147,13 @@ void Dataset::setAverage(const bool& average)
 	qDebug() << _name << "set average" << _average;
 
 	emit averageChanged(_average);
+
+	computeColorImage();
 }
 
 bool Dataset::canAverage() const
 {
-	return _images->imageCollectionType() == ImageCollectionType::Sequence;
+	return _dataset->imageCollectionType() == ImageCollectionType::Sequence;
 }
 
 float Dataset::selectionOpacity() const
@@ -165,19 +173,45 @@ void Dataset::setSelectionOpacity(const float& selectionOpacity)
 	emit selectionOpacityChanged(_selectionOpacity);
 }
 
+void Dataset::setSelectionChanged()
+{
+	emit selectionChanged();
+
+	computeSelectionImage();
+}
+
 ImageCollectionType Dataset::imageCollectionType() const
 {
-	return _images->imageCollectionType();
+	return _dataset->imageCollectionType();
+}
+
+QMenu* Dataset::contextMenu() const
+{
+	auto contextMenu = new QMenu();
+	/*
+	if (_imageViewerPlugin->imageCollectionType() == ImageCollectionType::Stack) {
+		auto* createSubsetFromSelectionAction = new QAction("Create subset from selection");
+
+		createSubsetFromSelectionAction->setEnabled(_imageViewerPlugin->noSelectedPixels() > 0);
+
+		connect(createSubsetFromSelectionAction, &QAction::triggered, _imageViewerPlugin, &ImageViewerPlugin::createSubsetFromSelection);
+
+		contextMenu->addSeparator();
+		contextMenu->addAction(createSubsetFromSelectionAction);
+	}
+	*/
+
+	return contextMenu;
 }
 
 std::vector<std::uint32_t> Dataset::selection() const
 {
-	return _images->indices();
+	return _dataset->indices();
 }
 
 std::uint32_t Dataset::noSelectedPixels() const
 {
-	return _images->noSelectedPixels();
+	return _dataset->noSelectedPixels();
 }
 
 bool Dataset::hasSelection() const
@@ -187,26 +221,24 @@ bool Dataset::hasSelection() const
 
 bool Dataset::isPixelSelectionAllowed() const
 {
-	return _images->imageCollectionType() == ImageCollectionType::Stack;
+	return _dataset->imageCollectionType() == ImageCollectionType::Stack;
 }
 
 void Dataset::selectPixels(const std::vector<std::pair<std::uint32_t, std::uint32_t>>& pixelCoordinates, const SelectionModifier& selectionModifier)
 {
-	_images->selectPixels(pixelCoordinates, selectionModifier);
+	_dataset->selectPixels(pixelCoordinates, selectionModifier);
 }
 
 void Dataset::createSubsetFromSelection()
 {
 	qDebug() << "Create subset from selection";
 
-	_images->createSubset();
+	_dataset->createSubset();
 }
 
-/*
-void ImageViewerPlugin::computeDisplayImage()
+void Dataset::computeColorImage()
 {
-	if (_currentImages == nullptr)
-		return;
+	qDebug() << _name << "compute color image";
 
 	switch (imageCollectionType()) {
 		case ImageCollectionType::Sequence:
@@ -215,31 +247,27 @@ void ImageViewerPlugin::computeDisplayImage()
 
 			if (hasSelection()) {
 				const auto pointSelection = selection();
-				ids = _averageImages ? pointSelection : std::vector<std::uint32_t>({ pointSelection.front() });
+				ids = _average ? pointSelection : std::vector<std::uint32_t>({ pointSelection.front() });
 			}
 			else
 			{
-				if (_averageImages) {
-					ids.resize(_currentImages->noImages());
+				if (_average) {
+					ids.resize(_dataset->noImages());
 					std::iota(ids.begin(), ids.end(), 0);
 				}
 				else
 				{
-					ids = std::vector<std::uint32_t>({ static_cast<std::uint32_t>(_currentImageId) });
+					ids = std::vector<std::uint32_t>({ static_cast<std::uint32_t>(_currentImageIndex) });
 				}
 			}
 
-			auto image = _currentImages->sequenceImage(ids);
-
-			emit displayImageChanged(image);
+			emit colorImageChanged(QSharedPointer<QImage>::create(*_dataset->sequenceImage(ids).get()));
 			break;
 		}
 
 		case ImageCollectionType::Stack:
 		{
-			auto image = _currentImages->stackImage(_currentDimensionId);
-
-			emit displayImageChanged(image);
+			emit colorImageChanged(QSharedPointer<QImage>::create(*_dataset->stackImage(_currentDimensionIndex).get()));
 			break;
 		}
 
@@ -248,19 +276,14 @@ void ImageViewerPlugin::computeDisplayImage()
 	}
 }
 
-void ImageViewerPlugin::computeSelectionImage()
+void Dataset::computeSelectionImage()
 {
-	if (_currentImages == nullptr)
-		return;
-
-	qDebug() << "Compute selection image";
+	qDebug() << _name << "compute selection image";
 
 	if (imageCollectionType() == ImageCollectionType::Stack) {
-		emit selectionImageChanged(_currentImages->selectionImage(), _currentImages->selectionBounds(true));
+		emit selectionImageChanged(QSharedPointer<QImage>::create(*_dataset->selectionImage().get()), _dataset->selectionBounds(true));
 	}
 	else {
-		emit selectionImageChanged(std::make_shared<QImage>(), QRect());
+		emit selectionImageChanged(QSharedPointer<QImage>::create(), QRect());
 	}
-	
 }
-*/

@@ -52,6 +52,9 @@ public:
 	/** Update the window title with some useful meta data */
 	void updateWindowTitle();
 
+	/** Get pointer to datasets */
+	Datasets* datasets();
+
 private:
 	ImageViewerWidget*	_imageViewerWidget;			/** Pointer to image viewer widget */
 	SettingsWidget*		_settingsWidget;			/** Image viewer settings widget */

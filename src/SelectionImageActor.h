@@ -30,7 +30,7 @@ public:
 	 * Sets the image
 	 * @param image Image
 	 */
-	void setImage(std::shared_ptr<QImage> image);
+	void setImage(QSharedPointer<QImage> image);
 
 	/** Returns the image size */
 	QSize imageSize() const;

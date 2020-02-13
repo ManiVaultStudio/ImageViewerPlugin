@@ -186,35 +186,34 @@ void Renderer::keyPressEvent(QKeyEvent* keyEvent)
 	}
 	else
 	{
-		/*
 		switch (keyEvent->key())
 		{
 			case Qt::Key::Key_R:
-				_pixelSelection.setSelectionType(SelectionType::Rectangle);
+				// TODO: _pixelSelection.setSelectionType(SelectionType::Rectangle);
 				break;
 
 			case Qt::Key::Key_B:
-				_pixelSelection.setSelectionType(SelectionType::Brush);
+				// TODO: _pixelSelection.setSelectionType(SelectionType::Brush);
 				break;
 
 			case Qt::Key::Key_L:
-				_pixelSelection.setSelectionType(SelectionType::Lasso);
+				// TODO: _pixelSelection.setSelectionType(SelectionType::Lasso);
 				break;
 
 			case Qt::Key::Key_P:
-				_pixelSelection.setSelectionType(SelectionType::Polygon);
+				// TODO: _pixelSelection.setSelectionType(SelectionType::Polygon);
 				break;
 
 			case Qt::Key::Key_Shift:
-				_pixelSelection.setSelectionModifier(SelectionModifier::Add);
+				// TODO: _pixelSelection.setSelectionModifier(SelectionModifier::Add);
 				break;
 
 			case Qt::Key::Key_Control:
-				_pixelSelection.setSelectionModifier(SelectionModifier::Remove);
+				// TODO: _pixelSelection.setSelectionModifier(SelectionModifier::Remove);
 				break;
 
 			case Qt::Key::Key_Escape:
-				_pixelSelection.abortSelection();
+				// TODO: _pixelSelection.abortSelection();
 				break;
 
 			case Qt::Key::Key_Space:
@@ -224,7 +223,6 @@ void Renderer::keyPressEvent(QKeyEvent* keyEvent)
 			default:
 				break;
 		}
-		*/
 	}
 
 	for (auto key : _actors.keys()) {
@@ -310,7 +308,6 @@ QMatrix4x4 Renderer::normalizedScreenToScreenMatrix() const
 	scale.scale(halfSize.width(), halfSize.height(), 1.0f);
 	translate.translate(size.width(), 1, 0.0f);
 
-	//return translate * screenToNormalizedScreenMatrix().inverted();
 	return translate * scale;// *;
 }
 
@@ -423,7 +420,7 @@ void Renderer::resetView()
 	_zoom = 1.f;
 }
 
-void Renderer::setColorImage(std::shared_ptr<QImage> colorImage)
+void Renderer::setColorImage(QSharedPointer<QImage> colorImage)
 {
 	bindOpenGLContext();
 
@@ -431,7 +428,7 @@ void Renderer::setColorImage(std::shared_ptr<QImage> colorImage)
 	selectionPickerActor()->setImageSize(colorImage->size());
 }
 
-void Renderer::setSelectionImage(std::shared_ptr<QImage> selectionImage, const QRect& selectionBounds)
+void Renderer::setSelectionImage(QSharedPointer<QImage> selectionImage, const QRect& selectionBounds)
 {
 	auto worldSelectionBounds = QRect(selectionBounds.left(), selectionImage->height() - selectionBounds.bottom() - 1, selectionBounds.width() + 1, selectionBounds.height() + 1);
 

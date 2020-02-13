@@ -24,7 +24,7 @@ ColorImageActor::ColorImageActor(Renderer* renderer, const QString& name) :
 	connect(propByName<ColorImageProp>("ColorImageProp"), &ColorImageProp::imageSizeChanged, this, &ColorImageActor::imageSizeChanged);
 }
 
-void ColorImageActor::setImage(std::shared_ptr<QImage> image)
+void ColorImageActor::setImage(QSharedPointer<QImage> image)
 {
 	qDebug() << "Set image for" << name();
 

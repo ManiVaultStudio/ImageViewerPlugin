@@ -123,7 +123,7 @@ void SelectionImageProp::render()
 	}
 }
 
-void SelectionImageProp::setImage(std::shared_ptr<QImage> image)
+void SelectionImageProp::setImage(QSharedPointer<QImage> image)
 {
 	const auto texture = textureByName("Quad");
 

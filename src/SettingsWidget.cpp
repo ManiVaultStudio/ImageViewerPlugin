@@ -1,6 +1,4 @@
 #include "SettingsWidget.h"
-#include "ImageViewerPlugin.h"
-#include "ImageViewerWidget.h"
 #include "Datasets.h"
 
 #include "ui_SettingsWidget.h"
@@ -54,8 +52,6 @@ void SettingsWidget::onDatasetNamesChanged(const QStringList& datasetNames)
 	_ui->datasetsComboBox->blockSignals(false);
 
 	_ui->currentDatasetLabel->setEnabled(datasetAvailable);
-
-	updateSelectionOpacityUI();
 }
 
 void SettingsWidget::onCurrentDatasetChanged(Dataset* previousDataset, Dataset* currentDataset)
@@ -174,38 +170,4 @@ void SettingsWidget::onCurrentDatasetChanged(Dataset* previousDataset, Dataset* 
 			}
 		});
 	}
-}
-
-void SettingsWidget::onSelectionImageChanged(std::shared_ptr<QImage> selectionImage, const QRect& selectionBounds)
-{
-	_ui->averageImagesCheckBox->blockSignals(true);
-
-	updateSelectionOpacityUI();
-
-	_ui->averageImagesCheckBox->blockSignals(false);
-}
-
-void SettingsWidget::updateSelectionOpacityUI()
-{
-	/*
-	const auto hasSelection = _imageViewerPlugin->hasSelection();
-
-	_ui->selectionOpacitySlider->setValue(_imageViewerPlugin->imageViewerWidget()->renderer()->selectionOpacity() * 100.0f);
-
-	const auto imageCollectionType = _imageViewerPlugin->imageCollectionType();
-
-	if (_imageViewerPlugin->datasetNames().size() == 0 || imageCollectionType == ImageCollectionType::Sequence)
-	{
-		_ui->createSubsetFromSelectionPushButton->setEnabled(false);
-		_ui->selectionOpacityLabel->setEnabled(false);
-		_ui->selectionOpacitySlider->setEnabled(false);
-	}
-
-	if (imageCollectionType == ImageCollectionType::Stack || imageCollectionType == ImageCollectionType::MultiPartSequence)
-	{
-		_ui->createSubsetFromSelectionPushButton->setEnabled(hasSelection);
-		_ui->selectionOpacityLabel->setEnabled(hasSelection);
-		_ui->selectionOpacitySlider->setEnabled(hasSelection);
-	}
-	*/
 }

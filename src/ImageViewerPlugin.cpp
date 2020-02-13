@@ -68,6 +68,11 @@ void ImageViewerPlugin::updateWindowTitle()
 	setWindowTitle(QString("%1").arg(properties.join(", ")));
 }
 
+Datasets* ImageViewerPlugin::datasets()
+{
+	return &_datasets;
+}
+
 void ImageViewerPlugin::dataAdded(const QString dataset)
 {
 	qDebug() << "Data added" << dataset;
@@ -83,13 +88,11 @@ void ImageViewerPlugin::dataChanged(const QString dataset)
 void ImageViewerPlugin::dataRemoved(const QString dataset)
 {
 	qDebug() << "Data removed" << dataset;
-	
-	// TODO: _datasetNames.removeAt(_datasetNames.indexOf(dataset));
 }
 
 void ImageViewerPlugin::selectionChanged(const QString dataset)
 {
-	emit _datasets.currentDataset()->selectionChanged();
+	emit _datasets.currentDataset()->setSelectionChanged();
 }
 
 hdps::DataTypes ImageViewerPlugin::supportedDataTypes() const
@@ -101,5 +104,5 @@ hdps::DataTypes ImageViewerPlugin::supportedDataTypes() const
 
 ImageViewerPlugin* ImageViewerPluginFactory::produce()
 {
-    return new ImageViewerPlugin();
+	return new ImageViewerPlugin();
 }

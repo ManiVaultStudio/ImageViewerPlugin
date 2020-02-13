@@ -3,9 +3,12 @@
 #include "ImageData/Images.h"
 
 #include "Common.h"
+#include "Layer.h"
+
+class QMenu;
 
 /**
- * Images dataset class
+ * Dataset class
  * @author Thomas Kroes
  */
 class Dataset : public QObject
@@ -75,8 +78,14 @@ public:
 	 */
 	void setSelectionOpacity(const float& selectionOpacity);
 
+	/** The dataset selection has changed */
+	void setSelectionChanged();
+
 	/** Returns the image collection type */
 	ImageCollectionType imageCollectionType() const;
+
+	/** Dataset context menu */
+	QMenu* contextMenu() const;
 
 public: // Selection
 
@@ -101,6 +110,13 @@ public: // Selection
 
 	/** Creates an image subset from the current selection */
 	void createSubsetFromSelection();
+
+private:
+	/** Computes the color image */
+	void computeColorImage();
+
+	/** Computes the selection image */
+	void computeSelectionImage();
 
 signals:
 	/**
@@ -145,11 +161,12 @@ signals:
 
 private:
 	QString			_name;						/** Dataset name */
-	Images*			_images;					/** Pointer to the Images HDPS data structure */
+	Images*			_dataset;					/** Pointer to the Images HDPS data structure */
 	QStringList		_imageNames;				/** Image names */
 	std::int32_t	_currentImageIndex;			/** The index of the current image  */
 	QStringList		_dimensionNames;			/** Dimension names */
 	std::int32_t	_currentDimensionIndex;		/** The index of the current dimension */
 	bool			_average;					/** Whether to average images */
 	float			_selectionOpacity;			/** Selection opacity */
+	QVector<Layer>	_layers;					/** Layers */
 };

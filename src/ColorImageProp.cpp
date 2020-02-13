@@ -115,7 +115,7 @@ void ColorImageProp::render()
 	}
 }
 
-void ColorImageProp::setImage(std::shared_ptr<QImage> image)
+void ColorImageProp::setImage(QSharedPointer<QImage> image)
 {
 	const auto texture = textureByName("Quad");
 

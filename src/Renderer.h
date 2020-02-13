@@ -191,13 +191,14 @@ public:
 	 * Sets the color image
 	 * @param colorImage Color image
 	 */
-	void setColorImage(std::shared_ptr<QImage> colorImage);
+	void setColorImage(QSharedPointer<QImage> colorImage);
 
 	/**
 	 * Sets the selection image
 	 * @param selectionImage Selection image
+	 * @param selectionBounds Bounds of the selected pixels
 	 */
-	void setSelectionImage(std::shared_ptr<QImage> selectionImage, const QRect& selectionBounds);
+	void setSelectionImage(QSharedPointer<QImage> selectionImage, const QRect& selectionBounds);
 
 	/** Returns the selection opacity */
 	float selectionOpacity();
