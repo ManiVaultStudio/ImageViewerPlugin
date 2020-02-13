@@ -5,13 +5,15 @@
 #include <QMenu>
 #include <QDebug>
 
+#include "LayerActor.h"
 #include "ColorImageActor.h"
 #include "SelectionImageActor.h"
 #include "SelectionPickerActor.h"
 
-Renderer::Renderer(ImageViewerWidget* parentWidget) :
+Renderer::Renderer(ImageViewerWidget* parentWidget, Datasets* datasets) :
 	hdps::Renderer(),
 	_parentWidget(parentWidget),
+	_datasets(datasets),
 	_actors(),
 	_interactionMode(InteractionMode::Selection),
 	_mouseEvents(),
@@ -23,21 +25,11 @@ Renderer::Renderer(ImageViewerWidget* parentWidget) :
 	addNamedColor("InterimSelectionOverlayColor", QColor(239, 130, 13, 50));
 	addNamedColor("SelectionOutline", QColor(239, 130, 13, 255));
 
-	createActors();
+	connect(_datasets, &Datasets::currentDatasetChanged, this, &Renderer::onCurrentDatasetChanged);
 }
 
 void Renderer::init()
 {
-	try
-	{
-		initializeActors();
-
-		
-	}
-	catch (const std::exception& e)
-	{
-		qDebug() << "One or more  initialization failed:" << e.what();
-	}
 }
 
 void Renderer::resize(QSize renderSize)
@@ -375,7 +367,12 @@ void Renderer::zoomExtents()
 {
 	qDebug() << "Zoom extents";
 
-	zoomToRectangle(QRectF(QPointF(), actorByName<ColorImageActor>("ColorImageActor")->imageSize()));
+	auto currentDataset = _datasets->currentDataset();
+
+	if (currentDataset == nullptr)
+		return;
+
+	zoomToRectangle(QRectF(QPointF(), currentDataset->imageSize()));
 }
 
 void Renderer::zoomToRectangle(const QRectF& rectangle)
@@ -424,8 +421,10 @@ void Renderer::setColorImage(QSharedPointer<QImage> colorImage)
 {
 	bindOpenGLContext();
 
+	/*
 	colorImageActor()->setImage(colorImage);
 	selectionPickerActor()->setImageSize(colorImage->size());
+	*/
 }
 
 void Renderer::setSelectionImage(QSharedPointer<QImage> selectionImage, const QRect& selectionBounds)
@@ -500,53 +499,38 @@ void Renderer::onActorChanged(Actor* actor)
 	emit dirty();
 }
 
-void Renderer::addActor(const QString& name, QSharedPointer<Actor> actor)
+void Renderer::onCurrentDatasetChanged(Dataset* previousDataset, Dataset* currentDataset)
 {
-	_actors.insert(name, actor);
+	try
+	{
+		qDebug() << "Dataset changed to" << currentDataset->name();
 
-	connect(actor.get(), &Actor::changed, this, &Renderer::onActorChanged);
-}
+		bindOpenGLContext();
 
-void Renderer::createActors()
-{
-	//qDebug() << "Creating actors";
-	
-	addActor("ColorImageActor", QSharedPointer<ColorImageActor>::create(this, "ColorImageActor"));
-	addActor("SelectionImageActor", QSharedPointer<SelectionImageActor>::create(this, "SelectionImageActor"));
-	addActor("SelectionPickerActor", QSharedPointer<SelectionPickerActor>::create(this, "SelectionPickerActor"));
+		QMatrix4x4 modelMatrix;
 
-	colorImageActor()->show();
-	selectionImageActor()->show();
-	selectionPickerActor()->hide();
+		for (auto layerName : currentDataset->layerNames()) {
+			_actors.clear();
 
-	QMatrix4x4 modelMatrix;
+			const auto layerActorName = currentDataset->layerByName(layerName)->name();
 
-	colorImageActor()->setModelMatrix(modelMatrix);
+			addActor<LayerActor>(layerActorName);
 
-	modelMatrix.translate(0.0f, 0.0f, -1.0f);
+			auto layerActor = actorByName<LayerActor>(layerActorName);
 
-	selectionImageActor()->setModelMatrix(modelMatrix);
+			layerActor->show();
+			layerActor->setModelMatrix(modelMatrix);
+			layerActor->initialize();
 
-	modelMatrix.translate(0.0f, 0.0f, -1.0f);
+			modelMatrix.translate(0.0f, 0.0f, -1.0f);
+		}
 
-	selectionPickerActor()->setModelMatrix(modelMatrix);
-
-	connect(colorImageActor(), &ColorImageActor::endWindowLevel, [&]() {
-		setInteractionMode(InteractionMode::None);
-	});
-}
-
-void Renderer::initializeActors()
-{
-	//qDebug() << "Initializing" << _actors.size() << "actor(s)";
-
-	bindOpenGLContext();
-
-	for (auto name : _actors.keys()) {
-		_actors[name]->initialize();
+		zoomExtents();
 	}
-
-	connect(actorByName<ColorImageActor>("ColorImageActor"), &ColorImageActor::imageSizeChanged, this, [&]() { zoomExtents(); });
+	catch (const std::exception& e)
+	{
+		qDebug() << "An error occurred:" << e.what();
+	}
 }
 
 void Renderer::renderActors()
@@ -571,25 +555,11 @@ void Renderer::destroyActors()
 	}
 }
 
-ColorImageActor* Renderer::colorImageActor()
-{
-	return actorByName<ColorImageActor>("ColorImageActor");
-}
-
-SelectionPickerActor* Renderer::selectionPickerActor()
-{
-	return actorByName<SelectionPickerActor>("SelectionPickerActor");
-}
-
-SelectionImageActor* Renderer::selectionImageActor()
-{
-	return actorByName<SelectionImageActor>("SelectionImageActor");
-}
-
 QMenu* Renderer::viewMenu()
 {
 	auto* menu = new QMenu("View");
 
+	/*
 	auto* zoomToExtentsAction = new QAction("Zoom extents");
 	//auto* zoomToSelectionAction = new QAction("Zoom to selection");
 	auto* resetWindowLevelAction = new QAction("Reset window/level");
@@ -610,6 +580,7 @@ QMenu* Renderer::viewMenu()
 	//menu->addAction(zoomToSelectionAction);
 	menu->addSeparator();
 	menu->addAction(resetWindowLevelAction);
+	*/
 
 	return menu;
 }
@@ -620,7 +591,7 @@ QMenu* Renderer::contextMenu()
 
 	menu->addMenu(viewMenu());
 	menu->addSeparator();
-	menu->addMenu(selectionPickerActor()->contextMenu());
+	//menu->addMenu(selectionPickerActor()->contextMenu());
 
 	return menu;
 }
@@ -634,6 +605,7 @@ bool Renderer::allowsContextMenu()
 {
 	auto showContextMenu = false;
 
+	/*
 	switch (interactionMode())
 	{
 		case InteractionMode::Navigation:
@@ -653,6 +625,7 @@ bool Renderer::allowsContextMenu()
 		default:
 			break;
 	}
+	*/
 
 	return false;
 }

@@ -111,6 +111,33 @@ public: // Selection
 	/** Creates an image subset from the current selection */
 	void createSubsetFromSelection();
 
+public: // Layers
+
+	/**
+	* Add layer by name
+	* @param name Name of the layer
+	*/
+	void addLayer(const QString& name)
+	{
+		_layers.insert(name, QSharedPointer<Layer>::create(this, name));
+	}
+
+	/** Returns const pointer to layer by name */
+	const Layer* layerByName(const QString& name) const
+	{
+		return dynamic_cast<Layer*>(_layers[name].get());
+	}
+
+	/** Returns pointer to layer by name */
+	Layer* layerByName(const QString& name)
+	{
+		const auto constThis = const_cast<const Dataset*>(this);
+		return const_cast<Layer*>(constThis->layerByName(name));
+	}
+
+	/** Returns layer names */
+	QStringList layerNames();
+
 private:
 	/** Computes the color image */
 	void computeColorImage();
@@ -160,13 +187,13 @@ signals:
 	void selectionImageChanged(QSharedPointer<QImage> selectionImage, const QRect& selectionBounds);
 
 private:
-	QString			_name;						/** Dataset name */
-	Images*			_dataset;					/** Pointer to the Images HDPS data structure */
-	QStringList		_imageNames;				/** Image names */
-	std::int32_t	_currentImageIndex;			/** The index of the current image  */
-	QStringList		_dimensionNames;			/** Dimension names */
-	std::int32_t	_currentDimensionIndex;		/** The index of the current dimension */
-	bool			_average;					/** Whether to average images */
-	float			_selectionOpacity;			/** Selection opacity */
-	QVector<Layer>	_layers;					/** Layers */
+	QString									_name;						/** Dataset name */
+	Images*									_dataset;					/** Pointer to the Images HDPS data structure */
+	QStringList								_imageNames;				/** Image names */
+	std::int32_t							_currentImageIndex;			/** The index of the current image  */
+	QStringList								_dimensionNames;			/** Dimension names */
+	std::int32_t							_currentDimensionIndex;		/** The index of the current dimension */
+	bool									_average;					/** Whether to average images */
+	float									_selectionOpacity;			/** Selection opacity */
+	QMap<QString, QSharedPointer<Layer>>	_layers;					/** Layers */
 };

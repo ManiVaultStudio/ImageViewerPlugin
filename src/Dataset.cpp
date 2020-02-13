@@ -236,6 +236,11 @@ void Dataset::createSubsetFromSelection()
 	_dataset->createSubset();
 }
 
+QStringList Dataset::layerNames()
+{
+	return _layers.keys();
+}
+
 void Dataset::computeColorImage()
 {
 	qDebug() << _name << "compute color image";

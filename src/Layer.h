@@ -16,7 +16,7 @@ class Layer : public QObject
 
 public:
 	/** Constructor */
-	Layer(Dataset* dataset);
+	Layer(Dataset* dataset, const QString& name);
 
 	/** Destructor */
 	virtual ~Layer();

@@ -2,12 +2,14 @@
 
 #include "renderers/Renderer.h"
 #include "ImageData/ImageData.h"
+#include "Datasets.h"
 
 #include "Actor.h"
 
 #include <QColor>
 
 class ImageViewerWidget;
+class Datasets;
 class ColorImageActor;
 class SelectionImageActor;
 class SelectionPickerActor;
@@ -30,7 +32,7 @@ public:
 	 * Constructor
 	 * @param parentWidget Parent image viewer widget
 	 */
-	Renderer(ImageViewerWidget* parentWidget);
+	Renderer(ImageViewerWidget* parentWidget, Datasets* datasets);
 
 public:
 	/** Initialize the renderer */
@@ -209,21 +211,6 @@ public:
 	 */
 	void setSelectionOpacity(const float& selectionOpacity);
 
-	/** Returns const pointer to actor by name */
-	template<typename T>
-	const T* actorByName(const QString& name) const
-	{
-		return dynamic_cast<T*>(_actors[name].get());
-	}
-
-	/** Returns pointer to actor by name */
-	template<typename T>
-	T* actorByName(const QString& name)
-	{
-		const auto constThis = const_cast<const Renderer*>(this);
-		return const_cast<T*>(constThis->actorByName<T>(name));
-	}
-
 	/** Returns the interaction mode */
 	InteractionMode interactionMode() const;
 
@@ -239,34 +226,55 @@ public:
 	/** Releases the OpenGL context */
 	void releaseOpenGLContext();
 
-protected:
+protected: // Event handlers
 	/**
 	 * Invoked when an actor has changed
 	 * @param actor Actor
 	 */
 	void onActorChanged(Actor* actor);
+	
+	/**
+	 * Invoked when the current dataset changed
+	 * @param previousDataset Previous dataset (if any)
+	 * @param currentDataset Current dataset
+	 */
+	void onCurrentDatasetChanged(Dataset* previousDataset, Dataset* currentDataset);
 
-private:
-	/** Add an actor
-	 * @param actor Shared pointer to actor
+private: // Actors
+	/**
+	* Add actor by name
+	* @param name Name of the actor
 	*/
-	void addActor(const QString& name, QSharedPointer<Actor> actor);
+	template<typename T>
+	void addActor(const QString& name)
+	{
+		auto actor = QSharedPointer<T>::create(this, name);
 
-	/** Create shapes */
-	void createActors();
+		_actors.insert(name, actor);
 
-	/** Initialize shapes */
-	void initializeActors();
+		connect(actor.get(), &Actor::changed, this, &Renderer::onActorChanged);
+	}
 
-	/** Render shapes */
+	/** Returns const pointer to actor by name */
+	template<typename T>
+	const T* actorByName(const QString& name) const
+	{
+		return dynamic_cast<T*>(_actors[name].get());
+	}
+
+	/** Returns pointer to actor by name */
+	template<typename T>
+	T* actorByName(const QString& name)
+	{
+		const auto constThis = const_cast<const Renderer*>(this);
+		return const_cast<T*>(constThis->actorByName<T>(name));
+	}
+
+	/** Render actors */
 	void renderActors();
 
 	/** Destroy shapes */
 	void destroyActors();
-
-	ColorImageActor* colorImageActor();
-	SelectionImageActor* selectionImageActor();
-	SelectionPickerActor* selectionPickerActor();
 
 signals:
 	/** Signals that the renderer just became dirty (one or more shapes need to be re-rendered) */
@@ -310,6 +318,7 @@ signals:
 
 protected:
 	ImageViewerWidget*						_parentWidget;			/** Pointer to parent widget */
+	Datasets*								_datasets;				/** Pointer to datasets */
 	InteractionMode							_interactionMode;		/** Type of interaction e.g. navigation, selection and window/level */
 	QVector<QSharedPointer<QMouseEvent>>	_mouseEvents;			/** Recorded mouse events during interaction */
 	QVector2D								_pan;					/** Move view horizontally/vertically */

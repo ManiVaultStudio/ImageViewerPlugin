@@ -17,7 +17,7 @@
 ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	QOpenGLFunctions(),
 	_imageViewerPlugin(imageViewerPlugin),
-	_renderer(QSharedPointer<Renderer>::create(this)),
+	_renderer(QSharedPointer<Renderer>::create(this, imageViewerPlugin->datasets())),
 	_openglDebugLogger(std::make_unique<QOpenGLDebugLogger>())
 {
 	setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));

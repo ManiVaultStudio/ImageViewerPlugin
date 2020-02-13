@@ -3,10 +3,10 @@
 
 #include <QDebug>
 
-Layer::Layer(Dataset* dataset) :
+Layer::Layer(Dataset* dataset, const QString& name) :
 	QObject(),
 	_dataset(dataset),
-	_name(),
+	_name(name),
 	_order(0),
 	_opacity(),
 	_image()
