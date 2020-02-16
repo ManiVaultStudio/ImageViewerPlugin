@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ImageData/Images.h"
+#include "DisplayImage.h"
 
 #include <QImage>
 
@@ -54,14 +55,45 @@ public:
 	 */
 	void setOpacity(const float& opacity);
 
-	/** Returns the layer image */
-	const QImage image() const;
-
 	/**
 	 * Sets the image
 	 * @param image Layer image
 	 */
 	void setImage(const QImage& image);
+
+	/** Returns the image min and max values */
+	QPair<float, float> imageRange() const;
+
+	/** Returns the image min and max values */
+	QPair<float, float> displayRange() const;
+
+	/** Returns the normalized display window */
+	float windowNormalized() const;
+
+	/** Returns the display window */
+	float window() const;
+
+	/** Returns the normalized display level */
+	float levelNormalized() const;
+
+	/** Returns the display level */
+	float level() const;
+
+	/**
+	 * TODO
+	 */
+	void setWindowLevel(const float& window, const float& level);
+
+protected:
+	/**
+	 * TODO
+	 */
+	void computeImageRange();
+
+	/**
+	 * TODO
+	 */
+	void computeDisplayRange();
 
 signals:
 	/**
@@ -77,21 +109,37 @@ signals:
 	void orderChanged(const std::uint32_t& order);
 
 	/**
-	 * Signals the opacity changed
-	 * @param opacity Opacity of the layer
+	 * TODO
+	 */
+	void imageChanged(const QImage& image);
+
+	/**
+	 * TODO
 	 */
 	void opacityChanged(const float& opacity);
 
 	/**
-	 * Signals the image changed
-	 * @param image Layer image
+	 * TODO
 	 */
-	void imageChanged(const QImage& image);
+	void imageRangeChanged(const float& min, const float& max);
+
+	/**
+	 * TODO
+	 */
+	void displayRangeChanged(const float& min, const float& max);
+
 
 private:
-	Dataset*			_dataset;	/** Parent dataset */
-	QString				_name;		/** Name of the layer */
-	std::uint32_t		_order;		/** Depth at which to render the layer */
-	float				_opacity;	/** Opacity  of the layer */
-	QImage				_image;		/** Layer image */
+	Dataset*				_dataset;				/** Parent dataset */
+	QString					_name;					/** Name of the layer */
+	std::uint32_t			_order;					/** Depth at which to render the layer */
+	float					_opacity;				/** Opacity of the layer */
+	QImage					_image;					/** Image */
+	QPair<float, float>		_imageRange;			/** Image range */
+	QPair<float, float>		_displayRange;			/** Display range */
+	float					_windowNormalized;		/** Normalized display window */
+	float					_levelNormalized;		/** Normalized display level */
+	float					_window;				/** Display window */
+	float					_level;					/** Display level */
+	
 };

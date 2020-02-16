@@ -25,6 +25,8 @@ set(PLUGIN
 	src/Common.h
 	src/Layer.h
 	src/Layer.cpp
+	src/WindowLevel.h
+	src/WindowLevel.cpp
 	src/Dataset.h
 	src/Dataset.cpp
 	src/Datasets.h

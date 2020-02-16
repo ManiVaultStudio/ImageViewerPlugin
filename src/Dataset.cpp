@@ -64,6 +64,9 @@ Dataset::Dataset(const QString& name, Images* images) :
 			_dimensionNames = imageFileNames;
 		}
 	}
+
+	addLayerByName("ColorImage");
+	addLayerByName("SelectionImage");
 }
 
 Dataset::~Dataset() = default;
@@ -266,13 +269,13 @@ void Dataset::computeColorImage()
 				}
 			}
 
-			emit colorImageChanged(QSharedPointer<QImage>::create(*_dataset->sequenceImage(ids).get()));
+			layerByName("ColorImage")->setImage(*_dataset->sequenceImage(ids).get());
 			break;
 		}
 
 		case ImageCollectionType::Stack:
 		{
-			emit colorImageChanged(QSharedPointer<QImage>::create(*_dataset->stackImage(_currentDimensionIndex).get()));
+			layerByName("ColorImage")->setImage(*_dataset->stackImage(_currentDimensionIndex).get());
 			break;
 		}
 
@@ -286,9 +289,6 @@ void Dataset::computeSelectionImage()
 	qDebug() << _name << "compute selection image";
 
 	if (imageCollectionType() == ImageCollectionType::Stack) {
-		emit selectionImageChanged(QSharedPointer<QImage>::create(*_dataset->selectionImage().get()), _dataset->selectionBounds(true));
-	}
-	else {
-		emit selectionImageChanged(QSharedPointer<QImage>::create(), QRect());
+		layerByName("SelectionImage")->setImage(*_dataset->selectionImage().get());
 	}
 }

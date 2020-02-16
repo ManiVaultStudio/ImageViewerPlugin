@@ -178,6 +178,8 @@ public:
 
 	Renderer* renderer();
 
+protected: // Prop management
+
 	/** Returns const pointer to prop by name */
 	template<typename T>
 	const T* propByName(const QString& name) const
@@ -210,6 +212,14 @@ public:
 		connect(prop.get(), &Prop::changed, [&](Prop* shape) {
 			emit changed(this);
 		});
+	}
+
+	void removePropByName(const QString& name)
+	{
+		if (!_props.contains(name))
+			throw std::exception(QString("Unable to remove %1, it does not exist in %2").arg(name, _name).toLatin1());
+
+		_props.remove(name);
 	}
 
 	/** Returns the recorded mouse events */

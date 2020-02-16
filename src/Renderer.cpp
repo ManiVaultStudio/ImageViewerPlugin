@@ -477,8 +477,8 @@ void Renderer::setInteractionMode(const InteractionMode& interactionMode)
 	
 	_interactionMode = interactionMode;
 
-	actorByName<ColorImageActor>("ColorImageActor")->setEnabled(_interactionMode == InteractionMode::WindowLevel);
-	actorByName<SelectionPickerActor>("SelectionPickerActor")->setEnabled(_interactionMode == InteractionMode::Selection);
+	//actorByName<ColorImageActor>("ColorImageActor")->setEnabled(_interactionMode == InteractionMode::WindowLevel);
+	//actorByName<SelectionPickerActor>("SelectionPickerActor")->setEnabled(_interactionMode == InteractionMode::Selection);
 	//actorByName<SelectionPickerActor>("SelectionPickerActor")->setVisible(_interactionMode == InteractionMode::Selection);
 }
 
@@ -512,12 +512,15 @@ void Renderer::onCurrentDatasetChanged(Dataset* previousDataset, Dataset* curren
 		for (auto layerName : currentDataset->layerNames()) {
 			_actors.clear();
 
-			const auto layerActorName = currentDataset->layerByName(layerName)->name();
+			auto layer = currentDataset->layerByName(layerName);
+
+			const auto layerActorName = layer->name();
 
 			addActor<LayerActor>(layerActorName);
 
 			auto layerActor = actorByName<LayerActor>(layerActorName);
 
+			layerActor->setLayer(layer);
 			layerActor->show();
 			layerActor->setModelMatrix(modelMatrix);
 			layerActor->initialize();

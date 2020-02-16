@@ -9,7 +9,13 @@ Layer::Layer(Dataset* dataset, const QString& name) :
 	_name(name),
 	_order(0),
 	_opacity(),
-	_image()
+	_image(),
+	_imageRange(),
+	_displayRange(),
+	_windowNormalized(1.0f),
+	_levelNormalized(0.5f),
+	_window(1.0f),
+	_level(0.5f)
 {
 }
 
@@ -73,14 +79,9 @@ void Layer::setOpacity(const float& opacity)
 
 	_opacity = opacity;
 
-	qDebug() << fullName() << "set opacity to" << _opacity;
+	qDebug() << fullName() << "set opacity to" << QString::number(_opacity, 'f', 2);
 
 	emit opacityChanged(_opacity);
-}
-
-const QImage Layer::image() const
-{
-	return _image;
 }
 
 void Layer::setImage(const QImage& image)
@@ -92,5 +93,99 @@ void Layer::setImage(const QImage& image)
 
 	qDebug() << fullName() << "set image";
 
-	emit opacityChanged(_opacity);
+	computeImageRange();
+	computeDisplayRange();
+
+	emit imageChanged(_image);
+}
+
+QPair<float, float> Layer::imageRange() const
+{
+	return _imageRange;
+}
+
+QPair<float, float> Layer::displayRange() const
+{
+	return _displayRange;
+}
+
+float Layer::windowNormalized() const
+{
+	return _windowNormalized;
+}
+
+float Layer::window() const
+{
+	return _window;
+}
+
+float Layer::levelNormalized() const
+{
+	return _levelNormalized;
+}
+
+float Layer::level() const
+{
+	return _level;
+}
+
+void Layer::setWindowLevel(const float& window, const float& level)
+{
+	if (window == _windowNormalized && level == _levelNormalized)
+		return;
+
+	qDebug() << fullName() << "set window/level" << QString::number(window, 'f', 2) << QString::number(level, 'f', 2);
+
+	_windowNormalized	= std::clamp(window, 0.01f, 1.0f);
+	_levelNormalized	= std::clamp(level, 0.01f, 1.0f);
+
+	computeDisplayRange();
+}
+
+void Layer::computeImageRange()
+{
+	if (_image.isNull())
+		return;
+
+	qDebug() << fullName() << "compute image range";
+
+	auto imageBits = reinterpret_cast<ushort*>(const_cast<uchar*>(_image.bits()));
+
+	const auto noPixels = _image.width() * _image.height();
+
+	_imageRange.first = std::numeric_limits<float>::max();
+	_imageRange.second = std::numeric_limits<float>::min();
+
+	for (std::int32_t y = 0; y < _image.height(); y++)
+	{
+		for (std::int32_t x = 0; x < _image.width(); x++)
+		{
+			const auto pixelId = y * _image.width() + x;
+
+			for (int c = 0; c < 3; c++)
+			{
+				const auto channel = static_cast<float>(imageBits[pixelId * 4 + c]);
+
+				if (channel < _imageRange.first)
+					_imageRange.first = channel;
+
+				if (channel > _imageRange.second)
+					_imageRange.second = channel;
+			}
+		}
+	}
+
+	emit imageRangeChanged(_displayRange.first, _displayRange.second);
+}
+
+void Layer::computeDisplayRange()
+{
+	const auto maxWindow = _imageRange.second - _imageRange.first;
+
+	_level					= std::clamp(_imageRange.first + (_levelNormalized * maxWindow), _imageRange.first, _imageRange.second);
+	_window					= std::clamp(_windowNormalized * maxWindow, _imageRange.first, _imageRange.second);
+	_displayRange.first		= std::clamp(_level - (_window / 2.0f), _imageRange.first, _imageRange.second);
+	_displayRange.second	= std::clamp(_level + (_window / 2.0f), _imageRange.first, _imageRange.second);
+
+	emit displayRangeChanged(_displayRange.first, _displayRange.second);
 }

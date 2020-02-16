@@ -27,30 +27,6 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 
 	connect(_renderer.get(), &Renderer::dirty, this, &ImageViewerWidget::onRendererDirty);
 
-	connect(_imageViewerPlugin->datasets(), &Datasets::currentDatasetChanged, this, [&](Dataset* previousDataset, Dataset* currentDataset) {
-		if (previousDataset) {
-			disconnect(previousDataset, &Dataset::colorImageChanged, this, nullptr);
-			disconnect(previousDataset, &Dataset::selectionImageChanged, this, nullptr);
-		}
-
-		if (currentDataset) {
-			connect(currentDataset, &Dataset::colorImageChanged, this, [&](QSharedPointer<QImage> colorImage) {
-				_renderer->setColorImage(colorImage);
-			});
-
-			connect(currentDataset, &Dataset::selectionImageChanged, this, [&](QSharedPointer<QImage> selectionImage, const QRect& selectionBounds) {
-				_renderer->setSelectionImage(selectionImage, selectionBounds);
-			});
-		}
-	}, Qt::AutoConnection);
-
-	/*
-	connect(_imageViewerPlugin, &ImageViewerPlugin::displayImageChanged, this, [&](std::shared_ptr<QImage> image) {
-		_renderer->setColorImage(image);
-
-	}, Qt::AutoConnection);
-	*/
-
 	QSurfaceFormat surfaceFormat;
 
 	surfaceFormat.setRenderableType(QSurfaceFormat::OpenGL);

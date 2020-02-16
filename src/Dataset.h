@@ -117,7 +117,7 @@ public: // Layers
 	* Add layer by name
 	* @param name Name of the layer
 	*/
-	void addLayer(const QString& name)
+	void addLayerByName(const QString& name)
 	{
 		_layers.insert(name, QSharedPointer<Layer>::create(this, name));
 	}
@@ -174,17 +174,14 @@ signals:
 	void selectionChanged();
 
 	/**
-	 * Signals the color image changed
-	 * @param colorImage Color image
+	 * 
 	 */
-	void colorImageChanged(QSharedPointer<QImage> colorImage);
+	void addLayer(Layer* layer);
 
 	/**
-	 * Invoked when the selection image changes
-	 * @param selectionImage Selection image
-	 * @param selectionBounds Bounds of the selected pixels in the selection image
+	 *
 	 */
-	void selectionImageChanged(QSharedPointer<QImage> selectionImage, const QRect& selectionBounds);
+	void removeLayer(Layer* layer);
 
 private:
 	QString									_name;						/** Dataset name */
