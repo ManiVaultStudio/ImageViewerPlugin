@@ -1,10 +1,10 @@
-#include "Dataset.h"
+#include "ImageDataset.h"
 
 #include <QFileInfo>
 #include <QMenu>
 #include <QDebug>
 
-Dataset::Dataset(const QString& name, Images* images) : 
+ImageDataset::ImageDataset(const QString& name, Images* images) : 
 	QObject(),
 	_name(name),
 	_dataset(images),
@@ -14,7 +14,7 @@ Dataset::Dataset(const QString& name, Images* images) :
 	_currentDimensionIndex(0),
 	_average(false),
 	_selectionOpacity(0.5f),
-	_layers()
+	_imageLayers()
 {
 	auto imageFileNames = QStringList();
 
@@ -69,34 +69,34 @@ Dataset::Dataset(const QString& name, Images* images) :
 	addLayerByName("SelectionImage");
 }
 
-Dataset::~Dataset() = default;
+ImageDataset::~ImageDataset() = default;
 
-QString Dataset::name() const
+QString ImageDataset::name() const
 {
 	return _name;
 }
 
-QSize Dataset::imageSize() const
+QSize ImageDataset::imageSize() const
 {
 	return _dataset->imageSize();
 }
 
-QStringList Dataset::imageNames() const
+QStringList ImageDataset::imageNames() const
 {
 	return _imageNames;
 }
 
-QStringList Dataset::dimensionNames() const
+QStringList ImageDataset::dimensionNames() const
 {
 	return _dimensionNames;
 }
 
-auto Dataset::currentImageId() const
+auto ImageDataset::currentImageId() const
 {
 	return _currentImageIndex;
 }
 
-void Dataset::setCurrentImageId(const std::int32_t& currentImageIndex)
+void ImageDataset::setCurrentImageId(const std::int32_t& currentImageIndex)
 {
 	if (currentImageIndex == _currentImageIndex)
 		return;
@@ -113,12 +113,12 @@ void Dataset::setCurrentImageId(const std::int32_t& currentImageIndex)
 	computeColorImage();
 }
 
-auto Dataset::currentDimensionIndex() const
+auto ImageDataset::currentDimensionIndex() const
 {
 	return _currentDimensionIndex;
 }
 
-void Dataset::setCurrentDimensionIndex(const std::int32_t& currentDimensionIndex)
+void ImageDataset::setCurrentDimensionIndex(const std::int32_t& currentDimensionIndex)
 {
 	if (currentDimensionIndex == _currentDimensionIndex)
 		return;
@@ -135,12 +135,12 @@ void Dataset::setCurrentDimensionIndex(const std::int32_t& currentDimensionIndex
 	computeColorImage();
 }
 
-bool Dataset::average() const
+bool ImageDataset::average() const
 {
 	return _average;
 }
 
-void Dataset::setAverage(const bool& average)
+void ImageDataset::setAverage(const bool& average)
 {
 	if (average == _average)
 		return;
@@ -154,17 +154,17 @@ void Dataset::setAverage(const bool& average)
 	computeColorImage();
 }
 
-bool Dataset::canAverage() const
+bool ImageDataset::canAverage() const
 {
 	return _dataset->imageCollectionType() == ImageCollectionType::Sequence;
 }
 
-float Dataset::selectionOpacity() const
+float ImageDataset::selectionOpacity() const
 {
 	return _selectionOpacity;
 }
 
-void Dataset::setSelectionOpacity(const float& selectionOpacity)
+void ImageDataset::setSelectionOpacity(const float& selectionOpacity)
 {
 	if (selectionOpacity == _selectionOpacity)
 		return;
@@ -176,19 +176,19 @@ void Dataset::setSelectionOpacity(const float& selectionOpacity)
 	emit selectionOpacityChanged(_selectionOpacity);
 }
 
-void Dataset::setSelectionChanged()
+void ImageDataset::setSelectionChanged()
 {
 	emit selectionChanged();
 
 	computeSelectionImage();
 }
 
-ImageCollectionType Dataset::imageCollectionType() const
+ImageCollectionType ImageDataset::imageCollectionType() const
 {
 	return _dataset->imageCollectionType();
 }
 
-QMenu* Dataset::contextMenu() const
+QMenu* ImageDataset::contextMenu() const
 {
 	auto contextMenu = new QMenu();
 	/*
@@ -207,44 +207,44 @@ QMenu* Dataset::contextMenu() const
 	return contextMenu;
 }
 
-std::vector<std::uint32_t> Dataset::selection() const
+std::vector<std::uint32_t> ImageDataset::selection() const
 {
 	return _dataset->indices();
 }
 
-std::uint32_t Dataset::noSelectedPixels() const
+std::uint32_t ImageDataset::noSelectedPixels() const
 {
 	return _dataset->noSelectedPixels();
 }
 
-bool Dataset::hasSelection() const
+bool ImageDataset::hasSelection() const
 {
 	return noSelectedPixels() > 0;
 }
 
-bool Dataset::isPixelSelectionAllowed() const
+bool ImageDataset::isPixelSelectionAllowed() const
 {
 	return _dataset->imageCollectionType() == ImageCollectionType::Stack;
 }
 
-void Dataset::selectPixels(const std::vector<std::pair<std::uint32_t, std::uint32_t>>& pixelCoordinates, const SelectionModifier& selectionModifier)
+void ImageDataset::selectPixels(const std::vector<std::pair<std::uint32_t, std::uint32_t>>& pixelCoordinates, const SelectionModifier& selectionModifier)
 {
 	_dataset->selectPixels(pixelCoordinates, selectionModifier);
 }
 
-void Dataset::createSubsetFromSelection()
+void ImageDataset::createSubsetFromSelection()
 {
 	qDebug() << "Create subset from selection";
 
 	_dataset->createSubset();
 }
 
-QStringList Dataset::layerNames()
+QStringList ImageDataset::layerNames()
 {
-	return _layers.keys();
+	return _imageLayers.keys();
 }
 
-void Dataset::computeColorImage()
+void ImageDataset::computeColorImage()
 {
 	qDebug() << _name << "compute color image";
 
@@ -284,7 +284,7 @@ void Dataset::computeColorImage()
 	}
 }
 
-void Dataset::computeSelectionImage()
+void ImageDataset::computeSelectionImage()
 {
 	qDebug() << _name << "compute selection image";
 

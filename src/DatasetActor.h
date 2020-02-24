@@ -3,7 +3,7 @@
 #include "Actor.h"
 
 class Renderer;
-class Dataset;
+class ImageDataset;
 class ImageLayer;
 
 /**
@@ -21,19 +21,19 @@ public:
 	 * Sets the layer
 	 * @param layer Layer
 	 */
-	void setDataset(Dataset* dataset);
+	void setDataset(ImageDataset* dataset);
 
 protected: // Dataset linking
 
 	/**
 	 * 
 	 */
-	void connectToDataset(Dataset* dataset);
+	void connectToDataset(ImageDataset* dataset);
 
 	/**
 	 * 
 	 */
-	void disconnectFromDataset(Dataset* dataset);
+	void disconnectFromDataset(ImageDataset* dataset);
 
 protected: // Event handlers
 
@@ -60,5 +60,5 @@ protected: // Layer prop management
 	void removeLayerProp(ImageLayer* layer);
 
 private:
-	Dataset*		_dataset;		/** Layer */
+	ImageDataset*		_dataset;		/** Layer */
 };

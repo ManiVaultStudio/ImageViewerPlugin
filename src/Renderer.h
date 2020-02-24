@@ -2,14 +2,14 @@
 
 #include "renderers/Renderer.h"
 #include "ImageData/ImageData.h"
-#include "Datasets.h"
+#include "ImageDatasets.h"
 
 #include "Actor.h"
 
 #include <QColor>
 
 class ImageViewerWidget;
-class Datasets;
+class ImageDatasets;
 class ColorImageActor;
 class SelectionImageActor;
 class SelectionPickerActor;
@@ -32,7 +32,7 @@ public:
 	 * Constructor
 	 * @param parentWidget Parent image viewer widget
 	 */
-	Renderer(ImageViewerWidget* parentWidget, Datasets* datasets);
+	Renderer(ImageViewerWidget* parentWidget, ImageDatasets* datasets);
 
 public:
 	/** Initialize the renderer */
@@ -238,7 +238,7 @@ protected: // Event handlers
 	 * @param previousDataset Previous dataset (if any)
 	 * @param currentDataset Current dataset
 	 */
-	void onCurrentDatasetChanged(Dataset* previousDataset, Dataset* currentDataset);
+	void onCurrentDatasetChanged(ImageDataset* previousDataset, ImageDataset* currentDataset);
 
 private: // Actors
 
@@ -251,7 +251,7 @@ private: // Actors
 	{
 		_actors.insert(name, QSharedPointer<T>(actor));
 
-		connect(actor.get(), &Actor::changed, this, &Renderer::onActorChanged);
+		connect(actor, &Actor::changed, this, &Renderer::onActorChanged);
 	}
 
 	/** Returns const pointer to actor by name */
@@ -317,7 +317,7 @@ signals:
 
 protected:
 	ImageViewerWidget*						_parentWidget;			/** Pointer to parent widget */
-	Datasets*								_datasets;				/** Pointer to datasets */
+	ImageDatasets*								_datasets;				/** Pointer to datasets */
 	InteractionMode							_interactionMode;		/** Type of interaction e.g. navigation, selection and window/level */
 	QVector<QSharedPointer<QMouseEvent>>	_mouseEvents;			/** Recorded mouse events during interaction */
 	QVector2D								_pan;					/** Move view horizontally/vertically */

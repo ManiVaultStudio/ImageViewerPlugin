@@ -1,7 +1,7 @@
 #include "DatasetActor.h"
 #include "LayerProp.h"
 #include "Renderer.h"
-#include "Dataset.h"
+#include "ImageDataset.h"
 
 #include <QOpenGLTexture>
 #include <QDebug>
@@ -12,7 +12,7 @@ DatasetActor::DatasetActor(Renderer* renderer, const QString& name) :
 {
 }
 
-void DatasetActor::setDataset(Dataset* dataset)
+void DatasetActor::setDataset(ImageDataset* dataset)
 {
 	if (dataset == _dataset)
 		return;
@@ -47,26 +47,26 @@ void DatasetActor::setDataset(Dataset* dataset)
 	*/
 }
 
-void DatasetActor::connectToDataset(Dataset* dataset)
+void DatasetActor::connectToDataset(ImageDataset* dataset)
 {
 	if (dataset == nullptr)
 		return;
 
 	qDebug() << "Connecting to dataset" << dataset->name();
 
-	QObject::connect(dataset, &Dataset::addLayer, this, &DatasetActor::onAddLayer);
-	QObject::connect(dataset, &Dataset::removeLayer, this, &DatasetActor::onRemoveLayer);
+	QObject::connect(dataset, &ImageDataset::addLayer, this, &DatasetActor::onAddLayer);
+	QObject::connect(dataset, &ImageDataset::removeLayer, this, &DatasetActor::onRemoveLayer);
 }
 
-void DatasetActor::disconnectFromDataset(Dataset* dataset)
+void DatasetActor::disconnectFromDataset(ImageDataset* dataset)
 {
 	if (dataset == nullptr)
 		return;
 
 	qDebug() << "Disconnecting from dataset" << dataset->name();
 
-	QObject::disconnect(dataset, &Dataset::addLayer, this, &DatasetActor::onAddLayer);
-	QObject::disconnect(dataset, &Dataset::removeLayer, this, &DatasetActor::onRemoveLayer);
+	QObject::disconnect(dataset, &ImageDataset::addLayer, this, &DatasetActor::onAddLayer);
+	QObject::disconnect(dataset, &ImageDataset::removeLayer, this, &DatasetActor::onRemoveLayer);
 }
 
 void DatasetActor::onAddLayer(ImageLayer* layer)

@@ -4,8 +4,8 @@
 
 #include <QWidget>
 
-class Datasets;
-class Dataset;
+class ImageDatasets;
+class ImageDataset;
 
 namespace Ui {
 	class SettingsWidget;
@@ -22,7 +22,7 @@ public:
 	 * Constructor
 	 * @param datasets Pointer to datasets
 	 */
-	SettingsWidget(Datasets* datasets);
+	SettingsWidget(ImageDatasets* datasets);
 
 	/** Destructor */
 	~SettingsWidget();
@@ -38,9 +38,9 @@ private:
 	 * Invoked when current data set changes
 	 * @param currentDataset Current data set
 	 */
-	void onCurrentDatasetChanged(Dataset* previousDataset, Dataset* currentDataset);
+	void onCurrentDatasetChanged(ImageDataset* previousDataset, ImageDataset* currentDataset);
 
 private:
-	Datasets*								_datasets;		/** Pointer to datasets */
+	ImageDatasets*								_datasets;		/** Pointer to datasets */
 	std::unique_ptr<Ui::SettingsWidget>		_ui;			/** UI */
 };

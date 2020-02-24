@@ -11,7 +11,7 @@ class QMenu;
  * Dataset class
  * @author Thomas Kroes
  */
-class Dataset : public QObject
+class ImageDataset : public QObject
 {
 	Q_OBJECT
 
@@ -21,10 +21,10 @@ public:
 	 * @param name Name of the dataset
 	 * @param images Pointer to HDPS images dataset
 	 */
-	Dataset(const QString& name, Images* images);
+	ImageDataset(const QString& name, Images* images);
 
 	/** Destructor */
-	virtual ~Dataset();
+	virtual ~ImageDataset();
 
 public:
 	/** Returns the dataset name */
@@ -119,19 +119,19 @@ public: // Layers
 	*/
 	void addLayerByName(const QString& name)
 	{
-		_layers.insert(name, QSharedPointer<ImageLayer>::create(this, name));
+		_imageLayers.insert(name, QSharedPointer<ImageLayer>::create(this, name));
 	}
 
 	/** Returns const pointer to layer by name */
 	const ImageLayer* layerByName(const QString& name) const
 	{
-		return dynamic_cast<ImageLayer*>(_layers[name].get());
+		return dynamic_cast<ImageLayer*>(_imageLayers[name].get());
 	}
 
 	/** Returns pointer to layer by name */
 	ImageLayer* layerByName(const QString& name)
 	{
-		const auto constThis = const_cast<const Dataset*>(this);
+		const auto constThis = const_cast<const ImageDataset*>(this);
 		return const_cast<ImageLayer*>(constThis->layerByName(name));
 	}
 
@@ -184,13 +184,13 @@ signals:
 	void removeLayer(ImageLayer* layer);
 
 private:
-	QString									_name;						/** Dataset name */
-	Images*									_dataset;					/** Pointer to the Images HDPS data structure */
-	QStringList								_imageNames;				/** Image names */
-	std::int32_t							_currentImageIndex;			/** The index of the current image  */
-	QStringList								_dimensionNames;			/** Dimension names */
-	std::int32_t							_currentDimensionIndex;		/** The index of the current dimension */
-	bool									_average;					/** Whether to average images */
-	float									_selectionOpacity;			/** Selection opacity */
-	QMap<QString, QSharedPointer<ImageLayer>>	_layers;					/** Layers */
+	QString										_name;						/** Dataset name */
+	Images*										_dataset;					/** Pointer to the Images HDPS data structure */
+	QStringList									_imageNames;				/** Image names */
+	std::int32_t								_currentImageIndex;			/** The index of the current image  */
+	QStringList									_dimensionNames;			/** Dimension names */
+	std::int32_t								_currentDimensionIndex;		/** The index of the current dimension */
+	bool										_average;					/** Whether to average images */
+	float										_selectionOpacity;			/** Selection opacity */
+	QMap<QString, QSharedPointer<ImageLayer>>	_imageLayers;				/** Image layers */
 };

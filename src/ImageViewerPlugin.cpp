@@ -21,7 +21,7 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	//setFocusPolicy(Qt::FocusPolicy::StrongFocus);
 
 	_imageViewerWidget	= new ImageViewerWidget(this);
-	_settingsWidget		= new SettingsWidget(&_datasets);
+	_settingsWidget		= new SettingsWidget(&_imageDatasets);
 }
 
 void ImageViewerPlugin::init()
@@ -68,16 +68,16 @@ void ImageViewerPlugin::updateWindowTitle()
 	setWindowTitle(QString("%1").arg(properties.join(", ")));
 }
 
-Datasets* ImageViewerPlugin::datasets()
+ImageDatasets* ImageViewerPlugin::datasets()
 {
-	return &_datasets;
+	return &_imageDatasets;
 }
 
 void ImageViewerPlugin::dataAdded(const QString dataset)
 {
 	qDebug() << "Data added" << dataset;
 
-	_datasets.add(dataset, QSharedPointer<Dataset>::create(dataset, &_core->requestData<Images>(dataset)));
+	_imageDatasets.add(dataset, QSharedPointer<ImageDataset>::create(dataset, &_core->requestData<Images>(dataset)));
 }
 
 void ImageViewerPlugin::dataChanged(const QString dataset)
@@ -92,7 +92,7 @@ void ImageViewerPlugin::dataRemoved(const QString dataset)
 
 void ImageViewerPlugin::selectionChanged(const QString dataset)
 {
-	emit _datasets.currentDataset()->setSelectionChanged();
+	emit _imageDatasets.currentDataset()->setSelectionChanged();
 }
 
 hdps::DataTypes ImageViewerPlugin::supportedDataTypes() const

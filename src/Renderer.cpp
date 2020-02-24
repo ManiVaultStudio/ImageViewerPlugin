@@ -10,7 +10,7 @@
 #include "SelectionPickerActor.h"
 #include "DatasetActor.h"
 
-Renderer::Renderer(ImageViewerWidget* parentWidget, Datasets* datasets) :
+Renderer::Renderer(ImageViewerWidget* parentWidget, ImageDatasets* datasets) :
 	hdps::Renderer(),
 	_parentWidget(parentWidget),
 	_datasets(datasets),
@@ -25,7 +25,7 @@ Renderer::Renderer(ImageViewerWidget* parentWidget, Datasets* datasets) :
 	addNamedColor("InterimSelectionOverlayColor", QColor(239, 130, 13, 50));
 	addNamedColor("SelectionOutline", QColor(239, 130, 13, 255));
 
-	connect(_datasets, &Datasets::currentDatasetChanged, this, &Renderer::onCurrentDatasetChanged);
+	connect(_datasets, &ImageDatasets::currentDatasetChanged, this, &Renderer::onCurrentDatasetChanged);
 }
 
 void Renderer::init()
@@ -499,7 +499,7 @@ void Renderer::onActorChanged(Actor* actor)
 	emit dirty();
 }
 
-void Renderer::onCurrentDatasetChanged(Dataset* previousDataset, Dataset* currentDataset)
+void Renderer::onCurrentDatasetChanged(ImageDataset* previousDataset, ImageDataset* currentDataset)
 {
 	try
 	{

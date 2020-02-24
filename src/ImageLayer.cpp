@@ -1,9 +1,9 @@
 #include "ImageLayer.h"
-#include "Dataset.h"
+#include "ImageDataset.h"
 
 #include <QDebug>
 
-ImageLayer::ImageLayer(Dataset* dataset, const QString& name) :
+ImageLayer::ImageLayer(ImageDataset* dataset, const QString& name) :
 	QObject(),
 	_dataset(dataset),
 	_name(name),
@@ -21,7 +21,7 @@ ImageLayer::ImageLayer(Dataset* dataset, const QString& name) :
 
 ImageLayer::~ImageLayer() = default;
 
-Dataset* ImageLayer::dataset()
+ImageDataset* ImageLayer::dataset()
 {
 	return _dataset;
 }

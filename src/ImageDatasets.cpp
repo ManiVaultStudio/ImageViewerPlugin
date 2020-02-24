@@ -1,17 +1,17 @@
-#include "Datasets.h"
+#include "ImageDatasets.h"
 
 #include <QDebug>
 
-Datasets::Datasets() :
+ImageDatasets::ImageDatasets() :
 	QObject(),
 	_datasets(),
 	_currentDatasetName()
 {
 }
 
-Datasets::~Datasets() = default;
+ImageDatasets::~ImageDatasets() = default;
 
-void Datasets::add(const QString& name, const QSharedPointer<Dataset>& dataset)
+void ImageDatasets::add(const QString& name, const QSharedPointer<ImageDataset>& dataset)
 {
 	if (_datasets.contains(name))
 		throw std::exception(QString("Dataset %1 already exists").arg(name).toLatin1());
@@ -27,7 +27,7 @@ void Datasets::add(const QString& name, const QSharedPointer<Dataset>& dataset)
 	setCurrentDatasetName(name);
 }
 
-void Datasets::setCurrentDatasetName(const QString& currentDatasetName)
+void ImageDatasets::setCurrentDatasetName(const QString& currentDatasetName)
 {
 	if (currentDatasetName == _currentDatasetName)
 		return;
@@ -44,12 +44,12 @@ void Datasets::setCurrentDatasetName(const QString& currentDatasetName)
 	emit currentDataset()->selectionChanged();
 }
 
-Dataset* Datasets::currentDataset()
+ImageDataset* ImageDatasets::currentDataset()
 {
 	return datasetByName(_currentDatasetName);
 }
 
-Dataset* Datasets::datasetByName(const QString& datasetName)
+ImageDataset* ImageDatasets::datasetByName(const QString& datasetName)
 {
 	if (!_datasets.contains(datasetName))
 		return nullptr;

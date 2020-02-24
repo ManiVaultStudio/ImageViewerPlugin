@@ -4,7 +4,7 @@
 
 #include <QImage>
 
-class Dataset;
+class ImageDataset;
 
 /**
  * Layer class
@@ -16,13 +16,13 @@ class ImageLayer : public QObject
 
 public:
 	/** Constructor */
-	ImageLayer(Dataset* dataset, const QString& name);
+	ImageLayer(ImageDataset* dataset, const QString& name);
 
 	/** Destructor */
 	virtual ~ImageLayer();
 
 	/** Returns the parent dataset */
-	Dataset* dataset();
+	ImageDataset* dataset();
 
 	/** Returns the dataset name */
 	QString name() const;
@@ -129,7 +129,7 @@ signals:
 
 
 private:
-	Dataset*				_dataset;				/** Parent dataset */
+	ImageDataset*				_dataset;				/** Parent dataset */
 	QString					_name;					/** Name of the layer */
 	std::uint32_t			_order;					/** Depth at which to render the layer */
 	float					_opacity;				/** Opacity of the layer */

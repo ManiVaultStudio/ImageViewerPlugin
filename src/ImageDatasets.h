@@ -2,25 +2,25 @@
 
 #include "ImageData/Images.h"
 
-#include "Dataset.h"
+#include "ImageDataset.h"
 
 /**
  * Datasets class
  * @author Thomas Kroes
  */
-class Datasets : public QObject
+class ImageDatasets : public QObject
 {
 	Q_OBJECT
 
 public:
 	/** Constructor */
-	Datasets();
+	ImageDatasets();
 
 	/** Destructor */
-	~Datasets();
+	~ImageDatasets();
 
 	/** Add a dataset by name */
-	void add(const QString& name, const QSharedPointer<Dataset>& dataset);
+	void add(const QString& name, const QSharedPointer<ImageDataset>& dataset);
 
 	/**
 	 * Set the current (selected) dataset name
@@ -32,13 +32,13 @@ public:
 	 * Returns the current (selected) dataset
 	 * @param currentDatasetName Current dataset name
 	 */
-	Dataset* currentDataset();
+	ImageDataset* currentDataset();
 
 	/**
 	 * Returns dataset by name
 	 * @param datasetName Dataset name
 	 */
-	Dataset* datasetByName(const QString& datasetName);
+	ImageDataset* datasetByName(const QString& datasetName);
 
 signals:
 	/** Signals that dataset names changed */
@@ -56,9 +56,9 @@ signals:
 	 * @param previousDataset Previous dataset (if any)
 	 * @param currentDataset Current dataset
 	 */
-	void currentDatasetChanged(Dataset* previousDataset, Dataset* currentDataset);
+	void currentDatasetChanged(ImageDataset* previousDataset, ImageDataset* currentDataset);
 
 private:
-	QMap<QString, QSharedPointer<Dataset>>		_datasets;
-	QString										_currentDatasetName;
+	QMap<QString, QSharedPointer<ImageDataset>>		_datasets;
+	QString											_currentDatasetName;
 };

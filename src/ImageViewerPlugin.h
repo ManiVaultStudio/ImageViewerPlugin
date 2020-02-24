@@ -4,7 +4,7 @@
 
 #include "ImageData/Images.h"
 
-#include "Datasets.h"
+#include "ImageDatasets.h"
 
 using hdps::plugin::ViewPluginFactory;
 using hdps::plugin::ViewPlugin;
@@ -53,12 +53,12 @@ public:
 	void updateWindowTitle();
 
 	/** Get pointer to datasets */
-	Datasets* datasets();
+	ImageDatasets* datasets();
 
 private:
-	ImageViewerWidget*	_imageViewerWidget;			/** Pointer to image viewer widget */
-	SettingsWidget*		_settingsWidget;			/** Image viewer settings widget */
-	Datasets			_datasets;					/** Loaded datasets */
+	ImageViewerWidget*		_imageViewerWidget;			/** Pointer to image viewer widget */
+	SettingsWidget*			_settingsWidget;			/** Image viewer settings widget */
+	ImageDatasets			_imageDatasets;				/** Loaded image datasets */
 };
 
 

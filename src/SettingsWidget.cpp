@@ -1,5 +1,5 @@
 #include "SettingsWidget.h"
-#include "Datasets.h"
+#include "ImageDatasets.h"
 
 #include "ui_SettingsWidget.h"
 
@@ -8,14 +8,14 @@
 #include <QCheckBox>
 #include <QLabel>
 
-SettingsWidget::SettingsWidget(Datasets* datasets) :
+SettingsWidget::SettingsWidget(ImageDatasets* datasets) :
 	QWidget(),
 	_datasets(datasets),
 	_ui{ std::make_unique<Ui::SettingsWidget>() }
 {
 	_ui->setupUi(this);
 	
-	connect(_ui->datasetsComboBox, QOverload<const QString&>::of(&QComboBox::currentTextChanged), _datasets, &Datasets::setCurrentDatasetName);
+	connect(_ui->datasetsComboBox, QOverload<const QString&>::of(&QComboBox::currentTextChanged), _datasets, &ImageDatasets::setCurrentDatasetName);
 
 	connect(_ui->dimensionsComboBox, QOverload<const int>::of(&QComboBox::currentIndexChanged), [&](const int currentDimensionIndex) {
 		_datasets->currentDataset()->setCurrentDimensionIndex(currentDimensionIndex);
@@ -33,8 +33,8 @@ SettingsWidget::SettingsWidget(Datasets* datasets) :
 		_datasets->currentDataset()->createSubsetFromSelection();
 	});
 	
-	connect(_datasets, &Datasets::namesChanged, this, &SettingsWidget::onDatasetNamesChanged);
-	connect(_datasets, &Datasets::currentDatasetChanged, this, &SettingsWidget::onCurrentDatasetChanged);
+	connect(_datasets, &ImageDatasets::namesChanged, this, &SettingsWidget::onDatasetNamesChanged);
+	connect(_datasets, &ImageDatasets::currentDatasetChanged, this, &SettingsWidget::onCurrentDatasetChanged);
 }
 
 SettingsWidget::~SettingsWidget() = default;
@@ -54,7 +54,7 @@ void SettingsWidget::onDatasetNamesChanged(const QStringList& datasetNames)
 	_ui->currentDatasetLabel->setEnabled(datasetAvailable);
 }
 
-void SettingsWidget::onCurrentDatasetChanged(Dataset* previousDataset, Dataset* currentDataset)
+void SettingsWidget::onCurrentDatasetChanged(ImageDataset* previousDataset, ImageDataset* currentDataset)
 {
 	_ui->datasetsComboBox->blockSignals(true);
 	_ui->datasetsComboBox->setCurrentText(currentDataset->name());
@@ -123,39 +123,39 @@ void SettingsWidget::onCurrentDatasetChanged(Dataset* previousDataset, Dataset* 
 	}
 
 	if (previousDataset) {
-		disconnect(previousDataset, &Dataset::currentImageIndexChanged, this, nullptr);
-		disconnect(previousDataset, &Dataset::currentDimensionIndexChanged, this, nullptr);
-		disconnect(previousDataset, &Dataset::averageChanged, this, nullptr);
-		disconnect(previousDataset, &Dataset::selectionOpacityChanged, this, nullptr);
-		disconnect(previousDataset, &Dataset::selectionChanged, this, nullptr);
+		disconnect(previousDataset, &ImageDataset::currentImageIndexChanged, this, nullptr);
+		disconnect(previousDataset, &ImageDataset::currentDimensionIndexChanged, this, nullptr);
+		disconnect(previousDataset, &ImageDataset::averageChanged, this, nullptr);
+		disconnect(previousDataset, &ImageDataset::selectionOpacityChanged, this, nullptr);
+		disconnect(previousDataset, &ImageDataset::selectionChanged, this, nullptr);
 	}
 
 	if (currentDataset) {
-		connect(currentDataset, &Dataset::currentImageIndexChanged, this, [&](const std::int32_t& currentImageIndex) {
+		connect(currentDataset, &ImageDataset::currentImageIndexChanged, this, [&](const std::int32_t& currentImageIndex) {
 			_ui->imagesComboBox->blockSignals(true);
 			_ui->imagesComboBox->setCurrentIndex(currentImageIndex);
 			_ui->imagesComboBox->blockSignals(false);
 		});
 
-		connect(currentDataset, &Dataset::currentDimensionIndexChanged, this, [&](const std::int32_t& currentDimensionIndex) {
+		connect(currentDataset, &ImageDataset::currentDimensionIndexChanged, this, [&](const std::int32_t& currentDimensionIndex) {
 			_ui->dimensionsComboBox->blockSignals(true);
 			_ui->dimensionsComboBox->setCurrentIndex(currentDimensionIndex);
 			_ui->dimensionsComboBox->blockSignals(false);
 		});
 
-		connect(currentDataset, &Dataset::averageChanged, this, [&](const bool& average) {
+		connect(currentDataset, &ImageDataset::averageChanged, this, [&](const bool& average) {
 			_ui->averageImagesCheckBox->blockSignals(true);
 			_ui->averageImagesCheckBox->setChecked(average);
 			_ui->averageImagesCheckBox->blockSignals(false);
 		});
 
-		connect(currentDataset, &Dataset::selectionOpacityChanged, this, [&](const float& selectionOpacity) {
+		connect(currentDataset, &ImageDataset::selectionOpacityChanged, this, [&](const float& selectionOpacity) {
 			_ui->selectionOpacitySlider->blockSignals(true);
 			_ui->selectionOpacitySlider->setValue(selectionOpacity * 100.0f);
 			_ui->selectionOpacitySlider->blockSignals(false);
 		});
 
-		connect(currentDataset, &Dataset::selectionChanged, this, [&]() {
+		connect(currentDataset, &ImageDataset::selectionChanged, this, [&]() {
 			if (_datasets->currentDataset()->imageCollectionType() == ImageCollectionType::Sequence) {
 				_ui->createSubsetFromSelectionPushButton->setEnabled(false);
 				_ui->selectionOpacityLabel->setEnabled(false);
