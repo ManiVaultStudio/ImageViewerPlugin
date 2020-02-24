@@ -3,7 +3,7 @@
 #include "Prop.h"
 
 class Actor;
-class Layer;
+class ImageLayer;
 
 /**
  * Image prop class
@@ -18,7 +18,7 @@ public:
 	 * @param actor Parent actor
 	 * @param name Name of the prop
 	 */
-	LayerProp(Actor* actor, const QString& name, Layer* layer);
+	LayerProp(Actor* actor, const QString& name, ImageLayer* layer);
 
 	/** Destructor */
 	~LayerProp();
@@ -45,6 +45,6 @@ public:
 	void setDisplayRange(const QPair<float, float>& displayRange);
 
 private:
-	Layer*					_layer;				/** Parent layer */
+	ImageLayer*					_layer;				/** Parent layer */
 	QPair<float, float>		_displayRange;		/** Display range */
 };

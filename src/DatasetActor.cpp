@@ -1,5 +1,5 @@
 #include "DatasetActor.h"
-#include "ImageProp.h"
+#include "LayerProp.h"
 #include "Renderer.h"
 #include "Dataset.h"
 
@@ -69,22 +69,22 @@ void DatasetActor::disconnectFromDataset(Dataset* dataset)
 	QObject::disconnect(dataset, &Dataset::removeLayer, this, &DatasetActor::onRemoveLayer);
 }
 
-void DatasetActor::onAddLayer(Layer* layer)
+void DatasetActor::onAddLayer(ImageLayer* layer)
 {
 
 }
 
-void DatasetActor::onRemoveLayer(Layer* layer)
+void DatasetActor::onRemoveLayer(ImageLayer* layer)
 {
 
 }
 
-void DatasetActor::addLayerProp(Layer* layer)
+void DatasetActor::addLayerProp(ImageLayer* layer)
 {
 
 }
 
-void DatasetActor::removeLayerProp(Layer* layer)
+void DatasetActor::removeLayerProp(ImageLayer* layer)
 {
 
 }

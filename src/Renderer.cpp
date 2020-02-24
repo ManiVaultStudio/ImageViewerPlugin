@@ -5,10 +5,10 @@
 #include <QMenu>
 #include <QDebug>
 
-#include "LayerActor.h"
 #include "ColorImageActor.h"
 #include "SelectionImageActor.h"
 #include "SelectionPickerActor.h"
+#include "DatasetActor.h"
 
 Renderer::Renderer(ImageViewerWidget* parentWidget, Datasets* datasets) :
 	hdps::Renderer(),
@@ -507,26 +507,10 @@ void Renderer::onCurrentDatasetChanged(Dataset* previousDataset, Dataset* curren
 
 		bindOpenGLContext();
 
-		QMatrix4x4 modelMatrix;
+		if (_actors.contains("DatasetActor"))
+			addActor<DatasetActor>(new DatasetActor(this, "DatasetActor"), "DatasetActor");
 
-		for (auto layerName : currentDataset->layerNames()) {
-			_actors.clear();
-
-			auto layer = currentDataset->layerByName(layerName);
-
-			const auto layerActorName = layer->name();
-
-			addActor<LayerActor>(layerActorName);
-
-			auto layerActor = actorByName<LayerActor>(layerActorName);
-
-			layerActor->setLayer(layer);
-			layerActor->show();
-			layerActor->setModelMatrix(modelMatrix);
-			layerActor->initialize();
-
-			modelMatrix.translate(0.0f, 0.0f, -1.0f);
-		}
+		
 
 		zoomExtents();
 	}

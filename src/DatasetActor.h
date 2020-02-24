@@ -4,7 +4,7 @@
 
 class Renderer;
 class Dataset;
-class Layer;
+class ImageLayer;
 
 /**
  * Layer actor class
@@ -40,24 +40,24 @@ protected: // Event handlers
 	/**
 	 * 
 	 */
-	void onAddLayer(Layer* layer);
+	void onAddLayer(ImageLayer* layer);
 
 	/**
 	 * 
 	 */
-	void onRemoveLayer(Layer* layer);
+	void onRemoveLayer(ImageLayer* layer);
 
 protected: // Layer prop management
 
 	/**
 	 * 
 	 */
-	void addLayerProp(Layer* layer);
+	void addLayerProp(ImageLayer* layer);
 
 	/**
 	 * 
 	 */
-	void removeLayerProp(Layer* layer);
+	void removeLayerProp(ImageLayer* layer);
 
 private:
 	Dataset*		_dataset;		/** Layer */

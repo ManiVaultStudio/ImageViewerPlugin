@@ -178,6 +178,9 @@ public:
 
 	Renderer* renderer();
 
+	/** Returns the recorded mouse events */
+	QVector<MouseEvent> mouseEvents();
+
 protected: // Prop management
 
 	/** Returns const pointer to prop by name */
@@ -221,9 +224,6 @@ protected: // Prop management
 
 		_props.remove(name);
 	}
-
-	/** Returns the recorded mouse events */
-	QVector<MouseEvent> mouseEvents();
 
 protected:
 	/** Destroys the actor */

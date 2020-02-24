@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ImageData/Images.h"
-#include "DisplayImage.h"
 
 #include <QImage>
 
@@ -11,16 +10,16 @@ class Dataset;
  * Layer class
  * @author Thomas Kroes
  */
-class Layer : public QObject
+class ImageLayer : public QObject
 {
 	Q_OBJECT
 
 public:
 	/** Constructor */
-	Layer(Dataset* dataset, const QString& name);
+	ImageLayer(Dataset* dataset, const QString& name);
 
 	/** Destructor */
-	virtual ~Layer();
+	virtual ~ImageLayer();
 
 	/** Returns the parent dataset */
 	Dataset* dataset();
@@ -141,5 +140,4 @@ private:
 	float					_levelNormalized;		/** Normalized display level */
 	float					_window;				/** Display window */
 	float					_level;					/** Display level */
-	
 };

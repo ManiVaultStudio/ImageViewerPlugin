@@ -3,7 +3,7 @@
 #include "ImageData/Images.h"
 
 #include "Common.h"
-#include "Layer.h"
+#include "ImageLayer.h"
 
 class QMenu;
 
@@ -119,20 +119,20 @@ public: // Layers
 	*/
 	void addLayerByName(const QString& name)
 	{
-		_layers.insert(name, QSharedPointer<Layer>::create(this, name));
+		_layers.insert(name, QSharedPointer<ImageLayer>::create(this, name));
 	}
 
 	/** Returns const pointer to layer by name */
-	const Layer* layerByName(const QString& name) const
+	const ImageLayer* layerByName(const QString& name) const
 	{
-		return dynamic_cast<Layer*>(_layers[name].get());
+		return dynamic_cast<ImageLayer*>(_layers[name].get());
 	}
 
 	/** Returns pointer to layer by name */
-	Layer* layerByName(const QString& name)
+	ImageLayer* layerByName(const QString& name)
 	{
 		const auto constThis = const_cast<const Dataset*>(this);
-		return const_cast<Layer*>(constThis->layerByName(name));
+		return const_cast<ImageLayer*>(constThis->layerByName(name));
 	}
 
 	/** Returns layer names */
@@ -176,12 +176,12 @@ signals:
 	/**
 	 * 
 	 */
-	void addLayer(Layer* layer);
+	void addLayer(ImageLayer* layer);
 
 	/**
 	 *
 	 */
-	void removeLayer(Layer* layer);
+	void removeLayer(ImageLayer* layer);
 
 private:
 	QString									_name;						/** Dataset name */
@@ -192,5 +192,5 @@ private:
 	std::int32_t							_currentDimensionIndex;		/** The index of the current dimension */
 	bool									_average;					/** Whether to average images */
 	float									_selectionOpacity;			/** Selection opacity */
-	QMap<QString, QSharedPointer<Layer>>	_layers;					/** Layers */
+	QMap<QString, QSharedPointer<ImageLayer>>	_layers;					/** Layers */
 };

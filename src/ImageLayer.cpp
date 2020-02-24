@@ -1,9 +1,9 @@
-#include "Layer.h"
+#include "ImageLayer.h"
 #include "Dataset.h"
 
 #include <QDebug>
 
-Layer::Layer(Dataset* dataset, const QString& name) :
+ImageLayer::ImageLayer(Dataset* dataset, const QString& name) :
 	QObject(),
 	_dataset(dataset),
 	_name(name),
@@ -19,19 +19,19 @@ Layer::Layer(Dataset* dataset, const QString& name) :
 {
 }
 
-Layer::~Layer() = default;
+ImageLayer::~ImageLayer() = default;
 
-Dataset* Layer::dataset()
+Dataset* ImageLayer::dataset()
 {
 	return _dataset;
 }
 
-QString Layer::name() const
+QString ImageLayer::name() const
 {
 	return _name;
 }
 
-void Layer::setName(const QString& name)
+void ImageLayer::setName(const QString& name)
 {
 	if (name == _name)
 		return;
@@ -45,17 +45,17 @@ void Layer::setName(const QString& name)
 	emit nameChanged(_name);
 }
 
-QString Layer::fullName() const
+QString ImageLayer::fullName() const
 {
 	return QString("%1::%2").arg(_dataset->name(), _name);
 }
 
-std::uint32_t Layer::order() const
+std::uint32_t ImageLayer::order() const
 {
 	return _order;
 }
 
-void Layer::setOrder(const std::uint32_t& order)
+void ImageLayer::setOrder(const std::uint32_t& order)
 {
 	if (order == _order)
 		return;
@@ -67,12 +67,12 @@ void Layer::setOrder(const std::uint32_t& order)
 	emit orderChanged(_order);
 }
 
-float Layer::opacity() const
+float ImageLayer::opacity() const
 {
 	return _opacity;
 }
 
-void Layer::setOpacity(const float& opacity)
+void ImageLayer::setOpacity(const float& opacity)
 {
 	if (opacity == _opacity)
 		return;
@@ -84,7 +84,7 @@ void Layer::setOpacity(const float& opacity)
 	emit opacityChanged(_opacity);
 }
 
-void Layer::setImage(const QImage& image)
+void ImageLayer::setImage(const QImage& image)
 {
 	if (image == _image)
 		return;
@@ -99,37 +99,37 @@ void Layer::setImage(const QImage& image)
 	emit imageChanged(_image);
 }
 
-QPair<float, float> Layer::imageRange() const
+QPair<float, float> ImageLayer::imageRange() const
 {
 	return _imageRange;
 }
 
-QPair<float, float> Layer::displayRange() const
+QPair<float, float> ImageLayer::displayRange() const
 {
 	return _displayRange;
 }
 
-float Layer::windowNormalized() const
+float ImageLayer::windowNormalized() const
 {
 	return _windowNormalized;
 }
 
-float Layer::window() const
+float ImageLayer::window() const
 {
 	return _window;
 }
 
-float Layer::levelNormalized() const
+float ImageLayer::levelNormalized() const
 {
 	return _levelNormalized;
 }
 
-float Layer::level() const
+float ImageLayer::level() const
 {
 	return _level;
 }
 
-void Layer::setWindowLevel(const float& window, const float& level)
+void ImageLayer::setWindowLevel(const float& window, const float& level)
 {
 	if (window == _windowNormalized && level == _levelNormalized)
 		return;
@@ -142,7 +142,7 @@ void Layer::setWindowLevel(const float& window, const float& level)
 	computeDisplayRange();
 }
 
-void Layer::computeImageRange()
+void ImageLayer::computeImageRange()
 {
 	if (_image.isNull())
 		return;
@@ -178,7 +178,7 @@ void Layer::computeImageRange()
 	emit imageRangeChanged(_displayRange.first, _displayRange.second);
 }
 
-void Layer::computeDisplayRange()
+void ImageLayer::computeDisplayRange()
 {
 	const auto maxWindow = _imageRange.second - _imageRange.first;
 

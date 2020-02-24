@@ -241,16 +241,15 @@ protected: // Event handlers
 	void onCurrentDatasetChanged(Dataset* previousDataset, Dataset* currentDataset);
 
 private: // Actors
+
 	/**
 	* Add actor by name
 	* @param name Name of the actor
 	*/
 	template<typename T>
-	void addActor(const QString& name)
+	void addActor(T* actor, const QString& name)
 	{
-		auto actor = QSharedPointer<T>::create(this, name);
-
-		_actors.insert(name, actor);
+		_actors.insert(name, QSharedPointer<T>(actor));
 
 		connect(actor.get(), &Actor::changed, this, &Renderer::onActorChanged);
 	}

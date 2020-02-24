@@ -25,8 +25,6 @@ set(PLUGIN
 	src/Common.h
 	src/Layer.h
 	src/Layer.cpp
-	src/WindowLevel.h
-	src/WindowLevel.cpp
 	src/Dataset.h
 	src/Dataset.cpp
 	src/Datasets.h
@@ -84,4 +82,4 @@ add_custom_command(TARGET ${PROJECT} POST_BUILD
     COMMAND "${CMAKE_COMMAND}" -E copy_if_different
 	"$<TARGET_FILE:${PROJECT}>"
 	"$ENV{HDPS_INSTALL_DIR}/$<CONFIGURATION>/Plugins/$<TARGET_FILE_NAME:${PROJECT}>"
-) 
+)
