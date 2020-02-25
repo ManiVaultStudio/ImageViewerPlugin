@@ -92,10 +92,6 @@ void Prop::setVisible(const bool& visible)
 	_visible = visible;
 
 	qDebug() << (_visible ? "Show" : "Hide") << fullName();
-
-	emit visibilityChanged(_visible);
-
-	emit changed(this);
 }
 
 void Prop::show()
@@ -124,8 +120,6 @@ void Prop::setModelMatrix(const QMatrix4x4& modelMatrix)
 		return;
 
 	_modelMatrix = modelMatrix;
-
-	emit modelMatrixChanged(_modelMatrix);
 }
 
 QMatrix4x4 Prop::modelViewMatrix() const

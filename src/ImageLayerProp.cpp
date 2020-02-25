@@ -1,4 +1,4 @@
-#include "LayerProp.h"
+#include "ImageLayerProp.h"
 #include "QuadShape.h"
 #include "Actor.h"
 #include "ImageLayer.h"
@@ -13,24 +13,34 @@ const std::string fragmentShaderSource =
 #include "ColorImageFragment.glsl"
 ;
 
-LayerProp::LayerProp(Actor* actor, const QString& name, ImageLayer* layer) :
+ImageLayerProp::ImageLayerProp(Actor* actor, const QString& name, SharedImageLayer imageLayer) :
 	Prop(actor, name),
-	_layer(layer),
-	_displayRange()
+	_imageLayer(imageLayer)
 {
 	addShape<QuadShape>("Quad");
 	addShaderProgram("Quad");
 	addTexture("Quad", QOpenGLTexture::Target2D);
 
-	//QObject::connect(_layer, &Layer::imageChanged, this, &LayerProp::onLayerChanged);
+	setImage(imageLayer->image());
+
+	QObject::connect(imageLayer.get(), &ImageLayer::imageChanged, this, &ImageLayerProp::setImage);
+	
+	QObject::connect(imageLayer.get(), &ImageLayer::opacityChanged, this, [this](const float& opacity) {
+		emit becameDirty(this);
+	});
+
+	QObject::connect(imageLayer.get(), &ImageLayer::displayRangeChanged, this, [this](const float& opacity) {
+		emit becameDirty(this);
+	});
+
+	_actor->bindOpenGLContext();
+
+	initialize();
 }
 
-LayerProp::~LayerProp()
-{
+ImageLayerProp::~ImageLayerProp() = default;
 
-}
-
-void LayerProp::initialize()
+void ImageLayerProp::initialize()
 {
 	try
 	{
@@ -84,7 +94,7 @@ void LayerProp::initialize()
 	}
 }
 
-void LayerProp::render()
+void ImageLayerProp::render()
 {
 	try {
 		if (!canRender())
@@ -100,8 +110,9 @@ void LayerProp::render()
 
 		if (shaderProgram->bind()) {
 			shaderProgram->setUniformValue("imageTexture", 0);
-			shaderProgram->setUniformValue("minPixelValue", _displayRange.first);
-			shaderProgram->setUniformValue("maxPixelValue", _displayRange.second);
+			shaderProgram->setUniformValue("minPixelValue", _imageLayer->displayRange().first);
+			shaderProgram->setUniformValue("maxPixelValue", _imageLayer->displayRange().second);
+			shaderProgram->setUniformValue("opacity", _imageLayer->opacity());
 			shaderProgram->setUniformValue("transform", modelViewProjectionMatrix());
 
 			shape->render();
@@ -123,7 +134,7 @@ void LayerProp::render()
 	}
 }
 
-void LayerProp::setImage(const QImage& image)
+void ImageLayerProp::setImage(const QImage& image)
 {
 	const auto texture = textureByName("Quad");
 
@@ -146,15 +157,5 @@ void LayerProp::setImage(const QImage& image)
 
 	setModelMatrix(modelMatrix);
 
-	emit changed(this);
-}
-
-void LayerProp::setDisplayRange(const QPair<float, float>& displayRange)
-{
-	if (displayRange == _displayRange)
-		return;
-
-	_displayRange = displayRange;
-
-	emit changed(this);
+	emit becameDirty(this);
 }

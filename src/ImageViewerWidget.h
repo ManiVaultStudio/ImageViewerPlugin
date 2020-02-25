@@ -46,11 +46,6 @@ public:
 
 	ImageViewerPlugin* imageViewerPlugin() { return _imageViewerPlugin; };
 
-public:
-	/**
-	 * Invoked when the renderer becomes dirty */
-	void onRendererDirty();
-	
 private:
 	/** Initializes OpenGL */
 	void initializeGL() override;

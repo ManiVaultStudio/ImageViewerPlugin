@@ -49,13 +49,6 @@ public:
 	 */
 	void setMaxPixelValue(const float& maxPixelValue);
 
-signals:
-	/**
-	 * Signals that the image size changed
-	 * @para size Image size
-	 */
-	void imageSizeChanged(const QSize& imageSize);
-
 private:
 	float	_minPixelValue;			/** Window minimum pixel value */
 	float	_maxPixelValue;			/** Window maximum pixel value */

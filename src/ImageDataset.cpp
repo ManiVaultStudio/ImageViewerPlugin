@@ -65,8 +65,8 @@ ImageDataset::ImageDataset(const QString& name, Images* images) :
 		}
 	}
 
-	addLayerByName("ColorImage");
-	addLayerByName("SelectionImage");
+	addLayer("ColorImage");
+	addLayer("SelectionImage");
 }
 
 ImageDataset::~ImageDataset() = default;
@@ -207,6 +207,12 @@ QMenu* ImageDataset::contextMenu() const
 	return contextMenu;
 }
 
+void ImageDataset::activate()
+{
+	computeColorImage();
+	computeSelectionImage();
+}
+
 std::vector<std::uint32_t> ImageDataset::selection() const
 {
 	return _dataset->indices();
@@ -239,6 +245,42 @@ void ImageDataset::createSubsetFromSelection()
 	_dataset->createSubset();
 }
 
+void ImageDataset::addLayer(const QString& name)
+{
+	try
+	{
+		if (_imageLayers.contains(name))
+			throw std::exception(QString("%1 already exists").arg(name).toLatin1());
+
+		auto imageLayer = SharedImageLayer::create(this, name);
+
+		_imageLayers.insert(name, imageLayer);
+
+		emit layerAdded(name);
+	}
+	catch (std::exception& e)
+	{
+		qDebug() << "Unable to add layer:" << e.what();
+	}
+}
+
+void ImageDataset::removeLayer(const QString& name)
+{
+	try
+	{
+		if (!_imageLayers.contains(name))
+			throw std::exception(QString("%1 does not exist").arg(name).toLatin1());
+
+		_imageLayers.remove(name);
+
+		emit layerRemoved(name);
+	}
+	catch (std::exception& e)
+	{
+		qDebug() << "Unable to remove layer:" << e.what();
+	}
+}
+
 QStringList ImageDataset::layerNames()
 {
 	return _imageLayers.keys();
@@ -269,13 +311,13 @@ void ImageDataset::computeColorImage()
 				}
 			}
 
-			layerByName("ColorImage")->setImage(*_dataset->sequenceImage(ids).get());
+			layer("ColorImage")->setImage(*_dataset->sequenceImage(ids).get());
 			break;
 		}
 
 		case ImageCollectionType::Stack:
 		{
-			layerByName("ColorImage")->setImage(*_dataset->stackImage(_currentDimensionIndex).get());
+			layer("ColorImage")->setImage(*_dataset->stackImage(_currentDimensionIndex).get());
 			break;
 		}
 
@@ -289,6 +331,6 @@ void ImageDataset::computeSelectionImage()
 	qDebug() << _name << "compute selection image";
 
 	if (imageCollectionType() == ImageCollectionType::Stack) {
-		layerByName("SelectionImage")->setImage(*_dataset->selectionImage().get());
+		layer("SelectionImage")->setImage(*_dataset->selectionImage().get());
 	}
 }

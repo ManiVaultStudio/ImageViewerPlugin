@@ -6,6 +6,7 @@ R"(
 uniform sampler2D imageTexture;
 uniform float minPixelValue;
 uniform float maxPixelValue;
+uniform float opacity;
 
 in vec2 uv;
 out vec4 fragmentColor;
@@ -22,6 +23,6 @@ void main(void)
 		fragmentColor[c]	= float(clamp(fraction / range, 0.0, 1.0));
 	}
 
-	fragmentColor.a = 1.0f;
+	fragmentColor.a = opacity;
 }
 )"

@@ -7,7 +7,7 @@
 SelectionImageActor::SelectionImageActor(Renderer* renderer, const QString& name) :
 	Actor(renderer, name)
 {
-	addProp<SelectionImageProp>("ColorImageProp");
+//	addProp<SelectionImageProp>("ColorImageProp");
 }
 
 void SelectionImageActor::setImage(QSharedPointer<QImage> image)

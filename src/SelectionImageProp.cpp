@@ -141,8 +141,6 @@ void SelectionImageProp::setImage(QSharedPointer<QImage> image)
 	modelMatrix.translate(-0.5f * rectangle.width(), -0.5f * rectangle.height(), 0.0f);
 
 	setModelMatrix(modelMatrix);
-
-	emit changed(this);
 }
 
 QSize SelectionImageProp::imageSize() const

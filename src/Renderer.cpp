@@ -8,7 +8,7 @@
 #include "ColorImageActor.h"
 #include "SelectionImageActor.h"
 #include "SelectionPickerActor.h"
-#include "DatasetActor.h"
+#include "ImageDatasetActor.h"
 
 Renderer::Renderer(ImageViewerWidget* parentWidget, ImageDatasets* datasets) :
 	hdps::Renderer(),
@@ -116,7 +116,7 @@ void Renderer::mouseMoveEvent(QMouseEvent* mouseEvent)
 
 						pan(vDelta);
 
-						emit dirty();
+						emit becameDirty();
 					}
 					
 					break;
@@ -152,7 +152,7 @@ void Renderer::mouseWheelEvent(QWheelEvent* wheelEvent)
 				zoomAround(zoomCenter, 1.0f + _zoomSensitivity);
 			}
 
-			emit dirty();
+			emit becameDirty();
 			break;
 		}
 
@@ -390,7 +390,7 @@ void Renderer::zoomToRectangle(const QRectF& rectangle)
 	
 	zoomBy(factorX < factorY ? factorX : factorY);
 	
-	emit dirty();
+	emit becameDirty();
 }
 
 void Renderer::zoomToSelection()
@@ -492,13 +492,6 @@ void Renderer::releaseOpenGLContext()
 	_parentWidget->doneCurrent();
 }
 
-void Renderer::onActorChanged(Actor* actor)
-{
-	//qDebug() << "Actor" << actor->name() << "changed";
-
-	emit dirty();
-}
-
 void Renderer::onCurrentDatasetChanged(ImageDataset* previousDataset, ImageDataset* currentDataset)
 {
 	try
@@ -507,10 +500,15 @@ void Renderer::onCurrentDatasetChanged(ImageDataset* previousDataset, ImageDatas
 
 		bindOpenGLContext();
 
-		if (_actors.contains("DatasetActor"))
-			addActor<DatasetActor>(new DatasetActor(this, "DatasetActor"), "DatasetActor");
+		const auto imageDatsetActorName = "ImageDatsetActor";
 
-		
+		if (!_actors.contains(imageDatsetActorName)) {
+			addActor<ImageDatasetActor>(this, imageDatsetActorName);
+		}
+
+		auto imageDatasetActor = actorByName<ImageDatasetActor>(imageDatsetActorName);
+
+		imageDatasetActor->setDataset(currentDataset);
 
 		zoomExtents();
 	}

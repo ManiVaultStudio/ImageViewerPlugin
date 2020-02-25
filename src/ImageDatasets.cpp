@@ -38,10 +38,10 @@ void ImageDatasets::setCurrentDatasetName(const QString& currentDatasetName)
 
 	_currentDatasetName = currentDatasetName;
 
+	//datasetByName(currentDatasetName)->activate();
+
 	emit currentDatasetNameChanged(previousDatasetName, _currentDatasetName);
 	emit currentDatasetChanged(datasetByName(previousDatasetName), datasetByName(currentDatasetName));
-
-	emit currentDataset()->selectionChanged();
 }
 
 ImageDataset* ImageDatasets::currentDataset()

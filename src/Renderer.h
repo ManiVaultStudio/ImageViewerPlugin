@@ -242,16 +242,20 @@ protected: // Event handlers
 
 private: // Actors
 
-	/**
-	* Add actor by name
-	* @param name Name of the actor
-	*/
-	template<typename T>
-	void addActor(T* actor, const QString& name)
+	/** TODO */
+	template<typename T, typename ...Args>
+	void addActor(Args... args)
 	{
-		_actors.insert(name, QSharedPointer<T>(actor));
+		auto sharedActor	= QSharedPointer<T>::create(args...);
+		auto actor			= dynamic_cast<Actor*>(sharedActor.get());
+		auto actorName		= actor->name();
 
-		connect(actor, &Actor::changed, this, &Renderer::onActorChanged);
+		if (_actors.contains(actorName))
+			throw std::exception(QString("Renderer already has an actor named %2").arg(actorName).toLatin1());
+
+		_actors.insert(actorName, sharedActor);
+
+		QObject::connect(actor, &Actor::becameDirty, this, &Renderer::becameDirty);
 	}
 
 	/** Returns const pointer to actor by name */
@@ -277,7 +281,7 @@ private: // Actors
 
 signals:
 	/** Signals that the renderer just became dirty (one or more shapes need to be re-rendered) */
-	void dirty();
+	void becameDirty();
 
 	/**
 	 * Signals a key is pressed

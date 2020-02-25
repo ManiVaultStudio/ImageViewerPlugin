@@ -5,14 +5,14 @@
 
 #include "Renderer.h"
 
-Actor::Actor(Renderer* renderer, const QString& name) :
+Actor::Actor(Renderer* renderer, const QString& name, const bool& visible /*= true*/) :
 	QObject(),
 	_renderer(renderer),
 	_registeredEvents(static_cast<int>(ActorEvent::None)),
 	_mouseEvents(),
 	_name(name),
 	_enabled(true),
-	_visible(false),
+	_visible(visible),
 	_opacity(1.0f),
 	_modelMatrix(),
 	_props()
@@ -29,17 +29,6 @@ void Actor::destroy()
 	
 	for (auto name : _props.keys()) {
 		_props[name]->destroy();
-	}
-}
-
-void Actor::initialize()
-{
-	//qDebug() << "Initialize" << _name;
-
-	bindOpenGLContext();
-
-	for (auto name : _props.keys()) {
-		_props[name]->initialize();
 	}
 }
 
@@ -73,7 +62,7 @@ void Actor::setName(const QString& name)
 
 	emit nameChanged(_name);
 
-	emit changed(this);
+	emit becameDirty(this);
 }
 
 bool Actor::isEnabled() const
@@ -92,7 +81,7 @@ void Actor::setEnabled(const bool& enabled)
 
 	emit enabledChanged(_enabled);
 
-	emit changed(this);
+	emit becameDirty(this);
 }
 
 void Actor::enable()
@@ -302,7 +291,7 @@ void Actor::setOpacity(const float& opacity)
 
 	emit opacityChanged(_opacity);
 
-	emit changed(this);
+	emit becameDirty(this);
 }
 
 void Actor::bindOpenGLContext()

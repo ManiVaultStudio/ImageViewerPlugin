@@ -8,7 +8,7 @@ ImageLayer::ImageLayer(ImageDataset* dataset, const QString& name) :
 	_dataset(dataset),
 	_name(name),
 	_order(0),
-	_opacity(),
+	_opacity(1.0f),
 	_image(),
 	_imageRange(),
 	_displayRange(),
@@ -82,6 +82,11 @@ void ImageLayer::setOpacity(const float& opacity)
 	qDebug() << fullName() << "set opacity to" << QString::number(_opacity, 'f', 2);
 
 	emit opacityChanged(_opacity);
+}
+
+const QImage ImageLayer::image() const
+{
+	return _image;
 }
 
 void ImageLayer::setImage(const QImage& image)

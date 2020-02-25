@@ -29,6 +29,7 @@ SelectionPickerActor::SelectionPickerActor(Renderer* renderer, const QString& na
 	_registeredEvents |= static_cast<int>(ActorEvent::KeyPress);
 	_registeredEvents |= static_cast<int>(ActorEvent::KeyRelease);
 
+	/*
 	addProp<PolylineProp>("RectangleProp");
 	addProp<PolylineProp>("BrushProp");
 	addProp<PointsProp>("BrushCenter");
@@ -38,12 +39,11 @@ SelectionPickerActor::SelectionPickerActor(Renderer* renderer, const QString& na
 	addProp<PolylineProp>("PolygonClosingSegmentProp");
 	addProp<PointsProp>("PolygonPointsProp");
 	addProp<InterimSelectionProp>("InterimSelectionProp");
+	*/
 }
 
 void SelectionPickerActor::initialize()
 {
-	Actor::initialize();
-
 	// Configure rectangle selection prop
 	rectangleProp()->setLineWidth(2.5f);
 	rectangleProp()->setLineColor(renderer()->colorByName("SelectionOutline", 200));
@@ -346,7 +346,7 @@ void SelectionPickerActor::clearSelection()
 
 	interimSelectionProp()->reset();
 
-	emit changed(this);
+	emit becameDirty(this);
 }
 
 void SelectionPickerActor::startSelection()
@@ -410,8 +410,7 @@ void SelectionPickerActor::update()
 			break;
 	}
 
-
-	emit changed(this);
+	emit becameDirty(this);
 }
 
 void SelectionPickerActor::updateSelectionRectangle()

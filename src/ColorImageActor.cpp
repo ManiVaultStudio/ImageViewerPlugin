@@ -18,10 +18,6 @@ ColorImageActor::ColorImageActor(Renderer* renderer, const QString& name) :
 	_registeredEvents |= static_cast<int>(ActorEvent::MousePress);
 	_registeredEvents |= static_cast<int>(ActorEvent::MouseRelease);
 	_registeredEvents |= static_cast<int>(ActorEvent::MouseMove);
-
-	addProp<ColorImageProp>("ColorImageProp");
-
-	connect(propByName<ColorImageProp>("ColorImageProp"), &ColorImageProp::imageSizeChanged, this, &ColorImageActor::imageSizeChanged);
 }
 
 void ColorImageActor::setImage(QSharedPointer<QImage> image)
@@ -65,7 +61,7 @@ void ColorImageActor::setImage(QSharedPointer<QImage> image)
 
 	resetWindowLevel();
 
-	emit changed(this);
+	emit becameDirty(this);
 }
 
 QSize ColorImageActor::imageSize() const
@@ -108,7 +104,7 @@ void ColorImageActor::setWindowLevel(const float& window, const float& level)
 
 	emit windowLevelChanged(_window, _level);
 
-	emit changed(this);
+	emit becameDirty(this);
 }
 
 void ColorImageActor::resetWindowLevel()

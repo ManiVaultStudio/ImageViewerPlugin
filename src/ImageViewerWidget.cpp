@@ -25,7 +25,9 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 
 	setMouseTracking(true);
 
-	connect(_renderer.get(), &Renderer::dirty, this, &ImageViewerWidget::onRendererDirty);
+	QObject::connect(_renderer.get(), &Renderer::becameDirty, [this]() {
+		update();
+	});
 
 	QSurfaceFormat surfaceFormat;
 
@@ -95,13 +97,6 @@ void ImageViewerWidget::paintGL() {
 	for (const QOpenGLDebugMessage& message : _openglDebugLogger->loggedMessages())
 		qDebug() << message;
 #endif
-}
-
-void ImageViewerWidget::onRendererDirty()
-{
-	//qDebug() << "Renderer dirty";
-
-	update();
 }
 
 void ImageViewerWidget::keyPressEvent(QKeyEvent* keyEvent)

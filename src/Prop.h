@@ -169,18 +169,9 @@ protected:
 	}
 
 signals:
-	/** Signals that the visibility changed
-	 * @param visible Whether the prop is visible or not
-	 */
-	void visibilityChanged(const bool& visible);
 
-	/** Signals that the model matrix changed
-	 * @param modelMatrix Model matrix
-	 */
-	void modelMatrixChanged(const QMatrix4x4& modelMatrix);
-
-	/** Signals that the prop changed */
-	void changed(Prop* prop);
+	/** TODO */
+	void becameDirty(Prop* prop);
 
 protected:
 	Actor*													_actor;					/** Pointer to owning actor */
@@ -196,3 +187,5 @@ private:
 
 	friend class Actor;
 };
+
+using SharedProp = QSharedPointer<Prop>;

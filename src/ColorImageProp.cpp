@@ -137,9 +137,6 @@ void ColorImageProp::setImage(QSharedPointer<QImage> image)
 	modelMatrix.translate(-0.5f * rectangle.width(), -0.5f * rectangle.height(), 0.0f);
 
 	setModelMatrix(modelMatrix);
-
-	emit imageSizeChanged(rectangle.size().toSize());
-	emit changed(this);
 }
 
 QSize ColorImageProp::imageSize() const

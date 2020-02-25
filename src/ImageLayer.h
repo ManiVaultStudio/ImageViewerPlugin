@@ -54,6 +54,9 @@ public:
 	 */
 	void setOpacity(const float& opacity);
 
+	/** TODO */
+	const QImage image() const;
+
 	/**
 	 * Sets the image
 	 * @param image Layer image
@@ -107,26 +110,17 @@ signals:
 	 */
 	void orderChanged(const std::uint32_t& order);
 
-	/**
-	 * TODO
-	 */
+	/** TODO */
 	void imageChanged(const QImage& image);
 
-	/**
-	 * TODO
-	 */
+	/** TODO */
 	void opacityChanged(const float& opacity);
 
-	/**
-	 * TODO
-	 */
+	/** TODO */
 	void imageRangeChanged(const float& min, const float& max);
 
-	/**
-	 * TODO
-	 */
+	/** TODO */
 	void displayRangeChanged(const float& min, const float& max);
-
 
 private:
 	ImageDataset*				_dataset;				/** Parent dataset */
@@ -141,3 +135,5 @@ private:
 	float					_window;				/** Display window */
 	float					_level;					/** Display level */
 };
+
+using SharedImageLayer = QSharedPointer<ImageLayer>;

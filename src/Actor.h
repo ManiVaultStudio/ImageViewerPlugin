@@ -65,7 +65,7 @@ public:
 	 * @param renderer Renderer
 	 * @param name Name of the actor
 	 */
-	Actor(Renderer* renderer, const QString& name);
+	Actor(Renderer* renderer, const QString& name, const bool& visible = true);
 
 	/** Destructor */
 	~Actor();
@@ -183,7 +183,13 @@ public:
 
 protected: // Prop management
 
-	/** Returns const pointer to prop by name */
+	/** TODO */
+	const QMap<QString, SharedProp> props() const
+	{
+		return _props;
+	}
+
+	/** TODO */
 	template<typename T>
 	const T* propByName(const QString& name) const
 	{
@@ -193,7 +199,7 @@ protected: // Prop management
 		return dynamic_cast<T*>(_props[name].get());
 	}
 
-	/** Returns pointer to prop by name */
+	/** TODO */
 	template<typename T>
 	T* propByName(const QString& name)
 	{
@@ -201,26 +207,29 @@ protected: // Prop management
 		return const_cast<T*>(constThis->propByName<T>(name));
 	}
 	
-	/**
-	* Add prop by name
-	* @param name Name of the prop
-	*/
-	template<typename T>
-	void addProp(const QString& name)
+	/** TODO */
+	template<typename T, typename ...Args>
+	void addProp(Args... args)
 	{
-		auto prop = QSharedPointer<T>::create(this, name);
+		auto sharedProp	= QSharedPointer<T>::create(args...);
+		auto prop		= dynamic_cast<Prop*>(sharedProp.get());
+		auto propName	= prop->name();
 
-		_props.insert(name, prop);
+		if (_props.contains(propName))
+			throw std::exception(QString("%1 already has a prop named %2").arg(_name, propName).toLatin1());
 
-		connect(prop.get(), &Prop::changed, [&](Prop* shape) {
-			emit changed(this);
+		_props.insert(propName, sharedProp);
+
+		QObject::connect(prop, &Prop::becameDirty, [this](Prop* prop) {
+			emit becameDirty(this);
 		});
 	}
 
-	void removePropByName(const QString& name)
+	/** TODO */
+	void removeProp(const QString& name)
 	{
 		if (!_props.contains(name))
-			throw std::exception(QString("Unable to remove %1, it does not exist in %2").arg(name, _name).toLatin1());
+			throw std::exception(QString("%1 does not have a prop named %2").arg(_name, name).toLatin1());
 
 		_props.remove(name);
 	}
@@ -229,8 +238,7 @@ protected:
 	/** Destroys the actor */
 	virtual void destroy();
 
-	/** Initializes the actor */
-	virtual void initialize();
+	virtual void initialize() {};
 
 	/** Renders the actor */
 	virtual void render();
@@ -281,7 +289,7 @@ signals:
 	void modelMatrixChanged(const QMatrix4x4& modelMatrix);
 
 	/** Signals that the Actor changed */
-	void changed(Actor* Actor);
+	void becameDirty(Actor* Actor);
 
 protected:
 	Renderer*								_renderer;				/** Pointer to renderer */
@@ -289,12 +297,12 @@ protected:
 	QVector<MouseEvent>						_mouseEvents;			/** Recorded mouse events */
 
 private:
-	QString									_name;					/** Name of the Actor */
-	bool									_enabled;				/** Whether interaction with this actor is enabled */
-	bool									_visible;				/** Whether the actor is visible */
-	float									_opacity;				/** Render opacity */
-	QMatrix4x4								_modelMatrix;			/** Model matrix */
-	QMap<QString, QSharedPointer<Prop>>		_props;					/** Props map */
+	QString						_name;				/** Name of the Actor */
+	bool						_enabled;			/** Whether interaction with this actor is enabled */
+	bool						_visible;			/** Whether the actor is visible */
+	float						_opacity;			/** Render opacity */
+	QMatrix4x4					_modelMatrix;		/** Model matrix */
+	QMap<QString, SharedProp>	_props;				/** Props map */
 
 	friend class Renderer;
 };
