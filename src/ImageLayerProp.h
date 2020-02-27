@@ -15,7 +15,7 @@ class ImageLayerProp : public Prop
 
 public:
 	/** TODO */
-	ImageLayerProp(Actor* actor, const QString& name, SharedImageLayer imageLayer);
+	ImageLayerProp(Actor* actor, const QString& name, ImageLayer* imageLayer);
 
 	/** Destructor */
 	~ImageLayerProp();
@@ -36,7 +36,7 @@ public:
 	void setImage(const QImage& image);
 
 private:
-	SharedImageLayer	_imageLayer;	/** TODO */
+	ImageLayer*	_imageLayer;	/** TODO */
 };
 
 using SharedImageLayerProp = QSharedPointer<ImageLayerProp>;

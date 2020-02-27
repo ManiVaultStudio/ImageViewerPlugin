@@ -27,8 +27,8 @@ set(PLUGIN
 	src/ImageLayer.cpp
 	src/ImageDataset.h
 	src/ImageDataset.cpp
-	src/ImageDatasets.h
-	src/ImageDatasets.cpp
+	src/ImageDatasetsModel.h
+	src/ImageDatasetsModel.cpp
 	src/ImageViewerPlugin.h
 	src/ImageViewerPlugin.cpp
 	src/ImageViewerWidget.h

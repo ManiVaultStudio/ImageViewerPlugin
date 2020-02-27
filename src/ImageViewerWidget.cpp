@@ -1,5 +1,6 @@
 #include "ImageViewerWidget.h"
 #include "ImageViewerPlugin.h"
+#include "ImageDatasetActor.h"
 
 #include <vector>
 #include <algorithm>
@@ -14,10 +15,10 @@
 
 #include "SelectionPickerActor.h"
 
-ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
+ImageViewerWidget::ImageViewerWidget(ImageDatasetsModel* imageDatasets) :
 	QOpenGLFunctions(),
-	_imageViewerPlugin(imageViewerPlugin),
-	_renderer(QSharedPointer<Renderer>::create(this, imageViewerPlugin->datasets())),
+	_imageDatasets(imageDatasets),
+	_renderer(new Renderer(this)),
 	_openglDebugLogger(std::make_unique<QOpenGLDebugLogger>())
 {
 	setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
@@ -25,7 +26,7 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 
 	setMouseTracking(true);
 
-	QObject::connect(_renderer.get(), &Renderer::becameDirty, [this]() {
+	QObject::connect(_renderer, &Renderer::becameDirty, [this]() {
 		update();
 	});
 
@@ -54,6 +55,27 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	surfaceFormat.setSamples(16);
 
 	setFormat(surfaceFormat);
+
+	/*
+	connect(_imageDatasets, &ImageDatasetsModel::currentDatasetChanged, [this](ImageDataset* previousImageDataset, ImageDataset* currentImageDataset) {
+		try
+		{
+			qDebug() << "Dataset changed to" << currentImageDataset->name();
+
+			if (previousImageDataset != nullptr)
+				_renderer->removeActor(previousImageDataset->name());
+
+			if (currentImageDataset != nullptr) {
+				_renderer->addActor<ImageDatasetActor>(_renderer, currentImageDataset->name(), currentImageDataset);
+				_renderer->zoomToRectangle(QRectF(QPointF(), currentImageDataset->imageSize()));
+			}
+		}
+		catch (const std::exception& e)
+		{
+			qDebug() << e.what();
+		}
+	});
+	*/
 }
 
 ImageViewerWidget::~ImageViewerWidget()
@@ -184,11 +206,6 @@ void ImageViewerWidget::publishSelection()
 	*/
 
 	update();
-}
-
-QSharedPointer<Renderer> ImageViewerWidget::renderer()
-{
-	return _renderer;
 }
 
 QMenu* ImageViewerWidget::contextMenu()

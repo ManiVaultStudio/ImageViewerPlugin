@@ -4,6 +4,7 @@
 #include <map>
 
 #include <QSet>
+#include <QSharedPointer>
 
 class QOpenGLTexture;
 class QOpenGLShaderProgram;

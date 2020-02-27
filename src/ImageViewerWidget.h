@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Common.h"
+#include "Renderer.h"
 
 #include "ImageData/ImageData.h"
 
@@ -15,8 +16,7 @@
 
 class QMenu;
 
-class ImageViewerPlugin;
-class Renderer;
+class ImageDatasetsModel;
 
 /**
  * Image viewer widget class
@@ -32,7 +32,7 @@ public:
 	 * Constructor
 	 * @param imageViewerPlugin Pointer to image viewer plugin
 	 */
-	ImageViewerWidget(ImageViewerPlugin* imageViewerPlugin);
+	ImageViewerWidget(ImageDatasetsModel* imageDatasets);
 
 	/** Destructor */
 	~ImageViewerWidget() override;
@@ -40,11 +40,6 @@ public:
 public:
 	/** Publish selection to HDPS */
 	void publishSelection();
-
-	/** Returns the renderer */
-	QSharedPointer<Renderer> renderer();
-
-	ImageViewerPlugin* imageViewerPlugin() { return _imageViewerPlugin; };
 
 private:
 	/** Initializes OpenGL */
@@ -95,7 +90,7 @@ private:
 	QMenu* contextMenu();
 
 private:
-	ImageViewerPlugin*						_imageViewerPlugin;			/** Pointer to image viewer plugin */
-	QSharedPointer<Renderer>				_renderer;					/** Selection renderer */
+	ImageDatasetsModel*							_imageDatasets;			/** Pointer to image viewer plugin */
+	Renderer*								_renderer;					/** Selection renderer */
 	std::unique_ptr <QOpenGLDebugLogger>	_openglDebugLogger;			/** OpenGL debug logger (on in debug mode) */
 };

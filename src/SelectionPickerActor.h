@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Common.h"
 #include "Actor.h"
 
 #include "ImageData/ImageData.h"
@@ -14,7 +13,6 @@ class QMouseEvent;
 class QWheelEvent;
 class QMenu;
 
-class Renderer;
 class PolylineProp;
 class PointsProp;
 class InterimSelectionProp;
@@ -28,6 +26,7 @@ class SelectionPickerActor : public Actor
 	Q_OBJECT
 
 public:
+	/** TODO */
 	SelectionPickerActor(Renderer* renderer, const QString& name);
 
 	/** Show the actor */

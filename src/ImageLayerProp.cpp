@@ -6,14 +6,14 @@
 #include <QDebug>
 
 const std::string vertexShaderSource =
-#include "ColorImageVertex.glsl"
+#include "ImageLayerVertex.glsl"
 ;
 
 const std::string fragmentShaderSource =
-#include "ColorImageFragment.glsl"
+#include "ImageLayerFragment.glsl"
 ;
 
-ImageLayerProp::ImageLayerProp(Actor* actor, const QString& name, SharedImageLayer imageLayer) :
+ImageLayerProp::ImageLayerProp(Actor* actor, const QString& name, ImageLayer* imageLayer) :
 	Prop(actor, name),
 	_imageLayer(imageLayer)
 {
@@ -23,13 +23,13 @@ ImageLayerProp::ImageLayerProp(Actor* actor, const QString& name, SharedImageLay
 
 	setImage(imageLayer->image());
 
-	QObject::connect(imageLayer.get(), &ImageLayer::imageChanged, this, &ImageLayerProp::setImage);
+	QObject::connect(imageLayer, &ImageLayer::imageChanged, this, &ImageLayerProp::setImage);
 	
-	QObject::connect(imageLayer.get(), &ImageLayer::opacityChanged, this, [this](const float& opacity) {
+	QObject::connect(imageLayer, &ImageLayer::opacityChanged, this, [this](const float& opacity) {
 		emit becameDirty(this);
 	});
 
-	QObject::connect(imageLayer.get(), &ImageLayer::displayRangeChanged, this, [this](const float& opacity) {
+	QObject::connect(imageLayer, &ImageLayer::displayRangeChanged, this, [this](const float& opacity) {
 		emit becameDirty(this);
 	});
 

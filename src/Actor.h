@@ -15,8 +15,6 @@ class QMouseEvent;
 class QWheelEvent;
 class QKeyEvent;
 
-class Renderer;
-
 /**
  * Actor class
  * @author Thomas Kroes
@@ -61,10 +59,7 @@ public:
 	};
 
 public:
-	/** Constructor
-	 * @param renderer Renderer
-	 * @param name Name of the actor
-	 */
+	/** TODO */
 	Actor(Renderer* renderer, const QString& name, const bool& visible = true);
 
 	/** Destructor */
@@ -176,6 +171,10 @@ public:
 	/** Releases the OpenGL context */
 	void releaseOpenGLContext();
 
+	/** TODO */
+	const Renderer* renderer() const;
+
+	/** TODO */
 	Renderer* renderer();
 
 	/** Returns the recorded mouse events */
@@ -184,19 +183,58 @@ public:
 protected: // Prop management
 
 	/** TODO */
-	const QMap<QString, SharedProp> props() const
+	template<typename T, typename ...Args>
+	void addProp(Args... args)
 	{
-		return _props;
+		try {
+			auto sharedProp = QSharedPointer<T>::create(args...);
+			auto prop = dynamic_cast<Prop*>(sharedProp.get());
+			auto propName = prop->name();
+
+			if (_props.contains(propName))
+				throw std::exception(QString("%1 already has a prop named %2").arg(_name, propName).toLatin1());
+
+			_props.insert(propName, sharedProp);
+
+			QObject::connect(prop, &Prop::becameDirty, [this](Prop* prop) {
+				emit becameDirty(this);
+			});
+		}
+		catch (const std::exception& e)
+		{
+			throw std::exception(QString("Unable to add prop to %1: %2").arg(_name, e.what()).toLatin1());
+		}
+	}
+
+	/** TODO */
+	void removeProp(const QString& name)
+	{
+		try {
+			if (!_props.contains(name))
+				throw std::exception(QString("%1 does not have a prop named %2").arg(_name, name).toLatin1());
+
+			_props.remove(name);
+		}
+		catch (const std::exception& e)
+		{
+			throw std::exception(QString("Unable to remove prop from %1: %2").arg(_name, e.what()).toLatin1());
+		}
 	}
 
 	/** TODO */
 	template<typename T>
 	const T* propByName(const QString& name) const
 	{
-		if (!_props.contains(name))
-			throw std::exception(QString("%1 has no prop named %2").arg(_name, name).toLatin1());
+		try {
+			if (!_props.contains(name))
+				throw std::exception(QString("%1 has no prop named %2").arg(_name, name).toLatin1());
 
-		return dynamic_cast<T*>(_props[name].get());
+			return dynamic_cast<T*>(_props[name].get());
+		}
+		catch (const std::exception& e)
+		{
+			throw std::exception(QString("Unable to retrieve prop by name from %1: %2").arg(_name, e.what()).toLatin1());
+		}
 	}
 
 	/** TODO */
@@ -208,30 +246,9 @@ protected: // Prop management
 	}
 	
 	/** TODO */
-	template<typename T, typename ...Args>
-	void addProp(Args... args)
+	const QMap<QString, SharedProp> props() const
 	{
-		auto sharedProp	= QSharedPointer<T>::create(args...);
-		auto prop		= dynamic_cast<Prop*>(sharedProp.get());
-		auto propName	= prop->name();
-
-		if (_props.contains(propName))
-			throw std::exception(QString("%1 already has a prop named %2").arg(_name, propName).toLatin1());
-
-		_props.insert(propName, sharedProp);
-
-		QObject::connect(prop, &Prop::becameDirty, [this](Prop* prop) {
-			emit becameDirty(this);
-		});
-	}
-
-	/** TODO */
-	void removeProp(const QString& name)
-	{
-		if (!_props.contains(name))
-			throw std::exception(QString("%1 does not have a prop named %2").arg(_name, name).toLatin1());
-
-		_props.remove(name);
+		return _props;
 	}
 
 protected:
@@ -292,9 +309,8 @@ signals:
 	void becameDirty(Actor* Actor);
 
 protected:
-	Renderer*								_renderer;				/** Pointer to renderer */
-	int										_registeredEvents;		/** Defines which (mouse) events should be received by the actor */
-	QVector<MouseEvent>						_mouseEvents;			/** Recorded mouse events */
+	int							_registeredEvents;		/** Defines which (mouse) events should be received by the actor */
+	QVector<MouseEvent>			_mouseEvents;			/** Recorded mouse events */
 
 private:
 	QString						_name;				/** Name of the Actor */

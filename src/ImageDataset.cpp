@@ -1,11 +1,13 @@
+#include "ImageDatasetsModel.h"
 #include "ImageDataset.h"
+#include "ImageLayer.h"
 
 #include <QFileInfo>
 #include <QMenu>
 #include <QDebug>
 
-ImageDataset::ImageDataset(const QString& name, Images* images) : 
-	QObject(),
+ImageDataset::ImageDataset(ImageDatasetsModel* imageDatasets, const QString& name, Images* images) :
+	QObject(imageDatasets),
 	_name(name),
 	_dataset(images),
 	_imageNames(),
@@ -252,13 +254,11 @@ void ImageDataset::addLayer(const QString& name)
 		if (_imageLayers.contains(name))
 			throw std::exception(QString("%1 already exists").arg(name).toLatin1());
 
-		auto imageLayer = SharedImageLayer::create(this, name);
-
-		_imageLayers.insert(name, imageLayer);
+		_imageLayers.insert(name, new ImageLayer(this, name));
 
 		emit layerAdded(name);
 	}
-	catch (std::exception& e)
+	catch (const std::exception& e)
 	{
 		qDebug() << "Unable to add layer:" << e.what();
 	}
@@ -281,9 +281,29 @@ void ImageDataset::removeLayer(const QString& name)
 	}
 }
 
-QStringList ImageDataset::layerNames()
+const ImageLayer* ImageDataset::imageLayerByName(const QString& name) const
 {
-	return _imageLayers.keys();
+	try {
+		if (!_imageLayers.contains(name))
+			throw std::exception(QString("%1 does not exist in %2").arg(name, _name).toLatin1());
+
+		return _imageLayers[name];
+	}
+	catch (const std::exception& e)
+	{
+		throw std::exception(QString("Unable to retrieve layer by name: %1").arg(e.what()).toLatin1());
+	}
+}
+
+ImageLayer* ImageDataset::imageLayerByName(const QString& name)
+{
+	const auto constThis = const_cast<const ImageDataset*>(this);
+	return const_cast<ImageLayer*>(constThis->imageLayerByName(name));
+}
+
+const ImageLayers ImageDataset::imageLayers() const
+{
+	return _imageLayers;
 }
 
 void ImageDataset::computeColorImage()
@@ -311,13 +331,13 @@ void ImageDataset::computeColorImage()
 				}
 			}
 
-			layer("ColorImage")->setImage(*_dataset->sequenceImage(ids).get());
+			imageLayerByName("ColorImage")->setImage(*_dataset->sequenceImage(ids).get());
 			break;
 		}
 
 		case ImageCollectionType::Stack:
 		{
-			layer("ColorImage")->setImage(*_dataset->stackImage(_currentDimensionIndex).get());
+			imageLayerByName("ColorImage")->setImage(*_dataset->stackImage(_currentDimensionIndex).get());
 			break;
 		}
 
@@ -331,6 +351,6 @@ void ImageDataset::computeSelectionImage()
 	qDebug() << _name << "compute selection image";
 
 	if (imageCollectionType() == ImageCollectionType::Stack) {
-		layer("SelectionImage")->setImage(*_dataset->selectionImage().get());
+		imageLayerByName("SelectionImage")->setImage(*_dataset->selectionImage().get());
 	}
 }

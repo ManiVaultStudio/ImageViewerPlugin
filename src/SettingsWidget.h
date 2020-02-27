@@ -4,12 +4,12 @@
 
 #include <QWidget>
 
-class ImageDatasets;
-class ImageDataset;
-
 namespace Ui {
 	class SettingsWidget;
 }
+
+class ImageDatasetsModel;
+class ImageDataset;
 
 /**
  * Settings widget class
@@ -18,11 +18,8 @@ namespace Ui {
 class SettingsWidget : public QWidget
 {
 public:
-	/**
-	 * Constructor
-	 * @param datasets Pointer to datasets
-	 */
-	SettingsWidget(ImageDatasets* datasets);
+	/** TODO */
+	SettingsWidget(ImageDatasetsModel* imageDatasetsModel);
 
 	/** Destructor */
 	~SettingsWidget();
@@ -34,13 +31,10 @@ private:
 	 */
 	void onDatasetNamesChanged(const QStringList& datasetNames);
 
-	/** 
-	 * Invoked when current data set changes
-	 * @param currentDataset Current data set
-	 */
-	void onCurrentDatasetChanged(ImageDataset* previousDataset, ImageDataset* currentDataset);
+	/** TODO */
+	void onCurrentDatasetChanged(ImageDataset* previousImageDataset, ImageDataset* currentImageDataset);
 
 private:
-	ImageDatasets*								_datasets;		/** Pointer to datasets */
-	std::unique_ptr<Ui::SettingsWidget>		_ui;			/** UI */
+	ImageDatasetsModel*						_imageDatasetsModel;	/** TODO */
+	std::unique_ptr<Ui::SettingsWidget>		_ui;					/** UI */
 };

@@ -9,6 +9,7 @@
 #include <QDebug>
 
 Prop::Prop(Actor* actor, const QString& name) :
+	QObject(actor),
 	_actor(actor),
 	_initialized(false),
 	_name(name),

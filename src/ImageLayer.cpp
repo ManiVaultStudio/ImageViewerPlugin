@@ -3,9 +3,8 @@
 
 #include <QDebug>
 
-ImageLayer::ImageLayer(ImageDataset* dataset, const QString& name) :
-	QObject(),
-	_dataset(dataset),
+ImageLayer::ImageLayer(ImageDataset* imageDataset, const QString& name) :
+	QObject(imageDataset),
 	_name(name),
 	_order(0),
 	_opacity(1.0f),
@@ -21,9 +20,15 @@ ImageLayer::ImageLayer(ImageDataset* dataset, const QString& name) :
 
 ImageLayer::~ImageLayer() = default;
 
-ImageDataset* ImageLayer::dataset()
+const ImageDataset* ImageLayer::imageDataset() const
 {
-	return _dataset;
+	return dynamic_cast<ImageDataset*>(parent());
+}
+
+ImageDataset* ImageLayer::imageDataset()
+{
+	const auto constThis = const_cast<const ImageLayer*>(this);
+	return const_cast<ImageDataset*>(constThis->imageDataset());
 }
 
 QString ImageLayer::name() const
@@ -47,7 +52,7 @@ void ImageLayer::setName(const QString& name)
 
 QString ImageLayer::fullName() const
 {
-	return QString("%1::%2").arg(_dataset->name(), _name);
+	return QString("%1::%2").arg(imageDataset()->name(), _name);
 }
 
 std::uint32_t ImageLayer::order() const

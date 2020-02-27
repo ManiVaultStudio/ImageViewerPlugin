@@ -1,23 +1,21 @@
 #pragma once
 
 #include "renderers/Renderer.h"
-#include "ImageData/ImageData.h"
-#include "ImageDatasets.h"
 
 #include "Actor.h"
 
 #include <QColor>
+#include <QWidget>
 
 class ImageViewerWidget;
-class ImageDatasets;
-class ColorImageActor;
-class SelectionImageActor;
+class ImageDatasetsModel;
 class SelectionPickerActor;
 
 class QMouseEvent;
 class QWheelEvent;
 class QOpenGLWidget;
 class QMenu;
+class QOpenGLWidget;
 
 /**
  * Selection renderer class
@@ -32,14 +30,14 @@ public:
 	 * Constructor
 	 * @param parentWidget Parent image viewer widget
 	 */
-	Renderer(ImageViewerWidget* parentWidget, ImageDatasets* datasets);
+	Renderer(QOpenGLWidget* parent);
 
 public:
 	/** Initialize the renderer */
 	void init() override;
 
 	/** Resizes the renderer */
-	void resize(QSize renderSize) override;
+	void resize(QSize renderSize) override {};
 
 	/** Renders the content */
 	void render() override;
@@ -145,9 +143,6 @@ public:
 	 */
 	void zoomAround(const QVector2D& screenPoint, const float& factor);
 
-	/** Zoom to extents of the rendered image quad */
-	void zoomExtents();
-
 	/**
 	 * Zoom to rectangle
 	 * @param rectangle Rectangle to zoom to
@@ -166,9 +161,6 @@ public:
 	/** Returns the context menu */
 	QMenu* contextMenu();
 
-	/** Returns the view size */
-	QSize viewSize() const;
-
 	/** Whether the display of a context menu is allowed */
 	bool allowsContextMenu();
 
@@ -183,10 +175,13 @@ public:
 	 */
 	QColor colorByName(const QString& name, const std::int32_t& alpha = -1) const;
 
+public: // Parent widget queries
+
 	/** Returns the parent widget */
-	QWidget* parentWidget() {
-		return reinterpret_cast<QWidget*>(_parentWidget);
-	}
+	QOpenGLWidget* parentWidget() const;
+
+	/** Returns the parent widget size */
+	QSize parentWidgetSize() const;
 
 public:
 	/**
@@ -194,22 +189,6 @@ public:
 	 * @param colorImage Color image
 	 */
 	void setColorImage(QSharedPointer<QImage> colorImage);
-
-	/**
-	 * Sets the selection image
-	 * @param selectionImage Selection image
-	 * @param selectionBounds Bounds of the selected pixels
-	 */
-	void setSelectionImage(QSharedPointer<QImage> selectionImage, const QRect& selectionBounds);
-
-	/** Returns the selection opacity */
-	float selectionOpacity();
-
-	/**
-	 * Sets the selection  opacity
-	 * @param selectionOpacity Selection opacity
-	 */
-	void setSelectionOpacity(const float& selectionOpacity);
 
 	/** Returns the interaction mode */
 	InteractionMode interactionMode() const;
@@ -227,35 +206,55 @@ public:
 	void releaseOpenGLContext();
 
 protected: // Event handlers
+
 	/**
 	 * Invoked when an actor has changed
 	 * @param actor Actor
 	 */
 	void onActorChanged(Actor* actor);
 	
-	/**
-	 * Invoked when the current dataset changed
-	 * @param previousDataset Previous dataset (if any)
-	 * @param currentDataset Current dataset
-	 */
-	void onCurrentDatasetChanged(ImageDataset* previousDataset, ImageDataset* currentDataset);
-
-private: // Actors
+public: // Actors management
 
 	/** TODO */
 	template<typename T, typename ...Args>
 	void addActor(Args... args)
 	{
-		auto sharedActor	= QSharedPointer<T>::create(args...);
-		auto actor			= dynamic_cast<Actor*>(sharedActor.get());
-		auto actorName		= actor->name();
+		try
+		{
+			auto actor = dynamic_cast<Actor*>(new T(args...));
 
-		if (_actors.contains(actorName))
-			throw std::exception(QString("Renderer already has an actor named %2").arg(actorName).toLatin1());
+			if (actor == nullptr)
+				throw std::exception(QString("Supplied type is not an Actor").toLatin1());
 
-		_actors.insert(actorName, sharedActor);
+			auto name = actor->name();
 
-		QObject::connect(actor, &Actor::becameDirty, this, &Renderer::becameDirty);
+			if (_actors.contains(name))
+				throw std::exception(QString("%2 already exists").arg(name).toLatin1());
+
+			_actors.insert(name, actor);
+
+			QObject::connect(actor, &Actor::becameDirty, this, &Renderer::becameDirty);
+		}
+		catch (const std::exception& e)
+		{
+			throw std::exception(QString("Unable to add actor: %1").arg(e.what()).toLatin1());
+		}
+	}
+
+	/** TODO */
+	void removeActor(const QString& name)
+	{
+		try
+		{
+			if (!_actors.contains(name))
+				throw std::exception(QString("%2 does not exist").arg(name).toLatin1());
+
+			_actors.remove(name);
+		}
+		catch (const std::exception& e)
+		{
+			throw std::exception(QString("Unable to remove actor: %1").arg(e.what()).toLatin1());
+		}
 	}
 
 	/** Returns const pointer to actor by name */
@@ -273,14 +272,15 @@ private: // Actors
 		return const_cast<T*>(constThis->actorByName<T>(name));
 	}
 
-	/** Render actors */
+	/** TODO */
 	void renderActors();
 
-	/** Destroy shapes */
+	/** TODO */
 	void destroyActors();
 
 signals:
-	/** Signals that the renderer just became dirty (one or more shapes need to be re-rendered) */
+
+	/** Signals that the renderer just became dirty */
 	void becameDirty();
 
 	/**
@@ -320,8 +320,6 @@ signals:
 	void mouseWheel(QWheelEvent* wheelEvent);
 
 protected:
-	ImageViewerWidget*						_parentWidget;			/** Pointer to parent widget */
-	ImageDatasets*								_datasets;				/** Pointer to datasets */
 	InteractionMode							_interactionMode;		/** Type of interaction e.g. navigation, selection and window/level */
 	QVector<QSharedPointer<QMouseEvent>>	_mouseEvents;			/** Recorded mouse events during interaction */
 	QVector2D								_pan;					/** Move view horizontally/vertically */
@@ -331,5 +329,5 @@ protected:
 	QMap<QString, QColor>					_colorMap;				/** Color map */
 
 private:
-	QMap<QString, QSharedPointer<Actor>>	_actors;				/** Actors map */
+	QMap<QString, Actor*>	_actors;				/** TODO */
 };

@@ -447,8 +447,8 @@ void SelectionPickerActor::updateSelectionBrush()
 	QVector<QVector3D> polylinePoints;
 
 	// Determine the center of the brush in screen coordinates
-	const auto mousePosition	= renderer()->parentWidget()->mapFromGlobal(QCursor::pos());
-	const auto pCenter			= QVector2D(mousePosition.x(), renderer()->viewSize().height() - mousePosition.y());
+	const auto mousePosition	= dynamic_cast<QWidget*>(renderer()->parent())->mapFromGlobal(QCursor::pos());
+	const auto pCenter			= QVector2D(mousePosition.x(), renderer()->parentWidgetSize().height() - mousePosition.y());
 	const auto noSegments		= 128u;
 
 	std::vector<GLfloat> vertexCoordinates;

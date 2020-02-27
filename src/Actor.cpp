@@ -6,8 +6,7 @@
 #include "Renderer.h"
 
 Actor::Actor(Renderer* renderer, const QString& name, const bool& visible /*= true*/) :
-	QObject(),
-	_renderer(renderer),
+	QObject(renderer),
 	_registeredEvents(static_cast<int>(ActorEvent::None)),
 	_mouseEvents(),
 	_name(name),
@@ -116,12 +115,12 @@ void Actor::setModelMatrix(const QMatrix4x4& modelMatrix)
 
 QMatrix4x4 Actor::modelViewMatrix() const
 {
-	return _renderer->viewMatrix() * _modelMatrix;
+	return renderer()->viewMatrix() * _modelMatrix;
 }
 
 QMatrix4x4 Actor::modelViewProjectionMatrix() const
 {
-	return _renderer->projectionMatrix() * modelViewMatrix();
+	return renderer()->projectionMatrix() * modelViewMatrix();
 }
 
 bool Actor::mayProcessMousePressEvent() const
@@ -240,7 +239,7 @@ bool Actor::shouldReceiveKeyReleaseEvents() const
 void Actor::addMouseEvent(QMouseEvent* mouseEvent)
 {
 	const auto screenPoint		= QVector2D(mouseEvent->pos());
-	const auto worldPosition	= _renderer->screenPointToWorldPosition(modelViewMatrix(), screenPoint);
+	const auto worldPosition	= renderer()->screenPointToWorldPosition(modelViewMatrix(), screenPoint);
 
 	_mouseEvents.append(MouseEvent(screenPoint, worldPosition));
 }
@@ -296,15 +295,21 @@ void Actor::setOpacity(const float& opacity)
 
 void Actor::bindOpenGLContext()
 {
-	_renderer->bindOpenGLContext();
+	renderer()->bindOpenGLContext();
 }
 
 void Actor::releaseOpenGLContext()
 {
-	_renderer->releaseOpenGLContext();
+	renderer()->releaseOpenGLContext();
+}
+
+const Renderer* Actor::renderer() const
+{
+	return static_cast<Renderer*>(parent());
 }
 
 Renderer* Actor::renderer()
 {
-	return _renderer;
+	const auto constThis = const_cast<const Actor*>(this);
+	return const_cast<Renderer*>(constThis->renderer());
 }

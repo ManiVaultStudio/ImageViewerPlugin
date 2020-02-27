@@ -1,10 +1,10 @@
 #pragma once
 
 #include "Actor.h"
-#include "ImageLayer.h"
+
+#include "ImageDataset.h"
 
 class Renderer;
-class ImageDataset;
 
 /**
  * Layer actor class
@@ -15,18 +15,8 @@ class ImageDatasetActor : public Actor
 	Q_OBJECT
 
 public:
-	ImageDatasetActor(Renderer* renderer, const QString& name, const bool& visible = true);
-
 	/** TODO */
-	void setDataset(ImageDataset* dataset);
-
-protected: // Dataset linking
-
-	/** TODO */
-	void connectToDataset();
-
-	/** TODO */
-	void disconnectFromDataset();
+	ImageDatasetActor(Renderer* renderer, const QString& name, ImageDataset* imageDataset, const bool& visible = true);
 
 protected: // Layer prop management
 
@@ -37,5 +27,5 @@ protected: // Layer prop management
 	void removeLayerProp(const QString& layerName);
 
 private:
-	ImageDataset*		_dataset;		/** Layer */
+	ImageDataset*	_imageDataset;		/** Layer */
 };

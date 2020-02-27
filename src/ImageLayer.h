@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Common.h"
+
 #include "ImageData/Images.h"
 
 #include <QImage>
@@ -16,13 +18,16 @@ class ImageLayer : public QObject
 
 public:
 	/** Constructor */
-	ImageLayer(ImageDataset* dataset, const QString& name);
+	ImageLayer(ImageDataset* imageDataset, const QString& name);
 
 	/** Destructor */
 	virtual ~ImageLayer();
 
-	/** Returns the parent dataset */
-	ImageDataset* dataset();
+	/** TODO */
+	const ImageDataset* imageDataset() const;
+
+	/** TODO */
+	ImageDataset* imageDataset();
 
 	/** Returns the dataset name */
 	QString name() const;
@@ -123,7 +128,6 @@ signals:
 	void displayRangeChanged(const float& min, const float& max);
 
 private:
-	ImageDataset*				_dataset;				/** Parent dataset */
 	QString					_name;					/** Name of the layer */
 	std::uint32_t			_order;					/** Depth at which to render the layer */
 	float					_opacity;				/** Opacity of the layer */
@@ -135,5 +139,3 @@ private:
 	float					_window;				/** Display window */
 	float					_level;					/** Display level */
 };
-
-using SharedImageLayer = QSharedPointer<ImageLayer>;

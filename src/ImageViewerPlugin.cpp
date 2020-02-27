@@ -1,8 +1,11 @@
 #include "ImageViewerPlugin.h"
 #include "ImageViewerWidget.h"
 #include "SettingsWidget.h"
-#include "ColorImageActor.h"
+#include "ImageDataset.h"
 #include "Renderer.h"
+
+#include "ImageData/Images.h"
+#include "PointData.h"
 
 #include <QDebug>
 #include <QFileInfo>
@@ -14,14 +17,15 @@ Q_PLUGIN_METADATA(IID "nl.tudelft.ImageViewerPlugin")
 ImageViewerPlugin::ImageViewerPlugin() : 
 	ViewPlugin("Image Viewer"),
 	_imageViewerWidget(),
-	_settingsWidget()
+	_settingsWidget(),
+	_imageDatasetsModel(this)
 {
 	qRegisterMetaType<std::shared_ptr<QImage>>("std::shared_ptr<QImage>");
 
 	//setFocusPolicy(Qt::FocusPolicy::StrongFocus);
 
-	_imageViewerWidget	= new ImageViewerWidget(this);
-	_settingsWidget		= new SettingsWidget(&_imageDatasets);
+	_imageViewerWidget	= new ImageViewerWidget(&_imageDatasetsModel);
+	_settingsWidget		= new SettingsWidget(&_imageDatasetsModel);
 }
 
 void ImageViewerPlugin::init()
@@ -68,16 +72,13 @@ void ImageViewerPlugin::updateWindowTitle()
 	setWindowTitle(QString("%1").arg(properties.join(", ")));
 }
 
-ImageDatasets* ImageViewerPlugin::datasets()
-{
-	return &_imageDatasets;
-}
-
 void ImageViewerPlugin::dataAdded(const QString dataset)
 {
 	qDebug() << "Data added" << dataset;
 
-	_imageDatasets.add(dataset, QSharedPointer<ImageDataset>::create(dataset, &_core->requestData<Images>(dataset)));
+	auto imagesDataset = _core->requestData<Images>(dataset);
+
+	_imageDatasetsModel.add(dataset, imageCollectionTypeName(imagesDataset.imageCollectionType()), imagesDataset.noImages(), imagesDataset.imageSize(), imagesDataset.points()->getNumPoints(), imagesDataset.points()->getNumDimensions());
 }
 
 void ImageViewerPlugin::dataChanged(const QString dataset)
@@ -92,7 +93,7 @@ void ImageViewerPlugin::dataRemoved(const QString dataset)
 
 void ImageViewerPlugin::selectionChanged(const QString dataset)
 {
-	emit _imageDatasets.currentDataset()->setSelectionChanged();
+	//emit _imageDatasetsModel.currentDataset()->setSelectionChanged();
 }
 
 hdps::DataTypes ImageViewerPlugin::supportedDataTypes() const

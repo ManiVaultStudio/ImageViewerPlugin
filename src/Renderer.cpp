@@ -4,16 +4,14 @@
 #include <QtMath>
 #include <QMenu>
 #include <QDebug>
+#include <QOpenGLWidget>
 
-#include "ColorImageActor.h"
-#include "SelectionImageActor.h"
 #include "SelectionPickerActor.h"
 #include "ImageDatasetActor.h"
 
-Renderer::Renderer(ImageViewerWidget* parentWidget, ImageDatasets* datasets) :
+Renderer::Renderer(QOpenGLWidget* parent) :
+	QObject(parent),
 	hdps::Renderer(),
-	_parentWidget(parentWidget),
-	_datasets(datasets),
 	_actors(),
 	_interactionMode(InteractionMode::Selection),
 	_mouseEvents(),
@@ -24,19 +22,10 @@ Renderer::Renderer(ImageViewerWidget* parentWidget, ImageDatasets* datasets) :
 {
 	addNamedColor("InterimSelectionOverlayColor", QColor(239, 130, 13, 50));
 	addNamedColor("SelectionOutline", QColor(239, 130, 13, 255));
-
-	connect(_datasets, &ImageDatasets::currentDatasetChanged, this, &Renderer::onCurrentDatasetChanged);
 }
 
 void Renderer::init()
 {
-}
-
-void Renderer::resize(QSize renderSize)
-{
-	qDebug() << "Renderer resize";
-
-	zoomExtents();
 }
 
 void Renderer::render()
@@ -256,7 +245,7 @@ void Renderer::keyReleaseEvent(QKeyEvent* keyEvent)
 
 QVector3D Renderer::screenPointToWorldPosition(const QMatrix4x4& modelViewMatrix, const QVector2D& screenPoint) const
 {
-	return QVector3D(screenPoint.x(), _parentWidget->height()- screenPoint.y(), 0).unproject(modelViewMatrix, projectionMatrix(), QRect(0, 0, _parentWidget->width(), _parentWidget->height()));
+	return QVector3D(screenPoint.x(), parentWidgetSize().height()- screenPoint.y(), 0).unproject(modelViewMatrix, projectionMatrix(), QRect(0, 0, parentWidgetSize().width(), parentWidgetSize().height()));
 }
 
 QVector2D Renderer::worldPositionToNormalizedScreenPoint(const QVector3D& position) const
@@ -268,15 +257,15 @@ QVector2D Renderer::worldPositionToNormalizedScreenPoint(const QVector3D& positi
 QVector2D Renderer::worldPositionToScreenPoint(const QVector3D& position) const
 {
 	const auto normalizedScreenPoint	= worldPositionToNormalizedScreenPoint(position);
-	const auto viewSize					= QVector2D(_parentWidget->width(), _parentWidget->height());
+	const auto viewSize					= QVector2D(parentWidgetSize().width(), parentWidgetSize().height());
 
 	return viewSize * ((QVector2D(1.0f, 1.0f) + normalizedScreenPoint) / 2.0f);
 }
 
 QVector2D Renderer::screenPointToNormalizedScreenPoint(const QVector2D& screenPoint) const
 {
-	const auto viewSize = QVector2D(_parentWidget->width(), _parentWidget->height());
-	return QVector2D(-1.f, -1.f) + 2.f * (QVector2D(screenPoint.x(), _parentWidget->height() - screenPoint.y()) / viewSize);
+	const auto viewSize = QVector2D(parentWidgetSize().width(), parentWidgetSize().height());
+	return QVector2D(-1.f, -1.f) + 2.f * (QVector2D(screenPoint.x(), parentWidgetSize().height() - screenPoint.y()) / viewSize);
 }
 
 QMatrix4x4 Renderer::screenToNormalizedScreenMatrix() const
@@ -284,7 +273,7 @@ QMatrix4x4 Renderer::screenToNormalizedScreenMatrix() const
 	QMatrix4x4 translate, scale;
 
 	translate.translate(-1.0f, -1.0f, 0.0f);
-	scale.scale(2.0f / static_cast<float>(_parentWidget->width()), 2.0f / static_cast<float>(_parentWidget->height()), 1.0f);
+	scale.scale(2.0f / static_cast<float>(parentWidgetSize().width()), 2.0f / static_cast<float>(parentWidgetSize().height()), 1.0f);
 	
 	return translate * scale;
 }
@@ -293,7 +282,7 @@ QMatrix4x4 Renderer::normalizedScreenToScreenMatrix() const
 {
 	QMatrix4x4 translate, scale;
 
-	const auto size		= QSizeF(_parentWidget->size());
+	const auto size		= QSizeF(parentWidgetSize());
 	const auto halfSize = 0.5f * size;
 
 	
@@ -315,7 +304,7 @@ QMatrix4x4 Renderer::viewMatrix() const
 
 QMatrix4x4 Renderer::projectionMatrix() const
 {
-	const auto halfSize = _parentWidget->size() / 2;
+	const auto halfSize = parentWidgetSize() / 2;
 
 	QMatrix4x4 matrix;
 
@@ -363,18 +352,6 @@ void Renderer::zoomAround(const QVector2D& screenPoint, const float& factor)
 	pan(-vPanDelta);
 }
 
-void Renderer::zoomExtents()
-{
-	qDebug() << "Zoom extents";
-
-	auto currentDataset = _datasets->currentDataset();
-
-	if (currentDataset == nullptr)
-		return;
-
-	zoomToRectangle(QRectF(QPointF(), currentDataset->imageSize()));
-}
-
 void Renderer::zoomToRectangle(const QRectF& rectangle)
 {
 	if (!rectangle.isValid())
@@ -385,8 +362,8 @@ void Renderer::zoomToRectangle(const QRectF& rectangle)
 	resetView();
 
 	const auto center	= rectangle.center();
-	const auto factorX	= (_parentWidget->width() - 2 * _margin) / static_cast<float>(rectangle.width());
-	const auto factorY	= (_parentWidget->height() - 2 * _margin) / static_cast<float>(rectangle.height());
+	const auto factorX	= (parentWidgetSize().width() - 2 * _margin) / static_cast<float>(rectangle.width());
+	const auto factorY	= (parentWidgetSize().height() - 2 * _margin) / static_cast<float>(rectangle.height());
 	
 	zoomBy(factorX < factorY ? factorX : factorY);
 	
@@ -396,7 +373,7 @@ void Renderer::zoomToRectangle(const QRectF& rectangle)
 void Renderer::zoomToSelection()
 {
 	/*
-	auto* currentImageDataSet = _parentWidget->imageViewerPlugin()->currentImages();
+	auto* currentImageDataSet = parentSize().imageViewerPlugin()->currentImages();
 
 	if (currentImageDataSet == nullptr)
 		return;
@@ -427,25 +404,6 @@ void Renderer::setColorImage(QSharedPointer<QImage> colorImage)
 	*/
 }
 
-void Renderer::setSelectionImage(QSharedPointer<QImage> selectionImage, const QRect& selectionBounds)
-{
-	auto worldSelectionBounds = QRect(selectionBounds.left(), selectionImage->height() - selectionBounds.bottom() - 1, selectionBounds.width() + 1, selectionBounds.height() + 1);
-
-	worldSelectionBounds.translate(QPoint(-0.5f * static_cast<float>(selectionImage->width()), -0.5f * static_cast<float>(selectionImage->height())));
-
-	actorByName<SelectionImageActor>("SelectionImageActor")->setImage(selectionImage);
-}
-
-float Renderer::selectionOpacity()
-{
-	return actorByName<SelectionImageActor>("SelectionImageActor")->opacity();
-}
-
-void Renderer::setSelectionOpacity(const float& selectionOpacity)
-{
-	actorByName<SelectionImageActor>("SelectionImageActor")->setOpacity(selectionOpacity);
-}
-
 InteractionMode Renderer::interactionMode() const
 {
 	return _interactionMode;
@@ -461,13 +419,13 @@ void Renderer::setInteractionMode(const InteractionMode& interactionMode)
 	switch (interactionMode)
 	{
 		case InteractionMode::Navigation:
-			_parentWidget->setCursor(Qt::OpenHandCursor);
+			parentWidget()->setCursor(Qt::OpenHandCursor);
 			break;
 
 		case InteractionMode::Selection:
 		case InteractionMode::None:
 		{
-			_parentWidget->setCursor(Qt::ArrowCursor);
+			parentWidget()->setCursor(Qt::ArrowCursor);
 			break;
 		}
 
@@ -484,38 +442,12 @@ void Renderer::setInteractionMode(const InteractionMode& interactionMode)
 
 void Renderer::bindOpenGLContext()
 {
-	_parentWidget->makeCurrent();
+	parentWidget()->makeCurrent();
 }
 
 void Renderer::releaseOpenGLContext()
 {
-	_parentWidget->doneCurrent();
-}
-
-void Renderer::onCurrentDatasetChanged(ImageDataset* previousDataset, ImageDataset* currentDataset)
-{
-	try
-	{
-		qDebug() << "Dataset changed to" << currentDataset->name();
-
-		bindOpenGLContext();
-
-		const auto imageDatsetActorName = "ImageDatsetActor";
-
-		if (!_actors.contains(imageDatsetActorName)) {
-			addActor<ImageDatasetActor>(this, imageDatsetActorName);
-		}
-
-		auto imageDatasetActor = actorByName<ImageDatasetActor>(imageDatsetActorName);
-
-		imageDatasetActor->setDataset(currentDataset);
-
-		zoomExtents();
-	}
-	catch (const std::exception& e)
-	{
-		qDebug() << "An error occurred:" << e.what();
-	}
+	parentWidget()->doneCurrent();
 }
 
 void Renderer::renderActors()
@@ -581,11 +513,6 @@ QMenu* Renderer::contextMenu()
 	return menu;
 }
 
-QSize Renderer::viewSize() const
-{
-	return _parentWidget->size();
-}
-
 bool Renderer::allowsContextMenu()
 {
 	auto showContextMenu = false;
@@ -632,4 +559,14 @@ QColor Renderer::colorByName(const QString& name, const std::int32_t& alpha /*= 
 		color.setAlpha(alpha);
 
 	return color;
+}
+
+QOpenGLWidget* Renderer::parentWidget() const
+{
+	return dynamic_cast<QOpenGLWidget*>(parent());
+}
+
+QSize Renderer::parentWidgetSize() const
+{
+	return parentWidget()->size();
 }

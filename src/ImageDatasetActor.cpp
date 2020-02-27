@@ -1,79 +1,26 @@
 #include "ImageDatasetActor.h"
 #include "ImageLayerProp.h"
-#include "Renderer.h"
 #include "ImageDataset.h"
+#include "Renderer.h"
 
 #include <QOpenGLTexture>
 #include <QDebug>
 
-ImageDatasetActor::ImageDatasetActor(Renderer* renderer, const QString& name, const bool& visible /*= true*/) :
+ImageDatasetActor::ImageDatasetActor(Renderer* renderer, const QString& name, ImageDataset* imageDataset, const bool& visible /*= true*/) :
 	Actor(renderer, name, visible),
-	_dataset(nullptr)
+	_imageDataset(imageDataset)
 {
-}
+	if (_imageDataset == nullptr)
+		throw std::exception("Image dataset is null");
 
-void ImageDatasetActor::setDataset(ImageDataset* dataset)
-{
-	if (dataset == _dataset)
-		return;
-	
-	auto previousDataset = _dataset;
+	qDebug() << "Connecting to dataset" << _imageDataset->name();
 
-	_dataset = dataset;
-
-	// Disconnect from dataset
-	if (previousDataset != nullptr) {
-		disconnectFromDataset();
+	for (const auto& name : _imageDataset->imageLayers().keys()) {
+		addLayerProp(name);
 	}
 
-	// Connect to dataset
-	if (_dataset != nullptr) {
-		connectToDataset();
-	}
-}
-
-void ImageDatasetActor::connectToDataset()
-{
-	if (_dataset == nullptr)
-		return;
-
-	try
-	{
-		qDebug() << "Connecting to dataset" << _dataset->name();
-
-		for (const auto& name : _dataset->layerNames()) {
-			addLayerProp(name);
-		}
-
-		QObject::connect(_dataset, &ImageDataset::layerAdded, this, &ImageDatasetActor::addLayerProp);
-		QObject::connect(_dataset, &ImageDataset::layerRemoved, this, &ImageDatasetActor::removeLayerProp);
-	}
-	catch (const std::exception& e)
-	{
-		qDebug() << "Unable to connect to" << _dataset->name() << ":" << e.what();
-	}
-}
-
-void ImageDatasetActor::disconnectFromDataset()
-{
-	if (_dataset == nullptr)
-		return;
-
-	try
-	{
-		qDebug() << "Disconnecting from dataset" << _dataset->name();
-
-		for (const auto& name : props().keys()) {
-			removeLayerProp(name);
-		}
-
-		QObject::disconnect(_dataset, &ImageDataset::layerAdded, this, &ImageDatasetActor::addLayerProp);
-		QObject::disconnect(_dataset, &ImageDataset::layerRemoved, this, &ImageDatasetActor::removeLayerProp);
-	}
-	catch (const std::exception& e)
-	{
-		qDebug() << "Unable to disconnect from" << _dataset->name() << ":" << e.what();
-	}
+	QObject::connect(_imageDataset, &ImageDataset::layerAdded, this, &ImageDatasetActor::addLayerProp);
+	QObject::connect(_imageDataset, &ImageDataset::layerRemoved, this, &ImageDatasetActor::removeLayerProp);
 }
 
 void ImageDatasetActor::addLayerProp(const QString& layerName)
@@ -82,7 +29,7 @@ void ImageDatasetActor::addLayerProp(const QString& layerName)
 	{
 		qDebug() << "Add layer prop" << layerName;
 
-		addProp<ImageLayerProp>(this, layerName, _dataset->layer(layerName));
+		addProp<ImageLayerProp>(this, layerName, _imageDataset->imageLayerByName(layerName));
 	}
 	catch (std::exception& e)
 	{
