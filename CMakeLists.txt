@@ -27,8 +27,6 @@ set(PLUGIN
 	src/ImageLayer.cpp
 	src/ImageDataset.h
 	src/ImageDataset.cpp
-	src/ImageDatasetsModel.h
-	src/ImageDatasetsModel.cpp
 	src/ImageViewerPlugin.h
 	src/ImageViewerPlugin.cpp
 	src/ImageViewerWidget.h
@@ -41,6 +39,7 @@ set(PLUGIN
 	src/Selection.cpp
 )
 
+file(GLOB MODELS src/*Model.h src/*Model.cpp)
 file(GLOB ACTORS src/*Actor.h src/*Actor.cpp)
 file(GLOB PROPS src/*Prop.h src/*Prop.cpp)
 file(GLOB SHAPES src/*Shape.h src/*Shape.cpp)
@@ -48,10 +47,11 @@ file(GLOB UIS src/*.ui)
 file(GLOB SHADERS src/*.glsl)
 file(GLOB JSON src/*.json)
 
-set(SOURCES ${PLUGIN} ${ACTORS} ${PROPS} ${SHAPES})
+set(SOURCES ${PLUGIN} ${MODELS} ${ACTORS} ${PROPS} ${SHAPES})
 set(AUX ${JSON})
 
 source_group(Plugin FILES ${PLUGIN})
+source_group(Models FILES ${MODELS})
 source_group(Actors FILES ${ACTORS})
 source_group(Props FILES ${PROPS})
 source_group(Shapes FILES ${SHAPES})

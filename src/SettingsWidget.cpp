@@ -4,19 +4,42 @@
 
 #include "ui_SettingsWidget.h"
 
-#include <QDebug>
 #include <QComboBox>
 #include <QCheckBox>
 #include <QLabel>
+#include <QDataWidgetMapper>
+#include <QStringListModel>
+#include <QDebug>
 
 SettingsWidget::SettingsWidget(ImageDatasetsModel* imageDatasetsModel) :
 	QWidget(),
 	_imageDatasetsModel(imageDatasetsModel),
-	_ui{ std::make_unique<Ui::SettingsWidget>() }
+	_ui{ std::make_unique<Ui::SettingsWidget>() },
+	_dataWidgetMapper(new QDataWidgetMapper(this))
 {
 	_ui->setupUi(this);
 	
 	_ui->datasetsTableView->setModel(_imageDatasetsModel);
+
+	_dataWidgetMapper->setModel(_imageDatasetsModel);
+
+	_dataWidgetMapper->addMapping(_ui->currentImageComboBox, static_cast<int>(ImageDatasetsModel::Columns::ImageNames), "currentIndex");
+	_dataWidgetMapper->toFirst();
+
+	connect(_ui->previousPushButton, &QAbstractButton::clicked, _dataWidgetMapper, &QDataWidgetMapper::toPrevious);
+	connect(_ui->nextPushButton, &QAbstractButton::clicked, _dataWidgetMapper, &QDataWidgetMapper::toNext);
+	
+	connect(_dataWidgetMapper, &QDataWidgetMapper::currentIndexChanged, this, [this](int row) {
+		_ui->previousPushButton->setEnabled(row > 0);
+		_ui->nextPushButton->setEnabled(row < _imageDatasetsModel->rowCount(QModelIndex()) - 1);
+
+		const auto index	= _imageDatasetsModel->index(row, static_cast<int>(ImageDatasetsModel::Columns::ImageNames));;
+		const auto data		= _imageDatasetsModel->data(index, Qt::EditRole);
+
+		_ui->currentImageComboBox->setModel(new QStringListModel(data.toStringList()));
+	});
+
+	connect(_ui->datasetsTableView->selectionModel(), &QItemSelectionModel::currentRowChanged, _dataWidgetMapper, &QDataWidgetMapper::setCurrentModelIndex);
 
 	/*
 	auto imageDatasetsView = new QTableView();
@@ -62,6 +85,7 @@ SettingsWidget::~SettingsWidget() = default;
 
 void SettingsWidget::onCurrentDatasetChanged(ImageDataset* previousImageDataset, ImageDataset* currentImageDataset)
 {
+	/*
 	_ui->averageImagesCheckBox->setEnabled(currentImageDataset->canAverage());
 
 	_ui->averageImagesCheckBox->blockSignals(true);
@@ -172,6 +196,6 @@ void SettingsWidget::onCurrentDatasetChanged(ImageDataset* previousImageDataset,
 				_ui->selectionOpacitySlider->setEnabled(hasSelection);
 			}
 		});
-		*/
 	}
+	*/
 }

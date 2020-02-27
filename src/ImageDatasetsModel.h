@@ -37,18 +37,20 @@ public:
 	/** TODO */
 	struct ImageDataset
 	{
-		QString			_name;
-		QString			_type;
-		std::uint32_t	_noImages;
-		QSize			_size;
-		std::uint32_t	_noPoints;
-		std::uint32_t	_noDimensions;
-		std::uint32_t	_imageID;
-		std::uint32_t	_dimensionID;
-		QStringList		_imageNames;
-		QStringList		_dimensionNames;
-		bool			_averageImages;
+		QString				_name;				/** TODO */
+		QString				_type;				/** TODO */
+		std::uint32_t		_noImages;			/** TODO */
+		QSize				_size;				/** TODO */
+		std::uint32_t		_noPoints;			/** TODO */
+		std::uint32_t		_noDimensions;		/** TODO */
+		std::uint32_t		_imageID;			/** TODO */
+		std::uint32_t		_dimensionID;		/** TODO */
+		QStringList			_imageNames;		/** TODO */
+		QStringList			_dimensionNames;	/** TODO */
+		bool				_averageImages;		/** TODO */
 	};
+
+public:
 
 	/** Constructor */
 	ImageDatasetsModel(ImageViewerPlugin* imageViewerPlugin);

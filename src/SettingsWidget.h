@@ -11,6 +11,8 @@ namespace Ui {
 class ImageDatasetsModel;
 class ImageDataset;
 
+class QDataWidgetMapper;
+
 /**
  * Settings widget class
  * @author Thomas Kroes
@@ -31,4 +33,5 @@ private:
 private:
 	ImageDatasetsModel*						_imageDatasetsModel;	/** TODO */
 	std::unique_ptr<Ui::SettingsWidget>		_ui;					/** UI */
+	QDataWidgetMapper*						_dataWidgetMapper;		/** TODO */
 };

@@ -93,6 +93,18 @@ QVariant ImageDatasetsModel::data(const QModelIndex& index, int role) const
 		}
 	}
 
+	if (role == Qt::EditRole) {
+		auto imageDataset = _imageDatasets.at(index.row());
+
+		switch (index.column()) {
+			case (static_cast<int>(Columns::ImageNames)):
+				return imageDataset._imageNames;
+
+			default:
+				break;
+		}
+	}
+
 	return QVariant();
 }
 
