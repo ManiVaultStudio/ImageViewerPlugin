@@ -18,14 +18,23 @@ SettingsWidget::SettingsWidget(ImageDatasetsModel* imageDatasetsModel) :
 	
 	_ui->datasetsTableView->setModel(_imageDatasetsModel);
 
-	QObject::connect(&_imageDatasetsModel->selectionModel(), &QItemSelectionModel::currentChanged, [this](const QModelIndex& current, const QModelIndex& previous) {
-		qDebug() << current << previous;
-	});
+	/*
+	auto imageDatasetsView = new QTableView();
 
+	imageDatasetsView->setSelectionMode(QAbstractItemView::SelectionMode::SingleSelection);
+	imageDatasetsView->setSelectionBehavior(QAbstractItemView::SelectionBehavior::SelectRows);
+	*/
+	//_ui->datasetsComboBox->setView(imageDatasetsView);
+	
+	
+	QObject::connect(_ui->datasetsTableView->selectionModel(), &QItemSelectionModel::selectionChanged, [this](const QItemSelection &selected, const QItemSelection &deselected) {
+		qDebug() << selected << deselected;
+	});
+	/*
 	//_ui->datasetsComboBox->setse
 	//_imageDatasetsModel->
 
-	/*
+	
 	connect(_ui->datasetsComboBox, QOverload<const QString&>::of(&QComboBox::currentTextChanged), _imageDatasetsModel, &ImageDatasetsModel::setCurrentDatasetName);
 
 	connect(_ui->dimensionsComboBox, QOverload<const int>::of(&QComboBox::currentIndexChanged), [&](const int currentDimensionIndex) {
@@ -51,27 +60,8 @@ SettingsWidget::SettingsWidget(ImageDatasetsModel* imageDatasetsModel) :
 
 SettingsWidget::~SettingsWidget() = default;
 
-void SettingsWidget::onDatasetNamesChanged(const QStringList& datasetNames)
-{
-	const auto datasetAvailable = datasetNames.size() > 0;
-
-	_ui->datasetsComboBox->blockSignals(true);
-
-	_ui->datasetsComboBox->clear();
-	_ui->datasetsComboBox->addItems(datasetNames);
-	_ui->datasetsComboBox->setEnabled(datasetAvailable);
-	
-	_ui->datasetsComboBox->blockSignals(false);
-
-	_ui->currentDatasetLabel->setEnabled(datasetAvailable);
-}
-
 void SettingsWidget::onCurrentDatasetChanged(ImageDataset* previousImageDataset, ImageDataset* currentImageDataset)
 {
-	_ui->datasetsComboBox->blockSignals(true);
-	_ui->datasetsComboBox->setCurrentText(currentImageDataset->name());
-	_ui->datasetsComboBox->blockSignals(false);
-
 	_ui->averageImagesCheckBox->setEnabled(currentImageDataset->canAverage());
 
 	_ui->averageImagesCheckBox->blockSignals(true);

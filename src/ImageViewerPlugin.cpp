@@ -30,7 +30,7 @@ ImageViewerPlugin::ImageViewerPlugin() :
 
 void ImageViewerPlugin::init()
 {
-	auto layout = new QVBoxLayout();
+	auto layout = new QHBoxLayout();
 	
 	layout->setMargin(0);
 	layout->setSpacing(0);
@@ -78,7 +78,28 @@ void ImageViewerPlugin::dataAdded(const QString dataset)
 
 	auto imagesDataset = _core->requestData<Images>(dataset);
 
-	_imageDatasetsModel.add(dataset, imageCollectionTypeName(imagesDataset.imageCollectionType()), imagesDataset.noImages(), imagesDataset.imageSize(), imagesDataset.points()->getNumPoints(), imagesDataset.points()->getNumDimensions());
+	auto imageDataset = ImageDatasetsModel::ImageDataset();
+
+	imageDataset._name				= dataset;
+	imageDataset._type				= imageCollectionTypeName(imagesDataset.imageCollectionType());
+	imageDataset._noImages			= imagesDataset.noImages();
+	imageDataset._size				= imagesDataset.imageSize();
+	imageDataset._noPoints			= imagesDataset.points()->getNumPoints();
+	imageDataset._noDimensions		= imagesDataset.points()->getNumDimensions();
+	imageDataset._imageID			= 0;
+	imageDataset._dimensionID		= 0;
+
+	for (const auto& imageFilePath : imagesDataset.imageFilePaths()) {
+		imageDataset._imageNames << QFileInfo(imageFilePath).fileName();
+	}
+
+	for (const auto& dimensionName : imagesDataset.dimensionNames()) {
+		imageDataset._dimensionNames << dimensionName;
+	}
+
+	imageDataset._averageImages	= false;
+
+	_imageDatasetsModel.add(imageDataset);
 }
 
 void ImageViewerPlugin::dataChanged(const QString dataset)

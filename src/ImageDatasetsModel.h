@@ -26,7 +26,12 @@ public:
 		NoImages,
 		Size,
 		NoPoints,
-		NoDimensions
+		NoDimensions,
+		ImageID,
+		DimensionID,
+		ImageNames,
+		DimensionNames,
+		AverageImages
 	};
 
 	/** TODO */
@@ -38,6 +43,11 @@ public:
 		QSize			_size;
 		std::uint32_t	_noPoints;
 		std::uint32_t	_noDimensions;
+		std::uint32_t	_imageID;
+		std::uint32_t	_dimensionID;
+		QStringList		_imageNames;
+		QStringList		_dimensionNames;
+		bool			_averageImages;
 	};
 
 	/** Constructor */
@@ -47,10 +57,10 @@ public:
 	~ImageDatasetsModel();
 
 	/** TODO */
-	void add(const QString& name, const QString& type, const std::uint32_t& noImages, const QSize& size, const std::uint32_t& noPoints, const std::uint32_t& noDimensions);
+	void add(const ImageDataset& imageDataset);
 
 	/** TODO */
-	QItemSelectionModel& selectionModel() { return _selectionModel; };
+	//QItemSelectionModel& selectionModel() { return _selectionModel; };
 
 public: // Inherited members
 

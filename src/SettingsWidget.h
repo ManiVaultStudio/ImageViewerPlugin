@@ -25,12 +25,6 @@ public:
 	~SettingsWidget();
 
 private:
-	/** 
-	 * Invoked when data set names changed
-	 * @param datasetNames Data set names
-	 */
-	void onDatasetNamesChanged(const QStringList& datasetNames);
-
 	/** TODO */
 	void onCurrentDatasetChanged(ImageDataset* previousImageDataset, ImageDataset* currentImageDataset);
 
