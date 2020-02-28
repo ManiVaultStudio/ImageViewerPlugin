@@ -16,7 +16,7 @@
 
 class QMenu;
 
-class ImageDatasetsModel;
+class MainModel;
 
 /**
  * Image viewer widget class
@@ -32,7 +32,7 @@ public:
 	 * Constructor
 	 * @param imageViewerPlugin Pointer to image viewer plugin
 	 */
-	ImageViewerWidget(ImageDatasetsModel* imageDatasets);
+	ImageViewerWidget(MainModel* mainModel);
 
 	/** Destructor */
 	~ImageViewerWidget() override;
@@ -90,7 +90,7 @@ private:
 	QMenu* contextMenu();
 
 private:
-	ImageDatasetsModel*							_imageDatasets;			/** Pointer to image viewer plugin */
+	MainModel*								_mainModel;					/** TODO */
 	Renderer*								_renderer;					/** Selection renderer */
 	std::unique_ptr <QOpenGLDebugLogger>	_openglDebugLogger;			/** OpenGL debug logger (on in debug mode) */
 };

@@ -8,7 +8,7 @@ namespace Ui {
 	class SettingsWidget;
 }
 
-class ImageDatasetsModel;
+class MainModel;
 class ImageDataset;
 
 class QDataWidgetMapper;
@@ -19,19 +19,16 @@ class QDataWidgetMapper;
  */
 class SettingsWidget : public QWidget
 {
-public:
+public: // Construction/destruction
+
 	/** TODO */
-	SettingsWidget(ImageDatasetsModel* imageDatasetsModel);
+	SettingsWidget(MainModel* mainModel);
 
 	/** Destructor */
 	~SettingsWidget();
 
 private:
-	/** TODO */
-	void onCurrentDatasetChanged(ImageDataset* previousImageDataset, ImageDataset* currentImageDataset);
-
-private:
-	ImageDatasetsModel*						_imageDatasetsModel;	/** TODO */
+	MainModel*								_mainModel;				/** TODO */
 	std::unique_ptr<Ui::SettingsWidget>		_ui;					/** UI */
 	QDataWidgetMapper*						_dataWidgetMapper;		/** TODO */
 };

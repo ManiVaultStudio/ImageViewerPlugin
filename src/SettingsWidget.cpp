@@ -1,5 +1,7 @@
 #include "SettingsWidget.h"
-#include "ImageDatasetsModel.h"
+#include "MainModel.h"
+#include "DatasetsModel.h"
+#include "LayersModel.h"
 #include "ImageDataset.h"
 
 #include "ui_SettingsWidget.h"
@@ -11,160 +13,70 @@
 #include <QStringListModel>
 #include <QDebug>
 
-SettingsWidget::SettingsWidget(ImageDatasetsModel* imageDatasetsModel) :
+SettingsWidget::SettingsWidget(MainModel* mainModel) :
 	QWidget(),
-	_imageDatasetsModel(imageDatasetsModel),
+	_mainModel(mainModel),
 	_ui{ std::make_unique<Ui::SettingsWidget>() },
 	_dataWidgetMapper(new QDataWidgetMapper(this))
 {
 	_ui->setupUi(this);
 	
-	_ui->datasetsComboBox->setModel(_imageDatasetsModel);
+	auto datasetsModel = _mainModel->datasetsModel();
 
-	_dataWidgetMapper->setModel(_imageDatasetsModel);
-	_dataWidgetMapper->setSubmitPolicy(QDataWidgetMapper::AutoSubmit);
+	_ui->datasetsComboBox->setModel(datasetsModel);
+	_ui->datasetsListView->setModel(datasetsModel);
+	_ui->datasetsListView->setSelectionModel(_mainModel->selectionModel());
+	_ui->datasetsTreeView->setModel(datasetsModel);
+	_ui->datasetsTreeView->setSelectionModel(_mainModel->selectionModel());
 
-	_dataWidgetMapper->addMapping(_ui->currentImageComboBox, static_cast<int>(ImageDatasetsModel::Columns::ImageNames), "currentIndex");
-	_dataWidgetMapper->addMapping(_ui->averageImagesCheckBox, static_cast<int>(ImageDatasetsModel::Columns::AverageImages));// , "checked");
-	_dataWidgetMapper->toFirst();
-
-	QObject::connect(_ui->previousPushButton, &QAbstractButton::clicked, _dataWidgetMapper, &QDataWidgetMapper::toPrevious);
-	QObject::connect(_ui->nextPushButton, &QAbstractButton::clicked, _dataWidgetMapper, &QDataWidgetMapper::toNext);
-	
-	QObject::connect(_dataWidgetMapper, &QDataWidgetMapper::currentIndexChanged, this, [this](int row) {
-		_ui->previousPushButton->setEnabled(row > 0);
-		_ui->nextPushButton->setEnabled(row < _imageDatasetsModel->rowCount(QModelIndex()) - 1);
-
-		const auto index	= _imageDatasetsModel->index(row, static_cast<int>(ImageDatasetsModel::Columns::ImageNames));;
-		const auto data		= _imageDatasetsModel->data(index, Qt::EditRole);
-
-		//_ui->currentImageComboBox->setModel(new QStringListModel(data.toStringList()));
-
-		_ui->currentImageComboBox->setModel(_imageDatasetsModel);
-
-		const auto id = _imageDatasetsModel->index(row, static_cast<int>(ImageDatasetsModel::Columns::ImageNames));
-		_ui->currentImageComboBox->setRootModelIndex(id);
+	QObject::connect(_ui->datasetsComboBox, qOverload<int>(&QComboBox::currentIndexChanged), [this](int currentIndex) {
+		_mainModel->selectionModel()->select(_mainModel->datasetsModel()->index(currentIndex), QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
 	});
 
-	QObject::connect(_ui->datasetsComboBox, qOverload<int>(&QComboBox::currentIndexChanged), _dataWidgetMapper, &QDataWidgetMapper::setCurrentIndex);
-	QObject::connect(_dataWidgetMapper, &QDataWidgetMapper::currentIndexChanged, _ui->datasetsComboBox, &QComboBox::setCurrentIndex);
+	QObject::connect(_ui->currentImageComboBox, qOverload<int>(&QComboBox::currentIndexChanged), [this](int currentIndex) {
+		_mainModel->datasetsModel()->setCurrentImage(_mainModel->selectionModel()->currentIndex().row(), currentIndex);
+	});
+
+	QObject::connect(_ui->currentDimensionComboBox, qOverload<int>(&QComboBox::currentIndexChanged), [this](int currentIndex) {
+		_mainModel->datasetsModel()->setCurrentDimension(_mainModel->selectionModel()->currentIndex().row(), currentIndex);
+	});
+
+	QObject::connect(_ui->averageImagesCheckBox, &QCheckBox::stateChanged, [this](int state) {
+		_mainModel->datasetsModel()->setAverageImages(_mainModel->selectionModel()->currentIndex().row(), state);
+	});
+
+	QObject::connect(_mainModel->selectionModel(), &QItemSelectionModel::currentRowChanged, _dataWidgetMapper, &QDataWidgetMapper::setCurrentModelIndex);
+
+	QObject::connect(_mainModel->selectionModel(), &QItemSelectionModel::currentRowChanged, [this](const QModelIndex& current, const QModelIndex& previous) {
+		_ui->datasetsComboBox->blockSignals(true);
+		_ui->datasetsComboBox->setCurrentIndex(current.row());
+		_ui->datasetsComboBox->blockSignals(false);
+
+		const auto currentImageFlags = _mainModel->datasetsModel()->flags(_mainModel->datasetsModel()->index(current.row(), static_cast<int>(DatasetsModel::Columns::CurrentImage)));
+
+		_ui->currentImageComboBox->blockSignals(true);
+		_ui->currentImageLabel->setEnabled(currentImageFlags & Qt::ItemIsEditable);
+		_ui->currentImageComboBox->setEnabled(currentImageFlags & Qt::ItemIsEditable);
+		_ui->currentImageComboBox->setModel(new QStringListModel(_mainModel->datasetsModel()->imageNames(current.row())));
+		_ui->currentImageComboBox->setCurrentIndex(_mainModel->datasetsModel()->currentImage(current.row()));
+		_ui->currentImageComboBox->blockSignals(false);
+
+		const auto currentDimensionFlags = _mainModel->datasetsModel()->flags(_mainModel->datasetsModel()->index(current.row(), static_cast<int>(DatasetsModel::Columns::CurrentDimension)));
+
+		_ui->currentDimensionComboBox->blockSignals(true);
+		_ui->currentDimensionLabel->setEnabled(currentDimensionFlags & Qt::ItemIsEditable);
+		_ui->currentDimensionComboBox->setEnabled(currentDimensionFlags & Qt::ItemIsEditable);
+		_ui->currentDimensionComboBox->setModel(new QStringListModel(_mainModel->datasetsModel()->dimensionNames(current.row())));
+		_ui->currentDimensionComboBox->setCurrentIndex(_mainModel->datasetsModel()->currentDimension(current.row()));
+		_ui->currentDimensionComboBox->blockSignals(false);
+
+		const auto averageImagesFlags = _mainModel->datasetsModel()->flags(_mainModel->datasetsModel()->index(current.row(), static_cast<int>(DatasetsModel::Columns::AverageImages)));
+
+		_ui->averageImagesCheckBox->blockSignals(true);
+		_ui->averageImagesCheckBox->setEnabled(averageImagesFlags & Qt::ItemIsEditable);
+		_ui->averageImagesCheckBox->setChecked(_mainModel->datasetsModel()->averageImages(current.row()));
+		_ui->averageImagesCheckBox->blockSignals(false);
+	});
 }
 
 SettingsWidget::~SettingsWidget() = default;
-
-void SettingsWidget::onCurrentDatasetChanged(ImageDataset* previousImageDataset, ImageDataset* currentImageDataset)
-{
-	/*
-	_ui->averageImagesCheckBox->setEnabled(currentImageDataset->canAverage());
-
-	_ui->averageImagesCheckBox->blockSignals(true);
-	_ui->averageImagesCheckBox->setChecked(currentImageDataset->average());
-	_ui->averageImagesCheckBox->blockSignals(false);
-
-	const auto enable = currentImageDataset->imageNames().size() > 0 && !currentImageDataset->average();
-
-	_ui->imagesComboBox->blockSignals(true);
-
-	_ui->imagesComboBox->clear();
-	_ui->imagesComboBox->addItems(currentImageDataset->imageNames());
-	_ui->imagesComboBox->setEnabled(enable);
-	_ui->imagesComboBox->blockSignals(false);
-
-	const auto dimensionNames = currentImageDataset->dimensionNames();
-
-	_ui->dimensionsComboBox->blockSignals(true);
-
-	_ui->dimensionsComboBox->clear();
-	_ui->dimensionsComboBox->addItems(currentImageDataset->dimensionNames());
-
-	switch (currentImageDataset->imageCollectionType())
-	{
-		case ImageCollectionType::Sequence:
-		{
-			_ui->dimensionsComboBox->setEnabled(dimensionNames.size() > 0 && !currentImageDataset->average());
-			break;
-		}
-
-		case ImageCollectionType::Stack:
-		case ImageCollectionType::MultiPartSequence:
-		{
-			_ui->dimensionsComboBox->setEnabled(dimensionNames.size() > 0);
-			break;
-		}
-
-		default:
-			break;
-	}
-
-	_ui->dimensionsComboBox->blockSignals(false);
-
-	_ui->currentDimensionLabel->setEnabled(dimensionNames.size() > 0 && !currentImageDataset->average());
-
-	_ui->selectionOpacitySlider->blockSignals(true);
-	_ui->selectionOpacitySlider->setValue(currentImageDataset->selectionOpacity() * 100.0f);
-	_ui->selectionOpacitySlider->blockSignals(false);
-
-	if (currentImageDataset->imageCollectionType() == ImageCollectionType::Sequence) {
-		_ui->createSubsetFromSelectionPushButton->setEnabled(false);
-		_ui->selectionOpacityLabel->setEnabled(false);
-		_ui->selectionOpacitySlider->setEnabled(false);
-	}
-	else {
-		const auto hasSelection = currentImageDataset->hasSelection();
-
-		_ui->createSubsetFromSelectionPushButton->setEnabled(hasSelection);
-		_ui->selectionOpacityLabel->setEnabled(hasSelection);
-		_ui->selectionOpacitySlider->setEnabled(hasSelection);
-	}
-
-	if (previousImageDataset != nullptr) {
-		disconnect(previousImageDataset, &ImageDataset::currentImageIndexChanged, this, nullptr);
-		disconnect(previousImageDataset, &ImageDataset::currentDimensionIndexChanged, this, nullptr);
-		disconnect(previousImageDataset, &ImageDataset::averageChanged, this, nullptr);
-		disconnect(previousImageDataset, &ImageDataset::selectionOpacityChanged, this, nullptr);
-		disconnect(previousImageDataset, &ImageDataset::selectionChanged, this, nullptr);
-	}
-
-	if (currentImageDataset != nullptr) {
-		connect(currentImageDataset, &ImageDataset::currentImageIndexChanged, this, [&](const std::int32_t& currentImageIndex) {
-			_ui->imagesComboBox->blockSignals(true);
-			_ui->imagesComboBox->setCurrentIndex(currentImageIndex);
-			_ui->imagesComboBox->blockSignals(false);
-		});
-
-		connect(currentImageDataset, &ImageDataset::currentDimensionIndexChanged, this, [&](const std::int32_t& currentDimensionIndex) {
-			_ui->dimensionsComboBox->blockSignals(true);
-			_ui->dimensionsComboBox->setCurrentIndex(currentDimensionIndex);
-			_ui->dimensionsComboBox->blockSignals(false);
-		});
-
-		connect(currentImageDataset, &ImageDataset::averageChanged, this, [&](const bool& average) {
-			_ui->averageImagesCheckBox->blockSignals(true);
-			_ui->averageImagesCheckBox->setChecked(average);
-			_ui->averageImagesCheckBox->blockSignals(false);
-		});
-
-		connect(currentImageDataset, &ImageDataset::selectionOpacityChanged, this, [&](const float& selectionOpacity) {
-			_ui->selectionOpacitySlider->blockSignals(true);
-			_ui->selectionOpacitySlider->setValue(selectionOpacity * 100.0f);
-			_ui->selectionOpacitySlider->blockSignals(false);
-		});
-
-		/*
-		connect(currentImageDataset, &ImageDataset::selectionChanged, this, [&]() {
-			if (_imageDatasetsModel->currentDataset()->imageCollectionType() == ImageCollectionType::Sequence) {
-				_ui->createSubsetFromSelectionPushButton->setEnabled(false);
-				_ui->selectionOpacityLabel->setEnabled(false);
-				_ui->selectionOpacitySlider->setEnabled(false);
-			}
-			else {
-				const auto hasSelection = _imageDatasetsModel->currentDataset()->hasSelection();
-
-				_ui->createSubsetFromSelectionPushButton->setEnabled(hasSelection);
-				_ui->selectionOpacityLabel->setEnabled(hasSelection);
-				_ui->selectionOpacitySlider->setEnabled(hasSelection);
-			}
-		});
-	}
-	*/
-}

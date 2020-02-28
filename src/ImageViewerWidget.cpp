@@ -15,9 +15,9 @@
 
 #include "SelectionPickerActor.h"
 
-ImageViewerWidget::ImageViewerWidget(ImageDatasetsModel* imageDatasets) :
+ImageViewerWidget::ImageViewerWidget(MainModel* mainModel) :
 	QOpenGLFunctions(),
-	_imageDatasets(imageDatasets),
+	_mainModel(mainModel),
 	_renderer(new Renderer(this)),
 	_openglDebugLogger(std::make_unique<QOpenGLDebugLogger>())
 {

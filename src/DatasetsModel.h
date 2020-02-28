@@ -1,15 +1,31 @@
 #pragma once
 
-#include "Common.h"
+#include "MainModel.h"
 
 #include <QAbstractListModel>
-
-class MainModel;
 
 /** TODO */
 class DatasetsModel : public QAbstractListModel
 {
 	Q_OBJECT
+
+public: // Columns
+
+	/** TODO */
+	enum class Columns : int {
+		Name,
+		Type,
+		NoImages,
+		Size,
+		NoPoints,
+		NoDimensions,
+		CurrentImage,
+		CurrentDimension,
+		ImageNames,
+		DimensionNames,
+		AverageImages,
+		Layers
+	};
 
 public: // Construction/destruction
 
@@ -34,12 +50,6 @@ public: // Inherited members
 	QVariant headerData(int section, Qt::Orientation orientation, int role) const;
 
 	/** TODO */
-	QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
-
-	/** TODO */
-	QModelIndex parent(const QModelIndex& index) const override;
-
-	/** TODO */
 	Qt::ItemFlags flags(const QModelIndex &index) const;
 
 	/** TODO */
@@ -52,9 +62,48 @@ public: // Inherited members
 	bool removeRows(int position, int rows, const QModelIndex& index = QModelIndex());
 
 	/** TODO */
-	QList<ImageDataset> datasets();
+	const Datasets* datasets() const;
+
+	/** TODO */
+	Datasets* datasets();
+
+public: // Data access functions
+
+	/** TODO */
+	int type(const std::uint32_t& row) const;
+
+	/** TODO */
+	int currentDimension(const std::uint32_t& row) const;
+
+	/** TODO */
+	void setCurrentDimension(const std::uint32_t& row, const std::uint32_t& currentDimensionID);
+
+	/** TODO */
+	int currentImage(const std::uint32_t& row) const;
+
+	/** TODO */
+	void setCurrentImage(const std::uint32_t& row, const std::uint32_t& currentImageID);
+
+	/** TODO */
+	QStringList imageNames(const std::uint32_t& row) const;
+
+	/** TODO */
+	QStringList dimensionNames(const std::uint32_t& row) const;
+
+	/** TODO */
+	bool averageImages(const std::uint32_t& row) const;
+
+	/** TODO */
+	void setAverageImages(const std::uint32_t& row, const bool& averageImages);
+
+protected: // TODO
+	
+	/** TODO */
+	void add(const MainModel::Dataset& dataset);
 
 private:
 	MainModel*		_mainModel;				/** TODO */
 	QString			_currentDatasetName;	/** TODO */
+
+	friend class MainModel;
 };

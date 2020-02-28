@@ -1,16 +1,22 @@
 #pragma once
 
-#include "Common.h"
+#include "MainModel.h"
 
 #include <QAbstractListModel>
-
-class MainModel;
 
 /** TODO */
 class LayersModel : public QAbstractListModel
 {
-public:
+public: // Columns
 	
+	/** TODO */
+	enum class Columns : int {
+		Name,
+		Order,
+		Opacity,
+		Window,
+		Level
+	};
 
 public: // Construction/destruction
 
@@ -35,12 +41,6 @@ public: // Inherited members
 	QVariant headerData(int section, Qt::Orientation orientation, int role) const;
 
 	/** TODO */
-	QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
-
-	/** TODO */
-	QModelIndex parent(const QModelIndex& index) const override;
-
-	/** TODO */
 	Qt::ItemFlags flags(const QModelIndex &index) const;
 
 	/** TODO */
@@ -52,8 +52,13 @@ public: // Inherited members
 	/** TODO */
 	bool removeRows(int position, int rows, const QModelIndex& index = QModelIndex());
 
+public: // TODO
+
 	/** TODO */
-	QList<ImageLayer> layers();
+	const Layers layers() const;
+
+	/** TODO */
+	Layers layers();
 
 private:
 	MainModel*		_mainModel;				/** TODO */

@@ -1,4 +1,4 @@
-#include "ImageDatasetsModel.h"
+#include "DatasetsModel.h"
 #include "ImageDataset.h"
 #include "ImageLayer.h"
 
@@ -7,7 +7,7 @@
 #include <QDebug>
 
 ImageDataset::ImageDataset(ImageDatasetsModel* imageDatasets, const QString& name, Images* images) :
-	QObject(imageDatasets),
+	QObject(),
 	_name(name),
 	_dataset(images),
 	_imageNames(),

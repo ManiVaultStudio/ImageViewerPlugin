@@ -1,10 +1,10 @@
 #include "LayersModel.h"
-#include "MainModel.h"
 
 #include <QDebug>
 
 LayersModel::LayersModel(MainModel* mainModel) :
 	QAbstractListModel(mainModel),
+	_mainModel(mainModel),
 	_currentDatasetName()
 {
 }
@@ -29,27 +29,27 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 	if (!index.isValid())
 		return QVariant();
 
-	if (index.row() >= _imageLayers.size() || index.row() < 0)
+	if (index.row() >= layers().size() || index.row() < 0)
 		return QVariant();
 
 	if (role == Qt::DisplayRole) {
-		auto imageLayer = _imageLayers.at(index.row());
+		auto layer = layers().at(index.row());
 
 		switch (index.column()) {
 			case (static_cast<int>(Columns::Name)) :
-				return imageLayer._name;
+				return layer._name;
 
 			case (static_cast<int>(Columns::Order)):
-				return imageLayer._order;
+				return layer._order;
 
 			case (static_cast<int>(Columns::Opacity)):
-				return QString::number(imageLayer._opacity, 'f', 1);
+				return QString::number(layer._opacity, 'f', 1);
 
 			case (static_cast<int>(Columns::Window)):
-				return QString::number(imageLayer._window, 'f', 1);
+				return QString::number(layer._window, 'f', 1);
 
 			case (static_cast<int>(Columns::Level)):
-				return QString::number(imageLayer._level, 'f', 1);
+				return QString::number(layer._level, 'f', 1);
 
 			default:
 				break;
@@ -89,38 +89,12 @@ QVariant LayersModel::headerData(int section, Qt::Orientation orientation, int r
 	return QVariant();
 }
 
-QModelIndex LayersModel::index(int row, int column, const QModelIndex& parent /*= QModelIndex()*/) const
-{
-	if (!hasIndex(row, column, parent))
-		return QModelIndex();
-
-	/*
-	TreeItem *parentItem;
-
-	if (!parent.isValid())
-		parentItem = rootItem;
-	else
-		parentItem = static_cast<TreeItem*>(parent.internalPointer());
-
-	TreeItem *childItem = parentItem->child(row);
-	if (childItem)
-		return createIndex(row, column, childItem);
-	*/
-
-	return QModelIndex();
-}
-
-QModelIndex LayersModel::parent(const QModelIndex& index) const
-{
-	return QModelIndex();
-}
-
 Qt::ItemFlags LayersModel::flags(const QModelIndex &index) const
 {
 	if (!index.isValid())
 		return Qt::ItemIsEnabled;
 
-	return QAbstractTableModel::flags(index) | Qt::ItemIsEditable;
+	return QAbstractListModel::flags(index) | Qt::ItemIsEditable;
 }
 
 bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int role /*= Qt::DisplayRole*/)
@@ -128,34 +102,34 @@ bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int r
 	if (index.isValid() && role == Qt::DisplayRole) {
 		int row = index.row();
 
-		auto imageLayer = _imageLayers.value(row);
+		auto layer = layers().value(row);
 
 		switch (index.column()) {
 			case (static_cast<int>(Columns::Name)):
-				imageLayer._name = value.toString();
+				layer._name = value.toString();
 				break;
 
 			case (static_cast<int>(Columns::Order)):
-				imageLayer._order = value.toInt();
+				layer._order = value.toInt();
 				break;
 
 			case (static_cast<int>(Columns::Opacity)):
-				imageLayer._opacity = value.toFloat();
+				layer._opacity = value.toFloat();
 				break;
 
 			case (static_cast<int>(Columns::Window)):
-				imageLayer._window = value.toFloat();
+				layer._window = value.toFloat();
 				break;
 
 			case (static_cast<int>(Columns::Level)):
-				imageLayer._level = value.toFloat();
+				layer._level = value.toFloat();
 				break;
 
 			default:
 				return false;
 		}
 
-		_imageLayers.replace(row, imageLayer);
+		layers().replace(row, layer);
 
 		emit(dataChanged(index, index));
 
@@ -172,7 +146,7 @@ bool LayersModel::insertRows(int position, int rows, const QModelIndex& index /*
 	beginInsertRows(QModelIndex(), position, position + rows - 1);
 
 	for (int row = 0; row < rows; row++) {
-		_imageLayers.insert(position, ImageLayer());
+		layers().insert(position, MainModel::Dataset::Layer());
 	}
 
 	endInsertRows();
@@ -187,7 +161,7 @@ bool LayersModel::removeRows(int position, int rows, const QModelIndex& index /*
 	beginRemoveRows(QModelIndex(), position, position + rows - 1);
 
 	for (int row = 0; row < rows; ++row) {
-		_imageLayers.removeAt(position);
+		layers().removeAt(position);
 	}
 
 	endRemoveRows();
@@ -195,7 +169,13 @@ bool LayersModel::removeRows(int position, int rows, const QModelIndex& index /*
 	return true;
 }
 
-QList<LayersModel::ImageLayer> LayersModel::layers()
+const Layers LayersModel::layers() const
 {
-	return _imageLayers;
+	return _mainModel->datasets()->at(0)._layers;
+}
+
+Layers LayersModel::layers()
+{
+	const auto constThis = const_cast<const LayersModel*>(this);
+	return const_cast<QList<MainModel::Dataset::Layer>&>(constThis->layers());
 }

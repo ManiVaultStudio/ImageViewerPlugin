@@ -2,6 +2,7 @@
 #include "ImageViewerWidget.h"
 #include "SettingsWidget.h"
 #include "ImageDataset.h"
+#include "DatasetsModel.h"
 #include "Renderer.h"
 
 #include "ImageData/Images.h"
@@ -18,14 +19,14 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	ViewPlugin("Image Viewer"),
 	_imageViewerWidget(),
 	_settingsWidget(),
-	_imageDatasetsModel(this)
+	_mainModel(this)
 {
 	qRegisterMetaType<std::shared_ptr<QImage>>("std::shared_ptr<QImage>");
 
 	//setFocusPolicy(Qt::FocusPolicy::StrongFocus);
 
-	_imageViewerWidget	= new ImageViewerWidget(&_imageDatasetsModel);
-	_settingsWidget		= new SettingsWidget(&_imageDatasetsModel);
+	_imageViewerWidget	= new ImageViewerWidget(&_mainModel);
+	_settingsWidget		= new SettingsWidget(&_mainModel);
 }
 
 void ImageViewerPlugin::init()
@@ -78,16 +79,16 @@ void ImageViewerPlugin::dataAdded(const QString dataset)
 
 	auto imagesDataset = _core->requestData<Images>(dataset);
 
-	auto imageDataset = ImageDatasetsModel::ImageDataset();
+	auto imageDataset = MainModel::Dataset();
 
 	imageDataset._name				= dataset;
-	imageDataset._type				= imageCollectionTypeName(imagesDataset.imageCollectionType());
+	imageDataset._type				= static_cast<int>(imagesDataset.imageCollectionType());
 	imageDataset._noImages			= imagesDataset.noImages();
 	imageDataset._size				= imagesDataset.imageSize();
 	imageDataset._noPoints			= imagesDataset.points()->getNumPoints();
 	imageDataset._noDimensions		= imagesDataset.points()->getNumDimensions();
-	imageDataset._imageID			= 0;
-	imageDataset._dimensionID		= 0;
+	imageDataset._currentImage			= 0;
+	imageDataset._currentDimension		= 0;
 
 	for (const auto& imageFilePath : imagesDataset.imageFilePaths()) {
 		imageDataset._imageNames << QFileInfo(imageFilePath).fileName();
@@ -99,7 +100,7 @@ void ImageViewerPlugin::dataAdded(const QString dataset)
 
 	imageDataset._averageImages	= false;
 
-	_imageDatasetsModel.add(imageDataset);
+	_mainModel.addDataset(imageDataset);
 }
 
 void ImageViewerPlugin::dataChanged(const QString dataset)

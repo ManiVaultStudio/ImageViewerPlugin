@@ -2,7 +2,7 @@
 
 #include <ViewPlugin.h>
 
-#include "ImageDatasetsModel.h"
+#include "MainModel.h"
 
 using hdps::plugin::ViewPluginFactory;
 using hdps::plugin::ViewPlugin;
@@ -51,9 +51,9 @@ public:
 	void updateWindowTitle();
 
 private:
-	ImageViewerWidget*		_imageViewerWidget;			/** Pointer to image viewer widget */
-	SettingsWidget*			_settingsWidget;			/** Image viewer settings widget */
-	ImageDatasetsModel		_imageDatasetsModel;		/** TODO */
+	ImageViewerWidget*		_imageViewerWidget;		/** Pointer to image viewer widget */
+	SettingsWidget*			_settingsWidget;		/** Image viewer settings widget */
+	MainModel				_mainModel;				/** TODO */
 };
 
 /**
