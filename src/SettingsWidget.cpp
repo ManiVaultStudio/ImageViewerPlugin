@@ -19,66 +19,35 @@ SettingsWidget::SettingsWidget(ImageDatasetsModel* imageDatasetsModel) :
 {
 	_ui->setupUi(this);
 	
-	_ui->datasetsTableView->setModel(_imageDatasetsModel);
+	_ui->datasetsComboBox->setModel(_imageDatasetsModel);
 
 	_dataWidgetMapper->setModel(_imageDatasetsModel);
+	_dataWidgetMapper->setSubmitPolicy(QDataWidgetMapper::AutoSubmit);
 
 	_dataWidgetMapper->addMapping(_ui->currentImageComboBox, static_cast<int>(ImageDatasetsModel::Columns::ImageNames), "currentIndex");
+	_dataWidgetMapper->addMapping(_ui->averageImagesCheckBox, static_cast<int>(ImageDatasetsModel::Columns::AverageImages));// , "checked");
 	_dataWidgetMapper->toFirst();
 
-	connect(_ui->previousPushButton, &QAbstractButton::clicked, _dataWidgetMapper, &QDataWidgetMapper::toPrevious);
-	connect(_ui->nextPushButton, &QAbstractButton::clicked, _dataWidgetMapper, &QDataWidgetMapper::toNext);
+	QObject::connect(_ui->previousPushButton, &QAbstractButton::clicked, _dataWidgetMapper, &QDataWidgetMapper::toPrevious);
+	QObject::connect(_ui->nextPushButton, &QAbstractButton::clicked, _dataWidgetMapper, &QDataWidgetMapper::toNext);
 	
-	connect(_dataWidgetMapper, &QDataWidgetMapper::currentIndexChanged, this, [this](int row) {
+	QObject::connect(_dataWidgetMapper, &QDataWidgetMapper::currentIndexChanged, this, [this](int row) {
 		_ui->previousPushButton->setEnabled(row > 0);
 		_ui->nextPushButton->setEnabled(row < _imageDatasetsModel->rowCount(QModelIndex()) - 1);
 
 		const auto index	= _imageDatasetsModel->index(row, static_cast<int>(ImageDatasetsModel::Columns::ImageNames));;
 		const auto data		= _imageDatasetsModel->data(index, Qt::EditRole);
 
-		_ui->currentImageComboBox->setModel(new QStringListModel(data.toStringList()));
+		//_ui->currentImageComboBox->setModel(new QStringListModel(data.toStringList()));
+
+		_ui->currentImageComboBox->setModel(_imageDatasetsModel);
+
+		const auto id = _imageDatasetsModel->index(row, static_cast<int>(ImageDatasetsModel::Columns::ImageNames));
+		_ui->currentImageComboBox->setRootModelIndex(id);
 	});
 
-	connect(_ui->datasetsTableView->selectionModel(), &QItemSelectionModel::currentRowChanged, _dataWidgetMapper, &QDataWidgetMapper::setCurrentModelIndex);
-
-	/*
-	auto imageDatasetsView = new QTableView();
-
-	imageDatasetsView->setSelectionMode(QAbstractItemView::SelectionMode::SingleSelection);
-	imageDatasetsView->setSelectionBehavior(QAbstractItemView::SelectionBehavior::SelectRows);
-	*/
-	//_ui->datasetsComboBox->setView(imageDatasetsView);
-	
-	
-	QObject::connect(_ui->datasetsTableView->selectionModel(), &QItemSelectionModel::selectionChanged, [this](const QItemSelection &selected, const QItemSelection &deselected) {
-		qDebug() << selected << deselected;
-	});
-	/*
-	//_ui->datasetsComboBox->setse
-	//_imageDatasetsModel->
-
-	
-	connect(_ui->datasetsComboBox, QOverload<const QString&>::of(&QComboBox::currentTextChanged), _imageDatasetsModel, &ImageDatasetsModel::setCurrentDatasetName);
-
-	connect(_ui->dimensionsComboBox, QOverload<const int>::of(&QComboBox::currentIndexChanged), [&](const int currentDimensionIndex) {
-		_imageDatasetsModel->currentDataset()->setCurrentDimensionIndex(currentDimensionIndex);
-	});
-
-	connect(_ui->averageImagesCheckBox, &QCheckBox::stateChanged, this, [&](int state) {
-		_imageDatasetsModel->currentDataset()->setAverage(static_cast<bool>(state));
-	});
-	
-	connect(_ui->selectionOpacitySlider, &QSlider::valueChanged, _imageDatasetsModel, [&](int value) {
-		_imageDatasetsModel->currentDataset()->setSelectionOpacity(static_cast<float>(value) / 100.f);
-	});
-	
-	connect(_ui->createSubsetFromSelectionPushButton, &QCheckBox::clicked, [&]() {
-		_imageDatasetsModel->currentDataset()->createSubsetFromSelection();
-	});
-	
-	connect(_imageDatasetsModel, &ImageDatasetsModel::namesChanged, this, &SettingsWidget::onDatasetNamesChanged);
-	connect(_imageDatasetsModel, &ImageDatasetsModel::currentDatasetChanged, this, &SettingsWidget::onCurrentDatasetChanged);
-	*/
+	QObject::connect(_ui->datasetsComboBox, qOverload<int>(&QComboBox::currentIndexChanged), _dataWidgetMapper, &QDataWidgetMapper::setCurrentIndex);
+	QObject::connect(_dataWidgetMapper, &QDataWidgetMapper::currentIndexChanged, _ui->datasetsComboBox, &QComboBox::setCurrentIndex);
 }
 
 SettingsWidget::~SettingsWidget() = default;
