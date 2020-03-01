@@ -24,7 +24,9 @@ public: // Columns
 		ImageNames,
 		DimensionNames,
 		AverageImages,
-		Layers
+		ImageFilePaths,
+		CurrentImageFilepath,
+		CurrentDimensionFilepath
 	};
 
 public: // Construction/destruction
@@ -67,31 +69,39 @@ public: // Inherited members
 	/** TODO */
 	Datasets* datasets();
 
-public: // Data access functions
+public: // Getters
 
 	/** TODO */
-	int type(const std::uint32_t& row) const;
+	QVariant type(const std::uint32_t& row, int role = Qt::DisplayRole) const;
 
 	/** TODO */
-	int currentDimension(const std::uint32_t& row) const;
+	QVariant currentDimension(const std::uint32_t& row, int role = Qt::DisplayRole) const;
 
 	/** TODO */
-	void setCurrentDimension(const std::uint32_t& row, const std::uint32_t& currentDimensionID);
+	QVariant currentImage(const std::uint32_t& row, int role = Qt::DisplayRole) const;
 
 	/** TODO */
-	int currentImage(const std::uint32_t& row) const;
+	QVariant imageNames(const std::uint32_t& row, int role = Qt::DisplayRole) const;
+
+	/** TODO */
+	QVariant dimensionNames(const std::uint32_t& row, int role = Qt::DisplayRole) const;
+
+	/** TODO */
+	QVariant averageImages(const std::uint32_t& row, int role = Qt::DisplayRole) const;
+
+	/** TODO */
+	QVariant currentImageFilepath(const std::uint32_t& row, int role = Qt::DisplayRole) const;
+
+	/** TODO */
+	QVariant currentDimensionFilepath(const std::uint32_t& row, int role = Qt::DisplayRole) const;
+
+public: // Setters
 
 	/** TODO */
 	void setCurrentImage(const std::uint32_t& row, const std::uint32_t& currentImageID);
 
 	/** TODO */
-	QStringList imageNames(const std::uint32_t& row) const;
-
-	/** TODO */
-	QStringList dimensionNames(const std::uint32_t& row) const;
-
-	/** TODO */
-	bool averageImages(const std::uint32_t& row) const;
+	void setCurrentDimension(const std::uint32_t& row, const std::uint32_t& currentDimensionID);
 
 	/** TODO */
 	void setAverageImages(const std::uint32_t& row, const bool& averageImages);

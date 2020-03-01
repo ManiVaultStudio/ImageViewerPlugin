@@ -18,7 +18,7 @@ class LayersWidget : public QWidget
 public: // Construction/destruction
 
 	/** TODO */
-	LayersWidget(MainModel* mainModel);
+	LayersWidget(QWidget* parent, MainModel* mainModel);
 
 	/** Destructor */
 	~LayersWidget();

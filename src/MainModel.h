@@ -55,6 +55,7 @@ public:
 		QStringList			_imageNames;		/** TODO */
 		QStringList			_dimensionNames;	/** TODO */
 		bool				_averageImages;		/** TODO */
+		QStringList			_imageFilePaths;	/** TODO */
 		QList<Layer>		_layers;			/** TODO */
 	};
 

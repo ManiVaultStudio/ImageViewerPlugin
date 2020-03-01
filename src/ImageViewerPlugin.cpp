@@ -26,7 +26,7 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	//setFocusPolicy(Qt::FocusPolicy::StrongFocus);
 
 	_imageViewerWidget	= new ImageViewerWidget(&_mainModel);
-	_settingsWidget		= new SettingsWidget(&_mainModel);
+	_settingsWidget		= new SettingsWidget(this, &_mainModel);
 }
 
 void ImageViewerPlugin::init()
@@ -35,11 +35,13 @@ void ImageViewerPlugin::init()
 	
 	layout->setMargin(0);
 	layout->setSpacing(0);
-
+	
 	setMainLayout(layout);
 
 	addWidget(_imageViewerWidget);
 	addWidget(_settingsWidget);
+
+	layout->setStretchFactor(_imageViewerWidget, 1);
 }
 
 ImageViewerWidget* ImageViewerPlugin::imageViewerWidget()
@@ -87,15 +89,35 @@ void ImageViewerPlugin::dataAdded(const QString dataset)
 	imageDataset._size				= imagesDataset.imageSize();
 	imageDataset._noPoints			= imagesDataset.points()->getNumPoints();
 	imageDataset._noDimensions		= imagesDataset.points()->getNumDimensions();
-	imageDataset._currentImage			= 0;
-	imageDataset._currentDimension		= 0;
+	imageDataset._currentImage		= 0;
+	imageDataset._currentDimension	= 0;
+	imageDataset._averageImages		= false;
+	imageDataset._imageFilePaths	= QStringList();
 
 	for (const auto& imageFilePath : imagesDataset.imageFilePaths()) {
-		imageDataset._imageNames << QFileInfo(imageFilePath).fileName();
+		imageDataset._imageFilePaths << imageFilePath;
 	}
 
-	for (const auto& dimensionName : imagesDataset.dimensionNames()) {
-		imageDataset._dimensionNames << dimensionName;
+	switch (imagesDataset.imageCollectionType())
+	{
+		case ImageCollectionType::Sequence:
+		{
+			for (const auto& imageFilePath : imagesDataset.imageFilePaths()) {
+				imageDataset._imageNames << QFileInfo(imageFilePath).fileName();
+			}
+			break;
+		}
+
+		case ImageCollectionType::Stack:
+		{
+			for (const auto& dimensionName : imagesDataset.dimensionNames()) {
+				imageDataset._dimensionNames << dimensionName;
+			}
+			break;
+		}
+
+		default:
+			break;
 	}
 
 	imageDataset._averageImages	= false;

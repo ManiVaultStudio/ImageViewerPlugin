@@ -33,6 +33,8 @@ set(PLUGIN
 	src/ImageViewerWidget.cpp
 	src/SettingsWidget.h
 	src/SettingsWidget.cpp
+	src/SelectionWidget.h
+	src/SelectionWidget.cpp
 	src/LayersWidget.h
 	src/LayersWidget.cpp
 	src/Renderer.h

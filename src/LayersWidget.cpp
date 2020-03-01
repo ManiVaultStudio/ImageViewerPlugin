@@ -13,8 +13,8 @@
 #include <QStringListModel>
 #include <QDebug>
 
-LayersWidget::LayersWidget(MainModel* mainModel) :
-	QWidget(),
+LayersWidget::LayersWidget(QWidget* parent, MainModel* mainModel) :
+	QWidget(parent),
 	_mainModel(mainModel),
 	_ui{ std::make_unique<Ui::LayersWidget>() }
 {
