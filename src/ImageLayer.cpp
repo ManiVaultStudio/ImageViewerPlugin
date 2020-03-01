@@ -4,7 +4,7 @@
 #include <QDebug>
 
 ImageLayer::ImageLayer(ImageDataset* imageDataset, const QString& name) :
-	QObject(imageDataset),
+	QObject(),
 	_name(name),
 	_order(0),
 	_opacity(1.0f),
@@ -52,7 +52,7 @@ void ImageLayer::setName(const QString& name)
 
 QString ImageLayer::fullName() const
 {
-	return QString("%1::%2").arg(imageDataset()->name(), _name);
+	return QString("%1::%2").arg(imageDataset()->_name, _name);
 }
 
 std::uint32_t ImageLayer::order() const

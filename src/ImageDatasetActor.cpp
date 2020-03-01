@@ -10,6 +10,7 @@ ImageDatasetActor::ImageDatasetActor(Renderer* renderer, const QString& name, Im
 	Actor(renderer, name, visible),
 	_imageDataset(imageDataset)
 {
+	/*
 	if (_imageDataset == nullptr)
 		throw std::exception("Image dataset is null");
 
@@ -21,10 +22,12 @@ ImageDatasetActor::ImageDatasetActor(Renderer* renderer, const QString& name, Im
 
 	QObject::connect(_imageDataset, &ImageDataset::layerAdded, this, &ImageDatasetActor::addLayerProp);
 	QObject::connect(_imageDataset, &ImageDataset::layerRemoved, this, &ImageDatasetActor::removeLayerProp);
+	*/
 }
 
 void ImageDatasetActor::addLayerProp(const QString& layerName)
 {
+	/*
 	try
 	{
 		qDebug() << "Add layer prop" << layerName;
@@ -35,6 +38,7 @@ void ImageDatasetActor::addLayerProp(const QString& layerName)
 	{
 		qDebug() << "Unable to add layer prop:" << e.what();
 	}
+	*/
 }
 
 void ImageDatasetActor::removeLayerProp(const QString& layerName)

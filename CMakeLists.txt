@@ -23,6 +23,10 @@ find_package(Qt5 COMPONENTS Widgets WebEngineWidgets REQUIRED)
 
 set(PLUGIN
 	src/Common.h
+	src/Layer.h
+	src/Layer.cpp
+	src/ImageDataset.h
+	src/ImageDataset.cpp
 	src/ImageLayer.h
 	src/ImageLayer.cpp
 	src/ImageDataset.h

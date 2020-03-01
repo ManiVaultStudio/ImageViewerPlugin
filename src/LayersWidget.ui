@@ -2,12 +2,15 @@
 <ui version="4.0">
  <class>LayersWidget</class>
  <widget class="QWidget" name="LayersWidget">
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>417</width>
-    <height>359</height>
+    <width>300</width>
+    <height>390</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -16,10 +19,19 @@
     <verstretch>0</verstretch>
    </sizepolicy>
   </property>
+  <property name="maximumSize">
+   <size>
+    <width>16777215</width>
+    <height>16777215</height>
+   </size>
+  </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
+   <property name="sizeConstraint">
+    <enum>QLayout::SetDefaultConstraint</enum>
+   </property>
    <property name="leftMargin">
     <number>0</number>
    </property>
@@ -32,85 +44,78 @@
    <property name="bottomMargin">
     <number>0</number>
    </property>
-   <property name="spacing">
-    <number>0</number>
-   </property>
    <item row="0" column="0">
     <widget class="QGroupBox" name="layersGroupBox">
      <property name="enabled">
-      <bool>false</bool>
+      <bool>true</bool>
+     </property>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>300</width>
+       <height>16777215</height>
+      </size>
      </property>
      <property name="title">
       <string>Layers</string>
      </property>
+     <property name="flat">
+      <bool>false</bool>
+     </property>
+     <property name="checkable">
+      <bool>false</bool>
+     </property>
      <layout class="QGridLayout" name="gridLayout_4">
+      <property name="sizeConstraint">
+       <enum>QLayout::SetDefaultConstraint</enum>
+      </property>
       <item row="4" column="0">
        <widget class="QLabel" name="layerLevelLabel">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
         <property name="text">
          <string>Level</string>
         </property>
        </widget>
       </item>
-      <item row="5" column="0">
-       <widget class="QLabel" name="layerFilterColorLabel">
-        <property name="text">
-         <string>Filter color</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1" colspan="2">
-       <layout class="QHBoxLayout" name="layersHorizontalLayout">
-        <property name="topMargin">
-         <number>0</number>
-        </property>
+      <item row="3" column="1" colspan="2">
+       <layout class="QHBoxLayout" name="layerWindowHorizontalLayout">
         <item>
-         <widget class="QTreeView" name="layersTreeView"/>
+         <widget class="QDoubleSpinBox" name="layerWindowDoubleSpinBox">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+         </widget>
         </item>
         <item>
-         <layout class="QVBoxLayout" name="layerPositionLayout">
-          <property name="leftMargin">
-           <number>0</number>
+         <widget class="QSlider" name="layerWindowHorizontalSlider">
+          <property name="enabled">
+           <bool>true</bool>
           </property>
-          <item>
-           <widget class="QPushButton" name="layerMoveDownPushButton">
-            <property name="text">
-             <string>Move up</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="layerMoveUpPushButton">
-            <property name="text">
-             <string>Move down</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <spacer name="layerPositionLayoutVerticalSpacer">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>40</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-         </layout>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
         </item>
        </layout>
       </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="layerOpacityLabel">
-        <property name="text">
-         <string>Opacity</string>
-        </property>
-       </widget>
-      </item>
       <item row="1" column="1" colspan="2">
        <widget class="QCheckBox" name="layerEnabledCheckBox">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
         <property name="sizePolicy">
          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
           <horstretch>5</horstretch>
@@ -122,47 +127,33 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="0">
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>Layer</string>
-        </property>
-       </widget>
-      </item>
       <item row="3" column="0">
        <widget class="QLabel" name="layerWindowLabel">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
         <property name="text">
          <string>Window</string>
         </property>
        </widget>
       </item>
-      <item row="3" column="1" colspan="2">
-       <layout class="QHBoxLayout" name="layerWindowHorizontalLayout">
+      <item row="4" column="1" colspan="2">
+       <layout class="QHBoxLayout" name="layerLevelHorizontalLayout">
         <item>
-         <widget class="QDoubleSpinBox" name="layerWindowDoubleSpinBox"/>
-        </item>
-        <item>
-         <widget class="QSlider" name="layerWindowHorizontalSlider">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
+         <widget class="QDoubleSpinBox" name="layerLevelDoubleSpinBox">
+          <property name="enabled">
+           <bool>true</bool>
           </property>
          </widget>
         </item>
-       </layout>
-      </item>
-      <item row="2" column="1" colspan="2">
-       <layout class="QHBoxLayout" name="layerOpacityHorizontalLayout">
-        <property name="leftMargin">
-         <number>0</number>
-        </property>
         <item>
-         <widget class="QDoubleSpinBox" name="layerOpacityDoubleSpinBox"/>
-        </item>
-        <item>
-         <widget class="QSlider" name="layerOpacityHorizontalSlider">
+         <widget class="QSlider" name="layerLevelHorizontalSlider">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
           <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-            <horstretch>1</horstretch>
+           <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+            <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
@@ -173,17 +164,158 @@
         </item>
        </layout>
       </item>
-      <item row="4" column="1" colspan="2">
-       <layout class="QHBoxLayout" name="layerLevelHorizontalLayout">
+      <item row="2" column="0">
+       <widget class="QLabel" name="layerOpacityLabel">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="text">
+         <string>Opacity</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="0">
+       <widget class="QLabel" name="layerFilterColorLabel">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="text">
+         <string>Filter color</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1" colspan="2">
+       <layout class="QHBoxLayout" name="layerOpacityHorizontalLayout">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
         <item>
-         <widget class="QDoubleSpinBox" name="layerLevelDoubleSpinBox"/>
+         <widget class="QDoubleSpinBox" name="layerOpacityDoubleSpinBox">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+         </widget>
         </item>
         <item>
-         <widget class="QSlider" name="layerLevelHorizontalSlider">
+         <widget class="QSlider" name="layerOpacityHorizontalSlider">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
          </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="0" column="0" colspan="3">
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <property name="sizeConstraint">
+         <enum>QLayout::SetDefaultConstraint</enum>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QTreeView" name="layersTreeView">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::StyledPanel</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Sunken</enum>
+          </property>
+          <property name="lineWidth">
+           <number>1</number>
+          </property>
+          <property name="midLineWidth">
+           <number>0</number>
+          </property>
+          <property name="editTriggers">
+           <set>QAbstractItemView::NoEditTriggers</set>
+          </property>
+          <property name="showDropIndicator" stdset="0">
+           <bool>false</bool>
+          </property>
+          <property name="rootIsDecorated">
+           <bool>false</bool>
+          </property>
+          <property name="itemsExpandable">
+           <bool>false</bool>
+          </property>
+          <property name="expandsOnDoubleClick">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <item>
+           <widget class="QPushButton" name="layerMoveUpPushButton">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="text">
+             <string>Move up</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="layerMoveDownPushButton">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="text">
+             <string>Move up</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="layerPositionLayoutHorizontalSpacer">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
         </item>
        </layout>
       </item>

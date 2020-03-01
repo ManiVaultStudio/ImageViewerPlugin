@@ -4,6 +4,8 @@
 
 #include <QAbstractListModel>
 
+class QItemSelectionModel;
+
 /** TODO */
 class DatasetsModel : public QAbstractListModel
 {
@@ -72,48 +74,55 @@ public: // Inherited members
 public: // Getters
 
 	/** TODO */
-	QVariant type(const std::uint32_t& row, int role = Qt::DisplayRole) const;
+	QVariant type(const int& row, int role = Qt::DisplayRole) const;
 
 	/** TODO */
-	QVariant currentDimension(const std::uint32_t& row, int role = Qt::DisplayRole) const;
+	QVariant currentDimension(const int& row, int role = Qt::DisplayRole) const;
 
 	/** TODO */
-	QVariant currentImage(const std::uint32_t& row, int role = Qt::DisplayRole) const;
+	QVariant currentImage(const int& row, int role = Qt::DisplayRole) const;
 
 	/** TODO */
-	QVariant imageNames(const std::uint32_t& row, int role = Qt::DisplayRole) const;
+	QVariant imageNames(const int& row, int role = Qt::DisplayRole) const;
 
 	/** TODO */
-	QVariant dimensionNames(const std::uint32_t& row, int role = Qt::DisplayRole) const;
+	QVariant dimensionNames(const int& row, int role = Qt::DisplayRole) const;
 
 	/** TODO */
-	QVariant averageImages(const std::uint32_t& row, int role = Qt::DisplayRole) const;
+	QVariant averageImages(const int& row, int role = Qt::DisplayRole) const;
 
 	/** TODO */
-	QVariant currentImageFilepath(const std::uint32_t& row, int role = Qt::DisplayRole) const;
+	QVariant currentImageFilepath(const int& row, int role = Qt::DisplayRole) const;
 
 	/** TODO */
-	QVariant currentDimensionFilepath(const std::uint32_t& row, int role = Qt::DisplayRole) const;
+	QVariant currentDimensionFilepath(const int& row, int role = Qt::DisplayRole) const;
+
+	/** TODO */
+	LayersModel* layersModel(const int& row);
 
 public: // Setters
 
 	/** TODO */
-	void setCurrentImage(const std::uint32_t& row, const std::uint32_t& currentImageID);
+	void setCurrentImage(const int& row, const std::uint32_t& currentImageID);
 
 	/** TODO */
-	void setCurrentDimension(const std::uint32_t& row, const std::uint32_t& currentDimensionID);
+	void setCurrentDimension(const int& row, const std::uint32_t& currentDimensionID);
 
 	/** TODO */
-	void setAverageImages(const std::uint32_t& row, const bool& averageImages);
+	void setAverageImages(const int& row, const bool& averageImages);
 
-protected: // TODO
+public: // 
 	
 	/** TODO */
-	void add(const MainModel::Dataset& dataset);
+	void add(const ImageDataset& dataset);
+
+	/** TODO */
+	QItemSelectionModel* selectionModel() { return _selectionModel; }
 
 private:
-	MainModel*		_mainModel;				/** TODO */
-	QString			_currentDatasetName;	/** TODO */
+	MainModel*				_mainModel;				/** TODO */
+	QString					_currentDatasetName;	/** TODO */
+	QItemSelectionModel*	_selectionModel;		/** TODO */
 
 	friend class MainModel;
 };

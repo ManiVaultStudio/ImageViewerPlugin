@@ -8,7 +8,7 @@ namespace Ui {
 	class SelectionWidget;
 }
 
-class MainModel;
+class DatasetsModel;
 
 class QDataWidgetMapper;
 
@@ -18,12 +18,12 @@ class SelectionWidget : public QWidget
 public: // Construction/destruction
 
 	/** TODO */
-	SelectionWidget(QWidget* parent, MainModel* mainModel);
+	SelectionWidget(QWidget* parent, DatasetsModel* datasetsModel);
 
 	/** Destructor */
 	~SelectionWidget();
 
 private:
-	MainModel*								_mainModel;			/** TODO */
+	DatasetsModel*							_datasetsModel;		/** TODO */
 	std::unique_ptr<Ui::SelectionWidget>	_ui;				/** TODO */
 };

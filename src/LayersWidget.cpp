@@ -1,81 +1,95 @@
 #include "LayersWidget.h"
-#include "MainModel.h"
-#include "DatasetsModel.h"
 #include "LayersModel.h"
-#include "ImageDataset.h"
+#include "DatasetsModel.h"
 
 #include "ui_LayersWidget.h"
 
-#include <QComboBox>
-#include <QCheckBox>
-#include <QLabel>
-#include <QDataWidgetMapper>
-#include <QStringListModel>
 #include <QDebug>
 
-LayersWidget::LayersWidget(QWidget* parent, MainModel* mainModel) :
+LayersWidget::LayersWidget(QWidget* parent, DatasetsModel* datasetsModel) :
 	QWidget(parent),
-	_mainModel(mainModel),
+	_datasetsModel(datasetsModel),
 	_ui{ std::make_unique<Ui::LayersWidget>() }
 {
 	_ui->setupUi(this);
-	
-	/*
-	auto datasetsModel = _mainModel->datasetsModel();
 
-	_ui->datasetsComboBox->setModel(datasetsModel);
-	_ui->datasetsTreeView->setModel(datasetsModel);
-	_ui->datasetsTreeView->setSelectionModel(_mainModel->selectionModel());
-
-	QObject::connect(_ui->datasetsComboBox, qOverload<int>(&QComboBox::currentIndexChanged), [this](int currentIndex) {
-		_mainModel->selectionModel()->select(_mainModel->datasetsModel()->index(currentIndex), QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
+	QObject::connect(_datasetsModel->selectionModel(), &QItemSelectionModel::currentRowChanged, [this](const QModelIndex& current, const QModelIndex& previous) {
+		//	_ui->layersGroupBox->setEnabled(true);
 	});
-
-	QObject::connect(_ui->currentImageComboBox, qOverload<int>(&QComboBox::currentIndexChanged), [this](int currentIndex) {
-		_mainModel->datasetsModel()->setCurrentImage(_mainModel->selectionModel()->currentIndex().row(), currentIndex);
-	});
-
-	QObject::connect(_ui->currentDimensionComboBox, qOverload<int>(&QComboBox::currentIndexChanged), [this](int currentIndex) {
-		_mainModel->datasetsModel()->setCurrentDimension(_mainModel->selectionModel()->currentIndex().row(), currentIndex);
-	});
-
-	QObject::connect(_ui->averageImagesCheckBox, &QCheckBox::stateChanged, [this](int state) {
-		_mainModel->datasetsModel()->setAverageImages(_mainModel->selectionModel()->currentIndex().row(), state);
-	});
-
-	QObject::connect(_mainModel->selectionModel(), &QItemSelectionModel::currentRowChanged, _dataWidgetMapper, &QDataWidgetMapper::setCurrentModelIndex);
-
-	QObject::connect(_mainModel->selectionModel(), &QItemSelectionModel::currentRowChanged, [this](const QModelIndex& current, const QModelIndex& previous) {
-		_ui->datasetsComboBox->blockSignals(true);
-		_ui->datasetsComboBox->setCurrentIndex(current.row());
-		_ui->datasetsComboBox->blockSignals(false);
-
-		const auto currentImageFlags = _mainModel->datasetsModel()->flags(_mainModel->datasetsModel()->index(current.row(), static_cast<int>(DatasetsModel::Columns::CurrentImage)));
-
-		_ui->currentImageComboBox->blockSignals(true);
-		_ui->currentImageLabel->setEnabled(currentImageFlags & Qt::ItemIsEditable);
-		_ui->currentImageComboBox->setEnabled(currentImageFlags & Qt::ItemIsEditable);
-		_ui->currentImageComboBox->setModel(new QStringListModel(_mainModel->datasetsModel()->imageNames(current.row())));
-		_ui->currentImageComboBox->setCurrentIndex(_mainModel->datasetsModel()->currentImage(current.row()));
-		_ui->currentImageComboBox->blockSignals(false);
-
-		const auto currentDimensionFlags = _mainModel->datasetsModel()->flags(_mainModel->datasetsModel()->index(current.row(), static_cast<int>(DatasetsModel::Columns::CurrentDimension)));
-
-		_ui->currentDimensionComboBox->blockSignals(true);
-		_ui->currentDimensionLabel->setEnabled(currentDimensionFlags & Qt::ItemIsEditable);
-		_ui->currentDimensionComboBox->setEnabled(currentDimensionFlags & Qt::ItemIsEditable);
-		_ui->currentDimensionComboBox->setModel(new QStringListModel(_mainModel->datasetsModel()->dimensionNames(current.row())));
-		_ui->currentDimensionComboBox->setCurrentIndex(_mainModel->datasetsModel()->currentDimension(current.row()));
-		_ui->currentDimensionComboBox->blockSignals(false);
-
-		const auto averageImagesFlags = _mainModel->datasetsModel()->flags(_mainModel->datasetsModel()->index(current.row(), static_cast<int>(DatasetsModel::Columns::AverageImages)));
-
-		_ui->averageImagesCheckBox->blockSignals(true);
-		_ui->averageImagesCheckBox->setEnabled(averageImagesFlags & Qt::ItemIsEditable);
-		_ui->averageImagesCheckBox->setChecked(_mainModel->datasetsModel()->averageImages(current.row()));
-		_ui->averageImagesCheckBox->blockSignals(false);
-	});
-	*/
 }
 
 LayersWidget::~LayersWidget() = default;
+
+void LayersWidget::setModel(LayersModel* previous, LayersModel* current)
+{
+	/*
+	auto selectionModel = _layersModel->selectionModel();
+
+	_ui->layersTreeView->setModel(_layersModel);
+	_ui->layersTreeView->setSelectionModel(_layersModel->selectionModel());
+
+	auto headerView = _ui->layersTreeView->header();
+
+	headerView->setSectionResizeMode(QHeaderView::ResizeToContents);
+
+	headerView->hideSection(static_cast<int>(LayersModel::Columns::Order));
+	headerView->hideSection(static_cast<int>(LayersModel::Columns::Window));
+	headerView->hideSection(static_cast<int>(LayersModel::Columns::Level));
+
+	QObject::connect(_layersModel->datasetsModel()->selectionModel(), &QItemSelectionModel::currentRowChanged, [this](const QModelIndex& current, const QModelIndex& previous) {
+		//	_ui->layersGroupBox->setEnabled(true);
+	});
+
+	QObject::connect(_layersModel->datasetsModel()->selectionModel(), &QItemSelectionModel::currentRowChanged, [this](const QModelIndex& current, const QModelIndex& previous) {
+		//	_ui->layersGroupBox->setEnabled(_layersModel->datasetsModel()->rowCount(QModelIndex()) > 0);
+	});
+
+	QObject::connect(selectionModel, &QItemSelectionModel::currentRowChanged, [this](const QModelIndex& current, const QModelIndex& previous) {
+		auto datasetsModel = _layersModel->datasetsModel();
+
+		const auto opacityFlags = _layersModel->flags(_layersModel->index(current.row(), static_cast<int>(LayersModel::Columns::Opacity)));
+
+		_ui->layerOpacityLabel->setEnabled(opacityFlags & Qt::ItemIsEditable);
+		_ui->layerOpacityDoubleSpinBox->setEnabled(opacityFlags & Qt::ItemIsEditable);
+		_ui->layerOpacityHorizontalSlider->setEnabled(opacityFlags & Qt::ItemIsEditable);
+
+		_ui->layerOpacityDoubleSpinBox->blockSignals(true);
+		_ui->layerOpacityDoubleSpinBox->setValue(_layersModel->opacity(current.row()));
+		_ui->layerOpacityDoubleSpinBox->blockSignals(false);
+
+		_ui->layerOpacityHorizontalSlider->blockSignals(true);
+		_ui->layerOpacityHorizontalSlider->setValue(100.0f * _layersModel->opacity(current.row()));
+		_ui->layerOpacityHorizontalSlider->blockSignals(false);
+
+		const auto windowFlags = _layersModel->flags(_layersModel->index(current.row(), static_cast<int>(LayersModel::Columns::Window)));
+		const auto window = _layersModel->window(current.row());
+
+		_ui->layerWindowLabel->setEnabled(windowFlags & Qt::ItemIsEditable);
+		_ui->layerWindowDoubleSpinBox->setEnabled(windowFlags & Qt::ItemIsEditable);
+		_ui->layerWindowHorizontalSlider->setEnabled(windowFlags & Qt::ItemIsEditable);
+
+		_ui->layerWindowDoubleSpinBox->blockSignals(true);
+		_ui->layerWindowDoubleSpinBox->setValue(window);
+		_ui->layerWindowDoubleSpinBox->blockSignals(false);
+
+		_ui->layerWindowHorizontalSlider->blockSignals(true);
+		_ui->layerWindowHorizontalSlider->setValue(100.0f * window);
+		_ui->layerWindowHorizontalSlider->blockSignals(false);
+
+		const auto levelFlags = _layersModel->flags(_layersModel->index(current.row(), static_cast<int>(LayersModel::Columns::Level)));
+		const auto level = _layersModel->level(current.row());
+
+		_ui->layerLevelLabel->setEnabled(levelFlags & Qt::ItemIsEditable);
+		_ui->layerLevelDoubleSpinBox->setEnabled(levelFlags & Qt::ItemIsEditable);
+		_ui->layerLevelHorizontalSlider->setEnabled(levelFlags & Qt::ItemIsEditable);
+
+		_ui->layerLevelDoubleSpinBox->blockSignals(true);
+		_ui->layerLevelDoubleSpinBox->setValue(level);
+		_ui->layerLevelDoubleSpinBox->blockSignals(false);
+
+		_ui->layerLevelHorizontalSlider->blockSignals(true);
+		_ui->layerLevelHorizontalSlider->setValue(100.0f * level);
+		_ui->layerLevelHorizontalSlider->blockSignals(false);
+	});
+	*/
+}

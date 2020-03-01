@@ -2,12 +2,14 @@
 
 #include "ImageData/Images.h"
 
+#include <QItemSelectionModel>
 #include <QDebug>
 
 DatasetsModel::DatasetsModel(MainModel* mainModel) :
 	QAbstractListModel(mainModel),
 	_mainModel(mainModel),
-	_currentDatasetName()
+	_currentDatasetName(),
+	_selectionModel(new QItemSelectionModel(this))
 {
 }
 
@@ -35,7 +37,7 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 	if (index.row() >= columnCount(index) || index.row() < 0)
 		return QVariant();
 
-	auto dataset = datasets()->at(index.row());
+	auto dataset = _mainModel->datasets()->at(index.row());
 
 	if (role == Qt::DisplayRole) {
 		switch (index.column()) {
@@ -138,7 +140,7 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 				return QString("Number of images: %1").arg(QString::number(dataset._noImages));
 
 			case (static_cast<int>(Columns::Size)):
-				return QString("Image resolution: %1 x %2 pixels").arg(QString::number(dataset._size.width()), QString::number(dataset._size.height()));
+				return QString("Image resolution: %1x%2 pixels").arg(QString::number(dataset._size.width()), QString::number(dataset._size.height()));
 
 			case (static_cast<int>(Columns::NoPoints)):
 				return QString("Number of data points: %1").arg(QString::number(dataset._noPoints));
@@ -360,7 +362,7 @@ bool DatasetsModel::insertRows(int position, int rows, const QModelIndex& index 
 	beginInsertRows(QModelIndex(), position, position + rows - 1);
 
 	for (int row = 0; row < rows; row++) {
-		datasets()->insert(position, MainModel::Dataset());
+		datasets()->insert(position, ImageDataset());
 	}
 
 	endInsertRows();
@@ -394,62 +396,67 @@ Datasets* DatasetsModel::datasets()
 	return const_cast<Datasets*>(constThis->datasets());
 }
 
-QVariant DatasetsModel::type(const std::uint32_t& row, int role /*= Qt::DisplayRole*/) const
+QVariant DatasetsModel::type(const int& row, int role /*= Qt::DisplayRole*/) const
 {
 	return data(index(row, static_cast<int>(DatasetsModel::Columns::Type)), Qt::EditRole).toInt();
 }
 
-QVariant DatasetsModel::currentImage(const std::uint32_t& row, int role /*= Qt::DisplayRole*/) const
+QVariant DatasetsModel::currentImage(const int& row, int role /*= Qt::DisplayRole*/) const
 {
 	return data(index(row, static_cast<int>(DatasetsModel::Columns::CurrentImage)), Qt::EditRole).toInt();
 }
 
-QVariant DatasetsModel::currentDimension(const std::uint32_t& row, int role /*= Qt::DisplayRole*/) const
+QVariant DatasetsModel::currentDimension(const int& row, int role /*= Qt::DisplayRole*/) const
 {
 	return data(index(row, static_cast<int>(DatasetsModel::Columns::CurrentDimension)), Qt::EditRole).toInt();
 }
 
-QVariant DatasetsModel::imageNames(const std::uint32_t& row, int role /*= Qt::DisplayRole*/) const
+QVariant DatasetsModel::imageNames(const int& row, int role /*= Qt::DisplayRole*/) const
 {
 	return data(index(row, static_cast<int>(DatasetsModel::Columns::ImageNames)), Qt::EditRole).toStringList();
 }
 
-QVariant DatasetsModel::dimensionNames(const std::uint32_t& row, int role /*= Qt::DisplayRole*/) const
+QVariant DatasetsModel::dimensionNames(const int& row, int role /*= Qt::DisplayRole*/) const
 {
 	return data(index(row, static_cast<int>(DatasetsModel::Columns::DimensionNames)), Qt::EditRole).toStringList();
 }
 
-QVariant DatasetsModel::averageImages(const std::uint32_t& row, int role /*= Qt::DisplayRole*/) const
+QVariant DatasetsModel::averageImages(const int& row, int role /*= Qt::DisplayRole*/) const
 {
 	return data(index(row, static_cast<int>(DatasetsModel::Columns::AverageImages)), Qt::EditRole).toBool();
 }
 
-QVariant DatasetsModel::currentImageFilepath(const std::uint32_t& row, int role /*= Qt::DisplayRole*/) const
+QVariant DatasetsModel::currentImageFilepath(const int& row, int role /*= Qt::DisplayRole*/) const
 {
 	return data(index(row, static_cast<int>(DatasetsModel::Columns::CurrentImageFilepath)), role);
 }
 
-QVariant DatasetsModel::currentDimensionFilepath(const std::uint32_t& row, int role /*= Qt::DisplayRole*/) const
+QVariant DatasetsModel::currentDimensionFilepath(const int& row, int role /*= Qt::DisplayRole*/) const
 {
 	return data(index(row, static_cast<int>(DatasetsModel::Columns::CurrentDimensionFilepath)), role);
 }
 
-void DatasetsModel::setCurrentImage(const std::uint32_t& row, const std::uint32_t& currentImageID)
+LayersModel* DatasetsModel::layersModel(const int& row)
+{
+	return &_mainModel->datasets()->at(row)._layersModel;
+}
+
+void DatasetsModel::setCurrentImage(const int& row, const std::uint32_t& currentImageID)
 {
 	setData(index(row, static_cast<int>(DatasetsModel::Columns::CurrentImage)), currentImageID, Qt::DisplayRole);
 }
 
-void DatasetsModel::setCurrentDimension(const std::uint32_t& row, const std::uint32_t& currentDimensionID)
+void DatasetsModel::setCurrentDimension(const int& row, const std::uint32_t& currentDimensionID)
 {
 	setData(index(row, static_cast<int>(DatasetsModel::Columns::CurrentDimension)), currentDimensionID, Qt::DisplayRole);
 }
 
-void DatasetsModel::setAverageImages(const std::uint32_t& row, const bool& averageImages)
+void DatasetsModel::setAverageImages(const int& row, const bool& averageImages)
 {
 	setData(index(row, static_cast<int>(DatasetsModel::Columns::AverageImages)), averageImages, Qt::DisplayRole);
 }
 
-void DatasetsModel::add(const MainModel::Dataset& dataset)
+void DatasetsModel::add(const ImageDataset& dataset)
 {
 	insertRows(0, 1, QModelIndex());
 

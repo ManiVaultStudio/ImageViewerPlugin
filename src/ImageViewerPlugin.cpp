@@ -81,7 +81,7 @@ void ImageViewerPlugin::dataAdded(const QString dataset)
 
 	auto imagesDataset = _core->requestData<Images>(dataset);
 
-	auto imageDataset = MainModel::Dataset();
+	auto imageDataset = ImageDataset();
 
 	imageDataset._name				= dataset;
 	imageDataset._type				= static_cast<int>(imagesDataset.imageCollectionType());

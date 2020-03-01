@@ -8,9 +8,8 @@ namespace Ui {
 	class LayersWidget;
 }
 
-class MainModel;
-
-class QDataWidgetMapper;
+class DatasetsModel;
+class LayersModel;
 
 /** TODO */
 class LayersWidget : public QWidget
@@ -18,12 +17,17 @@ class LayersWidget : public QWidget
 public: // Construction/destruction
 
 	/** TODO */
-	LayersWidget(QWidget* parent, MainModel* mainModel);
+	LayersWidget(QWidget* parent, DatasetsModel* datasetsModel);
 
 	/** Destructor */
 	~LayersWidget();
 
+protected:
+
+	/** TODO */
+	void setModel(LayersModel* previous, LayersModel* current);
+
 private:
-	MainModel*							_mainModel;				/** TODO */
-	std::unique_ptr<Ui::LayersWidget>	_ui;					/** TODO */
+	DatasetsModel*						_datasetsModel;		/** TODO */
+	std::unique_ptr<Ui::LayersWidget>	_ui;				/** TODO */
 };
