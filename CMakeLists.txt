@@ -33,6 +33,8 @@ set(PLUGIN
 	src/ImageViewerWidget.cpp
 	src/SettingsWidget.h
 	src/SettingsWidget.cpp
+	src/LayersWidget.h
+	src/LayersWidget.cpp
 	src/Renderer.h
 	src/Renderer.cpp
 	src/Selection.h
@@ -82,4 +84,4 @@ add_custom_command(TARGET ${PROJECT} POST_BUILD
     COMMAND "${CMAKE_COMMAND}" -E copy_if_different
 	"$<TARGET_FILE:${PROJECT}>"
 	"$ENV{HDPS_INSTALL_DIR}/$<CONFIGURATION>/Plugins/$<TARGET_FILE_NAME:${PROJECT}>"
-)
+) 

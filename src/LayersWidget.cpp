@@ -1,10 +1,10 @@
-#include "SettingsWidget.h"
+#include "LayersWidget.h"
 #include "MainModel.h"
 #include "DatasetsModel.h"
 #include "LayersModel.h"
 #include "ImageDataset.h"
 
-#include "ui_SettingsWidget.h"
+#include "ui_LayersWidget.h"
 
 #include <QComboBox>
 #include <QCheckBox>
@@ -13,14 +13,14 @@
 #include <QStringListModel>
 #include <QDebug>
 
-SettingsWidget::SettingsWidget(MainModel* mainModel) :
+LayersWidget::LayersWidget(MainModel* mainModel) :
 	QWidget(),
 	_mainModel(mainModel),
-	_ui{ std::make_unique<Ui::SettingsWidget>() },
-	_dataWidgetMapper(new QDataWidgetMapper(this))
+	_ui{ std::make_unique<Ui::LayersWidget>() }
 {
 	_ui->setupUi(this);
 	
+	/*
 	auto datasetsModel = _mainModel->datasetsModel();
 
 	_ui->datasetsComboBox->setModel(datasetsModel);
@@ -75,6 +75,7 @@ SettingsWidget::SettingsWidget(MainModel* mainModel) :
 		_ui->averageImagesCheckBox->setChecked(_mainModel->datasetsModel()->averageImages(current.row()));
 		_ui->averageImagesCheckBox->blockSignals(false);
 	});
+	*/
 }
 
-SettingsWidget::~SettingsWidget() = default;
+LayersWidget::~LayersWidget() = default;

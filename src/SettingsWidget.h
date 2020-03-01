@@ -9,7 +9,6 @@ namespace Ui {
 }
 
 class MainModel;
-class ImageDataset;
 
 class QDataWidgetMapper;
 

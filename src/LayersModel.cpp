@@ -39,6 +39,9 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 			case (static_cast<int>(Columns::Name)) :
 				return layer._name;
 
+			case (static_cast<int>(Columns::Enabled)):
+				return layer._enabled;
+
 			case (static_cast<int>(Columns::Order)):
 				return layer._order;
 
@@ -68,6 +71,9 @@ QVariant LayersModel::headerData(int section, Qt::Orientation orientation, int r
 		switch (section) {
 			case (static_cast<int>(Columns::Name)):
 				return "Name";
+
+			case (static_cast<int>(Columns::Enabled)):
+				return "Enabled";
 
 			case (static_cast<int>(Columns::Order)):
 				return "Type";
@@ -107,6 +113,10 @@ bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int r
 		switch (index.column()) {
 			case (static_cast<int>(Columns::Name)):
 				layer._name = value.toString();
+				break;
+			
+			case (static_cast<int>(Columns::Enabled)):
+				layer._enabled = value.toBool();
 				break;
 
 			case (static_cast<int>(Columns::Order)):

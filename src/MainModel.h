@@ -32,6 +32,7 @@ public:
 		struct Layer
 		{
 			QString					_name;					/** TODO */
+			bool					_enabled;				/** TODO */
 			std::uint32_t			_order;					/** TODO */
 			float					_opacity;				/** TODO */
 			QImage					_image;					/** TODO */

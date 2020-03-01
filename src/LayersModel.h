@@ -12,6 +12,7 @@ public: // Columns
 	/** TODO */
 	enum class Columns : int {
 		Name,
+		Enabled,
 		Order,
 		Opacity,
 		Window,
