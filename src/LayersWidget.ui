@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>300</width>
-    <height>390</height>
+    <height>421</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -77,7 +77,7 @@
       <item row="4" column="0">
        <widget class="QLabel" name="layerLevelLabel">
         <property name="enabled">
-         <bool>true</bool>
+         <bool>false</bool>
         </property>
         <property name="text">
          <string>Level</string>
@@ -89,14 +89,14 @@
         <item>
          <widget class="QDoubleSpinBox" name="layerWindowDoubleSpinBox">
           <property name="enabled">
-           <bool>true</bool>
+           <bool>false</bool>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QSlider" name="layerWindowHorizontalSlider">
           <property name="enabled">
-           <bool>true</bool>
+           <bool>false</bool>
           </property>
           <property name="sizePolicy">
            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
@@ -114,7 +114,7 @@
       <item row="1" column="1" colspan="2">
        <widget class="QCheckBox" name="layerEnabledCheckBox">
         <property name="enabled">
-         <bool>true</bool>
+         <bool>false</bool>
         </property>
         <property name="sizePolicy">
          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
@@ -130,7 +130,7 @@
       <item row="3" column="0">
        <widget class="QLabel" name="layerWindowLabel">
         <property name="enabled">
-         <bool>true</bool>
+         <bool>false</bool>
         </property>
         <property name="text">
          <string>Window</string>
@@ -142,14 +142,14 @@
         <item>
          <widget class="QDoubleSpinBox" name="layerLevelDoubleSpinBox">
           <property name="enabled">
-           <bool>true</bool>
+           <bool>false</bool>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QSlider" name="layerLevelHorizontalSlider">
           <property name="enabled">
-           <bool>true</bool>
+           <bool>false</bool>
           </property>
           <property name="sizePolicy">
            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
@@ -167,7 +167,7 @@
       <item row="2" column="0">
        <widget class="QLabel" name="layerOpacityLabel">
         <property name="enabled">
-         <bool>true</bool>
+         <bool>false</bool>
         </property>
         <property name="text">
          <string>Opacity</string>
@@ -177,7 +177,7 @@
       <item row="5" column="0">
        <widget class="QLabel" name="layerFilterColorLabel">
         <property name="enabled">
-         <bool>true</bool>
+         <bool>false</bool>
         </property>
         <property name="text">
          <string>Filter color</string>
@@ -192,14 +192,14 @@
         <item>
          <widget class="QDoubleSpinBox" name="layerOpacityDoubleSpinBox">
           <property name="enabled">
-           <bool>true</bool>
+           <bool>false</bool>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QSlider" name="layerOpacityHorizontalSlider">
           <property name="enabled">
-           <bool>true</bool>
+           <bool>false</bool>
           </property>
           <property name="sizePolicy">
            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
@@ -282,7 +282,7 @@
           <item>
            <widget class="QPushButton" name="layerMoveUpPushButton">
             <property name="enabled">
-             <bool>true</bool>
+             <bool>false</bool>
             </property>
             <property name="text">
              <string>Move up</string>
@@ -292,7 +292,7 @@
           <item>
            <widget class="QPushButton" name="layerMoveDownPushButton">
             <property name="enabled">
-             <bool>true</bool>
+             <bool>false</bool>
             </property>
             <property name="text">
              <string>Move up</string>

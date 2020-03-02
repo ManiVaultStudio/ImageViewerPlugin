@@ -1,13 +1,13 @@
 #pragma once
 
 #include "Layer.h"
-#include "LayersModel.h"
 
 #include <QStringList>
 
 /** TODO */
-struct ImageDataset
+class ImageDataset
 {
+public:
 	/** TODO */
 	ImageDataset();
 
@@ -24,7 +24,6 @@ struct ImageDataset
 	bool				_averageImages;		/** TODO */
 	QStringList			_imageFilePaths;	/** TODO */
 	QList<Layer>		_layers;			/** TODO */
-	LayersModel			_layersModel;		/** TODO */
 };
 
 using Datasets = QList<ImageDataset>;

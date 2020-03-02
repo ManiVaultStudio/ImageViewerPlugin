@@ -1,4 +1,5 @@
 #include "DatasetsModel.h"
+#include "LayersModel.h"
 
 #include "ImageData/Images.h"
 
@@ -19,7 +20,7 @@ int DatasetsModel::rowCount(const QModelIndex& parent) const
 {
 	Q_UNUSED(parent);
 
-	return datasets()->size();
+	return datasets().size();
 }
 
 int DatasetsModel::columnCount(const QModelIndex& parent) const
@@ -37,7 +38,7 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 	if (index.row() >= columnCount(index) || index.row() < 0)
 		return QVariant();
 
-	auto dataset = _mainModel->datasets()->at(index.row());
+	auto dataset = _mainModel->datasets().at(index.row());
 
 	if (role == Qt::DisplayRole) {
 		switch (index.column()) {
@@ -290,7 +291,7 @@ bool DatasetsModel::setData(const QModelIndex& index, const QVariant& value, int
 	if (index.isValid() && role == Qt::DisplayRole) {
 		int row = index.row();
 
-		auto dataset = datasets()->value(row);
+		auto dataset = datasets().value(row);
 
 		switch (index.column()) {
 			case (static_cast<int>(Columns::Name)):
@@ -345,7 +346,7 @@ bool DatasetsModel::setData(const QModelIndex& index, const QVariant& value, int
 				return false;
 		}
 
-		datasets()->replace(row, dataset);
+		datasets().replace(row, dataset);
 
 		emit(dataChanged(index, index));
 
@@ -362,7 +363,7 @@ bool DatasetsModel::insertRows(int position, int rows, const QModelIndex& index 
 	beginInsertRows(QModelIndex(), position, position + rows - 1);
 
 	for (int row = 0; row < rows; row++) {
-		datasets()->insert(position, ImageDataset());
+		datasets().insert(position, ImageDataset());
 	}
 
 	endInsertRows();
@@ -377,7 +378,7 @@ bool DatasetsModel::removeRows(int position, int rows, const QModelIndex& index 
 	beginRemoveRows(QModelIndex(), position, position + rows - 1);
 
 	for (int row = 0; row < rows; ++row) {
-		datasets()->removeAt(position);
+		datasets().removeAt(position);
 	}
 
 	endRemoveRows();
@@ -385,15 +386,15 @@ bool DatasetsModel::removeRows(int position, int rows, const QModelIndex& index 
 	return true;
 }
 
-const Datasets* DatasetsModel::datasets() const
+const Datasets& DatasetsModel::datasets() const
 {
 	return _mainModel->datasets();
 }
 
-Datasets* DatasetsModel::datasets()
+Datasets& DatasetsModel::datasets()
 {
 	const auto constThis = const_cast<const DatasetsModel*>(this);
-	return const_cast<Datasets*>(constThis->datasets());
+	return const_cast<Datasets&>(constThis->datasets());
 }
 
 QVariant DatasetsModel::type(const int& row, int role /*= Qt::DisplayRole*/) const
@@ -436,9 +437,12 @@ QVariant DatasetsModel::currentDimensionFilepath(const int& row, int role /*= Qt
 	return data(index(row, static_cast<int>(DatasetsModel::Columns::CurrentDimensionFilepath)), role);
 }
 
-LayersModel* DatasetsModel::layersModel(const int& row)
+QSharedPointer<LayersModel> DatasetsModel::layersModel(const int& row)
 {
-	return &_mainModel->datasets()->at(row)._layersModel;
+	if (row < 0 || row >= _mainModel->datasets().size())
+		return QSharedPointer<LayersModel>();
+
+	return QSharedPointer<LayersModel>::create(&_mainModel->datasets()[row]._layers);
 }
 
 void DatasetsModel::setCurrentImage(const int& row, const std::uint32_t& currentImageID)

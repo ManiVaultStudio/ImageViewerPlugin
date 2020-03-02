@@ -9,23 +9,34 @@
 LayersWidget::LayersWidget(QWidget* parent, DatasetsModel* datasetsModel) :
 	QWidget(parent),
 	_datasetsModel(datasetsModel),
+	_layersModel(),
 	_ui{ std::make_unique<Ui::LayersWidget>() }
 {
 	_ui->setupUi(this);
 
 	QObject::connect(_datasetsModel->selectionModel(), &QItemSelectionModel::currentRowChanged, [this](const QModelIndex& current, const QModelIndex& previous) {
-		//	_ui->layersGroupBox->setEnabled(true);
+		setModel(_datasetsModel->layersModel(current.row()));
 	});
+
+	setModel(QSharedPointer<LayersModel>(nullptr));
 }
 
 LayersWidget::~LayersWidget() = default;
 
-void LayersWidget::setModel(LayersModel* previous, LayersModel* current)
+void LayersWidget::setModel(QSharedPointer<LayersModel> layersModel)
 {
-	/*
-	auto selectionModel = _layersModel->selectionModel();
+	_layersModel = layersModel;
 
-	_ui->layersTreeView->setModel(_layersModel);
+	if (_layersModel.isNull()) {
+		_ui->layersGroupBox->setEnabled(false);
+		return;
+	}
+
+	_ui->layersGroupBox->setEnabled(true);
+
+	auto selectionModel = layersModel->selectionModel();
+
+	_ui->layersTreeView->setModel(_layersModel.get());
 	_ui->layersTreeView->setSelectionModel(_layersModel->selectionModel());
 
 	auto headerView = _ui->layersTreeView->header();
@@ -36,17 +47,7 @@ void LayersWidget::setModel(LayersModel* previous, LayersModel* current)
 	headerView->hideSection(static_cast<int>(LayersModel::Columns::Window));
 	headerView->hideSection(static_cast<int>(LayersModel::Columns::Level));
 
-	QObject::connect(_layersModel->datasetsModel()->selectionModel(), &QItemSelectionModel::currentRowChanged, [this](const QModelIndex& current, const QModelIndex& previous) {
-		//	_ui->layersGroupBox->setEnabled(true);
-	});
-
-	QObject::connect(_layersModel->datasetsModel()->selectionModel(), &QItemSelectionModel::currentRowChanged, [this](const QModelIndex& current, const QModelIndex& previous) {
-		//	_ui->layersGroupBox->setEnabled(_layersModel->datasetsModel()->rowCount(QModelIndex()) > 0);
-	});
-
 	QObject::connect(selectionModel, &QItemSelectionModel::currentRowChanged, [this](const QModelIndex& current, const QModelIndex& previous) {
-		auto datasetsModel = _layersModel->datasetsModel();
-
 		const auto opacityFlags = _layersModel->flags(_layersModel->index(current.row(), static_cast<int>(LayersModel::Columns::Opacity)));
 
 		_ui->layerOpacityLabel->setEnabled(opacityFlags & Qt::ItemIsEditable);
@@ -91,5 +92,4 @@ void LayersWidget::setModel(LayersModel* previous, LayersModel* current)
 		_ui->layerLevelHorizontalSlider->setValue(100.0f * level);
 		_ui->layerLevelHorizontalSlider->blockSignals(false);
 	});
-	*/
 }

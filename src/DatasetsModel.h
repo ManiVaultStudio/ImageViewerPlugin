@@ -6,6 +6,8 @@
 
 class QItemSelectionModel;
 
+class LayersModel;
+
 /** TODO */
 class DatasetsModel : public QAbstractListModel
 {
@@ -66,10 +68,10 @@ public: // Inherited members
 	bool removeRows(int position, int rows, const QModelIndex& index = QModelIndex());
 
 	/** TODO */
-	const Datasets* datasets() const;
+	const Datasets& datasets() const;
 
 	/** TODO */
-	Datasets* datasets();
+	Datasets& datasets();
 
 public: // Getters
 
@@ -98,7 +100,7 @@ public: // Getters
 	QVariant currentDimensionFilepath(const int& row, int role = Qt::DisplayRole) const;
 
 	/** TODO */
-	LayersModel* layersModel(const int& row);
+	QSharedPointer<LayersModel> layersModel(const int& row);
 
 public: // Setters
 

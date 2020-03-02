@@ -26,7 +26,7 @@ public: //
 	void addDataset(const ImageDataset& dataset);
 
 	/** TODO */
-	Datasets* datasets() { return &_datasets; };
+	Datasets& datasets() { return _datasets; };
 
 	/** TODO */
 	DatasetsModel* datasetsModel() { return _datasetsModel; }

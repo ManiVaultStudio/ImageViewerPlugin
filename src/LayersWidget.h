@@ -25,9 +25,10 @@ public: // Construction/destruction
 protected:
 
 	/** TODO */
-	void setModel(LayersModel* previous, LayersModel* current);
+	void setModel(QSharedPointer<LayersModel> layersModel);
 
 private:
 	DatasetsModel*						_datasetsModel;		/** TODO */
+	QSharedPointer<LayersModel>			_layersModel;		/** TODO */
 	std::unique_ptr<Ui::LayersWidget>	_ui;				/** TODO */
 };

@@ -1,4 +1,5 @@
 #include "ImageDataset.h"
+#include "LayersModel.h"
 
 #include <QDebug>
 
@@ -15,8 +16,7 @@ ImageDataset::ImageDataset() :
 	_dimensionNames(),
 	_averageImages(),
 	_imageFilePaths(),
-	_layers(),
-	_layersModel(&_layers)
+	_layers()
 {
 	_layers.append(Layer("Image", Layer::Type::Image, true, 0));
 	_layers.append(Layer("Selection", Layer::Type::Selection, true, 1));

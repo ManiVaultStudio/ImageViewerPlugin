@@ -15,8 +15,6 @@ LayersModel::~LayersModel() = default;
 
 int LayersModel::rowCount(const QModelIndex& parent) const
 {
-	Q_UNUSED(parent);
-
 	return _layers->size();
 }
 
