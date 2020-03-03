@@ -100,11 +100,29 @@
           <property name="enabled">
            <bool>false</bool>
           </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+            <horstretch>1</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>55</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="suffix">
+           <string>%</string>
+          </property>
+          <property name="decimals">
+           <number>0</number>
+          </property>
           <property name="maximum">
-           <double>1.000000000000000</double>
+           <double>100.000000000000000</double>
           </property>
           <property name="singleStep">
-           <double>0.100000000000000</double>
+           <double>5.000000000000000</double>
           </property>
          </widget>
         </item>
@@ -115,7 +133,7 @@
           </property>
           <property name="sizePolicy">
            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-            <horstretch>0</horstretch>
+            <horstretch>3</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
@@ -190,6 +208,9 @@
           <property name="expandsOnDoubleClick">
            <bool>false</bool>
           </property>
+          <attribute name="headerStretchLastSection">
+           <bool>false</bool>
+          </attribute>
          </widget>
         </item>
         <item>
@@ -264,6 +285,18 @@
           <property name="enabled">
            <bool>false</bool>
           </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+            <horstretch>1</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>55</width>
+            <height>0</height>
+           </size>
+          </property>
           <property name="maximum">
            <double>1.000000000000000</double>
           </property>
@@ -279,7 +312,7 @@
           </property>
           <property name="sizePolicy">
            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-            <horstretch>0</horstretch>
+            <horstretch>3</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
@@ -307,6 +340,18 @@
           <property name="enabled">
            <bool>false</bool>
           </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+            <horstretch>1</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>55</width>
+            <height>0</height>
+           </size>
+          </property>
           <property name="maximum">
            <double>1.000000000000000</double>
           </property>
@@ -322,7 +367,7 @@
           </property>
           <property name="sizePolicy">
            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-            <horstretch>0</horstretch>
+            <horstretch>3</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>

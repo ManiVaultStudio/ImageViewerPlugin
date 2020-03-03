@@ -2,6 +2,8 @@
 #include "DatasetsModel.h"
 
 #include <QItemSelectionModel>
+#include <QFont>
+#include <QBrush>
 #include <QDebug>
 
 LayersModel::LayersModel(Layers* layers) :
@@ -23,7 +25,7 @@ int LayersModel::columnCount(const QModelIndex& parent /*= QModelIndex()*/) cons
 {
 	Q_UNUSED(parent);
 
-	return 8;
+	return 9;
 }
 
 QVariant LayersModel::data(const QModelIndex& index, int role) const
@@ -38,6 +40,21 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 
 	switch (role)
 	{
+		/*
+		case Qt::FontRole:
+		{
+			QFont font;
+
+			if (layer->_fixed)
+				font.setBold(true);
+
+			return font;
+		}
+		*/
+
+		case Qt::ForegroundRole:
+			return layer->_enabled ? QBrush(Qt::black) : QBrush(Qt::darkGray);
+
 		case Qt::DisplayRole:
 		{
 			switch (index.column()) {
@@ -65,17 +82,20 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 				case Columns::Enabled:
 					return layer->_enabled;
 
+				case Columns::Fixed:
+					return layer->_fixed ? "true" : "false";
+
 				case Columns::Order:
-					return layer->_order;
+					return QString::number(layer->_order);
 
 				case Columns::Opacity:
-					return QString::number(layer->_opacity, 'f', 1);
+					return QString("%1%").arg(QString::number(100.0f * layer->_opacity, 'f', 1));
 
 				case Columns::Window:
-					return QString::number(layer->_window, 'f', 1);
+					return QString::number(layer->_window, 'f', 2);
 
 				case Columns::Level:
-					return QString::number(layer->_level, 'f', 1);
+					return QString::number(layer->_level, 'f', 2);
 
 				case Columns::Color:
 					return layer->_color.name();
@@ -99,6 +119,9 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 				case Columns::Enabled:
 					return layer->_enabled;
 
+				case Columns::Fixed:
+					return layer->_fixed;
+
 				case Columns::Order:
 					return layer->_order;
 
@@ -113,6 +136,29 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 
 				case Columns::Color:
 					return layer->_color;
+
+				default:
+					break;
+			}
+
+			break;
+		}
+
+		case Qt::TextAlignmentRole:
+		{
+			switch (index.column()) {
+				case Columns::Name:
+				case Columns::Type:
+					return Qt::AlignLeft + Qt::AlignVCenter;
+
+				case Columns::Enabled:
+				case Columns::Fixed:
+				case Columns::Order:
+				case Columns::Opacity:
+				case Columns::Window:
+				case Columns::Level:
+				case Columns::Color:
+					return Qt::AlignRight + Qt::AlignVCenter;
 
 				default:
 					break;
@@ -143,6 +189,9 @@ QVariant LayersModel::headerData(int section, Qt::Orientation orientation, int r
 
 			case Columns::Enabled:
 				return "Enabled";
+
+			case Columns::Fixed:
+				return "Fixed";
 
 			case Columns::Order:
 				return "Order";
@@ -176,9 +225,8 @@ Qt::ItemFlags LayersModel::flags(const QModelIndex& index) const
 
 	switch (index.column()) {
 		case Columns::Name:
-			break;
-
 		case Columns::Type:
+		case Columns::Fixed:
 			break;
 
 		case Columns::Enabled:
@@ -232,11 +280,19 @@ bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int r
 
 		switch (index.column()) {
 			case Columns::Name:
-				layer->_name = value.toString();
+				layer->_name = QString("*%1").arg(value.toString());
 				break;
 			
+			case Columns::Type:
+				layer->_type = static_cast<Layer::Type>(value.toInt());
+				break;
+
 			case Columns::Enabled:
 				layer->_enabled = value.toBool();
+				break;
+
+			case Columns::Fixed:
+				layer->_fixed = value.toBool();
 				break;
 
 			case Columns::Order:
@@ -265,7 +321,12 @@ bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int r
 
 		_layers->replace(row, layer);
 
-		emit dataChanged(index, index);
+		if (index.column() == Columns::Enabled) {
+			emit dataChanged(this->index(row, 0), this->index(row, rowCount() - 1));
+		}
+		else {
+			emit dataChanged(index, index);
+		}
 
 		return true;
 	}
@@ -316,6 +377,11 @@ QVariant LayersModel::type(const int& row, int role /*= Qt::DisplayRole*/) const
 QVariant LayersModel::enabled(const int& row, int role /*= Qt::DisplayRole*/) const
 {
 	return data(index(row, Columns::Enabled), role);
+}
+
+QVariant LayersModel::fixed(const int& row, int role /*= Qt::DisplayRole*/) const
+{
+	return data(index(row, Columns::Fixed), role);
 }
 
 QVariant LayersModel::order(const int& row, int role /*= Qt::DisplayRole*/) const
@@ -421,8 +487,37 @@ void LayersModel::setColor(const int& row, const QColor& color)
 		return;
 }
 
+bool LayersModel::mayMoveUp(const int& row)
+{
+	if (row <= 0)
+		return false;
+
+	auto layers = (*_layers);
+
+	if (layers[row]->_fixed || layers[row - 1]->_fixed)
+		return false;
+
+	return true;
+}
+
+bool LayersModel::mayMoveDown(const int& row)
+{
+	if (row >= rowCount() - 1)
+		return false;
+
+	auto layers = (*_layers);
+
+	if (layers[row]->_fixed || layers[row + 1]->_fixed)
+		return false;
+
+	return true;
+}
+
 void LayersModel::moveUp(const int& row)
 {
+	if (!mayMoveUp(row))
+		return;
+
 	if (row > 0 && row < _layers->count())
 	{
 		beginMoveRows(QModelIndex(), row, row, QModelIndex(), row - 1);
@@ -441,6 +536,9 @@ void LayersModel::moveUp(const int& row)
 
 void LayersModel::moveDown(const int& row)
 {
+	if (!mayMoveDown(row))
+		return;
+
 	if (row >= 0 && row < _layers->count() - 1)
 	{
 		moveUp(row + 1);

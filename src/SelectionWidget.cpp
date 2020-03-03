@@ -25,7 +25,9 @@ SelectionWidget::SelectionWidget(QWidget* parent, DatasetsModel* datasetsModel) 
 	headerView->hideSection(static_cast<int>(DatasetsModel::Columns::NoDimensions));
 	headerView->hideSection(static_cast<int>(DatasetsModel::Columns::NoPoints));
 	headerView->hideSection(static_cast<int>(DatasetsModel::Columns::CurrentImage));
+	headerView->hideSection(static_cast<int>(DatasetsModel::Columns::CurrentImageName));
 	headerView->hideSection(static_cast<int>(DatasetsModel::Columns::CurrentDimension));
+	headerView->hideSection(static_cast<int>(DatasetsModel::Columns::CurrentDimensionName));
 	headerView->hideSection(static_cast<int>(DatasetsModel::Columns::ImageNames));
 	headerView->hideSection(static_cast<int>(DatasetsModel::Columns::DimensionNames));
 	headerView->hideSection(static_cast<int>(DatasetsModel::Columns::ImageFilePaths));
@@ -58,7 +60,7 @@ SelectionWidget::SelectionWidget(QWidget* parent, DatasetsModel* datasetsModel) 
 		_ui->currentImageComboBox->blockSignals(true);
 		_ui->currentImageLabel->setEnabled(currentImageFlags & Qt::ItemIsEditable);
 		_ui->currentImageComboBox->setEnabled(currentImageFlags & Qt::ItemIsEditable);
-		_ui->currentImageComboBox->setModel(new QStringListModel(_datasetsModel->imageNames(current.row()).toStringList()));
+		_ui->currentImageComboBox->setModel(new QStringListModel(_datasetsModel->imageNames(current.row(), Qt::EditRole).toStringList()));
 		_ui->currentImageComboBox->setCurrentIndex(_datasetsModel->currentImage(current.row()).toInt());
 		_ui->currentImageComboBox->blockSignals(false);
 
@@ -67,7 +69,7 @@ SelectionWidget::SelectionWidget(QWidget* parent, DatasetsModel* datasetsModel) 
 		_ui->currentDimensionComboBox->blockSignals(true);
 		_ui->currentDimensionLabel->setEnabled(currentDimensionFlags & Qt::ItemIsEditable);
 		_ui->currentDimensionComboBox->setEnabled(currentDimensionFlags & Qt::ItemIsEditable);
-		_ui->currentDimensionComboBox->setModel(new QStringListModel(_datasetsModel->dimensionNames(current.row()).toStringList()));
+		_ui->currentDimensionComboBox->setModel(new QStringListModel(_datasetsModel->dimensionNames(current.row(), Qt::EditRole).toStringList()));
 		_ui->currentDimensionComboBox->setCurrentIndex(_datasetsModel->currentDimension(current.row()).toInt());
 		_ui->currentDimensionComboBox->blockSignals(false);
 
@@ -75,7 +77,7 @@ SelectionWidget::SelectionWidget(QWidget* parent, DatasetsModel* datasetsModel) 
 
 		_ui->averageImagesCheckBox->blockSignals(true);
 		_ui->averageImagesCheckBox->setEnabled(averageImagesFlags & Qt::ItemIsEditable);
-		_ui->averageImagesCheckBox->setChecked(_datasetsModel->averageImages(current.row()).toBool());
+		_ui->averageImagesCheckBox->setChecked(_datasetsModel->averageImages(current.row(), Qt::EditRole).toBool());
 		_ui->averageImagesCheckBox->blockSignals(false);
 	});
 

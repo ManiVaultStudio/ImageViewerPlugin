@@ -1,4 +1,5 @@
 #include "DatasetsModel.h"
+#include "LayersModel.h"
 
 #include "ImageData/Images.h"
 
@@ -26,7 +27,7 @@ int DatasetsModel::columnCount(const QModelIndex& parent) const
 {
 	Q_UNUSED(parent);
 
-	return 14;
+	return 16;
 }
 
 QVariant DatasetsModel::data(const QModelIndex& index, int role) const
@@ -41,46 +42,52 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 
 	if (role == Qt::DisplayRole) {
 		switch (index.column()) {
-			case (static_cast<int>(Columns::Name)) :
+			case Columns::Name:
 				return dataset->_name;
 
-			case (static_cast<int>(Columns::Type)):
+			case Columns::Type:
 				return imageCollectionTypeName(static_cast<ImageCollectionType>(dataset->_type));
 
-			case (static_cast<int>(Columns::NoImages)):
+			case Columns::NoImages:
 				return QString::number(dataset->_noImages);
 
-			case (static_cast<int>(Columns::Size)):
+			case Columns::Size:
 				return QString("%1x%2").arg(QString::number(dataset->_size.width()), QString::number(dataset->_size.height()));
 
-			case (static_cast<int>(Columns::NoPoints)):
+			case Columns::NoPoints:
 				return QString::number(dataset->_noPoints);
 
-			case (static_cast<int>(Columns::NoDimensions)):
+			case Columns::NoDimensions:
 				return QString::number(dataset->_noDimensions);
 
-			case (static_cast<int>(Columns::CurrentImage)):
+			case Columns::CurrentImage:
+				return QString::number(dataset->_currentImage);
+
+			case Columns::CurrentImageName:
 				return dataset->_imageNames.isEmpty() ? "" : dataset->_imageNames[dataset->_currentImage];
 
-			case (static_cast<int>(Columns::CurrentDimension)):
+			case Columns::CurrentDimension:
+				return QString::number(dataset->_currentDimension);
+
+			case Columns::CurrentDimensionName:
 				return dataset->_dimensionNames.isEmpty() ? "" : dataset->_dimensionNames[dataset->_currentDimension];
 
-			case (static_cast<int>(Columns::ImageNames)):
+			case Columns::ImageNames:
 				return QString("[%1]").arg(dataset->_imageNames.join(", "));
 
-			case (static_cast<int>(Columns::DimensionNames)):
+			case Columns::DimensionNames:
 				return QString("[%1]").arg(dataset->_dimensionNames.join(", "));
 
-			case (static_cast<int>(Columns::AverageImages)):
+			case Columns::AverageImages:
 				return dataset->_averageImages ? "true" : "false";
 
-			case (static_cast<int>(Columns::ImageFilePaths)):
+			case Columns::ImageFilePaths:
 				return QString("[%1]").arg(dataset->_imageFilePaths.join(", "));
 
-			case (static_cast<int>(Columns::CurrentImageFilepath)):
+			case Columns::CurrentImageFilepath:
 				return dataset->_currentImage < dataset->_imageFilePaths.size() ? dataset->_imageFilePaths[dataset->_currentImage] : "";
 
-			case (static_cast<int>(Columns::CurrentDimensionFilepath)):
+			case Columns::CurrentDimensionFilepath:
 				return dataset->_currentDimension < dataset->_imageFilePaths.size() ? dataset->_imageFilePaths[dataset->_currentDimension] : "";
 
 			default:
@@ -90,38 +97,53 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 
 	if (role == Qt::EditRole) {
 		switch (index.column()) {
-			case (static_cast<int>(Columns::Name)):
+			case Columns::Name:
 				return dataset->_name;
 
-			case (static_cast<int>(Columns::Type)):
+			case Columns::Type:
 				return dataset->_type;
 
-			case (static_cast<int>(Columns::NoImages)):
-				return QString::number(dataset->_noImages);
+			case Columns::NoImages:
+				return dataset->_noImages;
 
-			case (static_cast<int>(Columns::Size)):
-				return dataset->_size;
+			case Columns::Size:
+				return dataset->_size.height();
 
-			case (static_cast<int>(Columns::NoPoints)):
+			case Columns::NoPoints:
 				return dataset->_noPoints;
 
-			case (static_cast<int>(Columns::NoDimensions)):
+			case Columns::NoDimensions:
 				return dataset->_noDimensions;
 
-			case (static_cast<int>(Columns::CurrentImage)):
+			case Columns::CurrentImage:
 				return dataset->_currentImage;
 
-			case (static_cast<int>(Columns::CurrentDimension)):
+			case Columns::CurrentImageName:
+				return dataset->_imageNames.isEmpty() ? "" : dataset->_imageNames[dataset->_currentImage];
+
+			case Columns::CurrentDimension:
 				return dataset->_currentDimension;
 
-			case (static_cast<int>(Columns::ImageNames)):
+			case Columns::CurrentDimensionName:
+				return dataset->_dimensionNames.isEmpty() ? "" : dataset->_dimensionNames[dataset->_currentDimension];
+
+			case Columns::ImageNames:
 				return dataset->_imageNames;
 
-			case (static_cast<int>(Columns::DimensionNames)):
+			case Columns::DimensionNames:
 				return dataset->_dimensionNames;
 
-			case (static_cast<int>(Columns::AverageImages)):
+			case Columns::AverageImages:
 				return dataset->_averageImages;
+
+			case Columns::ImageFilePaths:
+				return dataset->_imageFilePaths;
+
+			case Columns::CurrentImageFilepath:
+				return dataset->_currentImage < dataset->_imageFilePaths.size() ? dataset->_imageFilePaths[dataset->_currentImage] : "";
+
+			case Columns::CurrentDimensionFilepath:
+				return dataset->_currentDimension < dataset->_imageFilePaths.size() ? dataset->_imageFilePaths[dataset->_currentDimension] : "";
 
 			default:
 				break;
@@ -130,40 +152,46 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 	
 	if (role == Qt::ToolTipRole) {
 		switch (index.column()) {
-			case (static_cast<int>(Columns::Name)):
+			case Columns::Name:
 				return QString("Dataset name: %1").arg(dataset->_name);
 
-			case (static_cast<int>(Columns::Type)):
+			case Columns::Type:
 				return QString("Dataset type: %1").arg(imageCollectionTypeName(static_cast<ImageCollectionType>(dataset->_type)));
 
-			case (static_cast<int>(Columns::NoImages)):
+			case Columns::NoImages:
 				return QString("Number of images: %1").arg(QString::number(dataset->_noImages));
 
-			case (static_cast<int>(Columns::Size)):
+			case Columns::Size:
 				return QString("Image resolution: %1x%2 pixels").arg(QString::number(dataset->_size.width()), QString::number(dataset->_size.height()));
 
-			case (static_cast<int>(Columns::NoPoints)):
+			case Columns::NoPoints:
 				return QString("Number of data points: %1").arg(QString::number(dataset->_noPoints));
 
-			case (static_cast<int>(Columns::NoDimensions)):
+			case Columns::NoDimensions:
 				return QString("Number of data dimensions: %1").arg(QString::number(dataset->_noDimensions));
 
-			case (static_cast<int>(Columns::CurrentImage)):
+			case Columns::CurrentImage:
 				return dataset->_currentImage < dataset->_imageNames.size() ? QString("Current image: %1").arg(dataset->_imageNames[dataset->_currentImage]) : "";
 
-			case (static_cast<int>(Columns::CurrentDimension)):
+			case Columns::CurrentImageName:
+				return dataset->_currentImage < dataset->_imageNames.size() ? QString("Current image: %1").arg(dataset->_imageNames[dataset->_currentImage]) : "";
+
+			case Columns::CurrentDimension:
 				return dataset->_currentDimension < dataset->_dimensionNames.size() ? QString("Current dimension: %1").arg(dataset->_dimensionNames[dataset->_currentDimension]) : "";
 
-			case (static_cast<int>(Columns::ImageNames)):
+			case Columns::CurrentDimensionName:
+				return dataset->_currentDimension < dataset->_dimensionNames.size() ? QString("Current dimension: %1").arg(dataset->_dimensionNames[dataset->_currentDimension]) : "";
+
+			case Columns::ImageNames:
 				return QString("Image names: [%1]").arg(dataset->_imageNames.join(", "));
 
-			case (static_cast<int>(Columns::DimensionNames)):
+			case Columns::DimensionNames:
 				return QString("Dimension names: [%1]").arg(dataset->_dimensionNames.join(", "));
 
-			case (static_cast<int>(Columns::AverageImages)):
+			case Columns::AverageImages:
 				return QString("Average images: %1").arg(dataset->_averageImages ? "true" : "false");
 
-			case (static_cast<int>(Columns::ImageFilePaths)):
+			case Columns::ImageFilePaths:
 				return QString("Image file paths: [%1]").arg(dataset->_imageFilePaths.join(", "));
 
 			default:
@@ -181,37 +209,43 @@ QVariant DatasetsModel::headerData(int section, Qt::Orientation orientation, int
 
 	if (orientation == Qt::Horizontal) {
 		switch (section) {
-			case (static_cast<int>(Columns::Name)):
+			case Columns::Name:
 				return "Name";
 
-			case (static_cast<int>(Columns::Type)):
+			case Columns::Type:
 				return "Type";
 
-			case (static_cast<int>(Columns::NoImages)):
+			case Columns::NoImages:
 				return "#Images";
 
-			case (static_cast<int>(Columns::Size)):
+			case Columns::Size:
 				return "Size";
 
-			case (static_cast<int>(Columns::NoPoints)):
+			case Columns::NoPoints:
 				return "#Points";
 
-			case (static_cast<int>(Columns::NoDimensions)):
+			case Columns::NoDimensions:
 				return "#Dimensions";
 
-			case (static_cast<int>(Columns::CurrentImage)):
-				return "Image";
+			case Columns::CurrentImage:
+				return "Current image ID";
 
-			case (static_cast<int>(Columns::CurrentDimension)):
-				return "Dimension";
+			case Columns::CurrentImageName:
+				return "Image name";
 
-			case (static_cast<int>(Columns::ImageNames)):
+			case Columns::CurrentDimension:
+				return "Current dimension ID";
+
+			case Columns::CurrentDimensionName:
+				return "Dimension name";
+
+			case Columns::ImageNames:
 				return "Images";
 
-			case (static_cast<int>(Columns::DimensionNames)):
+			case Columns::DimensionNames:
 				return "Dimensions";
 
-			case (static_cast<int>(Columns::AverageImages)):
+			case Columns::AverageImages:
 				return "Average";
 
 			default:
@@ -229,50 +263,40 @@ Qt::ItemFlags DatasetsModel::flags(const QModelIndex& index) const
 
 	int flags = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
 
+	const auto datasetType = type(index.row(), Qt::EditRole);
+
 	switch (index.column()) {
-		case (static_cast<int>(Columns::Name)):
+		case Columns::Name:
+		case Columns::Type:
+		case Columns::NoImages:
+		case Columns::Size:
+		case Columns::NoPoints:
+		case Columns::NoDimensions:
+		case Columns::CurrentImageName:
+		case Columns::CurrentDimensionName:
+		case Columns::ImageNames:
+		case Columns::DimensionNames:
 			break;
 
-		case (static_cast<int>(Columns::Type)):
-			break;
-
-		case (static_cast<int>(Columns::NoImages)):
-			break;
-
-		case (static_cast<int>(Columns::Size)):
-			break;
-
-		case (static_cast<int>(Columns::NoPoints)):
-			break;
-
-		case (static_cast<int>(Columns::NoDimensions)):
-			break;
-
-		case (static_cast<int>(Columns::CurrentImage)):
+		case Columns::CurrentImage:
 		{
-			if (type(index.row()) == static_cast<int>(ImageCollectionType::Sequence))
+			if (datasetType == static_cast<int>(ImageCollectionType::Sequence))
 				flags |= Qt::ItemIsEditable;
 
 			break;
 		}
 
-		case (static_cast<int>(Columns::CurrentDimension)):
+		case Columns::CurrentDimension:
 		{
-			if (type(index.row()) == static_cast<int>(ImageCollectionType::Stack))
+			if (datasetType == static_cast<int>(ImageCollectionType::Stack))
 				flags |= Qt::ItemIsEditable;
 
 			break;
 		}
 
-		case (static_cast<int>(Columns::ImageNames)):
-			break;
-
-		case (static_cast<int>(Columns::DimensionNames)):
-			break;
-
-		case (static_cast<int>(Columns::AverageImages)):
+		case Columns::AverageImages:
 		{
-			if (type(index.row()) == static_cast<int>(ImageCollectionType::Sequence))
+			if (datasetType == static_cast<int>(ImageCollectionType::Sequence))
 				flags |= Qt::ItemIsEditable;
 
 			break;
@@ -293,51 +317,68 @@ bool DatasetsModel::setData(const QModelIndex& index, const QVariant& value, int
 		auto dataset = datasets().value(row);
 
 		switch (index.column()) {
-			case (static_cast<int>(Columns::Name)):
+			case Columns::Name:
 				dataset->_name = value.toString();
 				break;
 
-			case (static_cast<int>(Columns::Type)):
+			case Columns::Type:
 				dataset->_type = value.toInt();
 				break;
 
-			case (static_cast<int>(Columns::NoImages)):
+			case Columns::NoImages:
 				dataset->_noImages = value.toInt();
 				break;
 
-			case (static_cast<int>(Columns::Size)):
+			case Columns::Size:
 				dataset->_size = value.toSize();
 				break;
 
-			case (static_cast<int>(Columns::NoPoints)):
+			case Columns::NoPoints:
 				dataset->_noPoints = value.toInt();
 				break;
 
-			case (static_cast<int>(Columns::NoDimensions)):
+			case Columns::NoDimensions:
 				dataset->_noDimensions = value.toInt();
 				break;
 
-			case (static_cast<int>(Columns::CurrentImage)):
+			case Columns::CurrentImage:
+			{
 				dataset->_currentImage = value.toInt();
-				break;
 
-			case (static_cast<int>(Columns::CurrentDimension)):
-				dataset->_currentDimension = value.toInt();
+				if (dataset->_type == static_cast<int>(ImageCollectionType::Sequence)) {
+					const auto imageName = currentImageName(row).toString();
+					dataset->_layersModel->setData(dataset->_layersModel->index(0, LayersModel::Columns::Name), QString("%1").arg(imageName));
+					dataset->_layersModel->setData(dataset->_layersModel->index(1, LayersModel::Columns::Name), QString("%1").arg(imageName));
+				}
+				
 				break;
+			}
 
-			case (static_cast<int>(Columns::ImageNames)):
+			case Columns::CurrentDimension:
+			{
+				if (dataset->_type == static_cast<int>(ImageCollectionType::Stack)) {
+					dataset->_currentDimension = value.toInt();
+					const auto dimensionName = currentDimensionName(row).toString();
+					dataset->_layersModel->setData(dataset->_layersModel->index(0, LayersModel::Columns::Name), QString("%1").arg(dimensionName));
+					dataset->_layersModel->setData(dataset->_layersModel->index(1, LayersModel::Columns::Name), QString("%1").arg(dimensionName));
+				}
+
+				break;
+			}
+
+			case Columns::ImageNames:
 				dataset->_imageNames = value.toStringList();
 				break;
 
-			case (static_cast<int>(Columns::DimensionNames)):
+			case Columns::DimensionNames:
 				dataset->_dimensionNames = value.toStringList();
 				break;
 
-			case (static_cast<int>(Columns::AverageImages)):
+			case Columns::AverageImages:
 				dataset->_averageImages = value.toBool();
 				break;
 
-			case (static_cast<int>(Columns::ImageFilePaths)):
+			case Columns::ImageFilePaths:
 				dataset->_imageFilePaths = value.toStringList();
 				break;
 
@@ -398,32 +439,42 @@ Datasets& DatasetsModel::datasets()
 
 QVariant DatasetsModel::type(const int& row, int role /*= Qt::DisplayRole*/) const
 {
-	return data(index(row, static_cast<int>(DatasetsModel::Columns::Type)), Qt::EditRole).toInt();
+	return data(index(row, static_cast<int>(DatasetsModel::Columns::Type)), role).toInt();
 }
 
 QVariant DatasetsModel::currentImage(const int& row, int role /*= Qt::DisplayRole*/) const
 {
-	return data(index(row, static_cast<int>(DatasetsModel::Columns::CurrentImage)), Qt::EditRole).toInt();
+	return data(index(row, static_cast<int>(DatasetsModel::Columns::CurrentImage)), role).toInt();
+}
+
+QVariant DatasetsModel::currentImageName(const int& row, int role /*= Qt::DisplayRole*/) const
+{
+	return data(index(row, static_cast<int>(DatasetsModel::Columns::CurrentImageName)), role).toString();
 }
 
 QVariant DatasetsModel::currentDimension(const int& row, int role /*= Qt::DisplayRole*/) const
 {
-	return data(index(row, static_cast<int>(DatasetsModel::Columns::CurrentDimension)), Qt::EditRole).toInt();
+	return data(index(row, static_cast<int>(DatasetsModel::Columns::CurrentDimension)), role).toInt();
+}
+
+QVariant DatasetsModel::currentDimensionName(const int& row, int role /*= Qt::DisplayRole*/) const
+{
+	return data(index(row, static_cast<int>(DatasetsModel::Columns::CurrentDimensionName)), role).toString();
 }
 
 QVariant DatasetsModel::imageNames(const int& row, int role /*= Qt::DisplayRole*/) const
 {
-	return data(index(row, static_cast<int>(DatasetsModel::Columns::ImageNames)), Qt::EditRole).toStringList();
+	return data(index(row, static_cast<int>(DatasetsModel::Columns::ImageNames)), role).toStringList();
 }
 
 QVariant DatasetsModel::dimensionNames(const int& row, int role /*= Qt::DisplayRole*/) const
 {
-	return data(index(row, static_cast<int>(DatasetsModel::Columns::DimensionNames)), Qt::EditRole).toStringList();
+	return data(index(row, static_cast<int>(DatasetsModel::Columns::DimensionNames)), role).toStringList();
 }
 
 QVariant DatasetsModel::averageImages(const int& row, int role /*= Qt::DisplayRole*/) const
 {
-	return data(index(row, static_cast<int>(DatasetsModel::Columns::AverageImages)), Qt::EditRole).toBool();
+	return data(index(row, static_cast<int>(DatasetsModel::Columns::AverageImages)), role).toBool();
 }
 
 QVariant DatasetsModel::currentImageFilepath(const int& row, int role /*= Qt::DisplayRole*/) const
@@ -453,11 +504,18 @@ void DatasetsModel::setAverageImages(const int& row, const bool& averageImages)
 
 void DatasetsModel::add(ImageDataset* dataset)
 {
-	beginInsertRows(QModelIndex(), 0, 0);
+	insertRows(0, 1);
 
-	dataset->setParent(this);
-
-	datasets().insert(0, dataset);
-
-	endInsertRows();
+	setData(index(0, Columns::Name, QModelIndex()), dataset->_name);
+	setData(index(0, Columns::Type, QModelIndex()), dataset->_type);
+	setData(index(0, Columns::NoImages, QModelIndex()), dataset->_noImages);
+	setData(index(0, Columns::Size, QModelIndex()), dataset->_size);
+	setData(index(0, Columns::NoPoints, QModelIndex()), dataset->_noPoints);
+	setData(index(0, Columns::NoDimensions, QModelIndex()), dataset->_noDimensions);
+	setData(index(0, Columns::ImageNames, QModelIndex()), dataset->_imageNames);
+	setData(index(0, Columns::DimensionNames, QModelIndex()), dataset->_dimensionNames);
+	setData(index(0, Columns::AverageImages, QModelIndex()), dataset->_averageImages);
+	setData(index(0, Columns::ImageFilePaths, QModelIndex()), dataset->_imageFilePaths);
+	setData(index(0, Columns::CurrentImage, QModelIndex()), dataset->_currentImage);
+	setData(index(0, Columns::CurrentDimension, QModelIndex()), dataset->_currentDimension);
 }

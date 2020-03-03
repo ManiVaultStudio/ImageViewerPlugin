@@ -16,6 +16,7 @@ public: // Columns
 		Name,
 		Type,
 		Enabled,
+		Fixed,
 		Order,
 		Opacity,
 		Window,
@@ -72,6 +73,9 @@ public: // Getters
 	QVariant enabled(const int& row, int role = Qt::DisplayRole) const;
 
 	/** TODO */
+	QVariant fixed(const int& row, int role = Qt::DisplayRole) const;
+
+	/** TODO */
 	QVariant order(const int& row, int role = Qt::DisplayRole) const;
 
 	/** TODO */
@@ -113,6 +117,12 @@ public: // Setters
 	void setColor(const int& row, const QColor& color);
 
 public: // TODO
+
+	/** TODO */
+	bool mayMoveUp(const int& row);
+
+	/** TODO */
+	bool mayMoveDown(const int& row);
 
 	/** TODO */
 	void moveUp(const int& row);

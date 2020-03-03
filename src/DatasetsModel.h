@@ -14,7 +14,7 @@ class DatasetsModel : public QAbstractListModel
 public: // Columns
 
 	/** TODO */
-	enum class Columns : int {
+	enum Columns : int {
 		Name,
 		Type,
 		NoImages,
@@ -22,7 +22,9 @@ public: // Columns
 		NoPoints,
 		NoDimensions,
 		CurrentImage,
+		CurrentImageName,
 		CurrentDimension,
+		CurrentDimensionName,
 		ImageNames,
 		DimensionNames,
 		AverageImages,
@@ -77,10 +79,16 @@ public: // Getters
 	QVariant type(const int& row, int role = Qt::DisplayRole) const;
 
 	/** TODO */
+	QVariant currentImage(const int& row, int role = Qt::DisplayRole) const;
+
+	/** TODO */
+	QVariant currentImageName(const int& row, int role = Qt::DisplayRole) const;
+
+	/** TODO */
 	QVariant currentDimension(const int& row, int role = Qt::DisplayRole) const;
 
 	/** TODO */
-	QVariant currentImage(const int& row, int role = Qt::DisplayRole) const;
+	QVariant currentDimensionName(const int& row, int role = Qt::DisplayRole) const;
 
 	/** TODO */
 	QVariant imageNames(const int& row, int role = Qt::DisplayRole) const;

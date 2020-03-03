@@ -17,7 +17,8 @@ ImageDataset::ImageDataset(QObject* parent) :
 	_dimensionNames(),
 	_averageImages(),
 	_imageFilePaths(),
-	_layers()
+	_layers(),
+	_layersModel(QSharedPointer<LayersModel>::create(&_layers))
 {
 	addLayer("Image", Layer::Type::Image, true, true);
 	addLayer("Selection", Layer::Type::Selection, true, true);
