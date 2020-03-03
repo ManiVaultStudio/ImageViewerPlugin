@@ -12,14 +12,15 @@ class LayersModel : public QAbstractListModel
 public: // Columns
 	
 	/** TODO */
-	enum class Columns : int {
+	enum Columns : int {
 		Name,
 		Type,
 		Enabled,
 		Order,
 		Opacity,
 		Window,
-		Level
+		Level,
+		Color
 	};
 
 public: // Construction/destruction
@@ -33,10 +34,10 @@ public: // Construction/destruction
 public: // Inherited members
 
 	/** TODO */
-	int rowCount(const QModelIndex& parent) const;
+	int rowCount(const QModelIndex& parent = QModelIndex()) const;
 
 	/** TODO */
-	int columnCount(const QModelIndex& parent) const;
+	int columnCount(const QModelIndex& parent = QModelIndex()) const;
 
 	/** TODO */
 	QVariant data(const QModelIndex& index, int role) const;
@@ -56,30 +57,36 @@ public: // Inherited members
 	/** TODO */
 	bool removeRows(int position, int rows, const QModelIndex& index = QModelIndex());
 
+	/** TODO */
+	//void sort(int column, Qt::SortOrder order /* = Qt::AscendingOrder */);
+
 public: // Getters
 	
 	/** TODO */
-	QString name(const int& row, int role = Qt::DisplayRole) const;
+	QVariant name(const int& row, int role = Qt::DisplayRole) const;
 
 	/** TODO */
-	int type(const int& row, int role = Qt::DisplayRole) const;
+	QVariant type(const int& row, int role = Qt::DisplayRole) const;
 
 	/** TODO */
-	bool enabled(const int& row, int role = Qt::DisplayRole) const;
+	QVariant enabled(const int& row, int role = Qt::DisplayRole) const;
 
 	/** TODO */
-	int order(const int& row, int role = Qt::DisplayRole) const;
+	QVariant order(const int& row, int role = Qt::DisplayRole) const;
 
 	/** TODO */
-	float opacity(const int& row, int role = Qt::DisplayRole) const;
+	QVariant opacity(const int& row, int role = Qt::DisplayRole) const;
 
 	/** TODO */
-	float window(const int& row, int role = Qt::DisplayRole) const;
+	QVariant window(const int& row, int role = Qt::DisplayRole) const;
 
 	/** TODO */
-	float level(const int& row, int role = Qt::DisplayRole) const;
+	QVariant level(const int& row, int role = Qt::DisplayRole) const;
 
-public: // Getters
+	/** TODO */
+	QVariant color(const int& row, int role = Qt::DisplayRole) const;
+
+public: // Setters
 
 	/** TODO */
 	void setName(const int& row, const QString& name);
@@ -102,10 +109,19 @@ public: // Getters
 	/** TODO */
 	void setLevel(const int& row, const float& level);
 
+	/** TODO */
+	void setColor(const int& row, const QColor& color);
+
 public: // TODO
 
 	/** TODO */
 	QItemSelectionModel* selectionModel() { return _selectionModel; }
+
+	/** TODO */
+	void moveUp(const int& row);
+
+	/** TODO */
+	void moveDown(const int& row);
 
 private:
 	Layers*					_layers;			/** TODO */

@@ -8,7 +8,7 @@ class Layer
 public:
 
 	/** TODO */
-	enum class Type {
+	enum Type : int {
 		Image,			/** TODO */
 		Selection,		/** TODO */
 		Metadata		/** TODO */
@@ -18,7 +18,7 @@ public:
 	Layer();
 
 	/** TODO */
-	Layer(const QString& name, const Type& type, const bool& enabled, const std::uint32_t& order, const float& opacity = 1.0f);
+	Layer(const QString& name, const Type& type, const bool& enabled, const std::uint32_t& order, const float& opacity = 1.0f, const float& window = 1.0f, const float& level = 0.5f);
 
 public:
 	QString					_name;					/** TODO */
@@ -33,6 +33,7 @@ public:
 	float					_levelNormalized;		/** TODO */
 	float					_window;				/** TODO */
 	float					_level;					/** TODO */
+	QColor					_color;					/** TODO */
 
 	friend class ImageDataset;
 };

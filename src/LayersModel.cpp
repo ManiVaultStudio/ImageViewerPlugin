@@ -13,16 +13,18 @@ LayersModel::LayersModel(Layers* layers) :
 
 LayersModel::~LayersModel() = default;
 
-int LayersModel::rowCount(const QModelIndex& parent) const
-{
-	return _layers->size();
-}
-
-int LayersModel::columnCount(const QModelIndex& parent) const
+int LayersModel::rowCount(const QModelIndex& parent /*= QModelIndex()*/) const
 {
 	Q_UNUSED(parent);
 
-	return 6;
+	return _layers->size();
+}
+
+int LayersModel::columnCount(const QModelIndex& parent /*= QModelIndex()*/) const
+{
+	Q_UNUSED(parent);
+
+	return 8;
 }
 
 QVariant LayersModel::data(const QModelIndex& index, int role) const
@@ -33,49 +35,95 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 	if (index.row() >= _layers->size() || index.row() < 0)
 		return QVariant();
 
-	if (role == Qt::DisplayRole) {
-		auto layer = _layers->at(index.row());
+	auto layer = _layers->at(index.row());
 
-		switch (index.column()) {
-			case (static_cast<int>(Columns::Name)) :
-				return layer._name;
+	switch (role)
+	{
+		case Qt::DisplayRole:
+		{
+			switch (index.column()) {
+				case Columns::Name:
+					return layer._name;
 
-			case (static_cast<int>(Columns::Type)):
-			{
-				switch (layer._type)
+				case Columns::Type:
 				{
-					case Layer::Type::Image:
-						return "Image";
-					
-					case Layer::Type::Selection:
-						return "Selection";
+					switch (layer._type)
+					{
+						case Layer::Type::Image:
+							return "Image";
 
-					case Layer::Type::Metadata:
-						return "Metadata";
+						case Layer::Type::Selection:
+							return "Selection";
 
-					default:
-						break;
+						case Layer::Type::Metadata:
+							return "Metadata";
+
+						default:
+							break;
+					}
 				}
+
+				case Columns::Enabled:
+					return layer._enabled;
+
+				case Columns::Order:
+					return layer._order;
+
+				case Columns::Opacity:
+					return QString::number(layer._opacity, 'f', 1);
+
+				case Columns::Window:
+					return QString::number(layer._window, 'f', 1);
+
+				case Columns::Level:
+					return QString::number(layer._level, 'f', 1);
+
+				case Columns::Color:
+					return layer._color.name();
+
+				default:
+					break;
 			}
 
-			case (static_cast<int>(Columns::Enabled)):
-				return layer._enabled;
-
-			case (static_cast<int>(Columns::Order)):
-				return layer._order;
-
-			case (static_cast<int>(Columns::Opacity)):
-				return QString::number(layer._opacity, 'f', 1);
-
-			case (static_cast<int>(Columns::Window)):
-				return QString::number(layer._window, 'f', 1);
-
-			case (static_cast<int>(Columns::Level)):
-				return QString::number(layer._level, 'f', 1);
-
-			default:
-				break;
+			break;
 		}
+
+		case Qt::EditRole:
+		{
+			switch (index.column()) {
+				case Columns::Name:
+					return layer._name;
+
+				case Columns::Type:
+					return static_cast<int>(layer._type);
+
+				case Columns::Enabled:
+					return layer._enabled;
+
+				case Columns::Order:
+					return layer._order;
+
+				case Columns::Opacity:
+					return layer._opacity;
+
+				case Columns::Window:
+					return layer._window;
+
+				case Columns::Level:
+					return layer._level;
+
+				case Columns::Color:
+					return layer._color;
+
+				default:
+					break;
+			}
+
+			break;
+		}
+
+		default:
+			break;
 	}
 
 	return QVariant();
@@ -88,26 +136,29 @@ QVariant LayersModel::headerData(int section, Qt::Orientation orientation, int r
 
 	if (orientation == Qt::Horizontal) {
 		switch (section) {
-			case (static_cast<int>(Columns::Name)):
+			case Columns::Name:
 				return "Name";
 
-			case (static_cast<int>(Columns::Type)):
+			case Columns::Type:
 				return "Type";
 
-			case (static_cast<int>(Columns::Enabled)):
+			case Columns::Enabled:
 				return "Enabled";
 
-			case (static_cast<int>(Columns::Order)):
-				return "Type";
+			case Columns::Order:
+				return "Order";
 
-			case (static_cast<int>(Columns::Opacity)):
+			case Columns::Opacity:
 				return "Opacity";
 
-			case (static_cast<int>(Columns::Window)):
+			case Columns::Window:
 				return "Window";
 
-			case (static_cast<int>(Columns::Level)):
+			case Columns::Level:
 				return "Level";
+
+			case Columns::Color:
+				return "Color";
 
 			default:
 				return QVariant();
@@ -122,36 +173,45 @@ Qt::ItemFlags LayersModel::flags(const QModelIndex& index) const
 	if (!index.isValid())
 		return Qt::ItemIsEnabled;
 
-	int flags = Qt::ItemIsSelectable;
-
-	/*
-	if (enabled(index.row()))
-		flags |= Qt::ItemIsEnabled;
-	*/
-
-	flags |= Qt::ItemIsEnabled;
+	int flags = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
 
 	switch (index.column()) {
-		case (static_cast<int>(Columns::Name)):
+		case Columns::Name:
 			break;
 
-		case (static_cast<int>(Columns::Type)):
+		case Columns::Type:
 			break;
 
-		case (static_cast<int>(Columns::Enabled)):
-			break;
-
-		case (static_cast<int>(Columns::Order)):
-			break;
-
-		case (static_cast<int>(Columns::Opacity)):
+		case Columns::Enabled:
 			flags |= Qt::ItemIsEditable;
 			break;
 
-		case (static_cast<int>(Columns::Window)):
-		case (static_cast<int>(Columns::Level)):
+		case Columns::Order:
+			break;
+
+		case Columns::Opacity:
+			flags |= Qt::ItemIsEditable;
+			break;
+
+		case Columns::Window:
 		{
-			if (type(index.row()) == static_cast<int>(Layer::Type::Image))
+			if (type(index.row(), Qt::EditRole).toInt() == Layer::Type::Image)
+				flags |= Qt::ItemIsEditable;
+
+			break;
+		}
+
+		case Columns::Level:
+		{
+			if (type(index.row(), Qt::EditRole).toInt() == Layer::Type::Image)
+				flags |= Qt::ItemIsEditable;
+
+			break;
+		}
+
+		case Columns::Color:
+		{
+			if (type(index.row(), Qt::EditRole).toInt() == Layer::Type::Selection)
 				flags |= Qt::ItemIsEditable;
 
 			break;
@@ -172,28 +232,32 @@ bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int r
 		auto layer = _layers->value(row);
 
 		switch (index.column()) {
-			case (static_cast<int>(Columns::Name)):
+			case Columns::Name:
 				layer._name = value.toString();
 				break;
 			
-			case (static_cast<int>(Columns::Enabled)):
+			case Columns::Enabled:
 				layer._enabled = value.toBool();
 				break;
 
-			case (static_cast<int>(Columns::Order)):
+			case Columns::Order:
 				layer._order = value.toInt();
 				break;
 
-			case (static_cast<int>(Columns::Opacity)):
+			case Columns::Opacity:
 				layer._opacity = value.toFloat();
 				break;
 
-			case (static_cast<int>(Columns::Window)):
+			case Columns::Window:
 				layer._window = value.toFloat();
 				break;
 
-			case (static_cast<int>(Columns::Level)):
+			case Columns::Level:
 				layer._level = value.toFloat();
+				break;
+
+			case Columns::Color:
+				layer._color = value.value<QColor>();
 				break;
 
 			default:
@@ -240,44 +304,49 @@ bool LayersModel::removeRows(int position, int rows, const QModelIndex& index /*
 	return true;
 }
 
-QString LayersModel::name(const int& row, int role /*= Qt::DisplayRole*/) const
+QVariant LayersModel::name(const int& row, int role /*= Qt::DisplayRole*/) const
 {
-	return data(index(row, static_cast<int>(LayersModel::Columns::Name)), role).toString();
+	return data(index(row, Columns::Name), role);
 }
 
-int LayersModel::type(const int& row, int role /*= Qt::DisplayRole*/) const
+QVariant LayersModel::type(const int& row, int role /*= Qt::DisplayRole*/) const
 {
-	return data(index(row, static_cast<int>(LayersModel::Columns::Type)), role).toInt();
+	return data(index(row, Columns::Type), role);
 }
 
-bool LayersModel::enabled(const int& row, int role /*= Qt::DisplayRole*/) const
+QVariant LayersModel::enabled(const int& row, int role /*= Qt::DisplayRole*/) const
 {
-	return data(index(row, static_cast<int>(LayersModel::Columns::Enabled)), role).toBool();
+	return data(index(row, Columns::Enabled), role);
 }
 
-int LayersModel::order(const int& row, int role /*= Qt::DisplayRole*/) const
+QVariant LayersModel::order(const int& row, int role /*= Qt::DisplayRole*/) const
 {
-	return data(index(row, static_cast<int>(LayersModel::Columns::Order)), role).toInt();
+	return data(index(row, Columns::Order), role);
 }
 
-float LayersModel::opacity(const int& row, int role /*= Qt::DisplayRole*/) const
+QVariant LayersModel::opacity(const int& row, int role /*= Qt::DisplayRole*/) const
 {
-	return data(index(row, static_cast<int>(LayersModel::Columns::Opacity)), role).toFloat();
+	return data(index(row, Columns::Opacity), role);
 }
 
-float LayersModel::window(const int& row, int role /*= Qt::DisplayRole*/) const
+QVariant LayersModel::window(const int& row, int role /*= Qt::DisplayRole*/) const
 {
-	return data(index(row, static_cast<int>(LayersModel::Columns::Window)), role).toFloat();
+	return data(index(row, Columns::Window), role);
 }
 
-float LayersModel::level(const int& row, int role /*= Qt::DisplayRole*/) const
+QVariant LayersModel::level(const int& row, int role /*= Qt::DisplayRole*/) const
 {
-	return data(index(row, static_cast<int>(LayersModel::Columns::Level)), role).toFloat();
+	return data(index(row, Columns::Level), role);
+}
+
+QVariant LayersModel::color(const int& row, int role /*= Qt::DisplayRole*/) const
+{
+	return data(index(row, Columns::Color), role);
 }
 
 void LayersModel::setName(const int& row, const QString& name)
 {
-	const auto modelIndex = index(row, static_cast<int>(LayersModel::Columns::Name));
+	const auto modelIndex = index(row, Columns::Name);
 
 	if (!modelIndex.isValid())
 		return;
@@ -287,7 +356,7 @@ void LayersModel::setName(const int& row, const QString& name)
 
 void LayersModel::setType(const int& row, const int& type)
 {
-	const auto modelIndex = index(row, static_cast<int>(LayersModel::Columns::Type));
+	const auto modelIndex = index(row, Columns::Type);
 
 	if (!modelIndex.isValid())
 		return;
@@ -297,7 +366,7 @@ void LayersModel::setType(const int& row, const int& type)
 
 void LayersModel::setEnabled(const int& row, const bool& enabled)
 {
-	const auto modelIndex = index(row, static_cast<int>(LayersModel::Columns::Enabled));
+	const auto modelIndex = index(row, Columns::Enabled);
 
 	if (!modelIndex.isValid())
 		return;
@@ -307,7 +376,7 @@ void LayersModel::setEnabled(const int& row, const bool& enabled)
 
 void LayersModel::setOrder(const int& row, const int& order)
 {
-	const auto modelIndex = index(row, static_cast<int>(LayersModel::Columns::Order));
+	const auto modelIndex = index(row, Columns::Order);
 
 	if (!modelIndex.isValid())
 		return;
@@ -317,7 +386,7 @@ void LayersModel::setOrder(const int& row, const int& order)
 
 void LayersModel::setOpacity(const int& row, const float& opacity)
 {
-	const auto modelIndex = index(row, static_cast<int>(LayersModel::Columns::Opacity));
+	const auto modelIndex = index(row, Columns::Opacity);
 
 	if (!modelIndex.isValid())
 		return;
@@ -327,7 +396,7 @@ void LayersModel::setOpacity(const int& row, const float& opacity)
 
 void LayersModel::setWindow(const int& row, const float& window)
 {
-	const auto modelIndex = index(row, static_cast<int>(LayersModel::Columns::Window));
+	const auto modelIndex = index(row, Columns::Window);
 
 	if (!modelIndex.isValid())
 		return;
@@ -337,10 +406,42 @@ void LayersModel::setWindow(const int& row, const float& window)
 
 void LayersModel::setLevel(const int& row, const float& level)
 {
-	const auto modelIndex = index(row, static_cast<int>(LayersModel::Columns::Level));
+	const auto modelIndex = index(row, Columns::Level);
 
 	if (!modelIndex.isValid())
 		return;
 
 
+}
+
+void LayersModel::setColor(const int& row, const QColor& color)
+{
+	const auto modelIndex = index(row, Columns::Color);
+
+	if (!modelIndex.isValid())
+		return;
+}
+
+void LayersModel::moveUp(const int& row)
+{
+	if (row > 0 && row < _layers->count())
+	{
+		beginMoveRows(QModelIndex(), row, row, QModelIndex(), row - 1);
+
+		std::swap((*_layers)[row]._order, (*_layers)[row - 1]._order);
+
+		std::sort(_layers->begin(), _layers->end(), [](Layer& layerA, Layer& layerB) {
+			return layerA._order < layerB._order;
+		});
+		
+		endMoveRows();
+	}
+}
+
+void LayersModel::moveDown(const int& row)
+{
+	if (row >= 0 && row < _layers->count() - 1)
+	{
+		moveUp(row + 1);
+	}
 }

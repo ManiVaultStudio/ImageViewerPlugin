@@ -27,6 +27,9 @@ protected:
 	/** TODO */
 	void setModel(QSharedPointer<LayersModel> layersModel);
 
+	/** TODO */
+	void updateData(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles = QVector<int>());
+
 private:
 	DatasetsModel*						_datasetsModel;		/** TODO */
 	QSharedPointer<LayersModel>			_layersModel;		/** TODO */

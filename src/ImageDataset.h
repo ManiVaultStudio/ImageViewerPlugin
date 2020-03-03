@@ -23,7 +23,7 @@ public:
 	QStringList			_dimensionNames;	/** TODO */
 	bool				_averageImages;		/** TODO */
 	QStringList			_imageFilePaths;	/** TODO */
-	QList<Layer>		_layers;			/** TODO */
+	Layers				_layers;			/** TODO */
 };
 
 using Datasets = QList<ImageDataset>;

@@ -18,7 +18,7 @@ Layer::Layer() :
 {
 }
 
-Layer::Layer(const QString& name, const Type& type, const bool& enabled, const std::uint32_t& order, const float& opacity /*= 1.0f*/) :
+Layer::Layer(const QString& name, const Type& type, const bool& enabled, const std::uint32_t& order, const float& opacity /*= 1.0f*/, const float& window /*= 1.0f*/, const float& level /*= 0.5f*/) :
 	_name(name),
 	_type(type),
 	_enabled(enabled),
@@ -29,7 +29,7 @@ Layer::Layer(const QString& name, const Type& type, const bool& enabled, const s
 	_displayRange(),
 	_windowNormalized(1.0f),
 	_levelNormalized(0.5f),
-	_window(1.0f),
-	_level(1.0f)
+	_window(window),
+	_level(level)
 {
 }
