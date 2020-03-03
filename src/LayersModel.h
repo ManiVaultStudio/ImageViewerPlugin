@@ -115,17 +115,13 @@ public: // Setters
 public: // TODO
 
 	/** TODO */
-	QItemSelectionModel* selectionModel() { return _selectionModel; }
-
-	/** TODO */
 	void moveUp(const int& row);
 
 	/** TODO */
 	void moveDown(const int& row);
 
 private:
-	Layers*					_layers;			/** TODO */
-	QItemSelectionModel*	_selectionModel;	/** TODO */
+	Layers*		_layers;		/** TODO */
 
 	friend class MainModel;
 };

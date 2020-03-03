@@ -6,8 +6,7 @@
 
 LayersModel::LayersModel(Layers* layers) :
 	QAbstractListModel(),
-	_layers(layers),
-	_selectionModel(new QItemSelectionModel(this))
+	_layers(layers)
 {
 }
 

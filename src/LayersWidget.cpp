@@ -22,49 +22,49 @@ LayersWidget::LayersWidget(QWidget* parent, DatasetsModel* datasetsModel) :
 	setModel(QSharedPointer<LayersModel>());
 
 	QObject::connect(_ui->layerMoveUpPushButton, &QPushButton::clicked, [this]() {
-		_layersModel->moveUp(_layersModel->selectionModel()->currentIndex().row());
+		_layersModel->moveUp(_ui->layersTreeView->selectionModel()->currentIndex().row());
 	});
 
 	QObject::connect(_ui->layerMoveDownPushButton, &QPushButton::clicked, [this]() {
-		_layersModel->moveDown(_layersModel->selectionModel()->currentIndex().row());
+		_layersModel->moveDown(_ui->layersTreeView->selectionModel()->currentIndex().row());
 	});
 
 	QObject::connect(_ui->layerEnabledCheckBox, &QCheckBox::stateChanged, [this](int enabled) {
-		const auto index = _layersModel->index(_layersModel->selectionModel()->currentIndex().row(), static_cast<int>(LayersModel::Columns::Enabled));
+		const auto index = _layersModel->index(_ui->layersTreeView->selectionModel()->currentIndex().row(), static_cast<int>(LayersModel::Columns::Enabled));
 		_layersModel->setData(index, enabled);
 	});
 
 	QObject::connect(_ui->layerOpacityDoubleSpinBox, qOverload<double>(&QDoubleSpinBox::valueChanged), [this](double value) {
-		const auto index = _layersModel->index(_layersModel->selectionModel()->currentIndex().row(), static_cast<int>(LayersModel::Columns::Opacity));
+		const auto index = _layersModel->index(_ui->layersTreeView->selectionModel()->currentIndex().row(), static_cast<int>(LayersModel::Columns::Opacity));
 		_layersModel->setData(index, value);
 	});
 
 	QObject::connect(_ui->layerOpacityHorizontalSlider, &QSlider::valueChanged, [this](int value) {
-		const auto index = _layersModel->index(_layersModel->selectionModel()->currentIndex().row(), static_cast<int>(LayersModel::Columns::Opacity));
+		const auto index = _layersModel->index(_ui->layersTreeView->selectionModel()->currentIndex().row(), static_cast<int>(LayersModel::Columns::Opacity));
 		const auto range = _ui->layerOpacityHorizontalSlider->maximum() - _ui->layerOpacityHorizontalSlider->minimum();
 
 		_layersModel->setData(index, value / static_cast<float>(range));
 	});
 
 	QObject::connect(_ui->layerWindowDoubleSpinBox, qOverload<double>(&QDoubleSpinBox::valueChanged), [this](double value) {
-		const auto index = _layersModel->index(_layersModel->selectionModel()->currentIndex().row(), static_cast<int>(LayersModel::Columns::Window));
+		const auto index = _layersModel->index(_ui->layersTreeView->selectionModel()->currentIndex().row(), static_cast<int>(LayersModel::Columns::Window));
 		_layersModel->setData(index, value);
 	});
 
 	QObject::connect(_ui->layerWindowHorizontalSlider, &QSlider::valueChanged, [this](int value) {
-		const auto index = _layersModel->index(_layersModel->selectionModel()->currentIndex().row(), static_cast<int>(LayersModel::Columns::Window));
+		const auto index = _layersModel->index(_ui->layersTreeView->selectionModel()->currentIndex().row(), static_cast<int>(LayersModel::Columns::Window));
 		const auto range = _ui->layerWindowHorizontalSlider->maximum() - _ui->layerWindowHorizontalSlider->minimum();
 
 		_layersModel->setData(index, value / static_cast<float>(range));
 	});
 
 	QObject::connect(_ui->layerLevelDoubleSpinBox, qOverload<double>(&QDoubleSpinBox::valueChanged), [this](double value) {
-		const auto index = _layersModel->index(_layersModel->selectionModel()->currentIndex().row(), static_cast<int>(LayersModel::Columns::Level));
+		const auto index = _layersModel->index(_ui->layersTreeView->selectionModel()->currentIndex().row(), static_cast<int>(LayersModel::Columns::Level));
 		_layersModel->setData(index, value);
 	});
 
 	QObject::connect(_ui->layerLevelHorizontalSlider, &QSlider::valueChanged, [this](int value) {
-		const auto index = _layersModel->index(_layersModel->selectionModel()->currentIndex().row(), static_cast<int>(LayersModel::Columns::Level));
+		const auto index = _layersModel->index(_ui->layersTreeView->selectionModel()->currentIndex().row(), static_cast<int>(LayersModel::Columns::Level));
 		const auto range = _ui->layerLevelHorizontalSlider->maximum() - _ui->layerLevelHorizontalSlider->minimum();
 
 		_layersModel->setData(index, value / static_cast<float>(range));
@@ -84,9 +84,6 @@ void LayersWidget::setModel(QSharedPointer<LayersModel> layersModel)
 	
 	_ui->layersGroupBox->setEnabled(true);
 	_ui->layersTreeView->setModel(layersModel.get());
-	_ui->layersTreeView->setSelectionModel(_layersModel->selectionModel());
-
-	
 
 	auto headerView = _ui->layersTreeView->header();
 
@@ -120,19 +117,19 @@ void LayersWidget::setModel(QSharedPointer<LayersModel> layersModel)
 	};
 
 	// Handle user row selection
-	QObject::connect(layersModel->selectionModel(), &QItemSelectionModel::currentRowChanged, [this, updateOrderPushButtons](const QModelIndex& current, const QModelIndex& previous) {
+	QObject::connect(_ui->layersTreeView->selectionModel(), &QItemSelectionModel::currentRowChanged, [this, updateOrderPushButtons](const QModelIndex& current, const QModelIndex& previous) {
 		updateOrderPushButtons(current.row());
 		updateData(_layersModel->index(current.row(), 0), _layersModel->index(current.row(), _layersModel->columnCount() - 1));
 	});
 
 	// Handle model rows reorganization
 	QObject::connect(_layersModel.get(), &QAbstractListModel::rowsMoved, [this, updateOrderPushButtons](const QModelIndex& parent, int start, int end, const QModelIndex& destination, int row) {
-		updateOrderPushButtons(_layersModel->selectionModel()->currentIndex().row());
+		updateOrderPushButtons(_ui->layersTreeView->selectionModel()->currentIndex().row());
 	});
 
 	QObject::connect(_layersModel.get(), &LayersModel::dataChanged, this, &LayersWidget::updateData);
 
-	_layersModel->selectionModel()->select(_layersModel->index(0), QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows | QItemSelectionModel::Current);
+	_ui->layersTreeView->selectionModel()->setCurrentIndex(_layersModel->index(0), QItemSelectionModel::Rows | QItemSelectionModel::Current);
 }
 
 void LayersWidget::updateData(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int> &roles /*= QVector<int>()*/)
