@@ -23,7 +23,7 @@ public: // Construction/destruction
 public: //
 
 	/** TODO */
-	void addDataset(const ImageDataset& dataset);
+	void addDataset(ImageDataset* dataset);
 
 	/** TODO */
 	Datasets& datasets() { return _datasets; };

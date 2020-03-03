@@ -3,13 +3,19 @@
 #include "Layer.h"
 
 #include <QStringList>
+#include <QSharedPointer>
+
+class LayersModel;
 
 /** TODO */
-class ImageDataset
+class ImageDataset : public QObject
 {
 public:
 	/** TODO */
-	ImageDataset();
+	ImageDataset(QObject* parent);
+
+	/** TODO */
+	void addLayer(const QString& name, const Layer::Type& type, const bool& enabled, const bool& fixed);
 
 	QString				_name;				/** TODO */
 	int					_type;				/** TODO */
@@ -26,4 +32,4 @@ public:
 	Layers				_layers;			/** TODO */
 };
 
-using Datasets = QList<ImageDataset>;
+using Datasets = QList<ImageDataset*>;

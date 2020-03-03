@@ -6,8 +6,6 @@
 
 class QItemSelectionModel;
 
-class LayersModel;
-
 /** TODO */
 class DatasetsModel : public QAbstractListModel
 {
@@ -99,9 +97,6 @@ public: // Getters
 	/** TODO */
 	QVariant currentDimensionFilepath(const int& row, int role = Qt::DisplayRole) const;
 
-	/** TODO */
-	QSharedPointer<LayersModel> layersModel(const int& row);
-
 public: // Setters
 
 	/** TODO */
@@ -116,7 +111,7 @@ public: // Setters
 public: // 
 	
 	/** TODO */
-	void add(const ImageDataset& dataset);
+	void add(ImageDataset* dataset);
 
 	/** TODO */
 	QItemSelectionModel* selectionModel() { return _selectionModel; }

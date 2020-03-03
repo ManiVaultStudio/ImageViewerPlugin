@@ -3,7 +3,8 @@
 
 #include <QDebug>
 
-ImageDataset::ImageDataset() :
+ImageDataset::ImageDataset(QObject* parent) :
+	QObject(parent),
 	_name(""),
 	_type(0),
 	_noImages(0),
@@ -18,8 +19,14 @@ ImageDataset::ImageDataset() :
 	_imageFilePaths(),
 	_layers()
 {
-	_layers.append(Layer("Image", Layer::Type::Image, true, 0));
-	_layers.append(Layer("Selection", Layer::Type::Selection, true, 1));
-	_layers.append(Layer("MetaA", Layer::Type::Metadata, true, 2));
-	_layers.append(Layer("MetaB", Layer::Type::Metadata, true, 3));
+	addLayer("Image", Layer::Type::Image, true, true);
+	addLayer("Selection", Layer::Type::Selection, true, true);
+	addLayer("MetaDataA", Layer::Type::Metadata, true, false);
+	addLayer("MetaDataB", Layer::Type::Metadata, true, false);
+	addLayer("MetaDataC", Layer::Type::Metadata, true, false);
+}
+
+void ImageDataset::addLayer(const QString& name, const Layer::Type& type, const bool& enabled, const bool& fixed)
+{
+	_layers.append(new Layer(this, name, type, enabled, fixed, _layers.size()));
 }

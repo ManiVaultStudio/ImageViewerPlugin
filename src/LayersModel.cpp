@@ -43,11 +43,11 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 		{
 			switch (index.column()) {
 				case Columns::Name:
-					return layer._name;
+					return layer->_name;
 
 				case Columns::Type:
 				{
-					switch (layer._type)
+					switch (layer->_type)
 					{
 						case Layer::Type::Image:
 							return "Image";
@@ -64,22 +64,22 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 				}
 
 				case Columns::Enabled:
-					return layer._enabled;
+					return layer->_enabled;
 
 				case Columns::Order:
-					return layer._order;
+					return layer->_order;
 
 				case Columns::Opacity:
-					return QString::number(layer._opacity, 'f', 1);
+					return QString::number(layer->_opacity, 'f', 1);
 
 				case Columns::Window:
-					return QString::number(layer._window, 'f', 1);
+					return QString::number(layer->_window, 'f', 1);
 
 				case Columns::Level:
-					return QString::number(layer._level, 'f', 1);
+					return QString::number(layer->_level, 'f', 1);
 
 				case Columns::Color:
-					return layer._color.name();
+					return layer->_color.name();
 
 				default:
 					break;
@@ -92,28 +92,28 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 		{
 			switch (index.column()) {
 				case Columns::Name:
-					return layer._name;
+					return layer->_name;
 
 				case Columns::Type:
-					return static_cast<int>(layer._type);
+					return static_cast<int>(layer->_type);
 
 				case Columns::Enabled:
-					return layer._enabled;
+					return layer->_enabled;
 
 				case Columns::Order:
-					return layer._order;
+					return layer->_order;
 
 				case Columns::Opacity:
-					return layer._opacity;
+					return layer->_opacity;
 
 				case Columns::Window:
-					return layer._window;
+					return layer->_window;
 
 				case Columns::Level:
-					return layer._level;
+					return layer->_level;
 
 				case Columns::Color:
-					return layer._color;
+					return layer->_color;
 
 				default:
 					break;
@@ -233,31 +233,31 @@ bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int r
 
 		switch (index.column()) {
 			case Columns::Name:
-				layer._name = value.toString();
+				layer->_name = value.toString();
 				break;
 			
 			case Columns::Enabled:
-				layer._enabled = value.toBool();
+				layer->_enabled = value.toBool();
 				break;
 
 			case Columns::Order:
-				layer._order = value.toInt();
+				layer->_order = value.toInt();
 				break;
 
 			case Columns::Opacity:
-				layer._opacity = value.toFloat();
+				layer->_opacity = value.toFloat();
 				break;
 
 			case Columns::Window:
-				layer._window = value.toFloat();
+				layer->_window = value.toFloat();
 				break;
 
 			case Columns::Level:
-				layer._level = value.toFloat();
+				layer->_level = value.toFloat();
 				break;
 
 			case Columns::Color:
-				layer._color = value.value<QColor>();
+				layer->_color = value.value<QColor>();
 				break;
 
 			default:
@@ -266,7 +266,7 @@ bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int r
 
 		_layers->replace(row, layer);
 
-		emit(dataChanged(index, index));
+		emit dataChanged(index, index);
 
 		return true;
 	}
@@ -281,7 +281,7 @@ bool LayersModel::insertRows(int position, int rows, const QModelIndex& index /*
 	beginInsertRows(QModelIndex(), position, position + rows - 1);
 
 	for (int row = 0; row < rows; row++) {
-		_layers->insert(position, Layer());
+		_layers->insert(position, new Layer(this));
 	}
 
 	endInsertRows();
@@ -428,10 +428,12 @@ void LayersModel::moveUp(const int& row)
 	{
 		beginMoveRows(QModelIndex(), row, row, QModelIndex(), row - 1);
 
-		std::swap((*_layers)[row]._order, (*_layers)[row - 1]._order);
+		auto layers = (*_layers);
 
-		std::sort(_layers->begin(), _layers->end(), [](Layer& layerA, Layer& layerB) {
-			return layerA._order < layerB._order;
+		std::swap(layers[row]->_order, layers[layers[row]->_order - 1]->_order);
+
+		std::sort(_layers->begin(), _layers->end(), [](Layer* layerA, Layer* layerB) {
+			return layerA->_order < layerB->_order;
 		});
 		
 		endMoveRows();

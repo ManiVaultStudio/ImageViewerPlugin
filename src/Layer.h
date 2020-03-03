@@ -3,7 +3,7 @@
 #include <QImage>
 
 /** TODO */
-class Layer
+class Layer : public QObject
 {
 public:
 
@@ -15,15 +15,16 @@ public:
 	};
 
 	/** TODO */
-	Layer();
+	Layer(QObject* parent);
 
 	/** TODO */
-	Layer(const QString& name, const Type& type, const bool& enabled, const std::uint32_t& order, const float& opacity = 1.0f, const float& window = 1.0f, const float& level = 0.5f);
+	Layer(QObject* parent,const QString& name, const Type& type, const bool& enabled, const bool& fixed, const std::uint32_t& order, const float& opacity = 1.0f, const float& window = 1.0f, const float& level = 0.5f);
 
 public:
 	QString					_name;					/** TODO */
 	Type					_type;					/** TODO */
 	bool					_enabled;				/** TODO */
+	bool					_fixed;					/** TODO */
 	std::uint32_t			_order;					/** TODO */
 	float					_opacity;				/** TODO */
 	QImage					_image;					/** TODO */
@@ -38,4 +39,4 @@ public:
 	friend class ImageDataset;
 };
 
-using Layers = QList<Layer>;
+using Layers = QList<Layer*>;

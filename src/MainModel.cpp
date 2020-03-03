@@ -14,7 +14,7 @@ MainModel::MainModel(ImageViewerPlugin* imageViewerPlugin) :
 
 MainModel::~MainModel() = default;
 
-void MainModel::addDataset(const ImageDataset& dataset)
+void MainModel::addDataset(ImageDataset* dataset)
 {
 	_datasetsModel->add(dataset);
 }

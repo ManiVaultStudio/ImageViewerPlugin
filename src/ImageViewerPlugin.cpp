@@ -81,21 +81,21 @@ void ImageViewerPlugin::dataAdded(const QString dataset)
 
 	auto imagesDataset = _core->requestData<Images>(dataset);
 
-	auto imageDataset = ImageDataset();
+	auto imageDataset = new ImageDataset(this);
 
-	imageDataset._name				= dataset;
-	imageDataset._type				= static_cast<int>(imagesDataset.imageCollectionType());
-	imageDataset._noImages			= imagesDataset.noImages();
-	imageDataset._size				= imagesDataset.imageSize();
-	imageDataset._noPoints			= imagesDataset.points()->getNumPoints();
-	imageDataset._noDimensions		= imagesDataset.points()->getNumDimensions();
-	imageDataset._currentImage		= 0;
-	imageDataset._currentDimension	= 0;
-	imageDataset._averageImages		= false;
-	imageDataset._imageFilePaths	= QStringList();
+	imageDataset->_name				= dataset;
+	imageDataset->_type				= static_cast<int>(imagesDataset.imageCollectionType());
+	imageDataset->_noImages			= imagesDataset.noImages();
+	imageDataset->_size				= imagesDataset.imageSize();
+	imageDataset->_noPoints			= imagesDataset.points()->getNumPoints();
+	imageDataset->_noDimensions		= imagesDataset.points()->getNumDimensions();
+	imageDataset->_currentImage		= 0;
+	imageDataset->_currentDimension	= 0;
+	imageDataset->_averageImages		= false;
+	imageDataset->_imageFilePaths	= QStringList();
 
 	for (const auto& imageFilePath : imagesDataset.imageFilePaths()) {
-		imageDataset._imageFilePaths << imageFilePath;
+		imageDataset->_imageFilePaths << imageFilePath;
 	}
 
 	switch (imagesDataset.imageCollectionType())
@@ -103,7 +103,7 @@ void ImageViewerPlugin::dataAdded(const QString dataset)
 		case ImageCollectionType::Sequence:
 		{
 			for (const auto& imageFilePath : imagesDataset.imageFilePaths()) {
-				imageDataset._imageNames << QFileInfo(imageFilePath).fileName();
+				imageDataset->_imageNames << QFileInfo(imageFilePath).fileName();
 			}
 			break;
 		}
@@ -111,7 +111,7 @@ void ImageViewerPlugin::dataAdded(const QString dataset)
 		case ImageCollectionType::Stack:
 		{
 			for (const auto& dimensionName : imagesDataset.dimensionNames()) {
-				imageDataset._dimensionNames << dimensionName;
+				imageDataset->_dimensionNames << dimensionName;
 			}
 			break;
 		}
@@ -120,7 +120,7 @@ void ImageViewerPlugin::dataAdded(const QString dataset)
 			break;
 	}
 
-	imageDataset._averageImages	= false;
+	imageDataset->_averageImages	= false;
 
 	_mainModel.addDataset(imageDataset);
 }
