@@ -236,6 +236,13 @@ Qt::ItemFlags LayersModel::flags(const QModelIndex& index) const
 
 	switch (index.column()) {
 		case Columns::Name:
+		{
+			if (!data(index.row(), LayersModel::Columns::Fixed, Qt::EditRole).toBool())
+				flags |= Qt::ItemIsEditable;
+
+			break;
+		}
+
 		case Columns::Type:
 		case Columns::Fixed:
 		case Columns::Removable:
@@ -473,6 +480,7 @@ void LayersModel::removeRows(const QModelIndexList& rows)
 	if (rowsToRemove.isEmpty())
 		return;
 
+	std::sort(rowsToRemove.begin(), rowsToRemove.end());
 	std::reverse(rowsToRemove.begin(), rowsToRemove.end());
 
 	beginRemoveRows(QModelIndex(), rowsToRemove.last(), rowsToRemove.first());
