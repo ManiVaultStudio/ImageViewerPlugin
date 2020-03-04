@@ -15,7 +15,7 @@ public:
 	ImageDataset(QObject* parent);
 
 	/** TODO */
-	void addLayer(const QString& name, const Layer::Type& type, const bool& enabled, const bool& fixed);
+	void addLayer(const QString& name, const Layer::Type& type, const std::uint32_t& flags);
 
 	QString							_name;					/** TODO */
 	int								_type;					/** TODO */

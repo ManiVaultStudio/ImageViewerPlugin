@@ -20,14 +20,14 @@ ImageDataset::ImageDataset(QObject* parent) :
 	_layers(),
 	_layersModel(QSharedPointer<LayersModel>::create(&_layers))
 {
-	addLayer("Image", Layer::Type::Image, true, true);
-	addLayer("Selection", Layer::Type::Selection, true, true);
-	addLayer("MetaDataA", Layer::Type::Metadata, true, false);
-	addLayer("MetaDataB", Layer::Type::Metadata, true, false);
-	addLayer("MetaDataC", Layer::Type::Metadata, true, false);
+	addLayer("Image", Layer::Type::Image, Layer::Flags::Enabled | Layer::Flags::Fixed);
+	addLayer("Selection", Layer::Type::Selection, Layer::Flags::Enabled | Layer::Flags::Fixed);
+	addLayer("MetaDataA", Layer::Type::Metadata, Layer::Flags::Enabled);
+	addLayer("MetaDataB", Layer::Type::Metadata, Layer::Flags::Enabled);
+	addLayer("MetaDataC", Layer::Type::Metadata, Layer::Flags::Enabled);
 }
 
-void ImageDataset::addLayer(const QString& name, const Layer::Type& type, const bool& enabled, const bool& fixed)
+void ImageDataset::addLayer(const QString& name, const Layer::Type& type, const std::uint32_t& flags)
 {
-	_layers.append(new Layer(this, name, type, enabled, fixed, _layers.size()));
+	_layers.append(new Layer(this, name, type, flags, _layers.size()));
 }

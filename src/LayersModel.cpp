@@ -53,7 +53,7 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 		*/
 
 		case Qt::ForegroundRole:
-			return layer->_enabled ? QBrush(Qt::black) : QBrush(Qt::darkGray);
+			return layer->isFlagSet(Layer::Flags::Enabled) ? QBrush(Qt::black) : QBrush(Qt::darkGray);
 
 		case Qt::DisplayRole:
 		{
@@ -80,10 +80,10 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 				}
 
 				case Columns::Enabled:
-					return layer->_enabled;
+					return layer->isFlagSet(Layer::Flags::Enabled) ? "true" : "false";
 
 				case Columns::Fixed:
-					return layer->_fixed ? "true" : "false";
+					return layer->isFlagSet(Layer::Flags::Fixed) ? "true" : "false";
 
 				case Columns::Order:
 					return QString::number(layer->_order);
@@ -117,10 +117,10 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 					return static_cast<int>(layer->_type);
 
 				case Columns::Enabled:
-					return layer->_enabled;
+					return layer->isFlagSet(Layer::Flags::Enabled);
 
 				case Columns::Fixed:
-					return layer->_fixed;
+					return layer->isFlagSet(Layer::Flags::Fixed);
 
 				case Columns::Order:
 					return layer->_order;
@@ -288,11 +288,11 @@ bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int r
 				break;
 
 			case Columns::Enabled:
-				layer->_enabled = value.toBool();
+				layer->setFlag(Layer::Flags::Enabled, value.toBool());
 				break;
 
 			case Columns::Fixed:
-				layer->_fixed = value.toBool();
+				layer->setFlag(Layer::Flags::Fixed, value.toBool());
 				break;
 
 			case Columns::Order:
@@ -494,7 +494,7 @@ bool LayersModel::mayMoveUp(const int& row)
 
 	auto layers = (*_layers);
 
-	if (layers[row]->_fixed || layers[row - 1]->_fixed)
+	if (layers[row]->isFlagSet(Layer::Flags::Fixed) || layers[row - 1]->isFlagSet(Layer::Flags::Fixed))
 		return false;
 
 	return true;
@@ -507,7 +507,7 @@ bool LayersModel::mayMoveDown(const int& row)
 
 	auto layers = (*_layers);
 
-	if (layers[row]->_fixed || layers[row + 1]->_fixed)
+	if (layers[row]->isFlagSet(Layer::Flags::Fixed) || layers[row + 1]->isFlagSet(Layer::Flags::Fixed))
 		return false;
 
 	return true;
