@@ -25,7 +25,7 @@ int LayersModel::columnCount(const QModelIndex& parent /*= QModelIndex()*/) cons
 {
 	Q_UNUSED(parent);
 
-	return 9;
+	return 10;
 }
 
 QVariant LayersModel::data(const QModelIndex& index, int role) const
@@ -85,6 +85,9 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 				case Columns::Fixed:
 					return layer->isFlagSet(Layer::Flags::Fixed) ? "true" : "false";
 
+				case Columns::Removable:
+					return layer->isFlagSet(Layer::Flags::Removable) ? "true" : "false";
+
 				case Columns::Order:
 					return QString::number(layer->_order);
 
@@ -121,6 +124,9 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 
 				case Columns::Fixed:
 					return layer->isFlagSet(Layer::Flags::Fixed);
+
+				case Columns::Removable:
+					return layer->isFlagSet(Layer::Flags::Removable);
 
 				case Columns::Order:
 					return layer->_order;
@@ -193,6 +199,9 @@ QVariant LayersModel::headerData(int section, Qt::Orientation orientation, int r
 			case Columns::Fixed:
 				return "Fixed";
 
+			case Columns::Removable:
+				return "Removable";
+
 			case Columns::Order:
 				return "Order";
 
@@ -222,11 +231,14 @@ Qt::ItemFlags LayersModel::flags(const QModelIndex& index) const
 		return Qt::ItemIsEnabled;
 
 	int flags = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+	
+	const auto type = data(index.row(), LayersModel::Type, Qt::EditRole).toInt();
 
 	switch (index.column()) {
 		case Columns::Name:
 		case Columns::Type:
 		case Columns::Fixed:
+		case Columns::Removable:
 			break;
 
 		case Columns::Enabled:
@@ -242,7 +254,7 @@ Qt::ItemFlags LayersModel::flags(const QModelIndex& index) const
 
 		case Columns::Window:
 		{
-			if (type(index.row(), Qt::EditRole).toInt() == Layer::Type::Image)
+			if (type == Layer::Type::Image)
 				flags |= Qt::ItemIsEditable;
 
 			break;
@@ -250,7 +262,7 @@ Qt::ItemFlags LayersModel::flags(const QModelIndex& index) const
 
 		case Columns::Level:
 		{
-			if (type(index.row(), Qt::EditRole).toInt() == Layer::Type::Image)
+			if (type == Layer::Type::Image)
 				flags |= Qt::ItemIsEditable;
 
 			break;
@@ -258,7 +270,7 @@ Qt::ItemFlags LayersModel::flags(const QModelIndex& index) const
 
 		case Columns::Color:
 		{
-			if (type(index.row(), Qt::EditRole).toInt() == Layer::Type::Selection)
+			if (type == Layer::Type::Selection)
 				flags |= Qt::ItemIsEditable;
 
 			break;
@@ -293,6 +305,10 @@ bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int r
 
 			case Columns::Fixed:
 				layer->setFlag(Layer::Flags::Fixed, value.toBool());
+				break;
+
+			case Columns::Removable:
+				layer->setFlag(Layer::Flags::Removable, value.toBool());
 				break;
 
 			case Columns::Order:
@@ -364,127 +380,24 @@ bool LayersModel::removeRows(int position, int rows, const QModelIndex& index /*
 	return true;
 }
 
-QVariant LayersModel::name(const int& row, int role /*= Qt::DisplayRole*/) const
+QVariant LayersModel::data(const int& row, const int& column, int role /*= Qt::DisplayRole*/) const
 {
-	return data(index(row, Columns::Name), role);
+	const auto modelIndex = index(row, column);
+
+	if (!modelIndex.isValid())
+		return QVariant();
+
+	return data(index(row, column), role);
 }
 
-QVariant LayersModel::type(const int& row, int role /*= Qt::DisplayRole*/) const
+void LayersModel::setData(const int& row, const int& column, const QVariant& value)
 {
-	return data(index(row, Columns::Type), role);
-}
-
-QVariant LayersModel::enabled(const int& row, int role /*= Qt::DisplayRole*/) const
-{
-	return data(index(row, Columns::Enabled), role);
-}
-
-QVariant LayersModel::fixed(const int& row, int role /*= Qt::DisplayRole*/) const
-{
-	return data(index(row, Columns::Fixed), role);
-}
-
-QVariant LayersModel::order(const int& row, int role /*= Qt::DisplayRole*/) const
-{
-	return data(index(row, Columns::Order), role);
-}
-
-QVariant LayersModel::opacity(const int& row, int role /*= Qt::DisplayRole*/) const
-{
-	return data(index(row, Columns::Opacity), role);
-}
-
-QVariant LayersModel::window(const int& row, int role /*= Qt::DisplayRole*/) const
-{
-	return data(index(row, Columns::Window), role);
-}
-
-QVariant LayersModel::level(const int& row, int role /*= Qt::DisplayRole*/) const
-{
-	return data(index(row, Columns::Level), role);
-}
-
-QVariant LayersModel::color(const int& row, int role /*= Qt::DisplayRole*/) const
-{
-	return data(index(row, Columns::Color), role);
-}
-
-void LayersModel::setName(const int& row, const QString& name)
-{
-	const auto modelIndex = index(row, Columns::Name);
+	const auto modelIndex = index(row, column);
 
 	if (!modelIndex.isValid())
 		return;
 
-
-}
-
-void LayersModel::setType(const int& row, const int& type)
-{
-	const auto modelIndex = index(row, Columns::Type);
-
-	if (!modelIndex.isValid())
-		return;
-
-
-}
-
-void LayersModel::setEnabled(const int& row, const bool& enabled)
-{
-	const auto modelIndex = index(row, Columns::Enabled);
-
-	if (!modelIndex.isValid())
-		return;
-
-
-}
-
-void LayersModel::setOrder(const int& row, const int& order)
-{
-	const auto modelIndex = index(row, Columns::Order);
-
-	if (!modelIndex.isValid())
-		return;
-
-
-}
-
-void LayersModel::setOpacity(const int& row, const float& opacity)
-{
-	const auto modelIndex = index(row, Columns::Opacity);
-
-	if (!modelIndex.isValid())
-		return;
-
-
-}
-
-void LayersModel::setWindow(const int& row, const float& window)
-{
-	const auto modelIndex = index(row, Columns::Window);
-
-	if (!modelIndex.isValid())
-		return;
-
-
-}
-
-void LayersModel::setLevel(const int& row, const float& level)
-{
-	const auto modelIndex = index(row, Columns::Level);
-
-	if (!modelIndex.isValid())
-		return;
-
-
-}
-
-void LayersModel::setColor(const int& row, const QColor& color)
-{
-	const auto modelIndex = index(row, Columns::Color);
-
-	if (!modelIndex.isValid())
-		return;
+	setData(modelIndex, value);
 }
 
 bool LayersModel::mayMoveUp(const int& row)
@@ -543,4 +456,30 @@ void LayersModel::moveDown(const int& row)
 	{
 		moveUp(row + 1);
 	}
+}
+
+void LayersModel::removeRows(const QModelIndexList& rows)
+{
+	QList<int> rowsToRemove;
+
+	for (const auto& index : rows) {
+		const auto row = index.row();
+
+		if (_layers->at(row)->isFlagSet(Layer::Flags::Removable)) {
+			rowsToRemove.append(row);
+		}
+	}
+
+	if (rowsToRemove.isEmpty())
+		return;
+
+	std::reverse(rowsToRemove.begin(), rowsToRemove.end());
+
+	beginRemoveRows(QModelIndex(), rowsToRemove.last(), rowsToRemove.first());
+
+	for (auto rowToRemove : rowsToRemove) {
+		_layers->removeAt(rowToRemove);
+	}
+
+	endRemoveRows();
 }

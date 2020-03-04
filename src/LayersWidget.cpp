@@ -29,9 +29,14 @@ LayersWidget::LayersWidget(QWidget* parent, DatasetsModel* datasetsModel) :
 		_layersModel->moveDown(_ui->layersTreeView->selectionModel()->currentIndex().row());
 	});
 
+	QObject::connect(_ui->layerRemovePushButton, &QPushButton::clicked, [this]() {
+		_layersModel->removeRows(_ui->layersTreeView->selectionModel()->selectedRows());
+	});
+
 	QObject::connect(_ui->layerEnabledCheckBox, &QCheckBox::stateChanged, [this](int enabled) {
-		const auto index = _layersModel->index(_ui->layersTreeView->selectionModel()->currentIndex().row(), LayersModel::Columns::Enabled);
-		_layersModel->setData(index, enabled);
+		for (auto index : _ui->layersTreeView->selectionModel()->selectedRows()) {
+			_layersModel->setData(_layersModel->index(index.row(), LayersModel::Columns::Enabled), enabled);
+		}
 	});
 
 	QObject::connect(_ui->layerOpacityDoubleSpinBox, qOverload<double>(&QDoubleSpinBox::valueChanged), [this](double value) {
@@ -42,34 +47,36 @@ LayersWidget::LayersWidget(QWidget* parent, DatasetsModel* datasetsModel) :
 	});
 
 	QObject::connect(_ui->layerOpacityHorizontalSlider, &QSlider::valueChanged, [this](int value) {
-		const auto index = _layersModel->index(_ui->layersTreeView->selectionModel()->currentIndex().row(), LayersModel::Columns::Opacity);
-		const auto range = _ui->layerOpacityHorizontalSlider->maximum() - _ui->layerOpacityHorizontalSlider->minimum();
-
-		_layersModel->setData(index, value / static_cast<float>(range));
+		for (auto index : _ui->layersTreeView->selectionModel()->selectedRows()) {
+			const auto range = _ui->layerOpacityHorizontalSlider->maximum() - _ui->layerOpacityHorizontalSlider->minimum();
+			_layersModel->setData(_layersModel->index(index.row(), LayersModel::Columns::Opacity), value / static_cast<float>(range));
+		}
 	});
 
 	QObject::connect(_ui->layerWindowDoubleSpinBox, qOverload<double>(&QDoubleSpinBox::valueChanged), [this](double value) {
-		const auto index = _layersModel->index(_ui->layersTreeView->selectionModel()->currentIndex().row(), LayersModel::Columns::Window);
-		_layersModel->setData(index, value);
+		for (auto index : _ui->layersTreeView->selectionModel()->selectedRows()) {
+			_layersModel->setData(_layersModel->index(index.row(), LayersModel::Columns::Window), value);
+		}
 	});
 
 	QObject::connect(_ui->layerWindowHorizontalSlider, &QSlider::valueChanged, [this](int value) {
-		const auto index = _layersModel->index(_ui->layersTreeView->selectionModel()->currentIndex().row(), LayersModel::Columns::Window);
-		const auto range = _ui->layerWindowHorizontalSlider->maximum() - _ui->layerWindowHorizontalSlider->minimum();
-
-		_layersModel->setData(index, value / static_cast<float>(range));
+		for (auto index : _ui->layersTreeView->selectionModel()->selectedRows()) {
+			const auto range = _ui->layerWindowHorizontalSlider->maximum() - _ui->layerWindowHorizontalSlider->minimum();
+			_layersModel->setData(_layersModel->index(index.row(), LayersModel::Columns::Window), value / static_cast<float>(range));
+		}
 	});
 
 	QObject::connect(_ui->layerLevelDoubleSpinBox, qOverload<double>(&QDoubleSpinBox::valueChanged), [this](double value) {
-		const auto index = _layersModel->index(_ui->layersTreeView->selectionModel()->currentIndex().row(), LayersModel::Columns::Level);
-		_layersModel->setData(index, value);
+		for (auto index : _ui->layersTreeView->selectionModel()->selectedRows()) {
+			_layersModel->setData(_layersModel->index(index.row(), LayersModel::Columns::Level), value);
+		}
 	});
 
 	QObject::connect(_ui->layerLevelHorizontalSlider, &QSlider::valueChanged, [this](int value) {
-		const auto index = _layersModel->index(_ui->layersTreeView->selectionModel()->currentIndex().row(), LayersModel::Columns::Level);
-		const auto range = _ui->layerLevelHorizontalSlider->maximum() - _ui->layerLevelHorizontalSlider->minimum();
-
-		_layersModel->setData(index, value / static_cast<float>(range));
+		for (auto index : _ui->layersTreeView->selectionModel()->selectedRows()) {
+			const auto range = _ui->layerLevelHorizontalSlider->maximum() - _ui->layerLevelHorizontalSlider->minimum();
+			_layersModel->setData(_layersModel->index(index.row(), LayersModel::Columns::Level), value / static_cast<float>(range));
+		}
 	});
 }
 
@@ -96,6 +103,7 @@ void LayersWidget::setModel(QSharedPointer<LayersModel> layersModel)
 	headerView->hideSection(LayersModel::Columns::Enabled);
 	headerView->hideSection(LayersModel::Columns::Fixed);
 	headerView->hideSection(LayersModel::Columns::Order);
+	headerView->hideSection(LayersModel::Columns::Removable);
 	//headerView->hideSection(LayersModel::Columns::Opacity);
 	//headerView->hideSection(LayersModel::Columns::Window);
 	//headerView->hideSection(LayersModel::Columns::Level);
@@ -111,21 +119,68 @@ void LayersWidget::setModel(QSharedPointer<LayersModel> layersModel)
 		_ui->layerColorComboBox->model()->setData(idx, color, Qt::DecorationRole);
 	}
 
-	// Update the buttons that re-organize rows
-	auto updateOrderPushButtons = [this](const int& row) {
-		_ui->layerMoveUpPushButton->setEnabled(_layersModel->mayMoveUp(row));
-		_ui->layerMoveDownPushButton->setEnabled(_layersModel->mayMoveDown(row));
+	auto updateButtons = [this]() {
+		const auto selectedRows		= _ui->layersTreeView->selectionModel()->selectedRows();
+		const auto noSelectedRows	= selectedRows.size();
+
+		_ui->layerRemovePushButton->setEnabled(false);
+		_ui->layerMoveUpPushButton->setEnabled(false);
+		_ui->layerMoveDownPushButton->setEnabled(false);
+
+		_ui->layerRemovePushButton->setToolTip("");
+		_ui->layerMoveUpPushButton->setToolTip("");
+		_ui->layerMoveDownPushButton->setToolTip("");
+
+		if (noSelectedRows == 1) {
+			const auto row			= selectedRows.at(0).row();
+			const auto name			= _layersModel->data(row, LayersModel::Columns::Name, Qt::EditRole).toString();
+			const auto mayRemove	= _layersModel->data(row, LayersModel::Columns::Removable, Qt::EditRole).toBool();
+
+			_ui->layerRemovePushButton->setEnabled(mayRemove);
+			_ui->layerRemovePushButton->setToolTip(mayRemove ? QString("Remove %1").arg(name) : "");
+
+			const auto mayMoveUp = _layersModel->mayMoveUp(row);
+
+			_ui->layerMoveUpPushButton->setEnabled(mayMoveUp);
+			_ui->layerMoveUpPushButton->setToolTip(mayMoveUp ? QString("Move %1 up one level").arg(name) : "");
+
+			const auto mayMoveDown = _layersModel->mayMoveDown(row);
+
+			_ui->layerMoveDownPushButton->setEnabled(mayMoveDown);
+			_ui->layerMoveDownPushButton->setToolTip(mayMoveDown ? QString("Move %1 down one level").arg(name) : "");
+		}
+
+		if (noSelectedRows >= 1) {
+			auto names		= QStringList();
+			auto mayRemove	= false;
+
+			for (auto index : selectedRows) {
+				if (_layersModel->data(index.row(), LayersModel::Columns::Removable, Qt::EditRole).toBool()) {
+					mayRemove = true;
+					names << _layersModel->data(index.row(), LayersModel::Columns::Name, Qt::EditRole).toString();
+				}
+			}
+			
+			if (mayRemove) {
+				_ui->layerRemovePushButton->setEnabled(true);
+				_ui->layerRemovePushButton->setToolTip(QString("Remove %1").arg(names.join(", ")));
+			}
+		}
 	};
 
 	// Handle user row selection
-	QObject::connect(_ui->layersTreeView->selectionModel(), &QItemSelectionModel::currentRowChanged, [this, updateOrderPushButtons](const QModelIndex& current, const QModelIndex& previous) {
-		updateOrderPushButtons(current.row());
-		updateData(_layersModel->index(current.row(), 0), _layersModel->index(current.row(), _layersModel->columnCount() - 1));
+	QObject::connect(_ui->layersTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, [this, updateButtons](const QItemSelection &selected, const QItemSelection &deselected) {
+		updateButtons();
+		
+		const auto selectedRows = _ui->layersTreeView->selectionModel()->selectedRows();
+
+		if (selectedRows.size() >= 1)
+			updateData(_layersModel->index(selectedRows.first().row(), 0), _layersModel->index(selectedRows.first().row(), _layersModel->columnCount() - 1));
 	});
 
 	// Handle model rows reorganization
-	QObject::connect(_layersModel.get(), &QAbstractListModel::rowsMoved, [this, updateOrderPushButtons](const QModelIndex& parent, int start, int end, const QModelIndex& destination, int row) {
-		updateOrderPushButtons(_ui->layersTreeView->selectionModel()->currentIndex().row());
+	QObject::connect(_layersModel.get(), &QAbstractListModel::rowsMoved, [this, updateButtons](const QModelIndex& parent, int start, int end, const QModelIndex& destination, int row) {
+		updateButtons();
 	});
 
 	QObject::connect(_layersModel.get(), &LayersModel::dataChanged, this, &LayersWidget::updateData);
@@ -135,11 +190,14 @@ void LayersWidget::setModel(QSharedPointer<LayersModel> layersModel)
 
 void LayersWidget::updateData(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int> &roles /*= QVector<int>()*/)
 {
+	const auto selectedRows		= _ui->layersTreeView->selectionModel()->selectedRows();
+	const auto noSelectedRows	= selectedRows.size();
+
 	const auto enabledFlags = _layersModel->flags(_layersModel->index(topLeft.row(), LayersModel::Columns::Enabled));
-	const auto enabled = _layersModel->enabled(topLeft.row(), Qt::EditRole).toBool();
+	const auto enabled		= noSelectedRows == 1 && _layersModel->data(topLeft.row(), LayersModel::Columns::Enabled, Qt::EditRole).toBool();
 
 	if (topLeft.column() <= LayersModel::Columns::Enabled && bottomRight.column() >= LayersModel::Columns::Enabled) {
-		_ui->layerEnabledCheckBox->setEnabled(enabledFlags & Qt::ItemIsEditable);
+		_ui->layerEnabledCheckBox->setEnabled(enabled && enabledFlags & Qt::ItemIsEditable);
 
 		_ui->layerEnabledCheckBox->blockSignals(true);
 		_ui->layerEnabledCheckBox->setChecked(enabled);
@@ -153,7 +211,7 @@ void LayersWidget::updateData(const QModelIndex& topLeft, const QModelIndex& bot
 	_ui->layerOpacityHorizontalSlider->setEnabled(enabled && opacityFlags & Qt::ItemIsEditable);
 
 	if (topLeft.column() <= LayersModel::Columns::Opacity && bottomRight.column() >= LayersModel::Columns::Opacity) {
-		const auto opacity = _layersModel->opacity(topLeft.row(), Qt::EditRole).toFloat();
+		const auto opacity = _layersModel->data(topLeft.row(), LayersModel::Columns::Opacity, Qt::EditRole).toFloat();
 
 		_ui->layerOpacityDoubleSpinBox->blockSignals(true);
 		_ui->layerOpacityDoubleSpinBox->setValue(100.0f * opacity);
@@ -171,7 +229,7 @@ void LayersWidget::updateData(const QModelIndex& topLeft, const QModelIndex& bot
 	_ui->layerWindowHorizontalSlider->setEnabled(enabled && windowFlags & Qt::ItemIsEditable);
 
 	if (topLeft.column() <= LayersModel::Columns::Window && bottomRight.column() >= LayersModel::Columns::Window) {
-		const auto window = _layersModel->window(topLeft.row(), Qt::EditRole).toFloat();
+		const auto window = _layersModel->data(topLeft.row(), LayersModel::Columns::Window, Qt::EditRole).toFloat();
 
 		_ui->layerWindowDoubleSpinBox->blockSignals(true);
 		_ui->layerWindowDoubleSpinBox->setValue(window);
@@ -189,7 +247,7 @@ void LayersWidget::updateData(const QModelIndex& topLeft, const QModelIndex& bot
 	_ui->layerLevelHorizontalSlider->setEnabled(enabled && levelFlags & Qt::ItemIsEditable);
 
 	if (topLeft.column() <= LayersModel::Columns::Level && bottomRight.column() >= LayersModel::Columns::Level) {
-		const auto level = _layersModel->level(topLeft.row(), Qt::EditRole).toFloat();
+		const auto level = _layersModel->data(topLeft.row(), LayersModel::Columns::Level, Qt::EditRole).toFloat();
 
 		_ui->layerLevelDoubleSpinBox->blockSignals(true);
 		_ui->layerLevelDoubleSpinBox->setValue(level);
@@ -206,7 +264,7 @@ void LayersWidget::updateData(const QModelIndex& topLeft, const QModelIndex& bot
 	_ui->layerColorComboBox->setEnabled(enabled && colorFlags & Qt::ItemIsEditable);
 
 	if (topLeft.column() <= LayersModel::Columns::Color && bottomRight.column() >= LayersModel::Columns::Color) {
-		const auto color = _layersModel->enabled(topLeft.row(), Qt::EditRole).value<QColor>();
+		const auto color = _layersModel->data(topLeft.row(), LayersModel::Columns::Color, Qt::EditRole).value<QColor>();
 
 		_ui->layerColorComboBox->blockSignals(true);
 		//_ui->layerColorComboBox->setChecked(enabled);

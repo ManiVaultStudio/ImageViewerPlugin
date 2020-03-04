@@ -17,6 +17,7 @@ public: // Columns
 		Type,
 		Enabled,
 		Fixed,
+		Removable,
 		Order,
 		Opacity,
 		Window,
@@ -61,60 +62,13 @@ public: // Inherited members
 	/** TODO */
 	//void sort(int column, Qt::SortOrder order /* = Qt::AscendingOrder */);
 
-public: // Getters
+public: // Overloaded data access
 	
 	/** TODO */
-	QVariant name(const int& row, int role = Qt::DisplayRole) const;
+	QVariant data(const int& row, const int& column, int role = Qt::DisplayRole) const;
 
 	/** TODO */
-	QVariant type(const int& row, int role = Qt::DisplayRole) const;
-
-	/** TODO */
-	QVariant enabled(const int& row, int role = Qt::DisplayRole) const;
-
-	/** TODO */
-	QVariant fixed(const int& row, int role = Qt::DisplayRole) const;
-
-	/** TODO */
-	QVariant order(const int& row, int role = Qt::DisplayRole) const;
-
-	/** TODO */
-	QVariant opacity(const int& row, int role = Qt::DisplayRole) const;
-
-	/** TODO */
-	QVariant window(const int& row, int role = Qt::DisplayRole) const;
-
-	/** TODO */
-	QVariant level(const int& row, int role = Qt::DisplayRole) const;
-
-	/** TODO */
-	QVariant color(const int& row, int role = Qt::DisplayRole) const;
-
-public: // Setters
-
-	/** TODO */
-	void setName(const int& row, const QString& name);
-
-	/** TODO */
-	void setType(const int& row, const int& type);
-
-	/** TODO */
-	void setEnabled(const int& row, const bool& enabled);
-
-	/** TODO */
-	void setOrder(const int& row, const int& order);
-
-	/** TODO */
-	void setOpacity(const int& row, const float& opacity);
-
-	/** TODO */
-	void setWindow(const int& row, const float& window);
-
-	/** TODO */
-	void setLevel(const int& row, const float& level);
-
-	/** TODO */
-	void setColor(const int& row, const QColor& color);
+	void setData(const int& row, const int& column, const QVariant& value);
 
 public: // TODO
 
@@ -129,6 +83,9 @@ public: // TODO
 
 	/** TODO */
 	void moveDown(const int& row);
+
+	/** TODO */
+	void removeRows(const QModelIndexList& rows);
 
 private:
 	Layers*		_layers;		/** TODO */
