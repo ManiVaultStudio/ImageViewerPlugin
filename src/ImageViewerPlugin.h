@@ -7,7 +7,7 @@
 using hdps::plugin::ViewPluginFactory;
 using hdps::plugin::ViewPlugin;
 
-class ImageViewerWidget;
+class ViewerWidget;
 class SettingsWidget;
 
 /**
@@ -45,13 +45,13 @@ public: // Inherited from ViewPlugin
 
 public:
 	/** Returns the image viewer widget */
-	ImageViewerWidget* imageViewerWidget();
+	ViewerWidget* imageViewerWidget();
 
 	/** Update the window title with some useful meta data */
 	void updateWindowTitle();
 
 private:
-	ImageViewerWidget*		_imageViewerWidget;		/** Pointer to image viewer widget */
+	ViewerWidget*		_imageViewerWidget;		/** Pointer to image viewer widget */
 	SettingsWidget*			_settingsWidget;		/** Image viewer settings widget */
 	MainModel				_mainModel;				/** TODO */
 };

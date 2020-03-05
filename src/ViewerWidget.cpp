@@ -1,4 +1,4 @@
-#include "ImageViewerWidget.h"
+#include "ViewerWidget.h"
 #include "ImageViewerPlugin.h"
 #include "ImageDatasetActor.h"
 
@@ -15,9 +15,9 @@
 
 #include "SelectionPickerActor.h"
 
-ImageViewerWidget::ImageViewerWidget(MainModel* mainModel) :
+ViewerWidget::ViewerWidget() :
 	QOpenGLFunctions(),
-	_mainModel(mainModel),
+	//_imageDataset(nullptr),
 	_renderer(new Renderer(this)),
 	_openglDebugLogger(std::make_unique<QOpenGLDebugLogger>())
 {
@@ -78,12 +78,18 @@ ImageViewerWidget::ImageViewerWidget(MainModel* mainModel) :
 	*/
 }
 
-ImageViewerWidget::~ImageViewerWidget()
+ViewerWidget::~ViewerWidget()
 {
 	_renderer->destroy();
 }
 
-void ImageViewerWidget::initializeGL()
+/*
+void ViewerWidget::setDataset(ImageDataset* dataset)
+{
+}
+*/
+
+void ViewerWidget::initializeGL()
 {
 	qDebug() << "Initializing OpenGL";
 
@@ -108,7 +114,7 @@ void ImageViewerWidget::initializeGL()
 	doneCurrent();
 }
 
-void ImageViewerWidget::paintGL() {
+void ViewerWidget::paintGL() {
 
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -121,21 +127,21 @@ void ImageViewerWidget::paintGL() {
 #endif
 }
 
-void ImageViewerWidget::keyPressEvent(QKeyEvent* keyEvent)
+void ViewerWidget::keyPressEvent(QKeyEvent* keyEvent)
 {
 	_renderer->keyPressEvent(keyEvent);
 
 	QOpenGLWidget::keyPressEvent(keyEvent);
 }
 
-void ImageViewerWidget::keyReleaseEvent(QKeyEvent* keyEvent)
+void ViewerWidget::keyReleaseEvent(QKeyEvent* keyEvent)
 {
 	_renderer->keyReleaseEvent(keyEvent);
 
 	QOpenGLWidget::keyReleaseEvent(keyEvent);
 }
 
-void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
+void ViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 {
 	/*
 	switch (mouseEvent->button())
@@ -158,7 +164,7 @@ void ImageViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 	QOpenGLWidget::mousePressEvent(mouseEvent);
 }
 
-void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent)
+void ViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent)
 {
 	if (mouseEvent->button() == Qt::RightButton && _renderer->allowsContextMenu()) {
 		contextMenu()->exec(mapToGlobal(mouseEvent->pos()));
@@ -169,19 +175,19 @@ void ImageViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent)
 	QOpenGLWidget::mouseReleaseEvent(mouseEvent);
 }
 
-void ImageViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent)
+void ViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent)
 {
 	_renderer->mouseMoveEvent(mouseEvent);
 
 	QOpenGLWidget::mouseMoveEvent(mouseEvent);
 }
 
-void ImageViewerWidget::wheelEvent(QWheelEvent* wheelEvent)
+void ViewerWidget::wheelEvent(QWheelEvent* wheelEvent)
 {
 	_renderer->mouseWheelEvent(wheelEvent);
 }
 
-void ImageViewerWidget::publishSelection()
+void ViewerWidget::publishSelection()
 {	
 	qDebug() << "Publish selection";
 	
@@ -208,7 +214,7 @@ void ImageViewerWidget::publishSelection()
 	update();
 }
 
-QMenu* ImageViewerWidget::contextMenu()
+QMenu* ViewerWidget::contextMenu()
 {
 	
 	auto contextMenu = _renderer->contextMenu();

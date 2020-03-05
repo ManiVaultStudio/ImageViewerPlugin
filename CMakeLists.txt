@@ -33,8 +33,8 @@ set(PLUGIN
 	src/ImageDataset.cpp
 	src/ImageViewerPlugin.h
 	src/ImageViewerPlugin.cpp
-	src/ImageViewerWidget.h
-	src/ImageViewerWidget.cpp
+	src/ViewerWidget.h
+	src/ViewerWidget.cpp
 	src/SettingsWidget.h
 	src/SettingsWidget.cpp
 	src/SelectionWidget.h
@@ -54,9 +54,10 @@ file(GLOB SHAPES src/*Shape.h src/*Shape.cpp)
 file(GLOB UIS src/*.ui)
 file(GLOB SHADERS src/*.glsl)
 file(GLOB JSON src/*.json)
+file(GLOB QRC src/*.qrc)
 
 set(SOURCES ${PLUGIN} ${MODELS} ${ACTORS} ${PROPS} ${SHAPES})
-set(AUX ${JSON})
+set(AUX ${JSON} ${QRC})
 
 source_group(Plugin FILES ${PLUGIN})
 source_group(Models FILES ${MODELS})

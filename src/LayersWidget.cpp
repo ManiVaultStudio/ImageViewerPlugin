@@ -21,6 +21,18 @@ LayersWidget::LayersWidget(QWidget* parent, DatasetsModel* datasetsModel) :
 
 	setModel(QSharedPointer<LayersModel>());
 
+	QFont font = QFont("Font Awesome 5 Free Solid", 8, 1);
+
+	_ui->layerAddPushButton->setFont(font);
+	_ui->layerRemovePushButton->setFont(font);
+	_ui->layerMoveUpPushButton->setFont(font);
+	_ui->layerMoveDownPushButton->setFont(font);
+
+	_ui->layerAddPushButton->setText(u8"\uf067");
+	_ui->layerRemovePushButton->setText(u8"\uf2ed");
+	_ui->layerMoveUpPushButton->setText(u8"\uf0d8");
+	_ui->layerMoveDownPushButton->setText(u8"\uf0d7");
+
 	QObject::connect(_ui->layerMoveUpPushButton, &QPushButton::clicked, [this]() {
 		_layersModel->moveUp(_ui->layersTreeView->selectionModel()->currentIndex().row());
 	});
@@ -114,6 +126,8 @@ void LayersWidget::setModel(QSharedPointer<LayersModel> layersModel)
 	//headerView->hideSection(LayersModel::Columns::Window);
 	//headerView->hideSection(LayersModel::Columns::Level);
 	headerView->hideSection(LayersModel::Columns::Color);
+
+	headerView->setSectionResizeMode(LayersModel::Columns::Name, QHeaderView::Interactive);
 
 	const QStringList colorNames = QColor::colorNames();
 	int index = 0;
@@ -218,9 +232,11 @@ void LayersWidget::updateData(const QModelIndex& topLeft, const QModelIndex& bot
 	if (topLeft.column() <= LayersModel::Columns::Name && bottomRight.column() >= LayersModel::Columns::Name) {
 		const auto name = _layersModel->data(topLeft.row(), LayersModel::Columns::Name, Qt::EditRole).toString();
 
-		_ui->layerNameLineEdit->blockSignals(true);
-		_ui->layerNameLineEdit->setText(name);
-		_ui->layerNameLineEdit->blockSignals(false);
+		if (name != _ui->layerNameLineEdit->text()) {
+			_ui->layerNameLineEdit->blockSignals(true);
+			_ui->layerNameLineEdit->setText(name);
+			_ui->layerNameLineEdit->blockSignals(false);
+		}
 	}
 
 	const auto opacityFlags = _layersModel->flags(_layersModel->index(topLeft.row(), LayersModel::Columns::Opacity));

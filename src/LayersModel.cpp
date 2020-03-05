@@ -25,7 +25,7 @@ int LayersModel::columnCount(const QModelIndex& parent /*= QModelIndex()*/) cons
 {
 	Q_UNUSED(parent);
 
-	return 10;
+	return 11;
 }
 
 QVariant LayersModel::data(const QModelIndex& index, int role) const
@@ -40,24 +40,26 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 
 	switch (role)
 	{
-		/*
 		case Qt::FontRole:
 		{
-			QFont font;
+			if (index.column() == Columns::Locked)
+				return QFont("Font Awesome 5 Free Solid", 6, 1);
 
-			if (layer->_fixed)
-				font.setBold(true);
-
-			return font;
+			break;
 		}
-		*/
 
 		case Qt::ForegroundRole:
-			return layer->isFlagSet(Layer::Flags::Enabled) ? QBrush(Qt::black) : QBrush(Qt::darkGray);
+			if (index.column() == Columns::Locked)
+				return QBrush(Qt::black);
+			else
+				return layer->isFlagSet(Layer::Flags::Enabled) ? QBrush(Qt::black) : QBrush(Qt::darkGray);
 
 		case Qt::DisplayRole:
 		{
 			switch (index.column()) {
+				case Columns::Locked:
+					return layer->isFlagSet(Layer::Flags::Fixed) ? u8"\uf023" : u8"\uf09c";
+
 				case Columns::Name:
 					return layer->_name;
 
@@ -113,6 +115,9 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 		case Qt::EditRole:
 		{
 			switch (index.column()) {
+				case Columns::Locked:
+					return layer->isFlagSet(Layer::Flags::Fixed);
+
 				case Columns::Name:
 					return layer->_name;
 
@@ -153,6 +158,7 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 		case Qt::TextAlignmentRole:
 		{
 			switch (index.column()) {
+				case Columns::Locked:
 				case Columns::Name:
 				case Columns::Type:
 					return Qt::AlignLeft + Qt::AlignVCenter;
@@ -187,6 +193,9 @@ QVariant LayersModel::headerData(int section, Qt::Orientation orientation, int r
 
 	if (orientation == Qt::Horizontal) {
 		switch (section) {
+			case Columns::Locked:
+				return "";
+
 			case Columns::Name:
 				return "Name";
 
@@ -235,6 +244,9 @@ Qt::ItemFlags LayersModel::flags(const QModelIndex& index) const
 	const auto type = data(index.row(), LayersModel::Type, Qt::EditRole).toInt();
 
 	switch (index.column()) {
+		case Columns::Locked:
+			break;
+
 		case Columns::Name:
 		{
 			if (!data(index.row(), LayersModel::Columns::Fixed, Qt::EditRole).toBool())
@@ -298,8 +310,11 @@ bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int r
 		auto layer = _layers->value(row);
 
 		switch (index.column()) {
+			case Columns::Locked:
+				break;
+
 			case Columns::Name:
-				layer->_name = QString("*%1").arg(value.toString());
+				layer->_name = QString("%1").arg(value.toString());
 				break;
 			
 			case Columns::Type:

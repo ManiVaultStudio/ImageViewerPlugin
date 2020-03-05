@@ -7,7 +7,7 @@
 #include <QColor>
 #include <QWidget>
 
-class ImageViewerWidget;
+class ViewerWidget;
 class ImageDatasetsModel;
 class SelectionPickerActor;
 

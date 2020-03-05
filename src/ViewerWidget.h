@@ -23,21 +23,22 @@ class MainModel;
  * This widget displays high-dimensional image data
  * @author Thomas Kroes
  */
-class ImageViewerWidget : public QOpenGLWidget, protected QOpenGLFunctions
+class ViewerWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
 	Q_OBJECT
 
 public:
-	/**
-	 * Constructor
-	 * @param imageViewerPlugin Pointer to image viewer plugin
-	 */
-	ImageViewerWidget(MainModel* mainModel);
+	/** Default constructor */
+	ViewerWidget();
 
 	/** Destructor */
-	~ImageViewerWidget() override;
+	~ViewerWidget() override;
 
 public:
+
+	/** TODO */
+	//void setDataset(ImageDataset* dataset);
+
 	/** Publish selection to HDPS */
 	void publishSelection();
 
@@ -90,7 +91,7 @@ private:
 	QMenu* contextMenu();
 
 private:
-	MainModel*								_mainModel;					/** TODO */
-	Renderer*								_renderer;					/** Selection renderer */
-	std::unique_ptr <QOpenGLDebugLogger>	_openglDebugLogger;			/** OpenGL debug logger (on in debug mode) */
+	Renderer*								_renderer;					/** TODO */
+//	ImageDataset*							_imageDataset;				/** TODO */
+	std::unique_ptr<QOpenGLDebugLogger>		_openglDebugLogger;			/** TODO */
 };

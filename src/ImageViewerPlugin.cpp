@@ -1,5 +1,5 @@
 #include "ImageViewerPlugin.h"
-#include "ImageViewerWidget.h"
+#include "ViewerWidget.h"
 #include "SettingsWidget.h"
 #include "ImageDataset.h"
 #include "DatasetsModel.h"
@@ -8,8 +8,10 @@
 #include "ImageData/Images.h"
 #include "PointData.h"
 
-#include <QDebug>
+#include <QFontDatabase>
+#include <QMessageBox>
 #include <QFileInfo>
+#include <QDebug>
 
 #include "IndexSet.h"
 
@@ -25,8 +27,11 @@ ImageViewerPlugin::ImageViewerPlugin() :
 
 	//setFocusPolicy(Qt::FocusPolicy::StrongFocus);
 
-	_imageViewerWidget	= new ImageViewerWidget(&_mainModel);
+	_imageViewerWidget	= new ViewerWidget();
 	_settingsWidget		= new SettingsWidget(this, &_mainModel);
+
+	if (!QFontDatabase::addApplicationFont(":/FontAwesome.otf"))
+		qDebug() << "Unable to load Font Awesome";
 }
 
 void ImageViewerPlugin::init()
@@ -44,7 +49,7 @@ void ImageViewerPlugin::init()
 	layout->setStretchFactor(_imageViewerWidget, 1);
 }
 
-ImageViewerWidget* ImageViewerPlugin::imageViewerWidget()
+ViewerWidget* ImageViewerPlugin::imageViewerWidget()
 {
 	return _imageViewerWidget;
 }

@@ -1,5 +1,5 @@
 #include "Renderer.h"
-#include "ImageViewerWidget.h"
+#include "ViewerWidget.h"
 
 #include <QtMath>
 #include <QMenu>
