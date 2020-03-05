@@ -1,10 +1,12 @@
 #include "ViewerWidget.h"
 #include "ImageViewerPlugin.h"
 #include "ImageDatasetActor.h"
+#include "DatasetsModel.h"
 
 #include <vector>
 #include <algorithm>
 
+#include <QItemSelectionModel>
 #include <QSize>
 #include <QDebug>
 #include <QMenu>
@@ -15,9 +17,10 @@
 
 #include "SelectionPickerActor.h"
 
-ViewerWidget::ViewerWidget() :
+ViewerWidget::ViewerWidget(QWidget* parent, DatasetsModel* datasetsModel) :
+	QOpenGLWidget(parent),
 	QOpenGLFunctions(),
-	//_imageDataset(nullptr),
+	_datasetsModel(datasetsModel),
 	_renderer(new Renderer(this)),
 	_openglDebugLogger(std::make_unique<QOpenGLDebugLogger>())
 {
@@ -76,6 +79,10 @@ ViewerWidget::ViewerWidget() :
 		}
 	});
 	*/
+
+	QObject::connect(_datasetsModel->selectionModel(), &QItemSelectionModel::currentRowChanged, [this](const QModelIndex& current, const QModelIndex& previous) {
+		qDebug() << "currentRowChanged" << current;
+	});
 }
 
 ViewerWidget::~ViewerWidget()

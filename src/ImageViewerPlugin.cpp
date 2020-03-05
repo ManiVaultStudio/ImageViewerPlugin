@@ -27,7 +27,7 @@ ImageViewerPlugin::ImageViewerPlugin() :
 
 	//setFocusPolicy(Qt::FocusPolicy::StrongFocus);
 
-	_imageViewerWidget	= new ViewerWidget();
+	_imageViewerWidget	= new ViewerWidget(this, &_mainModel);
 	_settingsWidget		= new SettingsWidget(this, &_mainModel);
 
 	if (!QFontDatabase::addApplicationFont(":/FontAwesome.otf"))

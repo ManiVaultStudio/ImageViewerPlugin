@@ -4,7 +4,7 @@
 
 #include "ui_LayersWidget.h"
 
-#include <QSortFilterProxyModel>
+#include <QItemSelectionModel>
 #include <QDebug>
 
 LayersWidget::LayersWidget(QWidget* parent, DatasetsModel* datasetsModel) :

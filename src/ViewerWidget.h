@@ -16,7 +16,7 @@
 
 class QMenu;
 
-class MainModel;
+class DatasetsModel;
 
 /**
  * Image viewer widget class
@@ -29,7 +29,7 @@ class ViewerWidget : public QOpenGLWidget, protected QOpenGLFunctions
 
 public:
 	/** Default constructor */
-	ViewerWidget();
+	ViewerWidget(QWidget* parent, DatasetsModel* datasetsModel);
 
 	/** Destructor */
 	~ViewerWidget() override;
@@ -92,6 +92,6 @@ private:
 
 private:
 	Renderer*								_renderer;					/** TODO */
-//	ImageDataset*							_imageDataset;				/** TODO */
+	DatasetsModel*							_datasetsModel;				/** TODO */
 	std::unique_ptr<QOpenGLDebugLogger>		_openglDebugLogger;			/** TODO */
 };
