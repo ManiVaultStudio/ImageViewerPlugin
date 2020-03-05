@@ -73,48 +73,13 @@ public: // Inherited members
 	/** TODO */
 	Datasets& datasets();
 
-public: // Getters
+public: // Overloaded data access
 
 	/** TODO */
-	QVariant type(const int& row, int role = Qt::DisplayRole) const;
+	QVariant data(const int& row, const int& column, int role = Qt::DisplayRole) const;
 
 	/** TODO */
-	QVariant currentImage(const int& row, int role = Qt::DisplayRole) const;
-
-	/** TODO */
-	QVariant currentImageName(const int& row, int role = Qt::DisplayRole) const;
-
-	/** TODO */
-	QVariant currentDimension(const int& row, int role = Qt::DisplayRole) const;
-
-	/** TODO */
-	QVariant currentDimensionName(const int& row, int role = Qt::DisplayRole) const;
-
-	/** TODO */
-	QVariant imageNames(const int& row, int role = Qt::DisplayRole) const;
-
-	/** TODO */
-	QVariant dimensionNames(const int& row, int role = Qt::DisplayRole) const;
-
-	/** TODO */
-	QVariant averageImages(const int& row, int role = Qt::DisplayRole) const;
-
-	/** TODO */
-	QVariant currentImageFilepath(const int& row, int role = Qt::DisplayRole) const;
-
-	/** TODO */
-	QVariant currentDimensionFilepath(const int& row, int role = Qt::DisplayRole) const;
-
-public: // Setters
-
-	/** TODO */
-	void setCurrentImage(const int& row, const std::uint32_t& currentImageID);
-
-	/** TODO */
-	void setCurrentDimension(const int& row, const std::uint32_t& currentDimensionID);
-
-	/** TODO */
-	void setAverageImages(const int& row, const bool& averageImages);
+	void setData(const int& row, const int& column, const QVariant& value);
 
 public: // 
 	

@@ -193,9 +193,7 @@ void LayersWidget::setModel(QSharedPointer<LayersModel> layersModel)
 		updateButtons();
 		
 		const auto selectedRows = _ui->layersTreeView->selectionModel()->selectedRows();
-
-		if (selectedRows.size() >= 1)
-			updateData(_layersModel->index(selectedRows.first().row(), 0), _layersModel->index(selectedRows.first().row(), _layersModel->columnCount() - 1));
+		updateData(_layersModel->index(selectedRows.first().row(), 0), _layersModel->index(selectedRows.first().row(), _layersModel->columnCount() - 1));
 	});
 
 	// Handle model rows reorganization
@@ -210,27 +208,29 @@ void LayersWidget::setModel(QSharedPointer<LayersModel> layersModel)
 
 void LayersWidget::updateData(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int> &roles /*= QVector<int>()*/)
 {
-	const auto selectedRows		= _ui->layersTreeView->selectionModel()->selectedRows();
-	const auto noSelectedRows	= selectedRows.size();
+	const auto selectedRows			= _ui->layersTreeView->selectionModel()->selectedRows();
+	const auto noSelectedRows		= selectedRows.size();
+	const auto singleRowSelection	= noSelectedRows == 1;
+	const auto enabled				= _layersModel->data(topLeft.row(), LayersModel::Columns::Enabled, Qt::EditRole).toBool();
+	const auto mightEdit			= singleRowSelection && enabled;
 
 	const auto enabledFlags = _layersModel->flags(_layersModel->index(topLeft.row(), LayersModel::Columns::Enabled));
-	const auto enabled		= _layersModel->data(topLeft.row(), LayersModel::Columns::Enabled, Qt::EditRole).toBool();
 
 	if (topLeft.column() <= LayersModel::Columns::Enabled && bottomRight.column() >= LayersModel::Columns::Enabled) {
-		_ui->layerEnabledCheckBox->setEnabled(noSelectedRows == 1 && enabledFlags & Qt::ItemIsEditable);
+		_ui->layerEnabledCheckBox->setEnabled(singleRowSelection && enabledFlags & Qt::ItemIsEditable);
 
 		_ui->layerEnabledCheckBox->blockSignals(true);
-		_ui->layerEnabledCheckBox->setChecked(enabled);
+		_ui->layerEnabledCheckBox->setChecked(mightEdit ? enabled : false);
 		_ui->layerEnabledCheckBox->blockSignals(false);
 	}
 
 	const auto nameFlags = _layersModel->flags(_layersModel->index(topLeft.row(), LayersModel::Columns::Name));
 
-	_ui->layerNameLabel->setEnabled(noSelectedRows == 1 && enabled && nameFlags & Qt::ItemIsEditable);
-	_ui->layerNameLineEdit->setEnabled(noSelectedRows == 1 && enabled && nameFlags & Qt::ItemIsEditable);
+	_ui->layerNameLabel->setEnabled(mightEdit && nameFlags & Qt::ItemIsEditable);
+	_ui->layerNameLineEdit->setEnabled(mightEdit && nameFlags & Qt::ItemIsEditable);
 
 	if (topLeft.column() <= LayersModel::Columns::Name && bottomRight.column() >= LayersModel::Columns::Name) {
-		const auto name = _layersModel->data(topLeft.row(), LayersModel::Columns::Name, Qt::EditRole).toString();
+		const auto name = mightEdit ? _layersModel->data(topLeft.row(), LayersModel::Columns::Name, Qt::EditRole).toString() : "";
 
 		if (name != _ui->layerNameLineEdit->text()) {
 			_ui->layerNameLineEdit->blockSignals(true);
@@ -241,62 +241,62 @@ void LayersWidget::updateData(const QModelIndex& topLeft, const QModelIndex& bot
 
 	const auto opacityFlags = _layersModel->flags(_layersModel->index(topLeft.row(), LayersModel::Columns::Opacity));
 
-	_ui->layerOpacityLabel->setEnabled(noSelectedRows == 1 && enabled && opacityFlags & Qt::ItemIsEditable);
-	_ui->layerOpacityDoubleSpinBox->setEnabled(noSelectedRows == 1 && enabled && opacityFlags & Qt::ItemIsEditable);
-	_ui->layerOpacityHorizontalSlider->setEnabled(noSelectedRows == 1 && enabled && opacityFlags & Qt::ItemIsEditable);
+	_ui->layerOpacityLabel->setEnabled(mightEdit && opacityFlags & Qt::ItemIsEditable);
+	_ui->layerOpacityDoubleSpinBox->setEnabled(mightEdit && opacityFlags & Qt::ItemIsEditable);
+	_ui->layerOpacityHorizontalSlider->setEnabled(mightEdit && opacityFlags & Qt::ItemIsEditable);
 
 	if (topLeft.column() <= LayersModel::Columns::Opacity && bottomRight.column() >= LayersModel::Columns::Opacity) {
 		const auto opacity = _layersModel->data(topLeft.row(), LayersModel::Columns::Opacity, Qt::EditRole).toFloat();
 
 		_ui->layerOpacityDoubleSpinBox->blockSignals(true);
-		_ui->layerOpacityDoubleSpinBox->setValue(100.0f * opacity);
+		_ui->layerOpacityDoubleSpinBox->setValue(mightEdit ? 100.0f * opacity : 100.0f);
 		_ui->layerOpacityDoubleSpinBox->blockSignals(false);
 
 		_ui->layerOpacityHorizontalSlider->blockSignals(true);
-		_ui->layerOpacityHorizontalSlider->setValue(100.0f * opacity);
+		_ui->layerOpacityHorizontalSlider->setValue(mightEdit ? 100.0f * opacity : 100.0f);
 		_ui->layerOpacityHorizontalSlider->blockSignals(false);
 	}
 
 	const auto windowFlags = _layersModel->flags(_layersModel->index(topLeft.row(), LayersModel::Columns::Window));
 
-	_ui->layerWindowLabel->setEnabled(noSelectedRows == 1 && enabled && windowFlags & Qt::ItemIsEditable);
-	_ui->layerWindowDoubleSpinBox->setEnabled(noSelectedRows == 1 && enabled && windowFlags & Qt::ItemIsEditable);
-	_ui->layerWindowHorizontalSlider->setEnabled(noSelectedRows == 1 && enabled && windowFlags & Qt::ItemIsEditable);
+	_ui->layerWindowLabel->setEnabled(mightEdit && windowFlags & Qt::ItemIsEditable);
+	_ui->layerWindowDoubleSpinBox->setEnabled(mightEdit && windowFlags & Qt::ItemIsEditable);
+	_ui->layerWindowHorizontalSlider->setEnabled(mightEdit && windowFlags & Qt::ItemIsEditable);
 
 	if (topLeft.column() <= LayersModel::Columns::Window && bottomRight.column() >= LayersModel::Columns::Window) {
 		const auto window = _layersModel->data(topLeft.row(), LayersModel::Columns::Window, Qt::EditRole).toFloat();
 
 		_ui->layerWindowDoubleSpinBox->blockSignals(true);
-		_ui->layerWindowDoubleSpinBox->setValue(window);
+		_ui->layerWindowDoubleSpinBox->setValue(mightEdit ? window : 1.0f);
 		_ui->layerWindowDoubleSpinBox->blockSignals(false);
 
 		_ui->layerWindowHorizontalSlider->blockSignals(true);
-		_ui->layerWindowHorizontalSlider->setValue(100.0f * window);
+		_ui->layerWindowHorizontalSlider->setValue(mightEdit ? 100.0f * window : 100.0f);
 		_ui->layerWindowHorizontalSlider->blockSignals(false);
 	}
 
 	const auto levelFlags = _layersModel->flags(_layersModel->index(topLeft.row(), LayersModel::Columns::Level));
 
-	_ui->layerLevelLabel->setEnabled(noSelectedRows == 1 && enabled && levelFlags & Qt::ItemIsEditable);
-	_ui->layerLevelDoubleSpinBox->setEnabled(noSelectedRows == 1 && enabled && levelFlags & Qt::ItemIsEditable);
-	_ui->layerLevelHorizontalSlider->setEnabled(noSelectedRows == 1 && enabled && levelFlags & Qt::ItemIsEditable);
+	_ui->layerLevelLabel->setEnabled(mightEdit && levelFlags & Qt::ItemIsEditable);
+	_ui->layerLevelDoubleSpinBox->setEnabled(mightEdit && levelFlags & Qt::ItemIsEditable);
+	_ui->layerLevelHorizontalSlider->setEnabled(mightEdit && levelFlags & Qt::ItemIsEditable);
 
 	if (topLeft.column() <= LayersModel::Columns::Level && bottomRight.column() >= LayersModel::Columns::Level) {
 		const auto level = _layersModel->data(topLeft.row(), LayersModel::Columns::Level, Qt::EditRole).toFloat();
 
 		_ui->layerLevelDoubleSpinBox->blockSignals(true);
-		_ui->layerLevelDoubleSpinBox->setValue(level);
+		_ui->layerLevelDoubleSpinBox->setValue(mightEdit ? level : 0.5f);
 		_ui->layerLevelDoubleSpinBox->blockSignals(false);
 
 		_ui->layerLevelHorizontalSlider->blockSignals(true);
-		_ui->layerLevelHorizontalSlider->setValue(100.0f * level);
+		_ui->layerLevelHorizontalSlider->setValue(mightEdit ? 100.0f * level : 50.0f);
 		_ui->layerLevelHorizontalSlider->blockSignals(false);
 	}
 
 	const auto colorFlags = _layersModel->flags(_layersModel->index(topLeft.row(), LayersModel::Columns::Color));
 
-	_ui->layerColorLabel->setEnabled(noSelectedRows == 1 && enabled && colorFlags & Qt::ItemIsEditable);
-	_ui->layerColorComboBox->setEnabled(noSelectedRows == 1 && enabled && colorFlags & Qt::ItemIsEditable);
+	_ui->layerColorLabel->setEnabled(mightEdit && colorFlags & Qt::ItemIsEditable);
+	_ui->layerColorComboBox->setEnabled(mightEdit && colorFlags & Qt::ItemIsEditable);
 
 	if (topLeft.column() <= LayersModel::Columns::Color && bottomRight.column() >= LayersModel::Columns::Color) {
 		const auto color = _layersModel->data(topLeft.row(), LayersModel::Columns::Color, Qt::EditRole).value<QColor>();
