@@ -6,9 +6,8 @@
 #include <QItemSelectionModel>
 #include <QDebug>
 
-DatasetsModel::DatasetsModel(MainModel* mainModel) :
-	QAbstractListModel(mainModel),
-	_mainModel(mainModel),
+DatasetsModel::DatasetsModel(QObject* parent) :
+	QAbstractListModel(parent),
 	_currentDatasetName(),
 	_selectionModel(new QItemSelectionModel(this))
 {
@@ -38,7 +37,7 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 	if (index.row() >= columnCount(index) || index.row() < 0)
 		return QVariant();
 
-	auto dataset = _mainModel->datasets().at(index.row());
+	auto dataset = _datasets.at(index.row());
 
 	if (role == Qt::DisplayRole) {
 		switch (index.column()) {
@@ -428,7 +427,7 @@ bool DatasetsModel::removeRows(int position, int rows, const QModelIndex& index 
 
 const Datasets& DatasetsModel::datasets() const
 {
-	return _mainModel->datasets();
+	return _datasets;
 }
 
 Datasets& DatasetsModel::datasets()

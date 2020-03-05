@@ -21,14 +21,14 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	ViewPlugin("Image Viewer"),
 	_imageViewerWidget(),
 	_settingsWidget(),
-	_mainModel(this)
+	_datasetsModel(this)
 {
 	qRegisterMetaType<std::shared_ptr<QImage>>("std::shared_ptr<QImage>");
 
 	//setFocusPolicy(Qt::FocusPolicy::StrongFocus);
 
-	_imageViewerWidget	= new ViewerWidget(this, &_mainModel);
-	_settingsWidget		= new SettingsWidget(this, &_mainModel);
+	_imageViewerWidget	= new ViewerWidget(this, &_datasetsModel);
+	_settingsWidget		= new SettingsWidget(this, &_datasetsModel);
 
 	if (!QFontDatabase::addApplicationFont(":/FontAwesome.otf"))
 		qDebug() << "Unable to load Font Awesome";
@@ -127,7 +127,7 @@ void ImageViewerPlugin::dataAdded(const QString dataset)
 
 	imageDataset._averageImages	= false;
 
-	_mainModel.addDataset(&imageDataset);
+	_datasetsModel.add(&imageDataset);
 }
 
 void ImageViewerPlugin::dataChanged(const QString dataset)

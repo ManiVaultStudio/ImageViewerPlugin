@@ -23,8 +23,8 @@ public:
 	QSize							_size;					/** TODO */
 	std::uint32_t					_noPoints;				/** TODO */
 	std::uint32_t					_noDimensions;			/** TODO */
-	std::uint32_t					_currentImage;			/** TODO */
-	std::uint32_t					_currentDimension;		/** TODO */
+	std::int32_t					_currentImage;			/** TODO */
+	std::int32_t					_currentDimension;		/** TODO */
 	QStringList						_imageNames;			/** TODO */
 	QStringList						_dimensionNames;		/** TODO */
 	bool							_averageImages;			/** TODO */

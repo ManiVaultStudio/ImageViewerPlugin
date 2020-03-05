@@ -220,7 +220,7 @@ void LayersWidget::updateData(const QModelIndex& topLeft, const QModelIndex& bot
 		_ui->layerEnabledCheckBox->setEnabled(singleRowSelection && enabledFlags & Qt::ItemIsEditable);
 
 		_ui->layerEnabledCheckBox->blockSignals(true);
-		_ui->layerEnabledCheckBox->setChecked(mightEdit ? enabled : false);
+		_ui->layerEnabledCheckBox->setChecked(singleRowSelection ? enabled : false);
 		_ui->layerEnabledCheckBox->blockSignals(false);
 	}
 
@@ -230,7 +230,7 @@ void LayersWidget::updateData(const QModelIndex& topLeft, const QModelIndex& bot
 	_ui->layerNameLineEdit->setEnabled(mightEdit && nameFlags & Qt::ItemIsEditable);
 
 	if (topLeft.column() <= LayersModel::Columns::Name && bottomRight.column() >= LayersModel::Columns::Name) {
-		const auto name = mightEdit ? _layersModel->data(topLeft.row(), LayersModel::Columns::Name, Qt::EditRole).toString() : "";
+		const auto name = singleRowSelection ? _layersModel->data(topLeft.row(), LayersModel::Columns::Name, Qt::EditRole).toString() : "";
 
 		if (name != _ui->layerNameLineEdit->text()) {
 			_ui->layerNameLineEdit->blockSignals(true);
@@ -249,11 +249,11 @@ void LayersWidget::updateData(const QModelIndex& topLeft, const QModelIndex& bot
 		const auto opacity = _layersModel->data(topLeft.row(), LayersModel::Columns::Opacity, Qt::EditRole).toFloat();
 
 		_ui->layerOpacityDoubleSpinBox->blockSignals(true);
-		_ui->layerOpacityDoubleSpinBox->setValue(mightEdit ? 100.0f * opacity : 100.0f);
+		_ui->layerOpacityDoubleSpinBox->setValue(singleRowSelection ? 100.0f * opacity : 100.0f);
 		_ui->layerOpacityDoubleSpinBox->blockSignals(false);
 
 		_ui->layerOpacityHorizontalSlider->blockSignals(true);
-		_ui->layerOpacityHorizontalSlider->setValue(mightEdit ? 100.0f * opacity : 100.0f);
+		_ui->layerOpacityHorizontalSlider->setValue(singleRowSelection ? 100.0f * opacity : 100.0f);
 		_ui->layerOpacityHorizontalSlider->blockSignals(false);
 	}
 
@@ -267,11 +267,11 @@ void LayersWidget::updateData(const QModelIndex& topLeft, const QModelIndex& bot
 		const auto window = _layersModel->data(topLeft.row(), LayersModel::Columns::Window, Qt::EditRole).toFloat();
 
 		_ui->layerWindowDoubleSpinBox->blockSignals(true);
-		_ui->layerWindowDoubleSpinBox->setValue(mightEdit ? window : 1.0f);
+		_ui->layerWindowDoubleSpinBox->setValue(singleRowSelection ? window : 1.0f);
 		_ui->layerWindowDoubleSpinBox->blockSignals(false);
 
 		_ui->layerWindowHorizontalSlider->blockSignals(true);
-		_ui->layerWindowHorizontalSlider->setValue(mightEdit ? 100.0f * window : 100.0f);
+		_ui->layerWindowHorizontalSlider->setValue(singleRowSelection ? 100.0f * window : 100.0f);
 		_ui->layerWindowHorizontalSlider->blockSignals(false);
 	}
 
@@ -285,11 +285,11 @@ void LayersWidget::updateData(const QModelIndex& topLeft, const QModelIndex& bot
 		const auto level = _layersModel->data(topLeft.row(), LayersModel::Columns::Level, Qt::EditRole).toFloat();
 
 		_ui->layerLevelDoubleSpinBox->blockSignals(true);
-		_ui->layerLevelDoubleSpinBox->setValue(mightEdit ? level : 0.5f);
+		_ui->layerLevelDoubleSpinBox->setValue(singleRowSelection ? level : 0.5f);
 		_ui->layerLevelDoubleSpinBox->blockSignals(false);
 
 		_ui->layerLevelHorizontalSlider->blockSignals(true);
-		_ui->layerLevelHorizontalSlider->setValue(mightEdit ? 100.0f * level : 50.0f);
+		_ui->layerLevelHorizontalSlider->setValue(singleRowSelection ? 100.0f * level : 50.0f);
 		_ui->layerLevelHorizontalSlider->blockSignals(false);
 	}
 

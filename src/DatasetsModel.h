@@ -1,6 +1,6 @@
 #pragma once
 
-#include "MainModel.h"
+#include "ImageDataset.h"
 
 #include <QAbstractListModel>
 
@@ -9,8 +9,6 @@ class QItemSelectionModel;
 /** TODO */
 class DatasetsModel : public QAbstractListModel
 {
-	Q_OBJECT
-
 public: // Columns
 
 	/** TODO */
@@ -36,7 +34,7 @@ public: // Columns
 public: // Construction/destruction
 
 	/** Constructor */
-	DatasetsModel(MainModel* mainModel);
+	DatasetsModel(QObject* parent);
 
 	/** Destructor */
 	~DatasetsModel();
@@ -90,7 +88,7 @@ public: //
 	QItemSelectionModel* selectionModel() { return _selectionModel; }
 
 private:
-	MainModel*				_mainModel;				/** TODO */
+	Datasets				_datasets;				/** TODO */
 	QString					_currentDatasetName;	/** TODO */
 	QItemSelectionModel*	_selectionModel;		/** TODO */
 
