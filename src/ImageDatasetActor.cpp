@@ -26,9 +26,9 @@ ImageDatasetActor::ImageDatasetActor(Renderer* renderer, const QString& name, La
 	*/
 
 	for (int row = 0; row < _layersModel->rowCount(); row++) {
-		const auto layerName = _layersModel->data(row, LayersModel::Columns::Name);
+		const auto layerName = _layersModel->data(row, LayersModel::Columns::Name).toString();
 		qDebug() << layerName;
-		//addProp<ImageLayerProp>(this, layerName, _imageDataset->imageLayerByName(layerName));
+		addProp<ImageLayerProp>(this, layerName);
 	}
 }
 

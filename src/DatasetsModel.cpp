@@ -202,6 +202,16 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 			case Columns::ImageFilePaths:
 				return QString("Image file paths: [%1]").arg(dataset->_imageFilePaths.join(", "));
 
+			case Columns::CurrentImageFilepath:
+				if (dataset->_currentImage < 0 || dataset->_currentImage >= dataset->_imageFilePaths.size())
+					return "";
+
+				return dataset->_imageFilePaths[dataset->_currentImage];
+
+			case Columns::CurrentDimensionFilepath:
+				if (dataset->_currentDimension < 0 || dataset->_currentDimension >= dataset->_imageFilePaths.size())
+					return "";
+
 			default:
 				break;
 		}
@@ -355,8 +365,8 @@ bool DatasetsModel::setData(const QModelIndex& index, const QVariant& value, int
 
 				if (dataset->_type == static_cast<int>(ImageCollectionType::Sequence)) {
 					const auto imageName = data(row, Columns::CurrentImageName).toString();
-					dataset->_layersModel->setData(dataset->_layersModel->index(0, LayersModel::Columns::Name), QString("%1").arg(imageName));
-					dataset->_layersModel->setData(dataset->_layersModel->index(1, LayersModel::Columns::Name), QString("%1").arg(imageName));
+					dataset->_layersModel->setData(dataset->_layersModel->index(0, LayersModel::Columns::Name), QString("%1_color").arg(imageName));
+					dataset->_layersModel->setData(dataset->_layersModel->index(1, LayersModel::Columns::Name), QString("%1_selection").arg(imageName));
 				}
 				
 				break;
@@ -367,8 +377,8 @@ bool DatasetsModel::setData(const QModelIndex& index, const QVariant& value, int
 				if (dataset->_type == static_cast<int>(ImageCollectionType::Stack)) {
 					dataset->_currentDimension = value.toInt();
 					const auto dimensionName = data(row, Columns::CurrentDimensionName).toString();
-					dataset->_layersModel->setData(dataset->_layersModel->index(0, LayersModel::Columns::Name), QString("%1").arg(dimensionName));
-					dataset->_layersModel->setData(dataset->_layersModel->index(1, LayersModel::Columns::Name), QString("%1").arg(dimensionName));
+					dataset->_layersModel->setData(dataset->_layersModel->index(0, LayersModel::Columns::Name), QString("%1_color").arg(dimensionName));
+					dataset->_layersModel->setData(dataset->_layersModel->index(1, LayersModel::Columns::Name), QString("%1_selection").arg(dimensionName));
 				}
 
 				break;

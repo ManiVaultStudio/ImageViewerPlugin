@@ -2,6 +2,7 @@
 #include "QuadShape.h"
 #include "Actor.h"
 #include "ImageLayer.h"
+#include "LayersModel.h"
 
 #include <QDebug>
 
@@ -13,16 +14,16 @@ const std::string fragmentShaderSource =
 #include "ImageLayerFragment.glsl"
 ;
 
-ImageLayerProp::ImageLayerProp(Actor* actor, const QString& name, ImageLayer* imageLayer) :
+ImageLayerProp::ImageLayerProp(Actor* actor, const QString& name) :
 	Prop(actor, name),
-	_imageLayer(imageLayer)
+	_image(),
+	_displayRange()
 {
 	addShape<QuadShape>("Quad");
 	addShaderProgram("Quad");
 	addTexture("Quad", QOpenGLTexture::Target2D);
 
-	setImage(imageLayer->image());
-
+	/*
 	QObject::connect(imageLayer, &ImageLayer::imageChanged, this, &ImageLayerProp::setImage);
 	
 	QObject::connect(imageLayer, &ImageLayer::opacityChanged, this, [this](const float& opacity) {
@@ -36,6 +37,7 @@ ImageLayerProp::ImageLayerProp(Actor* actor, const QString& name, ImageLayer* im
 	_actor->bindOpenGLContext();
 
 	initialize();
+	*/
 }
 
 ImageLayerProp::~ImageLayerProp() = default;
@@ -110,9 +112,9 @@ void ImageLayerProp::render()
 
 		if (shaderProgram->bind()) {
 			shaderProgram->setUniformValue("imageTexture", 0);
-			shaderProgram->setUniformValue("minPixelValue", _imageLayer->displayRange().first);
-			shaderProgram->setUniformValue("maxPixelValue", _imageLayer->displayRange().second);
-			shaderProgram->setUniformValue("opacity", _imageLayer->opacity());
+			shaderProgram->setUniformValue("minPixelValue", _displayRange.first);
+			shaderProgram->setUniformValue("maxPixelValue", _displayRange.second);
+			shaderProgram->setUniformValue("opacity", _opacity);
 			shaderProgram->setUniformValue("transform", modelViewProjectionMatrix());
 
 			shape->render();
@@ -134,8 +136,11 @@ void ImageLayerProp::render()
 	}
 }
 
-void ImageLayerProp::setImage(const QImage& image)
+void ImageLayerProp::setImage(const QImage& image, const QPair<float, float>& displayRange)
 {
+	_image = image;
+	_displayRange = displayRange;
+
 	const auto texture = textureByName("Quad");
 
 	texture->destroy();
@@ -156,6 +161,9 @@ void ImageLayerProp::setImage(const QImage& image)
 	modelMatrix.translate(-0.5f * rectangle.width(), -0.5f * rectangle.height(), 0.0f);
 
 	setModelMatrix(modelMatrix);
+}
 
-	emit becameDirty(this);
+void ImageLayerProp::setOpacity(const float& opacity)
+{
+	_opacity = opacity;
 }

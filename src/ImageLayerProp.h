@@ -1,9 +1,9 @@
 #pragma once
 
 #include "Prop.h"
-#include "ImageLayer.h"
 
 class Actor;
+class LayersModel;
 
 /**
  * Image prop class
@@ -15,7 +15,7 @@ class ImageLayerProp : public Prop
 
 public:
 	/** TODO */
-	ImageLayerProp(Actor* actor, const QString& name, ImageLayer* imageLayer);
+	ImageLayerProp(Actor* actor, const QString& name);
 
 	/** Destructor */
 	~ImageLayerProp();
@@ -28,15 +28,18 @@ protected: // Inherited
 	/** Renders the prop */
 	void render() override;
 
-public:
-	/**
-	 * Sets the image
-	 * @param image Image
-	 */
-	void setImage(const QImage& image);
+public: // Configuration
+
+	/** TODO */
+	void setImage(const QImage& image, const QPair<float, float>& displayRange);
+
+	/** TODO */
+	void setOpacity(const float& opacity);
 
 private:
-	ImageLayer*	_imageLayer;	/** TODO */
+	QImage					_image;
+	QPair<float, float>		_displayRange;
+	float					_opacity;
 };
 
 using SharedImageLayerProp = QSharedPointer<ImageLayerProp>;
