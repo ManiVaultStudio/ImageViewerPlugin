@@ -1,10 +1,12 @@
 #pragma once
 
-#include <QImage>
+#include "LayerImage.h"
 
 /** TODO */
 class Layer : public QObject
 {
+	Q_OBJECT
+
 public:
 
 	/** TODO */
@@ -27,7 +29,19 @@ public:
 	/** TODO */
 	Layer(QObject* parent,const QString& name, const Type& type, const std::uint32_t& flags, const std::uint32_t& order, const float& opacity = 1.0f, const float& window = 1.0f, const float& level = 0.5f);
 
-public: // Flags
+public: // Getters/setters
+
+	/** TODO */
+	QString name() const { return _name; }
+
+	/** TODO */
+	void setName(const QString& name) { _name = name; }
+
+	/** TODO */
+	Type type() const { return _type; }
+
+	/** TODO */
+	void setType(const Type& type) { _type = type; }
 
 	/** TODO */
 	bool isFlagSet(const std::uint32_t& flag) const;
@@ -35,20 +49,41 @@ public: // Flags
 	/** TODO */
 	void setFlag(const std::uint32_t& flag, const bool& enabled = true);
 
-public:
-	QString					_name;					/** TODO */
-	Type					_type;					/** TODO */
-	std::uint32_t			_flags;					/** TODO */
-	std::uint32_t			_order;					/** TODO */
-	float					_opacity;				/** TODO */
-	QImage					_image;					/** TODO */
-	QPair<float, float>		_imageRange;			/** TODO */
-	QPair<float, float>		_displayRange;			/** TODO */
-	float					_windowNormalized;		/** TODO */
-	float					_levelNormalized;		/** TODO */
-	float					_window;				/** TODO */
-	float					_level;					/** TODO */
-	QColor					_color;					/** TODO */
+	/** TODO */
+	std::uint32_t order() const { return _order; }
+
+	/** TODO */
+	std::uint32_t& order() { return _order; }
+
+	/** TODO */
+	void setOrder(const std::uint32_t& order) { _order = order; }
+
+	/** TODO */
+	float opacity() const { return _opacity; }
+
+	/** TODO */
+	void setOpacity(const float& opacity) { _opacity = opacity; }
+
+	/** TODO */
+	const LayerImage& image() const { return _image; }
+
+	/** TODO */
+	LayerImage& image() { return _image; }
+
+	/** TODO */
+	QColor color() const { return _color; }
+
+	/** TODO */
+	void setColor(const QColor& color) { _color = color; }
+
+private:
+	QString			_name;			/** TODO */
+	Type			_type;			/** TODO */
+	std::uint32_t	_flags;			/** TODO */
+	std::uint32_t	_order;			/** TODO */
+	float			_opacity;		/** TODO */
+	LayerImage		_image;			/** TODO */
+	QColor			_color;			/** TODO */
 
 	friend class ImageDataset;
 };

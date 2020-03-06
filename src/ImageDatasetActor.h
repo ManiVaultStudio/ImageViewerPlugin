@@ -19,13 +19,10 @@ public:
 	/** TODO */
 	ImageDatasetActor(Renderer* renderer, const QString& name, LayersModel* layersModel, const bool& visible = true);
 
-protected: // Layer prop management
+protected: // TODO
 
 	/** TODO */
-	void addLayerProp(const QString& layerName);
-
-	/** TODO */
-	void removeLayerProp(const QString& layerName);
+	void updateData(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int> &roles = QVector<int>());
 
 private:
 	LayersModel*	_layersModel;		/** TODO */

@@ -9,13 +9,8 @@ Layer::Layer(QObject* parent) :
 	_flags(0),
 	_order(0),
 	_opacity(1.0f),
-	_image(),
-	_imageRange(),
-	_displayRange(),
-	_windowNormalized(1.0f),
-	_levelNormalized(0.5f),
-	_window(1.0f),
-	_level(1.0f)
+	_image(this),
+	_color()
 {
 }
 
@@ -26,13 +21,8 @@ Layer::Layer(QObject* parent, const QString& name, const Type& type, const std::
 	_flags(flags),
 	_order(order),
 	_opacity(opacity),
-	_image(),
-	_imageRange(),
-	_displayRange(),
-	_windowNormalized(1.0f),
-	_levelNormalized(0.5f),
-	_window(window),
-	_level(level)
+	_image(this),
+	_color()
 {
 }
 

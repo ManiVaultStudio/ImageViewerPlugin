@@ -67,7 +67,8 @@ LayersWidget::LayersWidget(QWidget* parent, DatasetsModel* datasetsModel) :
 	QObject::connect(_ui->layerOpacityHorizontalSlider, &QSlider::valueChanged, [this](int value) {
 		for (auto index : _ui->layersTreeView->selectionModel()->selectedRows()) {
 			const auto range = _ui->layerOpacityHorizontalSlider->maximum() - _ui->layerOpacityHorizontalSlider->minimum();
-			_layersModel->setData(_layersModel->index(index.row(), LayersModel::Columns::Opacity), value / static_cast<float>(range));
+			
+			_layersModel->setData(_layersModel->index(index.row(), LayersModel::Columns::Opacity), static_cast<float>(value) / static_cast<float>(range));
 		}
 	});
 
@@ -126,6 +127,7 @@ void LayersWidget::setModel(QSharedPointer<LayersModel> layersModel)
 	//headerView->hideSection(LayersModel::Columns::Window);
 	//headerView->hideSection(LayersModel::Columns::Level);
 	headerView->hideSection(LayersModel::Columns::Color);
+	headerView->hideSection(LayersModel::Columns::Image);
 
 	headerView->setSectionResizeMode(LayersModel::Columns::Name, QHeaderView::Interactive);
 
@@ -217,8 +219,6 @@ void LayersWidget::updateData(const QModelIndex& topLeft, const QModelIndex& bot
 	const auto singleRowSelection	= noSelectedRows == 1;
 	const auto enabled				= _layersModel->data(topLeft.row(), LayersModel::Columns::Enabled, Qt::EditRole).toBool();
 	const auto mightEdit			= singleRowSelection && enabled;
-
-	qDebug() << selectedRows << singleRowSelection << enabled << mightEdit;
 
 	const auto enabledFlags = _layersModel->flags(_layersModel->index(topLeft.row(), LayersModel::Columns::Enabled));
 

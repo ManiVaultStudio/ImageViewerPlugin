@@ -23,7 +23,10 @@ public: // Columns
 		Opacity,
 		Window,
 		Level,
-		Color
+		Color,
+		Image,
+		ImageRange,
+		DisplayRange
 	};
 
 public: // Construction/destruction
@@ -84,6 +87,14 @@ public: // TODO
 
 	/** TODO */
 	void removeRows(const QModelIndexList& rows);
+
+protected:
+
+	/** TODO 
+	Layer::Range imageRange(const QImage& image);*/
+
+	/** TODO 
+	Layer::Range displayRange(const QImage& image);*/
 
 private:
 	Layers*		_layers;		/** TODO */

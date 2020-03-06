@@ -11,53 +11,34 @@ ImageDatasetActor::ImageDatasetActor(Renderer* renderer, const QString& name, La
 	Actor(renderer, name, visible),
 	_layersModel(layersModel)
 {
-	/*
-	if (_imageDataset == nullptr)
-		throw std::exception("Image dataset is null");
-
-	qDebug() << "Connecting to dataset" << _imageDataset->name();
-
-	for (const auto& name : _imageDataset->imageLayers().keys()) {
-		addLayerProp(name);
-	}
-
-	QObject::connect(_imageDataset, &ImageDataset::layerAdded, this, &ImageDatasetActor::addLayerProp);
-	QObject::connect(_imageDataset, &ImageDataset::layerRemoved, this, &ImageDatasetActor::removeLayerProp);
-	*/
-
 	for (int row = 0; row < _layersModel->rowCount(); row++) {
 		const auto layerName = _layersModel->data(row, LayersModel::Columns::Name).toString();
-		qDebug() << layerName;
 		addProp<ImageLayerProp>(this, layerName);
 	}
+
+	QObject::connect(_layersModel, &LayersModel::dataChanged, this, &ImageDatasetActor::updateData);
+
+	updateData(_layersModel->index(0), _layersModel->index(_layersModel->rowCount() - 1, _layersModel->columnCount() - 1));
 }
 
-void ImageDatasetActor::addLayerProp(const QString& layerName)
-{
-	/*
-	try
-	{
-		qDebug() << "Add layer prop" << layerName;
+void ImageDatasetActor::updateData(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int> &roles /*= QVector<int>()*/) {
+	for (int row = topLeft.row(); row <= bottomRight.row(); row++) {
+		const auto layerName = _layersModel->data(row, LayersModel::Columns::Name).toString();
+		const auto layerProp = this->propByName<ImageLayerProp>(layerName);
 
-		addProp<ImageLayerProp>(this, layerName, _imageDataset->imageLayerByName(layerName));
-	}
-	catch (std::exception& e)
-	{
-		qDebug() << "Unable to add layer prop:" << e.what();
-	}
-	*/
-}
+		if (topLeft.column() <= LayersModel::Columns::Image && bottomRight.column() >= LayersModel::Columns::Image) {
+			//const auto layerImage = _layersModel->data(row, LayersModel::Columns::Image, Qt::EditRole).value<QImage>();
+			//layerProp->setImage(layerImage);
+		}
 
-void ImageDatasetActor::removeLayerProp(const QString& layerName)
-{
-	try
-	{
-		qDebug() << "Remove layer prop" << layerName;
+		if (topLeft.column() <= LayersModel::Columns::DisplayRange && bottomRight.column() >= LayersModel::Columns::DisplayRange) {
+			//const auto layerDisplayRange = _layersModel->data(row, LayersModel::Columns::DisplayRange, Qt::EditRole).value<Layer::Range>();
+			//layerProp->setDisplayRange(layerDisplayRange.min(), layerDisplayRange.max());
+		}
 
-		removeProp(layerName);
-	}
-	catch (std::exception& e)
-	{
-		qDebug() << "Unable to remove layer prop:" << e.what();
+		if (topLeft.column() <= LayersModel::Columns::Opacity && bottomRight.column() >= LayersModel::Columns::Opacity) {
+			//const auto layerOpacity = _layersModel->data(row, LayersModel::Columns::Opacity, Qt::EditRole).toFloat();
+			//layerProp->setOpacity(layerOpacity);
+		}
 	}
 }

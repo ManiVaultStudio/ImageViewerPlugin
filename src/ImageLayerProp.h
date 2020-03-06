@@ -31,15 +31,18 @@ protected: // Inherited
 public: // Configuration
 
 	/** TODO */
-	void setImage(const QImage& image, const QPair<float, float>& displayRange);
+	void setImage(const QImage& image);
+
+	/** TODO */
+	void setDisplayRange(const float& min, const float& max);
 
 	/** TODO */
 	void setOpacity(const float& opacity);
 
 private:
-	QImage					_image;
-	QPair<float, float>		_displayRange;
-	float					_opacity;
+	QImage		_image;
+	float		_displayRange[2];
+	float		_opacity;
 };
 
 using SharedImageLayerProp = QSharedPointer<ImageLayerProp>;

@@ -17,27 +17,16 @@ const std::string fragmentShaderSource =
 ImageLayerProp::ImageLayerProp(Actor* actor, const QString& name) :
 	Prop(actor, name),
 	_image(),
-	_displayRange()
+	_displayRange{0.0f, 1000.0f},
+	_opacity(0.0f)
 {
 	addShape<QuadShape>("Quad");
 	addShaderProgram("Quad");
 	addTexture("Quad", QOpenGLTexture::Target2D);
 
-	/*
-	QObject::connect(imageLayer, &ImageLayer::imageChanged, this, &ImageLayerProp::setImage);
-	
-	QObject::connect(imageLayer, &ImageLayer::opacityChanged, this, [this](const float& opacity) {
-		emit becameDirty(this);
-	});
-
-	QObject::connect(imageLayer, &ImageLayer::displayRangeChanged, this, [this](const float& opacity) {
-		emit becameDirty(this);
-	});
-
 	_actor->bindOpenGLContext();
 
 	initialize();
-	*/
 }
 
 ImageLayerProp::~ImageLayerProp() = default;
@@ -112,8 +101,8 @@ void ImageLayerProp::render()
 
 		if (shaderProgram->bind()) {
 			shaderProgram->setUniformValue("imageTexture", 0);
-			shaderProgram->setUniformValue("minPixelValue", _displayRange.first);
-			shaderProgram->setUniformValue("maxPixelValue", _displayRange.second);
+			shaderProgram->setUniformValue("minPixelValue", _displayRange[0]);
+			shaderProgram->setUniformValue("maxPixelValue", _displayRange[1]);
 			shaderProgram->setUniformValue("opacity", _opacity);
 			shaderProgram->setUniformValue("transform", modelViewProjectionMatrix());
 
@@ -136,11 +125,12 @@ void ImageLayerProp::render()
 	}
 }
 
-void ImageLayerProp::setImage(const QImage& image, const QPair<float, float>& displayRange)
+void ImageLayerProp::setImage(const QImage& image)
 {
-	_image = image;
-	_displayRange = displayRange;
+	qDebug() << fullName() << "set image";
 
+	_image = image;
+	
 	const auto texture = textureByName("Quad");
 
 	texture->destroy();
@@ -163,7 +153,17 @@ void ImageLayerProp::setImage(const QImage& image, const QPair<float, float>& di
 	setModelMatrix(modelMatrix);
 }
 
+void ImageLayerProp::setDisplayRange(const float& min, const float& max)
+{
+	qDebug() << fullName() << "set display range" << min << max;
+
+	_displayRange[0] = min;
+	_displayRange[1] = max;
+}
+
 void ImageLayerProp::setOpacity(const float& opacity)
 {
+	qDebug() << fullName() << "set opacity" << QString::number(opacity, 'f', 2);
+
 	_opacity = opacity;
 }

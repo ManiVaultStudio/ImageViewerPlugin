@@ -80,6 +80,10 @@ ViewerWidget::ViewerWidget(QWidget* parent, DatasetsModel* datasetsModel) :
 	});
 	*/
 
+	QObject::connect(_datasetsModel, &DatasetsModel::dataChanged, this, [this](const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int> &roles /*= QVector<int>()*/) {
+		_renderer->render();
+	});
+
 	QObject::connect(_datasetsModel->selectionModel(), &QItemSelectionModel::currentRowChanged, [this](const QModelIndex& current, const QModelIndex& previous) {
 		if (previous.isValid()) {
 			const auto name = _datasetsModel->data(previous.row(), DatasetsModel::Columns::Name).toString();

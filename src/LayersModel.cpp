@@ -10,6 +10,11 @@ LayersModel::LayersModel(Layers* layers) :
 	QAbstractListModel(),
 	_layers(layers)
 {
+	QObject::connect(this, &LayersModel::dataChanged, this, [this](const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int> &roles /*= QVector<int>()*/) {
+		if (topLeft.column() <= LayersModel::Columns::Image && bottomRight.column() >= LayersModel::Columns::Image) {
+			
+		}
+	});
 }
 
 LayersModel::~LayersModel() = default;
@@ -25,7 +30,7 @@ int LayersModel::columnCount(const QModelIndex& parent /*= QModelIndex()*/) cons
 {
 	Q_UNUSED(parent);
 
-	return 11;
+	return 14;
 }
 
 QVariant LayersModel::data(const QModelIndex& index, int role) const
@@ -61,11 +66,11 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 					return layer->isFlagSet(Layer::Flags::Fixed) ? u8"\uf023" : u8"\uf09c";
 
 				case Columns::Name:
-					return layer->_name;
+					return layer->name();
 
 				case Columns::Type:
 				{
-					switch (layer->_type)
+					switch (layer->type())
 					{
 						case Layer::Type::Image:
 							return "Image";
@@ -91,19 +96,28 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 					return layer->isFlagSet(Layer::Flags::Removable) ? "true" : "false";
 
 				case Columns::Order:
-					return QString::number(layer->_order);
+					return QString::number(layer->order());
 
 				case Columns::Opacity:
-					return QString("%1%").arg(QString::number(100.0f * layer->_opacity, 'f', 1));
+					return QString("%1%").arg(QString::number(100.0f * layer->opacity(), 'f', 1));
 
 				case Columns::Window:
-					return QString::number(layer->_window, 'f', 2);
+					return QString::number(layer->image().window(), 'f', 2);
 
 				case Columns::Level:
-					return QString::number(layer->_level, 'f', 2);
+					return QString::number(layer->image().level(), 'f', 2);
 
 				case Columns::Color:
-					return layer->_color.name();
+					return layer->color().name();
+
+				case Columns::Image:
+					return "Image";
+
+				case Columns::ImageRange:
+					return QString("[%1, %2]").arg(QString::number(layer->image().imageRange().min(), 'f', 2), QString::number(layer->image().imageRange().max(), 'f', 2));
+
+				case Columns::DisplayRange:
+					return QString("[%1, %2]").arg(QString::number(layer->image().displayRange().min(), 'f', 2), QString::number(layer->image().displayRange().max(), 'f', 2));
 
 				default:
 					break;
@@ -119,10 +133,10 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 					return layer->isFlagSet(Layer::Flags::Fixed);
 
 				case Columns::Name:
-					return layer->_name;
+					return layer->name();
 
 				case Columns::Type:
-					return static_cast<int>(layer->_type);
+					return static_cast<int>(layer->type());
 
 				case Columns::Enabled:
 					return layer->isFlagSet(Layer::Flags::Enabled);
@@ -134,19 +148,31 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 					return layer->isFlagSet(Layer::Flags::Removable);
 
 				case Columns::Order:
-					return layer->_order;
+					return layer->order();
 
 				case Columns::Opacity:
-					return layer->_opacity;
+					return layer->opacity();
 
 				case Columns::Window:
-					return layer->_window;
+					return layer->image().window();
 
 				case Columns::Level:
-					return layer->_level;
+					return layer->image().level();
 
 				case Columns::Color:
-					return layer->_color;
+					return layer->color();
+
+					/*
+				case Columns::Image:
+					return layer->image();
+					
+
+				case Columns::ImageRange:
+					return QVariant::fromValue(layer->image().imageRange());
+
+				case Columns::DisplayRange:
+					return QVariant::fromValue(layer->image().displayRange());
+					*/
 
 				default:
 					break;
@@ -226,6 +252,15 @@ QVariant LayersModel::headerData(int section, Qt::Orientation orientation, int r
 			case Columns::Color:
 				return "Color";
 
+			case Columns::Image:
+				return "Image";
+
+			case Columns::ImageRange:
+				return "Image range";
+
+			case Columns::DisplayRange:
+				return "Display range";
+
 			default:
 				return QVariant();
 		}
@@ -295,6 +330,9 @@ Qt::ItemFlags LayersModel::flags(const QModelIndex& index) const
 			break;
 		}
 
+		case Columns::Image:
+			break;
+
 		default:
 			break;
 	}
@@ -314,11 +352,11 @@ bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int r
 				break;
 
 			case Columns::Name:
-				layer->_name = QString("%1").arg(value.toString());
+				layer->setName(QString("%1").arg(value.toString()));
 				break;
 			
 			case Columns::Type:
-				layer->_type = static_cast<Layer::Type>(value.toInt());
+				layer->setType(static_cast<Layer::Type>(value.toInt()));
 				break;
 
 			case Columns::Enabled:
@@ -334,25 +372,29 @@ bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int r
 				break;
 
 			case Columns::Order:
-				layer->_order = value.toInt();
+				layer->setOrder(value.toInt());
 				break;
 
 			case Columns::Opacity:
-				layer->_opacity = value.toFloat();
+				layer->setOpacity(value.toFloat());
 				break;
 
 			case Columns::Window:
-				layer->_window = value.toFloat();
+				layer->image().setWindow(value.toFloat());
 				break;
 
 			case Columns::Level:
-				layer->_level = value.toFloat();
+				layer->image().setLevel(value.toFloat());
 				break;
 
 			case Columns::Color:
-				layer->_color = value.value<QColor>();
+				layer->setColor(value.value<QColor>());
 				break;
 
+			case Columns::Image:
+				layer->image().setImage(value.value<QImage>());
+				break;
+				
 			default:
 				return false;
 		}
@@ -459,10 +501,10 @@ void LayersModel::moveUp(const int& row)
 
 		auto layers = (*_layers);
 
-		std::swap(layers[row]->_order, layers[layers[row]->_order - 1]->_order);
+		std::swap(layers[row]->order(), layers[layers[row]->order() - 1]->order());
 
 		std::sort(_layers->begin(), _layers->end(), [](Layer* layerA, Layer* layerB) {
-			return layerA->_order < layerB->_order;
+			return layerA->order() < layerB->order();
 		});
 		
 		endMoveRows();

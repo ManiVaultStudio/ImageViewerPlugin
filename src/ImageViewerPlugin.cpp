@@ -3,6 +3,7 @@
 #include "SettingsWidget.h"
 #include "ImageDataset.h"
 #include "DatasetsModel.h"
+#include "LayersModel.h"
 #include "Renderer.h"
 
 #include "ImageData/Images.h"
@@ -32,6 +33,26 @@ ImageViewerPlugin::ImageViewerPlugin() :
 
 	if (!QFontDatabase::addApplicationFont(":/FontAwesome.otf"))
 		qDebug() << "Unable to load Font Awesome";
+
+	QObject::connect(&_datasetsModel, &DatasetsModel::dataChanged, this, [this](const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int> &roles /*= QVector<int>()*/) {
+		const auto currentImageChanged		= topLeft.column() <= DatasetsModel::Columns::CurrentImage && bottomRight.column() >= DatasetsModel::Columns::CurrentImage;
+		const auto currentDimensionChanged	= topLeft.column() <= DatasetsModel::Columns::CurrentDimension && bottomRight.column() >= DatasetsModel::Columns::CurrentDimension;
+
+		if (currentImageChanged || currentDimensionChanged) {
+			const auto datasetName	= _datasetsModel.data(topLeft.row(), DatasetsModel::Columns::Name).toString();
+			const auto currentImage	= _datasetsModel.data(topLeft.row(), DatasetsModel::Columns::CurrentImage).toInt();
+
+			auto imagesDataset = _core->requestData<Images>(datasetName);
+
+			auto stackImage = imagesDataset.stackImage(currentImage);
+
+			_datasetsModel.layersModel(topLeft.row())->setData(0, LayersModel::Columns::Image, *stackImage.get());
+
+			
+
+			_datasetsModel.layersModel(topLeft.row())->setData(0, LayersModel::Columns::ImageRange, *stackImage.get());
+		}
+	});
 }
 
 void ImageViewerPlugin::init()
