@@ -8,7 +8,6 @@
 
 DatasetsModel::DatasetsModel(QObject* parent) :
 	QAbstractListModel(parent),
-	_currentDatasetName(),
 	_selectionModel(new QItemSelectionModel(this))
 {
 }
@@ -84,10 +83,16 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 				return QString("[%1]").arg(dataset->_imageFilePaths.join(", "));
 
 			case Columns::CurrentImageFilepath:
-				return dataset->_currentImage < dataset->_imageFilePaths.size() ? dataset->_imageFilePaths[dataset->_currentImage] : "";
+				if (dataset->_currentImage < 0 || dataset->_currentImage >= dataset->_imageFilePaths.size())
+					return "";
+
+				return dataset->_imageFilePaths[dataset->_currentImage];
 
 			case Columns::CurrentDimensionFilepath:
-				return dataset->_currentDimension < dataset->_imageFilePaths.size() ? dataset->_imageFilePaths[dataset->_currentDimension] : "";
+				if (dataset->_currentDimension < 0 || dataset->_currentDimension >= dataset->_imageFilePaths.size())
+					return "";
+
+				return dataset->_imageFilePaths[dataset->_currentDimension];
 
 			default:
 				break;
@@ -139,10 +144,14 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 				return dataset->_imageFilePaths;
 
 			case Columns::CurrentImageFilepath:
-				return dataset->_currentImage < dataset->_imageFilePaths.size() ? dataset->_imageFilePaths[dataset->_currentImage] : "";
+				if (dataset->_currentImage < 0 || dataset->_currentImage >= dataset->_imageFilePaths.size())
+					return "";
+
+				return dataset->_imageFilePaths[dataset->_currentImage];
 
 			case Columns::CurrentDimensionFilepath:
-				return dataset->_currentDimension < dataset->_imageFilePaths.size() ? dataset->_imageFilePaths[dataset->_currentDimension] : "";
+				if (dataset->_currentDimension < 0 || dataset->_currentDimension >= dataset->_imageFilePaths.size())
+					return "";
 
 			default:
 				break;
@@ -472,4 +481,9 @@ void DatasetsModel::add(ImageDataset* dataset)
 	setData(index(0, Columns::ImageFilePaths, QModelIndex()), dataset->_imageFilePaths);
 	setData(index(0, Columns::CurrentImage, QModelIndex()), dataset->_currentImage);
 	setData(index(0, Columns::CurrentDimension, QModelIndex()), dataset->_currentDimension);
+}
+
+LayersModel* DatasetsModel::layersModel(const int& row)
+{
+	return _datasets[row]->_layersModel.get();
 }

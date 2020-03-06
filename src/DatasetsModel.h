@@ -85,11 +85,13 @@ public: //
 	void add(ImageDataset* dataset);
 
 	/** TODO */
+	LayersModel* layersModel(const int& row);
+
+	/** TODO */
 	QItemSelectionModel* selectionModel() { return _selectionModel; }
 
 private:
 	Datasets				_datasets;				/** TODO */
-	QString					_currentDatasetName;	/** TODO */
 	QItemSelectionModel*	_selectionModel;		/** TODO */
 
 	friend class MainModel;

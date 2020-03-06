@@ -193,7 +193,11 @@ void LayersWidget::setModel(QSharedPointer<LayersModel> layersModel)
 		updateButtons();
 		
 		const auto selectedRows = _ui->layersTreeView->selectionModel()->selectedRows();
-		updateData(_layersModel->index(selectedRows.first().row(), 0), _layersModel->index(selectedRows.first().row(), _layersModel->columnCount() - 1));
+
+		if (selectedRows.isEmpty())
+			updateData(_layersModel->index(0, 0), _layersModel->index(0, _layersModel->columnCount() - 1));
+		else
+			updateData(_layersModel->index(selectedRows.first().row(), 0), _layersModel->index(selectedRows.first().row(), _layersModel->columnCount() - 1));
 	});
 
 	// Handle model rows reorganization
@@ -213,6 +217,8 @@ void LayersWidget::updateData(const QModelIndex& topLeft, const QModelIndex& bot
 	const auto singleRowSelection	= noSelectedRows == 1;
 	const auto enabled				= _layersModel->data(topLeft.row(), LayersModel::Columns::Enabled, Qt::EditRole).toBool();
 	const auto mightEdit			= singleRowSelection && enabled;
+
+	qDebug() << selectedRows << singleRowSelection << enabled << mightEdit;
 
 	const auto enabledFlags = _layersModel->flags(_layersModel->index(topLeft.row(), LayersModel::Columns::Enabled));
 

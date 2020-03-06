@@ -60,9 +60,6 @@ public: // Inherited members
 	/** TODO */
 	bool removeRows(int position, int rows, const QModelIndex& index = QModelIndex());
 
-	/** TODO */
-	//void sort(int column, Qt::SortOrder order /* = Qt::AscendingOrder */);
-
 public: // Overloaded data access
 	
 	/** TODO */

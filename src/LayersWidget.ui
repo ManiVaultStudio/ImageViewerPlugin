@@ -62,7 +62,7 @@
       </size>
      </property>
      <property name="title">
-      <string>Layers</string>
+      <string>Image layers</string>
      </property>
      <property name="flat">
       <bool>false</bool>

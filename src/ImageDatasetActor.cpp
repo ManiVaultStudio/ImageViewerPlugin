@@ -1,14 +1,15 @@
 #include "ImageDatasetActor.h"
 #include "ImageLayerProp.h"
 #include "ImageDataset.h"
+#include "LayersModel.h"
 #include "Renderer.h"
 
 #include <QOpenGLTexture>
 #include <QDebug>
 
-ImageDatasetActor::ImageDatasetActor(Renderer* renderer, const QString& name, ImageDataset* imageDataset, const bool& visible /*= true*/) :
+ImageDatasetActor::ImageDatasetActor(Renderer* renderer, const QString& name, LayersModel* layersModel, const bool& visible /*= true*/) :
 	Actor(renderer, name, visible),
-	_imageDataset(imageDataset)
+	_layersModel(layersModel)
 {
 	/*
 	if (_imageDataset == nullptr)
@@ -23,6 +24,12 @@ ImageDatasetActor::ImageDatasetActor(Renderer* renderer, const QString& name, Im
 	QObject::connect(_imageDataset, &ImageDataset::layerAdded, this, &ImageDatasetActor::addLayerProp);
 	QObject::connect(_imageDataset, &ImageDataset::layerRemoved, this, &ImageDatasetActor::removeLayerProp);
 	*/
+
+	for (int row = 0; row < _layersModel->rowCount(); row++) {
+		const auto layerName = _layersModel->data(row, LayersModel::Columns::Name);
+		qDebug() << layerName;
+		//addProp<ImageLayerProp>(this, layerName, _imageDataset->imageLayerByName(layerName));
+	}
 }
 
 void ImageDatasetActor::addLayerProp(const QString& layerName)

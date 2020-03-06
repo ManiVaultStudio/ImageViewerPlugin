@@ -81,7 +81,15 @@ ViewerWidget::ViewerWidget(QWidget* parent, DatasetsModel* datasetsModel) :
 	*/
 
 	QObject::connect(_datasetsModel->selectionModel(), &QItemSelectionModel::currentRowChanged, [this](const QModelIndex& current, const QModelIndex& previous) {
-		qDebug() << "currentRowChanged" << current;
+		if (previous.isValid()) {
+			const auto name = _datasetsModel->data(previous.row(), DatasetsModel::Columns::Name).toString();
+			_renderer->removeActor(name);
+		}
+
+		if (current.isValid()) {
+			const auto name = _datasetsModel->data(current.row(), DatasetsModel::Columns::Name).toString();
+			_renderer->addActor<ImageDatasetActor>(_renderer, name, _datasetsModel->layersModel(current.row()));
+		}
 	});
 }
 

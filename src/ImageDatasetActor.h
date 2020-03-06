@@ -5,6 +5,7 @@
 #include "ImageDataset.h"
 
 class Renderer;
+class LayersModel;
 
 /**
  * Layer actor class
@@ -16,7 +17,7 @@ class ImageDatasetActor : public Actor
 
 public:
 	/** TODO */
-	ImageDatasetActor(Renderer* renderer, const QString& name, ImageDataset* imageDataset, const bool& visible = true);
+	ImageDatasetActor(Renderer* renderer, const QString& name, LayersModel* layersModel, const bool& visible = true);
 
 protected: // Layer prop management
 
@@ -27,5 +28,5 @@ protected: // Layer prop management
 	void removeLayerProp(const QString& layerName);
 
 private:
-	ImageDataset*	_imageDataset;		/** Layer */
+	LayersModel*	_layersModel;		/** TODO */
 };
