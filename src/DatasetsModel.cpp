@@ -360,29 +360,12 @@ bool DatasetsModel::setData(const QModelIndex& index, const QVariant& value, int
 				break;
 
 			case Columns::CurrentImage:
-			{
 				dataset->_currentImage = value.toInt();
-
-				if (dataset->_type == static_cast<int>(ImageCollectionType::Sequence)) {
-					const auto imageName = data(row, Columns::CurrentImageName).toString();
-					//dataset->_layersModel->setData(dataset->_layersModel->index(0, LayersModel::Columns::Name), QString("%1_color").arg(imageName));
-					//dataset->_layersModel->setData(dataset->_layersModel->index(1, LayersModel::Columns::Name), QString("%1_selection").arg(imageName));
-				}
-				
 				break;
-			}
 
 			case Columns::CurrentDimension:
-			{
-				if (dataset->_type == static_cast<int>(ImageCollectionType::Stack)) {
-					dataset->_currentDimension = value.toInt();
-					const auto dimensionName = data(row, Columns::CurrentDimensionName).toString();
-					//dataset->_layersModel->setData(dataset->_layersModel->index(0, LayersModel::Columns::Name), QString("%1_color").arg(dimensionName));
-					//dataset->_layersModel->setData(dataset->_layersModel->index(1, LayersModel::Columns::Name), QString("%1_selection").arg(dimensionName));
-				}
-
+				dataset->_currentDimension = value.toInt();
 				break;
-			}
 
 			case Columns::ImageNames:
 				dataset->_imageNames = value.toStringList();

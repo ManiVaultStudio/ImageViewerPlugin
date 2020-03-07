@@ -23,13 +23,28 @@ public:
 		float min() const { return _min; }
 
 		/** TODO */
-		float setMin(const float& min) { return _min = std::min(min, _max); }
+		void setMin(const float& min) { _min = std::min(min, _max); }
 
 		/** TODO */
 		float max() const { return _max; }
 
 		/** TODO */
-		float setMax(const float& max) { return _max = std::max(_min, max); }
+		void setMax(const float& max) { _max = std::max(_min, max); }
+
+		/** TODO */
+		void include(const float& value) {
+			_min = std::min(_min, value);
+			_max = std::max(_max, value);
+		}
+
+		/** TODO */
+		void setFullRange() {
+			_max = std::numeric_limits<float>::min();
+			_min = std::numeric_limits<float>::max();
+		}
+
+		/** TODO */
+		float length() const { return _max - _min; }
 
 	private:
 		float	_min;	/** TODO */
@@ -40,40 +55,48 @@ public:
 	LayerImage(QObject* parent = nullptr, const float& window = 1.0f, const float& level = 0.5f);
 
 	/** TODO */
-	QImage image() const { return _image; }
+	QImage image() const;
 
 	/** TODO */
 	void setImage(const QImage& image);
 
 	/** TODO */
-	Range imageRange() const { return _imageRange; }
+	Range imageRange() const;
 
 	/** TODO */
-	Range displayRange() const { return _displayRange; }
+	Range displayRange() const;
 
 	/** TODO */
-	float windowNormalized() const { return _windowNormalized; }
+	float windowNormalized() const;
 
 	/** TODO */
-	void setWindowNormalized(const float& windowNormalized) { _windowNormalized = windowNormalized; }
+	void setWindowNormalized(const float& windowNormalized);
 
 	/** TODO */
-	float levelNormalized() const { return _levelNormalized; }
+	float levelNormalized() const;
 
 	/** TODO */
-	void setLevelNormalized(const float& levelNormalized) { _levelNormalized = levelNormalized; }
+	void setLevelNormalized(const float& levelNormalized);
 
 	/** TODO */
-	float window() const { return _window; }
+	float window() const;
 
 	/** TODO */
-	void setWindow(const float& window) { _window = window; }
+	void setWindow(const float& window);
 
 	/** TODO */
-	float level() const { return _level; }
+	float level() const;
 
 	/** TODO */
-	void setLevel(const float& level) { _level = level; }
+	void setLevel(const float& level);
+
+private:
+
+	/** TODO */
+	void computeImageRange();
+
+	/** TODO */
+	void computeDisplayRange();
 
 public:
 	QImage		_image;					/** TODO */
@@ -85,49 +108,4 @@ public:
 	float		_level;					/** TODO */
 };
 
-//Q_DECLARE_METATYPE(LayerImage);
-
-/*
-Layer::Range LayersModel::imageRange(const QImage& image)
-{
-	auto imageBits = reinterpret_cast<ushort*>(const_cast<uchar*>(image.bits()));
-
-	const auto noPixels = image.width() * image.height();
-
-	Layer::Range range;
-
-	range.setMin(std::numeric_limits<float>::max());
-	range.setMax(std::numeric_limits<float>::min());
-
-	for (std::int32_t y = 0; y < image.height(); y++)
-	{
-		for (std::int32_t x = 0; x < image.width(); x++)
-		{
-			const auto pixelId = y * image.width() + x;
-
-			for (int c = 0; c < 3; c++)
-			{
-				const auto channel = static_cast<float>(imageBits[pixelId * 4 + c]);
-
-				if (channel < range.min())
-					range.setMin(channel);
-
-				if (channel > range.max())
-					range.setMax(channel);
-			}
-		}
-	}
-
-	return range;
-}
-
-Layer::Range LayersModel::displayRange(const QImage& image)
-{
-	const auto maxWindow = _imageRange.second - _imageRange.first;
-
-	_level = std::clamp(_imageRange.first + (_levelNormalized * maxWindow), _imageRange.first, _imageRange.second);
-	_window = std::clamp(_windowNormalized * maxWindow, _imageRange.first, _imageRange.second);
-	_displayRange.first = std::clamp(_level - (_window / 2.0f), _imageRange.first, _imageRange.second);
-	_displayRange.second = std::clamp(_level + (_window / 2.0f), _imageRange.first, _imageRange.second);
-}
-*/
+Q_DECLARE_METATYPE(LayerImage::Range);

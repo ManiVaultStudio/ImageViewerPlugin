@@ -10,7 +10,7 @@
 #include "PointData.h"
 
 #include <QFontDatabase>
-#include <QMessageBox>
+#include <QItemSelectionModel>
 #include <QFileInfo>
 #include <QDebug>
 
@@ -34,23 +34,38 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	if (!QFontDatabase::addApplicationFont(":/FontAwesome.otf"))
 		qDebug() << "Unable to load Font Awesome";
 
+	QObject::connect(_datasetsModel.selectionModel(), &QItemSelectionModel::currentRowChanged, [this](const QModelIndex& current, const QModelIndex& previous) {
+		const auto datasetName = _datasetsModel.data(current.row(), DatasetsModel::Columns::Name).toString();
+		auto imagesDataset = _core->requestData<Images>(datasetName);
+		_datasetsModel.layersModel(current.row())->setData(1, LayersModel::Columns::Image, imagesDataset.selectionImage());
+	});
+
 	QObject::connect(&_datasetsModel, &DatasetsModel::dataChanged, this, [this](const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int> &roles /*= QVector<int>()*/) {
 		const auto currentImageChanged		= topLeft.column() <= DatasetsModel::Columns::CurrentImage && bottomRight.column() >= DatasetsModel::Columns::CurrentImage;
 		const auto currentDimensionChanged	= topLeft.column() <= DatasetsModel::Columns::CurrentDimension && bottomRight.column() >= DatasetsModel::Columns::CurrentDimension;
 
 		if (currentImageChanged || currentDimensionChanged) {
 			const auto datasetName	= _datasetsModel.data(topLeft.row(), DatasetsModel::Columns::Name).toString();
-			const auto currentImage	= _datasetsModel.data(topLeft.row(), DatasetsModel::Columns::CurrentImage).toInt();
+			const auto type			= _datasetsModel.data(topLeft.row(), DatasetsModel::Columns::Type, Qt::EditRole).toInt();
+			
 
 			auto imagesDataset = _core->requestData<Images>(datasetName);
 
-			auto stackImage = imagesDataset.stackImage(currentImage);
+			switch (type)
+			{
+				case static_cast<int>(ImageCollectionType::Stack) :
+				{
+					const auto currentDimension = _datasetsModel.data(topLeft.row(), DatasetsModel::Columns::CurrentDimension).toInt();
 
-			_datasetsModel.layersModel(topLeft.row())->setData(0, LayersModel::Columns::Image, *stackImage.get());
+					_datasetsModel.layersModel(topLeft.row())->setData(0, LayersModel::Columns::Image, imagesDataset.stackImage(currentDimension));
 
-			
+					break;
+				}
 
-			_datasetsModel.layersModel(topLeft.row())->setData(0, LayersModel::Columns::ImageRange, *stackImage.get());
+				default:
+					break;
+			}
+
 		}
 	});
 }
@@ -163,6 +178,12 @@ void ImageViewerPlugin::dataRemoved(const QString dataset)
 
 void ImageViewerPlugin::selectionChanged(const QString dataset)
 {
+	/*
+	const auto datasetName = _datasetsModel.data(current.row(), DatasetsModel::Columns::Name).toString();
+	auto imagesDataset = _core->requestData<Images>(datasetName);
+	_datasetsModel.layersModel(current.row())->setData(1, LayersModel::Columns::Image, imagesDataset.selectionImage());
+	*/
+
 	//emit _imageDatasetsModel.currentDataset()->setSelectionChanged();
 }
 

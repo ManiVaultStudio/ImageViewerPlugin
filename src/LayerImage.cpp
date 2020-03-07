@@ -14,40 +14,127 @@ LayerImage::LayerImage(QObject* parent, const float& window /*= 1.0f*/, const fl
 {
 }
 
-void LayerImage::setImage(const QImage& image)
+QImage LayerImage::image() const
 {
-
+	return _image;
 }
 
-/*
-			auto image = data(topLeft.row(), LayersModel::Columns::Image, Qt::EditRole).value<QImage>();
-			auto imageBits = reinterpret_cast<ushort*>(const_cast<uchar*>(image.bits()));
+void LayerImage::setImage(const QImage& image)
+{
+	_image = image;
 
-			const auto noPixels = image.width() * image.height();
+	computeImageRange();
+	computeDisplayRange();
+}
 
-			Layer::Range range;
+LayerImage::Range LayerImage::imageRange() const
+{
+	return _imageRange;
+}
 
-			range.setMin(std::numeric_limits<float>::max());
-			range.setMax(std::numeric_limits<float>::min());
+LayerImage::Range LayerImage::displayRange() const
+{
+	return _displayRange;
+}
 
-			for (std::int32_t y = 0; y < image.height(); y++)
+float LayerImage::windowNormalized() const
+{
+	return _windowNormalized;
+}
+
+void LayerImage::setWindowNormalized(const float& windowNormalized)
+{
+	_windowNormalized = windowNormalized;
+
+	computeDisplayRange();
+}
+
+float LayerImage::levelNormalized() const
+{
+	return _levelNormalized;
+}
+
+void LayerImage::setLevelNormalized(const float& levelNormalized)
+{
+	_levelNormalized = levelNormalized;
+
+	computeDisplayRange();
+}
+
+float LayerImage::window() const
+{
+	return _window;
+}
+
+void LayerImage::setWindow(const float& window)
+{
+	_window = window;
+}
+
+float LayerImage::level() const
+{
+	return _level;
+}
+
+void LayerImage::setLevel(const float& level)
+{
+	_level = level;
+}
+
+void LayerImage::computeImageRange()
+{
+	if (_image.isNull())
+		return;
+
+	qDebug() << "Compute image range";
+	
+	_imageRange.setFullRange();
+
+	switch (_image.format())
+	{
+		case QImage::Format_RGBX64:
+		case QImage::Format_RGBA64:
+		case QImage::Format_RGBA64_Premultiplied:
+		{
+			for (std::int32_t y = 0; y < _image.height(); y++)
 			{
-				for (std::int32_t x = 0; x < image.width(); x++)
+				for (std::int32_t x = 0; x < _image.width(); x++)
 				{
-					const auto pixelId = y * image.width() + x;
+					const auto pixelColor = _image.pixelColor(x, y).rgba64();
 
-					for (int c = 0; c < 3; c++)
-					{
-						const auto channel = static_cast<float>(imageBits[pixelId * 4 + c]);
-
-						if (channel < range.min())
-							range.setMin(channel);
-
-						if (channel > range.max())
-							range.setMax(channel);
-					}
+					_imageRange.include(pixelColor.red());
+					_imageRange.include(pixelColor.green());
+					_imageRange.include(pixelColor.blue());
 				}
 			}
+			break;
+		}
 
-			setData(topLeft.row(), LayersModel::Columns::ImageRange, QVariant::fromValue(range));
-			*/
+		default:
+		{
+			for (std::int32_t y = 0; y < _image.height(); y++)
+			{
+				for (std::int32_t x = 0; x < _image.width(); x++)
+				{
+					const auto pixelColor = _image.pixelColor(x, y);
+
+					_imageRange.include(pixelColor.red());
+					_imageRange.include(pixelColor.green());
+					_imageRange.include(pixelColor.blue());
+				}
+			}
+			break;
+		}
+	}
+}
+
+void LayerImage::computeDisplayRange()
+{
+	const auto maxWindow = _imageRange.length();
+
+	_level		= std::clamp(_imageRange.min() + (_levelNormalized * maxWindow), _imageRange.min(), _imageRange.max());
+	_window		= std::clamp(_windowNormalized * maxWindow, _imageRange.min(), _imageRange.max());
+	
+	_displayRange.setMin(std::clamp(_level - (_window / 2.0f), _imageRange.min(), _imageRange.max()));
+	_displayRange.setMax(std::clamp(_level + (_window / 2.0f), _imageRange.min(), _imageRange.max()));
+}

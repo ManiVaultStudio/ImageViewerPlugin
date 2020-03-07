@@ -74,27 +74,27 @@ LayersWidget::LayersWidget(QWidget* parent, DatasetsModel* datasetsModel) :
 
 	QObject::connect(_ui->layerWindowDoubleSpinBox, qOverload<double>(&QDoubleSpinBox::valueChanged), [this](double value) {
 		for (auto index : _ui->layersTreeView->selectionModel()->selectedRows()) {
-			_layersModel->setData(_layersModel->index(index.row(), LayersModel::Columns::Window), value);
+			_layersModel->setData(_layersModel->index(index.row(), LayersModel::Columns::WindowNormalized), value);
 		}
 	});
 
 	QObject::connect(_ui->layerWindowHorizontalSlider, &QSlider::valueChanged, [this](int value) {
 		for (auto index : _ui->layersTreeView->selectionModel()->selectedRows()) {
 			const auto range = _ui->layerWindowHorizontalSlider->maximum() - _ui->layerWindowHorizontalSlider->minimum();
-			_layersModel->setData(_layersModel->index(index.row(), LayersModel::Columns::Window), value / static_cast<float>(range));
+			_layersModel->setData(_layersModel->index(index.row(), LayersModel::Columns::WindowNormalized), value / static_cast<float>(range));
 		}
 	});
 
 	QObject::connect(_ui->layerLevelDoubleSpinBox, qOverload<double>(&QDoubleSpinBox::valueChanged), [this](double value) {
 		for (auto index : _ui->layersTreeView->selectionModel()->selectedRows()) {
-			_layersModel->setData(_layersModel->index(index.row(), LayersModel::Columns::Level), value);
+			_layersModel->setData(_layersModel->index(index.row(), LayersModel::Columns::LevelNormalized), value);
 		}
 	});
 
 	QObject::connect(_ui->layerLevelHorizontalSlider, &QSlider::valueChanged, [this](int value) {
 		for (auto index : _ui->layersTreeView->selectionModel()->selectedRows()) {
 			const auto range = _ui->layerLevelHorizontalSlider->maximum() - _ui->layerLevelHorizontalSlider->minimum();
-			_layersModel->setData(_layersModel->index(index.row(), LayersModel::Columns::Level), value / static_cast<float>(range));
+			_layersModel->setData(_layersModel->index(index.row(), LayersModel::Columns::LevelNormalized), value / static_cast<float>(range));
 		}
 	});
 }
@@ -263,14 +263,14 @@ void LayersWidget::updateData(const QModelIndex& topLeft, const QModelIndex& bot
 		_ui->layerOpacityHorizontalSlider->blockSignals(false);
 	}
 
-	const auto windowFlags = _layersModel->flags(_layersModel->index(topLeft.row(), LayersModel::Columns::Window));
+	const auto windowFlags = _layersModel->flags(_layersModel->index(topLeft.row(), LayersModel::Columns::WindowNormalized));
 
 	_ui->layerWindowLabel->setEnabled(mightEdit && windowFlags & Qt::ItemIsEditable);
 	_ui->layerWindowDoubleSpinBox->setEnabled(mightEdit && windowFlags & Qt::ItemIsEditable);
 	_ui->layerWindowHorizontalSlider->setEnabled(mightEdit && windowFlags & Qt::ItemIsEditable);
 
-	if (topLeft.column() <= LayersModel::Columns::Window && bottomRight.column() >= LayersModel::Columns::Window) {
-		const auto window = _layersModel->data(topLeft.row(), LayersModel::Columns::Window, Qt::EditRole).toFloat();
+	if (topLeft.column() <= LayersModel::Columns::WindowNormalized && bottomRight.column() >= LayersModel::Columns::WindowNormalized) {
+		const auto window = _layersModel->data(topLeft.row(), LayersModel::Columns::WindowNormalized, Qt::EditRole).toFloat();
 
 		_ui->layerWindowDoubleSpinBox->blockSignals(true);
 		_ui->layerWindowDoubleSpinBox->setValue(singleRowSelection ? window : 1.0f);
@@ -281,14 +281,14 @@ void LayersWidget::updateData(const QModelIndex& topLeft, const QModelIndex& bot
 		_ui->layerWindowHorizontalSlider->blockSignals(false);
 	}
 
-	const auto levelFlags = _layersModel->flags(_layersModel->index(topLeft.row(), LayersModel::Columns::Level));
+	const auto levelFlags = _layersModel->flags(_layersModel->index(topLeft.row(), LayersModel::Columns::LevelNormalized));
 
 	_ui->layerLevelLabel->setEnabled(mightEdit && levelFlags & Qt::ItemIsEditable);
 	_ui->layerLevelDoubleSpinBox->setEnabled(mightEdit && levelFlags & Qt::ItemIsEditable);
 	_ui->layerLevelHorizontalSlider->setEnabled(mightEdit && levelFlags & Qt::ItemIsEditable);
 
-	if (topLeft.column() <= LayersModel::Columns::Level && bottomRight.column() >= LayersModel::Columns::Level) {
-		const auto level = _layersModel->data(topLeft.row(), LayersModel::Columns::Level, Qt::EditRole).toFloat();
+	if (topLeft.column() <= LayersModel::Columns::LevelNormalized && bottomRight.column() >= LayersModel::Columns::LevelNormalized) {
+		const auto level = _layersModel->data(topLeft.row(), LayersModel::Columns::LevelNormalized, Qt::EditRole).toFloat();
 
 		_ui->layerLevelDoubleSpinBox->blockSignals(true);
 		_ui->layerLevelDoubleSpinBox->setValue(singleRowSelection ? level : 0.5f);

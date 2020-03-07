@@ -101,11 +101,11 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 				case Columns::Opacity:
 					return QString("%1%").arg(QString::number(100.0f * layer->opacity(), 'f', 1));
 
-				case Columns::Window:
-					return QString::number(layer->image().window(), 'f', 2);
+				case Columns::WindowNormalized:
+					return QString::number(layer->image().windowNormalized(), 'f', 2);
 
-				case Columns::Level:
-					return QString::number(layer->image().level(), 'f', 2);
+				case Columns::LevelNormalized:
+					return QString::number(layer->image().levelNormalized(), 'f', 2);
 
 				case Columns::Color:
 					return layer->color().name();
@@ -153,11 +153,11 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 				case Columns::Opacity:
 					return layer->opacity();
 
-				case Columns::Window:
-					return layer->image().window();
+				case Columns::WindowNormalized:
+					return layer->image().windowNormalized();
 
-				case Columns::Level:
-					return layer->image().level();
+				case Columns::LevelNormalized:
+					return layer->image().levelNormalized();
 
 				case Columns::Color:
 					return layer->color();
@@ -165,14 +165,13 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 					/*
 				case Columns::Image:
 					return layer->image();
-					
+					*/
 
 				case Columns::ImageRange:
 					return QVariant::fromValue(layer->image().imageRange());
 
 				case Columns::DisplayRange:
 					return QVariant::fromValue(layer->image().displayRange());
-					*/
 
 				default:
 					break;
@@ -191,11 +190,16 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 
 				case Columns::Enabled:
 				case Columns::Fixed:
+				case Columns::Removable:
 				case Columns::Order:
 				case Columns::Opacity:
-				case Columns::Window:
-				case Columns::Level:
+				case Columns::WindowNormalized:
+				case Columns::LevelNormalized:
 				case Columns::Color:
+					return Qt::AlignRight + Qt::AlignVCenter;
+
+				case Columns::ImageRange:
+				case Columns::DisplayRange:
 					return Qt::AlignRight + Qt::AlignVCenter;
 
 				default:
@@ -243,10 +247,10 @@ QVariant LayersModel::headerData(int section, Qt::Orientation orientation, int r
 			case Columns::Opacity:
 				return "Opacity";
 
-			case Columns::Window:
+			case Columns::WindowNormalized:
 				return "Window";
 
-			case Columns::Level:
+			case Columns::LevelNormalized:
 				return "Level";
 
 			case Columns::Color:
@@ -291,12 +295,14 @@ Qt::ItemFlags LayersModel::flags(const QModelIndex& index) const
 		}
 
 		case Columns::Type:
-		case Columns::Fixed:
-		case Columns::Removable:
 			break;
 
 		case Columns::Enabled:
 			flags |= Qt::ItemIsEditable;
+			break;
+
+		case Columns::Fixed:
+		case Columns::Removable:
 			break;
 
 		case Columns::Order:
@@ -306,7 +312,7 @@ Qt::ItemFlags LayersModel::flags(const QModelIndex& index) const
 			flags |= Qt::ItemIsEditable;
 			break;
 
-		case Columns::Window:
+		case Columns::WindowNormalized:
 		{
 			if (type == Layer::Type::Image)
 				flags |= Qt::ItemIsEditable;
@@ -314,7 +320,7 @@ Qt::ItemFlags LayersModel::flags(const QModelIndex& index) const
 			break;
 		}
 
-		case Columns::Level:
+		case Columns::LevelNormalized:
 		{
 			if (type == Layer::Type::Image)
 				flags |= Qt::ItemIsEditable;
@@ -331,6 +337,10 @@ Qt::ItemFlags LayersModel::flags(const QModelIndex& index) const
 		}
 
 		case Columns::Image:
+			break;
+
+		case Columns::ImageRange:
+		case Columns::DisplayRange:
 			break;
 
 		default:
@@ -379,12 +389,12 @@ bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int r
 				layer->setOpacity(value.toFloat());
 				break;
 
-			case Columns::Window:
-				layer->image().setWindow(value.toFloat());
+			case Columns::WindowNormalized:
+				layer->image().setWindowNormalized(value.toFloat());
 				break;
 
-			case Columns::Level:
-				layer->image().setLevel(value.toFloat());
+			case Columns::LevelNormalized:
+				layer->image().setLevelNormalized(value.toFloat());
 				break;
 
 			case Columns::Color:
@@ -394,6 +404,10 @@ bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int r
 			case Columns::Image:
 				layer->image().setImage(value.value<QImage>());
 				break;
+
+			case Columns::ImageRange:
+			case Columns::DisplayRange:
+				break;
 				
 			default:
 				return false;
@@ -401,11 +415,20 @@ bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int r
 
 		_layers->replace(row, layer);
 
-		if (index.column() == Columns::Enabled) {
-			emit dataChanged(this->index(row, 0), this->index(row, rowCount() - 1));
-		}
-		else {
-			emit dataChanged(index, index);
+		switch (index.column())
+		{
+			case Columns::Enabled:
+				emit dataChanged(this->index(row, 0), this->index(row, columnCount() - 1));
+				break;
+
+			case Columns::Image:
+			case Columns::WindowNormalized:
+			case Columns::LevelNormalized:
+				emit dataChanged(this->index(row, 0), this->index(row, columnCount() - 1));
+				break;
+
+			default:
+				emit dataChanged(index, index);
 		}
 
 		return true;
