@@ -33,6 +33,7 @@ SelectionWidget::SelectionWidget(QWidget* parent, DatasetsModel* datasetsModel) 
 	headerView->hideSection(static_cast<int>(DatasetsModel::Columns::ImageFilePaths));
 	headerView->hideSection(static_cast<int>(DatasetsModel::Columns::CurrentImageFilepath));
 	headerView->hideSection(static_cast<int>(DatasetsModel::Columns::CurrentDimensionFilepath));
+	//headerView->hideSection(static_cast<int>(DatasetsModel::Columns::PointsName));
 
 	QObject::connect(datasetsModel, &DatasetsModel::rowsInserted, this, [this](const QModelIndex& parent, int first, int last) {
 		_ui->selectionGroupBox->setEnabled(true);

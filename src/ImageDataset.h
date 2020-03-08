@@ -7,6 +7,10 @@
 
 class LayersModel;
 
+using Indices = QVector<std::uint32_t>;
+
+Q_DECLARE_METATYPE(Indices);
+
 /** TODO */
 class ImageDataset : public QObject
 {
@@ -29,6 +33,8 @@ public:
 	QStringList						_dimensionNames;		/** TODO */
 	bool							_averageImages;			/** TODO */
 	QStringList						_imageFilePaths;		/** TODO */
+	QString							_pointsName;			/** TODO */
+	Indices							_selection;				/** TODO */
 	Layers							_layers;				/** TODO */
 	QSharedPointer<LayersModel>		_layersModel;			/** TODO */
 };

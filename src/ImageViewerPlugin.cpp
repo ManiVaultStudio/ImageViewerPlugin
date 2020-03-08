@@ -16,6 +16,8 @@
 
 #include "IndexSet.h"
 
+using namespace hdps;
+
 Q_PLUGIN_METADATA(IID "nl.tudelft.ImageViewerPlugin")
 
 ImageViewerPlugin::ImageViewerPlugin() : 
@@ -161,7 +163,7 @@ void ImageViewerPlugin::dataAdded(const QString dataset)
 			break;
 	}
 
-	imageDataset._averageImages	= false;
+	imageDataset._pointsName = imagesDataset.points()->getDataName();
 
 	_datasetsModel.add(&imageDataset);
 }
@@ -178,13 +180,15 @@ void ImageViewerPlugin::dataRemoved(const QString dataset)
 
 void ImageViewerPlugin::selectionChanged(const QString dataset)
 {
-	/*
-	const auto datasetName = _datasetsModel.data(current.row(), DatasetsModel::Columns::Name).toString();
-	auto imagesDataset = _core->requestData<Images>(datasetName);
-	_datasetsModel.layersModel(current.row())->setData(1, LayersModel::Columns::Image, imagesDataset.selectionImage());
-	*/
+	const auto hits = _datasetsModel.match(_datasetsModel.index(0, DatasetsModel::Columns::PointsName), Qt::DisplayRole, dataset, -1, Qt::MatchExactly);
+	
+	if (hits.isEmpty())
+		return;
 
-	//emit _imageDatasetsModel.currentDataset()->setSelectionChanged();
+	const auto datasetName	= _datasetsModel.data(_datasetsModel.index(hits.first().row(), DatasetsModel::Columns::Name), Qt::DisplayRole).toString();
+	const auto selection	= _core->requestData<Images>(datasetName).indices();
+
+	_datasetsModel.setData(_datasetsModel.index(hits.first().row(), DatasetsModel::Columns::Selection), QVariant::fromValue(Indices::fromStdVector(selection)));
 }
 
 hdps::DataTypes ImageViewerPlugin::supportedDataTypes() const

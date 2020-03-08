@@ -25,7 +25,7 @@ int DatasetsModel::columnCount(const QModelIndex& parent) const
 {
 	Q_UNUSED(parent);
 
-	return 16;
+	return 19;
 }
 
 QVariant DatasetsModel::data(const QModelIndex& index, int role) const
@@ -83,16 +83,43 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 				return QString("[%1]").arg(dataset->_imageFilePaths.join(", "));
 
 			case Columns::CurrentImageFilepath:
+			{
 				if (dataset->_currentImage < 0 || dataset->_currentImage >= dataset->_imageFilePaths.size())
 					return "";
 
 				return dataset->_imageFilePaths[dataset->_currentImage];
+			}
 
 			case Columns::CurrentDimensionFilepath:
+			{
 				if (dataset->_currentDimension < 0 || dataset->_currentDimension >= dataset->_imageFilePaths.size())
 					return "";
 
 				return dataset->_imageFilePaths[dataset->_currentDimension];
+			}
+
+			case Columns::PointsName:
+				return dataset->_pointsName;
+
+			case Columns::Selection:
+			{
+				auto selection = QStringList();
+
+				if (dataset->_selection.size() <= 2) {
+					for (const auto& id : dataset->_selection)
+						selection << QString::number(id);
+				}
+				else {
+					selection << QString::number(dataset->_selection.first());
+					selection << "...";
+					selection << QString::number(dataset->_selection.last());
+				}
+
+				return QString("[%1]").arg(selection.join(", "));
+			}
+
+			case Columns::SelectionSize:
+				return QString::number(dataset->_selection.size());
 
 			default:
 				break;
@@ -153,6 +180,15 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 				if (dataset->_currentDimension < 0 || dataset->_currentDimension >= dataset->_imageFilePaths.size())
 					return "";
 
+			case Columns::PointsName:
+				return dataset->_pointsName;
+
+			case Columns::Selection:
+				return QVariant::fromValue(dataset->_selection);
+
+			case Columns::SelectionSize:
+				return dataset->_selection.size();
+
 			default:
 				break;
 		}
@@ -203,14 +239,36 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 				return QString("Image file paths: [%1]").arg(dataset->_imageFilePaths.join(", "));
 
 			case Columns::CurrentImageFilepath:
+			{
 				if (dataset->_currentImage < 0 || dataset->_currentImage >= dataset->_imageFilePaths.size())
 					return "";
 
 				return dataset->_imageFilePaths[dataset->_currentImage];
+			}
 
 			case Columns::CurrentDimensionFilepath:
+			{
 				if (dataset->_currentDimension < 0 || dataset->_currentDimension >= dataset->_imageFilePaths.size())
 					return "";
+			}
+
+			case Columns::PointsName:
+			{
+				return dataset->_pointsName;
+			}
+
+			case Columns::Selection:
+			{
+				auto selection = QStringList();
+
+				for (const auto& id : dataset->_selection)
+					selection << QString::number(id);
+
+				return QString("Selected pixels: [%1]").arg(selection.join(", "));
+			}
+
+			case Columns::SelectionSize:
+				return QString("Number of selected pixels: %1").arg(QString::number(dataset->_selection.size()));
 
 			default:
 				break;
@@ -240,10 +298,10 @@ QVariant DatasetsModel::headerData(int section, Qt::Orientation orientation, int
 				return "Size";
 
 			case Columns::NoPoints:
-				return "#Points";
+				return "No. points";
 
 			case Columns::NoDimensions:
-				return "#Dimensions";
+				return "No. dimensions";
 
 			case Columns::CurrentImage:
 				return "Current image ID";
@@ -265,6 +323,15 @@ QVariant DatasetsModel::headerData(int section, Qt::Orientation orientation, int
 
 			case Columns::AverageImages:
 				return "Average";
+
+			case Columns::PointsName:
+				return "Points dataset name";
+
+			case Columns::Selection:
+				return "Selection";
+
+			case Columns::SelectionSize:
+				return "No. selected pixels";
 
 			default:
 				return QVariant();
@@ -319,6 +386,15 @@ Qt::ItemFlags DatasetsModel::flags(const QModelIndex& index) const
 
 			break;
 		}
+
+		case Columns::PointsName:
+			break;
+
+		case Columns::Selection:
+			break;
+
+		case Columns::SelectionSize:
+			break;
 
 		default:
 			break;
@@ -383,13 +459,30 @@ bool DatasetsModel::setData(const QModelIndex& index, const QVariant& value, int
 				dataset->_imageFilePaths = value.toStringList();
 				break;
 
+			case Columns::PointsName:
+				dataset->_pointsName = value.toString();
+				break;
+
+			case Columns::Selection:
+				dataset->_selection = value.value<Indices>();
+				break;
+
+			case Columns::SelectionSize:
+				break;
+
 			default:
 				return false;
 		}
 
-		datasets().replace(row, dataset);
+		switch (index.column())
+		{
+			case Columns::Selection:
+				emit dataChanged(this->index(row, Columns::Selection), this->index(row, Columns::SelectionSize));
+				break;
 
-		emit(dataChanged(index, index));
+			default:
+				emit dataChanged(index, index);
+		}
 
 		return true;
 	}
@@ -474,6 +567,7 @@ void DatasetsModel::add(ImageDataset* dataset)
 	setData(index(0, Columns::ImageFilePaths, QModelIndex()), dataset->_imageFilePaths);
 	setData(index(0, Columns::CurrentImage, QModelIndex()), dataset->_currentImage);
 	setData(index(0, Columns::CurrentDimension, QModelIndex()), dataset->_currentDimension);
+	setData(index(0, Columns::PointsName, QModelIndex()), dataset->_pointsName);
 }
 
 LayersModel* DatasetsModel::layersModel(const int& row)

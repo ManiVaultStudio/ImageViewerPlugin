@@ -28,7 +28,10 @@ public: // Columns
 		AverageImages,
 		ImageFilePaths,
 		CurrentImageFilepath,
-		CurrentDimensionFilepath
+		CurrentDimensionFilepath,
+		PointsName,
+		Selection,
+		SelectionSize
 	};
 
 public: // Construction/destruction
