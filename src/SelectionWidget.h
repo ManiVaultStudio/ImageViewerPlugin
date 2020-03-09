@@ -23,6 +23,11 @@ public: // Construction/destruction
 	/** Destructor */
 	~SelectionWidget();
 
+protected:
+
+	/** TODO */
+	void updateData(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles = QVector<int>());
+
 private:
 	DatasetsModel*							_datasetsModel;		/** TODO */
 	std::unique_ptr<Ui::SelectionWidget>	_ui;				/** TODO */

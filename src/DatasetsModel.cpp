@@ -14,14 +14,14 @@ DatasetsModel::DatasetsModel(QObject* parent) :
 
 DatasetsModel::~DatasetsModel() = default;
 
-int DatasetsModel::rowCount(const QModelIndex& parent) const
+int DatasetsModel::rowCount(const QModelIndex& parent /*= QModelIndex()*/) const
 {
 	Q_UNUSED(parent);
 
 	return datasets().size();
 }
 
-int DatasetsModel::columnCount(const QModelIndex& parent) const
+int DatasetsModel::columnCount(const QModelIndex& parent /*= QModelIndex()*/) const
 {
 	Q_UNUSED(parent);
 
@@ -71,7 +71,35 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 				return dataset->_dimensionNames.isEmpty() ? "" : dataset->_dimensionNames[dataset->_currentDimension];
 
 			case Columns::ImageNames:
-				return QString("[%1]").arg(dataset->_imageNames.join(", "));
+			{
+				auto imageNames = QStringList();
+
+				switch (dataset->_type)
+				{
+					case (static_cast<int>(ImageCollectionType::Sequence)):
+					{
+						if (dataset->_selection.isEmpty()) {
+							imageNames = dataset->_imageNames;
+						} else {
+							for (const auto& id : dataset->_selection)
+								imageNames << dataset->_imageNames[id];
+						}
+						
+						break;
+					}
+
+					case (static_cast<int>(ImageCollectionType::Stack)) :
+					{
+						imageNames = dataset->_imageNames;
+						break;
+					}
+
+					default:
+						break;
+				}
+				
+				return QString("[%1]").arg(imageNames.join(", "));
+			}
 
 			case Columns::DimensionNames:
 				return QString("[%1]").arg(dataset->_dimensionNames.join(", "));
@@ -159,7 +187,36 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 				return dataset->_dimensionNames.isEmpty() ? "" : dataset->_dimensionNames[dataset->_currentDimension];
 
 			case Columns::ImageNames:
-				return dataset->_imageNames;
+			{
+				auto imageNames = QStringList();
+
+				switch (dataset->_type)
+				{
+					case (static_cast<int>(ImageCollectionType::Sequence)) :
+					{
+						if (dataset->_selection.isEmpty()) {
+							imageNames = dataset->_imageNames;
+						}
+						else {
+							for (const auto& id : dataset->_selection)
+								imageNames << dataset->_imageNames[id];
+						}
+
+						break;
+					}
+
+					case (static_cast<int>(ImageCollectionType::Stack)) :
+					{
+						imageNames = dataset->_imageNames;
+						break;
+					}
+
+					default:
+						break;
+				}
+
+				return imageNames;
+			}
 
 			case Columns::DimensionNames:
 				return dataset->_dimensionNames;
@@ -331,7 +388,7 @@ QVariant DatasetsModel::headerData(int section, Qt::Orientation orientation, int
 				return "Selection";
 
 			case Columns::SelectionSize:
-				return "No. selected pixels";
+				return "No. selected items";
 
 			default:
 				return QVariant();
@@ -436,7 +493,10 @@ bool DatasetsModel::setData(const QModelIndex& index, const QVariant& value, int
 				break;
 
 			case Columns::CurrentImage:
-				dataset->_currentImage = value.toInt();
+				if (dataset->_selection.isEmpty())
+					dataset->_currentImage = value.toInt();
+				else
+					dataset->_currentImage = dataset->_selection[value.toInt()];
 				break;
 
 			case Columns::CurrentDimension:
@@ -478,6 +538,7 @@ bool DatasetsModel::setData(const QModelIndex& index, const QVariant& value, int
 		{
 			case Columns::Selection:
 				emit dataChanged(this->index(row, Columns::Selection), this->index(row, Columns::SelectionSize));
+				emit dataChanged(this->index(row, Columns::ImageNames), this->index(row, Columns::ImageNames));
 				break;
 
 			default:

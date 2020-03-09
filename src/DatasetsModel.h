@@ -45,10 +45,10 @@ public: // Construction/destruction
 public: // Inherited members
 
 	/** TODO */
-	int rowCount(const QModelIndex& parent) const;
+	int rowCount(const QModelIndex& parent = QModelIndex()) const;
 
 	/** TODO */
-	int columnCount(const QModelIndex& parent) const;
+	int columnCount(const QModelIndex& parent = QModelIndex()) const;
 
 	/** TODO */
 	QVariant data(const QModelIndex& index, int role) const;

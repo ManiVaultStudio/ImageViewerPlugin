@@ -185,10 +185,13 @@ void ImageViewerPlugin::selectionChanged(const QString dataset)
 	if (hits.isEmpty())
 		return;
 
-	const auto datasetName	= _datasetsModel.data(_datasetsModel.index(hits.first().row(), DatasetsModel::Columns::Name), Qt::DisplayRole).toString();
-	const auto selection	= _core->requestData<Images>(datasetName).indices();
+	const auto firstHit		= hits.first();
+	const auto datasetName	= _datasetsModel.data(_datasetsModel.index(firstHit.row(), DatasetsModel::Columns::Name), Qt::DisplayRole).toString();
+	
+	auto imagesDataset = _core->requestData<Images>(datasetName);
 
-	_datasetsModel.setData(_datasetsModel.index(hits.first().row(), DatasetsModel::Columns::Selection), QVariant::fromValue(Indices::fromStdVector(selection)));
+	_datasetsModel.setData(_datasetsModel.index(hits.first().row(), DatasetsModel::Columns::Selection), QVariant::fromValue(Indices::fromStdVector(imagesDataset.indices())));
+	_datasetsModel.layersModel(firstHit.row())->setData(1, LayersModel::Columns::Image, imagesDataset.selectionImage());
 }
 
 hdps::DataTypes ImageViewerPlugin::supportedDataTypes() const
