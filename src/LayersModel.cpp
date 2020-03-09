@@ -50,6 +50,13 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 			if (index.column() == Columns::Locked)
 				return QFont("Font Awesome 5 Free Solid", 6, 1);
 
+			if (index.column() == Columns::Name)
+			{
+				auto font = QFont();
+				font.setBold(true);
+				return font;
+			}
+
 			break;
 		}
 
