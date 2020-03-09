@@ -20,7 +20,8 @@ public:
 	enum Flags : int {
 		Enabled		= 1ul << 0,		/** TODO */
 		Fixed		= 1ul << 1,		/** TODO */
-		Removable	= 1ul << 2		/** TODO */
+		Removable	= 1ul << 2,		/** TODO */
+		Mask		= 1ul << 3		/** TODO */
 	};
 
 	/** TODO */

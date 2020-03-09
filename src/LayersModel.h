@@ -13,12 +13,13 @@ public: // Columns
 	
 	/** TODO */
 	enum Columns : int {
+		Enabled,
 		Locked,
 		Name,
 		Type,
-		Enabled,
 		Fixed,
 		Removable,
+		Mask,
 		Order,
 		Opacity,
 		WindowNormalized,

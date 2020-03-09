@@ -30,7 +30,7 @@ int LayersModel::columnCount(const QModelIndex& parent /*= QModelIndex()*/) cons
 {
 	Q_UNUSED(parent);
 
-	return 14;
+	return 15;
 }
 
 QVariant LayersModel::data(const QModelIndex& index, int role) const
@@ -50,10 +50,10 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 			if (index.column() == Columns::Locked)
 				return QFont("Font Awesome 5 Free Solid", 6, 1);
 
-			if (index.column() == Columns::Name)
+			if (layer->type() == Layer::Type::Image)
 			{
 				auto font = QFont();
-				font.setBold(true);
+				font.setItalic(true);
 				return font;
 			}
 
@@ -64,11 +64,24 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 			if (index.column() == Columns::Locked)
 				return QBrush(Qt::black);
 			else
-				return layer->isFlagSet(Layer::Flags::Enabled) ? QBrush(Qt::black) : QBrush(Qt::darkGray);
+				return layer->isFlagSet(Layer::Flags::Enabled) ? QBrush(Qt::black) : QBrush(QColor(80, 80, 80));
+
+		case Qt::CheckStateRole:
+		{
+			switch (index.column()) {
+				case Columns::Name:
+					return layer->isFlagSet(Layer::Flags::Enabled) ? Qt::Checked : Qt::Unchecked;
+			}
+
+			break;
+		}
 
 		case Qt::DisplayRole:
 		{
 			switch (index.column()) {
+				case Columns::Enabled:
+					break;
+
 				case Columns::Locked:
 					return layer->isFlagSet(Layer::Flags::Fixed) ? u8"\uf023" : u8"\uf09c";
 
@@ -93,14 +106,14 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 					}
 				}
 
-				case Columns::Enabled:
-					return layer->isFlagSet(Layer::Flags::Enabled) ? "true" : "false";
-
 				case Columns::Fixed:
 					return layer->isFlagSet(Layer::Flags::Fixed) ? "true" : "false";
 
 				case Columns::Removable:
 					return layer->isFlagSet(Layer::Flags::Removable) ? "true" : "false";
+
+				case Columns::Mask:
+					return layer->isFlagSet(Layer::Flags::Mask) ? "true" : "false";
 
 				case Columns::Order:
 					return QString::number(layer->order());
@@ -136,6 +149,9 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 		case Qt::EditRole:
 		{
 			switch (index.column()) {
+				case Columns::Enabled:
+					return layer->isFlagSet(Layer::Flags::Enabled);
+
 				case Columns::Locked:
 					return layer->isFlagSet(Layer::Flags::Fixed);
 
@@ -145,14 +161,14 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 				case Columns::Type:
 					return static_cast<int>(layer->type());
 
-				case Columns::Enabled:
-					return layer->isFlagSet(Layer::Flags::Enabled);
-
 				case Columns::Fixed:
 					return layer->isFlagSet(Layer::Flags::Fixed);
 
 				case Columns::Removable:
 					return layer->isFlagSet(Layer::Flags::Removable);
+
+				case Columns::Mask:
+					return layer->isFlagSet(Layer::Flags::Mask);
 
 				case Columns::Order:
 					return layer->order();
@@ -190,14 +206,15 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 		case Qt::TextAlignmentRole:
 		{
 			switch (index.column()) {
+				case Columns::Enabled:
 				case Columns::Locked:
 				case Columns::Name:
 				case Columns::Type:
 					return Qt::AlignLeft + Qt::AlignVCenter;
 
-				case Columns::Enabled:
 				case Columns::Fixed:
 				case Columns::Removable:
+				case Columns::Mask:
 				case Columns::Order:
 				case Columns::Opacity:
 				case Columns::WindowNormalized:
@@ -230,6 +247,9 @@ QVariant LayersModel::headerData(int section, Qt::Orientation orientation, int r
 
 	if (orientation == Qt::Horizontal) {
 		switch (section) {
+			case Columns::Enabled:
+				return "";
+
 			case Columns::Locked:
 				return "";
 
@@ -239,14 +259,14 @@ QVariant LayersModel::headerData(int section, Qt::Orientation orientation, int r
 			case Columns::Type:
 				return "Type";
 
-			case Columns::Enabled:
-				return "Enabled";
-
 			case Columns::Fixed:
 				return "Fixed";
 
 			case Columns::Removable:
 				return "Removable";
+
+			case Columns::Mask:
+				return "Mask";
 
 			case Columns::Order:
 				return "Order";
@@ -290,11 +310,17 @@ Qt::ItemFlags LayersModel::flags(const QModelIndex& index) const
 	const auto type = data(index.row(), LayersModel::Type, Qt::EditRole).toInt();
 
 	switch (index.column()) {
+		case Columns::Enabled:
+			flags |= Qt::ItemIsEditable;
+			break;
+
 		case Columns::Locked:
 			break;
 
 		case Columns::Name:
 		{
+			flags |= Qt::ItemIsUserCheckable;
+
 			if (!data(index.row(), LayersModel::Columns::Fixed, Qt::EditRole).toBool())
 				flags |= Qt::ItemIsEditable;
 
@@ -304,13 +330,17 @@ Qt::ItemFlags LayersModel::flags(const QModelIndex& index) const
 		case Columns::Type:
 			break;
 
-		case Columns::Enabled:
-			flags |= Qt::ItemIsEditable;
-			break;
-
 		case Columns::Fixed:
 		case Columns::Removable:
 			break;
+
+		case Columns::Mask:
+		{
+			if (type == Layer::Type::Selection)
+				flags |= Qt::ItemIsEditable;
+
+			break;
+		}
 
 		case Columns::Order:
 			break;
@@ -359,12 +389,31 @@ Qt::ItemFlags LayersModel::flags(const QModelIndex& index) const
 
 bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int role /*= Qt::DisplayRole*/)
 {
-	if (index.isValid() && role == Qt::DisplayRole) {
-		int row = index.row();
+	if (!index.isValid())
+		return false;
 
-		auto layer = _layers->value(row);
+	int row = index.row();
 
+	auto layer = _layers->value(row);
+
+	if (role == Qt::CheckStateRole) {
 		switch (index.column()) {
+			case Columns::Name:
+				layer->setFlag(Layer::Flags::Enabled, value == Qt::Checked ? true : false);
+				emit dataChanged(this->index(row, 0), this->index(row, columnCount() - 1));
+				break;
+
+			default:
+				break;
+		}
+	}
+
+	if (role == Qt::DisplayRole) {
+		switch (index.column()) {
+			case Columns::Enabled:
+				layer->setFlag(Layer::Flags::Enabled, value.toBool());
+				break;
+
 			case Columns::Locked:
 				break;
 
@@ -376,16 +425,16 @@ bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int r
 				layer->setType(static_cast<Layer::Type>(value.toInt()));
 				break;
 
-			case Columns::Enabled:
-				layer->setFlag(Layer::Flags::Enabled, value.toBool());
-				break;
-
 			case Columns::Fixed:
 				layer->setFlag(Layer::Flags::Fixed, value.toBool());
 				break;
 
 			case Columns::Removable:
 				layer->setFlag(Layer::Flags::Removable, value.toBool());
+				break;
+
+			case Columns::Mask:
+				layer->setFlag(Layer::Flags::Mask, value.toBool());
 				break;
 
 			case Columns::Order:
@@ -417,31 +466,28 @@ bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int r
 				break;
 				
 			default:
-				return false;
-		}
-
-		_layers->replace(row, layer);
-
-		switch (index.column())
-		{
-			case Columns::Enabled:
-				emit dataChanged(this->index(row, 0), this->index(row, columnCount() - 1));
 				break;
-
-			case Columns::Image:
-			case Columns::WindowNormalized:
-			case Columns::LevelNormalized:
-				emit dataChanged(this->index(row, 0), this->index(row, columnCount() - 1));
-				break;
-
-			default:
-				emit dataChanged(index, index);
 		}
-
-		return true;
 	}
 
-	return false;
+	switch (index.column())
+	{
+		case Columns::Enabled:
+			emit dataChanged(this->index(row, 0), this->index(row, columnCount() - 1));
+			break;
+
+		case Columns::Image:
+		case Columns::WindowNormalized:
+		case Columns::LevelNormalized:
+			emit dataChanged(this->index(row, 0), this->index(row, columnCount() - 1));
+			break;
+
+		default:
+			emit dataChanged(index, index);
+			break;
+	}
+
+	return true;
 }
 
 bool LayersModel::insertRows(int position, int rows, const QModelIndex& index /*= QModelIndex()*/)
