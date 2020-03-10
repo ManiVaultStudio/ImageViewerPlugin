@@ -77,7 +77,7 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 				return dataset->dimensionNames(Qt::DisplayRole);
 
 			case Columns::Average:
-				return dataset->_averageImages ? "true" : "false";
+				return dataset->average(Qt::DisplayRole);
 
 			case Columns::ImageFilePaths:
 				return QString("[%1]").arg(dataset->_imageFilePaths.join(", "));
@@ -165,7 +165,7 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 				return dataset->dimensionNames(Qt::EditRole);
 
 			case Columns::Average:
-				return dataset->_averageImages;
+				return dataset->average(Qt::EditRole);
 
 			case Columns::ImageFilePaths:
 				return dataset->_imageFilePaths;
@@ -233,7 +233,7 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 				return dataset->dimensionNames(Qt::ToolTipRole);
 
 			case Columns::Average:
-				return QString("Average images: %1").arg(dataset->_averageImages ? "true" : "false");
+				return dataset->average(Qt::ToolTipRole);
 
 			case Columns::ImageFilePaths:
 				return QString("Image file paths: [%1]").arg(dataset->_imageFilePaths.join(", "));
@@ -452,7 +452,7 @@ bool DatasetsModel::setData(const QModelIndex& index, const QVariant& value, int
 				break;
 
 			case Columns::Average:
-				dataset->_averageImages = value.toBool();
+				dataset->setAverage(value.toBool());
 				break;
 
 			case Columns::ImageFilePaths:
@@ -569,7 +569,7 @@ void DatasetsModel::add(ImageDataset* dataset)
 	setData(index(0, Columns::NoDimensions, QModelIndex()), dataset->_noDimensions);
 	setData(index(0, Columns::ImageNames, QModelIndex()), dataset->_imageNames);
 	setData(index(0, Columns::DimensionNames, QModelIndex()), dataset->_dimensionNames);
-	setData(index(0, Columns::Average, QModelIndex()), dataset->_averageImages);
+	setData(index(0, Columns::Average, QModelIndex()), dataset->_average);
 	setData(index(0, Columns::ImageFilePaths, QModelIndex()), dataset->_imageFilePaths);
 	setData(index(0, Columns::CurrentImage, QModelIndex()), dataset->_currentImage);
 	setData(index(0, Columns::CurrentDimension, QModelIndex()), dataset->_currentDimension);

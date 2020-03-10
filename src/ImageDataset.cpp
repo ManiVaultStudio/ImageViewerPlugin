@@ -16,7 +16,7 @@ ImageDataset::ImageDataset(QObject* parent) :
 	_currentDimension(-1),
 	_imageNames(),
 	_dimensionNames(),
-	_averageImages(),
+	_average(),
 	_imageFilePaths(),
 	_pointsName(),
 	_selection(),
@@ -272,26 +272,26 @@ QVariant ImageDataset::imageNames(const int& role /*= Qt::DisplayRole*/) const
 			const auto selectionSize	= _selection.size();
 			const auto noImages			= _imageNames.size();
 
-			if (_averageImages) {
+			if (_average) {
 				if (selectionSize == 0) {
 					if (noImages == 1)
 						names << _imageNames.first();
 
 					if (noImages == 2)
-						names << _imageNames.first() << _imageNames.last();
+						names << QString("[%1, %2]").arg(_imageNames.first(), _imageNames.last());
 
 					if (noImages > 2)
-						names << _imageNames.first() << "..." << _imageNames.last();
+						names << QString("[%1, ..., %2]").arg(_imageNames.first(), _imageNames.last());
 				}
 
 				if (selectionSize == 1)
 					names << _imageNames[_selection.first()];
 
 				if (selectionSize == 2)
-					names << _imageNames[_selection.first()] << _imageNames[_selection.last()];
+					names << QString("[%1, %2]").arg(_imageNames[_selection.first()], _imageNames[_selection.last()]);
 
 				if (selectionSize > 2)
-					names << _imageNames[_selection.first()] << "..." << _imageNames[_selection.last()];
+					names << QString("[%1, ..., %2]").arg(_imageNames[_selection.first()], _imageNames[_selection.last()]);
 			}
 			else {
 				if (selectionSize <= 0) {
@@ -362,4 +362,31 @@ QVariant ImageDataset::dimensionNames(const int& role /*= Qt::DisplayRole*/) con
 void ImageDataset::setDimensionNames(const QStringList& dimensionNames)
 {
 	_dimensionNames = dimensionNames;
+}
+
+QVariant ImageDataset::average(const int& role /*= Qt::DisplayRole*/) const
+{
+	const auto averageString = _average ? "true" : "false";
+
+	switch (role)
+	{
+		case Qt::DisplayRole:
+			return averageString;
+
+		case Qt::EditRole:
+			return _average;
+
+		case Qt::ToolTipRole:
+			return QString("Average images: %1").arg(averageString);
+
+		default:
+			break;
+	}
+
+	return false;
+}
+
+void ImageDataset::setAverage(const bool& average)
+{
+	_average = average;
 }

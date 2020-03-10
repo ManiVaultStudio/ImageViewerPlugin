@@ -133,7 +133,7 @@ void ImageViewerPlugin::dataAdded(const QString dataset)
 	imageDataset._noDimensions		= imagesDataset.points()->getNumDimensions();
 	imageDataset._currentImage		= 0;
 	imageDataset._currentDimension	= 0;
-	imageDataset._averageImages		= false;
+	imageDataset._average		= false;
 	imageDataset._imageFilePaths	= QStringList();
 
 	for (const auto& imageFilePath : imagesDataset.imageFilePaths()) {

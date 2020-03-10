@@ -84,6 +84,12 @@ public:
 	/** TODO */
 	void setDimensionNames(const QStringList& dimensionNames);
 
+	/** TODO */
+	QVariant average(const int& role = Qt::DisplayRole) const;
+
+	/** TODO */
+	void setAverage(const bool& average);
+
 	QString							_name;					/** TODO */
 	int								_type;					/** TODO */
 	QSize							_size;					/** TODO */
@@ -93,7 +99,7 @@ public:
 	std::int32_t					_currentDimension;		/** TODO */
 	QStringList						_imageNames;			/** TODO */
 	QStringList						_dimensionNames;		/** TODO */
-	bool							_averageImages;			/** TODO */
+	bool							_average;				/** TODO */
 	QStringList						_imageFilePaths;		/** TODO */
 	QString							_pointsName;			/** TODO */
 	Indices							_selection;				/** TODO */
