@@ -194,21 +194,21 @@ QVariant ImageDataset::currentImage(const int& role /*= Qt::DisplayRole*/) const
 			return QString("Current image: %1").arg(QString::number(_currentImage));
 	}
 
-	return "";
+	return std::uint32_t{};
 }
 
 QVariant ImageDataset::currentImageName(const int& role /*= Qt::DisplayRole*/) const
 {
-	const auto name = _imageNames.isEmpty() ? "" : _imageNames[_currentImage];
+	const auto imageName = _imageNames.isEmpty() ? "" : _imageNames[_currentImage];
 
 	switch (role)
 	{
 		case Qt::DisplayRole:
 		case Qt::EditRole:
-			return name;
+			return imageName;
 
 		case Qt::ToolTipRole:
-			return QString("Current image: %1").arg(name);
+			return QString("Current image: %1").arg(imageName);
 	}
 
 	return "";
@@ -220,6 +220,45 @@ void ImageDataset::setCurrentImage(const std::uint32_t& currentImage)
 		_currentImage = currentImage;
 	else
 		_currentImage = _selection[currentImage];
+}
+
+QVariant ImageDataset::currentDimension(const int& role /*= Qt::DisplayRole*/) const
+{
+	switch (role)
+	{
+		case Qt::DisplayRole:
+			return QString::number(_currentDimension);
+
+		case Qt::EditRole:
+			return _currentDimension;
+
+		case Qt::ToolTipRole:
+			return QString("Current dimension: %1").arg(QString::number(_currentDimension));
+	}
+
+	return std::uint32_t{};
+}
+
+QVariant ImageDataset::currentDimensionName(const int& role /*= Qt::DisplayRole*/) const
+{
+	const auto dimensionName = _dimensionNames.isEmpty() ? "" : _dimensionNames[_currentDimension];
+
+	switch (role)
+	{
+		case Qt::DisplayRole:
+		case Qt::EditRole:
+			return dimensionName;
+
+		case Qt::ToolTipRole:
+			return QString("Current dimension: %1").arg(dimensionName);
+	}
+
+	return "";
+}
+
+void ImageDataset::setCurrentDimension(const std::uint32_t& currentDimension)
+{
+	_currentDimension = currentDimension;
 }
 
 QVariant ImageDataset::imageNames(const int& role /*= Qt::DisplayRole*/) const

@@ -65,10 +65,10 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 				return dataset->currentImageName(Qt::DisplayRole);
 
 			case Columns::CurrentDimension:
-				return QString::number(dataset->_currentDimension);
+				return dataset->currentDimension(Qt::DisplayRole);
 
 			case Columns::CurrentDimensionName:
-				return dataset->_dimensionNames.isEmpty() ? "" : dataset->_dimensionNames[dataset->_currentDimension];
+				return dataset->currentDimensionName(Qt::DisplayRole);
 
 			case Columns::ImageNames:
 				return dataset->imageNames(Qt::DisplayRole);
@@ -153,10 +153,10 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 				return dataset->currentImageName(Qt::EditRole);
 
 			case Columns::CurrentDimension:
-				return dataset->_currentDimension;
+				return dataset->currentDimension(Qt::EditRole);
 
 			case Columns::CurrentDimensionName:
-				return dataset->_dimensionNames.isEmpty() ? "" : dataset->_dimensionNames[dataset->_currentDimension];
+				return dataset->currentDimensionName(Qt::EditRole);
 
 			case Columns::ImageNames:
 				return dataset->imageNames(Qt::EditRole);
@@ -221,10 +221,10 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 				return dataset->currentImageName(Qt::ToolTipRole);
 
 			case Columns::CurrentDimension:
-				return dataset->_currentDimension < dataset->_dimensionNames.size() ? QString("Current dimension: %1").arg(dataset->_dimensionNames[dataset->_currentDimension]) : "";
+				return dataset->currentDimension(Qt::ToolTipRole);
 
 			case Columns::CurrentDimensionName:
-				return dataset->_currentDimension < dataset->_dimensionNames.size() ? QString("Current dimension: %1").arg(dataset->_dimensionNames[dataset->_currentDimension]) : "";
+				return dataset->currentDimensionName(Qt::ToolTipRole);
 
 			case Columns::ImageNames:
 				return QString("Image names: [%1]").arg(dataset->_imageNames.join(", "));
@@ -440,7 +440,7 @@ bool DatasetsModel::setData(const QModelIndex& index, const QVariant& value, int
 				break;
 
 			case Columns::CurrentDimension:
-				dataset->_currentDimension = value.toInt();
+				dataset->setCurrentDimension(value.toInt());
 				break;
 
 			case Columns::ImageNames:

@@ -64,6 +64,15 @@ public:
 	void setCurrentImage(const std::uint32_t& currentImage);
 
 	/** TODO */
+	QVariant currentDimension(const int& role = Qt::DisplayRole) const;
+
+	/** TODO */
+	QVariant currentDimensionName(const int& role = Qt::DisplayRole) const;
+
+	/** TODO */
+	void setCurrentDimension(const std::uint32_t& currentDimension);
+
+	/** TODO */
 	QVariant imageNames(const int& role = Qt::DisplayRole) const;
 
 	QString							_name;					/** TODO */
