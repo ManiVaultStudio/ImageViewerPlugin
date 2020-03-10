@@ -28,6 +28,12 @@ public:
 	void setName(const QString& name);
 
 	/** TODO */
+	QVariant type(const int& role = Qt::DisplayRole) const;
+
+	/** TODO */
+	void setType(const int& type);
+
+	/** TODO */
 	QVariant currentImageName(const int& role = Qt::DisplayRole) const;
 
 	/** TODO */

@@ -59,6 +59,31 @@ void ImageDataset::setName(const QString& name)
 	_name = name;
 }
 
+QVariant ImageDataset::type(const int& role /*= Qt::DisplayRole*/) const
+{
+	switch (role)
+	{
+		case Qt::DisplayRole:
+			return imageCollectionTypeName(static_cast<ImageCollectionType>(_type));
+
+		case Qt::EditRole:
+			return _type;
+
+		case Qt::ToolTipRole:
+			return QString("Dataset type: %1").arg(imageCollectionTypeName(static_cast<ImageCollectionType>(_type)));
+
+		default:
+			break;
+	}
+
+	return "";
+}
+
+void ImageDataset::setType(const int& type)
+{
+	_type = type;
+}
+
 QVariant ImageDataset::currentImageName(const int& role /*= Qt::DisplayRole*/) const
 {
 	switch (role)

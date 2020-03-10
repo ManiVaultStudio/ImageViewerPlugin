@@ -44,7 +44,7 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 				return dataset->name(Qt::DisplayRole);
 
 			case Columns::Type:
-				return imageCollectionTypeName(static_cast<ImageCollectionType>(dataset->_type));
+				return dataset->type(Qt::DisplayRole);
 
 			case Columns::NoImages:
 				return QString::number(dataset->_noImages);
@@ -132,7 +132,7 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 				return dataset->name(Qt::EditRole);
 
 			case Columns::Type:
-				return dataset->_type;
+				return dataset->type(Qt::EditRole);
 
 			case Columns::NoImages:
 				return dataset->_noImages;
@@ -200,7 +200,7 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 				return dataset->name(Qt::ToolTipRole);
 
 			case Columns::Type:
-				return QString("Dataset type: %1").arg(imageCollectionTypeName(static_cast<ImageCollectionType>(dataset->_type)));
+				return dataset->type(Qt::ToolTipRole);
 
 			case Columns::NoImages:
 				return QString("Number of images: %1").arg(QString::number(dataset->_noImages));
@@ -417,7 +417,7 @@ bool DatasetsModel::setData(const QModelIndex& index, const QVariant& value, int
 				break;
 
 			case Columns::Type:
-				dataset->_type = value.toInt();
+				dataset->setType(value.toInt());
 				break;
 
 			case Columns::NoImages:
