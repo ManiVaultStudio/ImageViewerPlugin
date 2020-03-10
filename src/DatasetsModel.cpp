@@ -86,12 +86,7 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 				return dataset->currentImageFilePath(Qt::DisplayRole);
 
 			case Columns::CurrentDimensionFilepath:
-			{
-				if (dataset->_currentDimension < 0 || dataset->_currentDimension >= dataset->_imageFilePaths.size())
-					return "";
-
-				return dataset->_imageFilePaths[dataset->_currentDimension];
-			}
+				return dataset->currentDimensionFilePath(Qt::DisplayRole);
 
 			case Columns::PointsName:
 				return dataset->_pointsName;
@@ -169,8 +164,7 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 				return dataset->currentImageFilePath(Qt::EditRole);
 
 			case Columns::CurrentDimensionFilepath:
-				if (dataset->_currentDimension < 0 || dataset->_currentDimension >= dataset->_imageFilePaths.size())
-					return "";
+				return dataset->currentDimensionFilePath(Qt::EditRole);
 
 			case Columns::PointsName:
 				return dataset->_pointsName;
@@ -234,10 +228,7 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 				return dataset->currentImageFilePath(Qt::ToolTipRole);
 
 			case Columns::CurrentDimensionFilepath:
-			{
-				if (dataset->_currentDimension < 0 || dataset->_currentDimension >= dataset->_imageFilePaths.size())
-					return "";
-			}
+				return dataset->currentDimensionFilePath(Qt::ToolTipRole);
 
 			case Columns::PointsName:
 			{
@@ -444,6 +435,10 @@ bool DatasetsModel::setData(const QModelIndex& index, const QVariant& value, int
 
 			case Columns::ImageFilePaths:
 				dataset->setImageFilePaths(value.toStringList());
+				break;
+
+			case Columns::CurrentImageFilepath:
+			case Columns::CurrentDimensionFilepath:
 				break;
 
 			case Columns::PointsName:
