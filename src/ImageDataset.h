@@ -108,6 +108,12 @@ public:
 	/** TODO */
 	void setPointsName(const QString& pointsName);
 
+	/** TODO */
+	QVariant selection(const int& role = Qt::DisplayRole) const;
+
+	/** TODO */
+	void setSelection(const Indices& selection);
+
 	QString							_name;					/** TODO */
 	int								_type;					/** TODO */
 	QSize							_size;					/** TODO */

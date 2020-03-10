@@ -92,21 +92,7 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 				return dataset->pointsName(Qt::DisplayRole);
 
 			case Columns::Selection:
-			{
-				auto selection = QStringList();
-
-				if (dataset->_selection.size() <= 2) {
-					for (const auto& id : dataset->_selection)
-						selection << QString::number(id);
-				}
-				else {
-					selection << QString::number(dataset->_selection.first());
-					selection << "...";
-					selection << QString::number(dataset->_selection.last());
-				}
-
-				return QString("[%1]").arg(selection.join(", "));
-			}
+				return dataset->selection(Qt::DisplayRole);
 
 			case Columns::SelectionSize:
 				return QString::number(dataset->_selection.size());
@@ -170,7 +156,7 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 				return dataset->pointsName(Qt::EditRole);
 
 			case Columns::Selection:
-				return QVariant::fromValue(dataset->_selection);
+				return dataset->selection(Qt::EditRole);
 
 			case Columns::SelectionSize:
 				return dataset->_selection.size();
@@ -234,14 +220,7 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 				return dataset->pointsName(Qt::ToolTipRole);
 
 			case Columns::Selection:
-			{
-				auto selection = QStringList();
-
-				for (const auto& id : dataset->_selection)
-					selection << QString::number(id);
-
-				return QString("Selected pixels: [%1]").arg(selection.join(", "));
-			}
+				return dataset->selection(Qt::ToolTipRole);
 
 			case Columns::SelectionSize:
 				return QString("Number of selected pixels: %1").arg(QString::number(dataset->_selection.size()));
@@ -444,7 +423,7 @@ bool DatasetsModel::setData(const QModelIndex& index, const QVariant& value, int
 				break;
 
 			case Columns::Selection:
-				dataset->_selection = value.value<Indices>();
+				dataset->setSelection(value.value<Indices>());
 				break;
 
 			case Columns::SelectionSize:

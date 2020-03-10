@@ -482,3 +482,42 @@ void ImageDataset::setPointsName(const QString& pointsName)
 {
 	_pointsName = pointsName;
 }
+
+QVariant ImageDataset::selection(const int& role /*= Qt::DisplayRole*/) const
+{
+	auto selection = QStringList();
+
+	if (_selection.size() <= 2) {
+		for (const auto& id : _selection)
+			selection << QString::number(id);
+	}
+	else {
+		selection << QString::number(_selection.first());
+		selection << "...";
+		selection << QString::number(_selection.last());
+	}
+
+	const auto selectionString = QString("[%1]").arg(selection.join(", "));
+
+	switch (role)
+	{
+		case Qt::DisplayRole:
+			return selectionString;
+
+		case Qt::EditRole:
+			return QVariant::fromValue(_selection);
+
+		case Qt::ToolTipRole:
+			return QString("Selection: %1").arg(selectionString);
+
+		default:
+			break;
+	}
+
+	return QString();
+}
+
+void ImageDataset::setSelection(const Indices& selection)
+{
+	_selection = selection;
+}
