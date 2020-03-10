@@ -75,6 +75,15 @@ public:
 	/** TODO */
 	QVariant imageNames(const int& role = Qt::DisplayRole) const;
 
+	/** TODO */
+	void setImageNames(const QStringList& imageNames);
+
+	/** TODO */
+	QVariant dimensionNames(const int& role = Qt::DisplayRole) const;
+
+	/** TODO */
+	void setDimensionNames(const QStringList& dimensionNames);
+
 	QString							_name;					/** TODO */
 	int								_type;					/** TODO */
 	QSize							_size;					/** TODO */

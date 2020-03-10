@@ -74,7 +74,7 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 				return dataset->imageNames(Qt::DisplayRole);
 
 			case Columns::DimensionNames:
-				return QString("[%1]").arg(dataset->_dimensionNames.join(", "));
+				return dataset->dimensionNames(Qt::DisplayRole);
 
 			case Columns::Average:
 				return dataset->_averageImages ? "true" : "false";
@@ -162,7 +162,7 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 				return dataset->imageNames(Qt::EditRole);
 
 			case Columns::DimensionNames:
-				return dataset->_dimensionNames;
+				return dataset->dimensionNames(Qt::EditRole);
 
 			case Columns::Average:
 				return dataset->_averageImages;
@@ -227,10 +227,10 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 				return dataset->currentDimensionName(Qt::ToolTipRole);
 
 			case Columns::ImageNames:
-				return QString("Image names: [%1]").arg(dataset->_imageNames.join(", "));
+				return dataset->imageNames(Qt::ToolTipRole);
 
 			case Columns::DimensionNames:
-				return QString("Dimension names: [%1]").arg(dataset->_dimensionNames.join(", "));
+				return dataset->dimensionNames(Qt::ToolTipRole);
 
 			case Columns::Average:
 				return QString("Average images: %1").arg(dataset->_averageImages ? "true" : "false");
@@ -444,11 +444,11 @@ bool DatasetsModel::setData(const QModelIndex& index, const QVariant& value, int
 				break;
 
 			case Columns::ImageNames:
-				dataset->_imageNames = value.toStringList();
+				dataset->setImageNames(value.toStringList());
 				break;
 
 			case Columns::DimensionNames:
-				dataset->_dimensionNames = value.toStringList();
+				dataset->setDimensionNames(value.toStringList());
 				break;
 
 			case Columns::Average:

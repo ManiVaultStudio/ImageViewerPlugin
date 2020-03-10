@@ -263,67 +263,103 @@ void ImageDataset::setCurrentDimension(const std::uint32_t& currentDimension)
 
 QVariant ImageDataset::imageNames(const int& role /*= Qt::DisplayRole*/) const
 {
-	switch (role)
+	auto names = QStringList();
+
+	switch (_type)
 	{
-		case Qt::DisplayRole:
-		case Qt::EditRole:
+		case (static_cast<int>(ImageCollectionType::Sequence)):
 		{
-			switch (_type)
-			{
-				case (static_cast<int>(ImageCollectionType::Sequence)):
-				{
-					const auto selectionSize	= _selection.size();
-					const auto noImages			= _imageNames.size();
+			const auto selectionSize	= _selection.size();
+			const auto noImages			= _imageNames.size();
 
-					if (_averageImages) {
-						if (selectionSize == 0) {
-							if (noImages == 1)
-								return QStringList() << QString("[%1]").arg(_imageNames.first());
+			if (_averageImages) {
+				if (selectionSize == 0) {
+					if (noImages == 1)
+						names << _imageNames.first();
 
-							if (noImages == 2)
-								return QStringList() << QString("[%1, %2]").arg(_imageNames.first(), _imageNames.last());
+					if (noImages == 2)
+						names << _imageNames.first() << _imageNames.last();
 
-							if (noImages > 2)
-								return QStringList() << QString("[%1, ..., %2]").arg(_imageNames.first(), _imageNames.last());
-						}
-
-						if (selectionSize == 1)
-							return QStringList() << _imageNames[_selection.first()];
-
-						if (selectionSize == 2)
-							return QStringList() << QString("[%1, %3]").arg(_imageNames[_selection.first()], _imageNames[_selection.last()]);
-
-						if (selectionSize > 2)
-							return QStringList() << QString("[%1, .., %3]").arg(_imageNames[_selection.first()], _imageNames[_selection.last()]);
-					}
-					else {
-						if (selectionSize <= 0) {
-							return _imageNames;
-						}
-						else {
-							auto names = QStringList();
-
-							for (auto selectionIndex : _selection) {
-								names << _imageNames[selectionIndex];
-							}
-
-							return names;
-						}
-					}
-
-					break;
+					if (noImages > 2)
+						names << _imageNames.first() << "..." << _imageNames.last();
 				}
 
-				case (static_cast<int>(ImageCollectionType::Stack)):
-					return _imageNames;
+				if (selectionSize == 1)
+					names << _imageNames[_selection.first()];
 
-				default:
-					break;
+				if (selectionSize == 2)
+					names << _imageNames[_selection.first()] << _imageNames[_selection.last()];
+
+				if (selectionSize > 2)
+					names << _imageNames[_selection.first()] << "..." << _imageNames[_selection.last()];
+			}
+			else {
+				if (selectionSize <= 0) {
+					return _imageNames;
+				}
+				else {
+					for (auto selectionIndex : _selection) {
+						names << _imageNames[selectionIndex];
+					}
+
+					return names;
+				}
 			}
 
 			break;
 		}
+
+		case (static_cast<int>(ImageCollectionType::Stack)):
+			names = _imageNames;
+
+		default:
+			break;
+	}
+
+	switch (role)
+	{
+		case Qt::DisplayRole:
+			return QString("[%1]").arg(names.join(", "));
+
+		case Qt::EditRole:
+			return names;
+
+		case Qt::ToolTipRole:
+			return QString("Image names: [%1]").arg(names.join(", "));
+
+		default:
+			break;
 	}
 
 	return QStringList();
+}
+
+void ImageDataset::setImageNames(const QStringList& imageNames)
+{
+	_imageNames = imageNames;
+}
+
+QVariant ImageDataset::dimensionNames(const int& role /*= Qt::DisplayRole*/) const
+{
+	switch (role)
+	{
+		case Qt::DisplayRole:
+			return QString("[%1]").arg(_dimensionNames.join(", "));
+
+		case Qt::EditRole:
+			return _dimensionNames;
+
+		case Qt::ToolTipRole:
+			return QString("Dimension names: [%1]").arg(_dimensionNames.join(", "));
+
+		default:
+			break;
+	}
+
+	return QStringList();
+}
+
+void ImageDataset::setDimensionNames(const QStringList& dimensionNames)
+{
+	_dimensionNames = dimensionNames;
 }
