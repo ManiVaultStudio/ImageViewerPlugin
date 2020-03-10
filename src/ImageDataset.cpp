@@ -180,16 +180,46 @@ void ImageDataset::setNoDimensions(const std::uint32_t& noDimensions)
 	_noDimensions = noDimensions;
 }
 
-QVariant ImageDataset::currentImageName(const int& role /*= Qt::DisplayRole*/) const
+QVariant ImageDataset::currentImage(const int& role /*= Qt::DisplayRole*/) const
 {
 	switch (role)
 	{
 		case Qt::DisplayRole:
+			return QString::number(_currentImage);
+
 		case Qt::EditRole:
-			return _imageNames.isEmpty() ? "" : _imageNames[_currentImage];
+			return _currentImage;
+
+		case Qt::ToolTipRole:
+			return QString("Current image: %1").arg(QString::number(_currentImage));
 	}
 
 	return "";
+}
+
+QVariant ImageDataset::currentImageName(const int& role /*= Qt::DisplayRole*/) const
+{
+	const auto name = _imageNames.isEmpty() ? "" : _imageNames[_currentImage];
+
+	switch (role)
+	{
+		case Qt::DisplayRole:
+		case Qt::EditRole:
+			return name;
+
+		case Qt::ToolTipRole:
+			return QString("Current image: %1").arg(name);
+	}
+
+	return "";
+}
+
+void ImageDataset::setCurrentImage(const std::uint32_t& currentImage)
+{
+	if (_selection.isEmpty())
+		_currentImage = currentImage;
+	else
+		_currentImage = _selection[currentImage];
 }
 
 QVariant ImageDataset::imageNames(const int& role /*= Qt::DisplayRole*/) const

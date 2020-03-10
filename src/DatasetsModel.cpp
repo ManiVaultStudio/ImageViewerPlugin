@@ -59,7 +59,7 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 				return dataset->noDimensions(Qt::DisplayRole);
 
 			case Columns::CurrentImage:
-				return QString::number(dataset->_currentImage);
+				return dataset->currentImage(Qt::DisplayRole);
 
 			case Columns::CurrentImageName:
 				return dataset->currentImageName(Qt::DisplayRole);
@@ -147,7 +147,7 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 				return dataset->noDimensions(Qt::EditRole);
 
 			case Columns::CurrentImage:
-				return dataset->_currentImage;
+				return dataset->currentImage(Qt::EditRole);
 
 			case Columns::CurrentImageName:
 				return dataset->currentImageName(Qt::EditRole);
@@ -215,10 +215,10 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 				return dataset->noDimensions(Qt::ToolTipRole);
 
 			case Columns::CurrentImage:
-				return dataset->_currentImage < dataset->_imageNames.size() ? QString("Current image: %1").arg(dataset->_imageNames[dataset->_currentImage]) : "";
+				return dataset->currentImage(Qt::ToolTipRole);
 
 			case Columns::CurrentImageName:
-				return dataset->_currentImage < dataset->_imageNames.size() ? QString("Current image: %1").arg(dataset->_imageNames[dataset->_currentImage]) : "";
+				return dataset->currentImageName(Qt::ToolTipRole);
 
 			case Columns::CurrentDimension:
 				return dataset->_currentDimension < dataset->_dimensionNames.size() ? QString("Current dimension: %1").arg(dataset->_dimensionNames[dataset->_currentDimension]) : "";
@@ -436,10 +436,7 @@ bool DatasetsModel::setData(const QModelIndex& index, const QVariant& value, int
 				break;
 
 			case Columns::CurrentImage:
-				if (dataset->_selection.isEmpty())
-					dataset->_currentImage = value.toInt();
-				else
-					dataset->_currentImage = dataset->_selection[value.toInt()];
+				dataset->setCurrentImage(value.toInt());
 				break;
 
 			case Columns::CurrentDimension:

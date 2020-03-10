@@ -55,7 +55,13 @@ public:
 	void setNoDimensions(const std::uint32_t& noDimensions);
 
 	/** TODO */
+	QVariant currentImage(const int& role = Qt::DisplayRole) const;
+
+	/** TODO */
 	QVariant currentImageName(const int& role = Qt::DisplayRole) const;
+
+	/** TODO */
+	void setCurrentImage(const std::uint32_t& currentImage);
 
 	/** TODO */
 	QVariant imageNames(const int& role = Qt::DisplayRole) const;
