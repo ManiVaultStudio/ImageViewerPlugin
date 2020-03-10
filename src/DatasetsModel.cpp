@@ -56,7 +56,7 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 				return dataset->noPoints(Qt::DisplayRole);
 
 			case Columns::NoDimensions:
-				return QString::number(dataset->_noDimensions);
+				return dataset->noDimensions(Qt::DisplayRole);
 
 			case Columns::CurrentImage:
 				return QString::number(dataset->_currentImage);
@@ -144,7 +144,7 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 				return dataset->noPoints(Qt::EditRole);
 
 			case Columns::NoDimensions:
-				return dataset->_noDimensions;
+				return dataset->noDimensions(Qt::EditRole);
 
 			case Columns::CurrentImage:
 				return dataset->_currentImage;
@@ -212,7 +212,7 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 				return dataset->noPoints(Qt::ToolTipRole);
 
 			case Columns::NoDimensions:
-				return QString("Number of data dimensions: %1").arg(QString::number(dataset->_noDimensions));
+				return dataset->noDimensions(Qt::ToolTipRole);
 
 			case Columns::CurrentImage:
 				return dataset->_currentImage < dataset->_imageNames.size() ? QString("Current image: %1").arg(dataset->_imageNames[dataset->_currentImage]) : "";
@@ -432,7 +432,7 @@ bool DatasetsModel::setData(const QModelIndex& index, const QVariant& value, int
 				break;
 
 			case Columns::NoDimensions:
-				dataset->_noDimensions = value.toInt();
+				dataset->setNoDimensions(value.toInt());
 				break;
 
 			case Columns::CurrentImage:

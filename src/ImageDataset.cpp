@@ -155,6 +155,31 @@ void ImageDataset::setNoPoints(const std::uint32_t& noPoints)
 	_noPoints = noPoints;
 }
 
+QVariant ImageDataset::noDimensions(const int& role /*= Qt::DisplayRole*/) const
+{
+	switch (role)
+	{
+		case Qt::DisplayRole:
+			return QString::number(_noDimensions);
+
+		case Qt::EditRole:
+			return _noDimensions;
+
+		case Qt::ToolTipRole:
+			return QString("Number of data dimensions: %1").arg(QString::number(_noDimensions));
+
+		default:
+			break;
+	}
+
+	return std::uint32_t{};
+}
+
+void ImageDataset::setNoDimensions(const std::uint32_t& noDimensions)
+{
+	_noDimensions = noDimensions;
+}
+
 QVariant ImageDataset::currentImageName(const int& role /*= Qt::DisplayRole*/) const
 {
 	switch (role)
