@@ -459,3 +459,26 @@ QVariant ImageDataset::currentDimensionFilePath(const int& role /*= Qt::DisplayR
 
 	return QString();
 }
+
+QVariant ImageDataset::pointsName(const int& role /*= Qt::DisplayRole*/) const
+{
+	switch (role)
+	{
+		case Qt::DisplayRole:
+		case Qt::EditRole:
+			return _pointsName;
+
+		case Qt::ToolTipRole:
+			return QString("Points dataset name: %1").arg(_pointsName);
+
+		default:
+			break;
+	}
+
+	return QString();
+}
+
+void ImageDataset::setPointsName(const QString& pointsName)
+{
+	_pointsName = pointsName;
+}

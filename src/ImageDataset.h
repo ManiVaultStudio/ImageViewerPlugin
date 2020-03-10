@@ -102,6 +102,12 @@ public:
 	/** TODO */
 	QVariant currentDimensionFilePath(const int& role = Qt::DisplayRole) const;
 	
+	/** TODO */
+	QVariant pointsName(const int& role = Qt::DisplayRole) const;
+
+	/** TODO */
+	void setPointsName(const QString& pointsName);
+
 	QString							_name;					/** TODO */
 	int								_type;					/** TODO */
 	QSize							_size;					/** TODO */

@@ -89,7 +89,7 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 				return dataset->currentDimensionFilePath(Qt::DisplayRole);
 
 			case Columns::PointsName:
-				return dataset->_pointsName;
+				return dataset->pointsName(Qt::DisplayRole);
 
 			case Columns::Selection:
 			{
@@ -167,7 +167,7 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 				return dataset->currentDimensionFilePath(Qt::EditRole);
 
 			case Columns::PointsName:
-				return dataset->_pointsName;
+				return dataset->pointsName(Qt::EditRole);
 
 			case Columns::Selection:
 				return QVariant::fromValue(dataset->_selection);
@@ -231,9 +231,7 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 				return dataset->currentDimensionFilePath(Qt::ToolTipRole);
 
 			case Columns::PointsName:
-			{
-				return dataset->_pointsName;
-			}
+				return dataset->pointsName(Qt::ToolTipRole);
 
 			case Columns::Selection:
 			{
@@ -442,7 +440,7 @@ bool DatasetsModel::setData(const QModelIndex& index, const QVariant& value, int
 				break;
 
 			case Columns::PointsName:
-				dataset->_pointsName = value.toString();
+				dataset->setPointsName(value.toString());
 				break;
 
 			case Columns::Selection:
