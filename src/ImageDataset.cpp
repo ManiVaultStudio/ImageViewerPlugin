@@ -1,6 +1,8 @@
 #include "ImageDataset.h"
 #include "LayersModel.h"
 
+#include "ImageData/Images.h"
+
 #include <QDebug>
 
 ImageDataset::ImageDataset(QObject* parent) :
@@ -24,12 +26,91 @@ ImageDataset::ImageDataset(QObject* parent) :
 {
 	addLayer("Image", Layer::Type::Image, Layer::Flags::Enabled | Layer::Flags::Fixed);
 	addLayer("Selection", Layer::Type::Selection, Layer::Flags::Enabled | Layer::Flags::Fixed);
-	addLayer("MetaDataA", Layer::Type::Metadata, Layer::Flags::Enabled | Layer::Flags::Removable);
-	addLayer("MetaDataB", Layer::Type::Metadata, Layer::Flags::Enabled | Layer::Flags::Removable);
-	addLayer("MetaDataC", Layer::Type::Metadata, Layer::Flags::Enabled | Layer::Flags::Removable);
+	addLayer("MetaDataA", Layer::Type::Metadata, Layer::Flags::Enabled | Layer::Flags::Removable | Layer::Flags::Renamable);
+	addLayer("MetaDataB", Layer::Type::Metadata, Layer::Flags::Enabled | Layer::Flags::Removable | Layer::Flags::Renamable);
+	addLayer("MetaDataC", Layer::Type::Metadata, Layer::Flags::Enabled | Layer::Flags::Removable | Layer::Flags::Renamable);
 }
 
 void ImageDataset::addLayer(const QString& name, const Layer::Type& type, const std::uint32_t& flags)
 {
 	_layers.append(new Layer(this, name, type, flags, _layers.size()));
+}
+
+QVariant ImageDataset::currentImageName(const int& role /*= Qt::DisplayRole*/) const
+{
+	switch (role)
+	{
+		case Qt::DisplayRole:
+		case Qt::EditRole:
+			return _imageNames.isEmpty() ? "" : _imageNames[_currentImage];
+	}
+
+	return "";
+}
+
+QVariant ImageDataset::imageNames(const int& role /*= Qt::DisplayRole*/) const
+{
+	switch (role)
+	{
+		case Qt::DisplayRole:
+		case Qt::EditRole:
+		{
+			switch (_type)
+			{
+				case (static_cast<int>(ImageCollectionType::Sequence)):
+				{
+					const auto selectionSize	= _selection.size();
+					const auto noImages			= _imageNames.size();
+
+					if (_averageImages) {
+						if (selectionSize == 0) {
+							if (noImages == 1)
+								return QStringList() << QString("[%1]").arg(_imageNames.first());
+
+							if (noImages == 2)
+								return QStringList() << QString("[%1, %2]").arg(_imageNames.first(), _imageNames.last());
+
+							if (noImages > 2)
+								return QStringList() << QString("[%1, ..., %2]").arg(_imageNames.first(), _imageNames.last());
+						}
+
+						if (selectionSize == 1)
+							return QStringList() << _imageNames[_selection.first()];
+
+						if (selectionSize == 2)
+							return QStringList() << QString("[%1, %3]").arg(_imageNames[_selection.first()], _imageNames[_selection.last()]);
+
+						if (selectionSize > 2)
+							return QStringList() << QString("[%1, .., %3]").arg(_imageNames[_selection.first()], _imageNames[_selection.last()]);
+					}
+					else {
+						if (selectionSize <= 0) {
+							return _imageNames;
+						}
+						else {
+							auto names = QStringList();
+
+							for (auto selectionIndex : _selection) {
+								names << _imageNames[selectionIndex];
+							}
+
+							return names;
+						}
+					}
+
+					break;
+				}
+
+				case (static_cast<int>(ImageCollectionType::Stack)):
+					return _imageNames;
+
+				default:
+					break;
+			}
+
+			break;
+		}
+	}
+
+	return QStringList();
 }

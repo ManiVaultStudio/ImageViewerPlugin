@@ -25,7 +25,7 @@ public: // Columns
 		CurrentDimensionName,
 		ImageNames,
 		DimensionNames,
-		AverageImages,
+		Average,
 		ImageFilePaths,
 		CurrentImageFilepath,
 		CurrentDimensionFilepath,

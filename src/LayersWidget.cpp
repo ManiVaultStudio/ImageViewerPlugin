@@ -117,30 +117,24 @@ void LayersWidget::setModel(QSharedPointer<LayersModel> layersModel)
 
 	headerView->setSectionResizeMode(QHeaderView::ResizeToContents);
 
+	headerView->hideSection(LayersModel::Columns::Type);
 	headerView->hideSection(LayersModel::Columns::Enabled);
 	headerView->hideSection(LayersModel::Columns::Locked);
 	//headerView->hideSection(LayersModel::Columns::Name);
-	//headerView->hideSection(LayersModel::Columns::Type);
 	headerView->hideSection(LayersModel::Columns::Fixed);
-	headerView->hideSection(LayersModel::Columns::Order);
 	headerView->hideSection(LayersModel::Columns::Removable);
+	headerView->hideSection(LayersModel::Columns::Mask);
+	headerView->hideSection(LayersModel::Columns::Renamable);
+	headerView->hideSection(LayersModel::Columns::Order);
 	//headerView->hideSection(LayersModel::Columns::Opacity);
-	//headerView->hideSection(LayersModel::Columns::Window);
-	//headerView->hideSection(LayersModel::Columns::Level);
+	//headerView->hideSection(LayersModel::Columns::WindowNormalized);
+	//headerView->hideSection(LayersModel::Columns::LevelNormalized);
 	headerView->hideSection(LayersModel::Columns::Color);
 	headerView->hideSection(LayersModel::Columns::Image);
+	//headerView->hideSection(LayersModel::Columns::ImageRange);
+	//headerView->hideSection(LayersModel::Columns::DisplayRange);
 
 	headerView->setSectionResizeMode(LayersModel::Columns::Name, QHeaderView::Interactive);
-
-	const QStringList colorNames = QColor::colorNames();
-	int index = 0;
-
-	for (const auto& colorName : colorNames) {
-		const QColor color(colorName);
-		_ui->layerColorComboBox->addItem(colorName, color);
-		const QModelIndex idx = _ui->layerColorComboBox->model()->index(index++, 0);
-		_ui->layerColorComboBox->model()->setData(idx, color, Qt::DecorationRole);
-	}
 
 	auto updateButtons = [this]() {
 		const auto selectedRows		= _ui->layersTreeView->selectionModel()->selectedRows();
@@ -225,7 +219,6 @@ void LayersWidget::updateData(const QModelIndex& topLeft, const QModelIndex& bot
 
 	if (topLeft.column() <= LayersModel::Columns::Enabled && bottomRight.column() >= LayersModel::Columns::Enabled) {
 		_ui->layerEnabledCheckBox->setEnabled(singleRowSelection && enabledFlags & Qt::ItemIsEditable);
-
 		_ui->layerEnabledCheckBox->blockSignals(true);
 		_ui->layerEnabledCheckBox->setChecked(singleRowSelection ? enabled : false);
 		_ui->layerEnabledCheckBox->blockSignals(false);
@@ -305,15 +298,4 @@ void LayersWidget::updateData(const QModelIndex& topLeft, const QModelIndex& bot
 	_ui->maskCheckBox->setEnabled(mightEdit && maskFlags & Qt::ItemIsEditable);
 
 	const auto colorFlags = _layersModel->flags(_layersModel->index(topLeft.row(), LayersModel::Columns::Color));
-
-	_ui->layerColorLabel->setEnabled(mightEdit && colorFlags & Qt::ItemIsEditable);
-	_ui->layerColorComboBox->setEnabled(mightEdit && colorFlags & Qt::ItemIsEditable);
-
-	if (topLeft.column() <= LayersModel::Columns::Color && bottomRight.column() >= LayersModel::Columns::Color) {
-		const auto color = _layersModel->data(topLeft.row(), LayersModel::Columns::Color, Qt::EditRole).value<QColor>();
-
-		_ui->layerColorComboBox->blockSignals(true);
-		//_ui->layerColorComboBox->setChecked(enabled);
-		_ui->layerColorComboBox->blockSignals(false);
-	}
 }

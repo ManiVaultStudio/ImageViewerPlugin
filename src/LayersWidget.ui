@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>300</width>
-    <height>451</height>
+    <height>420</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -74,13 +74,6 @@
       <property name="sizeConstraint">
        <enum>QLayout::SetDefaultConstraint</enum>
       </property>
-      <item row="3" column="1" colspan="2">
-       <widget class="QLineEdit" name="layerNameLineEdit">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-       </widget>
-      </item>
       <item row="5" column="0">
        <widget class="QLabel" name="layerWindowLabel">
         <property name="enabled">
@@ -91,69 +84,15 @@
         </property>
        </widget>
       </item>
-      <item row="4" column="0">
-       <widget class="QLabel" name="layerOpacityLabel">
+      <item row="6" column="0">
+       <widget class="QLabel" name="layerLevelLabel">
         <property name="enabled">
          <bool>false</bool>
         </property>
         <property name="text">
-         <string>Opacity</string>
+         <string>Level</string>
         </property>
        </widget>
-      </item>
-      <item row="4" column="1" colspan="2">
-       <layout class="QHBoxLayout" name="layerOpacityHorizontalLayout">
-        <property name="leftMargin">
-         <number>0</number>
-        </property>
-        <item>
-         <widget class="QDoubleSpinBox" name="layerOpacityDoubleSpinBox">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-            <horstretch>1</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>55</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="suffix">
-           <string>%</string>
-          </property>
-          <property name="decimals">
-           <number>0</number>
-          </property>
-          <property name="maximum">
-           <double>100.000000000000000</double>
-          </property>
-          <property name="singleStep">
-           <double>5.000000000000000</double>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QSlider" name="layerOpacityHorizontalSlider">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-            <horstretch>3</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-         </widget>
-        </item>
-       </layout>
       </item>
       <item row="3" column="0">
        <widget class="QLabel" name="layerNameLabel">
@@ -416,52 +355,79 @@
         </item>
        </layout>
       </item>
-      <item row="8" column="0">
-       <widget class="QLabel" name="layerColorLabel">
+      <item row="7" column="1">
+       <widget class="QCheckBox" name="maskCheckBox">
         <property name="enabled">
          <bool>false</bool>
         </property>
         <property name="text">
-         <string>Color</string>
+         <string>Mask</string>
         </property>
        </widget>
       </item>
-      <item row="1" column="1" colspan="2">
-       <widget class="QCheckBox" name="layerEnabledCheckBox">
-        <property name="enabled">
-         <bool>false</bool>
+      <item row="4" column="1" colspan="2">
+       <layout class="QHBoxLayout" name="layerOpacityHorizontalLayout">
+        <property name="leftMargin">
+         <number>0</number>
         </property>
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="text">
-         <string>Enabled</string>
-        </property>
-       </widget>
-      </item>
-      <item row="8" column="1" colspan="2">
-       <layout class="QHBoxLayout" name="layerColorHorizontalLayout">
         <item>
-         <widget class="QPushButton" name="layerColorPushButton">
-          <property name="text">
-           <string>...</string>
+         <widget class="QDoubleSpinBox" name="layerOpacityDoubleSpinBox">
+          <property name="enabled">
+           <bool>false</bool>
           </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QComboBox" name="layerColorComboBox">
           <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
             <horstretch>1</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
+          <property name="minimumSize">
+           <size>
+            <width>55</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="suffix">
+           <string>%</string>
+          </property>
+          <property name="decimals">
+           <number>0</number>
+          </property>
+          <property name="maximum">
+           <double>100.000000000000000</double>
+          </property>
+          <property name="singleStep">
+           <double>5.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSlider" name="layerOpacityHorizontalSlider">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+            <horstretch>3</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
          </widget>
         </item>
        </layout>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="layerOpacityLabel">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>Opacity</string>
+        </property>
+       </widget>
       </item>
       <item row="5" column="1" colspan="2">
        <layout class="QHBoxLayout" name="layerWindowHorizontalLayout">
@@ -508,23 +474,26 @@
         </item>
        </layout>
       </item>
-      <item row="6" column="0">
-       <widget class="QLabel" name="layerLevelLabel">
+      <item row="3" column="1" colspan="2">
+       <widget class="QLineEdit" name="layerNameLineEdit">
         <property name="enabled">
          <bool>false</bool>
-        </property>
-        <property name="text">
-         <string>Level</string>
         </property>
        </widget>
       </item>
-      <item row="7" column="1">
-       <widget class="QCheckBox" name="maskCheckBox">
+      <item row="1" column="1" colspan="2">
+       <widget class="QCheckBox" name="layerEnabledCheckBox">
         <property name="enabled">
          <bool>false</bool>
         </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
         <property name="text">
-         <string>Mask</string>
+         <string>Enabled</string>
         </property>
        </widget>
       </item>

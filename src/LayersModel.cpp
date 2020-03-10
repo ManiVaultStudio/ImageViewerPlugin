@@ -30,7 +30,7 @@ int LayersModel::columnCount(const QModelIndex& parent /*= QModelIndex()*/) cons
 {
 	Q_UNUSED(parent);
 
-	return 15;
+	return 16;
 }
 
 QVariant LayersModel::data(const QModelIndex& index, int role) const
@@ -47,13 +47,13 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 	{
 		case Qt::FontRole:
 		{
-			if (index.column() == Columns::Locked)
-				return QFont("Font Awesome 5 Free Solid", 6, 1);
+			if (index.column() == Columns::Type)
+				return QFont("Font Awesome 5 Free Solid", 10, 1);
 
-			if (layer->type() == Layer::Type::Image)
+			if (layer->type() == Layer::Type::Image || layer->type() == Layer::Type::Selection)
 			{
 				auto font = QFont();
-				font.setItalic(true);
+				font.setBold(true);
 				return font;
 			}
 
@@ -79,6 +79,24 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 		case Qt::DisplayRole:
 		{
 			switch (index.column()) {
+				case Columns::Type:
+				{
+					switch (layer->type())
+					{
+						case Layer::Type::Image:
+							return u8"\uf03e";
+
+						case Layer::Type::Selection:
+							return u8"\uf065";
+
+						case Layer::Type::Metadata:
+							return u8"\uf02c";
+
+						default:
+							break;
+					}
+				}
+
 				case Columns::Enabled:
 					break;
 
@@ -88,24 +106,6 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 				case Columns::Name:
 					return layer->name();
 
-				case Columns::Type:
-				{
-					switch (layer->type())
-					{
-						case Layer::Type::Image:
-							return "Image";
-
-						case Layer::Type::Selection:
-							return "Selection";
-
-						case Layer::Type::Metadata:
-							return "Metadata";
-
-						default:
-							break;
-					}
-				}
-
 				case Columns::Fixed:
 					return layer->isFlagSet(Layer::Flags::Fixed) ? "true" : "false";
 
@@ -114,6 +114,9 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 
 				case Columns::Mask:
 					return layer->isFlagSet(Layer::Flags::Mask) ? "true" : "false";
+
+				case Columns::Renamable:
+					return layer->isFlagSet(Layer::Flags::Renamable) ? "true" : "false";
 
 				case Columns::Order:
 					return QString::number(layer->order());
@@ -149,6 +152,9 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 		case Qt::EditRole:
 		{
 			switch (index.column()) {
+				case Columns::Type:
+					return static_cast<int>(layer->type());
+
 				case Columns::Enabled:
 					return layer->isFlagSet(Layer::Flags::Enabled);
 
@@ -158,9 +164,6 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 				case Columns::Name:
 					return layer->name();
 
-				case Columns::Type:
-					return static_cast<int>(layer->type());
-
 				case Columns::Fixed:
 					return layer->isFlagSet(Layer::Flags::Fixed);
 
@@ -169,6 +172,9 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 
 				case Columns::Mask:
 					return layer->isFlagSet(Layer::Flags::Mask);
+
+				case Columns::Renamable:
+					return layer->isFlagSet(Layer::Flags::Renamable);
 
 				case Columns::Order:
 					return layer->order();
@@ -206,15 +212,18 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 		case Qt::TextAlignmentRole:
 		{
 			switch (index.column()) {
+				case Columns::Type:
+					return Qt::AlignLeft + Qt::AlignVCenter;
+
 				case Columns::Enabled:
 				case Columns::Locked:
 				case Columns::Name:
-				case Columns::Type:
 					return Qt::AlignLeft + Qt::AlignVCenter;
 
 				case Columns::Fixed:
 				case Columns::Removable:
 				case Columns::Mask:
+				case Columns::Renamable:
 				case Columns::Order:
 				case Columns::Opacity:
 				case Columns::WindowNormalized:
@@ -247,6 +256,9 @@ QVariant LayersModel::headerData(int section, Qt::Orientation orientation, int r
 
 	if (orientation == Qt::Horizontal) {
 		switch (section) {
+			case Columns::Type:
+				return "";
+
 			case Columns::Enabled:
 				return "";
 
@@ -256,9 +268,6 @@ QVariant LayersModel::headerData(int section, Qt::Orientation orientation, int r
 			case Columns::Name:
 				return "Name";
 
-			case Columns::Type:
-				return "Type";
-
 			case Columns::Fixed:
 				return "Fixed";
 
@@ -267,6 +276,9 @@ QVariant LayersModel::headerData(int section, Qt::Orientation orientation, int r
 
 			case Columns::Mask:
 				return "Mask";
+
+			case Columns::Renamable:
+				return "Renamable";
 
 			case Columns::Order:
 				return "Order";
@@ -310,6 +322,9 @@ Qt::ItemFlags LayersModel::flags(const QModelIndex& index) const
 	const auto type = data(index.row(), LayersModel::Type, Qt::EditRole).toInt();
 
 	switch (index.column()) {
+		case Columns::Type:
+			break;
+
 		case Columns::Enabled:
 			flags |= Qt::ItemIsEditable;
 			break;
@@ -321,14 +336,11 @@ Qt::ItemFlags LayersModel::flags(const QModelIndex& index) const
 		{
 			flags |= Qt::ItemIsUserCheckable;
 
-			if (!data(index.row(), LayersModel::Columns::Fixed, Qt::EditRole).toBool())
+			if (data(index.row(), LayersModel::Columns::Renamable, Qt::EditRole).toBool())
 				flags |= Qt::ItemIsEditable;
 
 			break;
 		}
-
-		case Columns::Type:
-			break;
 
 		case Columns::Fixed:
 		case Columns::Removable:
@@ -410,6 +422,10 @@ bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int r
 
 	if (role == Qt::DisplayRole) {
 		switch (index.column()) {
+			case Columns::Type:
+				layer->setType(static_cast<Layer::Type>(value.toInt()));
+				break;
+
 			case Columns::Enabled:
 				layer->setFlag(Layer::Flags::Enabled, value.toBool());
 				break;
@@ -419,10 +435,6 @@ bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int r
 
 			case Columns::Name:
 				layer->setName(QString("%1").arg(value.toString()));
-				break;
-			
-			case Columns::Type:
-				layer->setType(static_cast<Layer::Type>(value.toInt()));
 				break;
 
 			case Columns::Fixed:
@@ -435,6 +447,10 @@ bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int r
 
 			case Columns::Mask:
 				layer->setFlag(Layer::Flags::Mask, value.toBool());
+				break;
+
+			case Columns::Renamable:
+				layer->setFlag(Layer::Flags::Renamable, value.toBool());
 				break;
 
 			case Columns::Order:
