@@ -521,3 +521,37 @@ void ImageDataset::setSelection(const Indices& selection)
 {
 	_selection = selection;
 }
+
+QVariant ImageDataset::selectionSize(const int& role /*= Qt::DisplayRole*/) const
+{
+	const auto selectionSizeString = QString::number(_selection.size());
+
+	switch (role)
+	{
+		case Qt::DisplayRole:
+			return selectionSizeString;
+
+		case Qt::EditRole:
+			return _selection.size();
+
+		case Qt::ToolTipRole:
+		{
+			switch (_type)
+			{
+				case (static_cast<int>(ImageCollectionType::Sequence)):
+					return QString("No. selected images: %1").arg(selectionSizeString);
+
+				case (static_cast<int>(ImageCollectionType::Stack)):
+					return QString("No. selected pixels: %1").arg(selectionSizeString);
+
+				default:
+					break;
+			}
+		}
+
+		default:
+			break;
+	}
+
+	return QString();
+}

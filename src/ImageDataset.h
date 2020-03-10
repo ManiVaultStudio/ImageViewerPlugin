@@ -114,6 +114,9 @@ public:
 	/** TODO */
 	void setSelection(const Indices& selection);
 
+	/** TODO */
+	QVariant selectionSize(const int& role = Qt::DisplayRole) const;
+
 	QString							_name;					/** TODO */
 	int								_type;					/** TODO */
 	QSize							_size;					/** TODO */

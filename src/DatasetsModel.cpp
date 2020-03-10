@@ -95,7 +95,7 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 				return dataset->selection(Qt::DisplayRole);
 
 			case Columns::SelectionSize:
-				return QString::number(dataset->_selection.size());
+				return dataset->selectionSize(Qt::DisplayRole);
 
 			default:
 				break;
@@ -159,7 +159,7 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 				return dataset->selection(Qt::EditRole);
 
 			case Columns::SelectionSize:
-				return dataset->_selection.size();
+				return dataset->selectionSize(Qt::EditRole);
 
 			default:
 				break;
@@ -223,7 +223,7 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 				return dataset->selection(Qt::ToolTipRole);
 
 			case Columns::SelectionSize:
-				return QString("Number of selected pixels: %1").arg(QString::number(dataset->_selection.size()));
+				return dataset->selectionSize(Qt::ToolTipRole);
 
 			default:
 				break;
@@ -344,11 +344,7 @@ Qt::ItemFlags DatasetsModel::flags(const QModelIndex& index) const
 		}
 
 		case Columns::PointsName:
-			break;
-
 		case Columns::Selection:
-			break;
-
 		case Columns::SelectionSize:
 			break;
 
