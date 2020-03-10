@@ -22,6 +22,12 @@ public:
 	void addLayer(const QString& name, const Layer::Type& type, const std::uint32_t& flags);
 
 	/** TODO */
+	QVariant name(const int& role = Qt::DisplayRole) const;
+
+	/** TODO */
+	void setName(const QString& name);
+
+	/** TODO */
 	QVariant currentImageName(const int& role = Qt::DisplayRole) const;
 
 	/** TODO */

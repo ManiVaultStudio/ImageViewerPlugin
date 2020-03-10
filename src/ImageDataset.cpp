@@ -36,6 +36,29 @@ void ImageDataset::addLayer(const QString& name, const Layer::Type& type, const 
 	_layers.append(new Layer(this, name, type, flags, _layers.size()));
 }
 
+QVariant ImageDataset::name(const int& role /*= Qt::DisplayRole*/) const
+{
+	switch (role)
+	{
+		case Qt::DisplayRole:
+		case Qt::EditRole:
+			return _name;
+
+		case Qt::ToolTipRole:
+			return QString("Dataset name: %1").arg(_name);
+
+		default:
+			break;
+	}
+
+	return "";
+}
+
+void ImageDataset::setName(const QString& name)
+{
+	_name = name;
+}
+
 QVariant ImageDataset::currentImageName(const int& role /*= Qt::DisplayRole*/) const
 {
 	switch (role)
