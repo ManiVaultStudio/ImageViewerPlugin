@@ -96,7 +96,12 @@ public:
 	/** TODO */
 	void setImageFilePaths(const QStringList& imageFilePaths);
 
-	
+	/** TODO */
+	QVariant currentImageFilePath(const int& role = Qt::DisplayRole) const;
+
+	/** TODO 
+	QVariant currentImageFilePath(const int& role = Qt::DisplayRole) const;
+	*/
 	QString							_name;					/** TODO */
 	int								_type;					/** TODO */
 	QSize							_size;					/** TODO */

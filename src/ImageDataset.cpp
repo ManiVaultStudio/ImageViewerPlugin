@@ -50,7 +50,7 @@ QVariant ImageDataset::name(const int& role /*= Qt::DisplayRole*/) const
 			break;
 	}
 
-	return "";
+	return QString();
 }
 
 void ImageDataset::setName(const QString& name)
@@ -75,7 +75,7 @@ QVariant ImageDataset::type(const int& role /*= Qt::DisplayRole*/) const
 			break;
 	}
 
-	return "";
+	return QString();
 }
 
 void ImageDataset::setType(const int& type)
@@ -253,7 +253,7 @@ QVariant ImageDataset::currentDimensionName(const int& role /*= Qt::DisplayRole*
 			return QString("Current dimension: %1").arg(dimensionName);
 	}
 
-	return "";
+	return QString();
 }
 
 void ImageDataset::setCurrentDimension(const std::uint32_t& currentDimension)
@@ -410,12 +410,32 @@ QVariant ImageDataset::imageFilePaths(const int& role /*= Qt::DisplayRole*/) con
 			break;
 	}
 
-	return false;
-
-	return _imageFilePaths;
+	return QStringList();
 }
 
 void ImageDataset::setImageFilePaths(const QStringList& imageFilePaths)
 {
 	_imageFilePaths = imageFilePaths;
 }
+
+QVariant ImageDataset::currentImageFilePath(const int& role /*= Qt::DisplayRole*/) const
+{
+	if (_currentImage < 0 || _currentImage >= _imageFilePaths.size())
+		return "";
+
+	switch (role)
+	{
+		case Qt::DisplayRole:
+		case Qt::EditRole:
+			return _imageFilePaths[_currentImage];
+
+		case Qt::ToolTipRole:
+			return QString("Current image file path: %1").arg(imageNames(Qt::DisplayRole).toString());
+
+		default:
+			break;
+	}
+
+	return QString();
+}
+

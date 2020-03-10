@@ -83,12 +83,7 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 				return dataset->imageFilePaths(Qt::DisplayRole);
 
 			case Columns::CurrentImageFilepath:
-			{
-				if (dataset->_currentImage < 0 || dataset->_currentImage >= dataset->_imageFilePaths.size())
-					return "";
-
-				return dataset->_imageFilePaths[dataset->_currentImage];
-			}
+				return dataset->currentImageFilePath(Qt::DisplayRole);
 
 			case Columns::CurrentDimensionFilepath:
 			{
@@ -171,10 +166,7 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 				return dataset->imageFilePaths(Qt::EditRole);
 
 			case Columns::CurrentImageFilepath:
-				if (dataset->_currentImage < 0 || dataset->_currentImage >= dataset->_imageFilePaths.size())
-					return "";
-
-				return dataset->_imageFilePaths[dataset->_currentImage];
+				return dataset->currentImageFilePath(Qt::EditRole);
 
 			case Columns::CurrentDimensionFilepath:
 				if (dataset->_currentDimension < 0 || dataset->_currentDimension >= dataset->_imageFilePaths.size())
@@ -239,12 +231,7 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 				return dataset->imageFilePaths(Qt::ToolTipRole);
 
 			case Columns::CurrentImageFilepath:
-			{
-				if (dataset->_currentImage < 0 || dataset->_currentImage >= dataset->_imageFilePaths.size())
-					return "";
-
-				return dataset->_imageFilePaths[dataset->_currentImage];
-			}
+				return dataset->currentImageFilePath(Qt::ToolTipRole);
 
 			case Columns::CurrentDimensionFilepath:
 			{
