@@ -43,6 +43,12 @@ public:
 	void setSize(const QSize& size);
 
 	/** TODO */
+	QVariant noPoints(const int& role = Qt::DisplayRole) const;
+
+	/** TODO */
+	void setNoPoints(const std::uint32_t& noPoints);
+
+	/** TODO */
 	QVariant currentImageName(const int& role = Qt::DisplayRole) const;
 
 	/** TODO */

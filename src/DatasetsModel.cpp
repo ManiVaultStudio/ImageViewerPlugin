@@ -53,7 +53,7 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 				return dataset->size(Qt::DisplayRole);
 
 			case Columns::NoPoints:
-				return QString::number(dataset->_noPoints);
+				return dataset->noPoints(Qt::DisplayRole);
 
 			case Columns::NoDimensions:
 				return QString::number(dataset->_noDimensions);
@@ -141,7 +141,7 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 				return dataset->size(Qt::EditRole);
 
 			case Columns::NoPoints:
-				return dataset->_noPoints;
+				return dataset->noPoints(Qt::EditRole);
 
 			case Columns::NoDimensions:
 				return dataset->_noDimensions;
@@ -209,7 +209,7 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 				return dataset->size(Qt::ToolTipRole);
 
 			case Columns::NoPoints:
-				return QString("Number of data points: %1").arg(QString::number(dataset->_noPoints));
+				return dataset->noPoints(Qt::ToolTipRole);
 
 			case Columns::NoDimensions:
 				return QString("Number of data dimensions: %1").arg(QString::number(dataset->_noDimensions));
@@ -428,7 +428,7 @@ bool DatasetsModel::setData(const QModelIndex& index, const QVariant& value, int
 				break;
 
 			case Columns::NoPoints:
-				dataset->_noPoints = value.toInt();
+				dataset->setNoPoints(value.toInt());
 				break;
 
 			case Columns::NoDimensions:

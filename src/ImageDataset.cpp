@@ -102,7 +102,7 @@ QVariant ImageDataset::noImages(const int& role /*= Qt::DisplayRole*/) const
 			break;
 	}
 
-	return 0;
+	return std::uint32_t{};
 }
 
 QVariant ImageDataset::size(const int& role /*= Qt::DisplayRole*/) const
@@ -122,12 +122,37 @@ QVariant ImageDataset::size(const int& role /*= Qt::DisplayRole*/) const
 			break;
 	}
 
-	return 0;
+	return QSize();
 }
 
 void ImageDataset::setSize(const QSize& size)
 {
 	_size = size;
+}
+
+QVariant ImageDataset::noPoints(const int& role /*= Qt::DisplayRole*/) const
+{
+	switch (role)
+	{
+		case Qt::DisplayRole:
+			return QString::number(_noPoints);
+
+		case Qt::EditRole:
+			return _noPoints;
+
+		case Qt::ToolTipRole:
+			return QString("Number of data points: %1").arg(QString::number(_noPoints));
+
+		default:
+			break;
+	}
+
+	return std::uint32_t{};
+}
+
+void ImageDataset::setNoPoints(const std::uint32_t& noPoints)
+{
+	_noPoints = noPoints;
 }
 
 QVariant ImageDataset::currentImageName(const int& role /*= Qt::DisplayRole*/) const
