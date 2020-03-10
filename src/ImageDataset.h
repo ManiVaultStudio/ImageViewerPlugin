@@ -90,6 +90,13 @@ public:
 	/** TODO */
 	void setAverage(const bool& average);
 
+	/** TODO */
+	QVariant imageFilePaths(const int& role = Qt::DisplayRole) const;
+
+	/** TODO */
+	void setImageFilePaths(const QStringList& imageFilePaths);
+
+	
 	QString							_name;					/** TODO */
 	int								_type;					/** TODO */
 	QSize							_size;					/** TODO */

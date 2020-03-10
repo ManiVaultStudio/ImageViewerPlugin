@@ -80,7 +80,7 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 				return dataset->average(Qt::DisplayRole);
 
 			case Columns::ImageFilePaths:
-				return QString("[%1]").arg(dataset->_imageFilePaths.join(", "));
+				return dataset->imageFilePaths(Qt::DisplayRole);
 
 			case Columns::CurrentImageFilepath:
 			{
@@ -168,7 +168,7 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 				return dataset->average(Qt::EditRole);
 
 			case Columns::ImageFilePaths:
-				return dataset->_imageFilePaths;
+				return dataset->imageFilePaths(Qt::EditRole);
 
 			case Columns::CurrentImageFilepath:
 				if (dataset->_currentImage < 0 || dataset->_currentImage >= dataset->_imageFilePaths.size())
@@ -236,7 +236,7 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 				return dataset->average(Qt::ToolTipRole);
 
 			case Columns::ImageFilePaths:
-				return QString("Image file paths: [%1]").arg(dataset->_imageFilePaths.join(", "));
+				return dataset->imageFilePaths(Qt::ToolTipRole);
 
 			case Columns::CurrentImageFilepath:
 			{
@@ -456,7 +456,7 @@ bool DatasetsModel::setData(const QModelIndex& index, const QVariant& value, int
 				break;
 
 			case Columns::ImageFilePaths:
-				dataset->_imageFilePaths = value.toStringList();
+				dataset->setImageFilePaths(value.toStringList());
 				break;
 
 			case Columns::PointsName:

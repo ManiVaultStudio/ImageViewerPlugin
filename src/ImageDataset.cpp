@@ -390,3 +390,32 @@ void ImageDataset::setAverage(const bool& average)
 {
 	_average = average;
 }
+
+QVariant ImageDataset::imageFilePaths(const int& role /*= Qt::DisplayRole*/) const
+{
+	const auto imageFilePathsString = QString("[%1]").arg(_imageFilePaths.join(", "));
+
+	switch (role)
+	{
+		case Qt::DisplayRole:
+			return imageFilePathsString;
+
+		case Qt::EditRole:
+			return _imageFilePaths;
+
+		case Qt::ToolTipRole:
+			return QString("Image file paths: %1").arg(imageFilePathsString);
+
+		default:
+			break;
+	}
+
+	return false;
+
+	return _imageFilePaths;
+}
+
+void ImageDataset::setImageFilePaths(const QStringList& imageFilePaths)
+{
+	_imageFilePaths = imageFilePaths;
+}
