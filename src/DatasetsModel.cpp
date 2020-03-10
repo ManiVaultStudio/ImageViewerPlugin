@@ -47,7 +47,7 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 				return dataset->type(Qt::DisplayRole);
 
 			case Columns::NoImages:
-				return QString::number(dataset->_noImages);
+				return dataset->noImages(Qt::DisplayRole);
 
 			case Columns::Size:
 				return QString("%1x%2").arg(QString::number(dataset->_size.width()), QString::number(dataset->_size.height()));
@@ -135,7 +135,7 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 				return dataset->type(Qt::EditRole);
 
 			case Columns::NoImages:
-				return dataset->_noImages;
+				return dataset->noImages(Qt::EditRole);
 
 			case Columns::Size:
 				return dataset->_size.height();
@@ -203,7 +203,7 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 				return dataset->type(Qt::ToolTipRole);
 
 			case Columns::NoImages:
-				return QString("Number of images: %1").arg(QString::number(dataset->_noImages));
+				return dataset->noImages(Qt::ToolTipRole);
 
 			case Columns::Size:
 				return QString("Image resolution: %1x%2 pixels").arg(QString::number(dataset->_size.width()), QString::number(dataset->_size.height()));
@@ -292,7 +292,7 @@ QVariant DatasetsModel::headerData(int section, Qt::Orientation orientation, int
 				return "Type";
 
 			case Columns::NoImages:
-				return "#Images";
+				return "No. Images";
 
 			case Columns::Size:
 				return "Size";
@@ -421,7 +421,6 @@ bool DatasetsModel::setData(const QModelIndex& index, const QVariant& value, int
 				break;
 
 			case Columns::NoImages:
-				dataset->_noImages = value.toInt();
 				break;
 
 			case Columns::Size:
@@ -568,7 +567,6 @@ void DatasetsModel::add(ImageDataset* dataset)
 
 	setData(index(0, Columns::Name, QModelIndex()), dataset->_name);
 	setData(index(0, Columns::Type, QModelIndex()), dataset->_type);
-	setData(index(0, Columns::NoImages, QModelIndex()), dataset->_noImages);
 	setData(index(0, Columns::Size, QModelIndex()), dataset->_size);
 	setData(index(0, Columns::NoPoints, QModelIndex()), dataset->_noPoints);
 	setData(index(0, Columns::NoDimensions, QModelIndex()), dataset->_noDimensions);

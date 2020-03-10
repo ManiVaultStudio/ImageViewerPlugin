@@ -9,7 +9,6 @@ ImageDataset::ImageDataset(QObject* parent) :
 	QObject(parent),
 	_name(""),
 	_type(0),
-	_noImages(0),
 	_size(),
 	_noPoints(0),
 	_noDimensions(0),
@@ -82,6 +81,28 @@ QVariant ImageDataset::type(const int& role /*= Qt::DisplayRole*/) const
 void ImageDataset::setType(const int& type)
 {
 	_type = type;
+}
+
+QVariant ImageDataset::noImages(const int& role /*= Qt::DisplayRole*/) const
+{
+	const auto count = _imageFilePaths.size();
+
+	switch (role)
+	{
+		case Qt::DisplayRole:
+			return QString::number(count);
+
+		case Qt::EditRole:
+			return count;
+
+		case Qt::ToolTipRole:
+			return QString("Number of images: %1").arg(QString::number(count));
+
+		default:
+			break;
+	}
+
+	return 0;
 }
 
 QVariant ImageDataset::currentImageName(const int& role /*= Qt::DisplayRole*/) const

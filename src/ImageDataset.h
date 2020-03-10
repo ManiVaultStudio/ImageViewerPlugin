@@ -34,6 +34,9 @@ public:
 	void setType(const int& type);
 
 	/** TODO */
+	QVariant noImages(const int& role = Qt::DisplayRole) const;
+
+	/** TODO */
 	QVariant currentImageName(const int& role = Qt::DisplayRole) const;
 
 	/** TODO */
@@ -41,7 +44,6 @@ public:
 
 	QString							_name;					/** TODO */
 	int								_type;					/** TODO */
-	std::uint32_t					_noImages;				/** TODO */
 	QSize							_size;					/** TODO */
 	std::uint32_t					_noPoints;				/** TODO */
 	std::uint32_t					_noDimensions;			/** TODO */

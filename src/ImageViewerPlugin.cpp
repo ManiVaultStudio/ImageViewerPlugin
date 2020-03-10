@@ -128,7 +128,6 @@ void ImageViewerPlugin::dataAdded(const QString dataset)
 
 	imageDataset._name				= dataset;
 	imageDataset._type				= static_cast<int>(imagesDataset.imageCollectionType());
-	imageDataset._noImages			= imagesDataset.noImages();
 	imageDataset._size				= imagesDataset.imageSize();
 	imageDataset._noPoints			= imagesDataset.points()->getNumPoints();
 	imageDataset._noDimensions		= imagesDataset.points()->getNumDimensions();
