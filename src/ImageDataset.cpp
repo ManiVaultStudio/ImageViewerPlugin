@@ -105,6 +105,31 @@ QVariant ImageDataset::noImages(const int& role /*= Qt::DisplayRole*/) const
 	return 0;
 }
 
+QVariant ImageDataset::size(const int& role /*= Qt::DisplayRole*/) const
+{
+	switch (role)
+	{
+		case Qt::DisplayRole:
+			return QString("%1x%2").arg(QString::number(_size.width()), QString::number(_size.height()));
+
+		case Qt::EditRole:
+			return _size;
+
+		case Qt::ToolTipRole:
+			return QString("Image size: %1x%2").arg(QString::number(_size.width()), QString::number(_size.height()));
+
+		default:
+			break;
+	}
+
+	return 0;
+}
+
+void ImageDataset::setSize(const QSize& size)
+{
+	_size = size;
+}
+
 QVariant ImageDataset::currentImageName(const int& role /*= Qt::DisplayRole*/) const
 {
 	switch (role)

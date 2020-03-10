@@ -50,7 +50,7 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 				return dataset->noImages(Qt::DisplayRole);
 
 			case Columns::Size:
-				return QString("%1x%2").arg(QString::number(dataset->_size.width()), QString::number(dataset->_size.height()));
+				return dataset->size(Qt::DisplayRole);
 
 			case Columns::NoPoints:
 				return QString::number(dataset->_noPoints);
@@ -138,7 +138,7 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 				return dataset->noImages(Qt::EditRole);
 
 			case Columns::Size:
-				return dataset->_size.height();
+				return dataset->size(Qt::EditRole);
 
 			case Columns::NoPoints:
 				return dataset->_noPoints;
@@ -206,7 +206,7 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 				return dataset->noImages(Qt::ToolTipRole);
 
 			case Columns::Size:
-				return QString("Image resolution: %1x%2 pixels").arg(QString::number(dataset->_size.width()), QString::number(dataset->_size.height()));
+				return dataset->size(Qt::ToolTipRole);
 
 			case Columns::NoPoints:
 				return QString("Number of data points: %1").arg(QString::number(dataset->_noPoints));
@@ -424,7 +424,7 @@ bool DatasetsModel::setData(const QModelIndex& index, const QVariant& value, int
 				break;
 
 			case Columns::Size:
-				dataset->_size = value.toSize();
+				dataset->setSize(value.toSize());
 				break;
 
 			case Columns::NoPoints:

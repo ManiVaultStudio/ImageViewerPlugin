@@ -37,6 +37,12 @@ public:
 	QVariant noImages(const int& role = Qt::DisplayRole) const;
 
 	/** TODO */
+	QVariant size(const int& role = Qt::DisplayRole) const;
+
+	/** TODO */
+	void setSize(const QSize& size);
+
+	/** TODO */
 	QVariant currentImageName(const int& role = Qt::DisplayRole) const;
 
 	/** TODO */
