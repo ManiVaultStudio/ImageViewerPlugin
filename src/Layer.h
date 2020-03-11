@@ -77,13 +77,10 @@ public: // Getters/setters
 	void setFlag(const std::uint32_t& flag, const bool& enabled = true);
 
 	/** TODO */
-	std::uint32_t order(const int& role = Qt::DisplayRole) const { return _order; }
+	QVariant order(const int& role = Qt::DisplayRole) const;
 
 	/** TODO */
-	std::uint32_t& order(const int& role = Qt::DisplayRole) { return _order; }
-
-	/** TODO */
-	void setOrder(const std::uint32_t& order) { _order = order; }
+	void setOrder(const std::uint32_t& order);
 
 	/** TODO */
 	float opacity(const int& role = Qt::DisplayRole) const { return _opacity; }
@@ -102,6 +99,9 @@ public: // Getters/setters
 
 	/** TODO */
 	void setColor(const QColor& color) { _color = color; }
+
+	/** TODO */
+	std::uint32_t& order(const int& role = Qt::DisplayRole) { return _order; }
 
 private:
 	QString			_id;			/** TODO */

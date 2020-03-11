@@ -18,7 +18,7 @@ public: // Columns
 		Locked,
 		ID,					// Name for internal use
 		Name,				// Name in the user interface
-		Fixed,
+		Frozen,
 		Removable,
 		Mask,
 		Renamable,

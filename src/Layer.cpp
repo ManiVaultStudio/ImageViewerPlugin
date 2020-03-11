@@ -170,3 +170,30 @@ void Layer::setFlag(const std::uint32_t& flag, const bool& enabled /*= true*/)
 	else
 		_flags = _flags & ~flag;
 }
+
+QVariant Layer::order(const int& role /*= Qt::DisplayRole*/) const
+{
+	const auto orderString = QString::number(_order);
+
+	switch (role)
+	{
+		case Qt::DisplayRole:
+			return orderString;
+
+		case Qt::EditRole:
+			return _order;
+
+		case Qt::ToolTipRole:
+			return QString("Order: %1").arg(orderString);
+
+		default:
+			break;
+	}
+
+	return QString();
+}
+
+void Layer::setOrder(const std::uint32_t& order)
+{
+	_order = order;
+}

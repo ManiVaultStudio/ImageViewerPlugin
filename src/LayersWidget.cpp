@@ -122,7 +122,7 @@ void LayersWidget::setModel(QSharedPointer<LayersModel> layersModel)
 	headerView->hideSection(LayersModel::Columns::Locked);
 	headerView->hideSection(LayersModel::Columns::ID);
 	//headerView->hideSection(LayersModel::Columns::Name);
-	headerView->hideSection(LayersModel::Columns::Fixed);
+	headerView->hideSection(LayersModel::Columns::Frozen);
 	headerView->hideSection(LayersModel::Columns::Removable);
 	headerView->hideSection(LayersModel::Columns::Mask);
 	headerView->hideSection(LayersModel::Columns::Renamable);

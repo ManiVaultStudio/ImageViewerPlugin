@@ -89,7 +89,7 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 				case Columns::Name:
 					return layer->name(Qt::DisplayRole).toString();
 
-				case Columns::Fixed:
+				case Columns::Frozen:
 					return layer->flag(Layer::Flags::Frozen, Qt::DisplayRole);
 
 				case Columns::Removable:
@@ -102,7 +102,7 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 					return layer->flag(Layer::Flags::Renamable, Qt::DisplayRole);
 
 				case Columns::Order:
-					return QString::number(layer->order());
+					return layer->order(Qt::DisplayRole);
 
 				case Columns::Opacity:
 					return QString("%1%").arg(QString::number(100.0f * layer->opacity(), 'f', 1));
@@ -150,7 +150,7 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 				case Columns::Name:
 					return layer->name(Qt::EditRole).toString();
 
-				case Columns::Fixed:
+				case Columns::Frozen:
 					return layer->flag(Layer::Flags::Frozen, Qt::EditRole);
 
 				case Columns::Removable:
@@ -163,7 +163,7 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 					return layer->flag(Layer::Flags::Renamable, Qt::EditRole);
 
 				case Columns::Order:
-					return layer->order();
+					return layer->order(Qt::EditRole);
 
 				case Columns::Opacity:
 					return layer->opacity();
@@ -197,7 +197,7 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 		{
 			switch (index.column()) {
 				case Columns::Enabled:
-					return layer->name(Qt::ToolTipRole);
+					return layer->flag(Layer::Flags::Enabled, Qt::ToolTipRole);
 
 				case Columns::Type:
 					return layer->type(Qt::ToolTipRole);
@@ -211,20 +211,20 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 				case Columns::Name:
 					return layer->name(Qt::ToolTipRole);
 
-				case Columns::Fixed:
-					return layer->name(Qt::ToolTipRole);
+				case Columns::Frozen:
+					return layer->flag(Layer::Flags::Frozen, Qt::ToolTipRole);
 
 				case Columns::Removable:
-					return layer->name(Qt::ToolTipRole);
+					return layer->flag(Layer::Flags::Removable, Qt::ToolTipRole);
 
 				case Columns::Mask:
-					return layer->name(Qt::ToolTipRole);
+					return layer->flag(Layer::Flags::Mask, Qt::ToolTipRole);
 
 				case Columns::Renamable:
-					return layer->name(Qt::ToolTipRole);
+					return layer->flag(Layer::Flags::Renamable, Qt::ToolTipRole);
 
 				case Columns::Order:
-					return layer->name(Qt::ToolTipRole);
+					return layer->order(Qt::ToolTipRole);
 
 				case Columns::Opacity:
 					return layer->name(Qt::ToolTipRole);
@@ -263,7 +263,7 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 				case Columns::Name:
 					return Qt::AlignLeft + Qt::AlignVCenter;
 
-				case Columns::Fixed:
+				case Columns::Frozen:
 				case Columns::Removable:
 				case Columns::Mask:
 				case Columns::Renamable:
@@ -310,8 +310,8 @@ QVariant LayersModel::headerData(int section, Qt::Orientation orientation, int r
 			case Columns::Name:
 				return "Name";
 
-			case Columns::Fixed:
-				return "Fixed";
+			case Columns::Frozen:
+				return "Frozen";
 
 			case Columns::Removable:
 				return "Removable";
@@ -381,7 +381,7 @@ Qt::ItemFlags LayersModel::flags(const QModelIndex& index) const
 			break;
 		}
 
-		case Columns::Fixed:
+		case Columns::Frozen:
 		case Columns::Removable:
 			break;
 
@@ -480,7 +480,7 @@ bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int r
 				layer->setName(value.toString());
 				break;
 
-			case Columns::Fixed:
+			case Columns::Frozen:
 				layer->setFlag(Layer::Flags::Frozen, value.toBool());
 				break;
 
