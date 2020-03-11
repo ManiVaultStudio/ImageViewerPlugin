@@ -1,6 +1,8 @@
 #pragma once
 
-#include "LayerImage.h"
+#include <QColor>
+#include <QObject>
+#include <QImage>
 
 /** TODO */
 class Layer : public QObject
