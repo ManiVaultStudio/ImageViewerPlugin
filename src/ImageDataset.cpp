@@ -23,11 +23,11 @@ ImageDataset::ImageDataset(QObject* parent) :
 	_layers(),
 	_layersModel(QSharedPointer<LayersModel>::create(&_layers))
 {
-	addLayer("Image", Layer::Type::Image, Layer::Flags::Enabled | Layer::Flags::Fixed);
-	addLayer("Selection", Layer::Type::Selection, Layer::Flags::Enabled | Layer::Flags::Fixed);
-	addLayer("MetaDataA", Layer::Type::Metadata, Layer::Flags::Enabled | Layer::Flags::Removable | Layer::Flags::Renamable);
-	addLayer("MetaDataB", Layer::Type::Metadata, Layer::Flags::Enabled | Layer::Flags::Removable | Layer::Flags::Renamable);
-	addLayer("MetaDataC", Layer::Type::Metadata, Layer::Flags::Enabled | Layer::Flags::Removable | Layer::Flags::Renamable);
+	addLayer("Image", Layer::Type::Image, Layer::Flags::Enabled);
+	addLayer("Selection", Layer::Type::Selection, Layer::Flags::Enabled);
+	//addLayer("MetaDataA", Layer::Type::Metadata, Layer::Flags::Enabled | Layer::Flags::Removable | Layer::Flags::Renamable);
+	//addLayer("MetaDataB", Layer::Type::Metadata, Layer::Flags::Enabled | Layer::Flags::Removable | Layer::Flags::Renamable);
+	//addLayer("MetaDataC", Layer::Type::Metadata, Layer::Flags::Enabled | Layer::Flags::Removable | Layer::Flags::Renamable);
 }
 
 void ImageDataset::addLayer(const QString& name, const Layer::Type& type, const std::uint32_t& flags)

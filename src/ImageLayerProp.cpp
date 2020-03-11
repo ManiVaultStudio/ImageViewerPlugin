@@ -131,8 +131,6 @@ void ImageLayerProp::setImage(const QImage& image)
 
 	_image = image;
 	
-	_image.save("from_variant_5.jpg");
-
 	const auto texture = textureByName("Quad");
 
 	texture->destroy();
@@ -147,12 +145,8 @@ void ImageLayerProp::setImage(const QImage& image)
 	const auto rectangle = QRectF(QPointF(0.f, 0.f), QSizeF(static_cast<float>(image.width()), static_cast<float>(image.height())));
 
 	shapeByName<QuadShape>("Quad")->setRectangle(rectangle);
-
-	QMatrix4x4 modelMatrix;
-
-	modelMatrix.translate(-0.5f * rectangle.width(), -0.5f * rectangle.height(), 0.0f);
-
-	setModelMatrix(modelMatrix);
+	
+	updateModelMatrix();
 }
 
 void ImageLayerProp::setDisplayRange(const float& min, const float& max)
@@ -168,4 +162,24 @@ void ImageLayerProp::setOpacity(const float& opacity)
 	qDebug() << fullName() << "set opacity" << QString::number(opacity, 'f', 2);
 
 	_opacity = opacity;
+}
+
+void ImageLayerProp::setOrder(const std::uint32_t& order)
+{
+	qDebug() << fullName() << "set order" << QString::number(order);
+
+	_order = order;
+
+	updateModelMatrix();
+}
+
+void ImageLayerProp::updateModelMatrix()
+{
+	QMatrix4x4 modelMatrix;
+
+	const auto rectangle = shapeByName<QuadShape>("Quad")->rectangle();
+
+	modelMatrix.translate(-0.5f * rectangle.width(), -0.5f * rectangle.height(), static_cast<float>(_order));
+
+	setModelMatrix(modelMatrix);
 }

@@ -13,8 +13,8 @@ public: // Columns
 	
 	/** TODO */
 	enum Columns : int {
-		Type,
 		Enabled,
+		Type,
 		Locked,
 		Name,
 		Fixed,

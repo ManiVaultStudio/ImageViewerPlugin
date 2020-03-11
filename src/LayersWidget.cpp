@@ -53,7 +53,7 @@ LayersWidget::LayersWidget(QWidget* parent, DatasetsModel* datasetsModel) :
 
 	QObject::connect(_ui->layerEnabledCheckBox, &QCheckBox::stateChanged, [this](int state) {
 		for (auto index : _ui->layersTreeView->selectionModel()->selectedRows()) {
-			_layersModel->setData(_layersModel->index(index.row(), LayersModel::Columns::Name), static_cast<int>(state), Qt::CheckStateRole);
+			_layersModel->setData(_layersModel->index(index.row(), LayersModel::Columns::Enabled), static_cast<int>(state), Qt::CheckStateRole);
 		}
 	});
 
@@ -117,8 +117,8 @@ void LayersWidget::setModel(QSharedPointer<LayersModel> layersModel)
 
 	headerView->setSectionResizeMode(QHeaderView::ResizeToContents);
 
-	headerView->hideSection(LayersModel::Columns::Type);
-	headerView->hideSection(LayersModel::Columns::Enabled);
+	//headerView->hideSection(LayersModel::Columns::Type);
+	//headerView->hideSection(LayersModel::Columns::Enabled);
 	headerView->hideSection(LayersModel::Columns::Locked);
 	//headerView->hideSection(LayersModel::Columns::Name);
 	headerView->hideSection(LayersModel::Columns::Fixed);

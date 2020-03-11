@@ -4,7 +4,6 @@
 #include "LayersModel.h"
 #include "Renderer.h"
 
-#include <QOpenGLTexture>
 #include <QDebug>
 
 ImageDatasetActor::ImageDatasetActor(Renderer* renderer, const QString& name, LayersModel* layersModel, const bool& visible /*= true*/) :
@@ -26,7 +25,12 @@ void ImageDatasetActor::updateData(const QModelIndex& topLeft, const QModelIndex
 		const auto layerName = _layersModel->data(row, LayersModel::Columns::Name).toString();
 		const auto layerProp = this->propByName<ImageLayerProp>(layerName);
 
-		if (topLeft.row() == 0 && topLeft.column() <= LayersModel::Columns::Image && bottomRight.column() >= LayersModel::Columns::Image) {
+		if (topLeft.column() <= LayersModel::Columns::Enabled && bottomRight.column() >= LayersModel::Columns::Enabled) {
+			const auto enabled = _layersModel->data(row, LayersModel::Columns::Enabled, Qt::EditRole).toBool();
+			layerProp->setVisible(enabled);
+		}
+
+		if (topLeft.column() <= LayersModel::Columns::Image && bottomRight.column() >= LayersModel::Columns::Image) {
 			const auto layerImage = _layersModel->data(row, LayersModel::Columns::Image, Qt::EditRole).value<QImage>();
 			layerProp->setImage(layerImage);
 		}
@@ -40,5 +44,12 @@ void ImageDatasetActor::updateData(const QModelIndex& topLeft, const QModelIndex
 			const auto layerOpacity = _layersModel->data(row, LayersModel::Columns::Opacity, Qt::EditRole).toFloat();
 			layerProp->setOpacity(layerOpacity);
 		}
+
+		if (topLeft.column() <= LayersModel::Columns::Order && bottomRight.column() >= LayersModel::Columns::Order) {
+			const auto order = _layersModel->data(row, LayersModel::Columns::Order, Qt::EditRole).toInt();
+			layerProp->setOrder(order);
+		}
+
+		emit becameDirty(this);
 	}
 }

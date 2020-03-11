@@ -39,10 +39,19 @@ public: // Configuration
 	/** TODO */
 	void setOpacity(const float& opacity);
 
+	/** TODO */
+	void setOrder(const std::uint32_t& order);
+
+protected:
+
+	/** TODO */
+	void updateModelMatrix();
+
 private:
-	QImage		_image;
-	float		_displayRange[2];
-	float		_opacity;
+	QImage			_image;
+	float			_displayRange[2];
+	float			_opacity;
+	std::uint32_t	_order;
 };
 
 using SharedImageLayerProp = QSharedPointer<ImageLayerProp>;
