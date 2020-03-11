@@ -19,7 +19,7 @@ public:
 	/** TODO */
 	enum Flags : int {
 		Enabled		= 1ul << 0,		/** TODO */
-		Fixed		= 1ul << 1,		/** TODO */
+		Frozen		= 1ul << 1,		/** TODO */
 		Removable	= 1ul << 2,		/** TODO */
 		Mask		= 1ul << 3,		/** TODO */
 		Renamable	= 1ul << 4		/** TODO */
@@ -40,10 +40,10 @@ public: // Getters/setters
 	void setId(const QString& id);
 
 	/** TODO */
-	QString name(const int& role = Qt::DisplayRole) const { return _name; }
+	QString name(const int& role = Qt::DisplayRole) const;
 
 	/** TODO */
-	void setName(const QString& name) { _name = name; }
+	void setName(const QString& name);
 
 	/** TODO */
 	Type type(const int& role = Qt::DisplayRole) const { return _type; }
@@ -52,7 +52,7 @@ public: // Getters/setters
 	void setType(const Type& type) { _type = type; }
 
 	/** TODO */
-	bool isFlagSet(const std::uint32_t& flag) const;
+	QVariant flag(const std::uint32_t& flag, const int& role = Qt::DisplayRole) const;
 
 	/** TODO */
 	void setFlag(const std::uint32_t& flag, const bool& enabled = true);

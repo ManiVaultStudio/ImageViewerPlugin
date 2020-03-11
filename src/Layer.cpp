@@ -37,15 +37,13 @@ QString Layer::id(const int& role /*= Qt::DisplayRole*/) const
 			return _id;
 
 		case Qt::ToolTipRole:
-			return QString("ID:: %1").arg(_id);
+			return QString("ID: %1").arg(_id);
 
 		default:
 			break;
 	}
 
 	return QString();
-
-	return _id;
 }
 
 void Layer::setId(const QString& id)
@@ -53,9 +51,73 @@ void Layer::setId(const QString& id)
 	_id = id;
 }
 
-bool Layer::isFlagSet(const std::uint32_t& flag) const
+QString Layer::name(const int& role /*= Qt::DisplayRole*/) const
 {
-	return _flags & flag;
+	switch (role)
+	{
+		case Qt::DisplayRole:
+		case Qt::EditRole:
+			return _name;
+
+		case Qt::ToolTipRole:
+			return QString("Name: %1").arg(_name);
+
+		default:
+			break;
+	}
+
+	return QString();
+}
+
+void Layer::setName(const QString& name)
+{
+	_name = name;
+}
+
+QVariant Layer::flag(const std::uint32_t& flag, const int& role /*= Qt::DisplayRole*/) const
+{
+	const auto isFlagSet	= _flags & flag;
+	const auto flagString	= isFlagSet ? "true" : "false";
+
+	switch (role)
+	{
+		case Qt::DisplayRole:
+			return flagString;
+
+		case Qt::EditRole:
+			return isFlagSet;
+
+		case Qt::ToolTipRole:
+		{
+			switch (flag)
+			{
+				case Enabled:
+					return QString("Enabled: %1").arg(flagString);
+
+				case Frozen:
+					return QString("Frozen: %1").arg(flagString);
+
+				case Removable:
+					return QString("Removable: %1").arg(flagString);
+
+				case Mask:
+					return QString("Mask: %1").arg(flagString);
+
+				case Renamable:
+					return QString("Renamable: %1").arg(flagString);
+
+				default:
+					break;
+			}
+
+			break;
+		}
+
+		default:
+			break;
+	}
+
+	return QString();
 }
 
 void Layer::setFlag(const std::uint32_t& flag, const bool& enabled /*= true*/)

@@ -59,13 +59,13 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 			if (index.column() == Columns::Locked)
 				return QBrush(Qt::black);
 			else
-				return layer->isFlagSet(Layer::Flags::Enabled) ? QBrush(Qt::black) : QBrush(QColor(80, 80, 80));
+				return layer->flag(Layer::Flags::Enabled, Qt::EditRole).toBool() ? QBrush(Qt::black) : QBrush(QColor(80, 80, 80));
 
 		case Qt::CheckStateRole:
 		{
 			switch (index.column()) {
 				case Columns::Enabled:
-					return layer->isFlagSet(Layer::Flags::Enabled) ? Qt::Checked : Qt::Unchecked;
+					return layer->flag(Layer::Flags::Enabled, Qt::EditRole).toBool() ? Qt::Checked : Qt::Unchecked;
 			}
 
 			break;
@@ -96,7 +96,7 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 				}
 
 				case Columns::Locked:
-					return layer->isFlagSet(Layer::Flags::Fixed) ? u8"\uf023" : u8"\uf09c";
+					return layer->flag(Layer::Flags::Frozen, Qt::EditRole).toBool() ? u8"\uf023" : u8"\uf09c";
 
 				case Columns::ID:
 					return layer->id(Qt::DisplayRole);
@@ -105,16 +105,16 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 					return layer->name(Qt::DisplayRole);
 
 				case Columns::Fixed:
-					return layer->isFlagSet(Layer::Flags::Fixed) ? "true" : "false";
+					return layer->flag(Layer::Flags::Frozen, Qt::DisplayRole);
 
 				case Columns::Removable:
-					return layer->isFlagSet(Layer::Flags::Removable) ? "true" : "false";
+					return layer->flag(Layer::Flags::Removable, Qt::DisplayRole);
 
 				case Columns::Mask:
-					return layer->isFlagSet(Layer::Flags::Mask) ? "true" : "false";
+					return layer->flag(Layer::Flags::Mask, Qt::DisplayRole);
 
 				case Columns::Renamable:
-					return layer->isFlagSet(Layer::Flags::Renamable) ? "true" : "false";
+					return layer->flag(Layer::Flags::Renamable, Qt::DisplayRole);
 
 				case Columns::Order:
 					return QString::number(layer->order());
@@ -151,31 +151,31 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 		{
 			switch (index.column()) {
 				case Columns::Enabled:
-					return layer->isFlagSet(Layer::Flags::Enabled);
+					return layer->flag(Layer::Flags::Enabled, Qt::EditRole);
 
 				case Columns::Type:
 					return static_cast<int>(layer->type());
 
 				case Columns::Locked:
-					return layer->isFlagSet(Layer::Flags::Fixed);
+					return layer->flag(Layer::Flags::Frozen, Qt::EditRole);
 
 				case Columns::ID:
-					return layer->id();
+					return layer->id(Qt::EditRole);
 
 				case Columns::Name:
-					return layer->name();
+					return layer->name(Qt::EditRole);
 
 				case Columns::Fixed:
-					return layer->isFlagSet(Layer::Flags::Fixed);
+					return layer->flag(Layer::Flags::Frozen, Qt::EditRole);
 
 				case Columns::Removable:
-					return layer->isFlagSet(Layer::Flags::Removable);
+					return layer->flag(Layer::Flags::Removable, Qt::EditRole);
 
 				case Columns::Mask:
-					return layer->isFlagSet(Layer::Flags::Mask);
+					return layer->flag(Layer::Flags::Mask, Qt::EditRole);
 
 				case Columns::Renamable:
-					return layer->isFlagSet(Layer::Flags::Renamable);
+					return layer->flag(Layer::Flags::Renamable, Qt::EditRole);
 
 				case Columns::Order:
 					return layer->order();
@@ -200,6 +200,64 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 
 				case Columns::DisplayRange:
 					return QVariant::fromValue(layer->image().displayRange());
+
+				default:
+					break;
+			}
+
+			break;
+		}
+
+		case Qt::ToolTipRole:
+		{
+			switch (index.column()) {
+				case Columns::Enabled:
+					return layer->name(Qt::ToolTipRole);
+
+				case Columns::Type:
+					return layer->type(Qt::ToolTipRole);
+
+				case Columns::Locked:
+					return layer->flag(Layer::Flags::Frozen, Qt::ToolTipRole);
+
+				case Columns::ID:
+					return layer->name(Qt::ToolTipRole);
+
+				case Columns::Name:
+					return layer->name(Qt::ToolTipRole);
+
+				case Columns::Fixed:
+					return layer->name(Qt::ToolTipRole);
+
+				case Columns::Removable:
+					return layer->name(Qt::ToolTipRole);
+
+				case Columns::Mask:
+					return layer->name(Qt::ToolTipRole);
+
+				case Columns::Renamable:
+					return layer->name(Qt::ToolTipRole);
+
+				case Columns::Order:
+					return layer->name(Qt::ToolTipRole);
+
+				case Columns::Opacity:
+					return layer->name(Qt::ToolTipRole);
+
+				case Columns::WindowNormalized:
+					return layer->name(Qt::ToolTipRole);
+
+				case Columns::LevelNormalized:
+					return layer->name(Qt::ToolTipRole);
+
+				case Columns::Color:
+					return layer->name(Qt::ToolTipRole);
+
+				case Columns::ImageRange:
+					return layer->name(Qt::ToolTipRole);
+
+				case Columns::DisplayRange:
+					return layer->name(Qt::ToolTipRole);
 
 				default:
 					break;
@@ -438,7 +496,7 @@ bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int r
 				break;
 
 			case Columns::Fixed:
-				layer->setFlag(Layer::Flags::Fixed, value.toBool());
+				layer->setFlag(Layer::Flags::Frozen, value.toBool());
 				break;
 
 			case Columns::Removable:
@@ -565,7 +623,7 @@ bool LayersModel::mayMoveUp(const int& row)
 
 	auto layers = (*_layers);
 
-	if (layers[row]->isFlagSet(Layer::Flags::Fixed) || layers[row - 1]->isFlagSet(Layer::Flags::Fixed))
+	if (layers[row]->flag(Layer::Flags::Frozen, Qt::EditRole).toBool() || layers[row - 1]->flag(Layer::Flags::Frozen, Qt::EditRole).toBool())
 		return false;
 
 	return true;
@@ -578,7 +636,7 @@ bool LayersModel::mayMoveDown(const int& row)
 
 	auto layers = (*_layers);
 
-	if (layers[row]->isFlagSet(Layer::Flags::Fixed) || layers[row + 1]->isFlagSet(Layer::Flags::Fixed))
+	if (layers[row]->flag(Layer::Flags::Frozen, Qt::EditRole).toBool() || layers[row + 1]->flag(Layer::Flags::Frozen, Qt::EditRole).toBool())
 		return false;
 
 	return true;
@@ -623,7 +681,7 @@ void LayersModel::removeRows(const QModelIndexList& rows)
 	for (const auto& index : rows) {
 		const auto row = index.row();
 
-		if (_layers->at(row)->isFlagSet(Layer::Flags::Removable)) {
+		if (_layers->at(row)->flag(Layer::Flags::Removable, Qt::EditRole).toBool()) {
 			rowsToRemove.append(row);
 		}
 	}
