@@ -517,21 +517,21 @@ void DatasetsModel::add(ImageDataset* dataset)
 {
 	insertRows(0, 1);
 
-	setData(index(0, Columns::Name, QModelIndex()), dataset->_name);
-	setData(index(0, Columns::Type, QModelIndex()), dataset->_type);
-	setData(index(0, Columns::Size, QModelIndex()), dataset->_size);
-	setData(index(0, Columns::NoPoints, QModelIndex()), dataset->_noPoints);
-	setData(index(0, Columns::NoDimensions, QModelIndex()), dataset->_noDimensions);
-	setData(index(0, Columns::ImageNames, QModelIndex()), dataset->_imageNames);
-	setData(index(0, Columns::DimensionNames, QModelIndex()), dataset->_dimensionNames);
-	setData(index(0, Columns::Average, QModelIndex()), dataset->_average);
-	setData(index(0, Columns::ImageFilePaths, QModelIndex()), dataset->_imageFilePaths);
-	setData(index(0, Columns::CurrentImage, QModelIndex()), dataset->_currentImage);
-	setData(index(0, Columns::CurrentDimension, QModelIndex()), dataset->_currentDimension);
-	setData(index(0, Columns::PointsName, QModelIndex()), dataset->_pointsName);
+	setData(index(0, Columns::Name, QModelIndex()), dataset->name(Qt::EditRole));
+	setData(index(0, Columns::Type, QModelIndex()), dataset->type(Qt::EditRole));
+	setData(index(0, Columns::Size, QModelIndex()), dataset->size(Qt::EditRole));
+	setData(index(0, Columns::NoPoints, QModelIndex()), dataset->noPoints(Qt::EditRole));
+	setData(index(0, Columns::NoDimensions, QModelIndex()), dataset->noDimensions(Qt::EditRole));
+	setData(index(0, Columns::ImageNames, QModelIndex()), dataset->imageNames(Qt::EditRole));
+	setData(index(0, Columns::DimensionNames, QModelIndex()), dataset->dimensionNames(Qt::EditRole));
+	setData(index(0, Columns::Average, QModelIndex()), dataset->average(Qt::EditRole));
+	setData(index(0, Columns::ImageFilePaths, QModelIndex()), dataset->imageFilePaths(Qt::EditRole));
+	setData(index(0, Columns::CurrentImage, QModelIndex()), dataset->currentImage(Qt::EditRole));
+	setData(index(0, Columns::CurrentDimension, QModelIndex()), dataset->currentDimension(Qt::EditRole));
+	setData(index(0, Columns::PointsName, QModelIndex()), dataset->pointsName(Qt::EditRole));
 }
 
 LayersModel* DatasetsModel::layersModel(const int& row)
 {
-	return _datasets[row]->_layersModel.get();
+	return _datasets[row]->layersModel().get();
 }

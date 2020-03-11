@@ -117,6 +117,10 @@ public:
 	/** TODO */
 	QVariant selectionSize(const int& role = Qt::DisplayRole) const;
 
+	/** TODO */
+	QSharedPointer<LayersModel> layersModel();
+
+private:
 	QString							_name;					/** TODO */
 	int								_type;					/** TODO */
 	QSize							_size;					/** TODO */

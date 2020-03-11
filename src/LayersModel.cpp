@@ -191,10 +191,8 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 				case Columns::Color:
 					return layer->color();
 
-					/*
 				case Columns::Image:
-					return layer->image();
-					*/
+					return layer->image().image();
 
 				case Columns::ImageRange:
 					return QVariant::fromValue(layer->image().imageRange());
@@ -493,6 +491,8 @@ bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int r
 			break;
 
 		case Columns::Image:
+			emit dataChanged(this->index(row, Columns::Image), this->index(row, Columns::DisplayRange));
+
 		case Columns::WindowNormalized:
 		case Columns::LevelNormalized:
 			emit dataChanged(this->index(row, 0), this->index(row, columnCount() - 1));

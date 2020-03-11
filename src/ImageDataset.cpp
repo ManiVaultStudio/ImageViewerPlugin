@@ -555,3 +555,8 @@ QVariant ImageDataset::selectionSize(const int& role /*= Qt::DisplayRole*/) cons
 
 	return QString();
 }
+
+QSharedPointer<LayersModel> ImageDataset::layersModel()
+{
+	return _layersModel;
+}

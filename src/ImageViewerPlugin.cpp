@@ -58,7 +58,7 @@ ImageViewerPlugin::ImageViewerPlugin() :
 				case static_cast<int>(ImageCollectionType::Stack) :
 				{
 					const auto currentDimension = _datasetsModel.data(topLeft.row(), DatasetsModel::Columns::CurrentDimension).toInt();
-
+					
 					_datasetsModel.layersModel(topLeft.row())->setData(0, LayersModel::Columns::Image, imagesDataset.stackImage(currentDimension));
 
 					break;
@@ -126,35 +126,44 @@ void ImageViewerPlugin::dataAdded(const QString dataset)
 
 	auto imageDataset = ImageDataset(nullptr);
 
-	imageDataset._name				= dataset;
-	imageDataset._type				= static_cast<int>(imagesDataset.imageCollectionType());
-	imageDataset._size				= imagesDataset.imageSize();
-	imageDataset._noPoints			= imagesDataset.points()->getNumPoints();
-	imageDataset._noDimensions		= imagesDataset.points()->getNumDimensions();
-	imageDataset._currentImage		= 0;
-	imageDataset._currentDimension	= 0;
-	imageDataset._average		= false;
-	imageDataset._imageFilePaths	= QStringList();
+	imageDataset.setName(dataset);
+	imageDataset.setType(static_cast<int>(imagesDataset.imageCollectionType()));
+	imageDataset.setSize(imagesDataset.imageSize());
+	imageDataset.setNoPoints(imagesDataset.points()->getNumPoints());
+	imageDataset.setNoDimensions(imagesDataset.points()->getNumDimensions());
+	imageDataset.setCurrentImage(0);
+	imageDataset.setCurrentDimension(0);
+	imageDataset.setAverage(false);
+
+	auto imageFilePaths = QStringList();
 
 	for (const auto& imageFilePath : imagesDataset.imageFilePaths()) {
-		imageDataset._imageFilePaths << imageFilePath;
+		imageFilePaths << imageFilePath;
 	}
 
 	switch (imagesDataset.imageCollectionType())
 	{
 		case ImageCollectionType::Sequence:
 		{
+			auto imageNames = QStringList();
+
 			for (const auto& imageFilePath : imagesDataset.imageFilePaths()) {
-				imageDataset._imageNames << QFileInfo(imageFilePath).fileName();
+				imageNames << QFileInfo(imageFilePath).fileName();
 			}
+
+			imageDataset.setImageNames(imageNames);
 			break;
 		}
 
 		case ImageCollectionType::Stack:
 		{
+			auto dimensionNames = QStringList();
+
 			for (const auto& dimensionName : imagesDataset.dimensionNames()) {
-				imageDataset._dimensionNames << dimensionName;
+				dimensionNames << dimensionName;
 			}
+
+			imageDataset.setDimensionNames(dimensionNames);
 			break;
 		}
 
@@ -162,7 +171,8 @@ void ImageViewerPlugin::dataAdded(const QString dataset)
 			break;
 	}
 
-	imageDataset._pointsName = imagesDataset.points()->getDataName();
+	imageDataset.setImageFilePaths(imageFilePaths);
+	imageDataset.setPointsName(imagesDataset.points()->getDataName());
 
 	_datasetsModel.add(&imageDataset);
 }

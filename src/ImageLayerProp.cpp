@@ -131,6 +131,8 @@ void ImageLayerProp::setImage(const QImage& image)
 
 	_image = image;
 	
+	_image.save("from_variant_5.jpg");
+
 	const auto texture = textureByName("Quad");
 
 	texture->destroy();

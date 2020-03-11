@@ -16,7 +16,7 @@ LayersWidget::LayersWidget(QWidget* parent, DatasetsModel* datasetsModel) :
 	_ui->setupUi(this);
 
 	QObject::connect(_datasetsModel->selectionModel(), &QItemSelectionModel::currentRowChanged, [this](const QModelIndex& current, const QModelIndex& previous) {
-		setModel(_datasetsModel->datasets()[current.row()]->_layersModel);
+		setModel(_datasetsModel->datasets()[current.row()]->layersModel());
 	});
 
 	setModel(QSharedPointer<LayersModel>());
