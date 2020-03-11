@@ -28,7 +28,7 @@ Layer::Layer(QObject* parent, const QString& id, const QString& name, const Type
 {
 }
 
-QString Layer::id(const int& role /*= Qt::DisplayRole*/) const
+QVariant Layer::id(const int& role /*= Qt::DisplayRole*/) const
 {
 	switch (role)
 	{
@@ -51,7 +51,7 @@ void Layer::setId(const QString& id)
 	_id = id;
 }
 
-QString Layer::name(const int& role /*= Qt::DisplayRole*/) const
+QVariant Layer::name(const int& role /*= Qt::DisplayRole*/) const
 {
 	switch (role)
 	{
@@ -72,6 +72,49 @@ QString Layer::name(const int& role /*= Qt::DisplayRole*/) const
 void Layer::setName(const QString& name)
 {
 	_name = name;
+}
+
+QVariant Layer::type(const int& role /*= Qt::DisplayRole*/) const
+{
+	const auto typeName = Layer::typeName(_type);
+
+	switch (role)
+	{
+		case Qt::DisplayRole:
+		{
+			switch (_type) {
+				case Layer::Type::Image:
+					return u8"\uf03e";
+
+				case Layer::Type::Selection:
+					return u8"\uf065";
+
+				case Layer::Type::Cluster:
+					return u8"\uf02c";
+
+				default:
+					break;
+			}
+
+			break;
+		}
+
+		case Qt::EditRole:
+			return static_cast<int>(_type);
+
+		case Qt::ToolTipRole:
+			return QString("Type: %1").arg(typeName);
+
+		default:
+			break;
+	}
+
+	return QString();
+}
+
+void Layer::setType(const Type& type)
+{
+	_type = type;
 }
 
 QVariant Layer::flag(const std::uint32_t& flag, const int& role /*= Qt::DisplayRole*/) const

@@ -13,8 +13,27 @@ public:
 	enum Type : int {
 		Image,			/** TODO */
 		Selection,		/** TODO */
-		Metadata		/** TODO */
+		Cluster			/** TODO */
 	};
+
+	static QString typeName(const Type& type) {
+		switch (type)
+		{
+			case Layer::Type::Image:
+				return "Image";
+
+			case Layer::Type::Selection:
+				return "Selection";
+
+			case Layer::Type::Cluster:
+				return "Cluster";
+
+			default:
+				break;
+		}
+
+		return "";
+	}
 
 	/** TODO */
 	enum Flags : int {
@@ -34,22 +53,22 @@ public:
 public: // Getters/setters
 
 	/** TODO */
-	QString id(const int& role = Qt::DisplayRole) const;
+	QVariant id(const int& role = Qt::DisplayRole) const;
 
 	/** TODO */
 	void setId(const QString& id);
 
 	/** TODO */
-	QString name(const int& role = Qt::DisplayRole) const;
+	QVariant name(const int& role = Qt::DisplayRole) const;
 
 	/** TODO */
 	void setName(const QString& name);
 
 	/** TODO */
-	Type type(const int& role = Qt::DisplayRole) const { return _type; }
+	QVariant type(const int& role = Qt::DisplayRole) const;
 
 	/** TODO */
-	void setType(const Type& type) { _type = type; }
+	void setType(const Type& type);
 
 	/** TODO */
 	QVariant flag(const std::uint32_t& flag, const int& role = Qt::DisplayRole) const;

@@ -45,7 +45,7 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 			if (index.column() == Columns::Type)
 				return QFont("Font Awesome 5 Free Solid", 10, 1);
 
-			if (layer->type() == Layer::Type::Image || layer->type() == Layer::Type::Selection)
+			if (layer->type(Qt::EditRole).toInt() == Layer::Type::Image || layer->type(Qt::EditRole).toInt() == Layer::Type::Selection)
 			{
 				auto font = QFont();
 				font.setBold(true);
@@ -78,31 +78,16 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 					break;
 
 				case Columns::Type:
-				{
-					switch (layer->type())
-					{
-						case Layer::Type::Image:
-							return u8"\uf03e";
-
-						case Layer::Type::Selection:
-							return u8"\uf065";
-
-						case Layer::Type::Metadata:
-							return u8"\uf02c";
-
-						default:
-							break;
-					}
-				}
+					return layer->type(Qt::DisplayRole).toString();
 
 				case Columns::Locked:
 					return layer->flag(Layer::Flags::Frozen, Qt::EditRole).toBool() ? u8"\uf023" : u8"\uf09c";
 
 				case Columns::ID:
-					return layer->id(Qt::DisplayRole);
+					return layer->id(Qt::DisplayRole).toString();
 
 				case Columns::Name:
-					return layer->name(Qt::DisplayRole);
+					return layer->name(Qt::DisplayRole).toString();
 
 				case Columns::Fixed:
 					return layer->flag(Layer::Flags::Frozen, Qt::DisplayRole);
@@ -154,7 +139,7 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 					return layer->flag(Layer::Flags::Enabled, Qt::EditRole);
 
 				case Columns::Type:
-					return static_cast<int>(layer->type());
+					return layer->type(Qt::EditRole).toInt();
 
 				case Columns::Locked:
 					return layer->flag(Layer::Flags::Frozen, Qt::EditRole);
@@ -163,7 +148,7 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 					return layer->id(Qt::EditRole);
 
 				case Columns::Name:
-					return layer->name(Qt::EditRole);
+					return layer->name(Qt::EditRole).toString();
 
 				case Columns::Fixed:
 					return layer->flag(Layer::Flags::Frozen, Qt::EditRole);
