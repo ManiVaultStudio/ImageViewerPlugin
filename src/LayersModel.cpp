@@ -108,22 +108,22 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 					return layer->opacity(Qt::DisplayRole);
 
 				case Columns::WindowNormalized:
-					return QString::number(layer->image().windowNormalized(), 'f', 2);
+					return layer->windowNormalized(Qt::DisplayRole);
 
 				case Columns::LevelNormalized:
-					return QString::number(layer->image().levelNormalized(), 'f', 2);
+					return layer->levelNormalized(Qt::DisplayRole);
 
 				case Columns::Color:
 					return layer->color(Qt::DisplayRole);
 
 				case Columns::Image:
-					return "Image";
+					return layer->image(Qt::DisplayRole);
 
 				case Columns::ImageRange:
-					return QString("[%1, %2]").arg(QString::number(layer->image().imageRange().min(), 'f', 2), QString::number(layer->image().imageRange().max(), 'f', 2));
+					return layer->imageRange(Qt::DisplayRole);
 
 				case Columns::DisplayRange:
-					return QString("[%1, %2]").arg(QString::number(layer->image().displayRange().min(), 'f', 2), QString::number(layer->image().displayRange().max(), 'f', 2));
+					return layer->displayRange(Qt::DisplayRole);
 
 				default:
 					break;
@@ -139,7 +139,7 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 					return layer->flag(Layer::Flags::Enabled, Qt::EditRole);
 
 				case Columns::Type:
-					return layer->type(Qt::EditRole).toInt();
+					return layer->type(Qt::EditRole);
 
 				case Columns::Locked:
 					return layer->flag(Layer::Flags::Frozen, Qt::EditRole);
@@ -148,7 +148,7 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 					return layer->id(Qt::EditRole);
 
 				case Columns::Name:
-					return layer->name(Qt::EditRole).toString();
+					return layer->name(Qt::EditRole);
 
 				case Columns::Frozen:
 					return layer->flag(Layer::Flags::Frozen, Qt::EditRole);
@@ -169,22 +169,22 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 					return layer->opacity(Qt::EditRole);
 
 				case Columns::WindowNormalized:
-					return layer->image().windowNormalized();
+					return layer->windowNormalized(Qt::EditRole);
 
 				case Columns::LevelNormalized:
-					return layer->image().levelNormalized();
+					return layer->levelNormalized(Qt::EditRole);
 
 				case Columns::Color:
-					return layer->color();
+					return layer->color(Qt::EditRole);
 
 				case Columns::Image:
-					return layer->image().image();
+					return layer->image(Qt::EditRole);
 
 				case Columns::ImageRange:
-					return QVariant::fromValue(layer->image().imageRange());
+					return layer->imageRange(Qt::EditRole);
 
 				case Columns::DisplayRange:
-					return QVariant::fromValue(layer->image().displayRange());
+					return layer->displayRange(Qt::EditRole);
 
 				default:
 					break;
@@ -230,19 +230,22 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 					return layer->opacity(Qt::ToolTipRole);
 
 				case Columns::WindowNormalized:
-					return layer->name(Qt::ToolTipRole);
+					return layer->windowNormalized(Qt::ToolTipRole);
 
 				case Columns::LevelNormalized:
-					return layer->name(Qt::ToolTipRole);
+					return layer->levelNormalized(Qt::ToolTipRole);
 
 				case Columns::Color:
-					return layer->name(Qt::ToolTipRole);
+					return layer->color(Qt::ToolTipRole);
+
+				case Columns::Image:
+					return layer->image(Qt::ToolTipRole);
 
 				case Columns::ImageRange:
-					return layer->name(Qt::ToolTipRole);
+					return layer->imageRange(Qt::ToolTipRole);
 
 				case Columns::DisplayRange:
-					return layer->name(Qt::ToolTipRole);
+					return layer->displayRange(Qt::ToolTipRole);
 
 				default:
 					break;
@@ -272,6 +275,7 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 				case Columns::WindowNormalized:
 				case Columns::LevelNormalized:
 				case Columns::Color:
+				case Columns::Image:
 					return Qt::AlignRight + Qt::AlignVCenter;
 
 				case Columns::ImageRange:
@@ -505,11 +509,11 @@ bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int r
 				break;
 
 			case Columns::WindowNormalized:
-				layer->image().setWindowNormalized(value.toFloat());
+				layer->setWindowNormalized(value.toFloat());
 				break;
 
 			case Columns::LevelNormalized:
-				layer->image().setLevelNormalized(value.toFloat());
+				layer->setLevelNormalized(value.toFloat());
 				break;
 
 			case Columns::Color:
@@ -517,7 +521,7 @@ bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int r
 				break;
 
 			case Columns::Image:
-				layer->image().setImage(value.value<QImage>());
+				layer->setImage(value.value<QImage>());
 				break;
 
 			case Columns::ImageRange:

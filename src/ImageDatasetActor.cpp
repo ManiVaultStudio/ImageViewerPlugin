@@ -36,7 +36,7 @@ void ImageDatasetActor::updateData(const QModelIndex& topLeft, const QModelIndex
 		}
 
 		if (topLeft.column() <= LayersModel::Columns::DisplayRange && bottomRight.column() >= LayersModel::Columns::DisplayRange) {
-			const auto layerDisplayRange = _layersModel->data(row, LayersModel::Columns::DisplayRange, Qt::EditRole).value<LayerImage::Range>();
+			const auto layerDisplayRange = _layersModel->data(row, LayersModel::Columns::DisplayRange, Qt::EditRole).value<Layer::Range>();
 			layerProp->setDisplayRange(layerDisplayRange.min(), layerDisplayRange.max());
 		}
 

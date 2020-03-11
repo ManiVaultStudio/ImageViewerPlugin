@@ -45,6 +45,50 @@ public:
 	};
 
 	/** TODO */
+	class Range
+	{
+	public:
+
+		/** TODO */
+		Range(const float& min = 0.0f, const float& max = 0.0f) :
+			_min(std::min(min, max)),
+			_max(std::max(min, max))
+		{
+		}
+
+		/** TODO */
+		float min() const { return _min; }
+
+		/** TODO */
+		void setMin(const float& min) { _min = std::min(min, _max); }
+
+		/** TODO */
+		float max() const { return _max; }
+
+		/** TODO */
+		void setMax(const float& max) { _max = std::max(_min, max); }
+
+		/** TODO */
+		void include(const float& value) {
+			_min = std::min(_min, value);
+			_max = std::max(_max, value);
+		}
+
+		/** TODO */
+		void setFullRange() {
+			_max = std::numeric_limits<float>::min();
+			_min = std::numeric_limits<float>::max();
+		}
+
+		/** TODO */
+		float length() const { return _max - _min; }
+
+	private:
+		float	_min;	/** TODO */
+		float	_max;	/** TODO */
+	};
+
+	/** TODO */
 	Layer(QObject* parent);
 
 	/** TODO */
@@ -89,12 +133,6 @@ public: // Getters/setters
 	void setOpacity(const float& opacity);
 
 	/** TODO */
-	const LayerImage& image() const;
-
-	/** TODO */
-	LayerImage& image();
-
-	/** TODO */
 	QVariant color(const int& role = Qt::DisplayRole) const;
 
 	/** TODO */
@@ -103,17 +141,71 @@ public: // Getters/setters
 	/** TODO */
 	std::uint32_t& order(const int& role = Qt::DisplayRole);
 
+public: // Image functions
+
+	/** TODO */
+	QVariant image(const int& role = Qt::DisplayRole) const;
+
+	/** TODO */
+	void setImage(const QImage& image);
+
+	/** TODO */
+	QVariant imageRange(const int& role = Qt::DisplayRole) const;
+
+	/** TODO */
+	QVariant displayRange(const int& role = Qt::DisplayRole) const;
+
+	/** TODO */
+	QVariant windowNormalized(const int& role = Qt::DisplayRole) const;
+
+	/** TODO */
+	void setWindowNormalized(const float& windowNormalized);
+
+	/** TODO */
+	QVariant levelNormalized(const int& role = Qt::DisplayRole) const;
+
+	/** TODO */
+	void setLevelNormalized(const float& levelNormalized);
+
+	/** TODO */
+	QVariant window(const int& role = Qt::DisplayRole) const;
+
+	/** TODO */
+	void setWindow(const float& window);
+
+	/** TODO */
+	QVariant level(const int& role = Qt::DisplayRole) const;
+
+	/** TODO */
+	void setLevel(const float& level);
+
+protected:
+
+	/** TODO */
+	void computeImageRange();
+
+	/** TODO */
+	void computeDisplayRange();
+
 private:
-	QString			_id;			/** TODO */
-	QString			_name;			/** TODO */
-	Type			_type;			/** TODO */
-	std::uint32_t	_flags;			/** TODO */
-	std::uint32_t	_order;			/** TODO */
-	float			_opacity;		/** TODO */
-	LayerImage		_image;			/** TODO */
-	QColor			_color;			/** TODO */
+	QString			_id;					/** TODO */
+	QString			_name;					/** TODO */
+	Type			_type;					/** TODO */
+	std::uint32_t	_flags;					/** TODO */
+	std::uint32_t	_order;					/** TODO */
+	float			_opacity;				/** TODO */
+	QColor			_color;					/** TODO */
+	QImage			_image;					/** TODO */
+	Range			_imageRange;			/** TODO */
+	Range			_displayRange;			/** TODO */
+	float			_windowNormalized;		/** TODO */
+	float			_levelNormalized;		/** TODO */
+	float			_window;				/** TODO */
+	float			_level;					/** TODO */
 
 	friend class ImageDataset;
 };
+
+Q_DECLARE_METATYPE(Layer::Range);
 
 using Layers = QList<Layer*>;
