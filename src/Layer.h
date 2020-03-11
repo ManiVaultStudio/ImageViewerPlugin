@@ -89,19 +89,19 @@ public: // Getters/setters
 	void setOpacity(const float& opacity);
 
 	/** TODO */
-	const LayerImage& image() const { return _image; }
+	const LayerImage& image() const;
 
 	/** TODO */
-	LayerImage& image() { return _image; }
+	LayerImage& image();
 
 	/** TODO */
-	QColor color(const int& role = Qt::DisplayRole) const { return _color; }
+	QVariant color(const int& role = Qt::DisplayRole) const;
 
 	/** TODO */
-	void setColor(const QColor& color) { _color = color; }
+	void setColor(const QColor& color);
 
 	/** TODO */
-	std::uint32_t& order(const int& role = Qt::DisplayRole) { return _order; }
+	std::uint32_t& order(const int& role = Qt::DisplayRole);
 
 private:
 	QString			_id;			/** TODO */

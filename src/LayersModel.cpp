@@ -114,7 +114,7 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 					return QString::number(layer->image().levelNormalized(), 'f', 2);
 
 				case Columns::Color:
-					return layer->color().name();
+					return layer->color(Qt::DisplayRole);
 
 				case Columns::Image:
 					return "Image";

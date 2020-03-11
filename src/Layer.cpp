@@ -193,6 +193,11 @@ QVariant Layer::order(const int& role /*= Qt::DisplayRole*/) const
 	return QString();
 }
 
+std::uint32_t& Layer::order(const int& role /*= Qt::DisplayRole*/)
+{
+	return _order;
+}
+
 void Layer::setOrder(const std::uint32_t& order)
 {
 	_order = order;
@@ -223,4 +228,41 @@ QVariant Layer::opacity(const int& role /*= Qt::DisplayRole*/) const
 void Layer::setOpacity(const float& opacity)
 {
 	_opacity = opacity;
+}
+
+const LayerImage& Layer::image() const
+{
+	return _image;
+}
+
+LayerImage& Layer::image()
+{
+	return _image;
+}
+
+QVariant Layer::color(const int& role /*= Qt::DisplayRole*/) const
+{
+	const auto colorString = _color.name();
+
+	switch (role)
+	{
+		case Qt::DisplayRole:
+			return colorString;
+
+		case Qt::EditRole:
+			return _color;
+
+		case Qt::ToolTipRole:
+			return QString("Color: %1").arg(colorString);
+
+		default:
+			break;
+	}
+
+	return QString();
+}
+
+void Layer::setColor(const QColor& color)
+{
+	_color = color;
 }
