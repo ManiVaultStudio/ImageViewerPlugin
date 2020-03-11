@@ -10,6 +10,34 @@ DatasetsModel::DatasetsModel(QObject* parent) :
 	QAbstractListModel(parent),
 	_selectionModel(new QItemSelectionModel(this))
 {
+	QObject::connect(this, &DatasetsModel::dataChanged, this, [this](const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int> &roles) {
+		const auto selectedRows = _selectionModel->selectedRows();
+
+		if (selectedRows.size() != 1 || topLeft.row() != selectedRows.first().row())
+			return;
+
+		if (topLeft.column() <= Columns::CurrentImageName && bottomRight.column() >= Columns::CurrentImageName) {
+			auto dataset = datasets().value(topLeft.row());
+
+			if (dataset->type(Qt::EditRole).toInt() == static_cast<int>(ImageCollectionType::Sequence)) {
+				const auto name = dataset->currentImageName(Qt::DisplayRole).toString();
+
+				dataset->layersModel()->renameLayer("default_color", name);
+				dataset->layersModel()->renameLayer("default_selection", name);
+			}
+		}
+
+		if (topLeft.column() <= Columns::CurrentDimensionName && bottomRight.column() >= Columns::CurrentDimensionName) {
+			auto dataset = datasets().value(topLeft.row());
+
+			if (dataset->type(Qt::EditRole).toInt() == static_cast<int>(ImageCollectionType::Stack)) {
+				const auto name = dataset->currentDimensionName(Qt::DisplayRole).toString();
+
+				dataset->layersModel()->renameLayer("default_color", name);
+				dataset->layersModel()->renameLayer("default_selection", name);
+			}
+		}
+	});
 }
 
 DatasetsModel::~DatasetsModel() = default;
@@ -429,22 +457,26 @@ bool DatasetsModel::setData(const QModelIndex& index, const QVariant& value, int
 				return false;
 		}
 
+		/* TODO
 		switch (index.column())
 		{
 			case Columns::Average:
-				emit dataChanged(this->index(row, Columns::ImageNames), this->index(row, Columns::ImageNames));
-				break;
-
+			case Columns::CurrentImage:
+			case Columns::CurrentDimension:
 			case Columns::Selection:
-				emit dataChanged(this->index(row, Columns::Selection), this->index(row, Columns::SelectionSize));
+				emit dataChanged(this->index(row, Columns::CurrentImage), this->index(row, Columns::CurrentImage));
+				emit dataChanged(this->index(row, Columns::CurrentDimension), this->index(row, Columns::CurrentDimension));
+				emit dataChanged(this->index(row, Columns::CurrentImageName), this->index(row, Columns::CurrentImageName));
+				emit dataChanged(this->index(row, Columns::CurrentDimensionName), this->index(row, Columns::CurrentDimensionName));
 				emit dataChanged(this->index(row, Columns::ImageNames), this->index(row, Columns::ImageNames));
 				break;
 
 			default:
-				break;
+				
 		}
+		*/
 
-		emit dataChanged(index, index);
+		emit dataChanged(this->index(row, 0), this->index(row, columnCount() - 1));
 
 		return true;
 	}

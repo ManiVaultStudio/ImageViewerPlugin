@@ -34,10 +34,7 @@ public:
 	/** Destructor */
 	~ViewerWidget() override;
 
-public:
-
-	/** TODO */
-	//void setDataset(ImageDataset* dataset);
+public: // Selections
 
 	/** Publish selection to HDPS */
 	void publishSelection();

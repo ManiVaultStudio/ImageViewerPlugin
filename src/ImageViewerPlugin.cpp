@@ -49,16 +49,22 @@ ImageViewerPlugin::ImageViewerPlugin() :
 		if (currentImageChanged || currentDimensionChanged) {
 			const auto datasetName	= _datasetsModel.data(topLeft.row(), DatasetsModel::Columns::Name).toString();
 			const auto type			= _datasetsModel.data(topLeft.row(), DatasetsModel::Columns::Type, Qt::EditRole).toInt();
-			
 
 			auto imagesDataset = _core->requestData<Images>(datasetName);
 
 			switch (type)
 			{
-				case static_cast<int>(ImageCollectionType::Stack) :
+				case (static_cast<int>(ImageCollectionType::Sequence)) :
+				{
+					//const auto currentImage = _datasetsModel.data(topLeft.row(), DatasetsModel::Columns::CurrentDimension).toInt();
+					//_datasetsModel.layersModel(topLeft.row())->setData(0, LayersModel::Columns::Image, imagesDataset.sequenceImage(currentImage));
+					break;
+				}
+
+				case (static_cast<int>(ImageCollectionType::Stack)):
 				{
 					const auto currentDimension = _datasetsModel.data(topLeft.row(), DatasetsModel::Columns::CurrentDimension).toInt();
-					
+
 					_datasetsModel.layersModel(topLeft.row())->setData(0, LayersModel::Columns::Image, imagesDataset.stackImage(currentDimension));
 
 					break;
@@ -67,7 +73,6 @@ ImageViewerPlugin::ImageViewerPlugin() :
 				default:
 					break;
 			}
-
 		}
 	});
 }

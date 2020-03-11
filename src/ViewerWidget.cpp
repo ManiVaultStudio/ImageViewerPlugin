@@ -102,12 +102,6 @@ ViewerWidget::~ViewerWidget()
 	_renderer->destroy();
 }
 
-/*
-void ViewerWidget::setDataset(ImageDataset* dataset)
-{
-}
-*/
-
 void ViewerWidget::initializeGL()
 {
 	qDebug() << "Initializing OpenGL";
@@ -235,7 +229,6 @@ void ViewerWidget::publishSelection()
 
 QMenu* ViewerWidget::contextMenu()
 {
-	
 	auto contextMenu = _renderer->contextMenu();
 	/*
 	if (_imageViewerPlugin->imageCollectionType() == ImageCollectionType::Stack) {

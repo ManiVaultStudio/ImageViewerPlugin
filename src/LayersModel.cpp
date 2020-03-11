@@ -45,12 +45,14 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 			if (index.column() == Columns::Type)
 				return QFont("Font Awesome 5 Free Solid", 10, 1);
 
+			/* TODO
 			if (layer->type(Qt::EditRole).toInt() == Layer::Type::Image || layer->type(Qt::EditRole).toInt() == Layer::Type::Selection)
 			{
 				auto font = QFont();
 				font.setBold(true);
 				return font;
 			}
+			*/
 
 			break;
 		}
@@ -688,4 +690,16 @@ void LayersModel::removeRows(const QModelIndexList& rows)
 	}
 
 	endRemoveRows();
+}
+
+void LayersModel::renameLayer(const QString& id, const QString& name)
+{
+	const auto hits = match(index(0, Columns::ID), Qt::EditRole, id, -1, Qt::MatchExactly);
+
+	if (hits.isEmpty())
+		return;
+
+	const auto firstHit = hits.first();
+
+	setData(firstHit.row(), Columns::Name, name);
 }

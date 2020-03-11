@@ -10,20 +10,22 @@ ImageDatasetActor::ImageDatasetActor(Renderer* renderer, const QString& name, La
 	Actor(renderer, name, visible),
 	_layersModel(layersModel)
 {
+	/*
 	for (int row = 0; row < _layersModel->rowCount(); row++) {
-		const auto layerName = _layersModel->data(row, LayersModel::Columns::Name).toString();
-		addProp<ImageLayerProp>(this, layerName);
+		const auto layerId = _layersModel->data(row, LayersModel::Columns::ID).toString();
+		addProp<ImageLayerProp>(this, layerId);
 	}
 
 	QObject::connect(_layersModel, &LayersModel::dataChanged, this, &ImageDatasetActor::updateData);
 
 	updateData(_layersModel->index(0), _layersModel->index(_layersModel->rowCount() - 1, _layersModel->columnCount() - 1));
+	*/
 }
 
 void ImageDatasetActor::updateData(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int> &roles /*= QVector<int>()*/) {
 	for (int row = topLeft.row(); row <= bottomRight.row(); row++) {
-		const auto layerName = _layersModel->data(row, LayersModel::Columns::Name).toString();
-		const auto layerProp = this->propByName<ImageLayerProp>(layerName);
+		const auto layerId = _layersModel->data(row, LayersModel::Columns::ID).toString();
+		const auto layerProp = this->propByName<ImageLayerProp>(layerId);
 
 		if (topLeft.column() <= LayersModel::Columns::Enabled && bottomRight.column() >= LayersModel::Columns::Enabled) {
 			const auto enabled = _layersModel->data(row, LayersModel::Columns::Enabled, Qt::EditRole).toBool();

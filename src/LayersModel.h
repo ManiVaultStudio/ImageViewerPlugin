@@ -91,6 +91,9 @@ public: // TODO
 	/** TODO */
 	void removeRows(const QModelIndexList& rows);
 
+	/** TODO */
+	void renameLayer(const QString& id, const QString& name);
+
 private:
 	Layers*		_layers;		/** TODO */
 

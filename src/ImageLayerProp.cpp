@@ -1,7 +1,6 @@
 #include "ImageLayerProp.h"
 #include "QuadShape.h"
 #include "Actor.h"
-#include "ImageLayer.h"
 #include "LayersModel.h"
 
 #include <QDebug>
