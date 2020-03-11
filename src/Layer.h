@@ -29,18 +29,24 @@ public:
 	Layer(QObject* parent);
 
 	/** TODO */
-	Layer(QObject* parent,const QString& name, const Type& type, const std::uint32_t& flags, const std::uint32_t& order, const float& opacity = 1.0f, const float& window = 1.0f, const float& level = 0.5f);
+	Layer(QObject* parent, const QString& id, const QString& name, const Type& type, const std::uint32_t& flags, const std::uint32_t& order, const float& opacity = 1.0f, const float& window = 1.0f, const float& level = 0.5f);
 
 public: // Getters/setters
 
 	/** TODO */
-	QString name() const { return _name; }
+	QString id(const int& role = Qt::DisplayRole) const;
+
+	/** TODO */
+	void setId(const QString& id);
+
+	/** TODO */
+	QString name(const int& role = Qt::DisplayRole) const { return _name; }
 
 	/** TODO */
 	void setName(const QString& name) { _name = name; }
 
 	/** TODO */
-	Type type() const { return _type; }
+	Type type(const int& role = Qt::DisplayRole) const { return _type; }
 
 	/** TODO */
 	void setType(const Type& type) { _type = type; }
@@ -52,16 +58,16 @@ public: // Getters/setters
 	void setFlag(const std::uint32_t& flag, const bool& enabled = true);
 
 	/** TODO */
-	std::uint32_t order() const { return _order; }
+	std::uint32_t order(const int& role = Qt::DisplayRole) const { return _order; }
 
 	/** TODO */
-	std::uint32_t& order() { return _order; }
+	std::uint32_t& order(const int& role = Qt::DisplayRole) { return _order; }
 
 	/** TODO */
 	void setOrder(const std::uint32_t& order) { _order = order; }
 
 	/** TODO */
-	float opacity() const { return _opacity; }
+	float opacity(const int& role = Qt::DisplayRole) const { return _opacity; }
 
 	/** TODO */
 	void setOpacity(const float& opacity) { _opacity = opacity; }
@@ -73,12 +79,13 @@ public: // Getters/setters
 	LayerImage& image() { return _image; }
 
 	/** TODO */
-	QColor color() const { return _color; }
+	QColor color(const int& role = Qt::DisplayRole) const { return _color; }
 
 	/** TODO */
 	void setColor(const QColor& color) { _color = color; }
 
 private:
+	QString			_id;			/** TODO */
 	QString			_name;			/** TODO */
 	Type			_type;			/** TODO */
 	std::uint32_t	_flags;			/** TODO */

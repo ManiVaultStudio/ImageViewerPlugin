@@ -19,7 +19,7 @@ public:
 	ImageDataset(QObject* parent);
 
 	/** TODO */
-	void addLayer(const QString& name, const Layer::Type& type, const std::uint32_t& flags);
+	void addLayer(const QString& id, const QString& name, const Layer::Type& type, const std::uint32_t& flags);
 
 	/** TODO */
 	QVariant name(const int& role = Qt::DisplayRole) const;

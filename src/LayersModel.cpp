@@ -25,7 +25,7 @@ int LayersModel::columnCount(const QModelIndex& parent /*= QModelIndex()*/) cons
 {
 	Q_UNUSED(parent);
 
-	return 16;
+	return 17;
 }
 
 QVariant LayersModel::data(const QModelIndex& index, int role) const
@@ -98,8 +98,11 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 				case Columns::Locked:
 					return layer->isFlagSet(Layer::Flags::Fixed) ? u8"\uf023" : u8"\uf09c";
 
+				case Columns::ID:
+					return layer->id(Qt::DisplayRole);
+
 				case Columns::Name:
-					return layer->name();
+					return layer->name(Qt::DisplayRole);
 
 				case Columns::Fixed:
 					return layer->isFlagSet(Layer::Flags::Fixed) ? "true" : "false";
@@ -156,6 +159,9 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 				case Columns::Locked:
 					return layer->isFlagSet(Layer::Flags::Fixed);
 
+				case Columns::ID:
+					return layer->id();
+
 				case Columns::Name:
 					return layer->name();
 
@@ -210,6 +216,7 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 					return Qt::AlignLeft + Qt::AlignVCenter;
 
 				case Columns::Locked:
+				case Columns::ID:
 				case Columns::Name:
 					return Qt::AlignLeft + Qt::AlignVCenter;
 
@@ -253,6 +260,9 @@ QVariant LayersModel::headerData(int section, Qt::Orientation orientation, int r
 			case Columns::Type:
 			case Columns::Locked:
 				return "";
+
+			case Columns::ID:
+				return "ID";
 
 			case Columns::Name:
 				return "Name";
@@ -316,9 +326,8 @@ Qt::ItemFlags LayersModel::flags(const QModelIndex& index) const
 			break;
 
 		case Columns::Type:
-			break;
-
 		case Columns::Locked:
+		case Columns::ID:
 			break;
 
 		case Columns::Name:
@@ -420,8 +429,12 @@ bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int r
 			case Columns::Locked:
 				break;
 
+			case Columns::ID:
+				layer->setId(value.toString());
+				break;
+
 			case Columns::Name:
-				layer->setName(QString("%1").arg(value.toString()));
+				layer->setName(value.toString());
 				break;
 
 			case Columns::Fixed:

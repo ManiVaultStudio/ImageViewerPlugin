@@ -16,7 +16,8 @@ public: // Columns
 		Enabled,
 		Type,
 		Locked,
-		Name,
+		ID,					// Name for internal use
+		Name,				// Name in the user interface
 		Fixed,
 		Removable,
 		Mask,
