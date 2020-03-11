@@ -83,10 +83,10 @@ public: // Getters/setters
 	void setOrder(const std::uint32_t& order);
 
 	/** TODO */
-	float opacity(const int& role = Qt::DisplayRole) const { return _opacity; }
+	QVariant opacity(const int& role = Qt::DisplayRole) const;
 
 	/** TODO */
-	void setOpacity(const float& opacity) { _opacity = opacity; }
+	void setOpacity(const float& opacity);
 
 	/** TODO */
 	const LayerImage& image() const { return _image; }

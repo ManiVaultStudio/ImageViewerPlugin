@@ -197,3 +197,30 @@ void Layer::setOrder(const std::uint32_t& order)
 {
 	_order = order;
 }
+
+QVariant Layer::opacity(const int& role /*= Qt::DisplayRole*/) const
+{
+	const auto opacityString = QString("%1%").arg(QString::number(100.0f * _opacity, 'f', 1));
+
+	switch (role)
+	{
+		case Qt::DisplayRole:
+			return opacityString;
+
+		case Qt::EditRole:
+			return _opacity;
+
+		case Qt::ToolTipRole:
+			return QString("Opacity: %1").arg(opacityString);
+
+		default:
+			break;
+	}
+
+	return QString();
+}
+
+void Layer::setOpacity(const float& opacity)
+{
+	_opacity = opacity;
+}

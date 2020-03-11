@@ -105,7 +105,7 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 					return layer->order(Qt::DisplayRole);
 
 				case Columns::Opacity:
-					return QString("%1%").arg(QString::number(100.0f * layer->opacity(), 'f', 1));
+					return layer->opacity(Qt::DisplayRole);
 
 				case Columns::WindowNormalized:
 					return QString::number(layer->image().windowNormalized(), 'f', 2);
@@ -166,7 +166,7 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 					return layer->order(Qt::EditRole);
 
 				case Columns::Opacity:
-					return layer->opacity();
+					return layer->opacity(Qt::EditRole);
 
 				case Columns::WindowNormalized:
 					return layer->image().windowNormalized();
@@ -227,7 +227,7 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 					return layer->order(Qt::ToolTipRole);
 
 				case Columns::Opacity:
-					return layer->name(Qt::ToolTipRole);
+					return layer->opacity(Qt::ToolTipRole);
 
 				case Columns::WindowNormalized:
 					return layer->name(Qt::ToolTipRole);
