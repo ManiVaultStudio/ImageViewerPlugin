@@ -22,14 +22,23 @@ SelectionWidget::SelectionWidget(QWidget* parent, DatasetsModel* datasetsModel) 
 
 	headerView->setSectionResizeMode(QHeaderView::ResizeToContents);
 
-	headerView->hideSection(static_cast<int>(DatasetsModel::Columns::NoDimensions));
-	headerView->hideSection(static_cast<int>(DatasetsModel::Columns::NoPoints));
-	headerView->hideSection(static_cast<int>(DatasetsModel::Columns::CurrentImage));
-	headerView->hideSection(static_cast<int>(DatasetsModel::Columns::CurrentImageName));
+	//headerView->hideSection(static_cast<int>(DatasetsModel::Columns::Type));
+	//headerView->hideSection(static_cast<int>(DatasetsModel::Columns::Name));
+	//headerView->hideSection(static_cast<int>(DatasetsModel::Columns::NoImages));
+	//headerView->hideSection(static_cast<int>(DatasetsModel::Columns::Size));
+	//headerView->hideSection(static_cast<int>(DatasetsModel::Columns::NoPoints));
+	//headerView->hideSection(static_cast<int>(DatasetsModel::Columns::NoDimensions));
 	headerView->hideSection(static_cast<int>(DatasetsModel::Columns::ImageNames));
 	headerView->hideSection(static_cast<int>(DatasetsModel::Columns::ImageFilePaths));
+	headerView->hideSection(static_cast<int>(DatasetsModel::Columns::CurrentImage));
+	headerView->hideSection(static_cast<int>(DatasetsModel::Columns::CurrentImageName));
 	headerView->hideSection(static_cast<int>(DatasetsModel::Columns::CurrentImageFilepath));
-	//headerView->hideSection(static_cast<int>(DatasetsModel::Columns::PointsName));
+	//headerView->hideSection(static_cast<int>(DatasetsModel::Columns::Average));
+	headerView->hideSection(static_cast<int>(DatasetsModel::Columns::PointsName));
+	headerView->hideSection(static_cast<int>(DatasetsModel::Columns::Selection));
+	headerView->hideSection(static_cast<int>(DatasetsModel::Columns::SelectionSize));
+	
+	headerView->setSectionResizeMode(DatasetsModel::Columns::Name, QHeaderView::Interactive);
 
 	QObject::connect(datasetsModel, &DatasetsModel::rowsInserted, this, [this](const QModelIndex& parent, int first, int last) {
 		_ui->selectionGroupBox->setEnabled(true);
@@ -43,10 +52,6 @@ SelectionWidget::SelectionWidget(QWidget* parent, DatasetsModel* datasetsModel) 
 		_datasetsModel->setData(_datasetsModel->selectionModel()->currentIndex().row(), DatasetsModel::Columns::CurrentImage, currentIndex);
 	});
 
-	QObject::connect(_ui->currentDimensionComboBox, qOverload<int>(&QComboBox::currentIndexChanged), [this](int currentIndex) {
-		_datasetsModel->setData(_datasetsModel->selectionModel()->currentIndex().row(), DatasetsModel::Columns::CurrentImage, currentIndex);
-	});
-
 	QObject::connect(_ui->averageImagesCheckBox, &QCheckBox::stateChanged, [this](int state) {
 		_datasetsModel->setData(_datasetsModel->selectionModel()->currentIndex().row(), DatasetsModel::Columns::Average, state);
 	});
@@ -57,7 +62,6 @@ SelectionWidget::SelectionWidget(QWidget* parent, DatasetsModel* datasetsModel) 
 
 	QObject::connect(datasetsModel, &DatasetsModel::dataChanged, this, [this](const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>& roles = QVector<int>()) {
 		_ui->currentImageComboBox->setToolTip(_datasetsModel->data(topLeft.row(), DatasetsModel::Columns::CurrentImageFilepath, Qt::ToolTipRole).toString());
-		_ui->currentDimensionComboBox->setToolTip(_datasetsModel->data(topLeft.row(), DatasetsModel::Columns::CurrentImageFilepath, Qt::ToolTipRole).toString());
 		_ui->averageImagesCheckBox->setToolTip(QString("Images will%1be averaged").arg(_datasetsModel->data(topLeft.row(), DatasetsModel::Columns::Average, Qt::EditRole).toBool() ? " " : " not "));
 	}, Qt::QueuedConnection);
 
@@ -75,12 +79,13 @@ void SelectionWidget::updateData(const QModelIndex &topLeft, const QModelIndex &
 {
 	const auto selectedRows	= _datasetsModel->selectionModel()->selectedRows();
 	const auto mightEdit	= selectedRows.size() == 1;
-	const auto average		= mightEdit ? _datasetsModel->data(topLeft.row(), DatasetsModel::Columns::Average, Qt::EditRole).toBool() : false;
+	const auto average		= _datasetsModel->data(topLeft.row(), DatasetsModel::Columns::Average, Qt::EditRole).toBool();
 
-	const auto currentImageFlags = mightEdit ? _datasetsModel->flags(_datasetsModel->index(topLeft.row(), static_cast<int>(DatasetsModel::Columns::CurrentImage))) : 0;
+	const auto currentImageFlags	= mightEdit ? _datasetsModel->flags(_datasetsModel->index(topLeft.row(), static_cast<int>(DatasetsModel::Columns::CurrentImage))) : 0;
+	const auto averageImagesFlags	= _datasetsModel->flags(_datasetsModel->index(topLeft.row(), static_cast<int>(DatasetsModel::Columns::Average)));
 
-	_ui->currentImageLabel->setEnabled(mightEdit && currentImageFlags & Qt::ItemIsEditable);
-	_ui->currentImageComboBox->setEnabled(mightEdit && currentImageFlags & Qt::ItemIsEditable);
+	_ui->currentImageLabel->setEnabled(mightEdit);
+	_ui->currentImageComboBox->setEnabled(mightEdit && !average);
 
 	const auto currentImageChanged	= topLeft.column() <= DatasetsModel::Columns::CurrentImage && bottomRight.column() >= DatasetsModel::Columns::CurrentImage;
 	const auto imageNamesChanged	= topLeft.column() <= DatasetsModel::Columns::ImageNames && bottomRight.column() >= DatasetsModel::Columns::ImageNames;
@@ -92,28 +97,7 @@ void SelectionWidget::updateData(const QModelIndex &topLeft, const QModelIndex &
 		_ui->currentImageComboBox->setModel(new QStringListModel(mightEdit ? _datasetsModel->data(topLeft.row(), DatasetsModel::Columns::ImageNames, Qt::EditRole).toStringList() : QStringList()));
 		_ui->currentImageComboBox->setCurrentText(mightEdit ? _datasetsModel->data(topLeft.row(), DatasetsModel::Columns::CurrentImageName, Qt::EditRole).toString() : "");
 		_ui->currentImageComboBox->blockSignals(false);
-
-		_ui->currentDimensionComboBox->blockSignals(true);
-		_ui->currentDimensionComboBox->setModel(new QStringListModel(mightEdit ? _datasetsModel->data(topLeft.row(), DatasetsModel::Columns::ImageNames, Qt::EditRole).toStringList() : QStringList()));
-		_ui->currentDimensionComboBox->setCurrentText(mightEdit ? _datasetsModel->data(topLeft.row(), DatasetsModel::Columns::CurrentImageName, Qt::EditRole).toString() : "");
-		_ui->currentDimensionComboBox->blockSignals(false);
 	}
-
-	/*
-	const auto currentDimensionFlags = mightEdit ? _datasetsModel->flags(_datasetsModel->index(topLeft.row(), static_cast<int>(DatasetsModel::Columns::CurrentDimension))) : 0;
-
-	_ui->currentDimensionLabel->setEnabled(mightEdit && currentDimensionFlags & Qt::ItemIsEditable);
-	_ui->currentDimensionComboBox->setEnabled(mightEdit && currentDimensionFlags & Qt::ItemIsEditable);
-
-	const auto currentDimensionChanged	= topLeft.column() <= DatasetsModel::Columns::CurrentDimension && bottomRight.column() >= DatasetsModel::Columns::DimensionNames;
-	const auto dimensionNamesChanged	= topLeft.column() <= DatasetsModel::Columns::DimensionNames && bottomRight.column() >= DatasetsModel::Columns::DimensionNames;
-
-	if (currentDimensionChanged || dimensionNamesChanged) {
-		
-	}
-	*/
-
-	const auto averageImagesFlags = _datasetsModel->flags(_datasetsModel->index(topLeft.row(), static_cast<int>(DatasetsModel::Columns::Average)));
 
 	_ui->averageImagesCheckBox->setEnabled(mightEdit && averageImagesFlags & Qt::ItemIsEditable);
 

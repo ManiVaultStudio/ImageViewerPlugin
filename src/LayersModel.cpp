@@ -42,26 +42,26 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 	{
 		case Qt::FontRole:
 		{
-			if (index.column() == Columns::Type)
-				return QFont("Font Awesome 5 Free Solid", 10, 1);
+			switch (index.column()) {
+				case Columns::Type:
+					return layer->type(Qt::FontRole).toString();
 
-			/* TODO
-			if (layer->type(Qt::EditRole).toInt() == Layer::Type::Image || layer->type(Qt::EditRole).toInt() == Layer::Type::Selection)
-			{
-				auto font = QFont();
-				font.setBold(true);
-				return font;
+				default:
+					break;
 			}
-			*/
 
 			break;
 		}
 
 		case Qt::ForegroundRole:
+		{
 			if (index.column() == Columns::Locked)
 				return QBrush(Qt::black);
 			else
 				return layer->flag(Layer::Flags::Enabled, Qt::EditRole).toBool() ? QBrush(Qt::black) : QBrush(QColor(80, 80, 80));
+
+			break;
+		}
 
 		case Qt::CheckStateRole:
 		{
@@ -80,7 +80,7 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 					break;
 
 				case Columns::Type:
-					return layer->type(Qt::DisplayRole).toString();
+					return layer->type(Roles::FontIconText).toString();
 
 				case Columns::Locked:
 					return layer->flag(Layer::Flags::Frozen, Qt::EditRole).toBool() ? u8"\uf023" : u8"\uf09c";

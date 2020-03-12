@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Common.h"
+
 #include <QColor>
 #include <QObject>
 #include <QImage>

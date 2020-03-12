@@ -3,6 +3,7 @@
 
 #include "ImageData/Images.h"
 
+#include <QFont>
 #include <QDebug>
 
 ImageDataset::ImageDataset(QObject* parent) :
@@ -58,16 +59,37 @@ void ImageDataset::setName(const QString& name)
 
 QVariant ImageDataset::type(const int& role /*= Qt::DisplayRole*/) const
 {
+	const auto typeName = ImageData::typeName(static_cast<ImageData::Type>(_type));
+
 	switch (role)
 	{
-		case Qt::DisplayRole:
-			return ImageData::typeName(static_cast<ImageData::Type>(_type));
+		case Qt::FontRole:
+			return QFont("Font Awesome 5 Free Solid", 9);
 
+		case Qt::DisplayRole:
+			return typeName;
+		
 		case Qt::EditRole:
-			return _type;
+			return static_cast<int>(_type);
 
 		case Qt::ToolTipRole:
-			return QString("Dataset type: %1").arg(ImageData::typeName(static_cast<ImageData::Type>(_type)));
+			return QString("Type: %1").arg(typeName);
+
+		case Roles::FontIconText:
+		{
+			switch (_type) {
+				case ImageData::Type::Sequence:
+					return u8"\uf00a";
+
+				case ImageData::Type::Stack:
+					return u8"\uf5fd";
+
+				default:
+					break;
+			}
+
+			break;
+		}
 
 		default:
 			break;
@@ -182,55 +204,41 @@ QVariant ImageDataset::imageNames(const int& role /*= Qt::DisplayRole*/) const
 {
 	auto names = QStringList();
 
-	switch (_type)
-	{
-		case (static_cast<int>(ImageData::Type::Sequence)):
-		{
-			const auto selectionSize = _selection.size();
-			const auto noImages = _imageNames.size();
+	const auto selectionSize	= _selection.size();
+	const auto noImages			= _imageNames.size();
 
-			if (_average) {
-				if (selectionSize == 0) {
-					if (noImages == 1)
-						names << _imageNames.first();
+	if (_average) {
+		if (selectionSize == 0) {
+			if (noImages == 1)
+				names << _imageNames.first();
 
-					if (noImages == 2)
-						names << QString("[%1, %2]").arg(_imageNames.first(), _imageNames.last());
+			if (noImages == 2)
+				names << QString("[%1, %2]").arg(_imageNames.first(), _imageNames.last());
 
-					if (noImages > 2)
-						names << QString("[%1, ..., %2]").arg(_imageNames.first(), _imageNames.last());
-				}
-
-				if (selectionSize == 1)
-					names << _imageNames[_selection.first()];
-
-				if (selectionSize == 2)
-					names << QString("[%1, %2]").arg(_imageNames[_selection.first()], _imageNames[_selection.last()]);
-
-				if (selectionSize > 2)
-					names << QString("[%1, ..., %2]").arg(_imageNames[_selection.first()], _imageNames[_selection.last()]);
-			}
-			else {
-				if (selectionSize <= 0) {
-					return _imageNames;
-				}
-				else {
-					for (auto selectionIndex : _selection) {
-						names << _imageNames[selectionIndex];
-					}
-
-					return names;
-				}
-			}
-
-			break;
+			if (noImages > 2)
+				names << QString("[%1, ..., %2]").arg(_imageNames.first(), _imageNames.last());
 		}
 
-		case (static_cast<int>(ImageData::Type::Stack)):
-			names = _imageNames;
+		if (selectionSize == 1)
+			names << _imageNames[_selection.first()];
 
-		default:
-			break;
+		if (selectionSize == 2)
+			names << QString("[%1, %2]").arg(_imageNames[_selection.first()], _imageNames[_selection.last()]);
+
+		if (selectionSize > 2)
+			names << QString("[%1, ..., %2]").arg(_imageNames[_selection.first()], _imageNames[_selection.last()]);
+	}
+	else {
+		if (selectionSize <= 0) {
+			return _imageNames;
+		}
+		else {
+			for (auto selectionIndex : _selection) {
+				names << _imageNames[selectionIndex];
+			}
+
+			return names;
+		}
 	}
 
 	switch (role)
@@ -352,8 +360,6 @@ QVariant ImageDataset::average(const int& role /*= Qt::DisplayRole*/) const
 	return false;
 }
 
-
-
 QVariant ImageDataset::currentImageFilePath(const int& role /*= Qt::DisplayRole*/) const
 {
 	if (_currentImage < 0 || _currentImage >= _imageFilePaths.size())
@@ -366,7 +372,7 @@ QVariant ImageDataset::currentImageFilePath(const int& role /*= Qt::DisplayRole*
 			return _imageFilePaths[_currentImage];
 
 		case Qt::ToolTipRole:
-			return QString("Current image file path: %1").arg(_imageFilePaths[_currentImage]);
+			return QString("Image file path: %1").arg(_imageFilePaths[_currentImage]);
 
 		default:
 			break;

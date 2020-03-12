@@ -68,160 +68,180 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 
 	auto dataset = _datasets.at(index.row());
 
-	if (role == Qt::DisplayRole) {
-		switch (index.column()) {
-			case Columns::Name:
-				return dataset->name(Qt::DisplayRole);
+	switch (role)
+	{
+		case Qt::FontRole:
+		{
+			switch (index.column()) {
+				case Columns::Type:
+					return dataset->type(Qt::FontRole);
 
-			case Columns::Type:
-				return dataset->type(Qt::DisplayRole);
-
-			case Columns::NoImages:
-				return dataset->noImages(Qt::DisplayRole);
-
-			case Columns::Size:
-				return dataset->size(Qt::DisplayRole);
-
-			case Columns::NoPoints:
-				return dataset->noPoints(Qt::DisplayRole);
-
-			case Columns::NoDimensions:
-				return dataset->noDimensions(Qt::DisplayRole);
-
-			case Columns::ImageNames:
-				return dataset->imageNames(Qt::DisplayRole);
-
-			case Columns::ImageFilePaths:
-				return dataset->imageFilePaths(Qt::DisplayRole);
-
-			case Columns::CurrentImage:
-				return dataset->currentImage(Qt::DisplayRole);
-
-			case Columns::CurrentImageName:
-				return dataset->currentImageName(Qt::DisplayRole);
-
-			case Columns::CurrentImageFilepath:
-				return dataset->currentImageFilePath(Qt::DisplayRole);
-
-			case Columns::Average:
-				return dataset->average(Qt::DisplayRole);
-
-			case Columns::PointsName:
-				return dataset->pointsName(Qt::DisplayRole);
-
-			case Columns::Selection:
-				return dataset->selection(Qt::DisplayRole);
-
-			case Columns::SelectionSize:
-				return dataset->selectionSize(Qt::DisplayRole);
-
-			default:
-				break;
+				default:
+					break;
+			}
 		}
-	}
 
-	if (role == Qt::EditRole) {
-		switch (index.column()) {
-			case Columns::Name:
-				return dataset->name(Qt::EditRole);
+		case Qt::DisplayRole:
+		{
+			switch (index.column()) {
+				case Columns::Type:
+					return dataset->type(Roles::FontIconText);
 
-			case Columns::Type:
-				return dataset->type(Qt::EditRole);
+				case Columns::Name:
+					return dataset->name(Qt::DisplayRole);
 
-			case Columns::NoImages:
-				return dataset->noImages(Qt::EditRole);
+				case Columns::NoImages:
+					return dataset->noImages(Qt::DisplayRole);
 
-			case Columns::Size:
-				return dataset->size(Qt::EditRole);
+				case Columns::Size:
+					return dataset->size(Qt::DisplayRole);
 
-			case Columns::NoPoints:
-				return dataset->noPoints(Qt::EditRole);
+				case Columns::NoPoints:
+					return dataset->noPoints(Qt::DisplayRole);
 
-			case Columns::NoDimensions:
-				return dataset->noDimensions(Qt::EditRole);
+				case Columns::NoDimensions:
+					return dataset->noDimensions(Qt::DisplayRole);
 
-			case Columns::ImageNames:
-				return dataset->imageNames(Qt::EditRole);
+				case Columns::ImageNames:
+					return dataset->imageNames(Qt::DisplayRole);
 
-			case Columns::ImageFilePaths:
-				return dataset->imageFilePaths(Qt::EditRole);
+				case Columns::ImageFilePaths:
+					return dataset->imageFilePaths(Qt::DisplayRole);
 
-			case Columns::CurrentImage:
-				return dataset->currentImage(Qt::EditRole);
+				case Columns::CurrentImage:
+					return dataset->currentImage(Qt::DisplayRole);
 
-			case Columns::CurrentImageName:
-				return dataset->currentImageName(Qt::EditRole);
+				case Columns::CurrentImageName:
+					return dataset->currentImageName(Qt::DisplayRole);
 
-			case Columns::CurrentImageFilepath:
-				return dataset->currentImageFilePath(Qt::EditRole);
+				case Columns::CurrentImageFilepath:
+					return dataset->currentImageFilePath(Qt::DisplayRole);
 
-			case Columns::Average:
-				return dataset->average(Qt::EditRole);
+				case Columns::Average:
+					return dataset->average(Qt::DisplayRole);
 
-			case Columns::PointsName:
-				return dataset->pointsName(Qt::EditRole);
+				case Columns::PointsName:
+					return dataset->pointsName(Qt::DisplayRole);
 
-			case Columns::Selection:
-				return dataset->selection(Qt::EditRole);
+				case Columns::Selection:
+					return dataset->selection(Qt::DisplayRole);
 
-			case Columns::SelectionSize:
-				return dataset->selectionSize(Qt::EditRole);
+				case Columns::SelectionSize:
+					return dataset->selectionSize(Qt::DisplayRole);
 
-			default:
-				break;
+				default:
+					break;
+			}
 		}
-	}
-	
-	if (role == Qt::ToolTipRole) {
-		switch (index.column()) {
-			case Columns::Name:
-				return dataset->name(Qt::ToolTipRole);
 
-			case Columns::Type:
-				return dataset->type(Qt::ToolTipRole);
+		case Qt::EditRole:
+		{
+			switch (index.column()) {
+				case Columns::Type:
+					return dataset->type(Qt::EditRole);
 
-			case Columns::NoImages:
-				return dataset->noImages(Qt::ToolTipRole);
+				case Columns::Name:
+					return dataset->name(Qt::EditRole);
 
-			case Columns::Size:
-				return dataset->size(Qt::ToolTipRole);
+				case Columns::NoImages:
+					return dataset->noImages(Qt::EditRole);
 
-			case Columns::NoPoints:
-				return dataset->noPoints(Qt::ToolTipRole);
+				case Columns::Size:
+					return dataset->size(Qt::EditRole);
 
-			case Columns::NoDimensions:
-				return dataset->noDimensions(Qt::ToolTipRole);
+				case Columns::NoPoints:
+					return dataset->noPoints(Qt::EditRole);
 
-			case Columns::ImageNames:
-				return dataset->imageNames(Qt::ToolTipRole);
+				case Columns::NoDimensions:
+					return dataset->noDimensions(Qt::EditRole);
 
-			case Columns::ImageFilePaths:
-				return dataset->imageFilePaths(Qt::ToolTipRole);
+				case Columns::ImageNames:
+					return dataset->imageNames(Qt::EditRole);
 
-			case Columns::CurrentImage:
-				return dataset->currentImage(Qt::ToolTipRole);
+				case Columns::ImageFilePaths:
+					return dataset->imageFilePaths(Qt::EditRole);
 
-			case Columns::CurrentImageName:
-				return dataset->currentImageName(Qt::ToolTipRole);
+				case Columns::CurrentImage:
+					return dataset->currentImage(Qt::EditRole);
 
-			case Columns::CurrentImageFilepath:
-				return dataset->currentImageFilePath(Qt::ToolTipRole);
+				case Columns::CurrentImageName:
+					return dataset->currentImageName(Qt::EditRole);
 
-			case Columns::Average:
-				return dataset->average(Qt::ToolTipRole);
+				case Columns::CurrentImageFilepath:
+					return dataset->currentImageFilePath(Qt::EditRole);
 
-			case Columns::PointsName:
-				return dataset->pointsName(Qt::ToolTipRole);
+				case Columns::Average:
+					return dataset->average(Qt::EditRole);
 
-			case Columns::Selection:
-				return dataset->selection(Qt::ToolTipRole);
+				case Columns::PointsName:
+					return dataset->pointsName(Qt::EditRole);
 
-			case Columns::SelectionSize:
-				return dataset->selectionSize(Qt::ToolTipRole);
+				case Columns::Selection:
+					return dataset->selection(Qt::EditRole);
 
-			default:
-				break;
+				case Columns::SelectionSize:
+					return dataset->selectionSize(Qt::EditRole);
+
+				default:
+					break;
+			}
 		}
+
+		case Qt::ToolTipRole:
+		{
+			switch (index.column()) {
+				case Columns::Type:
+					return dataset->type(Qt::ToolTipRole);
+
+				case Columns::Name:
+					return dataset->name(Qt::ToolTipRole);
+
+				case Columns::NoImages:
+					return dataset->noImages(Qt::ToolTipRole);
+
+				case Columns::Size:
+					return dataset->size(Qt::ToolTipRole);
+
+				case Columns::NoPoints:
+					return dataset->noPoints(Qt::ToolTipRole);
+
+				case Columns::NoDimensions:
+					return dataset->noDimensions(Qt::ToolTipRole);
+
+				case Columns::ImageNames:
+					return dataset->imageNames(Qt::ToolTipRole);
+
+				case Columns::ImageFilePaths:
+					return dataset->imageFilePaths(Qt::ToolTipRole);
+
+				case Columns::CurrentImage:
+					return dataset->currentImage(Qt::ToolTipRole);
+
+				case Columns::CurrentImageName:
+					return dataset->currentImageName(Qt::ToolTipRole);
+
+				case Columns::CurrentImageFilepath:
+					return dataset->currentImageFilePath(Qt::ToolTipRole);
+
+				case Columns::Average:
+					return dataset->average(Qt::ToolTipRole);
+
+				case Columns::PointsName:
+					return dataset->pointsName(Qt::ToolTipRole);
+
+				case Columns::Selection:
+					return dataset->selection(Qt::ToolTipRole);
+
+				case Columns::SelectionSize:
+					return dataset->selectionSize(Qt::ToolTipRole);
+
+				default:
+					break;
+			}
+		}
+
+		default:
+			break;
 	}
 
 	return QVariant();
@@ -234,23 +254,23 @@ QVariant DatasetsModel::headerData(int section, Qt::Orientation orientation, int
 
 	if (orientation == Qt::Horizontal) {
 		switch (section) {
+			case Columns::Type:
+				return "";
+
 			case Columns::Name:
 				return "Name";
 
-			case Columns::Type:
-				return "Type";
-
 			case Columns::NoImages:
-				return "No. Images";
+				return "# Images";
 
 			case Columns::Size:
 				return "Size";
 
 			case Columns::NoPoints:
-				return "No. points";
+				return "# Points";
 
 			case Columns::NoDimensions:
-				return "No. dimensions";
+				return "# Dimensions";
 
 			case Columns::ImageNames:
 				return "Images";
@@ -298,8 +318,8 @@ Qt::ItemFlags DatasetsModel::flags(const QModelIndex& index) const
 	const auto average		= data(index.row(), Columns::Average, Qt::EditRole);
 
 	switch (index.column()) {
-		case Columns::Name:
 		case Columns::Type:
+		case Columns::Name:
 		case Columns::NoImages:
 		case Columns::Size:
 		case Columns::NoPoints:
@@ -342,12 +362,12 @@ bool DatasetsModel::setData(const QModelIndex& index, const QVariant& value, int
 		auto dataset = datasets().value(row);
 
 		switch (index.column()) {
-			case Columns::Name:
-				dataset->setName(value.toString());
-				break;
-
 			case Columns::Type:
 				dataset->setType(value.toInt());
+				break;
+
+			case Columns::Name:
+				dataset->setName(value.toString());
 				break;
 
 			case Columns::NoImages:

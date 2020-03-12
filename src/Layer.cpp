@@ -1,5 +1,6 @@
 #include "Layer.h"
 
+#include <QFont>
 #include <QDebug>
 
 Layer::Layer(QObject* parent) :
@@ -92,7 +93,19 @@ QVariant Layer::type(const int& role /*= Qt::DisplayRole*/) const
 
 	switch (role)
 	{
+		case Qt::FontRole:
+			return QFont("Font Awesome 5 Free Solid", 9);
+
 		case Qt::DisplayRole:
+			return typeName;
+
+		case Qt::EditRole:
+			return static_cast<int>(_type);
+
+		case Qt::ToolTipRole:
+			return QString("Type: %1").arg(typeName);
+
+		case Roles::FontIconText:
 		{
 			switch (_type) {
 				case Layer::Type::Image:
@@ -110,12 +123,6 @@ QVariant Layer::type(const int& role /*= Qt::DisplayRole*/) const
 
 			break;
 		}
-
-		case Qt::EditRole:
-			return static_cast<int>(_type);
-
-		case Qt::ToolTipRole:
-			return QString("Type: %1").arg(typeName);
 
 		default:
 			break;

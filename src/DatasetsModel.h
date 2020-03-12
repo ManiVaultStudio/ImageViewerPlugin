@@ -13,8 +13,8 @@ public: // Columns
 
 	/** TODO */
 	enum Columns : int {
-		Name,
 		Type,
+		Name,
 		NoImages,
 		Size,
 		NoPoints,

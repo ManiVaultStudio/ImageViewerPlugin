@@ -137,3 +137,7 @@ inline QString actorEventName(const ActorEvent& actorEvent)
 
 	return "";
 }
+
+enum Roles {
+	FontIconText = Qt::UserRole
+};
