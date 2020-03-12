@@ -29,14 +29,15 @@ SelectionWidget::SelectionWidget(QWidget* parent, DatasetsModel* datasetsModel) 
 	//headerView->hideSection(static_cast<int>(DatasetsModel::Columns::NoPoints));
 	//headerView->hideSection(static_cast<int>(DatasetsModel::Columns::NoDimensions));
 	headerView->hideSection(static_cast<int>(DatasetsModel::Columns::ImageNames));
+	headerView->hideSection(static_cast<int>(DatasetsModel::Columns::FilteredImageNames));
 	headerView->hideSection(static_cast<int>(DatasetsModel::Columns::ImageFilePaths));
 	headerView->hideSection(static_cast<int>(DatasetsModel::Columns::CurrentImage));
 	headerView->hideSection(static_cast<int>(DatasetsModel::Columns::CurrentImageName));
 	headerView->hideSection(static_cast<int>(DatasetsModel::Columns::CurrentImageFilepath));
 	//headerView->hideSection(static_cast<int>(DatasetsModel::Columns::Average));
 	headerView->hideSection(static_cast<int>(DatasetsModel::Columns::PointsName));
-	headerView->hideSection(static_cast<int>(DatasetsModel::Columns::Selection));
-	headerView->hideSection(static_cast<int>(DatasetsModel::Columns::SelectionSize));
+	//headerView->hideSection(static_cast<int>(DatasetsModel::Columns::Selection));
+	//headerView->hideSection(static_cast<int>(DatasetsModel::Columns::SelectionSize));
 	
 	headerView->setSectionResizeMode(DatasetsModel::Columns::Name, QHeaderView::Interactive);
 
@@ -93,9 +94,12 @@ void SelectionWidget::updateData(const QModelIndex &topLeft, const QModelIndex &
 	const auto type = _datasetsModel->data(topLeft.row(), DatasetsModel::Columns::Type, Qt::EditRole).toInt();
 
 	if (currentImageChanged || imageNamesChanged) {
+		const auto averageImageNames	= QStringList() << _datasetsModel->data(topLeft.row(), DatasetsModel::Columns::FilteredImageNames, Qt::DisplayRole).toString();
+		const auto imageNames			= _datasetsModel->data(topLeft.row(), DatasetsModel::Columns::FilteredImageNames, Qt::EditRole).toStringList();
+
 		_ui->currentImageComboBox->blockSignals(true);
-		_ui->currentImageComboBox->setModel(new QStringListModel(mightEdit ? _datasetsModel->data(topLeft.row(), DatasetsModel::Columns::ImageNames, Qt::EditRole).toStringList() : QStringList()));
-		_ui->currentImageComboBox->setCurrentText(mightEdit ? _datasetsModel->data(topLeft.row(), DatasetsModel::Columns::CurrentImageName, Qt::EditRole).toString() : "");
+		_ui->currentImageComboBox->setModel(new QStringListModel(average ? averageImageNames : imageNames));
+		_ui->currentImageComboBox->setCurrentText(_datasetsModel->data(topLeft.row(), DatasetsModel::Columns::FilteredImageNames, Qt::DisplayRole).toString());
 		_ui->currentImageComboBox->blockSignals(false);
 	}
 

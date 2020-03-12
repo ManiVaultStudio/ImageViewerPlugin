@@ -15,10 +15,9 @@ ImageDataset::ImageDataset(QObject* parent) :
 	_noDimensions(0),
 	_imageNames(),
 	_imageFilePaths(),
-	_currentImage(-1),
 	_average(),
 	_pointsName(),
-	_selection(),
+	_selection(Indices({ 0 })),
 	_layers(),
 	_layersModel(QSharedPointer<LayersModel>::create(&_layers))
 {
@@ -202,12 +201,12 @@ void ImageDataset::setNoDimensions(const std::uint32_t& noDimensions)
 
 QVariant ImageDataset::imageNames(const int& role /*= Qt::DisplayRole*/) const
 {
-	auto names = QStringList();
+	const auto selectionSize = _selection.size();
 
-	const auto selectionSize	= _selection.size();
-	const auto noImages			= _imageNames.size();
+	auto imageNamesString = QString();
 
 	if (_average) {
+		/*
 		if (selectionSize == 0) {
 			if (noImages == 1)
 				names << _imageNames.first();
@@ -221,36 +220,85 @@ QVariant ImageDataset::imageNames(const int& role /*= Qt::DisplayRole*/) const
 
 		if (selectionSize == 1)
 			names << _imageNames[_selection.first()];
+		*/
 
 		if (selectionSize == 2)
-			names << QString("[%1, %2]").arg(_imageNames[_selection.first()], _imageNames[_selection.last()]);
+			imageNamesString = QString("[%1, %2]").arg(_imageNames[_selection.first()], _imageNames[_selection.last()]);
 
 		if (selectionSize > 2)
-			names << QString("[%1, ..., %2]").arg(_imageNames[_selection.first()], _imageNames[_selection.last()]);
-	}
-	else {
-		if (selectionSize <= 0) {
-			return _imageNames;
-		}
-		else {
-			for (auto selectionIndex : _selection) {
-				names << _imageNames[selectionIndex];
-			}
-
-			return names;
-		}
+			imageNamesString = QString("[%1, ..., %2]").arg(_imageNames[_selection.first()], _imageNames[_selection.last()]);
 	}
 
 	switch (role)
 	{
 		case Qt::DisplayRole:
-			return QString("[%1]").arg(names.join(", "));
+			return imageNamesString;
 
 		case Qt::EditRole:
-			return names;
+			return _imageNames;
 
 		case Qt::ToolTipRole:
-			return QString("Image names: [%1]").arg(names.join(", "));
+			return QString("Image names: %1").arg(imageNamesString);
+
+		default:
+			break;
+	}
+
+	return QStringList();
+}
+
+QVariant ImageDataset::filteredImageNames(const int& role /*= Qt::DisplayRole*/) const
+{
+	const auto selectionSize = _selection.size();
+
+	auto imageNames = QStringList();
+
+	switch (_type)
+	{
+		case ImageData::Type::Sequence:
+		{
+			if (selectionSize > 0) {
+				for (auto id : _selection) {
+					imageNames << _imageNames[id];
+				}
+			}
+			else {
+				imageNames = _imageNames;
+			}
+
+			break;
+		}
+
+		default:
+			break;
+	}
+
+	auto imageNamesString = QString();
+
+	if (_average) {
+		if (imageNames.size() == 1)
+			imageNamesString == imageNames.first();
+
+		if (imageNames.size() == 2)
+			imageNamesString = QString("[%1, %2]").arg(imageNames.first(), imageNames.last());
+
+		if (imageNames.size() > 2)
+			imageNamesString = QString("[%1, ..., %2]").arg(imageNames.first(), imageNames.last());
+	}
+	else {
+	//	imageNamesString = 
+	}
+
+	switch (role)
+	{
+		case Qt::DisplayRole:
+			return imageNamesString;
+
+		case Qt::EditRole:
+			return imageNames;
+
+		case Qt::ToolTipRole:
+			return QString("Image names: %1").arg(imageNamesString);
 
 		default:
 			break;
@@ -293,16 +341,22 @@ void ImageDataset::setImageFilePaths(const QStringList& imageFilePaths)
 
 QVariant ImageDataset::currentImage(const int& role /*= Qt::DisplayRole*/) const
 {
+	if (_selection.isEmpty())
+		return QString();
+
+	const auto firstSelection		= _selection.first();
+	const auto currentImageString	= QString::number(firstSelection);
+
 	switch (role)
 	{
 		case Qt::DisplayRole:
-			return QString::number(_currentImage);
+			return currentImageString;
 
 		case Qt::EditRole:
-			return _currentImage;
+			return firstSelection;
 
 		case Qt::ToolTipRole:
-			return QString("Current image: %1").arg(QString::number(_currentImage));
+			return QString("Current image: %1").arg(currentImageString);
 	}
 
 	return std::uint32_t{};
@@ -310,15 +364,15 @@ QVariant ImageDataset::currentImage(const int& role /*= Qt::DisplayRole*/) const
 
 void ImageDataset::setCurrentImage(const std::uint32_t& currentImage)
 {
-	if (_selection.isEmpty())
-		_currentImage = currentImage;
-	else
-		_currentImage = _selection[currentImage];
+//	_selection = Indices({ currentImage });
 }
 
 QVariant ImageDataset::currentImageName(const int& role /*= Qt::DisplayRole*/) const
 {
-	const auto imageName = _imageNames.isEmpty() ? "" : _imageNames[_currentImage];
+	if (_selection.isEmpty())
+		return QString();
+
+	const auto imageName = _imageNames.isEmpty() ? "" : _imageNames[_selection.first()];
 
 	switch (role)
 	{
@@ -362,17 +416,19 @@ QVariant ImageDataset::average(const int& role /*= Qt::DisplayRole*/) const
 
 QVariant ImageDataset::currentImageFilePath(const int& role /*= Qt::DisplayRole*/) const
 {
-	if (_currentImage < 0 || _currentImage >= _imageFilePaths.size())
-		return "";
+	if (_selection.isEmpty())
+		return QString();
+
+	const auto imageFilePathString = _imageFilePaths[_selection.first()];
 
 	switch (role)
 	{
 		case Qt::DisplayRole:
 		case Qt::EditRole:
-			return _imageFilePaths[_currentImage];
+			return imageFilePathString;
 
 		case Qt::ToolTipRole:
-			return QString("Image file path: %1").arg(_imageFilePaths[_currentImage]);
+			return QString("Image file path: %1").arg(imageFilePathString);
 
 		default:
 			break;

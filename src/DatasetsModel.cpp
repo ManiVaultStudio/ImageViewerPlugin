@@ -55,7 +55,7 @@ int DatasetsModel::columnCount(const QModelIndex& parent /*= QModelIndex()*/) co
 {
 	Q_UNUSED(parent);
 
-	return 15;
+	return 16;
 }
 
 QVariant DatasetsModel::data(const QModelIndex& index, int role) const
@@ -104,6 +104,9 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 
 				case Columns::ImageNames:
 					return dataset->imageNames(Qt::DisplayRole);
+
+				case Columns::FilteredImageNames:
+					return dataset->filteredImageNames(Qt::DisplayRole);
 
 				case Columns::ImageFilePaths:
 					return dataset->imageFilePaths(Qt::DisplayRole);
@@ -158,6 +161,9 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 				case Columns::ImageNames:
 					return dataset->imageNames(Qt::EditRole);
 
+				case Columns::FilteredImageNames:
+					return dataset->filteredImageNames(Qt::EditRole);
+
 				case Columns::ImageFilePaths:
 					return dataset->imageFilePaths(Qt::EditRole);
 
@@ -210,6 +216,9 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 
 				case Columns::ImageNames:
 					return dataset->imageNames(Qt::ToolTipRole);
+
+				case Columns::FilteredImageNames:
+					return dataset->filteredImageNames(Qt::ToolTipRole);
 
 				case Columns::ImageFilePaths:
 					return dataset->imageFilePaths(Qt::ToolTipRole);
@@ -273,7 +282,10 @@ QVariant DatasetsModel::headerData(int section, Qt::Orientation orientation, int
 				return "# Dimensions";
 
 			case Columns::ImageNames:
-				return "Images";
+				return "Image names";
+
+			case Columns::FilteredImageNames:
+				return "Filtered image names";
 
 			case Columns::ImageFilePaths:
 				return "Image file paths";
@@ -325,6 +337,8 @@ Qt::ItemFlags DatasetsModel::flags(const QModelIndex& index) const
 		case Columns::NoPoints:
 		case Columns::NoDimensions:
 		case Columns::ImageNames:
+		case Columns::FilteredImageNames:
+			break;
 		
 		case Columns::CurrentImage:
 		{
@@ -387,6 +401,9 @@ bool DatasetsModel::setData(const QModelIndex& index, const QVariant& value, int
 
 			case Columns::ImageNames:
 				dataset->setImageNames(value.toStringList());
+				break;
+
+			case Columns::FilteredImageNames:
 				break;
 
 			case Columns::ImageFilePaths:

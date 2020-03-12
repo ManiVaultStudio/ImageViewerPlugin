@@ -58,6 +58,9 @@ public:
 	QVariant imageNames(const int& role = Qt::DisplayRole) const;
 
 	/** TODO */
+	QVariant filteredImageNames(const int& role = Qt::DisplayRole) const;
+
+	/** TODO */
 	void setImageNames(const QStringList& imageNames);
 
 	/** TODO */
@@ -110,7 +113,6 @@ private:
 	std::uint32_t					_noDimensions;			/** TODO */
 	QStringList						_imageNames;			/** TODO */
 	QStringList						_imageFilePaths;		/** TODO */
-	std::int32_t					_currentImage;			/** TODO */
 	bool							_average;				/** TODO */
 	QString							_pointsName;			/** TODO */
 	Indices							_selection;				/** TODO */
