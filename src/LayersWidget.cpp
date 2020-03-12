@@ -126,7 +126,7 @@ void LayersWidget::setModel(QSharedPointer<LayersModel> layersModel)
 	headerView->hideSection(LayersModel::Columns::Removable);
 	headerView->hideSection(LayersModel::Columns::Mask);
 	headerView->hideSection(LayersModel::Columns::Renamable);
-	headerView->hideSection(LayersModel::Columns::Order);
+	//headerView->hideSection(LayersModel::Columns::Order);
 	//headerView->hideSection(LayersModel::Columns::Opacity);
 	//headerView->hideSection(LayersModel::Columns::WindowNormalized);
 	//headerView->hideSection(LayersModel::Columns::LevelNormalized);

@@ -14,10 +14,10 @@ class Layer : public QObject
 public:
 
 	/** TODO */
-	enum Type : int {
+	enum Type {
 		Image,			/** TODO */
 		Selection,		/** TODO */
-		Cluster			/** TODO */
+		MetaData			/** TODO */
 	};
 
 	static QString typeName(const Type& type) {
@@ -29,8 +29,8 @@ public:
 			case Layer::Type::Selection:
 				return "Selection";
 
-			case Layer::Type::Cluster:
-				return "Cluster";
+			case Layer::Type::MetaData:
+				return "MetaData";
 
 			default:
 				break;
@@ -141,9 +141,6 @@ public: // Getters/setters
 
 	/** TODO */
 	void setColor(const QColor& color);
-
-	/** TODO */
-	std::uint32_t& order(const int& role = Qt::DisplayRole);
 
 public: // Image functions
 

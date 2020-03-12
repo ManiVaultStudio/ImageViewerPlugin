@@ -13,8 +13,9 @@ const std::string fragmentShaderSource =
 #include "ImageLayerFragment.glsl"
 ;
 
-ImageLayerProp::ImageLayerProp(Actor* actor, const QString& name) :
+ImageLayerProp::ImageLayerProp(Actor* actor, const QString& name, const Layer::Type& type) :
 	Prop(actor, name),
+	_type(type),
 	_image(),
 	_displayRange{0.0f, 1000.0f},
 	_opacity(0.0f)
@@ -100,6 +101,7 @@ void ImageLayerProp::render()
 
 		if (shaderProgram->bind()) {
 			shaderProgram->setUniformValue("imageTexture", 0);
+			shaderProgram->setUniformValue("type", _type);
 			shaderProgram->setUniformValue("minPixelValue", _displayRange[0]);
 			shaderProgram->setUniformValue("maxPixelValue", _displayRange[1]);
 			shaderProgram->setUniformValue("opacity", _opacity);
@@ -130,16 +132,44 @@ void ImageLayerProp::setImage(const QImage& image)
 
 	_image = image;
 	
-	const auto texture = textureByName("Quad");
+	auto texture = textureByName("Quad");
 
-	texture->destroy();
-	texture->create();
-	texture->setSize(image.size().width(), image.size().height());
-	texture->setFormat(QOpenGLTexture::RGBA16_UNorm);
-	texture->setWrapMode(QOpenGLTexture::ClampToEdge);
-	texture->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
-	texture->allocateStorage();
-	texture->setData(QOpenGLTexture::PixelFormat::RGBA, QOpenGLTexture::PixelType::UInt16, image.bits());
+	switch (image.format())
+	{
+		case QImage::Format::Format_RGB32:
+		{
+			texture->destroy();
+			texture->create();
+			texture->setSize(image.size().width(), image.size().height());
+			texture->setFormat(QOpenGLTexture::RGBA8_UNorm);
+			texture->setWrapMode(QOpenGLTexture::ClampToEdge);
+			texture->setMinMagFilters(QOpenGLTexture::Nearest, QOpenGLTexture::Nearest);
+			texture->allocateStorage();
+			texture->setData(QOpenGLTexture::PixelFormat::RGBA, QOpenGLTexture::PixelType::UInt8, image.bits());
+
+			break;
+		}
+
+		case QImage::Format::Format_RGBX64:
+		case QImage::Format::Format_RGBA64:
+		case QImage::Format::Format_RGBA64_Premultiplied:
+		{
+			texture->destroy();
+			texture->create();
+			texture->setSize(image.size().width(), image.size().height());
+			texture->setFormat(QOpenGLTexture::RGBA16_UNorm);
+			texture->setWrapMode(QOpenGLTexture::ClampToEdge);
+			texture->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
+			texture->allocateStorage();
+			texture->setData(QOpenGLTexture::PixelFormat::RGBA, QOpenGLTexture::PixelType::UInt16, image.bits());
+
+			break;
+		}
+
+		default:
+			break;
+	}
+	
 
 	const auto rectangle = QRectF(QPointF(0.f, 0.f), QSizeF(static_cast<float>(image.width()), static_cast<float>(image.height())));
 
@@ -165,7 +195,7 @@ void ImageLayerProp::setOpacity(const float& opacity)
 
 void ImageLayerProp::setOrder(const std::uint32_t& order)
 {
-	//qDebug() << fullName() << "set order" << QString::number(order);
+	qDebug() << fullName() << "set order" << QString::number(order);
 
 	_order = order;
 

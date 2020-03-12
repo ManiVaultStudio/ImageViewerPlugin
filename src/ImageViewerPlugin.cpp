@@ -165,6 +165,7 @@ void ImageViewerPlugin::dataAdded(const QString dataset)
 
 			imageDataset.addLayer("default_color", "Color", Layer::Type::Image, Layer::Flags::Enabled | Layer::Flags::Enabled);
 			imageDataset.addLayer("default_selection", "Selection", Layer::Type::Selection, Layer::Flags::Enabled);
+			imageDataset.addLayer("layer_0", "Cluster", Layer::Type::MetaData, Layer::Flags::Enabled);
 			break;
 		}
 

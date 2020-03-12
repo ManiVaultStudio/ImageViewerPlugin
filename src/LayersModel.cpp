@@ -535,6 +535,7 @@ bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int r
 		}
 	}
 
+	/*
 	switch (index.column())
 	{
 		case Columns::Enabled:
@@ -553,6 +554,9 @@ bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int r
 			emit dataChanged(index, index);
 			break;
 	}
+	*/
+
+	emit dataChanged(this->index(row, 0), this->index(row, columnCount() - 1));
 
 	return true;
 }
@@ -644,8 +648,12 @@ void LayersModel::moveUp(const int& row)
 
 		auto layers = (*_layers);
 
-		std::swap(layers[row]->order(), layers[layers[row]->order() - 1]->order());
+		const auto orderSource = layers[row]->order(Qt::EditRole).toInt();
+		const auto orderTarget = orderSource - 1;
 
+		layers[orderSource]->setOrder(orderTarget);
+		layers[orderTarget]->setOrder(orderSource);
+		
 		std::sort(_layers->begin(), _layers->end(), [](Layer* layerA, Layer* layerB) {
 			return layerA->order() < layerB->order();
 		});
@@ -663,6 +671,17 @@ void LayersModel::moveDown(const int& row)
 	{
 		moveUp(row + 1);
 	}
+}
+
+void LayersModel::sort()
+{
+	beginResetModel();
+
+	std::sort(_layers->begin(), _layers->end(), [](Layer* layerA, Layer* layerB) {
+		return layerA->order() < layerB->order();
+	});
+
+	endResetModel();
 }
 
 void LayersModel::removeRows(const QModelIndexList& rows)

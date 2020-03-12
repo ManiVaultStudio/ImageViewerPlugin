@@ -4,6 +4,7 @@ R"(
 #extension GL_ARB_gpu_shader_fp64 : enable
 
 uniform sampler2D imageTexture;
+uniform int type;
 uniform float minPixelValue;
 uniform float maxPixelValue;
 uniform float opacity;
@@ -23,6 +24,17 @@ void main(void)
 		fragmentColor[c]	= float(clamp(fraction / range, 0.0, 1.0));
 	}
 
-	fragmentColor.a = opacity;
+	switch (type) {
+		case 0:
+			fragmentColor.a = opacity;
+			break;
+		
+		case 1:
+			fragmentColor.a = fragmentColor[0] > 0 ? opacity : 0;
+			break;
+
+		default:
+			break;
+	}
 }
 )"

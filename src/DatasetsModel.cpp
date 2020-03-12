@@ -541,6 +541,8 @@ void DatasetsModel::add(ImageDataset* dataset)
 
 	for (auto layer : dataset->layers())
 		layersModel(0)->add(layer);
+
+	layersModel(0)->sort();
 }
 
 LayersModel* DatasetsModel::layersModel(const int& row)

@@ -114,8 +114,8 @@ QVariant Layer::type(const int& role /*= Qt::DisplayRole*/) const
 				case Layer::Type::Selection:
 					return u8"\uf065";
 
-				case Layer::Type::Cluster:
-					return u8"\uf02c";
+				case Layer::Type::MetaData:
+					return u8"\uf141";
 
 				default:
 					break;
@@ -210,11 +210,6 @@ QVariant Layer::order(const int& role /*= Qt::DisplayRole*/) const
 	}
 
 	return QString();
-}
-
-std::uint32_t& Layer::order(const int& role /*= Qt::DisplayRole*/)
-{
-	return _order;
 }
 
 void Layer::setOrder(const std::uint32_t& order)

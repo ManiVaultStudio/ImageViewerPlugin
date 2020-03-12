@@ -89,6 +89,9 @@ public: // TODO
 	void moveDown(const int& row);
 
 	/** TODO */
+	void sort();
+
+	/** TODO */
 	void removeRows(const QModelIndexList& rows);
 
 	/** TODO */
