@@ -55,40 +55,10 @@ public:
 	void setNoDimensions(const std::uint32_t& noDimensions);
 
 	/** TODO */
-	QVariant currentImage(const int& role = Qt::DisplayRole) const;
-
-	/** TODO */
-	QVariant currentImageName(const int& role = Qt::DisplayRole) const;
-
-	/** TODO */
-	void setCurrentImage(const std::uint32_t& currentImage);
-
-	/** TODO */
-	QVariant currentDimension(const int& role = Qt::DisplayRole) const;
-
-	/** TODO */
-	QVariant currentDimensionName(const int& role = Qt::DisplayRole) const;
-
-	/** TODO */
-	void setCurrentDimension(const std::uint32_t& currentDimension);
-
-	/** TODO */
 	QVariant imageNames(const int& role = Qt::DisplayRole) const;
 
 	/** TODO */
 	void setImageNames(const QStringList& imageNames);
-
-	/** TODO */
-	QVariant dimensionNames(const int& role = Qt::DisplayRole) const;
-
-	/** TODO */
-	void setDimensionNames(const QStringList& dimensionNames);
-
-	/** TODO */
-	QVariant average(const int& role = Qt::DisplayRole) const;
-
-	/** TODO */
-	void setAverage(const bool& average);
 
 	/** TODO */
 	QVariant imageFilePaths(const int& role = Qt::DisplayRole) const;
@@ -97,11 +67,23 @@ public:
 	void setImageFilePaths(const QStringList& imageFilePaths);
 
 	/** TODO */
+	QVariant currentImage(const int& role = Qt::DisplayRole) const;
+
+	/** TODO */
+	void setCurrentImage(const std::uint32_t& currentImage);
+
+	/** TODO */
+	QVariant currentImageName(const int& role = Qt::DisplayRole) const;
+
+	/** TODO */
 	QVariant currentImageFilePath(const int& role = Qt::DisplayRole) const;
 
 	/** TODO */
-	QVariant currentDimensionFilePath(const int& role = Qt::DisplayRole) const;
-	
+	QVariant average(const int& role = Qt::DisplayRole) const;
+
+	/** TODO */
+	void setAverage(const bool& average);
+
 	/** TODO */
 	QVariant pointsName(const int& role = Qt::DisplayRole) const;
 
@@ -126,12 +108,10 @@ private:
 	QSize							_size;					/** TODO */
 	std::uint32_t					_noPoints;				/** TODO */
 	std::uint32_t					_noDimensions;			/** TODO */
-	std::int32_t					_currentImage;			/** TODO */
-	std::int32_t					_currentDimension;		/** TODO */
 	QStringList						_imageNames;			/** TODO */
-	QStringList						_dimensionNames;		/** TODO */
-	bool							_average;				/** TODO */
 	QStringList						_imageFilePaths;		/** TODO */
+	std::int32_t					_currentImage;			/** TODO */
+	bool							_average;				/** TODO */
 	QString							_pointsName;			/** TODO */
 	Indices							_selection;				/** TODO */
 	Layers							_layers;				/** TODO */

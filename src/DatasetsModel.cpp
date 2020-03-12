@@ -10,6 +10,7 @@ DatasetsModel::DatasetsModel(QObject* parent) :
 	QAbstractListModel(parent),
 	_selectionModel(new QItemSelectionModel(this))
 {
+	/*
 	QObject::connect(this, &DatasetsModel::dataChanged, this, [this](const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int> &roles) {
 		const auto selectedRows = _selectionModel->selectedRows();
 
@@ -38,6 +39,7 @@ DatasetsModel::DatasetsModel(QObject* parent) :
 			}
 		}
 	});
+	*/
 }
 
 DatasetsModel::~DatasetsModel() = default;
@@ -53,7 +55,7 @@ int DatasetsModel::columnCount(const QModelIndex& parent /*= QModelIndex()*/) co
 {
 	Q_UNUSED(parent);
 
-	return 19;
+	return 15;
 }
 
 QVariant DatasetsModel::data(const QModelIndex& index, int role) const
@@ -86,35 +88,23 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 			case Columns::NoDimensions:
 				return dataset->noDimensions(Qt::DisplayRole);
 
+			case Columns::ImageNames:
+				return dataset->imageNames(Qt::DisplayRole);
+
+			case Columns::ImageFilePaths:
+				return dataset->imageFilePaths(Qt::DisplayRole);
+
 			case Columns::CurrentImage:
 				return dataset->currentImage(Qt::DisplayRole);
 
 			case Columns::CurrentImageName:
 				return dataset->currentImageName(Qt::DisplayRole);
 
-			case Columns::CurrentDimension:
-				return dataset->currentDimension(Qt::DisplayRole);
-
-			case Columns::CurrentDimensionName:
-				return dataset->currentDimensionName(Qt::DisplayRole);
-
-			case Columns::ImageNames:
-				return dataset->imageNames(Qt::DisplayRole);
-
-			case Columns::DimensionNames:
-				return dataset->dimensionNames(Qt::DisplayRole);
-
-			case Columns::Average:
-				return dataset->average(Qt::DisplayRole);
-
-			case Columns::ImageFilePaths:
-				return dataset->imageFilePaths(Qt::DisplayRole);
-
 			case Columns::CurrentImageFilepath:
 				return dataset->currentImageFilePath(Qt::DisplayRole);
 
-			case Columns::CurrentDimensionFilepath:
-				return dataset->currentDimensionFilePath(Qt::DisplayRole);
+			case Columns::Average:
+				return dataset->average(Qt::DisplayRole);
 
 			case Columns::PointsName:
 				return dataset->pointsName(Qt::DisplayRole);
@@ -150,35 +140,23 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 			case Columns::NoDimensions:
 				return dataset->noDimensions(Qt::EditRole);
 
+			case Columns::ImageNames:
+				return dataset->imageNames(Qt::EditRole);
+
+			case Columns::ImageFilePaths:
+				return dataset->imageFilePaths(Qt::EditRole);
+
 			case Columns::CurrentImage:
 				return dataset->currentImage(Qt::EditRole);
 
 			case Columns::CurrentImageName:
 				return dataset->currentImageName(Qt::EditRole);
 
-			case Columns::CurrentDimension:
-				return dataset->currentDimension(Qt::EditRole);
-
-			case Columns::CurrentDimensionName:
-				return dataset->currentDimensionName(Qt::EditRole);
-
-			case Columns::ImageNames:
-				return dataset->imageNames(Qt::EditRole);
-
-			case Columns::DimensionNames:
-				return dataset->dimensionNames(Qt::EditRole);
-
-			case Columns::Average:
-				return dataset->average(Qt::EditRole);
-
-			case Columns::ImageFilePaths:
-				return dataset->imageFilePaths(Qt::EditRole);
-
 			case Columns::CurrentImageFilepath:
 				return dataset->currentImageFilePath(Qt::EditRole);
 
-			case Columns::CurrentDimensionFilepath:
-				return dataset->currentDimensionFilePath(Qt::EditRole);
+			case Columns::Average:
+				return dataset->average(Qt::EditRole);
 
 			case Columns::PointsName:
 				return dataset->pointsName(Qt::EditRole);
@@ -214,35 +192,23 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 			case Columns::NoDimensions:
 				return dataset->noDimensions(Qt::ToolTipRole);
 
+			case Columns::ImageNames:
+				return dataset->imageNames(Qt::ToolTipRole);
+
+			case Columns::ImageFilePaths:
+				return dataset->imageFilePaths(Qt::ToolTipRole);
+
 			case Columns::CurrentImage:
 				return dataset->currentImage(Qt::ToolTipRole);
 
 			case Columns::CurrentImageName:
 				return dataset->currentImageName(Qt::ToolTipRole);
 
-			case Columns::CurrentDimension:
-				return dataset->currentDimension(Qt::ToolTipRole);
-
-			case Columns::CurrentDimensionName:
-				return dataset->currentDimensionName(Qt::ToolTipRole);
-
-			case Columns::ImageNames:
-				return dataset->imageNames(Qt::ToolTipRole);
-
-			case Columns::DimensionNames:
-				return dataset->dimensionNames(Qt::ToolTipRole);
-
-			case Columns::Average:
-				return dataset->average(Qt::ToolTipRole);
-
-			case Columns::ImageFilePaths:
-				return dataset->imageFilePaths(Qt::ToolTipRole);
-
 			case Columns::CurrentImageFilepath:
 				return dataset->currentImageFilePath(Qt::ToolTipRole);
 
-			case Columns::CurrentDimensionFilepath:
-				return dataset->currentDimensionFilePath(Qt::ToolTipRole);
+			case Columns::Average:
+				return dataset->average(Qt::ToolTipRole);
 
 			case Columns::PointsName:
 				return dataset->pointsName(Qt::ToolTipRole);
@@ -286,23 +252,20 @@ QVariant DatasetsModel::headerData(int section, Qt::Orientation orientation, int
 			case Columns::NoDimensions:
 				return "No. dimensions";
 
+			case Columns::ImageNames:
+				return "Images";
+
+			case Columns::ImageFilePaths:
+				return "Image file paths";
+
 			case Columns::CurrentImage:
 				return "Current image ID";
 
 			case Columns::CurrentImageName:
 				return "Image name";
 
-			case Columns::CurrentDimension:
-				return "Current dimension ID";
-
-			case Columns::CurrentDimensionName:
-				return "Dimension name";
-
-			case Columns::ImageNames:
-				return "Images";
-
-			case Columns::DimensionNames:
-				return "Dimensions";
+			case Columns::CurrentImageFilepath:
+				return "Image file path";
 
 			case Columns::Average:
 				return "Average";
@@ -341,35 +304,23 @@ Qt::ItemFlags DatasetsModel::flags(const QModelIndex& index) const
 		case Columns::Size:
 		case Columns::NoPoints:
 		case Columns::NoDimensions:
-		case Columns::CurrentImageName:
-		case Columns::CurrentDimensionName:
 		case Columns::ImageNames:
-		case Columns::DimensionNames:
-			break;
-
+		
 		case Columns::CurrentImage:
 		{
-			if (datasetType == static_cast<int>(ImageCollectionType::Sequence) != average)
+			if (datasetType == ImageData::Type::Sequence != average)
 				flags |= Qt::ItemIsEditable;
 
 			break;
 		}
 
-		case Columns::CurrentDimension:
-		{
-			if (datasetType == static_cast<int>(ImageCollectionType::Stack))
-				flags |= Qt::ItemIsEditable;
-
+		case Columns::CurrentImageName:
+		case Columns::CurrentImageFilepath:
 			break;
-		}
 
 		case Columns::Average:
-		{
-			if (datasetType == static_cast<int>(ImageCollectionType::Sequence))
-				flags |= Qt::ItemIsEditable;
-
+			flags |= Qt::ItemIsEditable;
 			break;
-		}
 
 		case Columns::PointsName:
 		case Columns::Selection:
@@ -414,32 +365,26 @@ bool DatasetsModel::setData(const QModelIndex& index, const QVariant& value, int
 				dataset->setNoDimensions(value.toInt());
 				break;
 
-			case Columns::CurrentImage:
-				dataset->setCurrentImage(value.toInt());
-				break;
-
-			case Columns::CurrentDimension:
-				dataset->setCurrentDimension(value.toInt());
-				break;
-
 			case Columns::ImageNames:
 				dataset->setImageNames(value.toStringList());
-				break;
-
-			case Columns::DimensionNames:
-				dataset->setDimensionNames(value.toStringList());
-				break;
-
-			case Columns::Average:
-				dataset->setAverage(value.toBool());
 				break;
 
 			case Columns::ImageFilePaths:
 				dataset->setImageFilePaths(value.toStringList());
 				break;
 
+			case Columns::CurrentImage:
+				dataset->setCurrentImage(value.toInt());
+				break;
+
+			case Columns::CurrentImageName:
+				break;
+
 			case Columns::CurrentImageFilepath:
-			case Columns::CurrentDimensionFilepath:
+				break;
+
+			case Columns::Average:
+				dataset->setAverage(value.toBool());
 				break;
 
 			case Columns::PointsName:
@@ -555,11 +500,9 @@ void DatasetsModel::add(ImageDataset* dataset)
 	setData(index(0, Columns::NoPoints, QModelIndex()), dataset->noPoints(Qt::EditRole));
 	setData(index(0, Columns::NoDimensions, QModelIndex()), dataset->noDimensions(Qt::EditRole));
 	setData(index(0, Columns::ImageNames, QModelIndex()), dataset->imageNames(Qt::EditRole));
-	setData(index(0, Columns::DimensionNames, QModelIndex()), dataset->dimensionNames(Qt::EditRole));
+	setData(index(0, Columns::CurrentImage, QModelIndex()), dataset->currentImage(Qt::EditRole));
 	setData(index(0, Columns::Average, QModelIndex()), dataset->average(Qt::EditRole));
 	setData(index(0, Columns::ImageFilePaths, QModelIndex()), dataset->imageFilePaths(Qt::EditRole));
-	setData(index(0, Columns::CurrentImage, QModelIndex()), dataset->currentImage(Qt::EditRole));
-	setData(index(0, Columns::CurrentDimension, QModelIndex()), dataset->currentDimension(Qt::EditRole));
 	setData(index(0, Columns::PointsName, QModelIndex()), dataset->pointsName(Qt::EditRole));
 }
 

@@ -135,7 +135,7 @@
       <item row="1" column="0">
        <widget class="QLabel" name="currentImageLabel">
         <property name="text">
-         <string>Selected image(s)</string>
+         <string>Image(s)</string>
         </property>
        </widget>
       </item>

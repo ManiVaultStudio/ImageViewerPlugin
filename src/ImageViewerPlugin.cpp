@@ -44,8 +44,8 @@ ImageViewerPlugin::ImageViewerPlugin() :
 
 	QObject::connect(&_datasetsModel, &DatasetsModel::dataChanged, this, [this](const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int> &roles /*= QVector<int>()*/) {
 		const auto currentImageChanged		= topLeft.column() <= DatasetsModel::Columns::CurrentImage && bottomRight.column() >= DatasetsModel::Columns::CurrentImage;
-		const auto currentDimensionChanged	= topLeft.column() <= DatasetsModel::Columns::CurrentDimension && bottomRight.column() >= DatasetsModel::Columns::CurrentDimension;
 
+		/*
 		if (currentImageChanged || currentDimensionChanged) {
 			const auto datasetName	= _datasetsModel.data(topLeft.row(), DatasetsModel::Columns::Name).toString();
 			const auto type			= _datasetsModel.data(topLeft.row(), DatasetsModel::Columns::Type, Qt::EditRole).toInt();
@@ -63,7 +63,7 @@ ImageViewerPlugin::ImageViewerPlugin() :
 
 				case (static_cast<int>(ImageCollectionType::Stack)):
 				{
-					const auto currentDimension = _datasetsModel.data(topLeft.row(), DatasetsModel::Columns::CurrentDimension).toInt();
+					const auto currentDimension = _datasetsModel.data(topLeft.row(), DatasetsModel::Columns::CurrentImage).toInt();
 
 					_datasetsModel.layersModel(topLeft.row())->setData(0, LayersModel::Columns::Image, imagesDataset.stackImage(currentDimension));
 
@@ -74,6 +74,7 @@ ImageViewerPlugin::ImageViewerPlugin() :
 					break;
 			}
 		}
+		*/
 	});
 }
 
@@ -132,12 +133,11 @@ void ImageViewerPlugin::dataAdded(const QString dataset)
 	auto imageDataset = ImageDataset(nullptr);
 
 	imageDataset.setName(dataset);
-	imageDataset.setType(static_cast<int>(imagesDataset.imageCollectionType()));
+	imageDataset.setType(imagesDataset.type());
 	imageDataset.setSize(imagesDataset.imageSize());
 	imageDataset.setNoPoints(imagesDataset.points()->getNumPoints());
 	imageDataset.setNoDimensions(imagesDataset.points()->getNumDimensions());
 	imageDataset.setCurrentImage(0);
-	imageDataset.setCurrentDimension(0);
 	imageDataset.setAverage(false);
 
 	auto imageFilePaths = QStringList();
@@ -146,9 +146,9 @@ void ImageViewerPlugin::dataAdded(const QString dataset)
 		imageFilePaths << imageFilePath;
 	}
 
-	switch (imagesDataset.imageCollectionType())
+	switch (imagesDataset.type())
 	{
-		case ImageCollectionType::Sequence:
+		case ImageData::Type::Sequence:
 		{
 			auto imageNames = QStringList();
 
@@ -160,7 +160,7 @@ void ImageViewerPlugin::dataAdded(const QString dataset)
 			break;
 		}
 
-		case ImageCollectionType::Stack:
+		case ImageData::Type::Stack:
 		{
 			auto dimensionNames = QStringList();
 
@@ -168,7 +168,7 @@ void ImageViewerPlugin::dataAdded(const QString dataset)
 				dimensionNames << dimensionName;
 			}
 
-			imageDataset.setDimensionNames(dimensionNames);
+			imageDataset.setImageNames(dimensionNames);
 			break;
 		}
 
