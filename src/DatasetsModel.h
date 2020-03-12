@@ -20,6 +20,7 @@ public: // Columns
 		NoPoints,
 		NoDimensions,
 		ImageNames,
+		ImageIds,
 		FilteredImageNames,
 		ImageFilePaths,
 		CurrentImage,

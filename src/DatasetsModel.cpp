@@ -10,36 +10,21 @@ DatasetsModel::DatasetsModel(QObject* parent) :
 	QAbstractListModel(parent),
 	_selectionModel(new QItemSelectionModel(this))
 {
-	/*
 	QObject::connect(this, &DatasetsModel::dataChanged, this, [this](const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int> &roles) {
 		const auto selectedRows = _selectionModel->selectedRows();
 
 		if (selectedRows.size() != 1 || topLeft.row() != selectedRows.first().row())
 			return;
 
-		if (topLeft.column() <= Columns::CurrentImageName && bottomRight.column() >= Columns::CurrentImageName) {
+		if (topLeft.column() <= Columns::FilteredImageNames && bottomRight.column() >= Columns::FilteredImageNames) {
+			auto imageNames = data(index(topLeft.row(), Columns::FilteredImageNames), Qt::DisplayRole).toString();
+			qDebug() << imageNames;
 			auto dataset = datasets().value(topLeft.row());
 
-			if (dataset->type(Qt::EditRole).toInt() == static_cast<int>(ImageCollectionType::Sequence)) {
-				const auto name = dataset->currentImageName(Qt::DisplayRole).toString();
-
-				dataset->layersModel()->renameLayer("default_color", name);
-				dataset->layersModel()->renameLayer("default_selection", name);
-			}
-		}
-
-		if (topLeft.column() <= Columns::CurrentDimensionName && bottomRight.column() >= Columns::CurrentDimensionName) {
-			auto dataset = datasets().value(topLeft.row());
-
-			if (dataset->type(Qt::EditRole).toInt() == static_cast<int>(ImageCollectionType::Stack)) {
-				const auto name = dataset->currentDimensionName(Qt::DisplayRole).toString();
-
-				dataset->layersModel()->renameLayer("default_color", name);
-				dataset->layersModel()->renameLayer("default_selection", name);
-			}
+			dataset->layersModel()->renameLayer("default_color", imageNames);
+			dataset->layersModel()->renameLayer("default_selection", imageNames);
 		}
 	});
-	*/
 }
 
 DatasetsModel::~DatasetsModel() = default;
@@ -55,7 +40,7 @@ int DatasetsModel::columnCount(const QModelIndex& parent /*= QModelIndex()*/) co
 {
 	Q_UNUSED(parent);
 
-	return 16;
+	return 17;
 }
 
 QVariant DatasetsModel::data(const QModelIndex& index, int role) const
@@ -104,6 +89,9 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 
 				case Columns::ImageNames:
 					return dataset->imageNames(Qt::DisplayRole);
+
+				case Columns::ImageIds:
+					return dataset->imageIds(Qt::DisplayRole);
 
 				case Columns::FilteredImageNames:
 					return dataset->filteredImageNames(Qt::DisplayRole);
@@ -161,6 +149,9 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 				case Columns::ImageNames:
 					return dataset->imageNames(Qt::EditRole);
 
+				case Columns::ImageIds:
+					return dataset->imageIds(Qt::EditRole);
+
 				case Columns::FilteredImageNames:
 					return dataset->filteredImageNames(Qt::EditRole);
 
@@ -216,6 +207,9 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 
 				case Columns::ImageNames:
 					return dataset->imageNames(Qt::ToolTipRole);
+
+				case Columns::ImageIds:
+					return dataset->imageIds(Qt::ToolTipRole);
 
 				case Columns::FilteredImageNames:
 					return dataset->filteredImageNames(Qt::ToolTipRole);
@@ -283,6 +277,9 @@ QVariant DatasetsModel::headerData(int section, Qt::Orientation orientation, int
 
 			case Columns::ImageNames:
 				return "Image names";
+
+			case Columns::ImageIds:
+				return "Image ID's";
 
 			case Columns::FilteredImageNames:
 				return "Filtered image names";
@@ -401,6 +398,9 @@ bool DatasetsModel::setData(const QModelIndex& index, const QVariant& value, int
 
 			case Columns::ImageNames:
 				dataset->setImageNames(value.toStringList());
+				break;
+
+			case Columns::ImageIds:
 				break;
 
 			case Columns::FilteredImageNames:

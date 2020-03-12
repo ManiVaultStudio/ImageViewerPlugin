@@ -29,10 +29,11 @@ SelectionWidget::SelectionWidget(QWidget* parent, DatasetsModel* datasetsModel) 
 	//headerView->hideSection(static_cast<int>(DatasetsModel::Columns::NoPoints));
 	//headerView->hideSection(static_cast<int>(DatasetsModel::Columns::NoDimensions));
 	headerView->hideSection(static_cast<int>(DatasetsModel::Columns::ImageNames));
+	//headerView->hideSection(static_cast<int>(DatasetsModel::Columns::ImageIds));
 	headerView->hideSection(static_cast<int>(DatasetsModel::Columns::FilteredImageNames));
 	headerView->hideSection(static_cast<int>(DatasetsModel::Columns::ImageFilePaths));
-	headerView->hideSection(static_cast<int>(DatasetsModel::Columns::CurrentImage));
-	headerView->hideSection(static_cast<int>(DatasetsModel::Columns::CurrentImageName));
+	//headerView->hideSection(static_cast<int>(DatasetsModel::Columns::CurrentImage));
+	//headerView->hideSection(static_cast<int>(DatasetsModel::Columns::CurrentImageName));
 	headerView->hideSection(static_cast<int>(DatasetsModel::Columns::CurrentImageFilepath));
 	//headerView->hideSection(static_cast<int>(DatasetsModel::Columns::Average));
 	headerView->hideSection(static_cast<int>(DatasetsModel::Columns::PointsName));
@@ -85,7 +86,7 @@ void SelectionWidget::updateData(const QModelIndex &topLeft, const QModelIndex &
 	const auto currentImageFlags	= mightEdit ? _datasetsModel->flags(_datasetsModel->index(topLeft.row(), static_cast<int>(DatasetsModel::Columns::CurrentImage))) : 0;
 	const auto averageImagesFlags	= _datasetsModel->flags(_datasetsModel->index(topLeft.row(), static_cast<int>(DatasetsModel::Columns::Average)));
 
-	_ui->currentImageLabel->setEnabled(mightEdit);
+	_ui->currentImageLabel->setEnabled(mightEdit && !average);
 	_ui->currentImageComboBox->setEnabled(mightEdit && !average);
 
 	const auto currentImageChanged	= topLeft.column() <= DatasetsModel::Columns::CurrentImage && bottomRight.column() >= DatasetsModel::Columns::CurrentImage;
@@ -98,8 +99,12 @@ void SelectionWidget::updateData(const QModelIndex &topLeft, const QModelIndex &
 		const auto imageNames			= _datasetsModel->data(topLeft.row(), DatasetsModel::Columns::FilteredImageNames, Qt::EditRole).toStringList();
 
 		_ui->currentImageComboBox->blockSignals(true);
-		_ui->currentImageComboBox->setModel(new QStringListModel(average ? averageImageNames : imageNames));
-		_ui->currentImageComboBox->setCurrentText(_datasetsModel->data(topLeft.row(), DatasetsModel::Columns::FilteredImageNames, Qt::DisplayRole).toString());
+
+		if (mightEdit) {
+			_ui->currentImageComboBox->setModel(new QStringListModel(average ? averageImageNames : imageNames));
+			_ui->currentImageComboBox->setCurrentText(_datasetsModel->data(topLeft.row(), DatasetsModel::Columns::CurrentImageName, Qt::DisplayRole).toString());
+		}
+		
 		_ui->currentImageComboBox->blockSignals(false);
 	}
 

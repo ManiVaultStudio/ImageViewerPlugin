@@ -263,9 +263,15 @@ QVariant ImageDataset::filteredImageNames(const int& role /*= Qt::DisplayRole*/)
 				}
 			}
 			else {
-				imageNames = _imageNames;
+				imageNames << _imageNames;
 			}
 
+			break;
+		}
+
+		case ImageData::Type::Stack:
+		{
+			imageNames = _imageNames;
 			break;
 		}
 
@@ -276,9 +282,6 @@ QVariant ImageDataset::filteredImageNames(const int& role /*= Qt::DisplayRole*/)
 	auto imageNamesString = QString();
 
 	if (_average) {
-		if (imageNames.size() == 1)
-			imageNamesString == imageNames.first();
-
 		if (imageNames.size() == 2)
 			imageNamesString = QString("[%1, %2]").arg(imageNames.first(), imageNames.last());
 
@@ -286,7 +289,7 @@ QVariant ImageDataset::filteredImageNames(const int& role /*= Qt::DisplayRole*/)
 			imageNamesString = QString("[%1, ..., %2]").arg(imageNames.first(), imageNames.last());
 	}
 	else {
-	//	imageNamesString = 
+		imageNamesString = _imageNames[_currentImage];
 	}
 
 	switch (role)
@@ -299,6 +302,82 @@ QVariant ImageDataset::filteredImageNames(const int& role /*= Qt::DisplayRole*/)
 
 		case Qt::ToolTipRole:
 			return QString("Image names: %1").arg(imageNamesString);
+
+		default:
+			break;
+	}
+
+	return QStringList();
+}
+
+QVariant ImageDataset::imageIds(const int& role /*= Qt::DisplayRole*/) const
+{
+	const auto selectionSize = _selection.size();
+
+	auto ids = Indices();
+
+	switch (_type)
+	{
+		case ImageData::Type::Sequence:
+		{
+			if (selectionSize > 0) {
+				for (auto id : _selection) {
+					ids << id;
+				}
+			}
+			else {
+				if (_average) {
+					ids.resize(_imageNames.size());
+					std::iota(ids.begin(), ids.end(), 0);
+				}
+				else {
+					ids << _currentImage;
+				}
+			}
+
+			break;
+		}
+
+		case ImageData::Type::Stack:
+		{
+			if (_average) {
+				ids.resize(_imageNames.size());
+				std::iota(ids.begin(), ids.end(), 0);
+			}
+			else {
+				ids << _currentImage;
+			}
+
+			break;
+		}
+
+		default:
+			break;
+	}
+
+	auto imageIdsString = QString();
+
+	//if (_average) {
+		if (ids.size() == 1)
+			imageIdsString = QString::number(ids.first());
+
+		if (ids.size() == 2)
+			imageIdsString = QString("[%1, %2]").arg(QString::number(ids.first()), QString::number(ids.last()));
+
+		if (ids.size() > 2)
+			imageIdsString = QString("[%1, ..., %2]").arg(QString::number(ids.first()), QString::number(ids.last()));
+		//}
+
+	switch (role)
+	{
+		case Qt::DisplayRole:
+			return imageIdsString;
+
+		case Qt::EditRole:
+			return QVariant::fromValue(ids);
+
+		case Qt::ToolTipRole:
+			return QString("Image ID's: %1").arg(imageIdsString);
 
 		default:
 			break;
@@ -341,38 +420,32 @@ void ImageDataset::setImageFilePaths(const QStringList& imageFilePaths)
 
 QVariant ImageDataset::currentImage(const int& role /*= Qt::DisplayRole*/) const
 {
-	if (_selection.isEmpty())
-		return QString();
-
-	const auto firstSelection		= _selection.first();
-	const auto currentImageString	= QString::number(firstSelection);
-
 	switch (role)
 	{
 		case Qt::DisplayRole:
-			return currentImageString;
+			return QString::number(_currentImage);
 
 		case Qt::EditRole:
-			return firstSelection;
+			return _currentImage;
 
 		case Qt::ToolTipRole:
-			return QString("Current image: %1").arg(currentImageString);
+			return QString("Current image: %1").arg(QString::number(_currentImage));
 	}
 
-	return std::uint32_t{};
+	return QString();
 }
 
 void ImageDataset::setCurrentImage(const std::uint32_t& currentImage)
 {
-//	_selection = Indices({ currentImage });
+	if (_selection.isEmpty())
+		_currentImage = currentImage;
+	else
+		_currentImage = _selection[currentImage];
 }
 
 QVariant ImageDataset::currentImageName(const int& role /*= Qt::DisplayRole*/) const
 {
-	if (_selection.isEmpty())
-		return QString();
-
-	const auto imageName = _imageNames.isEmpty() ? "" : _imageNames[_selection.first()];
+	const auto imageName = _imageNames.isEmpty() ? "" : _imageNames[_currentImage];
 
 	switch (role)
 	{
@@ -536,4 +609,20 @@ QVariant ImageDataset::selectionSize(const int& role /*= Qt::DisplayRole*/) cons
 QSharedPointer<LayersModel> ImageDataset::layersModel()
 {
 	return _layersModel;
+}
+
+QString ImageDataset::displayStringList(const QStringList& stringList)
+{
+	const auto noStrings = stringList.size();
+
+	if (noStrings == 1)
+		return QString("[%1]").arg(stringList.first());
+
+	if (noStrings == 2)
+		return QString("[%1, %2]").arg(stringList.first(), stringList.last());
+
+	if (noStrings > 2)
+		return QString("[%1, ..., %2]").arg(stringList.first(), stringList.last());
+
+	return QString("[]");
 }
