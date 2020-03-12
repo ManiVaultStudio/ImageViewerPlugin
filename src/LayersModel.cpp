@@ -703,3 +703,54 @@ void LayersModel::renameLayer(const QString& id, const QString& name)
 
 	setData(firstHit.row(), Columns::Name, name);
 }
+
+void LayersModel::add(Layer* layer)
+{
+	insertRows(0, 1);
+
+	setData(index(0, Columns::Enabled, QModelIndex()), layer->flag(Layer::Flags::Enabled, Qt::EditRole));
+	setData(index(0, Columns::Type, QModelIndex()), layer->type(Qt::EditRole));
+	setData(index(0, Columns::ID, QModelIndex()), layer->id(Qt::EditRole));
+	setData(index(0, Columns::Name, QModelIndex()), layer->name(Qt::EditRole));
+	setData(index(0, Columns::Frozen, QModelIndex()), layer->flag(Layer::Flags::Frozen, Qt::EditRole));
+	setData(index(0, Columns::Removable, QModelIndex()), layer->flag(Layer::Flags::Removable, Qt::EditRole));
+	setData(index(0, Columns::Mask, QModelIndex()), layer->flag(Layer::Flags::Mask, Qt::EditRole));
+	setData(index(0, Columns::Renamable, QModelIndex()), layer->flag(Layer::Flags::Enabled, Qt::EditRole));
+	setData(index(0, Columns::Order, QModelIndex()), layer->order(Qt::EditRole));
+	setData(index(0, Columns::Opacity, QModelIndex()), layer->opacity(Qt::EditRole));
+	setData(index(0, Columns::WindowNormalized, QModelIndex()), layer->windowNormalized(Qt::EditRole));
+	setData(index(0, Columns::LevelNormalized, QModelIndex()), layer->levelNormalized(Qt::EditRole));
+	setData(index(0, Columns::Image, QModelIndex()), layer->image(Qt::EditRole));
+}
+
+void LayersModel::renameDefaultLayers(const QString& name)
+{
+	const auto hits = match(index(0, LayersModel::Columns::ID), Qt::DisplayRole, "default", -1, Qt::MatchStartsWith);
+
+	if (hits.isEmpty())
+		return;
+
+	for (auto hit : hits) {
+		setData(hit.row(), LayersModel::Columns::Name, name);
+	}
+}
+
+void LayersModel::setDefaultColorImage(const QImage& image)
+{
+	const auto hits = match(index(0, Columns::ID), Qt::DisplayRole, "default_color", -1, Qt::MatchExactly);
+
+	if (hits.isEmpty())
+		return;
+
+	setData(hits.first().row(), Columns::Image, image);
+}
+
+void LayersModel::setDefaultSelectionImage(const QImage& image)
+{
+	const auto hits = match(index(0, Columns::ID), Qt::DisplayRole, "default_selection", -1, Qt::MatchExactly);
+
+	if (hits.isEmpty())
+		return;
+
+	setData(hits.first().row(), Columns::Image, image);
+}

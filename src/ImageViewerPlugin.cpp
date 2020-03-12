@@ -43,38 +43,30 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	});
 
 	QObject::connect(&_datasetsModel, &DatasetsModel::dataChanged, this, [this](const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int> &roles /*= QVector<int>()*/) {
-		const auto currentImageChanged		= topLeft.column() <= DatasetsModel::Columns::CurrentImage && bottomRight.column() >= DatasetsModel::Columns::CurrentImage;
+		const auto imageIdsChanged	= topLeft.column() <= DatasetsModel::Columns::ImageIds && bottomRight.column() >= DatasetsModel::Columns::ImageIds;
+		const auto imageIds			= _datasetsModel.data(topLeft.row(), DatasetsModel::Columns::ImageIds, Qt::EditRole).value<Indices>();
+		const auto datasetName		= _datasetsModel.data(topLeft.row(), DatasetsModel::Columns::Name).toString();
+		const auto type				= _datasetsModel.data(topLeft.row(), DatasetsModel::Columns::Type, Qt::EditRole).toInt();
 
-		/*
-		if (currentImageChanged || currentDimensionChanged) {
-			const auto datasetName	= _datasetsModel.data(topLeft.row(), DatasetsModel::Columns::Name).toString();
-			const auto type			= _datasetsModel.data(topLeft.row(), DatasetsModel::Columns::Type, Qt::EditRole).toInt();
+		auto imagesDataset = _core->requestData<Images>(datasetName);
 
-			auto imagesDataset = _core->requestData<Images>(datasetName);
+		auto layersModel = _datasetsModel.layersModel(topLeft.row());
 
+		if (!imageIds.isEmpty()) {
 			switch (type)
 			{
-				case (static_cast<int>(ImageCollectionType::Sequence)) :
-				{
-					//const auto currentImage = _datasetsModel.data(topLeft.row(), DatasetsModel::Columns::CurrentDimension).toInt();
-					//_datasetsModel.layersModel(topLeft.row())->setData(0, LayersModel::Columns::Image, imagesDataset.sequenceImage(currentImage));
+				case ImageData::Type::Sequence:
+					layersModel->setDefaultColorImage(imagesDataset.sequenceImage(imageIds.toStdVector()));
 					break;
-				}
 
-				case (static_cast<int>(ImageCollectionType::Stack)):
-				{
-					const auto currentDimension = _datasetsModel.data(topLeft.row(), DatasetsModel::Columns::CurrentImage).toInt();
-
-					_datasetsModel.layersModel(topLeft.row())->setData(0, LayersModel::Columns::Image, imagesDataset.stackImage(currentDimension));
-
+				case ImageData::Type::Stack:
+					layersModel->setDefaultColorImage(imagesDataset.stackImage(imageIds.first()));
 					break;
-				}
 
 				default:
 					break;
 			}
 		}
-		*/
 	});
 }
 
@@ -157,6 +149,7 @@ void ImageViewerPlugin::dataAdded(const QString dataset)
 			}
 
 			imageDataset.setImageNames(imageNames);
+			imageDataset.addLayer("default_color", "Color", Layer::Type::Image, Layer::Flags::Enabled | Layer::Flags::Enabled);
 			break;
 		}
 
@@ -169,6 +162,9 @@ void ImageViewerPlugin::dataAdded(const QString dataset)
 			}
 
 			imageDataset.setImageNames(dimensionNames);
+
+			imageDataset.addLayer("default_color", "Color", Layer::Type::Image, Layer::Flags::Enabled | Layer::Flags::Enabled);
+			imageDataset.addLayer("default_selection", "Selection", Layer::Type::Selection, Layer::Flags::Enabled);
 			break;
 		}
 
@@ -200,12 +196,15 @@ void ImageViewerPlugin::selectionChanged(const QString dataset)
 		return;
 
 	const auto firstHit		= hits.first();
-	const auto datasetName	= _datasetsModel.data(_datasetsModel.index(firstHit.row(), DatasetsModel::Columns::Name), Qt::DisplayRole).toString();
-	
+	const auto datasetType	= _datasetsModel.data(_datasetsModel.index(firstHit.row(), DatasetsModel::Columns::Type), Qt::EditRole).toInt();
+	const auto datasetName	=_datasetsModel.data(_datasetsModel.index(firstHit.row(), DatasetsModel::Columns::Name), Qt::EditRole).toString();
+
 	auto imagesDataset = _core->requestData<Images>(datasetName);
 
 	_datasetsModel.setData(_datasetsModel.index(hits.first().row(), DatasetsModel::Columns::Selection), QVariant::fromValue(Indices::fromStdVector(imagesDataset.indices())));
-	_datasetsModel.layersModel(firstHit.row())->setData(1, LayersModel::Columns::Image, imagesDataset.selectionImage());
+
+	if (datasetType == ImageData::Type::Stack)
+		_datasetsModel.layersModel(firstHit.row())->setDefaultSelectionImage(imagesDataset.selectionImage());
 }
 
 hdps::DataTypes ImageViewerPlugin::supportedDataTypes() const

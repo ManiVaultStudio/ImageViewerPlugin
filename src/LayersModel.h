@@ -94,6 +94,18 @@ public: // TODO
 	/** TODO */
 	void renameLayer(const QString& id, const QString& name);
 
+	/** TODO */
+	void add(Layer* layer);
+
+	/** TODO */
+	void renameDefaultLayers(const QString& name);
+
+	/** TODO */
+	void setDefaultColorImage(const QImage& image);
+
+	/** TODO */
+	void setDefaultSelectionImage(const QImage& image);
+
 private:
 	Layers*		_layers;		/** TODO */
 

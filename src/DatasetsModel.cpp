@@ -17,12 +17,7 @@ DatasetsModel::DatasetsModel(QObject* parent) :
 			return;
 
 		if (topLeft.column() <= Columns::FilteredImageNames && bottomRight.column() >= Columns::FilteredImageNames) {
-			auto imageNames = data(index(topLeft.row(), Columns::FilteredImageNames), Qt::DisplayRole).toString();
-			
-			auto dataset = datasets().value(topLeft.row());
-
-			dataset->layersModel()->renameLayer("default_color", imageNames);
-			dataset->layersModel()->renameLayer("default_selection", imageNames);
+			layersModel(topLeft.row())->renameDefaultLayers(data(index(topLeft.row(), Columns::FilteredImageNames), Qt::DisplayRole).toString());
 		}
 	});
 }
@@ -543,6 +538,9 @@ void DatasetsModel::add(ImageDataset* dataset)
 	setData(index(0, Columns::Average, QModelIndex()), dataset->average(Qt::EditRole));
 	setData(index(0, Columns::ImageFilePaths, QModelIndex()), dataset->imageFilePaths(Qt::EditRole));
 	setData(index(0, Columns::PointsName, QModelIndex()), dataset->pointsName(Qt::EditRole));
+
+	for (auto layer : dataset->layers())
+		layersModel(0)->add(layer);
 }
 
 LayersModel* DatasetsModel::layersModel(const int& row)

@@ -126,7 +126,7 @@ void ImageLayerProp::render()
 
 void ImageLayerProp::setImage(const QImage& image)
 {
-	qDebug() << fullName() << "set image";
+	//qDebug() << fullName() << "set image";
 
 	_image = image;
 	
@@ -150,7 +150,7 @@ void ImageLayerProp::setImage(const QImage& image)
 
 void ImageLayerProp::setDisplayRange(const float& min, const float& max)
 {
-	qDebug() << fullName() << "set display range" << min << max;
+	//qDebug() << fullName() << "set display range" << min << max;
 
 	_displayRange[0] = min;
 	_displayRange[1] = max;
@@ -158,14 +158,14 @@ void ImageLayerProp::setDisplayRange(const float& min, const float& max)
 
 void ImageLayerProp::setOpacity(const float& opacity)
 {
-	qDebug() << fullName() << "set opacity" << QString::number(opacity, 'f', 2);
+	//qDebug() << fullName() << "set opacity" << QString::number(opacity, 'f', 2);
 
 	_opacity = opacity;
 }
 
 void ImageLayerProp::setOrder(const std::uint32_t& order)
 {
-	qDebug() << fullName() << "set order" << QString::number(order);
+	//qDebug() << fullName() << "set order" << QString::number(order);
 
 	_order = order;
 

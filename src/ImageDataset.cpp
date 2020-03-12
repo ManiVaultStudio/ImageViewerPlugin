@@ -21,11 +21,6 @@ ImageDataset::ImageDataset(QObject* parent) :
 	_layers(),
 	_layersModel(QSharedPointer<LayersModel>::create(&_layers))
 {
-	addLayer("default_color", "Color", Layer::Type::Image, Layer::Flags::Enabled);
-	addLayer("default_selection", "Selection", Layer::Type::Selection, Layer::Flags::Enabled);
-	//addLayer("MetaDataA", Layer::Type::Metadata, Layer::Flags::Enabled | Layer::Flags::Removable | Layer::Flags::Renamable);
-	//addLayer("MetaDataB", Layer::Type::Metadata, Layer::Flags::Enabled | Layer::Flags::Removable | Layer::Flags::Renamable);
-	//addLayer("MetaDataC", Layer::Type::Metadata, Layer::Flags::Enabled | Layer::Flags::Removable | Layer::Flags::Renamable);
 }
 
 void ImageDataset::addLayer(const QString& id, const QString& name, const Layer::Type& type, const std::uint32_t& flags)
@@ -291,15 +286,20 @@ QVariant ImageDataset::imageIds(const int& role /*= Qt::DisplayRole*/) const
 	{
 		case ImageData::Type::Sequence:
 		{
-			if (selectionSize > 0) {
-				for (auto id : _selection) {
-					ids << id;
+			if (_average) {
+				if (selectionSize > 0) {
+					for (auto id : _selection) {
+						ids << id;
+					}
+				}
+				else {
+					ids.resize(_imageNames.size());
+					std::iota(ids.begin(), ids.end(), 0);
 				}
 			}
 			else {
-				if (_average) {
-					ids.resize(_imageNames.size());
-					std::iota(ids.begin(), ids.end(), 0);
+				if (selectionSize > 0) {
+					ids << _selection.first();
 				}
 				else {
 					ids << _currentImage;
@@ -458,10 +458,7 @@ QVariant ImageDataset::average(const int& role /*= Qt::DisplayRole*/) const
 
 QVariant ImageDataset::currentImageFilePath(const int& role /*= Qt::DisplayRole*/) const
 {
-	if (_selection.isEmpty())
-		return QString();
-
-	const auto imageFilePathString = _imageFilePaths[_selection.first()];
+	const auto imageFilePathString = _imageFilePaths[_currentImage];
 
 	switch (role)
 	{
@@ -573,6 +570,11 @@ QVariant ImageDataset::selectionSize(const int& role /*= Qt::DisplayRole*/) cons
 	}
 
 	return QString();
+}
+
+Layers& ImageDataset::layers()
+{
+	return _layers;
 }
 
 QSharedPointer<LayersModel> ImageDataset::layersModel()

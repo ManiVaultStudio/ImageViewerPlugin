@@ -106,6 +106,9 @@ public:
 	QVariant selectionSize(const int& role = Qt::DisplayRole) const;
 
 	/** TODO */
+	Layers& layers();
+
+	/** TODO */
 	QSharedPointer<LayersModel> layersModel();
 
 	static QString displayStringList(const QStringList& stringList);

@@ -10,16 +10,15 @@ ImageDatasetActor::ImageDatasetActor(Renderer* renderer, const QString& name, La
 	Actor(renderer, name, visible),
 	_layersModel(layersModel)
 {
-	/*
+	
 	for (int row = 0; row < _layersModel->rowCount(); row++) {
 		const auto layerId = _layersModel->data(row, LayersModel::Columns::ID).toString();
 		addProp<ImageLayerProp>(this, layerId);
 	}
 
 	QObject::connect(_layersModel, &LayersModel::dataChanged, this, &ImageDatasetActor::updateData);
-
+	
 	updateData(_layersModel->index(0), _layersModel->index(_layersModel->rowCount() - 1, _layersModel->columnCount() - 1));
-	*/
 }
 
 void ImageDatasetActor::updateData(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int> &roles /*= QVector<int>()*/) {
