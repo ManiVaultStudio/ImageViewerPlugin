@@ -28,7 +28,7 @@ SelectionWidget::SelectionWidget(QWidget* parent, DatasetsModel* datasetsModel) 
 	//headerView->hideSection(static_cast<int>(DatasetsModel::Columns::Size));
 	//headerView->hideSection(static_cast<int>(DatasetsModel::Columns::NoPoints));
 	//headerView->hideSection(static_cast<int>(DatasetsModel::Columns::NoDimensions));
-	headerView->hideSection(static_cast<int>(DatasetsModel::Columns::ImageNames));
+	//headerView->hideSection(static_cast<int>(DatasetsModel::Columns::ImageNames));
 	//headerView->hideSection(static_cast<int>(DatasetsModel::Columns::ImageIds));
 	headerView->hideSection(static_cast<int>(DatasetsModel::Columns::FilteredImageNames));
 	headerView->hideSection(static_cast<int>(DatasetsModel::Columns::ImageFilePaths));

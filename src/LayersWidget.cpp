@@ -21,7 +21,7 @@ LayersWidget::LayersWidget(QWidget* parent, DatasetsModel* datasetsModel) :
 
 	setModel(QSharedPointer<LayersModel>());
 
-	QFont font = QFont("Font Awesome 5 Free Solid", 8, 1);
+	QFont font = QFont("Font Awesome 5 Free Solid", 9);
 
 	_ui->layerAddPushButton->setFont(font);
 	_ui->layerRemovePushButton->setFont(font);

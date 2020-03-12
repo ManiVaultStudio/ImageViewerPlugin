@@ -201,33 +201,8 @@ void ImageDataset::setNoDimensions(const std::uint32_t& noDimensions)
 
 QVariant ImageDataset::imageNames(const int& role /*= Qt::DisplayRole*/) const
 {
-	const auto selectionSize = _selection.size();
-
-	auto imageNamesString = QString();
-
-	if (_average) {
-		/*
-		if (selectionSize == 0) {
-			if (noImages == 1)
-				names << _imageNames.first();
-
-			if (noImages == 2)
-				names << QString("[%1, %2]").arg(_imageNames.first(), _imageNames.last());
-
-			if (noImages > 2)
-				names << QString("[%1, ..., %2]").arg(_imageNames.first(), _imageNames.last());
-		}
-
-		if (selectionSize == 1)
-			names << _imageNames[_selection.first()];
-		*/
-
-		if (selectionSize == 2)
-			imageNamesString = QString("[%1, %2]").arg(_imageNames[_selection.first()], _imageNames[_selection.last()]);
-
-		if (selectionSize > 2)
-			imageNamesString = QString("[%1, ..., %2]").arg(_imageNames[_selection.first()], _imageNames[_selection.last()]);
-	}
+	const auto selectionSize	= _selection.size();
+	const auto imageNamesString	= ImageDataset::displayStringList(_imageNames);
 
 	switch (role)
 	{
@@ -282,11 +257,7 @@ QVariant ImageDataset::filteredImageNames(const int& role /*= Qt::DisplayRole*/)
 	auto imageNamesString = QString();
 
 	if (_average) {
-		if (imageNames.size() == 2)
-			imageNamesString = QString("[%1, %2]").arg(imageNames.first(), imageNames.last());
-
-		if (imageNames.size() > 2)
-			imageNamesString = QString("[%1, ..., %2]").arg(imageNames.first(), imageNames.last());
+		imageNamesString = ImageDataset::displayStringList(imageNames);
 	}
 	else {
 		imageNamesString = _imageNames[_currentImage];
@@ -357,16 +328,14 @@ QVariant ImageDataset::imageIds(const int& role /*= Qt::DisplayRole*/) const
 
 	auto imageIdsString = QString();
 
-	//if (_average) {
-		if (ids.size() == 1)
-			imageIdsString = QString::number(ids.first());
+	if (ids.size() == 1)
+		imageIdsString = QString::number(ids.first());
 
-		if (ids.size() == 2)
-			imageIdsString = QString("[%1, %2]").arg(QString::number(ids.first()), QString::number(ids.last()));
+	if (ids.size() == 2)
+		imageIdsString = QString("[%1, %2]").arg(QString::number(ids.first()), QString::number(ids.last()));
 
-		if (ids.size() > 2)
-			imageIdsString = QString("[%1, ..., %2]").arg(QString::number(ids.first()), QString::number(ids.last()));
-		//}
+	if (ids.size() > 2)
+		imageIdsString = QString("[%1, ..., %2]").arg(QString::number(ids.first()), QString::number(ids.last()));
 
 	switch (role)
 	{
@@ -616,7 +585,7 @@ QString ImageDataset::displayStringList(const QStringList& stringList)
 	const auto noStrings = stringList.size();
 
 	if (noStrings == 1)
-		return QString("[%1]").arg(stringList.first());
+		return QString("%1").arg(stringList.first());
 
 	if (noStrings == 2)
 		return QString("[%1, %2]").arg(stringList.first(), stringList.last());

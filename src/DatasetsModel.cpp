@@ -18,7 +18,7 @@ DatasetsModel::DatasetsModel(QObject* parent) :
 
 		if (topLeft.column() <= Columns::FilteredImageNames && bottomRight.column() >= Columns::FilteredImageNames) {
 			auto imageNames = data(index(topLeft.row(), Columns::FilteredImageNames), Qt::DisplayRole).toString();
-			qDebug() << imageNames;
+			
 			auto dataset = datasets().value(topLeft.row());
 
 			dataset->layersModel()->renameLayer("default_color", imageNames);
@@ -64,6 +64,8 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 				default:
 					break;
 			}
+
+			break;
 		}
 
 		case Qt::DisplayRole:
