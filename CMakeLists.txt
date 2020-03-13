@@ -23,45 +23,27 @@ find_package(Qt5 COMPONENTS Widgets WebEngineWidgets REQUIRED)
 
 set(PLUGIN
 	src/Common.h
-	src/Layer.h
-	src/Layer.cpp
-	src/ImageDataset.h
-	src/ImageDataset.cpp
-	src/ImageDataset.h
-	src/ImageDataset.cpp
 	src/ImageViewerPlugin.h
 	src/ImageViewerPlugin.cpp
-	src/ViewerWidget.h
-	src/ViewerWidget.cpp
-	src/SettingsWidget.h
-	src/SettingsWidget.cpp
-	src/SelectionWidget.h
-	src/SelectionWidget.cpp
-	src/LayersWidget.h
-	src/LayersWidget.cpp
-	src/Renderer.h
-	src/Renderer.cpp
 	src/Selection.h
 	src/Selection.cpp
 )
 
-file(GLOB MODELS src/*Model.h src/*Model.cpp)
-file(GLOB ACTORS src/*Actor.h src/*Actor.cpp)
-file(GLOB PROPS src/*Prop.h src/*Prop.cpp)
-file(GLOB SHAPES src/*Shape.h src/*Shape.cpp)
+file(GLOB MODEL src/*Model.* src/ImageDataset.* src/Layer.*)
+file(GLOB RENDERING src/*Renderer.* src/*Actor.* src/*Prop.* src/*Shape.*)
+file(GLOB WIDGETS src/*Widget.*)
 file(GLOB UIS src/*.ui)
 file(GLOB SHADERS src/*.glsl)
 file(GLOB JSON src/*.json)
 file(GLOB QRC src/*.qrc)
 
-set(SOURCES ${PLUGIN} ${MODELS} ${ACTORS} ${PROPS} ${SHAPES})
+set(SOURCES ${PLUGIN} ${MODEL} ${RENDERING} ${WIDGETS})
 set(AUX ${JSON} ${QRC})
 
 source_group(Plugin FILES ${PLUGIN})
-source_group(Models FILES ${MODELS})
-source_group(Actors FILES ${ACTORS})
-source_group(Props FILES ${PROPS})
-source_group(Shapes FILES ${SHAPES})
+source_group(Model FILES ${MODEL})
+source_group(Rendering FILES ${RENDERING})
+source_group(Widgets FILES ${WIDGETS})
 source_group(UI FILES ${UIS})
 source_group(Shaders FILES ${SHADERS})
 source_group(Aux FILES ${AUX})
