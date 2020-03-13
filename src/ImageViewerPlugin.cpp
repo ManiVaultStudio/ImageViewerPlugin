@@ -40,27 +40,30 @@ ImageViewerPlugin::ImageViewerPlugin() :
 
 	QObject::connect(&_datasetsModel, &DatasetsModel::dataChanged, this, [this](const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int> &roles /*= QVector<int>()*/) {
 		const auto imageIdsChanged	= topLeft.column() <= DatasetsModel::Columns::ImageIds && bottomRight.column() >= DatasetsModel::Columns::ImageIds;
-		const auto imageIds			= _datasetsModel.data(topLeft.row(), DatasetsModel::Columns::ImageIds, Qt::EditRole).value<Indices>();
-		const auto datasetName		= _datasetsModel.data(topLeft.row(), DatasetsModel::Columns::Name).toString();
-		const auto type				= _datasetsModel.data(topLeft.row(), DatasetsModel::Columns::Type, Qt::EditRole).toInt();
 
-		auto imagesDataset = _core->requestData<Images>(datasetName);
+		if (imageIdsChanged) {
+			const auto imageIds = _datasetsModel.data(topLeft.row(), DatasetsModel::Columns::ImageIds, Qt::EditRole).value<Indices>();
+			const auto datasetName = _datasetsModel.data(topLeft.row(), DatasetsModel::Columns::Name, Qt::EditRole).toString();
+			const auto type = _datasetsModel.data(topLeft.row(), DatasetsModel::Columns::Type, Qt::EditRole).toInt();
 
-		auto layersModel = _datasetsModel.layersModel(topLeft.row());
+			auto imagesDataset = _core->requestData<Images>(datasetName);
 
-		if (!imageIds.isEmpty()) {
-			switch (type)
-			{
-				case ImageData::Type::Sequence:
-					layersModel->setDefaultColorImage(imagesDataset.sequenceImage(imageIds.toStdVector()));
-					break;
+			auto layersModel = _datasetsModel.layersModel(topLeft.row());
 
-				case ImageData::Type::Stack:
-					layersModel->setDefaultColorImage(imagesDataset.stackImage(imageIds.first()));
-					break;
+			if (!imageIds.isEmpty()) {
+				switch (type)
+				{
+					case ImageData::Type::Sequence:
+						layersModel->setDefaultColorImage(imagesDataset.sequenceImage(imageIds.toStdVector()));
+						break;
 
-				default:
-					break;
+					case ImageData::Type::Stack:
+						layersModel->setDefaultColorImage(imagesDataset.stackImage(imageIds.first()));
+						break;
+
+					default:
+						break;
+				}
 			}
 		}
 	});

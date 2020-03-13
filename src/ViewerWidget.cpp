@@ -59,40 +59,23 @@ ViewerWidget::ViewerWidget(QWidget* parent, DatasetsModel* datasetsModel) :
 
 	setFormat(surfaceFormat);
 
-	/*
-	connect(_imageDatasets, &ImageDatasetsModel::currentDatasetChanged, [this](ImageDataset* previousImageDataset, ImageDataset* currentImageDataset) {
-		try
-		{
-			qDebug() << "Dataset changed to" << currentImageDataset->name();
-
-			if (previousImageDataset != nullptr)
-				_renderer->removeActor(previousImageDataset->name());
-
-			if (currentImageDataset != nullptr) {
-				_renderer->addActor<ImageDatasetActor>(_renderer, currentImageDataset->name(), currentImageDataset);
-				_renderer->zoomToRectangle(QRectF(QPointF(), currentImageDataset->imageSize()));
-			}
-		}
-		catch (const std::exception& e)
-		{
-			qDebug() << e.what();
-		}
-	});
-	*/
-
 	QObject::connect(_datasetsModel, &DatasetsModel::dataChanged, this, [this](const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int> &roles /*= QVector<int>()*/) {
 		_renderer->render();
 	});
 
 	QObject::connect(_datasetsModel->selectionModel(), &QItemSelectionModel::currentRowChanged, [this](const QModelIndex& current, const QModelIndex& previous) {
 		if (previous.isValid()) {
-			const auto name = _datasetsModel->data(previous.row(), DatasetsModel::Columns::Name).toString();
+			const auto name = _datasetsModel->data(previous.row(), DatasetsModel::Columns::Name, Qt::EditRole).toString();
+
 			_renderer->removeActor(name);
 		}
 
 		if (current.isValid()) {
-			const auto name = _datasetsModel->data(current.row(), DatasetsModel::Columns::Name).toString();
+			const auto name = _datasetsModel->data(current.row(), DatasetsModel::Columns::Name, Qt::EditRole).toString();
+			const auto size = _datasetsModel->data(current.row(), DatasetsModel::Columns::Size, Qt::EditRole).toSize();
+			
 			_renderer->addActor<ImageDatasetActor>(_renderer, name, _datasetsModel->layersModel(current.row()));
+			_renderer->zoomToRectangle(QRectF(QPointF(), size));
 		}
 	});
 }

@@ -116,7 +116,51 @@ QVariant ImageDataset::noImages(const int& role /*= Qt::DisplayRole*/) const
 			break;
 	}
 
-	return std::uint32_t{};
+	return QVariant();
+}
+
+QVariant ImageDataset::width(const int& role /*= Qt::DisplayRole*/) const
+{
+	const auto widthString = QString::number(_size.width());
+
+	switch (role)
+	{
+		case Qt::DisplayRole:
+			return widthString;
+
+		case Qt::EditRole:
+			return _size.width();
+
+		case Qt::ToolTipRole:
+			return QString("Image width: %1 pixels").arg(widthString);
+
+		default:
+			break;
+	}
+
+	return QVariant();
+}
+
+QVariant ImageDataset::height(const int& role /*= Qt::DisplayRole*/) const
+{
+	const auto heightString = QString::number(_size.height());
+
+	switch (role)
+	{
+		case Qt::DisplayRole:
+			return heightString;
+
+		case Qt::EditRole:
+			return _size.height();
+
+		case Qt::ToolTipRole:
+			return QString("Image height: %1 pixels").arg(heightString);
+
+		default:
+			break;
+	}
+
+	return QVariant();
 }
 
 QVariant ImageDataset::size(const int& role /*= Qt::DisplayRole*/) const

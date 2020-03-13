@@ -11,8 +11,7 @@ DatasetsModel::DatasetsModel(QObject* parent) :
 	_selectionModel(new QItemSelectionModel(this))
 {
 	QObject::connect(_selectionModel, &QItemSelectionModel::currentRowChanged, this, [this](const QModelIndex &current, const QModelIndex &previous) {
-		emit dataChanged(index(current.row(), Columns::ImageIds), index(current.row(), Columns::ImageIds));
-		qDebug() << current << previous;
+	//	emit dataChanged(index(current.row(), 0), index(current.row(), columnCount() - 1));
 	});
 
 	QObject::connect(this, &DatasetsModel::dataChanged, this, [this](const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int> &roles) {
@@ -40,7 +39,7 @@ int DatasetsModel::columnCount(const QModelIndex& parent /*= QModelIndex()*/) co
 {
 	Q_UNUSED(parent);
 
-	return 17;
+	return 19;
 }
 
 QVariant DatasetsModel::data(const QModelIndex& index, int role) const
@@ -79,6 +78,12 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 
 				case Columns::NoImages:
 					return dataset->noImages(Qt::DisplayRole);
+
+				case Columns::Width:
+					return dataset->width(Qt::DisplayRole);
+
+				case Columns::Height:
+					return dataset->height(Qt::DisplayRole);
 
 				case Columns::Size:
 					return dataset->size(Qt::DisplayRole);
@@ -139,6 +144,12 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 				case Columns::NoImages:
 					return dataset->noImages(Qt::EditRole);
 
+				case Columns::Width:
+					return dataset->width(Qt::EditRole);
+
+				case Columns::Height:
+					return dataset->height(Qt::EditRole);
+
 				case Columns::Size:
 					return dataset->size(Qt::EditRole);
 
@@ -197,6 +208,12 @@ QVariant DatasetsModel::data(const QModelIndex& index, int role) const
 
 				case Columns::NoImages:
 					return dataset->noImages(Qt::ToolTipRole);
+
+				case Columns::Width:
+					return dataset->width(Qt::ToolTipRole);
+
+				case Columns::Height:
+					return dataset->height(Qt::ToolTipRole);
 
 				case Columns::Size:
 					return dataset->size(Qt::ToolTipRole);
@@ -268,6 +285,12 @@ QVariant DatasetsModel::headerData(int section, Qt::Orientation orientation, int
 			case Columns::NoImages:
 				return "# Images";
 
+			case Columns::Width:
+				return "Width";
+
+			case Columns::Height:
+				return "Height";
+
 			case Columns::Size:
 				return "Size";
 
@@ -332,6 +355,8 @@ Qt::ItemFlags DatasetsModel::flags(const QModelIndex& index) const
 		case Columns::Type:
 		case Columns::Name:
 		case Columns::NoImages:
+		case Columns::Width:
+		case Columns::Height:
 		case Columns::Size:
 		case Columns::NoPoints:
 		case Columns::NoDimensions:
@@ -384,6 +409,8 @@ bool DatasetsModel::setData(const QModelIndex& index, const QVariant& value, int
 				break;
 
 			case Columns::NoImages:
+			case Columns::Width:
+			case Columns::Height:
 				break;
 
 			case Columns::Size:
@@ -441,6 +468,8 @@ bool DatasetsModel::setData(const QModelIndex& index, const QVariant& value, int
 				return false;
 		}
 
+		emit dataChanged(this->index(row, index.column()), this->index(row, index.column()));
+
 		/* TODO
 		switch (index.column())
 		{
@@ -460,7 +489,7 @@ bool DatasetsModel::setData(const QModelIndex& index, const QVariant& value, int
 		}
 		*/
 
-		emit dataChanged(this->index(row, 0), this->index(row, columnCount() - 1));
+		
 
 		return true;
 	}
@@ -509,7 +538,7 @@ Datasets& DatasetsModel::datasets()
 	return const_cast<Datasets&>(constThis->datasets());
 }
 
-QVariant DatasetsModel::data(const int& row, const int& column, int role /*= Qt::DisplayRole*/) const
+QVariant DatasetsModel::data(const int& row, const int& column, int role) const
 {
 	const auto modelIndex = index(row, column);
 

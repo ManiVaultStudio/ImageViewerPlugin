@@ -37,6 +37,12 @@ public:
 	QVariant noImages(const int& role = Qt::DisplayRole) const;
 
 	/** TODO */
+	QVariant width(const int& role = Qt::DisplayRole) const;
+
+	/** TODO */
+	QVariant height(const int& role = Qt::DisplayRole) const;
+
+	/** TODO */
 	QVariant size(const int& role = Qt::DisplayRole) const;
 
 	/** TODO */
