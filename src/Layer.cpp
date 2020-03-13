@@ -430,7 +430,7 @@ void Layer::computeImageRange()
 	if (_image.isNull())
 		return;
 
-	qDebug() << "Compute image range";
+	//qDebug() << "Compute image range";
 
 	_imageRange.setFullRange();
 
@@ -474,6 +474,8 @@ void Layer::computeImageRange()
 
 void Layer::computeDisplayRange()
 {
+	//qDebug() << "Compute display range";
+
 	const auto maxWindow = _imageRange.length();
 
 	_level = std::clamp(_imageRange.min() + (_levelNormalized * maxWindow), _imageRange.min(), _imageRange.max());

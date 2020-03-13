@@ -36,14 +36,14 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	/*
 	if (!QFontDatabase::addApplicationFont(":/FontAwesome.otf"))
 		qDebug() << "Unable to load Font Awesome";
-	*/
+	
 
 	QObject::connect(_datasetsModel.selectionModel(), &QItemSelectionModel::currentRowChanged, [this](const QModelIndex& current, const QModelIndex& previous) {
 		const auto datasetName = _datasetsModel.data(current.row(), DatasetsModel::Columns::Name).toString();
 		auto imagesDataset = _core->requestData<Images>(datasetName);
 		_datasetsModel.layersModel(current.row())->setData(1, LayersModel::Columns::Image, imagesDataset.selectionImage());
 	});
-
+*/
 	QObject::connect(&_datasetsModel, &DatasetsModel::dataChanged, this, [this](const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int> &roles /*= QVector<int>()*/) {
 		const auto imageIdsChanged	= topLeft.column() <= DatasetsModel::Columns::ImageIds && bottomRight.column() >= DatasetsModel::Columns::ImageIds;
 		const auto imageIds			= _datasetsModel.data(topLeft.row(), DatasetsModel::Columns::ImageIds, Qt::EditRole).value<Indices>();

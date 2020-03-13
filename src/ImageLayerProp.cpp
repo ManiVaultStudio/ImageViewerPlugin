@@ -195,7 +195,7 @@ void ImageLayerProp::setOpacity(const float& opacity)
 
 void ImageLayerProp::setOrder(const std::uint32_t& order)
 {
-	qDebug() << fullName() << "set order" << QString::number(order);
+	//qDebug() << fullName() << "set order" << QString::number(order);
 
 	_order = order;
 

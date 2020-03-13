@@ -401,10 +401,25 @@ QVariant ImageDataset::currentImage(const int& role /*= Qt::DisplayRole*/) const
 
 void ImageDataset::setCurrentImage(const std::uint32_t& currentImage)
 {
-	if (_selection.isEmpty())
-		_currentImage = currentImage;
-	else
-		_currentImage = _selection[currentImage];
+	switch (_type)
+	{
+		case ImageData::Type::Sequence:
+		{
+			if (_selection.isEmpty())
+				_currentImage = currentImage;
+			else
+				_currentImage = _selection[currentImage];
+
+			break;
+		}
+
+		case ImageData::Type::Stack:
+			_currentImage = currentImage;
+			break;
+
+		default:
+			break;
+	}
 }
 
 QVariant ImageDataset::currentImageName(const int& role /*= Qt::DisplayRole*/) const
@@ -530,8 +545,10 @@ QVariant ImageDataset::selection(const int& role /*= Qt::DisplayRole*/) const
 
 void ImageDataset::setSelection(const Indices& selection)
 {
-	_selection		= selection;
-	_currentImage	= selection.isEmpty() ? 0 : selection.first();
+	_selection = selection;
+
+	if (_type == ImageData::Type::Sequence)
+		_currentImage = selection.isEmpty() ? 0 : selection.first();
 }
 
 QVariant ImageDataset::selectionSize(const int& role /*= Qt::DisplayRole*/) const
