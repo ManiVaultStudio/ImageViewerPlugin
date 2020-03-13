@@ -112,7 +112,7 @@ public: // TODO
 	/** TODO */
 	void setDefaultSelectionImage(const QImage& image);
 
-private: // Internal members
+private: // Layers
 
 	/** TODO */
 	Layers& layers();

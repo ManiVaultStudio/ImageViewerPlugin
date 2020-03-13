@@ -687,9 +687,6 @@ void LayersModel::removeRows(const QModelIndexList& rows)
 	if (rowsToRemove.isEmpty())
 		return;
 
-	std::sort(rowsToRemove.begin(), rowsToRemove.end());
-	std::reverse(rowsToRemove.begin(), rowsToRemove.end());
-
 	beginRemoveRows(QModelIndex(), rowsToRemove.last(), rowsToRemove.first());
 
 	for (auto rowToRemove : rowsToRemove) {
@@ -697,6 +694,8 @@ void LayersModel::removeRows(const QModelIndexList& rows)
 	}
 
 	endRemoveRows();
+
+	sortOrder();
 }
 
 void LayersModel::renameLayer(const QString& id, const QString& name)
