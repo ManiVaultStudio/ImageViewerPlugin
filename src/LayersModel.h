@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Layer.h"
+#include "ImageDataset.h"
 
 #include <QAbstractListModel>
 
@@ -35,7 +35,7 @@ public: // Columns
 public: // Construction/destruction
 
 	/** Constructor */
-	LayersModel(Layers* layers);
+	LayersModel(ImageDataset* imageDataset);
 
 	/** Destructor */
 	~LayersModel();
@@ -66,6 +66,9 @@ public: // Inherited members
 	/** TODO */
 	bool removeRows(int position, int rows, const QModelIndex& index = QModelIndex());
 
+	/** TODO */
+	bool moveRows(const QModelIndex& sourceParent, int sourceRow, int count, const QModelIndex& destinationParent, int destinationChild);
+
 public: // Overloaded data access
 	
 	/** TODO */
@@ -89,7 +92,7 @@ public: // TODO
 	void moveDown(const int& row);
 
 	/** TODO */
-	void sort();
+	void sortOrder();
 
 	/** TODO */
 	void removeRows(const QModelIndexList& rows);
@@ -109,8 +112,19 @@ public: // TODO
 	/** TODO */
 	void setDefaultSelectionImage(const QImage& image);
 
+private: // Internal members
+
+	/** TODO */
+	Layers& layers();
+
+	/** TODO */
+	const Layers& layers() const;
+
+	/** TODO */
+	Layer* layer(const int& id);
+
 private:
-	Layers*		_layers;		/** TODO */
+	ImageDataset*		_imageDataset;		/** TODO */
 
 	friend class MainModel;
 };

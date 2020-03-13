@@ -6,9 +6,9 @@
 #include <QBrush>
 #include <QDebug>
 
-LayersModel::LayersModel(Layers* layers) :
+LayersModel::LayersModel(ImageDataset* imageDataset) :
 	QAbstractListModel(),
-	_layers(layers)
+	_imageDataset(imageDataset)
 {
 }
 
@@ -18,7 +18,7 @@ int LayersModel::rowCount(const QModelIndex& parent /*= QModelIndex()*/) const
 {
 	Q_UNUSED(parent);
 
-	return _layers->size();
+	return layers().size();
 }
 
 int LayersModel::columnCount(const QModelIndex& parent /*= QModelIndex()*/) const
@@ -33,10 +33,10 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 	if (!index.isValid())
 		return QVariant();
 
-	if (index.row() >= _layers->size() || index.row() < 0)
+	if (index.row() >= rowCount() || index.row() < 0)
 		return QVariant();
 
-	auto layer = _layers->at(index.row());
+	auto layer = layers().at(index.row());
 
 	switch (role)
 	{
@@ -451,7 +451,7 @@ bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int r
 
 	int row = index.row();
 
-	auto layer = _layers->value(row);
+	auto layer = layers().value(row);
 
 	if (role == Qt::CheckStateRole) {
 		switch (index.column()) {
@@ -568,7 +568,7 @@ bool LayersModel::insertRows(int position, int rows, const QModelIndex& index /*
 	beginInsertRows(QModelIndex(), position, position + rows - 1);
 
 	for (int row = 0; row < rows; row++) {
-		_layers->insert(position, new Layer(this));
+		layers().insert(position, new Layer(this));
 	}
 
 	endInsertRows();
@@ -583,10 +583,25 @@ bool LayersModel::removeRows(int position, int rows, const QModelIndex& index /*
 	beginRemoveRows(QModelIndex(), position, position + rows - 1);
 
 	for (int row = 0; row < rows; ++row) {
-		_layers->removeAt(position);
+		layers().removeAt(position);
 	}
 
 	endRemoveRows();
+
+	return true;
+}
+
+bool LayersModel::moveRows(const QModelIndex& sourceParent, int sourceRow, int count, const QModelIndex& destinationParent, int destinationChild)
+{
+	beginMoveRows(QModelIndex(), sourceRow, sourceRow + count - 1, QModelIndex(), destinationChild);
+
+	for (int i = 0; i < count; ++i) {
+		layers().insert(destinationChild + i, layer(sourceRow));
+		int removeIndex = destinationChild > sourceRow ? sourceRow : sourceRow + 1;
+		layers().removeAt(removeIndex);
+	}
+	
+	endMoveRows();
 
 	return true;
 }
@@ -616,9 +631,7 @@ bool LayersModel::mayMoveUp(const int& row)
 	if (row <= 0)
 		return false;
 
-	auto layers = (*_layers);
-
-	if (layers[row]->flag(Layer::Flags::Frozen, Qt::EditRole).toBool() || layers[row - 1]->flag(Layer::Flags::Frozen, Qt::EditRole).toBool())
+	if (layer(row)->flag(Layer::Flags::Frozen, Qt::EditRole).toBool() || layer(row - 1)->flag(Layer::Flags::Frozen, Qt::EditRole).toBool())
 		return false;
 
 	return true;
@@ -629,9 +642,7 @@ bool LayersModel::mayMoveDown(const int& row)
 	if (row >= rowCount() - 1)
 		return false;
 
-	auto layers = (*_layers);
-
-	if (layers[row]->flag(Layer::Flags::Frozen, Qt::EditRole).toBool() || layers[row + 1]->flag(Layer::Flags::Frozen, Qt::EditRole).toBool())
+	if (layer(row)->flag(Layer::Flags::Frozen, Qt::EditRole).toBool() || layer(row + 1)->flag(Layer::Flags::Frozen, Qt::EditRole).toBool())
 		return false;
 
 	return true;
@@ -642,24 +653,8 @@ void LayersModel::moveUp(const int& row)
 	if (!mayMoveUp(row))
 		return;
 
-	if (row > 0 && row < _layers->count())
-	{
-		beginMoveRows(QModelIndex(), row, row, QModelIndex(), row - 1);
-
-		auto layers = (*_layers);
-
-		const auto orderSource = layers[row]->order(Qt::EditRole).toInt();
-		const auto orderTarget = orderSource - 1;
-
-		layers[orderSource]->setOrder(orderTarget);
-		layers[orderTarget]->setOrder(orderSource);
-		
-		std::sort(_layers->begin(), _layers->end(), [](Layer* layerA, Layer* layerB) {
-			return layerA->order() < layerB->order();
-		});
-		
-		endMoveRows();
-	}
+	moveRows(QModelIndex(), row, 1, QModelIndex(), row - 1);
+	sortOrder();
 }
 
 void LayersModel::moveDown(const int& row)
@@ -667,21 +662,14 @@ void LayersModel::moveDown(const int& row)
 	if (!mayMoveDown(row))
 		return;
 
-	if (row >= 0 && row < _layers->count() - 1)
-	{
-		moveUp(row + 1);
-	}
+	moveRows(QModelIndex(), row + 1, 1, QModelIndex(), row);
+	sortOrder();
 }
 
-void LayersModel::sort()
+void LayersModel::sortOrder()
 {
-	beginResetModel();
-
-	std::sort(_layers->begin(), _layers->end(), [](Layer* layerA, Layer* layerB) {
-		return layerA->order() < layerB->order();
-	});
-
-	endResetModel();
+	for (int row = 0; row < rowCount(); row++)
+		setData(row, Columns::Order, row);
 }
 
 void LayersModel::removeRows(const QModelIndexList& rows)
@@ -691,7 +679,7 @@ void LayersModel::removeRows(const QModelIndexList& rows)
 	for (const auto& index : rows) {
 		const auto row = index.row();
 
-		if (_layers->at(row)->flag(Layer::Flags::Removable, Qt::EditRole).toBool()) {
+		if (layer(row)->flag(Layer::Flags::Removable, Qt::EditRole).toBool()) {
 			rowsToRemove.append(row);
 		}
 	}
@@ -705,7 +693,7 @@ void LayersModel::removeRows(const QModelIndexList& rows)
 	beginRemoveRows(QModelIndex(), rowsToRemove.last(), rowsToRemove.first());
 
 	for (auto rowToRemove : rowsToRemove) {
-		_layers->removeAt(rowToRemove);
+		layers().removeAt(rowToRemove);
 	}
 
 	endRemoveRows();
@@ -772,4 +760,19 @@ void LayersModel::setDefaultSelectionImage(const QImage& image)
 		return;
 
 	setData(hits.first().row(), Columns::Image, image);
+}
+
+Layers& LayersModel::layers()
+{
+	return _imageDataset->layers();
+}
+
+const Layers& LayersModel::layers() const
+{
+	return _imageDataset->layers();
+}
+
+Layer* LayersModel::layer(const int& id)
+{
+	return _imageDataset->layers()[id];
 }

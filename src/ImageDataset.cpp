@@ -19,7 +19,7 @@ ImageDataset::ImageDataset(QObject* parent) :
 	_pointsName(),
 	_selection(Indices({ 0 })),
 	_layers(),
-	_layersModel(QSharedPointer<LayersModel>::create(&_layers))
+	_layersModel(QSharedPointer<LayersModel>::create(this))
 {
 }
 
