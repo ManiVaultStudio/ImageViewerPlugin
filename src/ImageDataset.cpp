@@ -299,10 +299,10 @@ QVariant ImageDataset::imageIds(const int& role /*= Qt::DisplayRole*/) const
 			}
 			else {
 				if (selectionSize > 0) {
-					ids << _selection.first();
+					ids << _currentImage;
 				}
 				else {
-					ids << _currentImage;
+					ids << 0;
 				}
 			}
 
@@ -535,7 +535,8 @@ QVariant ImageDataset::selection(const int& role /*= Qt::DisplayRole*/) const
 
 void ImageDataset::setSelection(const Indices& selection)
 {
-	_selection = selection;
+	_selection		= selection;
+	_currentImage	= selection.isEmpty() ? 0 : selection.first();
 }
 
 QVariant ImageDataset::selectionSize(const int& role /*= Qt::DisplayRole*/) const

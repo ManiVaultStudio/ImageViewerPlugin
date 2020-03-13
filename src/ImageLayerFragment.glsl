@@ -26,6 +26,7 @@ void main(void)
 
 	switch (type) {
 		case 0:
+		case 2:
 			fragmentColor.a = opacity;
 			break;
 		

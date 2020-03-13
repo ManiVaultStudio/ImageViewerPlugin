@@ -40,12 +40,12 @@ public:
 	}
 
 	/** TODO */
-	enum Flags : int {
-		Enabled		= 1ul << 0,		/** TODO */
-		Frozen		= 1ul << 1,		/** TODO */
-		Removable	= 1ul << 2,		/** TODO */
-		Mask		= 1ul << 3,		/** TODO */
-		Renamable	= 1ul << 4		/** TODO */
+	enum Flags {
+		Enabled		= 0x01,		/** TODO */
+		Frozen		= 0x02,		/** TODO */
+		Removable	= 0x04,		/** TODO */
+		Mask		= 0x08,		/** TODO */
+		Renamable	= 0x20		/** TODO */
 	};
 
 	/** TODO */

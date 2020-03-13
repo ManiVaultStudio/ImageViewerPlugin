@@ -606,7 +606,7 @@ bool LayersModel::moveRows(const QModelIndex& sourceParent, int sourceRow, int c
 	return true;
 }
 
-QVariant LayersModel::data(const int& row, const int& column, int role /*= Qt::DisplayRole*/) const
+QVariant LayersModel::data(const int& row, const int& column, int role) const
 {
 	const auto modelIndex = index(row, column);
 
@@ -721,7 +721,7 @@ void LayersModel::add(Layer* layer)
 	setData(index(0, Columns::Frozen, QModelIndex()), layer->flag(Layer::Flags::Frozen, Qt::EditRole));
 	setData(index(0, Columns::Removable, QModelIndex()), layer->flag(Layer::Flags::Removable, Qt::EditRole));
 	setData(index(0, Columns::Mask, QModelIndex()), layer->flag(Layer::Flags::Mask, Qt::EditRole));
-	setData(index(0, Columns::Renamable, QModelIndex()), layer->flag(Layer::Flags::Enabled, Qt::EditRole));
+	setData(index(0, Columns::Renamable, QModelIndex()), layer->flag(Layer::Flags::Renamable, Qt::EditRole));
 	setData(index(0, Columns::Order, QModelIndex()), layer->order(Qt::EditRole));
 	setData(index(0, Columns::Opacity, QModelIndex()), layer->opacity(Qt::EditRole));
 	setData(index(0, Columns::WindowNormalized, QModelIndex()), layer->windowNormalized(Qt::EditRole));

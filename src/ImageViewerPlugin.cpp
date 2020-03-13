@@ -48,6 +48,8 @@ ImageViewerPlugin::ImageViewerPlugin() :
 		const auto datasetName		= _datasetsModel.data(topLeft.row(), DatasetsModel::Columns::Name).toString();
 		const auto type				= _datasetsModel.data(topLeft.row(), DatasetsModel::Columns::Type, Qt::EditRole).toInt();
 
+		qDebug() << imageIds;
+
 		auto imagesDataset = _core->requestData<Images>(datasetName);
 
 		auto layersModel = _datasetsModel.layersModel(topLeft.row());
@@ -163,9 +165,9 @@ void ImageViewerPlugin::dataAdded(const QString dataset)
 
 			imageDataset.setImageNames(dimensionNames);
 
-			imageDataset.addLayer("default_color", "Color", Layer::Type::Image, Layer::Flags::Enabled | Layer::Flags::Enabled);
+			imageDataset.addLayer("default_color", "Color", Layer::Type::Image, Layer::Flags::Enabled);
 			imageDataset.addLayer("default_selection", "Selection", Layer::Type::Selection, Layer::Flags::Enabled);
-			imageDataset.addLayer("layer_0", "Cluster", Layer::Type::MetaData, Layer::Flags::Enabled | Layer::Flags::Removable);
+			//imageDataset.addLayer("layer_0", "Cluster", Layer::Type::MetaData, Layer::Flags::Enabled | Layer::Flags::Removable | Layer::Flags::Renamable);
 			break;
 		}
 

@@ -62,10 +62,12 @@ SelectionWidget::SelectionWidget(QWidget* parent, DatasetsModel* datasetsModel) 
 		updateData(_datasetsModel->index(current.row(), 0), _datasetsModel->index(current.row(), _datasetsModel->columnCount()));
 	});
 
+	/* TODO
 	QObject::connect(datasetsModel, &DatasetsModel::dataChanged, this, [this](const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>& roles = QVector<int>()) {
 		_ui->currentImageComboBox->setToolTip(_datasetsModel->data(topLeft.row(), DatasetsModel::Columns::CurrentImageFilepath, Qt::ToolTipRole).toString());
 		_ui->averageImagesCheckBox->setToolTip(QString("Images will%1be averaged").arg(_datasetsModel->data(topLeft.row(), DatasetsModel::Columns::Average, Qt::EditRole).toBool() ? " " : " not "));
 	}, Qt::QueuedConnection);
+	*/
 
 	QObject::connect(_datasetsModel->selectionModel(), &QItemSelectionModel::selectionChanged, [this](const QItemSelection &selected, const QItemSelection &deselected) {
 		const auto selectedRows = _datasetsModel->selectionModel()->selectedRows();

@@ -72,7 +72,7 @@ public: // Inherited members
 public: // Overloaded data access
 	
 	/** TODO */
-	QVariant data(const int& row, const int& column, int role = Qt::DisplayRole) const;
+	QVariant data(const int& row, const int& column, int role) const;
 
 	/** TODO */
 	void setData(const int& row, const int& column, const QVariant& value);

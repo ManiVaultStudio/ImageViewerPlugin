@@ -134,7 +134,7 @@ void ImageLayerProp::setImage(const QImage& image)
 	
 	auto texture = textureByName("Quad");
 
-	switch (image.format())
+	switch (_image.format())
 	{
 		case QImage::Format::Format_RGB32:
 		{
