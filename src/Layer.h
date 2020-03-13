@@ -45,7 +45,8 @@ public:
 		Frozen		= 0x02,		/** TODO */
 		Removable	= 0x04,		/** TODO */
 		Mask		= 0x08,		/** TODO */
-		Renamable	= 0x20		/** TODO */
+		Renamable	= 0x20,		/** TODO */
+		Renderable	= 0x40		/** TODO */
 	};
 
 	/** TODO */

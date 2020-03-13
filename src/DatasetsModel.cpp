@@ -10,6 +10,7 @@ DatasetsModel::DatasetsModel(QObject* parent) :
 	QAbstractListModel(parent),
 	_selectionModel(new QItemSelectionModel(this))
 {
+	/*
 	QObject::connect(this, &DatasetsModel::dataChanged, this, [this](const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int> &roles) {
 		const auto selectedRows = _selectionModel->selectedRows();
 
@@ -20,6 +21,7 @@ DatasetsModel::DatasetsModel(QObject* parent) :
 			layersModel(topLeft.row())->renameDefaultLayers(data(index(topLeft.row(), Columns::FilteredImageNames), Qt::DisplayRole).toString());
 		}
 	});
+	*/
 }
 
 DatasetsModel::~DatasetsModel() = default;

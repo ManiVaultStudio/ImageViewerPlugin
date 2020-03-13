@@ -298,12 +298,7 @@ QVariant ImageDataset::imageIds(const int& role /*= Qt::DisplayRole*/) const
 				}
 			}
 			else {
-				if (selectionSize > 0) {
-					ids << _currentImage;
-				}
-				else {
-					ids << 0;
-				}
+				ids << _currentImage;
 			}
 
 			break;

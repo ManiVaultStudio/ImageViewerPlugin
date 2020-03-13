@@ -26,15 +26,17 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	_settingsWidget(),
 	_datasetsModel(this)
 {
-	qRegisterMetaType<std::shared_ptr<QImage>>("std::shared_ptr<QImage>");
+	qRegisterMetaType<QVector<int> >("QVector<int>");
 
 	//setFocusPolicy(Qt::FocusPolicy::StrongFocus);
 
 	_imageViewerWidget	= new ViewerWidget(this, &_datasetsModel);
 	_settingsWidget		= new SettingsWidget(this, &_datasetsModel);
 
+	/*
 	if (!QFontDatabase::addApplicationFont(":/FontAwesome.otf"))
 		qDebug() << "Unable to load Font Awesome";
+	*/
 
 	QObject::connect(_datasetsModel.selectionModel(), &QItemSelectionModel::currentRowChanged, [this](const QModelIndex& current, const QModelIndex& previous) {
 		const auto datasetName = _datasetsModel.data(current.row(), DatasetsModel::Columns::Name).toString();
@@ -47,8 +49,6 @@ ImageViewerPlugin::ImageViewerPlugin() :
 		const auto imageIds			= _datasetsModel.data(topLeft.row(), DatasetsModel::Columns::ImageIds, Qt::EditRole).value<Indices>();
 		const auto datasetName		= _datasetsModel.data(topLeft.row(), DatasetsModel::Columns::Name).toString();
 		const auto type				= _datasetsModel.data(topLeft.row(), DatasetsModel::Columns::Type, Qt::EditRole).toInt();
-
-		qDebug() << imageIds;
 
 		auto imagesDataset = _core->requestData<Images>(datasetName);
 
