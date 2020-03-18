@@ -24,31 +24,37 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	ViewPlugin("Image Viewer"),
 	_imageViewerWidget(),
 	_settingsWidget(),
-	_datasetsModel(this)
+	_layersModel()
 {
 	qRegisterMetaType<QVector<int> >("QVector<int>");
 
 	//setFocusPolicy(Qt::FocusPolicy::StrongFocus);
 
-	_imageViewerWidget	= new ViewerWidget(this, &_datasetsModel);
-	_settingsWidget		= new SettingsWidget(this, &_datasetsModel);
+	_imageViewerWidget	= new ViewerWidget(this);
+	_settingsWidget		= new SettingsWidget(this);
 
 	/*
 	if (!QFontDatabase::addApplicationFont(":/FontAwesome.otf"))
 		qDebug() << "Unable to load Font Awesome";
 	*/
 
-	QObject::connect(&_datasetsModel, &DatasetsModel::dataChanged, this, [this](const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int> &roles /*= QVector<int>()*/) {
+	/*
+	QObject::connect(_layersModel.selectionModel(), &QItemSelectionModel::currentRowChanged, this, [this](const QModelIndex &current, const QModelIndex &previous) {
+		emit _layersModel.dataChanged(_layersModel.index(current.row(), DatasetsModel::Columns::ImageIds), _layersModel.index(current.row(), DatasetsModel::Columns::ImageIds));
+	});
+
+	QObject::connect(&_layersModel, &DatasetsModel::dataChanged, this, [this](const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int> &roles /*= QVector<int>()
+	) {
 		const auto imageIdsChanged	= topLeft.column() <= DatasetsModel::Columns::ImageIds && bottomRight.column() >= DatasetsModel::Columns::ImageIds;
 
 		if (imageIdsChanged) {
-			const auto imageIds = _datasetsModel.data(topLeft.row(), DatasetsModel::Columns::ImageIds, Qt::EditRole).value<Indices>();
-			const auto datasetName = _datasetsModel.data(topLeft.row(), DatasetsModel::Columns::Name, Qt::EditRole).toString();
-			const auto type = _datasetsModel.data(topLeft.row(), DatasetsModel::Columns::Type, Qt::EditRole).toInt();
+			const auto imageIds = _layersModel.data(topLeft.row(), DatasetsModel::Columns::ImageIds, Qt::EditRole).value<Indices>();
+			const auto datasetName = _layersModel.data(topLeft.row(), DatasetsModel::Columns::Name, Qt::EditRole).toString();
+			const auto type = _layersModel.data(topLeft.row(), DatasetsModel::Columns::Type, Qt::EditRole).toInt();
 
 			auto imagesDataset = _core->requestData<Images>(datasetName);
 
-			auto layersModel = _datasetsModel.layersModel(topLeft.row());
+			auto layersModel = _layersModel.layersModel(topLeft.row());
 
 			if (!imageIds.isEmpty()) {
 				switch (type)
@@ -67,6 +73,7 @@ ImageViewerPlugin::ImageViewerPlugin() :
 			}
 		}
 	});
+	*/
 }
 
 void ImageViewerPlugin::init()
@@ -82,11 +89,6 @@ void ImageViewerPlugin::init()
 	addWidget(_settingsWidget);
 
 	layout->setStretchFactor(_imageViewerWidget, 1);
-}
-
-ViewerWidget* ImageViewerPlugin::imageViewerWidget()
-{
-	return _imageViewerWidget;
 }
 
 void ImageViewerPlugin::updateWindowTitle()
@@ -117,19 +119,20 @@ void ImageViewerPlugin::updateWindowTitle()
 
 void ImageViewerPlugin::dataAdded(const QString dataset)
 {
+	/*
 	qDebug() << "Data added" << dataset;
 
 	auto imagesDataset = _core->requestData<Images>(dataset);
 
-	auto imageDataset = ImageDataset(nullptr);
+	auto imageDataset = new ImageDataset(this);
 
-	imageDataset.setName(dataset);
-	imageDataset.setType(imagesDataset.type());
-	imageDataset.setSize(imagesDataset.imageSize());
-	imageDataset.setNoPoints(imagesDataset.points()->getNumPoints());
-	imageDataset.setNoDimensions(imagesDataset.points()->getNumDimensions());
-	imageDataset.setCurrentImage(0);
-	imageDataset.setAverage(false);
+	imageDataset->setName(dataset);
+	imageDataset->setType(imagesDataset.type());
+	imageDataset->setSize(imagesDataset.imageSize());
+	imageDataset->setNoPoints(imagesDataset.points()->getNumPoints());
+	imageDataset->setNoDimensions(imagesDataset.points()->getNumDimensions());
+	imageDataset->setCurrentImage(0);
+	imageDataset->setAverage(false);
 
 	auto imageFilePaths = QStringList();
 
@@ -147,8 +150,8 @@ void ImageViewerPlugin::dataAdded(const QString dataset)
 				imageNames << QFileInfo(imageFilePath).fileName();
 			}
 
-			imageDataset.setImageNames(imageNames);
-			imageDataset.addLayer("default_color", "Color", Layer::Type::Image, Layer::Flags::Enabled | Layer::Flags::Enabled);
+			imageDataset->setImageNames(imageNames);
+			imageDataset->addLayer("default_color", "Color", Layer::Type::Image, Layer::Flags::Enabled | Layer::Flags::Enabled);
 			break;
 		}
 
@@ -160,11 +163,11 @@ void ImageViewerPlugin::dataAdded(const QString dataset)
 				dimensionNames << dimensionName;
 			}
 
-			imageDataset.setImageNames(dimensionNames);
+			imageDataset->setImageNames(dimensionNames);
 
-			imageDataset.addLayer("default_color", "Color", Layer::Type::Image, Layer::Flags::Enabled);
-			imageDataset.addLayer("default_selection", "Selection", Layer::Type::Selection, Layer::Flags::Enabled);
-			//imageDataset.addLayer("layer_0", "Cluster", Layer::Type::MetaData, Layer::Flags::Enabled | Layer::Flags::Removable | Layer::Flags::Renamable);
+			imageDataset->addLayer("default_color", "Color", Layer::Type::Image, Layer::Flags::Enabled);
+			imageDataset->addLayer("default_selection", "Selection", Layer::Type::Selection, Layer::Flags::Enabled);
+			//imageDataset->addLayer("layer_0", "Cluster", Layer::Type::MetaData, Layer::Flags::Enabled | Layer::Flags::Removable | Layer::Flags::Renamable);
 			break;
 		}
 
@@ -172,10 +175,11 @@ void ImageViewerPlugin::dataAdded(const QString dataset)
 			break;
 	}
 
-	imageDataset.setImageFilePaths(imageFilePaths);
-	imageDataset.setPointsName(imagesDataset.points()->getDataName());
+	imageDataset->setImageFilePaths(imageFilePaths);
+	imageDataset->setPointsName(imagesDataset.points()->getDataName());
 
-	_datasetsModel.add(&imageDataset);
+	_layersModel.add(imageDataset);
+	*/
 }
 
 void ImageViewerPlugin::dataChanged(const QString dataset)
@@ -190,21 +194,23 @@ void ImageViewerPlugin::dataRemoved(const QString dataset)
 
 void ImageViewerPlugin::selectionChanged(const QString dataset)
 {
-	const auto hits = _datasetsModel.match(_datasetsModel.index(0, DatasetsModel::Columns::PointsName), Qt::DisplayRole, dataset, -1, Qt::MatchExactly);
+	/*
+	const auto hits = _layersModel.match(_layersModel.index(0, DatasetsModel::Columns::PointsName), Qt::DisplayRole, dataset, -1, Qt::MatchExactly);
 	
 	if (hits.isEmpty())
 		return;
 
 	const auto firstHit		= hits.first();
-	const auto datasetType	= _datasetsModel.data(_datasetsModel.index(firstHit.row(), DatasetsModel::Columns::Type), Qt::EditRole).toInt();
-	const auto datasetName	=_datasetsModel.data(_datasetsModel.index(firstHit.row(), DatasetsModel::Columns::Name), Qt::EditRole).toString();
+	const auto datasetType	= _layersModel.data(_layersModel.index(firstHit.row(), DatasetsModel::Columns::Type), Qt::EditRole).toInt();
+	const auto datasetName	=_layersModel.data(_layersModel.index(firstHit.row(), DatasetsModel::Columns::Name), Qt::EditRole).toString();
 
 	auto imagesDataset = _core->requestData<Images>(datasetName);
 
-	_datasetsModel.setData(_datasetsModel.index(hits.first().row(), DatasetsModel::Columns::Selection), QVariant::fromValue(Indices::fromStdVector(imagesDataset.indices())));
+	_layersModel.setData(_layersModel.index(hits.first().row(), DatasetsModel::Columns::Selection), QVariant::fromValue(Indices::fromStdVector(imagesDataset.indices())));
 
 	if (datasetType == ImageData::Type::Stack)
-		_datasetsModel.layersModel(firstHit.row())->setDefaultSelectionImage(imagesDataset.selectionImage());
+		_layersModel.layersModel(firstHit.row())->setDefaultSelectionImage(imagesDataset.selectionImage());
+	*/
 }
 
 hdps::DataTypes ImageViewerPlugin::supportedDataTypes() const

@@ -16,7 +16,8 @@
 
 class QMenu;
 
-class DatasetsModel;
+class ImageViewerPlugin;
+class LayersModel;
 
 /**
  * Image viewer widget class
@@ -29,7 +30,7 @@ class ViewerWidget : public QOpenGLWidget, protected QOpenGLFunctions
 
 public:
 	/** Default constructor */
-	ViewerWidget(QWidget* parent, DatasetsModel* datasetsModel);
+	ViewerWidget(ImageViewerPlugin* imageViewerPlugin);
 
 	/** Destructor */
 	~ViewerWidget() override;
@@ -84,11 +85,15 @@ private:
 	void wheelEvent(QWheelEvent* wheelEvent) override;
 
 private:
+
+	/** TODO */
+	LayersModel* layersModel();
+
 	/** Returns the context menu */
 	QMenu* contextMenu();
 
 private:
+	ImageViewerPlugin*						_imageViewerPlugin;			/** TODO */
 	Renderer*								_renderer;					/** TODO */
-	DatasetsModel*							_datasetsModel;				/** TODO */
 	std::unique_ptr<QOpenGLDebugLogger>		_openglDebugLogger;			/** TODO */
 };

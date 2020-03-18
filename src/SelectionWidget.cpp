@@ -1,4 +1,5 @@
 #include "SelectionWidget.h"
+#include "ImageViewerPlugin.h"
 #include "DatasetsModel.h"
 
 #include "ui_SelectionWidget.h"
@@ -6,8 +7,9 @@
 #include <QStringListModel>
 #include <QDebug>
 
-SelectionWidget::SelectionWidget(QWidget* parent, DatasetsModel* datasetsModel) :
-	QWidget(parent),
+SelectionWidget::SelectionWidget(ImageViewerPlugin* imageViewerPlugin, DatasetsModel* datasetsModel) :
+	QWidget(),
+	_imageViewerPlugin(imageViewerPlugin),
 	_datasetsModel(datasetsModel),
 	_ui{ std::make_unique<Ui::SelectionWidget>() }
 {
@@ -93,12 +95,10 @@ void SelectionWidget::updateData(const QModelIndex &topLeft, const QModelIndex &
 	_ui->currentImageLabel->setEnabled(mightEdit && !average);
 	_ui->currentImageComboBox->setEnabled(mightEdit && !average);
 
-	const auto currentImageChanged	= topLeft.column() <= DatasetsModel::Columns::CurrentImage && bottomRight.column() >= DatasetsModel::Columns::CurrentImage;
-	const auto imageNamesChanged	= topLeft.column() <= DatasetsModel::Columns::ImageNames && bottomRight.column() >= DatasetsModel::Columns::ImageNames;
+	const auto filteredImageNamesChanged	= topLeft.column() <= DatasetsModel::Columns::FilteredImageNames && bottomRight.column() >= DatasetsModel::Columns::FilteredImageNames;
+	const auto currentImageNameChanged		= topLeft.column() <= DatasetsModel::Columns::CurrentImageName && bottomRight.column() >= DatasetsModel::Columns::CurrentImageName;
 
-	const auto type = _datasetsModel->data(topLeft.row(), DatasetsModel::Columns::Type, Qt::EditRole).toInt();
-
-	if (currentImageChanged || imageNamesChanged) {
+	if (filteredImageNamesChanged || currentImageNameChanged) {
 		const auto averageImageNames	= QStringList() << _datasetsModel->data(topLeft.row(), DatasetsModel::Columns::FilteredImageNames, Qt::DisplayRole).toString();
 		const auto imageNames			= _datasetsModel->data(topLeft.row(), DatasetsModel::Columns::FilteredImageNames, Qt::EditRole).toStringList();
 

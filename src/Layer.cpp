@@ -11,7 +11,7 @@ Layer::Layer(QObject* parent) :
 	_flags(0),
 	_order(0),
 	_opacity(1.0f),
-	_color(),
+	_colorMap(),
 	_image(),
 	_imageRange(),
 	_displayRange(),
@@ -22,15 +22,15 @@ Layer::Layer(QObject* parent) :
 {
 }
 
-Layer::Layer(QObject* parent, const QString& id, const QString& name, const Type& type, const std::uint32_t& flags, const std::uint32_t& order, const float& opacity /*= 1.0f*/, const float& window /*= 1.0f*/, const float& level /*= 0.5f*/) :
+Layer::Layer(QObject* parent, const QString& id, const QString& name, const Type& type, const std::uint32_t& flags) :
 	QObject(parent),
 	_id(id),
 	_name(name),
 	_type(type),
 	_flags(flags),
-	_order(order),
-	_opacity(opacity),
-	_color(),
+	_order(0),
+	_opacity(0.0f),
+	_colorMap(),
 	_image(),
 	_imageRange(),
 	_displayRange(),
@@ -41,7 +41,7 @@ Layer::Layer(QObject* parent, const QString& id, const QString& name, const Type
 {
 }
 
-QVariant Layer::id(const int& role /*= Qt::DisplayRole*/) const
+QVariant Layer::id(const int& role) const
 {
 	switch (role)
 	{
@@ -56,7 +56,7 @@ QVariant Layer::id(const int& role /*= Qt::DisplayRole*/) const
 			break;
 	}
 
-	return QString();
+	return QVariant();
 }
 
 void Layer::setId(const QString& id)
@@ -64,7 +64,7 @@ void Layer::setId(const QString& id)
 	_id = id;
 }
 
-QVariant Layer::name(const int& role /*= Qt::DisplayRole*/) const
+QVariant Layer::name(const int& role) const
 {
 	switch (role)
 	{
@@ -79,7 +79,7 @@ QVariant Layer::name(const int& role /*= Qt::DisplayRole*/) const
 			break;
 	}
 
-	return QString();
+	return QVariant();
 }
 
 void Layer::setName(const QString& name)
@@ -87,7 +87,7 @@ void Layer::setName(const QString& name)
 	_name = name;
 }
 
-QVariant Layer::type(const int& role /*= Qt::DisplayRole*/) const
+QVariant Layer::type(const int& role) const
 {
 	const auto typeName = Layer::typeName(_type);
 
@@ -114,7 +114,7 @@ QVariant Layer::type(const int& role /*= Qt::DisplayRole*/) const
 				case Layer::Type::Selection:
 					return u8"\uf065";
 
-				case Layer::Type::MetaData:
+				case Layer::Type::Clusters:
 					return u8"\uf141";
 
 				default:
@@ -128,7 +128,7 @@ QVariant Layer::type(const int& role /*= Qt::DisplayRole*/) const
 			break;
 	}
 
-	return QString();
+	return QVariant();
 }
 
 void Layer::setType(const Type& type)
@@ -136,7 +136,29 @@ void Layer::setType(const Type& type)
 	_type = type;
 }
 
-QVariant Layer::flag(const std::uint32_t& flag, const int& role /*= Qt::DisplayRole*/) const
+QVariant Layer::flags(const int& role) const
+{
+	const auto flagsString = QString::number(_flags);
+
+	switch (role)
+	{
+		case Qt::DisplayRole:
+			return flagsString;
+
+		case Qt::EditRole:
+			return _flags;
+
+		case Qt::ToolTipRole:
+			return QString("Flags: %1").arg(flagsString);
+
+		default:
+			break;
+	}
+
+	return QVariant();
+}
+
+QVariant Layer::flag(const std::uint32_t& flag, const int& role) const
 {
 	const auto isFlagSet	= _flags & flag;
 	const auto flagString	= isFlagSet ? "true" : "false";
@@ -179,7 +201,7 @@ QVariant Layer::flag(const std::uint32_t& flag, const int& role /*= Qt::DisplayR
 			break;
 	}
 
-	return QString();
+	return QVariant();
 }
 
 void Layer::setFlag(const std::uint32_t& flag, const bool& enabled /*= true*/)
@@ -190,7 +212,12 @@ void Layer::setFlag(const std::uint32_t& flag, const bool& enabled /*= true*/)
 		_flags = _flags & ~flag;
 }
 
-QVariant Layer::order(const int& role /*= Qt::DisplayRole*/) const
+void Layer::setFlags(const std::uint32_t& flags)
+{
+	_flags = flags;
+}
+
+QVariant Layer::order(const int& role) const
 {
 	const auto orderString = QString::number(_order);
 
@@ -209,7 +236,7 @@ QVariant Layer::order(const int& role /*= Qt::DisplayRole*/) const
 			break;
 	}
 
-	return QString();
+	return QVariant();
 }
 
 void Layer::setOrder(const std::uint32_t& order)
@@ -217,7 +244,7 @@ void Layer::setOrder(const std::uint32_t& order)
 	_order = order;
 }
 
-QVariant Layer::opacity(const int& role /*= Qt::DisplayRole*/) const
+QVariant Layer::opacity(const int& role) const
 {
 	const auto opacityString = QString("%1%").arg(QString::number(100.0f * _opacity, 'f', 1));
 
@@ -236,7 +263,7 @@ QVariant Layer::opacity(const int& role /*= Qt::DisplayRole*/) const
 			break;
 	}
 
-	return QString();
+	return QVariant();
 }
 
 void Layer::setOpacity(const float& opacity)
@@ -244,34 +271,34 @@ void Layer::setOpacity(const float& opacity)
 	_opacity = opacity;
 }
 
-QVariant Layer::color(const int& role /*= Qt::DisplayRole*/) const
+QVariant Layer::colorMap(const int& role) const
 {
-	const auto colorString = _color.name();
+	const auto colorMapString = "Image";
 
 	switch (role)
 	{
 		case Qt::DisplayRole:
-			return colorString;
+			return colorMapString;
 
 		case Qt::EditRole:
-			return _color;
+			return _colorMap;
 
 		case Qt::ToolTipRole:
-			return QString("Color: %1").arg(colorString);
+			return QString("%1").arg(colorMapString);
 
 		default:
 			break;
 	}
 
-	return QString();
+	return QVariant();
 }
 
-void Layer::setColor(const QColor& color)
+void Layer::setColorMap(const QImage& colorMap)
 {
-	_color = color;
+	_colorMap = colorMap;
 }
 
-QVariant Layer::image(const int& role /*= Qt::DisplayRole*/) const
+QVariant Layer::image(const int& role) const
 {
 	const auto imageString = "image";
 
@@ -290,7 +317,7 @@ QVariant Layer::image(const int& role /*= Qt::DisplayRole*/) const
 			break;
 	}
 
-	return QString();
+	return QVariant();
 }
 
 void Layer::setImage(const QImage& image)
@@ -303,7 +330,7 @@ void Layer::setImage(const QImage& image)
 	computeDisplayRange();
 }
 
-QVariant Layer::imageRange(const int& role /*= Qt::DisplayRole*/) const
+QVariant Layer::imageRange(const int& role) const
 {
 	const auto imageRangeString = QString("[%1, %2]").arg(QString::number(_imageRange.min(), 'f', 2), QString::number(_imageRange.max(), 'f', 2));
 
@@ -322,10 +349,10 @@ QVariant Layer::imageRange(const int& role /*= Qt::DisplayRole*/) const
 			break;
 	}
 
-	return QString();
+	return QVariant();
 }
 
-QVariant Layer::displayRange(const int& role /*= Qt::DisplayRole*/) const
+QVariant Layer::displayRange(const int& role) const
 {
 	const auto displayRangeString = QString("[%1, %2]").arg(QString::number(_displayRange.min(), 'f', 2), QString::number(_displayRange.max(), 'f', 2));
 
@@ -344,10 +371,10 @@ QVariant Layer::displayRange(const int& role /*= Qt::DisplayRole*/) const
 			break;
 	}
 
-	return QString();
+	return QVariant();
 }
 
-QVariant Layer::windowNormalized(const int& role /*= Qt::DisplayRole*/) const
+QVariant Layer::windowNormalized(const int& role) const
 {
 	const auto windowNormalizedString = QString::number(_windowNormalized, 'f', 2);
 
@@ -366,7 +393,7 @@ QVariant Layer::windowNormalized(const int& role /*= Qt::DisplayRole*/) const
 			break;
 	}
 
-	return QString();
+	return QVariant();
 }
 
 void Layer::setWindowNormalized(const float& windowNormalized)
@@ -376,7 +403,7 @@ void Layer::setWindowNormalized(const float& windowNormalized)
 	computeDisplayRange();
 }
 
-QVariant Layer::levelNormalized(const int& role /*= Qt::DisplayRole*/) const
+QVariant Layer::levelNormalized(const int& role) const
 {
 	const auto levelNormalizedString = QString::number(_levelNormalized, 'f', 2);
 
@@ -395,7 +422,7 @@ QVariant Layer::levelNormalized(const int& role /*= Qt::DisplayRole*/) const
 			break;
 	}
 
-	return QString();
+	return QVariant();
 }
 
 void Layer::setLevelNormalized(const float& levelNormalized)
@@ -405,7 +432,7 @@ void Layer::setLevelNormalized(const float& levelNormalized)
 	computeDisplayRange();
 }
 
-QVariant Layer::window(const int& role /*= Qt::DisplayRole*/) const
+QVariant Layer::window(const int& role) const
 {
 	return _window;
 }
@@ -415,7 +442,7 @@ void Layer::setWindow(const float& window)
 	_window = window;
 }
 
-QVariant Layer::level(const int& role /*= Qt::DisplayRole*/) const
+QVariant Layer::level(const int& role) const
 {
 	return _level;
 }

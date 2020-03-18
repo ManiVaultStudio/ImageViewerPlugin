@@ -24,6 +24,7 @@ protected: // TODO
 	/** TODO */
 	void updateData(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int> &roles = QVector<int>());
 
+	void render();
 private:
 	LayersModel*	_layersModel;		/** TODO */
 };

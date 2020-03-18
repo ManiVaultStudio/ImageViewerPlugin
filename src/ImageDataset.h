@@ -16,7 +16,7 @@ class ImageDataset : public QObject
 {
 public:
 	/** TODO */
-	ImageDataset(QObject* parent);
+	ImageDataset(QObject* parent = nullptr);
 
 	/** TODO */
 	void addLayer(const QString& id, const QString& name, const Layer::Type& type, const std::uint32_t& flags);

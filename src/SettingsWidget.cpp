@@ -1,18 +1,16 @@
 #include "SettingsWidget.h"
 #include "SelectionWidget.h"
 #include "LayersWidget.h"
-#include "DatasetsModel.h"
 
 #include <QVBoxLayout>
 #include <QDebug>
 
-SettingsWidget::SettingsWidget(QWidget* parent, DatasetsModel* datasetsModel) :
-	QWidget(parent)
+SettingsWidget::SettingsWidget(ImageViewerPlugin* imageViewerPlugin) :
+	QWidget()
 {
 	auto layout = new QVBoxLayout();
 
-	layout->addWidget(new SelectionWidget(this, datasetsModel));
-	layout->addWidget(new LayersWidget(this, datasetsModel));
+	layout->addWidget(new LayersWidget(imageViewerPlugin));
 	layout->addStretch(1);
 
 	setLayout(layout);

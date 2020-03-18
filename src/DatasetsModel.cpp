@@ -10,20 +10,6 @@ DatasetsModel::DatasetsModel(QObject* parent) :
 	QAbstractListModel(parent),
 	_selectionModel(new QItemSelectionModel(this))
 {
-	QObject::connect(_selectionModel, &QItemSelectionModel::currentRowChanged, this, [this](const QModelIndex &current, const QModelIndex &previous) {
-	//	emit dataChanged(index(current.row(), 0), index(current.row(), columnCount() - 1));
-	});
-
-	QObject::connect(this, &DatasetsModel::dataChanged, this, [this](const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int> &roles) {
-		const auto selectedRows = _selectionModel->selectedRows();
-
-		if (selectedRows.size() != 1 || topLeft.row() != selectedRows.first().row())
-			return;
-
-		if (topLeft.column() <= Columns::FilteredImageNames && bottomRight.column() >= Columns::FilteredImageNames) {
-			layersModel(topLeft.row())->renameDefaultLayers(data(index(topLeft.row(), Columns::FilteredImageNames), Qt::DisplayRole).toString());
-		}
-	});
 }
 
 DatasetsModel::~DatasetsModel() = default;
@@ -377,8 +363,12 @@ Qt::ItemFlags DatasetsModel::flags(const QModelIndex& index) const
 			break;
 
 		case Columns::Average:
-			flags |= Qt::ItemIsEditable;
+		{
+			if (datasetType == ImageData::Type::Sequence)
+				flags |= Qt::ItemIsEditable;
+
 			break;
+		}
 
 		case Columns::PointsName:
 		case Columns::Selection:
@@ -469,27 +459,28 @@ bool DatasetsModel::setData(const QModelIndex& index, const QVariant& value, int
 		}
 
 		emit dataChanged(this->index(row, index.column()), this->index(row, index.column()));
-
-		/* TODO
+		
 		switch (index.column())
 		{
 			case Columns::Average:
-			case Columns::CurrentImage:
-			case Columns::CurrentDimension:
-			case Columns::Selection:
-				emit dataChanged(this->index(row, Columns::CurrentImage), this->index(row, Columns::CurrentImage));
-				emit dataChanged(this->index(row, Columns::CurrentDimension), this->index(row, Columns::CurrentDimension));
+				emit dataChanged(this->index(row, Columns::ImageIds), this->index(row, Columns::ImageIds));
+				emit dataChanged(this->index(row, Columns::FilteredImageNames), this->index(row, Columns::FilteredImageNames));
 				emit dataChanged(this->index(row, Columns::CurrentImageName), this->index(row, Columns::CurrentImageName));
-				emit dataChanged(this->index(row, Columns::CurrentDimensionName), this->index(row, Columns::CurrentDimensionName));
-				emit dataChanged(this->index(row, Columns::ImageNames), this->index(row, Columns::ImageNames));
+				break;
+
+			case Columns::CurrentImage:
+				emit dataChanged(this->index(row, Columns::ImageIds), this->index(row, Columns::ImageIds));
+				break;
+				
+			case Columns::Selection:
+				emit dataChanged(this->index(row, Columns::ImageIds), this->index(row, Columns::ImageIds));
+				emit dataChanged(this->index(row, Columns::FilteredImageNames), this->index(row, Columns::FilteredImageNames));
+				emit dataChanged(this->index(row, Columns::CurrentImageName), this->index(row, Columns::CurrentImageName));
 				break;
 
 			default:
-				
+				break;
 		}
-		*/
-
-		
 
 		return true;
 	}
@@ -560,22 +551,12 @@ void DatasetsModel::setData(const int& row, const int& column, const QVariant& v
 
 void DatasetsModel::add(ImageDataset* dataset)
 {
-	insertRows(0, 1);
+	beginInsertRows(QModelIndex(), 0, 0);
 
-	setData(index(0, Columns::Name, QModelIndex()), dataset->name(Qt::EditRole));
-	setData(index(0, Columns::Type, QModelIndex()), dataset->type(Qt::EditRole));
-	setData(index(0, Columns::Size, QModelIndex()), dataset->size(Qt::EditRole));
-	setData(index(0, Columns::NoPoints, QModelIndex()), dataset->noPoints(Qt::EditRole));
-	setData(index(0, Columns::NoDimensions, QModelIndex()), dataset->noDimensions(Qt::EditRole));
-	setData(index(0, Columns::ImageNames, QModelIndex()), dataset->imageNames(Qt::EditRole));
-	setData(index(0, Columns::CurrentImage, QModelIndex()), dataset->currentImage(Qt::EditRole));
-	setData(index(0, Columns::Average, QModelIndex()), dataset->average(Qt::EditRole));
-	setData(index(0, Columns::ImageFilePaths, QModelIndex()), dataset->imageFilePaths(Qt::EditRole));
-	setData(index(0, Columns::PointsName, QModelIndex()), dataset->pointsName(Qt::EditRole));
+	datasets().insert(0, dataset);
 
-	for (auto layer : dataset->layers())
-		layersModel(0)->add(layer);
-
+	endInsertRows();
+	
 	layersModel(0)->sortOrder();
 }
 

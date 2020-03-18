@@ -8,6 +8,7 @@ namespace Ui {
 	class LayersWidget;
 }
 
+class ImageViewerPlugin;
 class DatasetsModel;
 class LayersModel;
 
@@ -17,7 +18,7 @@ class LayersWidget : public QWidget
 public: // Construction/destruction
 
 	/** TODO */
-	LayersWidget(QWidget* parent, DatasetsModel* datasetsModel);
+	LayersWidget(ImageViewerPlugin* imageViewerPlugin);
 
 	/** Destructor */
 	~LayersWidget();
@@ -25,13 +26,22 @@ public: // Construction/destruction
 protected:
 
 	/** TODO */
-	void setModel(QSharedPointer<LayersModel> layersModel);
-
-	/** TODO */
 	void updateData(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles = QVector<int>());
 
+private: // Drag and drop
+
+	/** TODO */
+	void dragEnterEvent(QDragEnterEvent* dragEnterEvent);
+
+	/** TODO */
+	void dropEvent(QDropEvent* dropEvent);
+
+private: // Miscellaneous
+
+	/** TODO */
+	LayersModel* layersModel();
+
 private:
-	DatasetsModel*						_datasetsModel;		/** TODO */
-	QSharedPointer<LayersModel>			_layersModel;		/** TODO */
-	std::unique_ptr<Ui::LayersWidget>	_ui;				/** TODO */
+	ImageViewerPlugin*					_imageViewerPlugin;		/** TODO */
+	std::unique_ptr<Ui::LayersWidget>	_ui;					/** TODO */
 };

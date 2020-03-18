@@ -21,13 +21,13 @@ public:
 	/** Destructor */
 	~ImageLayerProp();
 
+	/** Renders the prop */
+	void render() override;
+
 protected: // Inherited
 
 	/** Initializes the prop */
 	void initialize() override;
-
-	/** Renders the prop */
-	void render() override;
 
 public: // Configuration
 

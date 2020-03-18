@@ -19,7 +19,17 @@ ImageDatasetActor::ImageDatasetActor(Renderer* renderer, const QString& name, La
 
 	QObject::connect(_layersModel, &LayersModel::dataChanged, this, &ImageDatasetActor::updateData);
 	
-	//updateData(_layersModel->index(0), _layersModel->index(_layersModel->rowCount() - 1, _layersModel->columnCount() - 1));
+
+	QObject::connect(_layersModel, &LayersModel::rowsInserted, this, [this](const QModelIndex &parent, int first, int last) {
+		for (int row = first; row <= last; row++) {
+			const auto id	= _layersModel->data(row, LayersModel::Columns::ID, Qt::EditRole).toString();
+			const auto type	= _layersModel->data(row, LayersModel::Columns::Type, Qt::EditRole).toInt();
+
+			addProp<ImageLayerProp>(this, id, static_cast<Layer::Type>(type));
+		}
+	});
+
+	updateData(_layersModel->index(0), _layersModel->index(_layersModel->rowCount() - 1, _layersModel->columnCount() - 1));
 }
 
 void ImageDatasetActor::updateData(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int> &roles /*= QVector<int>()*/) {
@@ -53,5 +63,16 @@ void ImageDatasetActor::updateData(const QModelIndex& topLeft, const QModelIndex
 		}
 
 		emit becameDirty(this);
+	}
+}
+
+void ImageDatasetActor::render()
+{
+	if (!canRender())
+		return;
+
+	for (int row = 0; row < _layersModel->rowCount(); row++) {
+		const auto layerId = _layersModel->data(_layersModel->rowCount() - 1 - row, LayersModel::Columns::ID, Qt::EditRole).toString();
+		this->propByName<ImageLayerProp>(layerId)->render();
 	}
 }

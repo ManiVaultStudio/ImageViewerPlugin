@@ -2,6 +2,11 @@
 #include "ImageViewerPlugin.h"
 #include "ImageDatasetActor.h"
 #include "DatasetsModel.h"
+#include "Renderer.h"
+#include "SelectionPickerActor.h"
+#include "LayersModel.h"
+
+#include "ClusterData.h"
 
 #include <vector>
 #include <algorithm>
@@ -13,20 +18,15 @@
 #include <QGuiApplication>
 #include <QOpenGLDebugLogger>
 
-#include "Renderer.h"
-
-#include "SelectionPickerActor.h"
-
-ViewerWidget::ViewerWidget(QWidget* parent, DatasetsModel* datasetsModel) :
-	QOpenGLWidget(parent),
+ViewerWidget::ViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
+	QOpenGLWidget(imageViewerPlugin),
 	QOpenGLFunctions(),
-	_datasetsModel(datasetsModel),
+	_imageViewerPlugin(imageViewerPlugin),
 	_renderer(new Renderer(this)),
 	_openglDebugLogger(std::make_unique<QOpenGLDebugLogger>())
 {
 	setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
 	setFocusPolicy(Qt::StrongFocus);
-
 	setMouseTracking(true);
 
 	QObject::connect(_renderer, &Renderer::becameDirty, [this]() {
@@ -59,22 +59,22 @@ ViewerWidget::ViewerWidget(QWidget* parent, DatasetsModel* datasetsModel) :
 
 	setFormat(surfaceFormat);
 
-	QObject::connect(_datasetsModel, &DatasetsModel::dataChanged, this, [this](const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int> &roles /*= QVector<int>()*/) {
+	QObject::connect(layersModel(), &DatasetsModel::dataChanged, this, [this](const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int> &roles /*= QVector<int>()*/) {
 		_renderer->render();
 	});
 
-	QObject::connect(_datasetsModel->selectionModel(), &QItemSelectionModel::currentRowChanged, [this](const QModelIndex& current, const QModelIndex& previous) {
+	QObject::connect(&layersModel()->selectionModel(), &QItemSelectionModel::currentRowChanged, [this](const QModelIndex& current, const QModelIndex& previous) {
 		if (previous.isValid()) {
-			const auto name = _datasetsModel->data(previous.row(), DatasetsModel::Columns::Name, Qt::EditRole).toString();
+			const auto name = layersModel()->data(previous.row(), DatasetsModel::Columns::Name, Qt::EditRole).toString();
 
 			_renderer->removeActor(name);
 		}
 
 		if (current.isValid()) {
-			const auto name = _datasetsModel->data(current.row(), DatasetsModel::Columns::Name, Qt::EditRole).toString();
-			const auto size = _datasetsModel->data(current.row(), DatasetsModel::Columns::Size, Qt::EditRole).toSize();
+			const auto name = layersModel()->data(current.row(), DatasetsModel::Columns::Name, Qt::EditRole).toString();
+			const auto size = layersModel()->data(current.row(), DatasetsModel::Columns::Size, Qt::EditRole).toSize();
 			
-			_renderer->addActor<ImageDatasetActor>(_renderer, name, _datasetsModel->layersModel(current.row()));
+			_renderer->addActor<ImageDatasetActor>(_renderer, name, layersModel());
 			_renderer->zoomToRectangle(QRectF(QPointF(), size));
 		}
 	});
@@ -93,13 +93,18 @@ void ViewerWidget::initializeGL()
 
 	makeCurrent();
 	
-	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LEQUAL);
+	//glDisable(GL_DEPTH_TEST);
+	//glEnable(GL_CULL_FACE);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glCullFace(GL_BACK);
+	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	//glCullFace(GL_BACK);
 
-	glEnable(GL_MULTISAMPLE);
+	//glDisable(GL_DEPTH_TEST);
+
+	//glDepthMask(GL_FALSE);
+
+	//glEnable(GL_MULTISAMPLE);
 
 	_renderer->init();
 
@@ -181,6 +186,11 @@ void ViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent)
 void ViewerWidget::wheelEvent(QWheelEvent* wheelEvent)
 {
 	_renderer->mouseWheelEvent(wheelEvent);
+}
+
+LayersModel* ViewerWidget::layersModel()
+{
+	return _imageViewerPlugin->layersModel();
 }
 
 void ViewerWidget::publishSelection()

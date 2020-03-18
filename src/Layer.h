@@ -17,7 +17,10 @@ public:
 	enum Type {
 		Image,			/** TODO */
 		Selection,		/** TODO */
-		MetaData			/** TODO */
+		Clusters,		/** TODO */
+		Scalar1D,		/** TODO */
+		Scalar2D,		/** TODO */
+		Scalar3D		/** TODO */
 	};
 
 	static QString typeName(const Type& type) {
@@ -29,8 +32,17 @@ public:
 			case Layer::Type::Selection:
 				return "Selection";
 
-			case Layer::Type::MetaData:
-				return "MetaData";
+			case Layer::Type::Clusters:
+				return "Clusters";
+
+			case Layer::Type::Scalar1D:
+				return "Scalar1D";
+
+			case Layer::Type::Scalar2D:
+				return "Scalar2D";
+
+			case Layer::Type::Scalar3D:
+				return "Scalar3D";
 
 			default:
 				break;
@@ -97,86 +109,92 @@ public:
 	Layer(QObject* parent);
 
 	/** TODO */
-	Layer(QObject* parent, const QString& id, const QString& name, const Type& type, const std::uint32_t& flags, const std::uint32_t& order, const float& opacity = 1.0f, const float& window = 1.0f, const float& level = 0.5f);
+	Layer(QObject* parent, const QString& id, const QString& name, const Type& type, const std::uint32_t& flags);
 
 public: // Getters/setters
 
 	/** TODO */
-	QVariant id(const int& role = Qt::DisplayRole) const;
+	QVariant id(const int& role) const;
 
 	/** TODO */
 	void setId(const QString& id);
 
 	/** TODO */
-	QVariant name(const int& role = Qt::DisplayRole) const;
+	QVariant name(const int& role) const;
 
 	/** TODO */
 	void setName(const QString& name);
 
 	/** TODO */
-	QVariant type(const int& role = Qt::DisplayRole) const;
+	QVariant type(const int& role) const;
 
 	/** TODO */
 	void setType(const Type& type);
 
 	/** TODO */
-	QVariant flag(const std::uint32_t& flag, const int& role = Qt::DisplayRole) const;
+	QVariant flags(const int& role) const;
+
+	/** TODO */
+	QVariant flag(const std::uint32_t& flag, const int& role) const;
 
 	/** TODO */
 	void setFlag(const std::uint32_t& flag, const bool& enabled = true);
 
 	/** TODO */
-	QVariant order(const int& role = Qt::DisplayRole) const;
+	void setFlags(const std::uint32_t& flags);
+
+	/** TODO */
+	QVariant order(const int& role) const;
 
 	/** TODO */
 	void setOrder(const std::uint32_t& order);
 
 	/** TODO */
-	QVariant opacity(const int& role = Qt::DisplayRole) const;
+	QVariant opacity(const int& role) const;
 
 	/** TODO */
 	void setOpacity(const float& opacity);
 
 	/** TODO */
-	QVariant color(const int& role = Qt::DisplayRole) const;
+	QVariant colorMap(const int& role) const;
 
 	/** TODO */
-	void setColor(const QColor& color);
+	void setColorMap(const QImage& colorMap);
 
 public: // Image functions
 
 	/** TODO */
-	QVariant image(const int& role = Qt::DisplayRole) const;
+	QVariant image(const int& role) const;
 
 	/** TODO */
 	void setImage(const QImage& image);
 
 	/** TODO */
-	QVariant imageRange(const int& role = Qt::DisplayRole) const;
+	QVariant imageRange(const int& role) const;
 
 	/** TODO */
-	QVariant displayRange(const int& role = Qt::DisplayRole) const;
+	QVariant displayRange(const int& role) const;
 
 	/** TODO */
-	QVariant windowNormalized(const int& role = Qt::DisplayRole) const;
+	QVariant windowNormalized(const int& role) const;
 
 	/** TODO */
 	void setWindowNormalized(const float& windowNormalized);
 
 	/** TODO */
-	QVariant levelNormalized(const int& role = Qt::DisplayRole) const;
+	QVariant levelNormalized(const int& role) const;
 
 	/** TODO */
 	void setLevelNormalized(const float& levelNormalized);
 
 	/** TODO */
-	QVariant window(const int& role = Qt::DisplayRole) const;
+	QVariant window(const int& role) const;
 
 	/** TODO */
 	void setWindow(const float& window);
 
 	/** TODO */
-	QVariant level(const int& role = Qt::DisplayRole) const;
+	QVariant level(const int& role) const;
 
 	/** TODO */
 	void setLevel(const float& level);
@@ -190,20 +208,20 @@ protected:
 	void computeDisplayRange();
 
 private:
-	QString			_id;					/** TODO */
-	QString			_name;					/** TODO */
-	Type			_type;					/** TODO */
-	std::uint32_t	_flags;					/** TODO */
-	std::uint32_t	_order;					/** TODO */
-	float			_opacity;				/** TODO */
-	QColor			_color;					/** TODO */
-	QImage			_image;					/** TODO */
-	Range			_imageRange;			/** TODO */
-	Range			_displayRange;			/** TODO */
-	float			_windowNormalized;		/** TODO */
-	float			_levelNormalized;		/** TODO */
-	float			_window;				/** TODO */
-	float			_level;					/** TODO */
+	QString				_id;					/** TODO */
+	QString				_name;					/** TODO */
+	Type				_type;					/** TODO */
+	std::uint32_t		_flags;					/** TODO */
+	std::uint32_t		_order;					/** TODO */
+	float				_opacity;				/** TODO */
+	QImage				_colorMap;				/** TODO */
+	QImage				_image;					/** TODO */
+	Range				_imageRange;			/** TODO */
+	Range				_displayRange;			/** TODO */
+	float				_windowNormalized;		/** TODO */
+	float				_levelNormalized;		/** TODO */
+	float				_window;				/** TODO */
+	float				_level;					/** TODO */
 
 	friend class ImageDataset;
 };

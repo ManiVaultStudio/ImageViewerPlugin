@@ -3,6 +3,7 @@
 #include "ImageDataset.h"
 
 #include <QAbstractListModel>
+#include <QItemSelectionModel>
 
 class QItemSelectionModel;
 
@@ -16,8 +17,9 @@ public: // Columns
 		Enabled,
 		Type,
 		Locked,
-		ID,					// Name for internal use
-		Name,				// Name in the user interface
+		ID,						// Name for internal use
+		Name,					// Name in the user interface
+		Flags,
 		Frozen,
 		Removable,
 		Mask,
@@ -26,7 +28,7 @@ public: // Columns
 		Opacity,
 		WindowNormalized,
 		LevelNormalized,
-		Color,
+		ColorMap,				//
 		Image,
 		ImageRange,
 		DisplayRange
@@ -35,10 +37,13 @@ public: // Columns
 public: // Construction/destruction
 
 	/** Constructor */
-	LayersModel(ImageDataset* imageDataset);
+	LayersModel();
 
 	/** Destructor */
 	~LayersModel();
+
+	/** TODO */
+	QItemSelectionModel& selectionModel() { return _selectionModel; }
 
 public: // Inherited members
 
@@ -101,7 +106,10 @@ public: // TODO
 	void renameLayer(const QString& id, const QString& name);
 
 	/** TODO */
-	void add(Layer* layer);
+	bool doesLayerExist(const QString& id);
+
+	/** TODO */
+	void addLayer(const Layer& layer);
 
 	/** TODO */
 	void renameDefaultLayers(const QString& name);
@@ -112,19 +120,9 @@ public: // TODO
 	/** TODO */
 	void setDefaultSelectionImage(const QImage& image);
 
-private: // Layers
-
-	/** TODO */
-	Layers& layers();
-
-	/** TODO */
-	const Layers& layers() const;
-
-	/** TODO */
-	Layer* layer(const int& id);
-
 private:
-	ImageDataset*		_imageDataset;		/** TODO */
+	Layers					_layers;				/** TODO */
+	QItemSelectionModel		_selectionModel;		/** TODO */
 
 	friend class MainModel;
 };

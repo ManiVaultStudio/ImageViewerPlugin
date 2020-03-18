@@ -2,7 +2,7 @@
 
 #include <ViewPlugin.h>
 
-#include "DatasetsModel.h"
+#include "LayersModel.h"
 
 using hdps::plugin::ViewPluginFactory;
 using hdps::plugin::ViewPlugin;
@@ -43,9 +43,17 @@ public: // Inherited from ViewPlugin
 	/** Determines which data types this the image viewer is compatible with */
 	hdps::DataTypes supportedDataTypes() const Q_DECL_OVERRIDE;
 
-public:
-	/** Returns the image viewer widget */
-	ViewerWidget* imageViewerWidget();
+	/** TODO */
+	template<typename T>
+	T& requestData(const QString& datasetName)
+	{
+		return _core->requestData<T>(datasetName);
+	}
+
+public: //
+
+	/** TODO */
+	LayersModel* layersModel() { return &_layersModel; }
 
 	/** Update the window title with some useful meta data */
 	void updateWindowTitle();
@@ -53,7 +61,7 @@ public:
 private:
 	ViewerWidget*		_imageViewerWidget;		/** TODO */
 	SettingsWidget*		_settingsWidget;		/** TODO */
-	DatasetsModel		_datasetsModel;			/** TODO */
+	LayersModel			_layersModel;			/** TODO */
 };
 
 /**

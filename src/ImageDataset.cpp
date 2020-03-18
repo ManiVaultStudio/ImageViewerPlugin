@@ -6,7 +6,7 @@
 #include <QFont>
 #include <QDebug>
 
-ImageDataset::ImageDataset(QObject* parent) :
+ImageDataset::ImageDataset(QObject* parent /*= nullptr*/) :
 	QObject(parent),
 	_name(""),
 	_type(0),
@@ -19,13 +19,13 @@ ImageDataset::ImageDataset(QObject* parent) :
 	_pointsName(),
 	_selection(Indices({ 0 })),
 	_layers(),
-	_layersModel(QSharedPointer<LayersModel>::create(this))
+	_layersModel(QSharedPointer<LayersModel>::create())
 {
 }
 
 void ImageDataset::addLayer(const QString& id, const QString& name, const Layer::Type& type, const std::uint32_t& flags)
 {
-	_layers.append(new Layer(this, id, name, type, flags, _layers.size()));
+//	_layersModel->add(new Layer(this, id, name, type, flags, _layers.size()));
 }
 
 QVariant ImageDataset::name(const int& role /*= Qt::DisplayRole*/) const
@@ -240,7 +240,6 @@ void ImageDataset::setNoDimensions(const std::uint32_t& noDimensions)
 
 QVariant ImageDataset::imageNames(const int& role /*= Qt::DisplayRole*/) const
 {
-	const auto selectionSize	= _selection.size();
 	const auto imageNamesString	= ImageDataset::displayStringList(_imageNames);
 
 	switch (role)
@@ -299,7 +298,7 @@ QVariant ImageDataset::filteredImageNames(const int& role /*= Qt::DisplayRole*/)
 		imageNamesString = ImageDataset::displayStringList(imageNames);
 	}
 	else {
-		imageNamesString = _imageNames[_currentImage];
+		imageNamesString = _imageNames.isEmpty() ? "" : _imageNames[_currentImage];
 	}
 
 	switch (role)
@@ -464,6 +463,8 @@ void ImageDataset::setCurrentImage(const std::uint32_t& currentImage)
 		default:
 			break;
 	}
+
+	_layersModel->renameDefaultLayers(filteredImageNames(Qt::DisplayRole).toString());
 }
 
 QVariant ImageDataset::currentImageName(const int& role /*= Qt::DisplayRole*/) const

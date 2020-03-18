@@ -81,6 +81,9 @@ public:
 	/** Returns the renderer */
 	Renderer* renderer();
 
+	/** Renders the prop */
+	virtual void render();
+
 protected:
 	/** Initializes the prop */
 	virtual void initialize();
@@ -90,9 +93,6 @@ protected:
 
 	/** Returns whether the prop can be rendered */
 	virtual bool canRender() const;
-
-	/** Renders the prop */
-	virtual void render();
 
 	/** Update shapes */
 	virtual void updateShapes() {};

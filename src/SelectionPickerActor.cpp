@@ -28,7 +28,7 @@ SelectionPickerActor::SelectionPickerActor(Renderer* renderer, const QString& na
 	_registeredEvents |= static_cast<int>(ActorEvent::MouseWheel);
 	_registeredEvents |= static_cast<int>(ActorEvent::KeyPress);
 	_registeredEvents |= static_cast<int>(ActorEvent::KeyRelease);
-
+	
 	/*
 	addProp<PolylineProp>("RectangleProp");
 	addProp<PolylineProp>("BrushProp");

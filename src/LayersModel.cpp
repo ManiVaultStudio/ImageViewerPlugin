@@ -6,9 +6,10 @@
 #include <QBrush>
 #include <QDebug>
 
-LayersModel::LayersModel(ImageDataset* imageDataset) :
+LayersModel::LayersModel() :
 	QAbstractListModel(),
-	_imageDataset(imageDataset)
+	_layers(),
+	_selectionModel()
 {
 }
 
@@ -18,7 +19,7 @@ int LayersModel::rowCount(const QModelIndex& parent /*= QModelIndex()*/) const
 {
 	Q_UNUSED(parent);
 
-	return layers().size();
+	return _layers.size();
 }
 
 int LayersModel::columnCount(const QModelIndex& parent /*= QModelIndex()*/) const
@@ -36,7 +37,7 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 	if (index.row() >= rowCount() || index.row() < 0)
 		return QVariant();
 
-	auto layer = layers().at(index.row());
+	auto layer = _layers.at(index.row());
 
 	switch (role)
 	{
@@ -86,10 +87,13 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 					return layer->flag(Layer::Flags::Frozen, Qt::EditRole).toBool() ? u8"\uf023" : u8"\uf09c";
 
 				case Columns::ID:
-					return layer->id(Qt::DisplayRole).toString();
+					return layer->id(Qt::DisplayRole);
 
 				case Columns::Name:
-					return layer->name(Qt::DisplayRole).toString();
+					return layer->name(Qt::DisplayRole);
+
+				case Columns::Flags:
+					return layer->flags(Qt::DisplayRole);
 
 				case Columns::Frozen:
 					return layer->flag(Layer::Flags::Frozen, Qt::DisplayRole);
@@ -115,8 +119,8 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 				case Columns::LevelNormalized:
 					return layer->levelNormalized(Qt::DisplayRole);
 
-				case Columns::Color:
-					return layer->color(Qt::DisplayRole);
+				case Columns::ColorMap:
+					return layer->colorMap(Qt::DisplayRole);
 
 				case Columns::Image:
 					return layer->image(Qt::DisplayRole);
@@ -152,6 +156,9 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 				case Columns::Name:
 					return layer->name(Qt::EditRole);
 
+				case Columns::Flags:
+					return layer->flags(Qt::EditRole);
+
 				case Columns::Frozen:
 					return layer->flag(Layer::Flags::Frozen, Qt::EditRole);
 
@@ -176,8 +183,8 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 				case Columns::LevelNormalized:
 					return layer->levelNormalized(Qt::EditRole);
 
-				case Columns::Color:
-					return layer->color(Qt::EditRole);
+				case Columns::ColorMap:
+					return layer->colorMap(Qt::EditRole);
 
 				case Columns::Image:
 					return layer->image(Qt::EditRole);
@@ -213,6 +220,9 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 				case Columns::Name:
 					return layer->name(Qt::ToolTipRole);
 
+				case Columns::Flags:
+					return layer->flags(Qt::ToolTipRole);
+
 				case Columns::Frozen:
 					return layer->flag(Layer::Flags::Frozen, Qt::ToolTipRole);
 
@@ -237,8 +247,8 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 				case Columns::LevelNormalized:
 					return layer->levelNormalized(Qt::ToolTipRole);
 
-				case Columns::Color:
-					return layer->color(Qt::ToolTipRole);
+				case Columns::ColorMap:
+					return layer->colorMap(Qt::ToolTipRole);
 
 				case Columns::Image:
 					return layer->image(Qt::ToolTipRole);
@@ -268,6 +278,7 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 				case Columns::Name:
 					return Qt::AlignLeft + Qt::AlignVCenter;
 
+				case Columns::Flags:
 				case Columns::Frozen:
 				case Columns::Removable:
 				case Columns::Mask:
@@ -276,7 +287,7 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 				case Columns::Opacity:
 				case Columns::WindowNormalized:
 				case Columns::LevelNormalized:
-				case Columns::Color:
+				case Columns::ColorMap:
 				case Columns::Image:
 					return Qt::AlignRight + Qt::AlignVCenter;
 
@@ -316,6 +327,9 @@ QVariant LayersModel::headerData(int section, Qt::Orientation orientation, int r
 			case Columns::Name:
 				return "Name";
 
+			case Columns::Flags:
+				return "Flags";
+
 			case Columns::Frozen:
 				return "Frozen";
 
@@ -340,7 +354,7 @@ QVariant LayersModel::headerData(int section, Qt::Orientation orientation, int r
 			case Columns::LevelNormalized:
 				return "Level";
 
-			case Columns::Color:
+			case Columns::ColorMap:
 				return "Color";
 
 			case Columns::Image:
@@ -387,6 +401,7 @@ Qt::ItemFlags LayersModel::flags(const QModelIndex& index) const
 			break;
 		}
 
+		case Columns::Flags:
 		case Columns::Frozen:
 		case Columns::Removable:
 			break;
@@ -422,7 +437,7 @@ Qt::ItemFlags LayersModel::flags(const QModelIndex& index) const
 			break;
 		}
 
-		case Columns::Color:
+		case Columns::ColorMap:
 		{
 			if (type == Layer::Type::Selection)
 				flags |= Qt::ItemIsEditable;
@@ -451,7 +466,7 @@ bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int r
 
 	int row = index.row();
 
-	auto layer = layers().value(row);
+	auto layer = _layers.value(row);
 
 	if (role == Qt::CheckStateRole) {
 		switch (index.column()) {
@@ -486,6 +501,10 @@ bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int r
 				layer->setName(value.toString());
 				break;
 
+			case Columns::Flags:
+				layer->setFlags(value.toInt());
+				break;
+
 			case Columns::Frozen:
 				layer->setFlag(Layer::Flags::Frozen, value.toBool());
 				break;
@@ -518,8 +537,8 @@ bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int r
 				layer->setLevelNormalized(value.toFloat());
 				break;
 
-			case Columns::Color:
-				layer->setColor(value.value<QColor>());
+			case Columns::ColorMap:
+				layer->setColorMap(value.value<QImage>());
 				break;
 
 			case Columns::Image:
@@ -568,7 +587,7 @@ bool LayersModel::insertRows(int position, int rows, const QModelIndex& index /*
 	beginInsertRows(QModelIndex(), position, position + rows - 1);
 
 	for (int row = 0; row < rows; row++) {
-		layers().insert(position, new Layer(this));
+		_layers.insert(position, new Layer(this));
 	}
 
 	endInsertRows();
@@ -583,7 +602,7 @@ bool LayersModel::removeRows(int position, int rows, const QModelIndex& index /*
 	beginRemoveRows(QModelIndex(), position, position + rows - 1);
 
 	for (int row = 0; row < rows; ++row) {
-		layers().removeAt(position);
+		_layers.removeAt(position);
 	}
 
 	endRemoveRows();
@@ -596,9 +615,9 @@ bool LayersModel::moveRows(const QModelIndex& sourceParent, int sourceRow, int c
 	beginMoveRows(QModelIndex(), sourceRow, sourceRow + count - 1, QModelIndex(), destinationChild);
 
 	for (int i = 0; i < count; ++i) {
-		layers().insert(destinationChild + i, layer(sourceRow));
+		_layers.insert(destinationChild + i, _layers.at(sourceRow));
 		int removeIndex = destinationChild > sourceRow ? sourceRow : sourceRow + 1;
-		layers().removeAt(removeIndex);
+		_layers.removeAt(removeIndex);
 	}
 	
 	endMoveRows();
@@ -631,7 +650,7 @@ bool LayersModel::mayMoveUp(const int& row)
 	if (row <= 0)
 		return false;
 
-	if (layer(row)->flag(Layer::Flags::Frozen, Qt::EditRole).toBool() || layer(row - 1)->flag(Layer::Flags::Frozen, Qt::EditRole).toBool())
+	if (_layers.at(row)->flag(Layer::Flags::Frozen, Qt::EditRole).toBool() || _layers.at(row - 1)->flag(Layer::Flags::Frozen, Qt::EditRole).toBool())
 		return false;
 
 	return true;
@@ -642,7 +661,7 @@ bool LayersModel::mayMoveDown(const int& row)
 	if (row >= rowCount() - 1)
 		return false;
 
-	if (layer(row)->flag(Layer::Flags::Frozen, Qt::EditRole).toBool() || layer(row + 1)->flag(Layer::Flags::Frozen, Qt::EditRole).toBool())
+	if (_layers.at(row)->flag(Layer::Flags::Frozen, Qt::EditRole).toBool() || _layers.at(row + 1)->flag(Layer::Flags::Frozen, Qt::EditRole).toBool())
 		return false;
 
 	return true;
@@ -669,7 +688,7 @@ void LayersModel::moveDown(const int& row)
 void LayersModel::sortOrder()
 {
 	for (int row = 0; row < rowCount(); row++)
-		setData(row, Columns::Order, row);
+		setData(row, Columns::Order, rowCount() - row);
 }
 
 void LayersModel::removeRows(const QModelIndexList& rows)
@@ -679,7 +698,7 @@ void LayersModel::removeRows(const QModelIndexList& rows)
 	for (const auto& index : rows) {
 		const auto row = index.row();
 
-		if (layer(row)->flag(Layer::Flags::Removable, Qt::EditRole).toBool()) {
+		if (_layers.at(row)->flag(Layer::Flags::Removable, Qt::EditRole).toBool()) {
 			rowsToRemove.append(row);
 		}
 	}
@@ -690,7 +709,7 @@ void LayersModel::removeRows(const QModelIndexList& rows)
 	beginRemoveRows(QModelIndex(), rowsToRemove.last(), rowsToRemove.first());
 
 	for (auto rowToRemove : rowsToRemove) {
-		layers().removeAt(rowToRemove);
+		_layers.removeAt(rowToRemove);
 	}
 
 	endRemoveRows();
@@ -710,23 +729,41 @@ void LayersModel::renameLayer(const QString& id, const QString& name)
 	setData(firstHit.row(), Columns::Name, name);
 }
 
-void LayersModel::add(Layer* layer)
+bool LayersModel::doesLayerExist(const QString& id)
 {
-	insertRows(0, 1);
+	const auto hits = match(index(0, LayersModel::Columns::ID), Qt::DisplayRole, id, -1, Qt::MatchStartsWith);
 
-	setData(index(0, Columns::Enabled, QModelIndex()), layer->flag(Layer::Flags::Enabled, Qt::EditRole));
-	setData(index(0, Columns::Type, QModelIndex()), layer->type(Qt::EditRole));
-	setData(index(0, Columns::ID, QModelIndex()), layer->id(Qt::EditRole));
-	setData(index(0, Columns::Name, QModelIndex()), layer->name(Qt::EditRole));
-	setData(index(0, Columns::Frozen, QModelIndex()), layer->flag(Layer::Flags::Frozen, Qt::EditRole));
-	setData(index(0, Columns::Removable, QModelIndex()), layer->flag(Layer::Flags::Removable, Qt::EditRole));
-	setData(index(0, Columns::Mask, QModelIndex()), layer->flag(Layer::Flags::Mask, Qt::EditRole));
-	setData(index(0, Columns::Renamable, QModelIndex()), layer->flag(Layer::Flags::Renamable, Qt::EditRole));
-	setData(index(0, Columns::Order, QModelIndex()), layer->order(Qt::EditRole));
-	setData(index(0, Columns::Opacity, QModelIndex()), layer->opacity(Qt::EditRole));
-	setData(index(0, Columns::WindowNormalized, QModelIndex()), layer->windowNormalized(Qt::EditRole));
-	setData(index(0, Columns::LevelNormalized, QModelIndex()), layer->levelNormalized(Qt::EditRole));
-	setData(index(0, Columns::Image, QModelIndex()), layer->image(Qt::EditRole));
+	if (hits.isEmpty())
+		return false;
+
+	return true;
+}
+
+void LayersModel::addLayer(const Layer& layer)
+{
+	const auto hits = match(index(0, LayersModel::Columns::ID), Qt::DisplayRole, layer.id(Qt::EditRole), -1, Qt::MatchStartsWith);
+
+	if (!hits.isEmpty())
+		return;
+
+	const auto row = 0;
+
+	insertRows(row, 1);
+
+	setData(row, Columns::ID, layer.id(Qt::EditRole));
+	setData(row, Columns::Name, layer.name(Qt::EditRole));
+	setData(row, Columns::Type, layer.type(Qt::EditRole));
+	setData(row, Columns::Flags, layer.flags(Qt::EditRole));
+	setData(row, Columns::Order, layer.order(Qt::EditRole));
+	setData(row, Columns::Opacity, layer.opacity(Qt::EditRole));
+	setData(row, Columns::ColorMap, layer.colorMap(Qt::EditRole));
+	setData(row, Columns::Image, layer.image(Qt::EditRole));
+	setData(row, Columns::ImageRange, layer.imageRange(Qt::EditRole));
+	setData(row, Columns::DisplayRange, layer.displayRange(Qt::EditRole));
+	setData(row, Columns::WindowNormalized, layer.windowNormalized(Qt::EditRole));
+	setData(row, Columns::LevelNormalized, layer.levelNormalized(Qt::EditRole));
+
+	sortOrder();
 }
 
 void LayersModel::renameDefaultLayers(const QString& name)
@@ -759,19 +796,4 @@ void LayersModel::setDefaultSelectionImage(const QImage& image)
 		return;
 
 	setData(hits.first().row(), Columns::Image, image);
-}
-
-Layers& LayersModel::layers()
-{
-	return _imageDataset->layers();
-}
-
-const Layers& LayersModel::layers() const
-{
-	return _imageDataset->layers();
-}
-
-Layer* LayersModel::layer(const int& id)
-{
-	return _imageDataset->layers()[id];
 }
