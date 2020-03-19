@@ -2,6 +2,7 @@
 
 #include <ViewPlugin.h>
 
+#include "DatasetsModel.h"
 #include "LayersModel.h"
 
 using hdps::plugin::ViewPluginFactory;
@@ -53,7 +54,10 @@ public: // Inherited from ViewPlugin
 public: //
 
 	/** TODO */
-	LayersModel* layersModel() { return &_layersModel; }
+	DatasetsModel& datasetsModel() { return _datasetModel; }
+
+	/** TODO */
+	LayersModel& layersModel() { return _layersModel; }
 
 	/** Update the window title with some useful meta data */
 	void updateWindowTitle();
@@ -61,6 +65,7 @@ public: //
 private:
 	ViewerWidget*		_imageViewerWidget;		/** TODO */
 	SettingsWidget*		_settingsWidget;		/** TODO */
+	DatasetsModel		_datasetModel;			/** TODO */
 	LayersModel			_layersModel;			/** TODO */
 };
 

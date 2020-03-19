@@ -189,11 +189,6 @@ void ViewerWidget::wheelEvent(QWheelEvent* wheelEvent)
 	_renderer->mouseWheelEvent(wheelEvent);
 }
 
-LayersModel* ViewerWidget::layersModel()
-{
-	return _imageViewerPlugin->layersModel();
-}
-
 void ViewerWidget::publishSelection()
 {	
 	qDebug() << "Publish selection";

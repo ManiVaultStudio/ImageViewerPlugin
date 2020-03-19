@@ -19,6 +19,7 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	ViewPlugin("Image Viewer"),
 	_imageViewerWidget(),
 	_settingsWidget(),
+	_datasetModel(this),
 	_layersModel(this)
 {
 	qRegisterMetaType<QVector<int> >("QVector<int>");

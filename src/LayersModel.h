@@ -6,7 +6,6 @@
 #include <QItemSelectionModel>
 
 class ImageViewerPlugin;
-class QItemSelectionModel;
 
 /** TODO */
 class LayersModel : public QAbstractListModel

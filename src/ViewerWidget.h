@@ -86,9 +86,6 @@ private:
 
 private:
 
-	/** TODO */
-	LayersModel* layersModel();
-
 	/** Returns the context menu */
 	QMenu* contextMenu();
 

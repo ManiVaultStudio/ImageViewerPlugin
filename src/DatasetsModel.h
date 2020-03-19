@@ -3,8 +3,9 @@
 #include "Dataset.h"
 
 #include <QAbstractListModel>
+#include <QItemSelectionModel>
 
-class QItemSelectionModel;
+class ImageViewerPlugin;
 
 /** TODO */
 class DatasetsModel : public QAbstractListModel
@@ -13,34 +14,21 @@ public: // Columns
 
 	/** TODO */
 	enum Columns : int {
-		Type,
 		Name,
-		NoImages,
-		Width,
-		Height,
-		Size,
-		NoPoints,
-		NoDimensions,
-		ImageNames,
-		ImageIds,
-		FilteredImageNames,
-		ImageFilePaths,
-		CurrentImage,
-		CurrentImageName,
-		CurrentImageFilepath,
-		Average,
-		PointsName,
-		Selection,
-		SelectionSize
+		Type,
+		SelectionImage
 	};
 
 public: // Construction/destruction
 
 	/** Constructor */
-	DatasetsModel(QObject* parent);
+	DatasetsModel(ImageViewerPlugin* imageViewerPlugin);
 
 	/** Destructor */
 	~DatasetsModel();
+
+	/** TODO */
+	QItemSelectionModel& selectionModel() { return _selectionModel; }
 
 public: // Inherited members
 
@@ -85,17 +73,15 @@ public: // Overloaded data access
 public: // 
 	
 	/** TODO */
-	void add(ImageDataset* dataset);
+	Dataset* findDataset(const QString& name);
 
 	/** TODO */
-	LayersModel* layersModel(const int& row);
-
-	/** TODO */
-	QItemSelectionModel* selectionModel() { return _selectionModel; }
+	Dataset* addDataset(const QString& name, const Dataset::Type& type);
 
 private:
+	ImageViewerPlugin*		_imageViewerPlugin;		/** TODO */
 	Datasets				_datasets;				/** TODO */
-	QItemSelectionModel*	_selectionModel;		/** TODO */
+	QItemSelectionModel		_selectionModel;		/** TODO */
 
 	friend class MainModel;
 };

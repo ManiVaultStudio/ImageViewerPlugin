@@ -39,6 +39,9 @@ private: // Drag and drop
 private: // Miscellaneous
 
 	/** TODO */
+	DatasetsModel* datasetsModel();
+
+	/** TODO */
 	LayersModel* layersModel();
 
 private:

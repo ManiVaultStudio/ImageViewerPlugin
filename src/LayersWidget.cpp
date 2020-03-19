@@ -27,16 +27,16 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 	});
 	*/
 
+	_ui->datasetsTreeView->setModel(&_imageViewerPlugin->datasetsModel());
+
 	_ui->maskCheckBox->setVisible(false);
 
 	QFont font = QFont("Font Awesome 5 Free Solid", 9);
 
-	_ui->layerAddPushButton->setFont(font);
 	_ui->layerRemovePushButton->setFont(font);
 	_ui->layerMoveUpPushButton->setFont(font);
 	_ui->layerMoveDownPushButton->setFont(font);
 
-	_ui->layerAddPushButton->setText(u8"\uf067");
 	_ui->layerRemovePushButton->setText(u8"\uf2ed");
 	_ui->layerMoveUpPushButton->setText(u8"\uf0d8");
 	_ui->layerMoveDownPushButton->setText(u8"\uf0d7");
@@ -332,8 +332,10 @@ void LayersWidget::dropEvent(QDropEvent* dropEvent)
 		const auto imagesName		= datasetName;
 		const auto selectionName	= QString("%1_selection").arg(datasetName);
 
-		layersModel()->addLayer(Layer(nullptr, imagesName, imagesName, Layer::Type::Image, datasetName, Layer::Flags::Enabled));
-		layersModel()->addLayer(Layer(nullptr, selectionName, selectionName, Layer::Type::Selection, datasetName, Layer::Flags::Enabled));
+		auto dataset = datasetsModel()->addDataset(datasetName, Dataset::Type::Images);
+
+		//layersModel()->addLayer(Layer(nullptr, imagesName, imagesName, Layer::Type::Image, datasetName, Layer::Flags::Enabled));
+		//layersModel()->addLayer(Layer(nullptr, selectionName, selectionName, Layer::Type::Selection, datasetName, Layer::Flags::Enabled));
 	}
 
 	if (datasetType == "Points") {
@@ -420,7 +422,12 @@ void LayersWidget::dropEvent(QDropEvent* dropEvent)
 	dropEvent->acceptProposedAction();
 }
 
+DatasetsModel* LayersWidget::datasetsModel()
+{
+	return &_imageViewerPlugin->datasetsModel();
+}
+
 LayersModel* LayersWidget::layersModel()
 {
-	return _imageViewerPlugin->layersModel();
+	return &_imageViewerPlugin->layersModel();
 }
