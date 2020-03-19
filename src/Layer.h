@@ -6,6 +6,8 @@
 #include <QObject>
 #include <QImage>
 
+class ImageViewerPlugin;
+
 /** TODO */
 class Layer : public QObject
 {
@@ -106,10 +108,7 @@ public:
 	};
 
 	/** TODO */
-	Layer(QObject* parent);
-
-	/** TODO */
-	Layer(QObject* parent, const QString& id, const QString& name, const Type& type, const std::uint32_t& flags);
+	Layer(ImageViewerPlugin* imageViewerPlugin, const QString& id = "", const QString& name = "", const Type& type = Type::Image, const QString& dataset = "", const std::uint32_t& flags = Flags::Enabled);
 
 public: // Getters/setters
 
@@ -124,6 +123,12 @@ public: // Getters/setters
 
 	/** TODO */
 	void setName(const QString& name);
+
+	/** TODO */
+	QVariant dataset(const int& role) const;
+
+	/** TODO */
+	void setDataset(const QString& dataset);
 
 	/** TODO */
 	QVariant type(const int& role) const;
@@ -208,22 +213,24 @@ protected:
 	void computeDisplayRange();
 
 private:
-	QString				_id;					/** TODO */
-	QString				_name;					/** TODO */
-	Type				_type;					/** TODO */
-	std::uint32_t		_flags;					/** TODO */
-	std::uint32_t		_order;					/** TODO */
-	float				_opacity;				/** TODO */
-	QImage				_colorMap;				/** TODO */
-	QImage				_image;					/** TODO */
-	Range				_imageRange;			/** TODO */
-	Range				_displayRange;			/** TODO */
-	float				_windowNormalized;		/** TODO */
-	float				_levelNormalized;		/** TODO */
-	float				_window;				/** TODO */
-	float				_level;					/** TODO */
+	ImageViewerPlugin*		_imageViewerPlugin;		/** TODO */
+	QString					_id;					/** TODO */
+	QString					_name;					/** TODO */
+	QString					_dataset;				/** TODO */
+	Type					_type;					/** TODO */
+	std::uint32_t			_flags;					/** TODO */
+	std::uint32_t			_order;					/** TODO */
+	float					_opacity;				/** TODO */
+	QImage					_colorMap;				/** TODO */
+	QImage					_image;					/** TODO */
+	Range					_imageRange;			/** TODO */
+	Range					_displayRange;			/** TODO */
+	float					_windowNormalized;		/** TODO */
+	float					_levelNormalized;		/** TODO */
+	float					_window;				/** TODO */
+	float					_level;					/** TODO */
 
-	friend class ImageDataset;
+	friend class ImagesDataset;
 };
 
 Q_DECLARE_METATYPE(Layer::Range);

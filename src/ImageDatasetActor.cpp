@@ -1,6 +1,5 @@
 #include "ImageDatasetActor.h"
 #include "ImageLayerProp.h"
-#include "ImageDataset.h"
 #include "LayersModel.h"
 #include "Renderer.h"
 

@@ -1,7 +1,6 @@
 #include "ViewerWidget.h"
 #include "ImageViewerPlugin.h"
 #include "ImageDatasetActor.h"
-#include "DatasetsModel.h"
 #include "Renderer.h"
 #include "SelectionPickerActor.h"
 #include "LayersModel.h"
@@ -59,7 +58,8 @@ ViewerWidget::ViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 
 	setFormat(surfaceFormat);
 
-	QObject::connect(layersModel(), &DatasetsModel::dataChanged, this, [this](const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int> &roles /*= QVector<int>()*/) {
+	/*
+	QObject::connect(layersModel(), &DatasetsModel::dataChanged, this, [this](const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int> &roles ) {
 		_renderer->render();
 	});
 
@@ -78,6 +78,7 @@ ViewerWidget::ViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 			_renderer->zoomToRectangle(QRectF(QPointF(), size));
 		}
 	});
+	*/
 }
 
 ViewerWidget::~ViewerWidget()

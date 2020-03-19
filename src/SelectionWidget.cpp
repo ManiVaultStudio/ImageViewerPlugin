@@ -1,6 +1,5 @@
 #include "SelectionWidget.h"
 #include "ImageViewerPlugin.h"
-#include "DatasetsModel.h"
 
 #include "ui_SelectionWidget.h"
 
@@ -13,6 +12,7 @@ SelectionWidget::SelectionWidget(ImageViewerPlugin* imageViewerPlugin, DatasetsM
 	_datasetsModel(datasetsModel),
 	_ui{ std::make_unique<Ui::SelectionWidget>() }
 {
+	/*
 	_ui->setupUi(this);
 
 	auto selectionModel = _datasetsModel->selectionModel();
@@ -66,25 +66,20 @@ SelectionWidget::SelectionWidget(ImageViewerPlugin* imageViewerPlugin, DatasetsM
 		updateData(_datasetsModel->index(current.row(), 0), _datasetsModel->index(current.row(), _datasetsModel->columnCount()));
 	});
 
-	/* TODO
-	QObject::connect(datasetsModel, &DatasetsModel::dataChanged, this, [this](const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>& roles = QVector<int>()) {
-		_ui->currentImageComboBox->setToolTip(_datasetsModel->data(topLeft.row(), DatasetsModel::Columns::CurrentImageFilepath, Qt::ToolTipRole).toString());
-		_ui->averageImagesCheckBox->setToolTip(QString("Images will%1be averaged").arg(_datasetsModel->data(topLeft.row(), DatasetsModel::Columns::Average, Qt::EditRole).toBool() ? " " : " not "));
-	}, Qt::QueuedConnection);
-	*/
-
 	QObject::connect(_datasetsModel->selectionModel(), &QItemSelectionModel::selectionChanged, [this](const QItemSelection &selected, const QItemSelection &deselected) {
 		const auto selectedRows = _datasetsModel->selectionModel()->selectedRows();
 		updateData(_datasetsModel->index(selectedRows.first().row(), 0), _datasetsModel->index(selectedRows.first().row(), _datasetsModel->columnCount() - 1));
 	});
 
 	QObject::connect(_datasetsModel, &DatasetsModel::dataChanged, this, &SelectionWidget::updateData);
+	*/
 }
 
 SelectionWidget::~SelectionWidget() = default;
 
 void SelectionWidget::updateData(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles /*= QVector<int>()*/)
 {
+	/*
 	const auto selectedRows	= _datasetsModel->selectionModel()->selectedRows();
 	const auto mightEdit	= selectedRows.size() == 1;
 	const auto average		= _datasetsModel->data(topLeft.row(), DatasetsModel::Columns::Average, Qt::EditRole).toBool();
@@ -121,4 +116,5 @@ void SelectionWidget::updateData(const QModelIndex &topLeft, const QModelIndex &
 		_ui->averageImagesCheckBox->setChecked(average);
 		_ui->averageImagesCheckBox->blockSignals(false);
 	}
+	*/
 }

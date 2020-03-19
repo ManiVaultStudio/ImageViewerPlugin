@@ -12,11 +12,11 @@ using Indices = QVector<std::uint32_t>;
 Q_DECLARE_METATYPE(Indices);
 
 /** TODO */
-class ImageDataset : public QObject
+class ImagesDataset : public QObject
 {
 public:
 	/** TODO */
-	ImageDataset(QObject* parent = nullptr);
+	ImagesDataset(QObject* parent = nullptr);
 
 	/** TODO */
 	void addLayer(const QString& id, const QString& name, const Layer::Type& type, const std::uint32_t& flags);
@@ -114,25 +114,19 @@ public:
 	/** TODO */
 	Layers& layers();
 
-	/** TODO */
-	QSharedPointer<LayersModel> layersModel();
-
 	static QString displayStringList(const QStringList& stringList);
 
 private:
-	QString							_name;					/** TODO */
-	int								_type;					/** TODO */
-	QSize							_size;					/** TODO */
-	std::uint32_t					_noPoints;				/** TODO */
-	std::uint32_t					_noDimensions;			/** TODO */
-	QStringList						_imageNames;			/** TODO */
-	QStringList						_imageFilePaths;		/** TODO */
-	std::int32_t					_currentImage;			/** TODO */
-	bool							_average;				/** TODO */
-	QString							_pointsName;			/** TODO */
-	Indices							_selection;				/** TODO */
-	Layers							_layers;				/** TODO */
-	QSharedPointer<LayersModel>		_layersModel;			/** TODO */
+	QString				_name;					/** TODO */
+	int					_type;					/** TODO */
+	QSize				_size;					/** TODO */
+	std::uint32_t		_noPoints;				/** TODO */
+	std::uint32_t		_noDimensions;			/** TODO */
+	QStringList			_imageNames;			/** TODO */
+	QStringList			_imageFilePaths;		/** TODO */
+	std::int32_t		_currentImage;			/** TODO */
+	bool				_average;				/** TODO */
+	QString				_pointsName;			/** TODO */
+	Indices				_selection;				/** TODO */
+	Layers				_layers;				/** TODO */
 };
-
-using Datasets = QList<ImageDataset*>;

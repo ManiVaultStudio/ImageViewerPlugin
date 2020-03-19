@@ -2,8 +2,6 @@
 
 #include "Actor.h"
 
-#include "ImageDataset.h"
-
 class Renderer;
 class LayersModel;
 

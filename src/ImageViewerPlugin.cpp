@@ -1,13 +1,8 @@
 #include "ImageViewerPlugin.h"
 #include "ViewerWidget.h"
 #include "SettingsWidget.h"
-#include "ImageDataset.h"
-#include "DatasetsModel.h"
 #include "LayersModel.h"
 #include "Renderer.h"
-
-#include "ImageData/Images.h"
-#include "PointData.h"
 
 #include <QFontDatabase>
 #include <QItemSelectionModel>
@@ -24,7 +19,7 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	ViewPlugin("Image Viewer"),
 	_imageViewerWidget(),
 	_settingsWidget(),
-	_layersModel()
+	_layersModel(this)
 {
 	qRegisterMetaType<QVector<int> >("QVector<int>");
 

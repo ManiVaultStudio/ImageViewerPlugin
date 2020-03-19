@@ -1,31 +1,15 @@
 #include "Layer.h"
+#include "ImageViewerPlugin.h"
 
 #include <QFont>
 #include <QDebug>
 
-Layer::Layer(QObject* parent) :
-	QObject(parent),
-	_id(),
-	_name(),
-	_type(Type::Image),
-	_flags(0),
-	_order(0),
-	_opacity(1.0f),
-	_colorMap(),
-	_image(),
-	_imageRange(),
-	_displayRange(),
-	_windowNormalized(1.0f),
-	_levelNormalized(0.5f),
-	_window(1.0f),
-	_level(0.5f)
-{
-}
-
-Layer::Layer(QObject* parent, const QString& id, const QString& name, const Type& type, const std::uint32_t& flags) :
-	QObject(parent),
+Layer::Layer(ImageViewerPlugin* imageViewerPlugin, const QString& id /*= ""*/, const QString& name /*= ""*/, const Type& type /*= Type::Image*/, const QString& dataset /*= ""*/, const std::uint32_t& flags /*= Flags::Enabled*/) :
+	QObject(imageViewerPlugin),
+	_imageViewerPlugin(imageViewerPlugin),
 	_id(id),
 	_name(name),
+	_dataset(dataset),
 	_type(type),
 	_flags(flags),
 	_order(0),
@@ -85,6 +69,29 @@ QVariant Layer::name(const int& role) const
 void Layer::setName(const QString& name)
 {
 	_name = name;
+}
+
+QVariant Layer::dataset(const int& role) const
+{
+	switch (role)
+	{
+		case Qt::DisplayRole:
+		case Qt::EditRole:
+			return _dataset;
+
+		case Qt::ToolTipRole:
+			return QString("Dataset: %1").arg(_dataset);
+
+		default:
+			break;
+	}
+
+	return QVariant();
+}
+
+void Layer::setDataset(const QString& dataset)
+{
+	_dataset = dataset;
 }
 
 QVariant Layer::type(const int& role) const

@@ -1,13 +1,14 @@
 #include "LayersModel.h"
-#include "DatasetsModel.h"
+#include "ImageViewerPlugin.h"
 
 #include <QItemSelectionModel>
 #include <QFont>
 #include <QBrush>
 #include <QDebug>
 
-LayersModel::LayersModel() :
-	QAbstractListModel(),
+LayersModel::LayersModel(ImageViewerPlugin* imageViewerPlugin) :
+	QAbstractListModel(imageViewerPlugin),
+	_imageViewerPlugin(imageViewerPlugin),
 	_layers(),
 	_selectionModel()
 {
@@ -26,7 +27,7 @@ int LayersModel::columnCount(const QModelIndex& parent /*= QModelIndex()*/) cons
 {
 	Q_UNUSED(parent);
 
-	return 17;
+	return 19;
 }
 
 QVariant LayersModel::data(const QModelIndex& index, int role) const
@@ -43,6 +44,7 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 	{
 		case Qt::FontRole:
 		{
+			/*
 			switch (index.column()) {
 				case Columns::Type:
 					return layer->type(Qt::FontRole).toString();
@@ -50,6 +52,7 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 				default:
 					break;
 			}
+			*/
 
 			break;
 		}
@@ -81,7 +84,7 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 					break;
 
 				case Columns::Type:
-					return layer->type(Roles::FontIconText).toString();
+					return layer->type(Qt::DisplayRole).toString();
 
 				case Columns::Locked:
 					return layer->flag(Layer::Flags::Frozen, Qt::EditRole).toBool() ? u8"\uf023" : u8"\uf09c";
@@ -91,6 +94,9 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 
 				case Columns::Name:
 					return layer->name(Qt::DisplayRole);
+
+				case Columns::Dataset:
+					return layer->dataset(Qt::DisplayRole);
 
 				case Columns::Flags:
 					return layer->flags(Qt::DisplayRole);
@@ -153,8 +159,8 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 				case Columns::ID:
 					return layer->id(Qt::EditRole);
 
-				case Columns::Name:
-					return layer->name(Qt::EditRole);
+				case Columns::Dataset:
+					return layer->dataset(Qt::EditRole);
 
 				case Columns::Flags:
 					return layer->flags(Qt::EditRole);
@@ -276,6 +282,7 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 				case Columns::Locked:
 				case Columns::ID:
 				case Columns::Name:
+				case Columns::Dataset:
 					return Qt::AlignLeft + Qt::AlignVCenter;
 
 				case Columns::Flags:
@@ -326,6 +333,9 @@ QVariant LayersModel::headerData(int section, Qt::Orientation orientation, int r
 
 			case Columns::Name:
 				return "Name";
+
+			case Columns::Dataset:
+				return "Dataset";
 
 			case Columns::Flags:
 				return "Flags";
@@ -401,6 +411,7 @@ Qt::ItemFlags LayersModel::flags(const QModelIndex& index) const
 			break;
 		}
 
+		case Columns::Dataset:
 		case Columns::Flags:
 		case Columns::Frozen:
 		case Columns::Removable:
@@ -501,6 +512,10 @@ bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int r
 				layer->setName(value.toString());
 				break;
 
+			case Columns::Dataset:
+				layer->setDataset(value.toString());
+				break;
+
 			case Columns::Flags:
 				layer->setFlags(value.toInt());
 				break;
@@ -587,7 +602,7 @@ bool LayersModel::insertRows(int position, int rows, const QModelIndex& index /*
 	beginInsertRows(QModelIndex(), position, position + rows - 1);
 
 	for (int row = 0; row < rows; row++) {
-		_layers.insert(position, new Layer(this));
+		_layers.insert(position, new Layer(_imageViewerPlugin));
 	}
 
 	endInsertRows();
@@ -752,6 +767,7 @@ void LayersModel::addLayer(const Layer& layer)
 
 	setData(row, Columns::ID, layer.id(Qt::EditRole));
 	setData(row, Columns::Name, layer.name(Qt::EditRole));
+	setData(row, Columns::Dataset, layer.dataset(Qt::EditRole));
 	setData(row, Columns::Type, layer.type(Qt::EditRole));
 	setData(row, Columns::Flags, layer.flags(Qt::EditRole));
 	setData(row, Columns::Order, layer.order(Qt::EditRole));

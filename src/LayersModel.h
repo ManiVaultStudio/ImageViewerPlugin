@@ -1,10 +1,11 @@
 #pragma once
 
-#include "ImageDataset.h"
+#include "Layer.h"
 
 #include <QAbstractListModel>
 #include <QItemSelectionModel>
 
+class ImageViewerPlugin;
 class QItemSelectionModel;
 
 /** TODO */
@@ -19,6 +20,7 @@ public: // Columns
 		Locked,
 		ID,						// Name for internal use
 		Name,					// Name in the user interface
+		Dataset,				// Name of the dataset
 		Flags,
 		Frozen,
 		Removable,
@@ -37,7 +39,7 @@ public: // Columns
 public: // Construction/destruction
 
 	/** Constructor */
-	LayersModel();
+	LayersModel(ImageViewerPlugin* imageViewerPlugin);
 
 	/** Destructor */
 	~LayersModel();
@@ -121,6 +123,7 @@ public: // TODO
 	void setDefaultSelectionImage(const QImage& image);
 
 private:
+	ImageViewerPlugin*		_imageViewerPlugin;		/** TODO */
 	Layers					_layers;				/** TODO */
 	QItemSelectionModel		_selectionModel;		/** TODO */
 
