@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Dataset.h"
+
 #include <QAbstractListModel>
 
 class QItemSelectionModel;
