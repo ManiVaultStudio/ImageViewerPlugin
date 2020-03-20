@@ -72,6 +72,11 @@ void LayerWidget::initialize(LayersModel* layersModel)
 			_layersModel->setData(_layersModel->index(index.row(), layerColumnId(Layer::Column::LevelNormalized)), value / static_cast<float>(range));
 		}
 	});
+
+	_ui->pointsLayerWidget->initialize(_layersModel);
+	_ui->imagesLayerWidget->initialize(_layersModel);
+	_ui->clustersLayerWidget->initialize(_layersModel);
+	_ui->selectionLayerWidget->initialize(_layersModel);
 }
 
 void LayerWidget::updateData(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles /*= QVector<int>()*/)
@@ -165,4 +170,13 @@ void LayerWidget::updateData(const QModelIndex &topLeft, const QModelIndex &bott
 	_ui->maskCheckBox->setEnabled(mightEdit && maskFlags & Qt::ItemIsEditable);
 
 	const auto colorFlags = _layersModel->flags(_layersModel->index(topLeft.row(), layerColumnId(Layer::Column::ColorMap)));
+
+	const auto type = _layersModel->data(topLeft.row(), layerColumnId(Layer::Column::Type), Qt::EditRole).toInt();
+
+	_ui->settingsStackedWidget->setCurrentIndex(type);
+
+	_ui->pointsLayerWidget->updateData(topLeft, bottomRight, roles);
+	_ui->imagesLayerWidget->updateData(topLeft, bottomRight, roles);
+	_ui->clustersLayerWidget->updateData(topLeft, bottomRight, roles);
+	_ui->selectionLayerWidget->updateData(topLeft, bottomRight, roles);
 }

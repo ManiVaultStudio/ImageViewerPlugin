@@ -22,18 +22,7 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 	setAcceptDrops(true);
 
 	_ui->setupUi(this);
-	
-	/*
-	QObject::connect(_datasetsModel->selectionModel(), &QItemSelectionModel::currentRowChanged, [this](const QModelIndex& current, const QModelIndex& previous) {
-		setModel(_datasetsModel->datasets()[current.row()]->layersModel());
-	});
-	*/
-
 	_ui->layerWidget->initialize(layersModel());
-	_ui->pointsLayerWidget->initialize(layersModel());
-	_ui->imagesLayerWidget->initialize(layersModel());
-	_ui->clustersLayerWidget->initialize(layersModel());
-
 	_ui->datasetsTreeView->setModel(&_imageViewerPlugin->datasetsModel());
 
 	QFont font = QFont("Font Awesome 5 Free Solid", 9);
@@ -57,8 +46,6 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 	QObject::connect(_ui->layerRemovePushButton, &QPushButton::clicked, [this]() {
 		layersModel()->removeRows(_ui->layersTreeView->selectionModel()->selectedRows());
 	});
-
-	
 
 	_ui->layersGroupBox->setEnabled(true);
 	_ui->layersTreeView->setModel(layersModel());
@@ -145,9 +132,9 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 		const auto selectedRows = _ui->layersTreeView->selectionModel()->selectedRows();
 
 		if (selectedRows.isEmpty())
-			updateData(layersModel()->index(0, 0), layersModel()->index(0, layersModel()->columnCount() - 1));
+			_ui->layerWidget->updateData(layersModel()->index(0, 0), layersModel()->index(0, layersModel()->columnCount() - 1));
 		else
-			updateData(layersModel()->index(selectedRows.first().row(), 0), layersModel()->index(selectedRows.first().row(), layersModel()->columnCount() - 1));
+			_ui->layerWidget->updateData(layersModel()->index(selectedRows.first().row(), 0), layersModel()->index(selectedRows.first().row(), layersModel()->columnCount() - 1));
 	});
 
 	// Handle model rows reorganization
@@ -155,20 +142,12 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 		updateButtons();
 	});
 
-	QObject::connect(layersModel(), &LayersModel::dataChanged, this, &LayersWidget::updateData);
+	QObject::connect(layersModel(), &LayersModel::dataChanged, _ui->layerWidget, &LayerWidget::updateData);
 
 	_ui->layersTreeView->selectionModel()->setCurrentIndex(layersModel()->index(0), QItemSelectionModel::Rows | QItemSelectionModel::Current);
 }
 
 LayersWidget::~LayersWidget() = default;
-
-void LayersWidget::updateData(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int> &roles /*= QVector<int>()*/)
-{
-	_ui->layerWidget->updateData(topLeft, bottomRight, roles);
-	_ui->pointsLayerWidget->updateData(topLeft, bottomRight, roles);
-	_ui->imagesLayerWidget->updateData(topLeft, bottomRight, roles);
-	_ui->clustersLayerWidget->updateData(topLeft, bottomRight, roles);
-}
 
 void LayersWidget::dragEnterEvent(QDragEnterEvent* dragEnterEvent)
 {
@@ -252,51 +231,7 @@ void LayersWidget::dropEvent(QDropEvent* dropEvent)
 
 		auto dataset = datasetsModel()->addDataset(datasetName, Dataset::Type::Clusters);
 
-		/*
-		const auto selectedRows = _datasetsModel->selectionModel()->selectedRows();
-
-		if (selectedRows.size() == 1) {
-			const auto row = selectedRows.first().row();
-			const auto size = _datasetsModel->data(row, DatasetsModel::Columns::Size, Qt::EditRole).toSize();
-			const auto clusters = _imageViewerPlugin->requestData<Clusters>(datasetName).getClusters();
-
-			auto clustersImage = QImage(size.width(), size.height(), QImage::Format::Format_RGB32);
-
-			const auto hueDelta = 360.0f / clusters.size();
-
-			auto hue = 0.0f;
-
-			for (auto& cluster : clusters) {
-				for (auto id : cluster.indices) {
-					const auto x = id % size.width();
-					const auto y = floorf(static_cast<float>(id) / static_cast<float>(size.width()));
-					clustersImage.setPixelColor(x, y, QColor::fromHsl(hue, 255, 100));
-				}
-
-				hue += hueDelta;
-			}
-
-			clustersImage.save("clustersImage.jpg");
-
-			auto layersModel = _datasetsModel->layersModel(row);
-
-			auto layer = new Layer(this, datasetName, datasetName, Layer::Type::MetaData, Layer::Flags::Enabled, layersModel->rowCount());
-
-			layer->setImage(clustersImage);
-
-			_datasetsModel->layersModel(row)->add(layer);
-		}
-		*/
-
-		//qDebug() << "No. clusters: " << clusters.getClusters().size();
-		/*
-		if (!hits.isEmpty()) {
-			const auto row = hits.first().row();
-
-			_datasetsModel->selectionModel()->select(_datasetsModel->index(row), QItemSelectionModel::SelectionFlag::Rows | QItemSelectionModel::SelectionFlag::ClearAndSelect);
-			_datasetsModel->selectionModel()->setCurrentIndex(_datasetsModel->index(row), QItemSelectionModel::SelectionFlag::Rows | QItemSelectionModel::SelectionFlag::ClearAndSelect);
-		}
-		*/
+		
 	}
 
 	dropEvent->acceptProposedAction();

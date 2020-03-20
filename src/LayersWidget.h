@@ -23,11 +23,6 @@ public: // Construction/destruction
 	/** Destructor */
 	~LayersWidget();
 
-protected:
-
-	/** TODO */
-	void updateData(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles = QVector<int>());
-
 private: // Drag and drop
 
 	/** TODO */

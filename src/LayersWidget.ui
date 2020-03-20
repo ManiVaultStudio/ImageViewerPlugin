@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>300</width>
-    <height>511</height>
+    <height>462</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -259,58 +259,6 @@
           </item>
          </layout>
         </item>
-        <item>
-         <widget class="LayerWidget" name="layerWidget" native="true"/>
-        </item>
-        <item>
-         <widget class="QGroupBox" name="settingsGroupBox">
-          <property name="title">
-           <string>Settings</string>
-          </property>
-          <layout class="QVBoxLayout" name="verticalLayout_2">
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
-            <number>0</number>
-           </property>
-           <item>
-            <widget class="QStackedWidget" name="settingsStackedWidget">
-             <property name="currentIndex">
-              <number>0</number>
-             </property>
-             <widget class="QWidget" name="pointsLayerPage">
-              <layout class="QVBoxLayout" name="verticalLayout_3">
-               <item>
-                <widget class="PointsLayerWidget" name="pointsLayerWidget" native="true"/>
-               </item>
-              </layout>
-             </widget>
-             <widget class="QWidget" name="imagesLayerPage">
-              <layout class="QVBoxLayout" name="verticalLayout_4">
-               <item>
-                <widget class="ImagesLayerWidget" name="imagesLayerWidget" native="true"/>
-               </item>
-              </layout>
-             </widget>
-             <widget class="QWidget" name="clustersLayerPage">
-              <layout class="QVBoxLayout" name="verticalLayout_5">
-               <item>
-                <widget class="ClustersLayerWidget" name="clustersLayerWidget" native="true"/>
-               </item>
-              </layout>
-             </widget>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
        </layout>
       </item>
      </layout>
@@ -319,31 +267,23 @@
    <item row="0" column="0">
     <widget class="QTreeView" name="datasetsTreeView"/>
    </item>
+   <item row="2" column="0">
+    <widget class="LayerWidget" name="layerWidget" native="true">
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>100</height>
+      </size>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
  <customwidgets>
   <customwidget>
-   <class>ImagesLayerWidget</class>
-   <extends>QWidget</extends>
-   <header>imageslayerwidget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
    <class>LayerWidget</class>
    <extends>QWidget</extends>
    <header>layerwidget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>ClustersLayerWidget</class>
-   <extends>QWidget</extends>
-   <header>clusterslayerwidget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>PointsLayerWidget</class>
-   <extends>QWidget</extends>
-   <header>pointslayerwidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
