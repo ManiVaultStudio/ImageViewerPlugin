@@ -99,16 +99,16 @@ public:
 
 	/** TODO */
 	enum class Type {
-		Image,			/** TODO */
-		Selection,		/** TODO */
+		Points,			/** TODO */
+		Images,			/** TODO */
 		Clusters,		/** TODO */
-		Points			/** TODO */
+		Selection		/** TODO */
 	};
 
 	static QString typeName(const Type& type) {
 		switch (type)
 		{
-			case Layer::Type::Image:
+			case Layer::Type::Images:
 				return "Image";
 
 			case Layer::Type::Selection:

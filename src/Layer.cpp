@@ -85,7 +85,7 @@ Qt::ItemFlags Layer::itemFlags(const int& column) const
 
 		case Column::WindowNormalized:
 		{
-			if (type == Layer::Type::Image)
+			if (type == Layer::Type::Images)
 				flags |= Qt::ItemIsEditable;
 
 			break;
@@ -93,7 +93,7 @@ Qt::ItemFlags Layer::itemFlags(const int& column) const
 
 		case Column::LevelNormalized:
 		{
-			if (type == Layer::Type::Image)
+			if (type == Layer::Type::Images)
 				flags |= Qt::ItemIsEditable;
 
 			break;
@@ -571,7 +571,7 @@ QVariant Layer::type(const int& role) const
 		case Roles::FontIconText:
 		{
 			switch (_type) {
-				case Type::Image:
+				case Type::Images:
 					return u8"\uf03e";
 
 				case Type::Selection:

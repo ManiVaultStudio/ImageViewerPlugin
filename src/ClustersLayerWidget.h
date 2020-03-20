@@ -5,17 +5,17 @@
 #include <QWidget>
 
 namespace Ui {
-	class LayerWidget;
+	class ClustersLayerWidget;
 }
 
 class LayersModel;
 
 /** TODO */
-class LayerWidget : public QWidget
+class ClustersLayerWidget : public QWidget
 {
 public:
 	/** TODO */
-	LayerWidget(QWidget* parent);
+	ClustersLayerWidget(QWidget* parent);
 
 	/** TODO */
 	void initialize(LayersModel* layersModel);
@@ -24,6 +24,6 @@ public:
 	void updateData(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles = QVector<int>());
 
 private:
-	std::unique_ptr<Ui::LayerWidget>	_ui;				/** TODO */
-	LayersModel*						_layersModel;		/** TODO */
+	std::unique_ptr<Ui::ClustersLayerWidget>	_ui;				/** TODO */
+	LayersModel*								_layersModel;		/** TODO */
 };

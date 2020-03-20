@@ -10,7 +10,10 @@ ImagesLayerWidget::ImagesLayerWidget(QWidget* parent) :
 	_ui->setupUi(this);
 }
 
+void ImagesLayerWidget::initialize(LayersModel* layersModel)
+{
+}
+
 void ImagesLayerWidget::updateData(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles /*= QVector<int>()*/)
 {
-
 }
