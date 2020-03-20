@@ -4,7 +4,7 @@
 #include <QFont>
 #include <QDebug>
 
-Layer::Layer(Dataset* dataset, const QString& id /*= ""*/, const QString& name /*= ""*/, const Type& type /*= Type::Image*/, const std::uint32_t& flags /*= Flags::Enabled*/) :
+Layer::Layer(Dataset* dataset, const QString& id /*= ""*/, const QString& name /*= ""*/, const Type& type /*= Type::Image*/, const std::uint32_t& flags) :
 	QObject(dataset),
 	_dataset(dataset),
 	_id(id),
@@ -22,6 +22,378 @@ Layer::Layer(Dataset* dataset, const QString& id /*= ""*/, const QString& name /
 	_window(1.0f),
 	_level(0.5f)
 {
+}
+
+int Layer::columnCount(const QModelIndex& parent /*= QModelIndex()*/) const
+{
+	return 0;
+}
+
+QVariant Layer::headerData(int section, Qt::Orientation orientation, int role) const
+{
+	return QVariant();
+}
+
+Qt::ItemFlags Layer::itemFlags(const QModelIndex &index) const
+{
+	int flags = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+
+	const auto type = static_cast<Layer::Type>(_type);
+
+	switch (static_cast<Layer::Column>(index.column())) {
+		case Column::Enabled:
+			flags |= Qt::ItemIsEditable | Qt::ItemIsUserCheckable;
+			break;
+
+		case Column::Type:
+		case Column::Locked:
+		case Column::ID:
+			break;
+
+		case Column::Name:
+		{
+			if (flag(Layer::Flag::Renamable, Qt::EditRole).toBool())
+				flags |= Qt::ItemIsEditable;
+
+			break;
+		}
+
+		case Column::Dataset:
+		case Column::Flags:
+		case Column::Frozen:
+		case Column::Removable:
+			break;
+
+		case Column::Mask:
+		{
+			if (type == Layer::Type::Selection)
+				flags |= Qt::ItemIsEditable;
+
+			break;
+		}
+
+		case Column::Order:
+			break;
+
+		case Column::Opacity:
+			flags |= Qt::ItemIsEditable;
+			break;
+
+		case Column::WindowNormalized:
+		{
+			if (type == Layer::Type::Image)
+				flags |= Qt::ItemIsEditable;
+
+			break;
+		}
+
+		case Column::LevelNormalized:
+		{
+			if (type == Layer::Type::Image)
+				flags |= Qt::ItemIsEditable;
+
+			break;
+		}
+
+		case Column::ColorMap:
+		{
+			if (type == Layer::Type::Selection)
+				flags |= Qt::ItemIsEditable;
+
+			break;
+		}
+
+		case Column::Image:
+			break;
+
+		case Column::ImageRange:
+		case Column::DisplayRange:
+			break;
+
+		default:
+			break;
+	}
+
+	return flags;
+}
+
+QVariant Layer::data(const QModelIndex& index, int role) const
+{
+	const auto column = static_cast<Layer::Column>(index.column());
+
+	switch (role)
+	{
+		case Qt::FontRole:
+		{
+			switch (column) {
+				case Column::Type:
+					return type(Qt::FontRole).toString();
+
+				default:
+					break;
+			}
+
+			break;
+		}
+
+		case Qt::CheckStateRole:
+		{
+			switch (column) {
+				case Column::Enabled:
+					return flag(Layer::Flag::Enabled, Qt::EditRole).toBool() ? Qt::Checked : Qt::Unchecked;
+			}
+
+			break;
+		}
+
+		case Qt::DisplayRole:
+		{
+			switch (column) {
+				case Column::Enabled:
+					break;
+
+				case Column::Type:
+					return type(Roles::FontIconText).toString();
+
+				case Column::Locked:
+					return flag(Layer::Flag::Frozen, Qt::EditRole).toBool() ? u8"\uf023" : u8"\uf09c";
+
+				case Column::ID:
+					return id(Qt::DisplayRole);
+
+				case Column::Name:
+					return name(Qt::DisplayRole);
+
+				case Column::Dataset:
+					return dataset(Qt::DisplayRole);
+
+				case Column::Flags:
+					return flags(Qt::DisplayRole);
+
+				case Column::Frozen:
+					return flag(Layer::Flag::Frozen, Qt::DisplayRole);
+
+				case Column::Removable:
+					return flag(Layer::Flag::Removable, Qt::DisplayRole);
+
+				case Column::Mask:
+					return flag(Layer::Flag::Mask, Qt::DisplayRole);
+
+				case Column::Renamable:
+					return flag(Layer::Flag::Renamable, Qt::DisplayRole);
+
+				case Column::Order:
+					return order(Qt::DisplayRole);
+
+				case Column::Opacity:
+					return opacity(Qt::DisplayRole);
+
+				case Column::WindowNormalized:
+					return windowNormalized(Qt::DisplayRole);
+
+				case Column::LevelNormalized:
+					return levelNormalized(Qt::DisplayRole);
+
+				case Column::ColorMap:
+					return colorMap(Qt::DisplayRole);
+
+				case Column::Image:
+					return image(Qt::DisplayRole);
+
+				case Column::ImageRange:
+					return imageRange(Qt::DisplayRole);
+
+				case Column::DisplayRange:
+					return displayRange(Qt::DisplayRole);
+
+				default:
+					break;
+			}
+
+			break;
+		}
+
+		case Qt::EditRole:
+		{
+			switch (column) {
+				case Column::Enabled:
+					return flag(Layer::Flag::Enabled, Qt::EditRole);
+
+				case Column::Type:
+					return type(Qt::EditRole);
+
+				case Column::Locked:
+					return flag(Layer::Flag::Frozen, Qt::EditRole);
+
+				case Column::ID:
+					return id(Qt::EditRole);
+
+				case Column::Name:
+					return name(Qt::EditRole);
+
+				case Column::Dataset:
+					return dataset(Qt::EditRole);
+
+				case Column::Flags:
+					return flags(Qt::EditRole);
+
+				case Column::Frozen:
+					return flag(Layer::Flag::Frozen, Qt::EditRole);
+
+				case Column::Removable:
+					return flag(Layer::Flag::Removable, Qt::EditRole);
+
+				case Column::Mask:
+					return flag(Layer::Flag::Mask, Qt::EditRole);
+
+				case Column::Renamable:
+					return flag(Layer::Flag::Renamable, Qt::EditRole);
+
+				case Column::Order:
+					return order(Qt::EditRole);
+
+				case Column::Opacity:
+					return opacity(Qt::EditRole);
+
+				case Column::WindowNormalized:
+					return windowNormalized(Qt::EditRole);
+
+				case Column::LevelNormalized:
+					return levelNormalized(Qt::EditRole);
+
+				case Column::ColorMap:
+					return colorMap(Qt::EditRole);
+
+				case Column::Image:
+					return image(Qt::EditRole);
+
+				case Column::ImageRange:
+					return imageRange(Qt::EditRole);
+
+				case Column::DisplayRange:
+					return displayRange(Qt::EditRole);
+
+				default:
+					break;
+			}
+
+			break;
+		}
+
+		case Qt::ToolTipRole:
+		{
+			switch (column) {
+				case Column::Enabled:
+					return flag(Layer::Flag::Enabled, Qt::ToolTipRole);
+
+				case Column::Type:
+					return type(Qt::ToolTipRole);
+
+				case Column::Locked:
+					return flag(Layer::Flag::Frozen, Qt::ToolTipRole);
+
+				case Column::ID:
+					return name(Qt::ToolTipRole);
+
+				case Column::Name:
+					return name(Qt::ToolTipRole);
+
+				case Column::Dataset:
+					return dataset(Qt::ToolTipRole);
+
+				case Column::Flags:
+					return flags(Qt::ToolTipRole);
+
+				case Column::Frozen:
+					return flag(Layer::Flag::Frozen, Qt::ToolTipRole);
+
+				case Column::Removable:
+					return flag(Layer::Flag::Removable, Qt::ToolTipRole);
+
+				case Column::Mask:
+					return flag(Layer::Flag::Mask, Qt::ToolTipRole);
+
+				case Column::Renamable:
+					return flag(Layer::Flag::Renamable, Qt::ToolTipRole);
+
+				case Column::Order:
+					return order(Qt::ToolTipRole);
+
+				case Column::Opacity:
+					return opacity(Qt::ToolTipRole);
+
+				case Column::WindowNormalized:
+					return windowNormalized(Qt::ToolTipRole);
+
+				case Column::LevelNormalized:
+					return levelNormalized(Qt::ToolTipRole);
+
+				case Column::ColorMap:
+					return colorMap(Qt::ToolTipRole);
+
+				case Column::Image:
+					return image(Qt::ToolTipRole);
+
+				case Column::ImageRange:
+					return imageRange(Qt::ToolTipRole);
+
+				case Column::DisplayRange:
+					return displayRange(Qt::ToolTipRole);
+
+				default:
+					break;
+			}
+
+			break;
+		}
+
+		case Qt::TextAlignmentRole:
+		{
+			switch (column) {
+				case Column::Enabled:
+				case Column::Type:
+					return Qt::AlignLeft + Qt::AlignVCenter;
+
+				case Column::Locked:
+				case Column::ID:
+				case Column::Name:
+				case Column::Dataset:
+					return Qt::AlignLeft + Qt::AlignVCenter;
+
+				case Column::Flags:
+				case Column::Frozen:
+				case Column::Removable:
+				case Column::Mask:
+				case Column::Renamable:
+				case Column::Order:
+				case Column::Opacity:
+				case Column::WindowNormalized:
+				case Column::LevelNormalized:
+				case Column::ColorMap:
+				case Column::Image:
+					return Qt::AlignRight + Qt::AlignVCenter;
+
+				case Column::ImageRange:
+				case Column::DisplayRange:
+					return Qt::AlignRight + Qt::AlignVCenter;
+
+				default:
+					break;
+			}
+
+			break;
+		}
+
+		default:
+			break;
+	}
+
+	return QVariant();
+}
+
+void Layer::setData(const int& row, const int& column, const QVariant& value)
+{
+
 }
 
 QVariant Layer::id(const int& role) const
@@ -164,9 +536,9 @@ QVariant Layer::flags(const int& role) const
 	return QVariant();
 }
 
-QVariant Layer::flag(const std::uint32_t& flag, const int& role) const
+QVariant Layer::flag(const Layer::Flag& flag, const int& role) const
 {
-	const auto isFlagSet	= _flags & flag;
+	const auto isFlagSet	= _flags & static_cast<int>(flag);
 	const auto flagString	= isFlagSet ? "true" : "false";
 
 	switch (role)
@@ -181,19 +553,19 @@ QVariant Layer::flag(const std::uint32_t& flag, const int& role) const
 		{
 			switch (flag)
 			{
-				case Enabled:
+				case Flag::Enabled:
 					return QString("Enabled: %1").arg(flagString);
 
-				case Frozen:
+				case Flag::Frozen:
 					return QString("Frozen: %1").arg(flagString);
 
-				case Removable:
+				case Flag::Removable:
 					return QString("Removable: %1").arg(flagString);
 
-				case Mask:
+				case Flag::Mask:
 					return QString("Mask: %1").arg(flagString);
 
-				case Renamable:
+				case Flag::Renamable:
 					return QString("Renamable: %1").arg(flagString);
 
 				default:
@@ -210,12 +582,12 @@ QVariant Layer::flag(const std::uint32_t& flag, const int& role) const
 	return QVariant();
 }
 
-void Layer::setFlag(const std::uint32_t& flag, const bool& enabled /*= true*/)
+void Layer::setFlag(const Layer::Flag& flag, const bool& enabled /*= true*/)
 {
 	if (enabled)
-		_flags |= flag;
+		_flags |= static_cast<int>(flag);
 	else
-		_flags = _flags & ~flag;
+		_flags = _flags & ~static_cast<int>(flag);
 }
 
 void Layer::setFlags(const std::uint32_t& flags)

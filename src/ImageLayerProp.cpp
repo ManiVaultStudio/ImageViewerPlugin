@@ -101,7 +101,7 @@ void ImageLayerProp::render()
 
 		if (shaderProgram->bind()) {
 			shaderProgram->setUniformValue("imageTexture", 0);
-			shaderProgram->setUniformValue("type", _type);
+			shaderProgram->setUniformValue("type", static_cast<int>(_type));
 			shaderProgram->setUniformValue("minPixelValue", _displayRange[0]);
 			shaderProgram->setUniformValue("maxPixelValue", _displayRange[1]);
 			shaderProgram->setUniformValue("opacity", _opacity);

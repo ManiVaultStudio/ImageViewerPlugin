@@ -5,6 +5,7 @@
 #include <QColor>
 #include <QObject>
 #include <QImage>
+#include <QModelIndex>
 
 class Dataset;
 
@@ -12,9 +13,31 @@ class Dataset;
 class Layer : public QObject
 {
 public:
+	/** TODO */
+	enum class Column {
+		Enabled,
+		Type,
+		Locked,
+		ID,						// Name for internal use
+		Name,					// Name in the user interface
+		Dataset,				// Name in the user interface
+		Flags,
+		Frozen,
+		Removable,
+		Mask,
+		Renamable,
+		Order,
+		Opacity,
+		WindowNormalized,
+		LevelNormalized,
+		ColorMap,				//
+		Image,
+		ImageRange,
+		DisplayRange
+	};
 
 	/** TODO */
-	enum Type {
+	enum class Type {
 		Image,			/** TODO */
 		Selection,		/** TODO */
 		Clusters,		/** TODO */
@@ -44,7 +67,7 @@ public:
 	}
 
 	/** TODO */
-	enum Flags {
+	enum class Flag {
 		Enabled		= 0x01,		/** TODO */
 		Frozen		= 0x02,		/** TODO */
 		Removable	= 0x04,		/** TODO */
@@ -98,7 +121,24 @@ public:
 	};
 
 	/** TODO */
-	Layer(Dataset* dataset, const QString& id = "", const QString& name = "", const Type& type = Type::Image, const std::uint32_t& flags = Flags::Enabled);
+	Layer(Dataset* dataset, const QString& id, const QString& name, const Type& type, const std::uint32_t& flags);
+
+public: // MVC
+
+	/** TODO */
+	int columnCount(const QModelIndex& parent = QModelIndex()) const;
+
+	/** TODO */
+	QVariant headerData(int section, Qt::Orientation orientation, int role) const;
+
+	/** TODO */
+	Qt::ItemFlags itemFlags(const QModelIndex &index) const;
+
+	/** TODO */
+	QVariant data(const QModelIndex& index, int role) const;
+
+	/** TODO */
+	void setData(const int& row, const int& column, const QVariant& value);
 
 public: // Getters/setters
 
@@ -127,10 +167,10 @@ public: // Getters/setters
 	QVariant flags(const int& role) const;
 
 	/** TODO */
-	QVariant flag(const std::uint32_t& flag, const int& role) const;
+	QVariant flag(const Layer::Flag& flag, const int& role) const;
 
 	/** TODO */
-	void setFlag(const std::uint32_t& flag, const bool& enabled = true);
+	void setFlag(const Layer::Flag& flag, const bool& enabled = true);
 
 	/** TODO */
 	void setFlags(const std::uint32_t& flags);

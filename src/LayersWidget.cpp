@@ -336,7 +336,7 @@ void LayersWidget::dropEvent(QDropEvent* dropEvent)
 	const auto datasetType				= items.at(1);
 	const auto selectionName			= QString("%1_selection").arg(datasetName);
 	const auto createSelectionLayer		= layersModel()->findLayerById(selectionName) == nullptr;
-	const auto layerFlags				= Layer::Flags::Enabled | Layer::Flags::Removable;
+	const auto layerFlags				= static_cast<int>(Layer::Flag::Enabled) | static_cast<int>(Layer::Flag::Removable);
 
 	if (datasetType == "Points") {
 		const auto points = _imageViewerPlugin->requestData<Points>(datasetName);

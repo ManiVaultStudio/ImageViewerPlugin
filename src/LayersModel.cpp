@@ -38,286 +38,7 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 	if (index.row() >= rowCount() || index.row() < 0)
 		return QVariant();
 
-	auto layer = _layers.at(index.row());
-
-	switch (role)
-	{
-		case Qt::FontRole:
-		{
-			switch (index.column()) {
-				case Columns::Type:
-					return layer->type(Qt::FontRole).toString();
-
-				default:
-					break;
-			}
-
-			break;
-		}
-
-		case Qt::ForegroundRole:
-		{
-			if (index.column() == Columns::Locked)
-				return QBrush(Qt::black);
-			else
-				return layer->flag(Layer::Flags::Enabled, Qt::EditRole).toBool() ? QBrush(Qt::black) : QBrush(QColor(80, 80, 80));
-
-			break;
-		}
-
-		case Qt::CheckStateRole:
-		{
-			switch (index.column()) {
-				case Columns::Enabled:
-					return layer->flag(Layer::Flags::Enabled, Qt::EditRole).toBool() ? Qt::Checked : Qt::Unchecked;
-			}
-
-			break;
-		}
-
-		case Qt::DisplayRole:
-		{
-			switch (index.column()) {
-				case Columns::Enabled:
-					break;
-
-				case Columns::Type:
-					return layer->type(Roles::FontIconText).toString();
-
-				case Columns::Locked:
-					return layer->flag(Layer::Flags::Frozen, Qt::EditRole).toBool() ? u8"\uf023" : u8"\uf09c";
-
-				case Columns::ID:
-					return layer->id(Qt::DisplayRole);
-
-				case Columns::Name:
-					return layer->name(Qt::DisplayRole);
-
-				case Columns::Dataset:
-					return layer->dataset(Qt::DisplayRole);
-
-				case Columns::Flags:
-					return layer->flags(Qt::DisplayRole);
-
-				case Columns::Frozen:
-					return layer->flag(Layer::Flags::Frozen, Qt::DisplayRole);
-
-				case Columns::Removable:
-					return layer->flag(Layer::Flags::Removable, Qt::DisplayRole);
-
-				case Columns::Mask:
-					return layer->flag(Layer::Flags::Mask, Qt::DisplayRole);
-
-				case Columns::Renamable:
-					return layer->flag(Layer::Flags::Renamable, Qt::DisplayRole);
-
-				case Columns::Order:
-					return layer->order(Qt::DisplayRole);
-
-				case Columns::Opacity:
-					return layer->opacity(Qt::DisplayRole);
-
-				case Columns::WindowNormalized:
-					return layer->windowNormalized(Qt::DisplayRole);
-
-				case Columns::LevelNormalized:
-					return layer->levelNormalized(Qt::DisplayRole);
-
-				case Columns::ColorMap:
-					return layer->colorMap(Qt::DisplayRole);
-
-				case Columns::Image:
-					return layer->image(Qt::DisplayRole);
-
-				case Columns::ImageRange:
-					return layer->imageRange(Qt::DisplayRole);
-
-				case Columns::DisplayRange:
-					return layer->displayRange(Qt::DisplayRole);
-
-				default:
-					break;
-			}
-
-			break;
-		}
-
-		case Qt::EditRole:
-		{
-			switch (index.column()) {
-				case Columns::Enabled:
-					return layer->flag(Layer::Flags::Enabled, Qt::EditRole);
-
-				case Columns::Type:
-					return layer->type(Qt::EditRole);
-
-				case Columns::Locked:
-					return layer->flag(Layer::Flags::Frozen, Qt::EditRole);
-
-				case Columns::ID:
-					return layer->id(Qt::EditRole);
-
-				case Columns::Name:
-					return layer->name(Qt::EditRole);
-
-				case Columns::Dataset:
-					return layer->dataset(Qt::EditRole);
-
-				case Columns::Flags:
-					return layer->flags(Qt::EditRole);
-
-				case Columns::Frozen:
-					return layer->flag(Layer::Flags::Frozen, Qt::EditRole);
-
-				case Columns::Removable:
-					return layer->flag(Layer::Flags::Removable, Qt::EditRole);
-
-				case Columns::Mask:
-					return layer->flag(Layer::Flags::Mask, Qt::EditRole);
-
-				case Columns::Renamable:
-					return layer->flag(Layer::Flags::Renamable, Qt::EditRole);
-
-				case Columns::Order:
-					return layer->order(Qt::EditRole);
-
-				case Columns::Opacity:
-					return layer->opacity(Qt::EditRole);
-
-				case Columns::WindowNormalized:
-					return layer->windowNormalized(Qt::EditRole);
-
-				case Columns::LevelNormalized:
-					return layer->levelNormalized(Qt::EditRole);
-
-				case Columns::ColorMap:
-					return layer->colorMap(Qt::EditRole);
-
-				case Columns::Image:
-					return layer->image(Qt::EditRole);
-
-				case Columns::ImageRange:
-					return layer->imageRange(Qt::EditRole);
-
-				case Columns::DisplayRange:
-					return layer->displayRange(Qt::EditRole);
-
-				default:
-					break;
-			}
-
-			break;
-		}
-
-		case Qt::ToolTipRole:
-		{
-			switch (index.column()) {
-				case Columns::Enabled:
-					return layer->flag(Layer::Flags::Enabled, Qt::ToolTipRole);
-
-				case Columns::Type:
-					return layer->type(Qt::ToolTipRole);
-
-				case Columns::Locked:
-					return layer->flag(Layer::Flags::Frozen, Qt::ToolTipRole);
-
-				case Columns::ID:
-					return layer->name(Qt::ToolTipRole);
-
-				case Columns::Name:
-					return layer->name(Qt::ToolTipRole);
-
-				case Columns::Dataset:
-					return layer->dataset(Qt::ToolTipRole);
-
-				case Columns::Flags:
-					return layer->flags(Qt::ToolTipRole);
-
-				case Columns::Frozen:
-					return layer->flag(Layer::Flags::Frozen, Qt::ToolTipRole);
-
-				case Columns::Removable:
-					return layer->flag(Layer::Flags::Removable, Qt::ToolTipRole);
-
-				case Columns::Mask:
-					return layer->flag(Layer::Flags::Mask, Qt::ToolTipRole);
-
-				case Columns::Renamable:
-					return layer->flag(Layer::Flags::Renamable, Qt::ToolTipRole);
-
-				case Columns::Order:
-					return layer->order(Qt::ToolTipRole);
-
-				case Columns::Opacity:
-					return layer->opacity(Qt::ToolTipRole);
-
-				case Columns::WindowNormalized:
-					return layer->windowNormalized(Qt::ToolTipRole);
-
-				case Columns::LevelNormalized:
-					return layer->levelNormalized(Qt::ToolTipRole);
-
-				case Columns::ColorMap:
-					return layer->colorMap(Qt::ToolTipRole);
-
-				case Columns::Image:
-					return layer->image(Qt::ToolTipRole);
-
-				case Columns::ImageRange:
-					return layer->imageRange(Qt::ToolTipRole);
-
-				case Columns::DisplayRange:
-					return layer->displayRange(Qt::ToolTipRole);
-
-				default:
-					break;
-			}
-
-			break;
-		}
-
-		case Qt::TextAlignmentRole:
-		{
-			switch (index.column()) {
-				case Columns::Enabled:
-				case Columns::Type:
-					return Qt::AlignLeft + Qt::AlignVCenter;
-
-				case Columns::Locked:
-				case Columns::ID:
-				case Columns::Name:
-				case Columns::Dataset:
-					return Qt::AlignLeft + Qt::AlignVCenter;
-
-				case Columns::Flags:
-				case Columns::Frozen:
-				case Columns::Removable:
-				case Columns::Mask:
-				case Columns::Renamable:
-				case Columns::Order:
-				case Columns::Opacity:
-				case Columns::WindowNormalized:
-				case Columns::LevelNormalized:
-				case Columns::ColorMap:
-				case Columns::Image:
-					return Qt::AlignRight + Qt::AlignVCenter;
-
-				case Columns::ImageRange:
-				case Columns::DisplayRange:
-					return Qt::AlignRight + Qt::AlignVCenter;
-
-				default:
-					break;
-			}
-
-			break;
-		}
-
-		default:
-			break;
-	}
-
-	return QVariant();
+	return _layers.at(index.row())->data(index, role);
 }
 
 QVariant LayersModel::headerData(int section, Qt::Orientation orientation, int role) const
@@ -393,85 +114,7 @@ Qt::ItemFlags LayersModel::flags(const QModelIndex& index) const
 	if (!index.isValid())
 		return Qt::ItemIsEnabled;
 
-	int flags = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
-	
-	const auto type = data(index.row(), LayersModel::Type, Qt::EditRole).toInt();
-
-	switch (index.column()) {
-		case Columns::Enabled:
-			flags |= Qt::ItemIsEditable | Qt::ItemIsUserCheckable;
-			break;
-
-		case Columns::Type:
-		case Columns::Locked:
-		case Columns::ID:
-			break;
-
-		case Columns::Name:
-		{
-			if (data(index.row(), LayersModel::Columns::Renamable, Qt::EditRole).toBool())
-				flags |= Qt::ItemIsEditable;
-
-			break;
-		}
-
-		case Columns::Dataset:
-		case Columns::Flags:
-		case Columns::Frozen:
-		case Columns::Removable:
-			break;
-
-		case Columns::Mask:
-		{
-			if (type == Layer::Type::Selection)
-				flags |= Qt::ItemIsEditable;
-
-			break;
-		}
-
-		case Columns::Order:
-			break;
-
-		case Columns::Opacity:
-			flags |= Qt::ItemIsEditable;
-			break;
-
-		case Columns::WindowNormalized:
-		{
-			if (type == Layer::Type::Image)
-				flags |= Qt::ItemIsEditable;
-
-			break;
-		}
-
-		case Columns::LevelNormalized:
-		{
-			if (type == Layer::Type::Image)
-				flags |= Qt::ItemIsEditable;
-
-			break;
-		}
-
-		case Columns::ColorMap:
-		{
-			if (type == Layer::Type::Selection)
-				flags |= Qt::ItemIsEditable;
-
-			break;
-		}
-
-		case Columns::Image:
-			break;
-
-		case Columns::ImageRange:
-		case Columns::DisplayRange:
-			break;
-
-		default:
-			break;
-	}
-
-	return flags;
+	return _layers.at(index.row())->itemFlags(index);
 }
 
 bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int role /*= Qt::DisplayRole*/)
@@ -486,7 +129,7 @@ bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int r
 	if (role == Qt::CheckStateRole) {
 		switch (index.column()) {
 			case Columns::Enabled:
-				layer->setFlag(Layer::Flags::Enabled, value == Qt::Checked ? true : false);
+				layer->setFlag(Layer::Flag::Enabled, value == Qt::Checked ? true : false);
 				emit dataChanged(this->index(row, 0), this->index(row, columnCount() - 1));
 				break;
 
@@ -498,7 +141,7 @@ bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int r
 	if (role == Qt::DisplayRole) {
 		switch (index.column()) {
 			case Columns::Enabled:
-				layer->setFlag(Layer::Flags::Enabled, value.toBool());
+				layer->setFlag(Layer::Flag::Enabled, value.toBool());
 				break;
 
 			case Columns::Type:
@@ -524,19 +167,19 @@ bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int r
 				break;
 
 			case Columns::Frozen:
-				layer->setFlag(Layer::Flags::Frozen, value.toBool());
+				layer->setFlag(Layer::Flag::Frozen, value.toBool());
 				break;
 
 			case Columns::Removable:
-				layer->setFlag(Layer::Flags::Removable, value.toBool());
+				layer->setFlag(Layer::Flag::Removable, value.toBool());
 				break;
 
 			case Columns::Mask:
-				layer->setFlag(Layer::Flags::Mask, value.toBool());
+				layer->setFlag(Layer::Flag::Mask, value.toBool());
 				break;
 
 			case Columns::Renamable:
-				layer->setFlag(Layer::Flags::Renamable, value.toBool());
+				layer->setFlag(Layer::Flag::Renamable, value.toBool());
 				break;
 
 			case Columns::Order:
@@ -670,7 +313,7 @@ bool LayersModel::mayMoveUp(const int& row)
 	if (row <= 0)
 		return false;
 
-	if (_layers.at(row)->flag(Layer::Flags::Frozen, Qt::EditRole).toBool() || _layers.at(row - 1)->flag(Layer::Flags::Frozen, Qt::EditRole).toBool())
+	if (_layers.at(row)->flag(Layer::Flag::Frozen, Qt::EditRole).toBool() || _layers.at(row - 1)->flag(Layer::Flag::Frozen, Qt::EditRole).toBool())
 		return false;
 
 	return true;
@@ -681,7 +324,7 @@ bool LayersModel::mayMoveDown(const int& row)
 	if (row >= rowCount() - 1)
 		return false;
 
-	if (_layers.at(row)->flag(Layer::Flags::Frozen, Qt::EditRole).toBool() || _layers.at(row + 1)->flag(Layer::Flags::Frozen, Qt::EditRole).toBool())
+	if (_layers.at(row)->flag(Layer::Flag::Frozen, Qt::EditRole).toBool() || _layers.at(row + 1)->flag(Layer::Flag::Frozen, Qt::EditRole).toBool())
 		return false;
 
 	return true;
@@ -718,7 +361,7 @@ void LayersModel::removeRows(const QModelIndexList& rows)
 	for (const auto& index : rows) {
 		const auto row = index.row();
 
-		if (_layers.at(row)->flag(Layer::Flags::Removable, Qt::EditRole).toBool()) {
+		if (_layers.at(row)->flag(Layer::Flag::Removable, Qt::EditRole).toBool()) {
 			rowsToRemove.append(row);
 		}
 	}
