@@ -1,6 +1,8 @@
 #include "LayersWidget.h"
 #include "ImageViewerPlugin.h"
 #include "LayersModel.h"
+#include "PointsLayer.h"
+#include "ImagesLayer.h"
 
 #include "ui_LayersWidget.h"
 
@@ -116,7 +118,7 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 	//headerView->hideSection(LayersModel::Columns::Type);
 	//headerView->hideSection(LayersModel::Columns::Enabled);
 	headerView->hideSection(LayersModel::Columns::Locked);
-	//headerView->hideSection(LayersModel::Columns::ID);
+	headerView->hideSection(LayersModel::Columns::ID);
 	//headerView->hideSection(LayersModel::Columns::Name);
 	//headerView->hideSection(LayersModel::Columns::Dataset);
 	headerView->hideSection(LayersModel::Columns::Flags);
@@ -130,8 +132,8 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 	headerView->hideSection(LayersModel::Columns::LevelNormalized);
 	headerView->hideSection(LayersModel::Columns::ColorMap);
 	headerView->hideSection(LayersModel::Columns::Image);
-	//headerView->hideSection(LayersModel::Columns::ImageRange);
-	//headerView->hideSection(LayersModel::Columns::DisplayRange);
+	headerView->hideSection(LayersModel::Columns::ImageRange);
+	headerView->hideSection(LayersModel::Columns::DisplayRange);
 
 	headerView->setSectionResizeMode(LayersModel::Columns::Name, QHeaderView::Interactive);
 
@@ -306,6 +308,11 @@ void LayersWidget::dragEnterEvent(QDragEnterEvent* dragEnterEvent)
 	const auto items = dragEnterEvent->mimeData()->text().split("\n");
 	const auto datasetName = items.at(0);
 	const auto datasetType = items.at(1);
+	
+	/*
+	if (layersModel()->findLayerById(datasetName) != nullptr)
+		return;
+	*/
 
 	if (datasetType == "Points") {
 		const auto points		= _imageViewerPlugin->requestData<Points>(datasetName);
@@ -315,7 +322,7 @@ void LayersWidget::dragEnterEvent(QDragEnterEvent* dragEnterEvent)
 			dragEnterEvent->acceptProposedAction();
 	}
 
-	if (datasetType == "Images" && !layersModel()->doesLayerExist(datasetName))
+	if (datasetType == "Images" && !layersModel()->findLayerById(datasetName))
 		dragEnterEvent->acceptProposedAction();
 
 	if (datasetType == "Clusters")
@@ -324,9 +331,41 @@ void LayersWidget::dragEnterEvent(QDragEnterEvent* dragEnterEvent)
 
 void LayersWidget::dropEvent(QDropEvent* dropEvent)
 {
-	const auto items = dropEvent->mimeData()->text().split("\n");
-	const auto datasetName = items.at(0);
-	const auto datasetType = items.at(1);
+	const auto items					= dropEvent->mimeData()->text().split("\n");
+	const auto datasetName				= items.at(0);
+	const auto datasetType				= items.at(1);
+	const auto selectionName			= QString("%1_selection").arg(datasetName);
+	const auto createSelectionLayer		= layersModel()->findLayerById(selectionName) == nullptr;
+	const auto layerFlags				= Layer::Flags::Enabled | Layer::Flags::Removable;
+
+	if (datasetType == "Points") {
+		const auto points = _imageViewerPlugin->requestData<Points>(datasetName);
+
+		auto dataset = datasetsModel()->addDataset(datasetName, Dataset::Type::Points);
+		
+		switch (points.getNumDimensions())
+		{
+			case 1:
+				layersModel()->addLayer(new PointsLayer(dataset, datasetName, datasetName, layerFlags));
+				break;
+
+			case 2:
+				layersModel()->addLayer(new PointsLayer(dataset, datasetName, datasetName, layerFlags));
+				break;
+
+			case 3:
+				layersModel()->addLayer(new PointsLayer(dataset, datasetName, datasetName, layerFlags));
+				break;
+
+			default:
+				break;
+		}
+
+		if (createSelectionLayer)
+			layersModel()->addLayer(new Layer(dataset, selectionName, selectionName, Layer::Type::Selection, layerFlags));
+
+		dataset->init();
+	}
 
 	if (datasetType == "Images") {
 		const auto imagesName		= datasetName;
@@ -334,44 +373,18 @@ void LayersWidget::dropEvent(QDropEvent* dropEvent)
 
 		auto dataset = datasetsModel()->addDataset(datasetName, Dataset::Type::Images);
 
-		//layersModel()->addLayer(Layer(nullptr, imagesName, imagesName, Layer::Type::Image, datasetName, Layer::Flags::Enabled));
-		//layersModel()->addLayer(Layer(nullptr, selectionName, selectionName, Layer::Type::Selection, datasetName, Layer::Flags::Enabled));
-	}
+		layersModel()->addLayer(new ImagesLayer(dataset, imagesName, imagesName, layerFlags));
 
-	if (datasetType == "Points") {
-		const auto points			= _imageViewerPlugin->requestData<Points>(datasetName);
-		const auto setName			= datasetName;
-		const auto selectionName	= QString("%1_selection").arg(datasetName);
+		if (createSelectionLayer)
+			layersModel()->addLayer(new Layer(dataset, selectionName, selectionName, Layer::Type::Selection, layerFlags));
 
-		switch (points.getNumDimensions())
-		{
-			case 1:
-			{
-				layersModel()->addLayer(Layer(nullptr, setName, setName, Layer::Type::Scalar1D, datasetName, Layer::Flags::Enabled));
-				layersModel()->addLayer(Layer(nullptr, selectionName, selectionName, Layer::Type::Selection, datasetName, Layer::Flags::Enabled));
-				break;
-			}
-
-			case 2:
-			{
-				layersModel()->addLayer(Layer(nullptr, setName, setName, Layer::Type::Scalar2D, datasetName, Layer::Flags::Enabled));
-				layersModel()->addLayer(Layer(nullptr, selectionName, selectionName, Layer::Type::Selection, datasetName, Layer::Flags::Enabled));
-				break;
-			}
-
-			case 3:
-			{
-				layersModel()->addLayer(Layer(nullptr, setName, setName, Layer::Type::Scalar3D, datasetName, Layer::Flags::Enabled));
-				layersModel()->addLayer(Layer(nullptr, selectionName, selectionName, Layer::Type::Selection, datasetName, Layer::Flags::Enabled));
-				break;
-			}
-
-			default:
-				break;
-		}
+		dataset->init();
 	}
 
 	if (datasetType == "Clusters") {
+
+		auto dataset = datasetsModel()->addDataset(datasetName, Dataset::Type::Clusters);
+
 		/*
 		const auto selectedRows = _datasetsModel->selectionModel()->selectedRows();
 

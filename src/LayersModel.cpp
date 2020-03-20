@@ -44,7 +44,6 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 	{
 		case Qt::FontRole:
 		{
-			/*
 			switch (index.column()) {
 				case Columns::Type:
 					return layer->type(Qt::FontRole).toString();
@@ -52,7 +51,6 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 				default:
 					break;
 			}
-			*/
 
 			break;
 		}
@@ -84,7 +82,7 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 					break;
 
 				case Columns::Type:
-					return layer->type(Qt::DisplayRole).toString();
+					return layer->type(Roles::FontIconText).toString();
 
 				case Columns::Locked:
 					return layer->flag(Layer::Flags::Frozen, Qt::EditRole).toBool() ? u8"\uf023" : u8"\uf09c";
@@ -159,6 +157,9 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 				case Columns::ID:
 					return layer->id(Qt::EditRole);
 
+				case Columns::Name:
+					return layer->name(Qt::EditRole);
+
 				case Columns::Dataset:
 					return layer->dataset(Qt::EditRole);
 
@@ -225,6 +226,9 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 
 				case Columns::Name:
 					return layer->name(Qt::ToolTipRole);
+
+				case Columns::Dataset:
+					return layer->dataset(Qt::ToolTipRole);
 
 				case Columns::Flags:
 					return layer->flags(Qt::ToolTipRole);
@@ -513,7 +517,6 @@ bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int r
 				break;
 
 			case Columns::Dataset:
-				layer->setDataset(value.toString());
 				break;
 
 			case Columns::Flags:
@@ -597,6 +600,7 @@ bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int r
 
 bool LayersModel::insertRows(int position, int rows, const QModelIndex& index /*= QModelIndex()*/)
 {
+	/*
 	Q_UNUSED(index);
 
 	beginInsertRows(QModelIndex(), position, position + rows - 1);
@@ -606,6 +610,7 @@ bool LayersModel::insertRows(int position, int rows, const QModelIndex& index /*
 	}
 
 	endInsertRows();
+	*/
 
 	return true;
 }
@@ -721,6 +726,8 @@ void LayersModel::removeRows(const QModelIndexList& rows)
 	if (rowsToRemove.isEmpty())
 		return;
 
+	std::sort(rowsToRemove.begin(), rowsToRemove.end(), std::greater<int>());
+
 	beginRemoveRows(QModelIndex(), rowsToRemove.last(), rowsToRemove.first());
 
 	for (auto rowToRemove : rowsToRemove) {
@@ -744,40 +751,23 @@ void LayersModel::renameLayer(const QString& id, const QString& name)
 	setData(firstHit.row(), Columns::Name, name);
 }
 
-bool LayersModel::doesLayerExist(const QString& id)
+Layer* LayersModel::findLayerById(const QString& id)
 {
-	const auto hits = match(index(0, LayersModel::Columns::ID), Qt::DisplayRole, id, -1, Qt::MatchStartsWith);
+	const auto hits = match(index(0, LayersModel::Columns::ID), Qt::DisplayRole, id, -1, Qt::MatchExactly);
 
 	if (hits.isEmpty())
-		return false;
+		return nullptr;
 
-	return true;
+	return _layers[hits.first().row()];
 }
 
-void LayersModel::addLayer(const Layer& layer)
+void LayersModel::addLayer(Layer* layer)
 {
-	const auto hits = match(index(0, LayersModel::Columns::ID), Qt::DisplayRole, layer.id(Qt::EditRole), -1, Qt::MatchStartsWith);
+	beginInsertRows(QModelIndex(), 0, 0);
 
-	if (!hits.isEmpty())
-		return;
+	_layers.insert(0, layer);
 
-	const auto row = 0;
-
-	insertRows(row, 1);
-
-	setData(row, Columns::ID, layer.id(Qt::EditRole));
-	setData(row, Columns::Name, layer.name(Qt::EditRole));
-	setData(row, Columns::Dataset, layer.dataset(Qt::EditRole));
-	setData(row, Columns::Type, layer.type(Qt::EditRole));
-	setData(row, Columns::Flags, layer.flags(Qt::EditRole));
-	setData(row, Columns::Order, layer.order(Qt::EditRole));
-	setData(row, Columns::Opacity, layer.opacity(Qt::EditRole));
-	setData(row, Columns::ColorMap, layer.colorMap(Qt::EditRole));
-	setData(row, Columns::Image, layer.image(Qt::EditRole));
-	setData(row, Columns::ImageRange, layer.imageRange(Qt::EditRole));
-	setData(row, Columns::DisplayRange, layer.displayRange(Qt::EditRole));
-	setData(row, Columns::WindowNormalized, layer.windowNormalized(Qt::EditRole));
-	setData(row, Columns::LevelNormalized, layer.levelNormalized(Qt::EditRole));
+	endInsertRows();
 
 	sortOrder();
 }

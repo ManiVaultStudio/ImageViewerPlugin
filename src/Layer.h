@@ -6,13 +6,11 @@
 #include <QObject>
 #include <QImage>
 
-class ImageViewerPlugin;
+class Dataset;
 
 /** TODO */
 class Layer : public QObject
 {
-	Q_OBJECT
-
 public:
 
 	/** TODO */
@@ -20,9 +18,7 @@ public:
 		Image,			/** TODO */
 		Selection,		/** TODO */
 		Clusters,		/** TODO */
-		Scalar1D,		/** TODO */
-		Scalar2D,		/** TODO */
-		Scalar3D		/** TODO */
+		Points			/** TODO */
 	};
 
 	static QString typeName(const Type& type) {
@@ -37,14 +33,8 @@ public:
 			case Layer::Type::Clusters:
 				return "Clusters";
 
-			case Layer::Type::Scalar1D:
-				return "Scalar1D";
-
-			case Layer::Type::Scalar2D:
-				return "Scalar2D";
-
-			case Layer::Type::Scalar3D:
-				return "Scalar3D";
+			case Layer::Type::Points:
+				return "Points";
 
 			default:
 				break;
@@ -108,7 +98,7 @@ public:
 	};
 
 	/** TODO */
-	Layer(ImageViewerPlugin* imageViewerPlugin, const QString& id = "", const QString& name = "", const Type& type = Type::Image, const QString& dataset = "", const std::uint32_t& flags = Flags::Enabled);
+	Layer(Dataset* dataset, const QString& id = "", const QString& name = "", const Type& type = Type::Image, const std::uint32_t& flags = Flags::Enabled);
 
 public: // Getters/setters
 
@@ -126,9 +116,6 @@ public: // Getters/setters
 
 	/** TODO */
 	QVariant dataset(const int& role) const;
-
-	/** TODO */
-	void setDataset(const QString& dataset);
 
 	/** TODO */
 	QVariant type(const int& role) const;
@@ -213,10 +200,9 @@ protected:
 	void computeDisplayRange();
 
 private:
-	ImageViewerPlugin*		_imageViewerPlugin;		/** TODO */
+	Dataset*				_dataset;				/** TODO */
 	QString					_id;					/** TODO */
 	QString					_name;					/** TODO */
-	QString					_dataset;				/** TODO */
 	Type					_type;					/** TODO */
 	std::uint32_t			_flags;					/** TODO */
 	std::uint32_t			_order;					/** TODO */

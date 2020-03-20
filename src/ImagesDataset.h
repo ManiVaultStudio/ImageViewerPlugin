@@ -3,20 +3,66 @@
 #include "Dataset.h"
 
 #include <QStringList>
-#include <QSharedPointer>
-
-class LayersModel;
-
-using Indices = QVector<std::uint32_t>;
-
-Q_DECLARE_METATYPE(Indices);
 
 /** TODO */
 class ImagesDataset : public Dataset
 {
 public:
 	/** TODO */
-	ImagesDataset(QObject* parent, const QString& name);
+	enum class Column {
+		NoImages,			/** TODO */
+		Width,				/** TODO */
+		Height,				/** TODO */
+		Size				/** TODO */
+	};
+
+	static QString columnName(const Column& column) {
+		switch (column)
+		{
+			case Column::NoImages:
+				return "No. Images";
+
+			case Column::Width:
+				return "Width";
+
+			case Column::Height:
+				return "Height";
+
+			case Column::Size:
+				return "Size";
+
+			default:
+				break;
+		}
+
+		return "";
+	}
+
+public:
+	/** TODO */
+	ImagesDataset(ImageViewerPlugin* imageViewerPlugin, const QString& name);
+
+	/** TODO */
+	void init();
+
+public: // Inherited model members
+
+	/** TODO */
+	int columnCount(const QModelIndex& parent = QModelIndex()) const override;
+
+	/** TODO */
+	QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
+
+	/** TODO */
+	Qt::ItemFlags flags(const QModelIndex &index) const override;
+
+	/** TODO */
+	QVariant data(const int& row, const int& column, int role) const override;
+
+	/** TODO */
+	void setData(const int& row, const int& column, const QVariant& value) override;
+
+public: // Getters/setters
 
 	/** TODO */
 	QVariant noImages(const int& role = Qt::DisplayRole) const;

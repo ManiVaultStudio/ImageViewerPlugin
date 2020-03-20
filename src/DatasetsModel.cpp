@@ -1,7 +1,8 @@
 #include "DatasetsModel.h"
 #include "ImageViewerPlugin.h"
-
 #include "ImagesDataset.h"
+#include "PointsDataset.h"
+#include "ClustersDataset.h"
 
 #include <QDebug>
 
@@ -245,7 +246,16 @@ Dataset* DatasetsModel::addDataset(const QString& name, const Dataset::Type& typ
 		switch (type)
 		{
 			case Dataset::Type::Images:
-				datasets().insert(0, new ImagesDataset(this, name));
+				datasets().insert(0, new ImagesDataset(_imageViewerPlugin, name));
+				break;
+
+			case Dataset::Type::Points:
+				datasets().insert(0, new PointsDataset(_imageViewerPlugin, name));
+				break;
+
+			case Dataset::Type::Clusters:
+				datasets().insert(0, new ClustersDataset(_imageViewerPlugin, name));
+				break;
 
 			default:
 				break;

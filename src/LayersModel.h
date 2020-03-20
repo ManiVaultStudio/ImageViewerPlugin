@@ -19,7 +19,7 @@ public: // Columns
 		Locked,
 		ID,						// Name for internal use
 		Name,					// Name in the user interface
-		Dataset,				// Name of the dataset
+		Dataset,				// Name in the user interface
 		Flags,
 		Frozen,
 		Removable,
@@ -107,10 +107,10 @@ public: // TODO
 	void renameLayer(const QString& id, const QString& name);
 
 	/** TODO */
-	bool doesLayerExist(const QString& id);
+	Layer* findLayerById(const QString& id);
 
 	/** TODO */
-	void addLayer(const Layer& layer);
+	void addLayer(Layer* layer);
 
 	/** TODO */
 	void renameDefaultLayers(const QString& name);

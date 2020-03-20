@@ -1,15 +1,14 @@
 #include "Layer.h"
-#include "ImageViewerPlugin.h"
+#include "Dataset.h"
 
 #include <QFont>
 #include <QDebug>
 
-Layer::Layer(ImageViewerPlugin* imageViewerPlugin, const QString& id /*= ""*/, const QString& name /*= ""*/, const Type& type /*= Type::Image*/, const QString& dataset /*= ""*/, const std::uint32_t& flags /*= Flags::Enabled*/) :
-	QObject(imageViewerPlugin),
-	_imageViewerPlugin(imageViewerPlugin),
+Layer::Layer(Dataset* dataset, const QString& id /*= ""*/, const QString& name /*= ""*/, const Type& type /*= Type::Image*/, const std::uint32_t& flags /*= Flags::Enabled*/) :
+	QObject(dataset),
+	_dataset(dataset),
 	_id(id),
 	_name(name),
-	_dataset(dataset),
 	_type(type),
 	_flags(flags),
 	_order(0),
@@ -73,25 +72,22 @@ void Layer::setName(const QString& name)
 
 QVariant Layer::dataset(const int& role) const
 {
+	const auto name = _dataset->name(role).toString();
+
 	switch (role)
 	{
 		case Qt::DisplayRole:
 		case Qt::EditRole:
-			return _dataset;
+			return name;
 
 		case Qt::ToolTipRole:
-			return QString("Dataset: %1").arg(_dataset);
+			return QString("Dataset name: %1").arg(name);
 
 		default:
 			break;
 	}
 
 	return QVariant();
-}
-
-void Layer::setDataset(const QString& dataset)
-{
-	_dataset = dataset;
 }
 
 QVariant Layer::type(const int& role) const
@@ -115,14 +111,17 @@ QVariant Layer::type(const int& role) const
 		case Roles::FontIconText:
 		{
 			switch (_type) {
-				case Layer::Type::Image:
+				case Type::Image:
 					return u8"\uf03e";
 
-				case Layer::Type::Selection:
+				case Type::Selection:
 					return u8"\uf065";
 
-				case Layer::Type::Clusters:
+				case Type::Clusters:
 					return u8"\uf141";
+
+				case Type::Points:
+					return u8"\uf03e";
 
 				default:
 					break;

@@ -1,13 +1,15 @@
 #include "ImagesDataset.h"
-#include "LayersModel.h"
+#include "ImageViewerPlugin.h"
 
 #include "ImageData/Images.h"
+#include "PointData.h"
 
 #include <QFont>
+#include <QFileInfo>
 #include <QDebug>
 
-ImagesDataset::ImagesDataset(QObject* parent, const QString& name) :
-	Dataset(parent, name, Type::Images),
+ImagesDataset::ImagesDataset(ImageViewerPlugin* imageViewerPlugin, const QString& name) :
+	Dataset(imageViewerPlugin, name, Type::Images),
 	_size(),
 	_noPoints(0),
 	_noDimensions(0),
@@ -16,6 +18,82 @@ ImagesDataset::ImagesDataset(QObject* parent, const QString& name) :
 	_average(),
 	_pointsName(),
 	_selection(Indices({ 0 }))
+{
+}
+
+void ImagesDataset::init()
+{
+	auto images = _imageViewerPlugin->requestData<Images>(_name);
+
+	setSize(images.imageSize());
+	setNoPoints(images.points()->getNumPoints());
+	setNoDimensions(images.points()->getNumDimensions());
+	setCurrentImage(0);
+	setAverage(false);
+
+	auto imageFilePaths = QStringList();
+
+	for (const auto& imageFilePath : images.imageFilePaths()) {
+		imageFilePaths << imageFilePath;
+	}
+
+	switch (images.type())
+	{
+		case ImageData::Type::Sequence:
+		{
+			auto imageNames = QStringList();
+
+			for (const auto& imageFilePath : images.imageFilePaths()) {
+				imageNames << QFileInfo(imageFilePath).fileName();
+			}
+
+			setImageNames(imageNames);
+			break;
+		}
+
+		case ImageData::Type::Stack:
+		{
+			auto dimensionNames = QStringList();
+
+			for (const auto& dimensionName : images.dimensionNames()) {
+				dimensionNames << dimensionName;
+			}
+
+			setImageNames(dimensionNames);
+			break;
+		}
+
+		default:
+			break;
+	}
+
+	setImageFilePaths(imageFilePaths);
+	setPointsName(images.points()->getDataName());
+}
+
+int ImagesDataset::columnCount(const QModelIndex& parent /*= QModelIndex()*/) const
+{
+	Q_UNUSED(parent)
+
+	return 0;
+}
+
+QVariant ImagesDataset::headerData(int section, Qt::Orientation orientation, int role) const
+{
+	return QVariant();
+}
+
+Qt::ItemFlags ImagesDataset::flags(const QModelIndex &index) const
+{
+	return 0;
+}
+
+QVariant ImagesDataset::data(const int& row, const int& column, int role) const
+{
+	return QVariant();
+}
+
+void ImagesDataset::setData(const int& row, const int& column, const QVariant& value)
 {
 }
 
