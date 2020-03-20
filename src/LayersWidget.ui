@@ -512,31 +512,7 @@
              <widget class="QWidget" name="page">
               <layout class="QGridLayout" name="gridLayout_6">
                <item row="0" column="0">
-                <layout class="QGridLayout" name="imagesGridLayout">
-                 <property name="topMargin">
-                  <number>0</number>
-                 </property>
-                 <property name="horizontalSpacing">
-                  <number>6</number>
-                 </property>
-                 <item row="0" column="0">
-                  <widget class="QLabel" name="imagesLabel">
-                   <property name="text">
-                    <string>Image(s)</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="1">
-                  <widget class="QComboBox" name="imagesComboBox">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                     <horstretch>1</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
+                <widget class="ImagesLayerWidget" name="widget" native="true"/>
                </item>
               </layout>
              </widget>
@@ -556,6 +532,14 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>ImagesLayerWidget</class>
+   <extends>QWidget</extends>
+   <header>imageslayerwidget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

@@ -75,7 +75,7 @@ int ImagesDataset::columnCount(const QModelIndex& parent /*= QModelIndex()*/) co
 {
 	Q_UNUSED(parent)
 
-	return 0;
+		return 0;
 }
 
 QVariant ImagesDataset::headerData(int section, Qt::Orientation orientation, int role) const

@@ -32,63 +32,7 @@ int Layer::columnCount()
 QVariant Layer::headerData(int section, Qt::Orientation orientation, int role)
 {
 	if (orientation == Qt::Horizontal) {
-		switch (static_cast<Layer::Column>(section)) {
-			case Column::Enabled:
-			case Column::Type:
-			case Column::Locked:
-				return "";
-
-			case Column::ID:
-				return "ID";
-
-			case Column::Name:
-				return "Name";
-
-			case Column::Dataset:
-				return "Dataset";
-
-			case Column::Flags:
-				return "Flags";
-
-			case Column::Frozen:
-				return "Frozen";
-
-			case Column::Removable:
-				return "Removable";
-
-			case Column::Mask:
-				return "Mask";
-
-			case Column::Renamable:
-				return "Renamable";
-
-			case Column::Order:
-				return "Order";
-
-			case Column::Opacity:
-				return "Opacity";
-
-			case Column::WindowNormalized:
-				return "Window";
-
-			case Column::LevelNormalized:
-				return "Level";
-
-			case Column::ColorMap:
-				return "Color";
-
-			case Column::Image:
-				return "Image";
-
-			case Column::ImageRange:
-				return "Image range";
-
-			case Column::DisplayRange:
-				return "Display range";
-
-			default:
-				return QVariant();
-		}
+		return columnName(static_cast<Layer::Column>(section));
 	}
 
 	return QVariant();

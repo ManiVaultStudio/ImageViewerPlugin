@@ -35,6 +35,68 @@ public:
 		DisplayRange
 	};
 
+	static QString columnName(const Column& column) {
+		switch (column) {
+			case Column::Enabled:
+			case Column::Type:
+			case Column::Locked:
+				return "";
+
+			case Column::ID:
+				return "ID";
+
+			case Column::Name:
+				return "Name";
+
+			case Column::Dataset:
+				return "Dataset";
+
+			case Column::Flags:
+				return "Flags";
+
+			case Column::Frozen:
+				return "Frozen";
+
+			case Column::Removable:
+				return "Removable";
+
+			case Column::Mask:
+				return "Mask";
+
+			case Column::Renamable:
+				return "Renamable";
+
+			case Column::Order:
+				return "Order";
+
+			case Column::Opacity:
+				return "Opacity";
+
+			case Column::WindowNormalized:
+				return "Window";
+
+			case Column::LevelNormalized:
+				return "Level";
+
+			case Column::ColorMap:
+				return "Color";
+
+			case Column::Image:
+				return "Image";
+
+			case Column::ImageRange:
+				return "Image range";
+
+			case Column::DisplayRange:
+				return "Display range";
+
+			default:
+				return QString();
+		}
+
+		return QString();
+	}
+
 	/** TODO */
 	enum class Type {
 		Image,			/** TODO */
