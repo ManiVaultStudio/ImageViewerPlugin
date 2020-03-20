@@ -10,8 +10,8 @@ ImageDatasetActor::ImageDatasetActor(Renderer* renderer, const QString& name, La
 	_layersModel(layersModel)
 {
 	for (int row = 0; row < _layersModel->rowCount(); row++) {
-		const auto id	= _layersModel->data(row, LayersModel::Columns::ID, Qt::EditRole).toString();
-		const auto type	= _layersModel->data(row, LayersModel::Columns::Type, Qt::EditRole).toInt();
+		const auto id	= _layersModel->data(row, layerColumnId(Layer::Column::ID), Qt::EditRole).toString();
+		const auto type	= _layersModel->data(row, layerColumnId(Layer::Column::Type), Qt::EditRole).toInt();
 		
 		addProp<ImageLayerProp>(this, id, static_cast<Layer::Type>(type));
 	}
@@ -21,8 +21,8 @@ ImageDatasetActor::ImageDatasetActor(Renderer* renderer, const QString& name, La
 
 	QObject::connect(_layersModel, &LayersModel::rowsInserted, this, [this](const QModelIndex &parent, int first, int last) {
 		for (int row = first; row <= last; row++) {
-			const auto id	= _layersModel->data(row, LayersModel::Columns::ID, Qt::EditRole).toString();
-			const auto type	= _layersModel->data(row, LayersModel::Columns::Type, Qt::EditRole).toInt();
+			const auto id	= _layersModel->data(row, layerColumnId(Layer::Column::ID), Qt::EditRole).toString();
+			const auto type	= _layersModel->data(row, layerColumnId(Layer::Column::Type), Qt::EditRole).toInt();
 
 			addProp<ImageLayerProp>(this, id, static_cast<Layer::Type>(type));
 		}
@@ -33,31 +33,31 @@ ImageDatasetActor::ImageDatasetActor(Renderer* renderer, const QString& name, La
 
 void ImageDatasetActor::updateData(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int> &roles /*= QVector<int>()*/) {
 	for (int row = topLeft.row(); row <= bottomRight.row(); row++) {
-		const auto layerId = _layersModel->data(row, LayersModel::Columns::ID, Qt::EditRole).toString();
+		const auto layerId = _layersModel->data(row, layerColumnId(Layer::Column::ID), Qt::EditRole).toString();
 		const auto layerProp = this->propByName<ImageLayerProp>(layerId);
 
-		if (topLeft.column() <= LayersModel::Columns::Enabled && bottomRight.column() >= LayersModel::Columns::Enabled) {
-			const auto enabled = _layersModel->data(row, LayersModel::Columns::Enabled, Qt::EditRole).toBool();
+		if (topLeft.column() <= layerColumnId(Layer::Column::Enabled) && bottomRight.column() >= layerColumnId(Layer::Column::Enabled)) {
+			const auto enabled = _layersModel->data(row, layerColumnId(Layer::Column::Enabled), Qt::EditRole).toBool();
 			layerProp->setVisible(enabled);
 		}
 
-		if (topLeft.column() <= LayersModel::Columns::Image && bottomRight.column() >= LayersModel::Columns::Image) {
-			const auto layerImage = _layersModel->data(row, LayersModel::Columns::Image, Qt::EditRole).value<QImage>();
+		if (topLeft.column() <= layerColumnId(Layer::Column::Image) && bottomRight.column() >= layerColumnId(Layer::Column::Image)) {
+			const auto layerImage = _layersModel->data(row, layerColumnId(Layer::Column::Image), Qt::EditRole).value<QImage>();
 			layerProp->setImage(layerImage);
 		}
 
-		if (topLeft.column() <= LayersModel::Columns::DisplayRange && bottomRight.column() >= LayersModel::Columns::DisplayRange) {
-			const auto layerDisplayRange = _layersModel->data(row, LayersModel::Columns::DisplayRange, Qt::EditRole).value<Layer::Range>();
+		if (topLeft.column() <= layerColumnId(Layer::Column::DisplayRange) && bottomRight.column() >= layerColumnId(Layer::Column::DisplayRange)) {
+			const auto layerDisplayRange = _layersModel->data(row, layerColumnId(Layer::Column::DisplayRange), Qt::EditRole).value<Layer::Range>();
 			layerProp->setDisplayRange(layerDisplayRange.min(), layerDisplayRange.max());
 		}
 
-		if (topLeft.column() <= LayersModel::Columns::Opacity && bottomRight.column() >= LayersModel::Columns::Opacity) {
-			const auto layerOpacity = _layersModel->data(row, LayersModel::Columns::Opacity, Qt::EditRole).toFloat();
+		if (topLeft.column() <= layerColumnId(Layer::Column::Opacity) && bottomRight.column() >= layerColumnId(Layer::Column::Opacity)) {
+			const auto layerOpacity = _layersModel->data(row, layerColumnId(Layer::Column::Opacity), Qt::EditRole).toFloat();
 			layerProp->setOpacity(layerOpacity);
 		}
 
-		if (topLeft.column() <= LayersModel::Columns::Order && bottomRight.column() >= LayersModel::Columns::Order) {
-			const auto order = _layersModel->data(row, LayersModel::Columns::Order, Qt::EditRole).toInt();
+		if (topLeft.column() <= layerColumnId(Layer::Column::Order) && bottomRight.column() >= layerColumnId(Layer::Column::Order)) {
+			const auto order = _layersModel->data(row, layerColumnId(Layer::Column::Order), Qt::EditRole).toInt();
 			layerProp->setOrder(order);
 		}
 
@@ -71,7 +71,7 @@ void ImageDatasetActor::render()
 		return;
 
 	for (int row = 0; row < _layersModel->rowCount(); row++) {
-		const auto layerId = _layersModel->data(_layersModel->rowCount() - 1 - row, LayersModel::Columns::ID, Qt::EditRole).toString();
+		const auto layerId = _layersModel->data(_layersModel->rowCount() - 1 - row, layerColumnId(Layer::Column::ID), Qt::EditRole).toString();
 		this->propByName<ImageLayerProp>(layerId)->render();
 	}
 }

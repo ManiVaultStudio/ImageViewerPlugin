@@ -24,23 +24,83 @@ Layer::Layer(Dataset* dataset, const QString& id /*= ""*/, const QString& name /
 {
 }
 
-int Layer::columnCount(const QModelIndex& parent /*= QModelIndex()*/) const
+int Layer::columnCount()
 {
-	return 0;
+	return 19;
 }
 
-QVariant Layer::headerData(int section, Qt::Orientation orientation, int role) const
+QVariant Layer::headerData(int section, Qt::Orientation orientation, int role)
 {
+	if (orientation == Qt::Horizontal) {
+		switch (static_cast<Layer::Column>(section)) {
+			case Column::Enabled:
+			case Column::Type:
+			case Column::Locked:
+				return "";
+
+			case Column::ID:
+				return "ID";
+
+			case Column::Name:
+				return "Name";
+
+			case Column::Dataset:
+				return "Dataset";
+
+			case Column::Flags:
+				return "Flags";
+
+			case Column::Frozen:
+				return "Frozen";
+
+			case Column::Removable:
+				return "Removable";
+
+			case Column::Mask:
+				return "Mask";
+
+			case Column::Renamable:
+				return "Renamable";
+
+			case Column::Order:
+				return "Order";
+
+			case Column::Opacity:
+				return "Opacity";
+
+			case Column::WindowNormalized:
+				return "Window";
+
+			case Column::LevelNormalized:
+				return "Level";
+
+			case Column::ColorMap:
+				return "Color";
+
+			case Column::Image:
+				return "Image";
+
+			case Column::ImageRange:
+				return "Image range";
+
+			case Column::DisplayRange:
+				return "Display range";
+
+			default:
+				return QVariant();
+		}
+	}
+
 	return QVariant();
 }
 
-Qt::ItemFlags Layer::itemFlags(const QModelIndex &index) const
+Qt::ItemFlags Layer::itemFlags(const int& column) const
 {
 	int flags = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
 
 	const auto type = static_cast<Layer::Type>(_type);
 
-	switch (static_cast<Layer::Column>(index.column())) {
+	switch (static_cast<Layer::Column>(column)) {
 		case Column::Enabled:
 			flags |= Qt::ItemIsEditable | Qt::ItemIsUserCheckable;
 			break;
@@ -117,15 +177,13 @@ Qt::ItemFlags Layer::itemFlags(const QModelIndex &index) const
 	return flags;
 }
 
-QVariant Layer::data(const QModelIndex& index, int role) const
+QVariant Layer::data(const int& column, int role) const
 {
-	const auto column = static_cast<Layer::Column>(index.column());
-
 	switch (role)
 	{
 		case Qt::FontRole:
 		{
-			switch (column) {
+			switch (static_cast<Layer::Column>(column)) {
 				case Column::Type:
 					return type(Qt::FontRole).toString();
 
@@ -138,7 +196,7 @@ QVariant Layer::data(const QModelIndex& index, int role) const
 
 		case Qt::CheckStateRole:
 		{
-			switch (column) {
+			switch (static_cast<Layer::Column>(column)) {
 				case Column::Enabled:
 					return flag(Layer::Flag::Enabled, Qt::EditRole).toBool() ? Qt::Checked : Qt::Unchecked;
 			}
@@ -148,7 +206,7 @@ QVariant Layer::data(const QModelIndex& index, int role) const
 
 		case Qt::DisplayRole:
 		{
-			switch (column) {
+			switch (static_cast<Layer::Column>(column)) {
 				case Column::Enabled:
 					break;
 
@@ -215,7 +273,7 @@ QVariant Layer::data(const QModelIndex& index, int role) const
 
 		case Qt::EditRole:
 		{
-			switch (column) {
+			switch (static_cast<Layer::Column>(column)) {
 				case Column::Enabled:
 					return flag(Layer::Flag::Enabled, Qt::EditRole);
 
@@ -282,7 +340,7 @@ QVariant Layer::data(const QModelIndex& index, int role) const
 
 		case Qt::ToolTipRole:
 		{
-			switch (column) {
+			switch (static_cast<Layer::Column>(column)) {
 				case Column::Enabled:
 					return flag(Layer::Flag::Enabled, Qt::ToolTipRole);
 
@@ -349,7 +407,7 @@ QVariant Layer::data(const QModelIndex& index, int role) const
 
 		case Qt::TextAlignmentRole:
 		{
-			switch (column) {
+			switch (static_cast<Layer::Column>(column)) {
 				case Column::Enabled:
 				case Column::Type:
 					return Qt::AlignLeft + Qt::AlignVCenter;
@@ -391,9 +449,95 @@ QVariant Layer::data(const QModelIndex& index, int role) const
 	return QVariant();
 }
 
-void Layer::setData(const int& row, const int& column, const QVariant& value)
+void Layer::setData(const int& column, const QVariant& value, const int& role)
 {
+	if (role == Qt::CheckStateRole) {
+		switch (static_cast<Layer::Column>(column)) {
+			case Column::Enabled:
+				setFlag(Layer::Flag::Enabled, value == Qt::Checked ? true : false);
+				break;
 
+			default:
+				break;
+		}
+	}
+
+	if (role == Qt::DisplayRole) {
+		switch (static_cast<Layer::Column>(column)) {
+			case Column::Enabled:
+				setFlag(Layer::Flag::Enabled, value.toBool());
+				break;
+
+			case Column::Type:
+				setType(static_cast<Layer::Type>(value.toInt()));
+				break;
+
+			case Column::Locked:
+				break;
+
+			case Column::ID:
+				setId(value.toString());
+				break;
+
+			case Column::Name:
+				setName(value.toString());
+				break;
+
+			case Column::Dataset:
+				break;
+
+			case Column::Flags:
+				setFlags(value.toInt());
+				break;
+
+			case Column::Frozen:
+				setFlag(Layer::Flag::Frozen, value.toBool());
+				break;
+
+			case Column::Removable:
+				setFlag(Layer::Flag::Removable, value.toBool());
+				break;
+
+			case Column::Mask:
+				setFlag(Layer::Flag::Mask, value.toBool());
+				break;
+
+			case Column::Renamable:
+				setFlag(Layer::Flag::Renamable, value.toBool());
+				break;
+
+			case Column::Order:
+				setOrder(value.toInt());
+				break;
+
+			case Column::Opacity:
+				setOpacity(value.toFloat());
+				break;
+
+			case Column::WindowNormalized:
+				setWindowNormalized(value.toFloat());
+				break;
+
+			case Column::LevelNormalized:
+				setLevelNormalized(value.toFloat());
+				break;
+
+			case Column::ColorMap:
+				setColorMap(value.value<QImage>());
+				break;
+
+			case Column::Image:
+				setImage(value.value<QImage>());
+				break;
+
+			case Column::ImageRange:
+			case Column::DisplayRange:
+				break;
+
+			default:
+				break;
+		}
+	}
 }
 
 QVariant Layer::id(const int& role) const

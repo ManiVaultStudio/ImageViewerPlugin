@@ -5,7 +5,6 @@
 #include <QColor>
 #include <QObject>
 #include <QImage>
-#include <QModelIndex>
 
 class Dataset;
 
@@ -126,19 +125,19 @@ public:
 public: // MVC
 
 	/** TODO */
-	int columnCount(const QModelIndex& parent = QModelIndex()) const;
+	static int columnCount();
 
 	/** TODO */
-	QVariant headerData(int section, Qt::Orientation orientation, int role) const;
+	static QVariant headerData(int section, Qt::Orientation orientation, int role);
 
 	/** TODO */
-	Qt::ItemFlags itemFlags(const QModelIndex &index) const;
+	Qt::ItemFlags itemFlags(const int& column) const;
 
 	/** TODO */
-	QVariant data(const QModelIndex& index, int role) const;
+	QVariant data(const int& column, int role) const;
 
 	/** TODO */
-	void setData(const int& row, const int& column, const QVariant& value);
+	void setData(const int& column, const QVariant& value, const int& role);
 
 public: // Getters/setters
 
@@ -262,3 +261,5 @@ private:
 Q_DECLARE_METATYPE(Layer::Range);
 
 using Layers = QList<Layer*>;
+
+static int layerColumnId(const Layer::Column& column) { return static_cast<int>(column); };

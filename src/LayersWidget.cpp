@@ -57,18 +57,18 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 
 	QObject::connect(_ui->layerNameLineEdit, &QLineEdit::textEdited, [this](const QString& text) {
 		for (auto index : _ui->layersTreeView->selectionModel()->selectedRows()) {
-			layersModel()->setData(layersModel()->index(index.row(), LayersModel::Columns::Name), text);
+			layersModel()->setData(layersModel()->index(index.row(), layerColumnId(Layer::Column::Name)), text);
 		}
 	});
 
 	QObject::connect(_ui->layerEnabledCheckBox, &QCheckBox::stateChanged, [this](int state) {
 		for (auto index : _ui->layersTreeView->selectionModel()->selectedRows()) {
-			layersModel()->setData(layersModel()->index(index.row(), LayersModel::Columns::Enabled), static_cast<int>(state), Qt::CheckStateRole);
+			layersModel()->setData(layersModel()->index(index.row(), layerColumnId(Layer::Column::Enabled)), static_cast<int>(state), Qt::CheckStateRole);
 		}
 	});
 
 	QObject::connect(_ui->layerOpacityDoubleSpinBox, qOverload<double>(&QDoubleSpinBox::valueChanged), [this](double value) {
-		const auto index = layersModel()->index(_ui->layersTreeView->selectionModel()->currentIndex().row(), LayersModel::Columns::Opacity);
+		const auto index = layersModel()->index(_ui->layersTreeView->selectionModel()->currentIndex().row(), layerColumnId(Layer::Column::Opacity));
 		const auto range = _ui->layerOpacityDoubleSpinBox->maximum() - _ui->layerOpacityDoubleSpinBox->minimum();
 
 		layersModel()->setData(index, value / static_cast<float>(range));
@@ -78,33 +78,33 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 		for (auto index : _ui->layersTreeView->selectionModel()->selectedRows()) {
 			const auto range = _ui->layerOpacityHorizontalSlider->maximum() - _ui->layerOpacityHorizontalSlider->minimum();
 			
-			layersModel()->setData(layersModel()->index(index.row(), LayersModel::Columns::Opacity), static_cast<float>(value) / static_cast<float>(range));
+			layersModel()->setData(layersModel()->index(index.row(), layerColumnId(Layer::Column::Opacity)), static_cast<float>(value) / static_cast<float>(range));
 		}
 	});
 
 	QObject::connect(_ui->layerWindowDoubleSpinBox, qOverload<double>(&QDoubleSpinBox::valueChanged), [this](double value) {
 		for (auto index : _ui->layersTreeView->selectionModel()->selectedRows()) {
-			layersModel()->setData(layersModel()->index(index.row(), LayersModel::Columns::WindowNormalized), value);
+			layersModel()->setData(layersModel()->index(index.row(), layerColumnId(Layer::Column::WindowNormalized)), value);
 		}
 	});
 
 	QObject::connect(_ui->layerWindowHorizontalSlider, &QSlider::valueChanged, [this](int value) {
 		for (auto index : _ui->layersTreeView->selectionModel()->selectedRows()) {
 			const auto range = _ui->layerWindowHorizontalSlider->maximum() - _ui->layerWindowHorizontalSlider->minimum();
-			layersModel()->setData(layersModel()->index(index.row(), LayersModel::Columns::WindowNormalized), value / static_cast<float>(range));
+			layersModel()->setData(layersModel()->index(index.row(), layerColumnId(Layer::Column::WindowNormalized)), value / static_cast<float>(range));
 		}
 	});
 
 	QObject::connect(_ui->layerLevelDoubleSpinBox, qOverload<double>(&QDoubleSpinBox::valueChanged), [this](double value) {
 		for (auto index : _ui->layersTreeView->selectionModel()->selectedRows()) {
-			layersModel()->setData(layersModel()->index(index.row(), LayersModel::Columns::LevelNormalized), value);
+			layersModel()->setData(layersModel()->index(index.row(), layerColumnId(Layer::Column::LevelNormalized)), value);
 		}
 	});
 
 	QObject::connect(_ui->layerLevelHorizontalSlider, &QSlider::valueChanged, [this](int value) {
 		for (auto index : _ui->layersTreeView->selectionModel()->selectedRows()) {
 			const auto range = _ui->layerLevelHorizontalSlider->maximum() - _ui->layerLevelHorizontalSlider->minimum();
-			layersModel()->setData(layersModel()->index(index.row(), LayersModel::Columns::LevelNormalized), value / static_cast<float>(range));
+			layersModel()->setData(layersModel()->index(index.row(), layerColumnId(Layer::Column::LevelNormalized)), value / static_cast<float>(range));
 		}
 	});
 
@@ -115,27 +115,27 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 
 	headerView->setSectionResizeMode(QHeaderView::ResizeToContents);
 
-	//headerView->hideSection(LayersModel::Columns::Type);
-	//headerView->hideSection(LayersModel::Columns::Enabled);
-	headerView->hideSection(LayersModel::Columns::Locked);
-	headerView->hideSection(LayersModel::Columns::ID);
-	//headerView->hideSection(LayersModel::Columns::Name);
-	//headerView->hideSection(LayersModel::Columns::Dataset);
-	headerView->hideSection(LayersModel::Columns::Flags);
-	headerView->hideSection(LayersModel::Columns::Frozen);
-	headerView->hideSection(LayersModel::Columns::Removable);
-	headerView->hideSection(LayersModel::Columns::Mask);
-	headerView->hideSection(LayersModel::Columns::Renamable);
-	headerView->hideSection(LayersModel::Columns::Order);
-	//headerView->hideSection(LayersModel::Columns::Opacity);
-	headerView->hideSection(LayersModel::Columns::WindowNormalized);
-	headerView->hideSection(LayersModel::Columns::LevelNormalized);
-	headerView->hideSection(LayersModel::Columns::ColorMap);
-	headerView->hideSection(LayersModel::Columns::Image);
-	headerView->hideSection(LayersModel::Columns::ImageRange);
-	headerView->hideSection(LayersModel::Columns::DisplayRange);
+	//headerView->hideSection(layerColumnId(Layer::Column::Type)));
+	//headerView->hideSection(layerColumnId(Layer::Column::Enabled));
+	headerView->hideSection(layerColumnId(Layer::Column::Locked));
+	headerView->hideSection(layerColumnId(Layer::Column::ID));
+	//headerView->hideSection(layerColumnId(Layer::Column::Name));
+	//headerView->hideSection(layerColumnId(Layer::Column::Dataset));
+	headerView->hideSection(layerColumnId(Layer::Column::Flags));
+	headerView->hideSection(layerColumnId(Layer::Column::Frozen));
+	headerView->hideSection(layerColumnId(Layer::Column::Removable));
+	headerView->hideSection(layerColumnId(Layer::Column::Mask));
+	headerView->hideSection(layerColumnId(Layer::Column::Renamable));
+	headerView->hideSection(layerColumnId(Layer::Column::Order));
+	//headerView->hideSection(layerColumnId(Layer::Column::Opacity));
+	headerView->hideSection(layerColumnId(Layer::Column::WindowNormalized));
+	headerView->hideSection(layerColumnId(Layer::Column::LevelNormalized));
+	headerView->hideSection(layerColumnId(Layer::Column::ColorMap));
+	headerView->hideSection(layerColumnId(Layer::Column::Image));
+	headerView->hideSection(layerColumnId(Layer::Column::ImageRange));
+	headerView->hideSection(layerColumnId(Layer::Column::DisplayRange));
 
-	headerView->setSectionResizeMode(LayersModel::Columns::Name, QHeaderView::Interactive);
+	headerView->setSectionResizeMode(layerColumnId(Layer::Column::Name), QHeaderView::Interactive);
 
 	auto updateButtons = [this]() {
 		const auto selectedRows = _ui->layersTreeView->selectionModel()->selectedRows();
@@ -151,8 +151,8 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 
 		if (noSelectedRows == 1) {
 			const auto row = selectedRows.at(0).row();
-			const auto name = layersModel()->data(row, LayersModel::Columns::Name, Qt::EditRole).toString();
-			const auto mayRemove = layersModel()->data(row, LayersModel::Columns::Removable, Qt::EditRole).toBool();
+			const auto name = layersModel()->data(row, layerColumnId(Layer::Column::Name), Qt::EditRole).toString();
+			const auto mayRemove = layersModel()->data(row, layerColumnId(Layer::Column::Removable), Qt::EditRole).toBool();
 
 			_ui->layerRemovePushButton->setEnabled(mayRemove);
 			_ui->layerRemovePushButton->setToolTip(mayRemove ? QString("Remove %1").arg(name) : "");
@@ -173,9 +173,9 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 			auto mayRemove = false;
 
 			for (auto index : selectedRows) {
-				if (layersModel()->data(index.row(), LayersModel::Columns::Removable, Qt::EditRole).toBool()) {
+				if (layersModel()->data(index.row(), layerColumnId(Layer::Column::Removable), Qt::EditRole).toBool()) {
 					mayRemove = true;
-					names << layersModel()->data(index.row(), LayersModel::Columns::Name, Qt::EditRole).toString();
+					names << layersModel()->data(index.row(), layerColumnId(Layer::Column::Name), Qt::EditRole).toString();
 				}
 			}
 
@@ -215,25 +215,25 @@ void LayersWidget::updateData(const QModelIndex& topLeft, const QModelIndex& bot
 	const auto selectedRows			= _ui->layersTreeView->selectionModel()->selectedRows();
 	const auto noSelectedRows		= selectedRows.size();
 	const auto singleRowSelection	= noSelectedRows == 1;
-	const auto enabled				= layersModel()->data(topLeft.row(), LayersModel::Columns::Enabled, Qt::EditRole).toBool();
+	const auto enabled				= layersModel()->data(topLeft.row(), layerColumnId(Layer::Column::Enabled), Qt::EditRole).toBool();
 	const auto mightEdit			= singleRowSelection && enabled;
 
-	const auto enabledFlags = layersModel()->flags(layersModel()->index(topLeft.row(), LayersModel::Columns::Enabled));
+	const auto enabledFlags = layersModel()->flags(layersModel()->index(topLeft.row(), layerColumnId(Layer::Column::Enabled)));
 
-	if (topLeft.column() <= LayersModel::Columns::Enabled && bottomRight.column() >= LayersModel::Columns::Enabled) {
+	if (topLeft.column() <= layerColumnId(Layer::Column::Enabled) && bottomRight.column() >= layerColumnId(Layer::Column::Enabled)) {
 		_ui->layerEnabledCheckBox->setEnabled(singleRowSelection && enabledFlags & Qt::ItemIsEditable);
 		_ui->layerEnabledCheckBox->blockSignals(true);
 		_ui->layerEnabledCheckBox->setChecked(singleRowSelection ? enabled : false);
 		_ui->layerEnabledCheckBox->blockSignals(false);
 	}
 
-	const auto nameFlags = layersModel()->flags(layersModel()->index(topLeft.row(), LayersModel::Columns::Name));
+	const auto nameFlags = layersModel()->flags(layersModel()->index(topLeft.row(), layerColumnId(Layer::Column::Name)));
 
 	_ui->layerNameLabel->setEnabled(mightEdit && nameFlags & Qt::ItemIsEditable);
 	_ui->layerNameLineEdit->setEnabled(mightEdit && nameFlags & Qt::ItemIsEditable);
 
-	if (topLeft.column() <= LayersModel::Columns::Name && bottomRight.column() >= LayersModel::Columns::Name) {
-		const auto name = singleRowSelection ? layersModel()->data(topLeft.row(), LayersModel::Columns::Name, Qt::EditRole).toString() : "";
+	if (topLeft.column() <= layerColumnId(Layer::Column::Name) && bottomRight.column() >= layerColumnId(Layer::Column::Name)) {
+		const auto name = singleRowSelection ? layersModel()->data(topLeft.row(), layerColumnId(Layer::Column::Name), Qt::EditRole).toString() : "";
 
 		if (name != _ui->layerNameLineEdit->text()) {
 			_ui->layerNameLineEdit->blockSignals(true);
@@ -242,14 +242,14 @@ void LayersWidget::updateData(const QModelIndex& topLeft, const QModelIndex& bot
 		}
 	}
 
-	const auto opacityFlags = layersModel()->flags(layersModel()->index(topLeft.row(), LayersModel::Columns::Opacity));
+	const auto opacityFlags = layersModel()->flags(layersModel()->index(topLeft.row(), layerColumnId(Layer::Column::Opacity)));
 
 	_ui->layerOpacityLabel->setEnabled(mightEdit && opacityFlags & Qt::ItemIsEditable);
 	_ui->layerOpacityDoubleSpinBox->setEnabled(mightEdit && opacityFlags & Qt::ItemIsEditable);
 	_ui->layerOpacityHorizontalSlider->setEnabled(mightEdit && opacityFlags & Qt::ItemIsEditable);
 
-	if (topLeft.column() <= LayersModel::Columns::Opacity && bottomRight.column() >= LayersModel::Columns::Opacity) {
-		const auto opacity = layersModel()->data(topLeft.row(), LayersModel::Columns::Opacity, Qt::EditRole).toFloat();
+	if (topLeft.column() <= layerColumnId(Layer::Column::Opacity) && bottomRight.column() >= layerColumnId(Layer::Column::Opacity)) {
+		const auto opacity = layersModel()->data(topLeft.row(), layerColumnId(Layer::Column::Opacity), Qt::EditRole).toFloat();
 
 		_ui->layerOpacityDoubleSpinBox->blockSignals(true);
 		_ui->layerOpacityDoubleSpinBox->setValue(singleRowSelection ? 100.0f * opacity : 100.0f);
@@ -260,14 +260,14 @@ void LayersWidget::updateData(const QModelIndex& topLeft, const QModelIndex& bot
 		_ui->layerOpacityHorizontalSlider->blockSignals(false);
 	}
 
-	const auto windowFlags = layersModel()->flags(layersModel()->index(topLeft.row(), LayersModel::Columns::WindowNormalized));
+	const auto windowFlags = layersModel()->flags(layersModel()->index(topLeft.row(), layerColumnId(Layer::Column::WindowNormalized)));
 
 	_ui->layerWindowLabel->setEnabled(mightEdit && windowFlags & Qt::ItemIsEditable);
 	_ui->layerWindowDoubleSpinBox->setEnabled(mightEdit && windowFlags & Qt::ItemIsEditable);
 	_ui->layerWindowHorizontalSlider->setEnabled(mightEdit && windowFlags & Qt::ItemIsEditable);
 
-	if (topLeft.column() <= LayersModel::Columns::WindowNormalized && bottomRight.column() >= LayersModel::Columns::WindowNormalized) {
-		const auto window = layersModel()->data(topLeft.row(), LayersModel::Columns::WindowNormalized, Qt::EditRole).toFloat();
+	if (topLeft.column() <= layerColumnId(Layer::Column::WindowNormalized) && bottomRight.column() >= layerColumnId(Layer::Column::WindowNormalized)) {
+		const auto window = layersModel()->data(topLeft.row(), layerColumnId(Layer::Column::WindowNormalized), Qt::EditRole).toFloat();
 
 		_ui->layerWindowDoubleSpinBox->blockSignals(true);
 		_ui->layerWindowDoubleSpinBox->setValue(singleRowSelection ? window : 1.0f);
@@ -278,14 +278,14 @@ void LayersWidget::updateData(const QModelIndex& topLeft, const QModelIndex& bot
 		_ui->layerWindowHorizontalSlider->blockSignals(false);
 	}
 
-	const auto levelFlags = layersModel()->flags(layersModel()->index(topLeft.row(), LayersModel::Columns::LevelNormalized));
+	const auto levelFlags = layersModel()->flags(layersModel()->index(topLeft.row(), layerColumnId(Layer::Column::LevelNormalized)));
 
 	_ui->layerLevelLabel->setEnabled(mightEdit && levelFlags & Qt::ItemIsEditable);
 	_ui->layerLevelDoubleSpinBox->setEnabled(mightEdit && levelFlags & Qt::ItemIsEditable);
 	_ui->layerLevelHorizontalSlider->setEnabled(mightEdit && levelFlags & Qt::ItemIsEditable);
 
-	if (topLeft.column() <= LayersModel::Columns::LevelNormalized && bottomRight.column() >= LayersModel::Columns::LevelNormalized) {
-		const auto level = layersModel()->data(topLeft.row(), LayersModel::Columns::LevelNormalized, Qt::EditRole).toFloat();
+	if (topLeft.column() <= layerColumnId(Layer::Column::LevelNormalized) && bottomRight.column() >= layerColumnId(Layer::Column::LevelNormalized)) {
+		const auto level = layersModel()->data(topLeft.row(), layerColumnId(Layer::Column::LevelNormalized), Qt::EditRole).toFloat();
 
 		_ui->layerLevelDoubleSpinBox->blockSignals(true);
 		_ui->layerLevelDoubleSpinBox->setValue(singleRowSelection ? level : 0.5f);
@@ -296,11 +296,11 @@ void LayersWidget::updateData(const QModelIndex& topLeft, const QModelIndex& bot
 		_ui->layerLevelHorizontalSlider->blockSignals(false);
 	}
 
-	const auto maskFlags = layersModel()->flags(layersModel()->index(topLeft.row(), LayersModel::Columns::Mask));
+	const auto maskFlags = layersModel()->flags(layersModel()->index(topLeft.row(), layerColumnId(Layer::Column::Mask)));
 
 	_ui->maskCheckBox->setEnabled(mightEdit && maskFlags & Qt::ItemIsEditable);
 
-	const auto colorFlags = layersModel()->flags(layersModel()->index(topLeft.row(), LayersModel::Columns::ColorMap));
+	const auto colorFlags = layersModel()->flags(layersModel()->index(topLeft.row(), layerColumnId(Layer::Column::ColorMap)));
 }
 
 void LayersWidget::dragEnterEvent(QDragEnterEvent* dragEnterEvent)

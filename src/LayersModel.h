@@ -10,31 +10,6 @@ class ImageViewerPlugin;
 /** TODO */
 class LayersModel : public QAbstractListModel
 {
-public: // Columns
-	
-	/** TODO */
-	enum Columns : int {
-		Enabled,
-		Type,
-		Locked,
-		ID,						// Name for internal use
-		Name,					// Name in the user interface
-		Dataset,				// Name in the user interface
-		Flags,
-		Frozen,
-		Removable,
-		Mask,
-		Renamable,
-		Order,
-		Opacity,
-		WindowNormalized,
-		LevelNormalized,
-		ColorMap,				//
-		Image,
-		ImageRange,
-		DisplayRange
-	};
-
 public: // Construction/destruction
 
 	/** Constructor */
