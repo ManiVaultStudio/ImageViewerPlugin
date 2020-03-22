@@ -27,7 +27,7 @@ int LayersModel::columnCount(const QModelIndex& parent /*= QModelIndex()*/) cons
 {
 	Q_UNUSED(parent);
 
-	return Layer::columnCount();
+	return 20;
 }
 
 QVariant LayersModel::data(const QModelIndex& index, int role) const
@@ -38,7 +38,7 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 	if (index.row() >= rowCount() || index.row() < 0)
 		return QVariant();
 
-	return _layers.at(index.row())->data(index.column(), role);
+	return _layers.at(index.row())->data(static_cast<LayerColumn>(index.column()), role);
 }
 
 QVariant LayersModel::headerData(int section, Qt::Orientation orientation, int role) const
@@ -54,7 +54,7 @@ Qt::ItemFlags LayersModel::flags(const QModelIndex& index) const
 	if (!index.isValid())
 		return Qt::ItemIsEnabled;
 
-	return _layers.at(index.row())->itemFlags(index.column());
+	return _layers.at(index.row())->itemFlags(static_cast<LayerColumn>(index.column()));
 }
 
 bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int role /*= Qt::DisplayRole*/)
@@ -62,7 +62,7 @@ bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int r
 	if (!index.isValid())
 		return false;
 
-	_layers.value(index.row())->setData(index.column(), value, role);
+	_layers.value(index.row())->setData(static_cast<LayerColumn>(index.column()), value, role);
 
 	emit dataChanged(index, index);
 
@@ -116,19 +116,19 @@ bool LayersModel::moveRows(const QModelIndex& sourceParent, int sourceRow, int c
 	return true;
 }
 
-QVariant LayersModel::data(const int& row, const int& column, int role) const
+QVariant LayersModel::data(const int& row, const LayerColumn& column, int role) const
 {
-	const auto modelIndex = index(row, column);
+	const auto modelIndex = index(row, static_cast<int>(column));
 
 	if (!modelIndex.isValid())
 		return QVariant();
 
-	return data(index(row, column), role);
+	return data(index(row, static_cast<int>(column)), role);
 }
 
-void LayersModel::setData(const int& row, const int& column, const QVariant& value)
+void LayersModel::setData(const int& row, const LayerColumn& column, const QVariant& value)
 {
-	const auto modelIndex = index(row, column);
+	const auto modelIndex = index(row, static_cast<int>(column));
 
 	if (!modelIndex.isValid())
 		return;
@@ -141,7 +141,7 @@ bool LayersModel::mayMoveUp(const int& row)
 	if (row <= 0)
 		return false;
 
-	if (_layers.at(row)->flag(Layer::Flag::Frozen, Qt::EditRole).toBool() || _layers.at(row - 1)->flag(Layer::Flag::Frozen, Qt::EditRole).toBool())
+	if (_layers.at(row)->general().flag(LayerFlag::Frozen, Qt::EditRole).toBool() || _layers.at(row - 1)->general().flag(LayerFlag::Frozen, Qt::EditRole).toBool())
 		return false;
 
 	return true;
@@ -152,7 +152,7 @@ bool LayersModel::mayMoveDown(const int& row)
 	if (row >= rowCount() - 1)
 		return false;
 
-	if (_layers.at(row)->flag(Layer::Flag::Frozen, Qt::EditRole).toBool() || _layers.at(row + 1)->flag(Layer::Flag::Frozen, Qt::EditRole).toBool())
+	if (_layers.at(row)->general().flag(LayerFlag::Frozen, Qt::EditRole).toBool() || _layers.at(row + 1)->general().flag(LayerFlag::Frozen, Qt::EditRole).toBool())
 		return false;
 
 	return true;
@@ -179,7 +179,7 @@ void LayersModel::moveDown(const int& row)
 void LayersModel::sortOrder()
 {
 	for (int row = 0; row < rowCount(); row++)
-		setData(row, layerColumnId(Layer::Column::Order), rowCount() - row);
+		setData(row, layerColumnId(LayerColumn::Order), rowCount() - row);
 }
 
 void LayersModel::removeRows(const QModelIndexList& rows)
@@ -189,7 +189,7 @@ void LayersModel::removeRows(const QModelIndexList& rows)
 	for (const auto& index : rows) {
 		const auto row = index.row();
 
-		if (_layers.at(row)->flag(Layer::Flag::Removable, Qt::EditRole).toBool()) {
+		if (_layers.at(row)->general().flag(LayerFlag::Removable, Qt::EditRole).toBool()) {
 			rowsToRemove.append(row);
 		}
 	}
@@ -212,19 +212,19 @@ void LayersModel::removeRows(const QModelIndexList& rows)
 
 void LayersModel::renameLayer(const QString& id, const QString& name)
 {
-	const auto hits = match(index(0, layerColumnId(Layer::Column::ID)), Qt::EditRole, id, -1, Qt::MatchExactly);
+	const auto hits = match(index(0, layerColumnId(LayerColumn::ID)), Qt::EditRole, id, -1, Qt::MatchExactly);
 
 	if (hits.isEmpty())
 		return;
 
 	const auto firstHit = hits.first();
 
-	setData(firstHit.row(), layerColumnId(Layer::Column::Name), name);
+	setData(firstHit.row(), layerColumnId(LayerColumn::Name), name);
 }
 
 Layer* LayersModel::findLayerById(const QString& id)
 {
-	const auto hits = match(index(0, layerColumnId(Layer::Column::ID)), Qt::DisplayRole, id, -1, Qt::MatchExactly);
+	const auto hits = match(index(0, layerColumnId(LayerColumn::ID)), Qt::DisplayRole, id, -1, Qt::MatchExactly);
 
 	if (hits.isEmpty())
 		return nullptr;
@@ -241,36 +241,4 @@ void LayersModel::addLayer(Layer* layer)
 	endInsertRows();
 
 	sortOrder();
-}
-
-void LayersModel::renameDefaultLayers(const QString& name)
-{
-	const auto hits = match(index(0, layerColumnId(Layer::Column::ID)), Qt::DisplayRole, "default", -1, Qt::MatchStartsWith);
-
-	if (hits.isEmpty())
-		return;
-
-	for (auto hit : hits) {
-		setData(hit.row(), layerColumnId(Layer::Column::Name), name);
-	}
-}
-
-void LayersModel::setDefaultColorImage(const QImage& image)
-{
-	const auto hits = match(index(0, layerColumnId(Layer::Column::ID)), Qt::DisplayRole, "default_color", -1, Qt::MatchExactly);
-
-	if (hits.isEmpty())
-		return;
-
-	setData(hits.first().row(), layerColumnId(Layer::Column::Image), image);
-}
-
-void LayersModel::setDefaultSelectionImage(const QImage& image)
-{
-	const auto hits = match(index(0, layerColumnId(Layer::Column::ID)), Qt::DisplayRole, "default_selection", -1, Qt::MatchExactly);
-
-	if (hits.isEmpty())
-		return;
-
-	setData(hits.first().row(), layerColumnId(Layer::Column::Image), image);
 }

@@ -53,10 +53,10 @@ public: // Inherited members
 public: // Overloaded data access
 	
 	/** TODO */
-	QVariant data(const int& row, const int& column, int role) const;
+	QVariant data(const int& row, const LayerColumn& column, int role) const;
 
 	/** TODO */
-	void setData(const int& row, const int& column, const QVariant& value);
+	void setData(const int& row, const LayerColumn& column, const QVariant& value);
 
 public: // TODO
 
@@ -86,15 +86,6 @@ public: // TODO
 
 	/** TODO */
 	void addLayer(Layer* layer);
-
-	/** TODO */
-	void renameDefaultLayers(const QString& name);
-
-	/** TODO */
-	void setDefaultColorImage(const QImage& image);
-
-	/** TODO */
-	void setDefaultSelectionImage(const QImage& image);
 
 private:
 	ImageViewerPlugin*		_imageViewerPlugin;		/** TODO */

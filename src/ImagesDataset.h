@@ -9,58 +9,10 @@ class ImagesDataset : public Dataset
 {
 public:
 	/** TODO */
-	enum class Column {
-		NoImages,			/** TODO */
-		Width,				/** TODO */
-		Height,				/** TODO */
-		Size				/** TODO */
-	};
-
-	static QString columnName(const Column& column) {
-		switch (column)
-		{
-			case Column::NoImages:
-				return "No. Images";
-
-			case Column::Width:
-				return "Width";
-
-			case Column::Height:
-				return "Height";
-
-			case Column::Size:
-				return "Size";
-
-			default:
-				break;
-		}
-
-		return "";
-	}
-
-public:
-	/** TODO */
 	ImagesDataset(ImageViewerPlugin* imageViewerPlugin, const QString& name);
 
 	/** TODO */
 	void init();
-
-public: // Inherited model members
-
-	/** TODO */
-	int columnCount(const QModelIndex& parent = QModelIndex()) const override;
-
-	/** TODO */
-	QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
-
-	/** TODO */
-	Qt::ItemFlags flags(const QModelIndex &index) const override;
-
-	/** TODO */
-	QVariant data(const int& row, const int& column, int role) const override;
-
-	/** TODO */
-	void setData(const int& row, const int& column, const QVariant& value) override;
 
 public: // Getters/setters
 
@@ -95,9 +47,6 @@ public: // Getters/setters
 	QVariant imageNames(const int& role = Qt::DisplayRole) const;
 
 	/** TODO */
-	QVariant filteredImageNames(const int& role = Qt::DisplayRole) const;
-
-	/** TODO */
 	QVariant imageIds(const int& role = Qt::DisplayRole) const;
 
 	/** TODO */
@@ -108,24 +57,6 @@ public: // Getters/setters
 
 	/** TODO */
 	void setImageFilePaths(const QStringList& imageFilePaths);
-
-	/** TODO */
-	QVariant currentImage(const int& role = Qt::DisplayRole) const;
-
-	/** TODO */
-	void setCurrentImage(const std::uint32_t& currentImage);
-
-	/** TODO */
-	QVariant currentImageName(const int& role = Qt::DisplayRole) const;
-
-	/** TODO */
-	QVariant currentImageFilePath(const int& role = Qt::DisplayRole) const;
-
-	/** TODO */
-	QVariant average(const int& role = Qt::DisplayRole) const;
-
-	/** TODO */
-	void setAverage(const bool& average);
 
 	/** TODO */
 	QVariant pointsName(const int& role = Qt::DisplayRole) const;
@@ -150,8 +81,6 @@ private:
 	std::uint32_t		_noDimensions;			/** TODO */
 	QStringList			_imageNames;			/** TODO */
 	QStringList			_imageFilePaths;		/** TODO */
-	std::int32_t		_currentImage;			/** TODO */
-	bool				_average;				/** TODO */
 	QString				_pointsName;			/** TODO */
 	Indices				_selection;				/** TODO */
 };

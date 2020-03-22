@@ -141,3 +141,216 @@ inline QString actorEventName(const ActorEvent& actorEvent)
 enum Roles {
 	FontIconText = Qt::UserRole
 };
+
+/** TODO */
+enum class LayerType {
+	Points,			/** TODO */
+	Images,			/** TODO */
+	Clusters,		/** TODO */
+	Selection		/** TODO */
+};
+
+/** TODO */
+static QString layerTypeName(const LayerType& type) {
+	switch (type)
+	{
+		case LayerType::Images:
+			return "Image";
+
+		case LayerType::Selection:
+			return "Selection";
+
+		case LayerType::Clusters:
+			return "Clusters";
+
+		case LayerType::Points:
+			return "Points";
+
+		default:
+			break;
+	}
+
+	return "";
+}
+
+/** TODO */
+enum LayerColumn {
+	Enabled,
+	Type,
+	Locked,
+	ID,						// Name for internal use
+	Name,					// Name in the user interface
+	Dataset,				// Name in the user interface
+	Flags,
+	Frozen,
+	Removable,
+	Mask,
+	Renamable,
+	Order,
+	Opacity,
+	WindowNormalized,
+	LevelNormalized,
+	ColorMap,
+	Image,
+	ImageRange,
+	DisplayRange,
+
+	// Selection
+	// Points
+
+	// Images
+	NoImages,
+	Width,
+	Height,
+	Size,
+	NoPoints,
+	NoDimensions,
+	ImageNames,
+	FilteredImageNames,
+	ImageIDs,
+	ImageFilePaths,
+	CurrentImageId,
+	CurrentImageName,
+	CurrentImageFilePath,
+	Average,
+	Selection,
+
+	// Clusters
+	ClustersStart,
+	ClustersEnd,
+
+	// General settings column range
+	GeneralStart = Enabled,
+	GeneralEnd = DisplayRange,
+
+	// Selection layer settings column range
+	SelectionStart,
+	SelectionEnd,
+
+	// Points layer settings column range
+	PointsStart,
+	PointsEnd,
+
+	// Images layer settings column range
+	ImagesStart,
+	ImagesEnd,
+
+	End
+};
+
+static QString layerColumnName(const LayerColumn& column) {
+	switch (column) {
+		case LayerColumn::Enabled:
+		case LayerColumn::Type:
+		case LayerColumn::Locked:
+			return "";
+
+		case LayerColumn::ID:
+			return "ID";
+
+		case LayerColumn::Name:
+			return "Name";
+
+		case LayerColumn::Dataset:
+			return "Dataset";
+
+		case LayerColumn::Flags:
+			return "Flags";
+
+		case LayerColumn::Frozen:
+			return "Frozen";
+
+		case LayerColumn::Removable:
+			return "Removable";
+
+		case LayerColumn::Mask:
+			return "Mask";
+
+		case LayerColumn::Renamable:
+			return "Renamable";
+
+		case LayerColumn::Order:
+			return "Order";
+
+		case LayerColumn::Opacity:
+			return "Opacity";
+
+		case LayerColumn::WindowNormalized:
+			return "Window";
+
+		case LayerColumn::LevelNormalized:
+			return "Level";
+
+		case LayerColumn::ColorMap:
+			return "Color";
+
+		case LayerColumn::Image:
+			return "Image";
+
+		case LayerColumn::ImageRange:
+			return "Image range";
+
+		case LayerColumn::DisplayRange:
+			return "Display range";
+
+		case LayerColumn::NoImages:
+			return "No. images";
+
+		case LayerColumn::Width:
+			return "Width";
+
+		case LayerColumn::Height:
+			return "Height";
+
+		case LayerColumn::Size:
+			return "Size";
+
+		case LayerColumn::NoPoints:
+			return "NoPoints";
+
+		case LayerColumn::NoDimensions:
+			return "NoDimensions";
+
+		case LayerColumn::ImageNames:
+			return "ImageNames";
+
+		case LayerColumn::FilteredImageNames:
+			return "FilteredImageNames";
+
+		case LayerColumn::ImageIDs:
+			return "ImageIDs";
+
+		case LayerColumn::ImageFilePaths:
+			return "ImageFilePaths";
+
+		case LayerColumn::CurrentImageId:
+			return "CurrentImageId";
+
+		case LayerColumn::CurrentImageName:
+			return "CurrentImageName";
+
+		case LayerColumn::CurrentImageFilePath:
+			return "CurrentImageFilePath";
+
+		case LayerColumn::Average:
+			return "Average";
+
+		case LayerColumn::Selection:
+			return "Selection";
+
+		default:
+			return QString();
+	}
+
+	return QString();
+}
+
+/** TODO */
+enum class LayerFlag {
+	Enabled		= 0x01,		/** TODO */
+	Frozen		= 0x02,		/** TODO */
+	Removable	= 0x04,		/** TODO */
+	Mask		= 0x08,		/** TODO */
+	Renamable	= 0x20,		/** TODO */
+	Renderable	= 0x40		/** TODO */
+};

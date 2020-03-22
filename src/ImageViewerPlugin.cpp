@@ -147,7 +147,7 @@ void ImageViewerPlugin::dataAdded(const QString dataset)
 			}
 
 			imageDataset->setImageNames(imageNames);
-			imageDataset->addLayer("default_color", "Color", Layer::Type::Image, Layer::Flags::Enabled | Layer::Flags::Enabled);
+			imageDataset->addLayer("default_color", "Color", Layer::Type::Image, LayerFlags::Enabled | LayerFlags::Enabled);
 			break;
 		}
 
@@ -161,9 +161,9 @@ void ImageViewerPlugin::dataAdded(const QString dataset)
 
 			imageDataset->setImageNames(dimensionNames);
 
-			imageDataset->addLayer("default_color", "Color", Layer::Type::Image, Layer::Flags::Enabled);
-			imageDataset->addLayer("default_selection", "Selection", Layer::Type::Selection, Layer::Flags::Enabled);
-			//imageDataset->addLayer("layer_0", "Cluster", Layer::Type::MetaData, Layer::Flags::Enabled | Layer::Flags::Removable | Layer::Flags::Renamable);
+			imageDataset->addLayer("default_color", "Color", Layer::Type::Image, LayerFlags::Enabled);
+			imageDataset->addLayer("default_selection", "Selection", Layer::Type::Selection, LayerFlags::Enabled);
+			//imageDataset->addLayer("layer_0", "Cluster", Layer::Type::MetaData, LayerFlags::Enabled | LayerFlags::Removable | LayerFlags::Renamable);
 			break;
 		}
 
