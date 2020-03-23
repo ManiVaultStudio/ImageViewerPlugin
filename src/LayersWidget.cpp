@@ -54,27 +54,14 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 
 	headerView->setSectionResizeMode(QHeaderView::ResizeToContents);
 
-	//headerView->hideSection(layerColumnId(LayerColumn::Type)));
-	//headerView->hideSection(layerColumnId(LayerColumn::Enabled));
-	headerView->hideSection(layerColumnId(LayerColumn::Locked));
-	headerView->hideSection(layerColumnId(LayerColumn::ID));
-	//headerView->hideSection(layerColumnId(LayerColumn::Name));
-	//headerView->hideSection(layerColumnId(LayerColumn::Dataset));
-	headerView->hideSection(layerColumnId(LayerColumn::Flags));
-	headerView->hideSection(layerColumnId(LayerColumn::Frozen));
-	headerView->hideSection(layerColumnId(LayerColumn::Removable));
-	headerView->hideSection(layerColumnId(LayerColumn::Mask));
-	headerView->hideSection(layerColumnId(LayerColumn::Renamable));
-	headerView->hideSection(layerColumnId(LayerColumn::Order));
-	//headerView->hideSection(layerColumnId(LayerColumn::Opacity));
-	headerView->hideSection(layerColumnId(LayerColumn::WindowNormalized));
-	headerView->hideSection(layerColumnId(LayerColumn::LevelNormalized));
-	headerView->hideSection(layerColumnId(LayerColumn::ColorMap));
-	headerView->hideSection(layerColumnId(LayerColumn::Image));
-	headerView->hideSection(layerColumnId(LayerColumn::ImageRange));
-	headerView->hideSection(layerColumnId(LayerColumn::DisplayRange));
+	for (int column = Layer::columnId(Layer::Column::Start); column < Layer::columnId(Layer::Column::End); column++)
+		headerView->hideSection(column);
 
-	headerView->setSectionResizeMode(layerColumnId(LayerColumn::Name), QHeaderView::Interactive);
+	headerView->showSection(Layer::columnId(Layer::Column::Type));
+	headerView->showSection(Layer::columnId(Layer::Column::Name));
+	headerView->showSection(Layer::columnId(Layer::Column::Opacity));
+
+	headerView->setSectionResizeMode(Layer::columnId(Layer::Column::Name), QHeaderView::Interactive);
 
 	auto updateButtons = [this]() {
 		const auto selectedRows = _ui->layersTreeView->selectionModel()->selectedRows();
@@ -90,8 +77,8 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 
 		if (noSelectedRows == 1) {
 			const auto row = selectedRows.at(0).row();
-			const auto name = layersModel()->data(row, layerColumnId(LayerColumn::Name), Qt::EditRole).toString();
-			const auto mayRemove = layersModel()->data(row, layerColumnId(LayerColumn::Removable), Qt::EditRole).toBool();
+			const auto name = layersModel()->data(row, Layer::Column::Name, Qt::EditRole).toString();
+			const auto mayRemove = layersModel()->data(row, Layer::Column::Removable, Qt::EditRole).toBool();
 
 			_ui->layerRemovePushButton->setEnabled(mayRemove);
 			_ui->layerRemovePushButton->setToolTip(mayRemove ? QString("Remove %1").arg(name) : "");
@@ -112,9 +99,9 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 			auto mayRemove = false;
 
 			for (auto index : selectedRows) {
-				if (layersModel()->data(index.row(), layerColumnId(LayerColumn::Removable), Qt::EditRole).toBool()) {
+				if (layersModel()->data(index.row(), Layer::Column::Removable, Qt::EditRole).toBool()) {
 					mayRemove = true;
-					names << layersModel()->data(index.row(), layerColumnId(LayerColumn::Name), Qt::EditRole).toString();
+					names << layersModel()->data(index.row(), Layer::Column::Name, Qt::EditRole).toString();
 				}
 			}
 
@@ -176,7 +163,7 @@ void LayersWidget::dropEvent(QDropEvent* dropEvent)
 	const auto datasetType				= items.at(1);
 	const auto selectionName			= QString("%1_selection").arg(datasetName);
 	const auto createSelectionLayer		= layersModel()->findLayerById(selectionName) == nullptr;
-	const auto layerFlags				= static_cast<int>(LayerFlag::Enabled) | static_cast<int>(LayerFlag::Removable);
+	const auto layerFlags				= static_cast<int>(Layer::Flag::Enabled) | static_cast<int>(Layer::Flag::Removable);
 
 	if (datasetType == "Points") {
 		const auto points = _imageViewerPlugin->requestData<Points>(datasetName);
@@ -186,15 +173,15 @@ void LayersWidget::dropEvent(QDropEvent* dropEvent)
 		switch (points.getNumDimensions())
 		{
 			case 1:
-				layersModel()->addLayer(new Layer(dataset, datasetName, datasetName, LayerType::Points, layerFlags));
+				layersModel()->addLayer(new Layer(dataset, datasetName, datasetName, Layer::Type::Points, layerFlags));
 				break;
 
 			case 2:
-				layersModel()->addLayer(new Layer(dataset, datasetName, datasetName, LayerType::Points, layerFlags));
+				layersModel()->addLayer(new Layer(dataset, datasetName, datasetName, Layer::Type::Points, layerFlags));
 				break;
 
 			case 3:
-				layersModel()->addLayer(new Layer(dataset, datasetName, datasetName, LayerType::Points, layerFlags));
+				layersModel()->addLayer(new Layer(dataset, datasetName, datasetName, Layer::Type::Points, layerFlags));
 				break;
 
 			default:
@@ -202,7 +189,7 @@ void LayersWidget::dropEvent(QDropEvent* dropEvent)
 		}
 
 		if (createSelectionLayer)
-			layersModel()->addLayer(new Layer(dataset, selectionName, selectionName, LayerType::Selection, layerFlags));
+			layersModel()->addLayer(new Layer(dataset, selectionName, selectionName, Layer::Type::Selection, layerFlags));
 
 		dataset->init();
 	}
@@ -213,10 +200,10 @@ void LayersWidget::dropEvent(QDropEvent* dropEvent)
 
 		auto dataset = datasetsModel()->addDataset(datasetName, Dataset::Type::Images);
 
-		layersModel()->addLayer(new Layer(dataset, imagesName, imagesName, LayerType::Images, layerFlags));
+		layersModel()->addLayer(new Layer(dataset, imagesName, imagesName, Layer::Type::Images, layerFlags));
 
 		if (createSelectionLayer)
-			layersModel()->addLayer(new Layer(dataset, selectionName, selectionName, LayerType::Selection, layerFlags));
+			layersModel()->addLayer(new Layer(dataset, selectionName, selectionName, Layer::Type::Selection, layerFlags));
 
 		dataset->init();
 	}

@@ -1,92 +1,98 @@
 #include "Layer.h"
 #include "Dataset.h"
 
+#include "GeneralSettings.h"
+#include "PointsSettings.h"
+#include "ImagesSettings.h"
+#include "ClustersSettings.h"
+
 #include <QFont>
 #include <QDebug>
 
-Layer::Layer(Dataset* dataset, const QString& id /*= ""*/, const QString& name /*= ""*/, const LayerType& type /*= Type::Image*/, const std::uint32_t& flags) :
+Layer::Layer(Dataset* dataset, const QString& id /*= ""*/, const QString& name /*= ""*/, const Type& type /*= Type::Image*/, const std::uint32_t& flags) :
 	QObject(dataset),
-	_general(dataset, id, name, type, flags),
-	_points(dataset),
-	_images(dataset),
-	_clusters(dataset)
+	_general(new GeneralSettings(this, dataset, id, name, type, flags)),
+	_points(new PointsSettings(this, dataset)),
+	_images(new ImagesSettings(this, dataset)),
+	_clusters(new ClustersSettings(this, dataset))
 {
+	
 }
 
-int LayerColumnCount()
+int Layer::columnCount()
 {
-	return static_cast<int>(LayerColumn::End);
+	return static_cast<int>(Layer::Column::GeneralEnd);
 }
 
 QVariant Layer::headerData(int section, Qt::Orientation orientation, int role)
 {
 	if (orientation == Qt::Horizontal) {
-		return layerColumnName(static_cast<LayerColumn>(section));
+		return columnName(static_cast<Column>(section));
 	}
 
 	return QVariant();
 }
 
-Qt::ItemFlags Layer::itemFlags(const LayerColumn& column) const
+Qt::ItemFlags Layer::itemFlags(const Column& column) const
 {
-	if (column > LayerColumn::GeneralStart && column < LayerColumn::GeneralEnd)
-		return _general.itemFlags(column);
+	if (column > Column::GeneralStart && column < Column::GeneralEnd)
+		return _general->itemFlags(column);
 
 	/*
-	if (column > LayerColumn::SelectionStart && column < LayerColumn::SelectionEnd)
+	if (column > Column::SelectionStart && column < Column::SelectionEnd)
 		return _selection.itemFlags(column);
 	*/
 
-	if (column > LayerColumn::PointsStart && column < LayerColumn::PointsEnd)
-		return _points.itemFlags(column);
+	if (column > Column::PointsStart && column < Column::PointsEnd)
+		return _points->itemFlags(column);
 
-	if (column > LayerColumn::ImagesStart && column < LayerColumn::ImagesEnd)
-		return _images.itemFlags(column);
+	if (column > Column::ImagesStart && column < Column::ImagesEnd)
+		return _images->itemFlags(column);
 
-	if (column > LayerColumn::ClustersStart && column < LayerColumn::ClustersEnd)
-		return _clusters.itemFlags(column);
+	if (column > Column::ClustersStart && column < Column::ClustersEnd)
+		return _clusters->itemFlags(column);
 
 	return Qt::NoItemFlags;
 }
 
-QVariant Layer::data(const LayerColumn& column, int role) const
+QVariant Layer::data(const Column& column, int role) const
 {
-	if (column > LayerColumn::GeneralStart && column < LayerColumn::GeneralEnd)
-		return _general.data(column, role);
+	if (column > Column::GeneralStart && column < Column::GeneralEnd)
+		return _general->data(column, role);
 
 	/*
-	if (column > LayerColumn::SelectionStart && column < LayerColumn::SelectionEnd)
+	if (column > Column::SelectionStart && column < Column::SelectionEnd)
 		return _selection.data(column, role);
 	*/
 
-	if (column > LayerColumn::PointsStart && column < LayerColumn::PointsEnd)
-		return _points.data(column, role);
+	if (column > Column::PointsStart && column < Column::PointsEnd)
+		return _points->data(column, role);
 
-	if (column > LayerColumn::ImagesStart && column < LayerColumn::ImagesEnd)
-		return _images.data(column, role);
+	if (column > Column::ImagesStart && column < Column::ImagesEnd)
+		return _images->data(column, role);
 
-	if (column > LayerColumn::ClustersStart && column < LayerColumn::ClustersEnd)
-		return _clusters.data(column, role);
+	if (column > Column::ClustersStart && column < Column::ClustersEnd)
+		return _clusters->data(column, role);
 
 	return QVariant();
 }
 
-void Layer::setData(const LayerColumn& column, const QVariant& value, const int& role)
+void Layer::setData(const Column& column, const QVariant& value, const int& role)
 {
-	if (column > LayerColumn::GeneralStart && column < LayerColumn::GeneralEnd)
-		return _general.setData(column, value, role);
+	if (column > Column::GeneralStart && column < Column::GeneralEnd)
+		return _general->setData(column, value, role);
 
 	/*
-	if (column > LayerColumn::SelectionStart && column < LayerColumn::SelectionEnd)
+	if (column > Column::SelectionStart && column < Column::SelectionEnd)
 		return _selection.data(column, value, role);
 	*/
 
-	if (column > LayerColumn::PointsStart && column < LayerColumn::PointsEnd)
-		return _points.setData(column, value, role);
+	if (column > Column::PointsStart && column < Column::PointsEnd)
+		return _points->setData(column, value, role);
 
-	if (column > LayerColumn::ImagesStart && column < LayerColumn::ImagesEnd)
-		return _images.setData(column, value, role);
+	if (column > Column::ImagesStart && column < Column::ImagesEnd)
+		return _images->setData(column, value, role);
 
-	if (column > LayerColumn::ClustersStart && column < LayerColumn::ClustersEnd)
-		return _clusters.setData(column, value, role);
+	if (column > Column::ClustersStart && column < Column::ClustersEnd)
+		return _clusters->setData(column, value, role);
 }

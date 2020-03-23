@@ -9,18 +9,18 @@ class ImagesSettings : public Settings<ImagesDataset>
 public:
 
 	/** TODO */
-	ImagesSettings(Dataset* dataset);
+	ImagesSettings(QObject* parent, Dataset* dataset);
 
 public: // MVC
 
 	/** TODO */
-	Qt::ItemFlags itemFlags(const LayerColumn& column) const override;
+	Qt::ItemFlags itemFlags(const Layer::Column& column) const override;
 
 	/** TODO */
-	QVariant data(const LayerColumn& column, int role) const override;
+	QVariant data(const Layer::Column& column, int role) const override;
 
 	/** TODO */
-	void setData(const LayerColumn& column, const QVariant& value, const int& role) override;
+	void setData(const Layer::Column& column, const QVariant& value, const int& role) override;
 
 public: // Getters/setters
 

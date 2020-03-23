@@ -3,8 +3,8 @@
 #include <QFont>
 #include <QDebug>
 
-GeneralSettings::GeneralSettings(Dataset* dataset, const QString& id, const QString& name, const LayerType& type, const std::uint32_t& flags) :
-	Settings(dataset),
+GeneralSettings::GeneralSettings(QObject* parent, Dataset* dataset, const QString& id, const QString& name, const Layer::Type& type, const std::uint32_t& flags) :
+	Settings(parent, dataset),
 	_id(id),
 	_name(name),
 	_type(type),
@@ -22,80 +22,80 @@ GeneralSettings::GeneralSettings(Dataset* dataset, const QString& id, const QStr
 {
 }
 
-Qt::ItemFlags GeneralSettings::itemFlags(const LayerColumn& column) const
+Qt::ItemFlags GeneralSettings::itemFlags(const Layer::Column& column) const
 {
 	int flags = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
 
-	const auto type = static_cast<LayerType>(_type);
+	const auto type = static_cast<Layer::Type>(_type);
 
-	switch (static_cast<LayerColumn>(column)) {
-		case LayerColumn::Enabled:
+	switch (static_cast<Layer::Column>(column)) {
+		case Layer::Column::Enabled:
 			flags |= Qt::ItemIsEditable | Qt::ItemIsUserCheckable;
 			break;
 
-		case LayerColumn::Type:
-		case LayerColumn::Locked:
-		case LayerColumn::ID:
+		case Layer::Column::Type:
+		case Layer::Column::Locked:
+		case Layer::Column::ID:
 			break;
 
-		case LayerColumn::Name:
+		case Layer::Column::Name:
 		{
-			if (flag(LayerFlag::Renamable, Qt::EditRole).toBool())
+			if (flag(Layer::Flag::Renamable, Qt::EditRole).toBool())
 				flags |= Qt::ItemIsEditable;
 
 			break;
 		}
 
-		case LayerColumn::Dataset:
-		case LayerColumn::Flags:
-		case LayerColumn::Frozen:
-		case LayerColumn::Removable:
+		case Layer::Column::Dataset:
+		case Layer::Column::Flags:
+		case Layer::Column::Frozen:
+		case Layer::Column::Removable:
 			break;
 
-		case LayerColumn::Mask:
+		case Layer::Column::Mask:
 		{
-			if (type == LayerType::Selection)
+			if (type == Layer::Type::Selection)
 				flags |= Qt::ItemIsEditable;
 
 			break;
 		}
 
-		case LayerColumn::Order:
+		case Layer::Column::Order:
 			break;
 
-		case LayerColumn::Opacity:
+		case Layer::Column::Opacity:
 			flags |= Qt::ItemIsEditable;
 			break;
 
-		case LayerColumn::WindowNormalized:
+		case Layer::Column::WindowNormalized:
 		{
-			if (type == LayerType::Images)
+			if (type == Layer::Type::Images)
 				flags |= Qt::ItemIsEditable;
 
 			break;
 		}
 
-		case LayerColumn::LevelNormalized:
+		case Layer::Column::LevelNormalized:
 		{
-			if (type == LayerType::Images)
+			if (type == Layer::Type::Images)
 				flags |= Qt::ItemIsEditable;
 
 			break;
 		}
 
-		case LayerColumn::ColorMap:
+		case Layer::Column::ColorMap:
 		{
-			if (type == LayerType::Selection)
+			if (type == Layer::Type::Selection)
 				flags |= Qt::ItemIsEditable;
 
 			break;
 		}
 
-		case LayerColumn::Image:
+		case Layer::Column::Image:
 			break;
 
-		case LayerColumn::ImageRange:
-		case LayerColumn::DisplayRange:
+		case Layer::Column::ImageRange:
+		case Layer::Column::DisplayRange:
 			break;
 
 		default:
@@ -105,14 +105,14 @@ Qt::ItemFlags GeneralSettings::itemFlags(const LayerColumn& column) const
 	return flags;
 }
 
-QVariant GeneralSettings::data(const LayerColumn& column, int role) const
+QVariant GeneralSettings::data(const Layer::Column& column, int role) const
 {
 	switch (role)
 	{
 		case Qt::FontRole:
 		{
-			switch (static_cast<LayerColumn>(column)) {
-				case LayerColumn::Type:
+			switch (static_cast<Layer::Column>(column)) {
+				case Layer::Column::Type:
 					return type(Qt::FontRole).toString();
 
 				default:
@@ -124,9 +124,9 @@ QVariant GeneralSettings::data(const LayerColumn& column, int role) const
 
 		case Qt::CheckStateRole:
 		{
-			switch (static_cast<LayerColumn>(column)) {
-				case LayerColumn::Enabled:
-					return flag(LayerFlag::Enabled, Qt::EditRole).toBool() ? Qt::Checked : Qt::Unchecked;
+			switch (static_cast<Layer::Column>(column)) {
+				case Layer::Column::Enabled:
+					return flag(Layer::Flag::Enabled, Qt::EditRole).toBool() ? Qt::Checked : Qt::Unchecked;
 			}
 
 			break;
@@ -134,62 +134,62 @@ QVariant GeneralSettings::data(const LayerColumn& column, int role) const
 
 		case Qt::DisplayRole:
 		{
-			switch (static_cast<LayerColumn>(column)) {
-				case LayerColumn::Enabled:
+			switch (static_cast<Layer::Column>(column)) {
+				case Layer::Column::Enabled:
 					break;
 
-				case LayerColumn::Type:
+				case Layer::Column::Type:
 					return type(Roles::FontIconText).toString();
 
-				case LayerColumn::Locked:
-					return flag(LayerFlag::Frozen, Qt::EditRole).toBool() ? u8"\uf023" : u8"\uf09c";
+				case Layer::Column::Locked:
+					return flag(Layer::Flag::Frozen, Qt::EditRole).toBool() ? u8"\uf023" : u8"\uf09c";
 
-				case LayerColumn::ID:
+				case Layer::Column::ID:
 					return id(Qt::DisplayRole);
 
-				case LayerColumn::Name:
+				case Layer::Column::Name:
 					return name(Qt::DisplayRole);
 
-				case LayerColumn::Dataset:
+				case Layer::Column::Dataset:
 					return dataset(Qt::DisplayRole);
 
-				case LayerColumn::Flags:
+				case Layer::Column::Flags:
 					return flags(Qt::DisplayRole);
 
-				case LayerColumn::Frozen:
-					return flag(LayerFlag::Frozen, Qt::DisplayRole);
+				case Layer::Column::Frozen:
+					return flag(Layer::Flag::Frozen, Qt::DisplayRole);
 
-				case LayerColumn::Removable:
-					return flag(LayerFlag::Removable, Qt::DisplayRole);
+				case Layer::Column::Removable:
+					return flag(Layer::Flag::Removable, Qt::DisplayRole);
 
-				case LayerColumn::Mask:
-					return flag(LayerFlag::Mask, Qt::DisplayRole);
+				case Layer::Column::Mask:
+					return flag(Layer::Flag::Mask, Qt::DisplayRole);
 
-				case LayerColumn::Renamable:
-					return flag(LayerFlag::Renamable, Qt::DisplayRole);
+				case Layer::Column::Renamable:
+					return flag(Layer::Flag::Renamable, Qt::DisplayRole);
 
-				case LayerColumn::Order:
+				case Layer::Column::Order:
 					return order(Qt::DisplayRole);
 
-				case LayerColumn::Opacity:
+				case Layer::Column::Opacity:
 					return opacity(Qt::DisplayRole);
 
-				case LayerColumn::WindowNormalized:
+				case Layer::Column::WindowNormalized:
 					return windowNormalized(Qt::DisplayRole);
 
-				case LayerColumn::LevelNormalized:
+				case Layer::Column::LevelNormalized:
 					return levelNormalized(Qt::DisplayRole);
 
-				case LayerColumn::ColorMap:
+				case Layer::Column::ColorMap:
 					return colorMap(Qt::DisplayRole);
 
-				case LayerColumn::Image:
+				case Layer::Column::Image:
 					return image(Qt::DisplayRole);
 
-				case LayerColumn::ImageRange:
+				case Layer::Column::ImageRange:
 					return imageRange(Qt::DisplayRole);
 
-				case LayerColumn::DisplayRange:
+				case Layer::Column::DisplayRange:
 					return displayRange(Qt::DisplayRole);
 
 				default:
@@ -201,62 +201,62 @@ QVariant GeneralSettings::data(const LayerColumn& column, int role) const
 
 		case Qt::EditRole:
 		{
-			switch (static_cast<LayerColumn>(column)) {
-				case LayerColumn::Enabled:
-					return flag(LayerFlag::Enabled, Qt::EditRole);
+			switch (static_cast<Layer::Column>(column)) {
+				case Layer::Column::Enabled:
+					return flag(Layer::Flag::Enabled, Qt::EditRole);
 
-				case LayerColumn::Type:
+				case Layer::Column::Type:
 					return type(Qt::EditRole);
 
-				case LayerColumn::Locked:
-					return flag(LayerFlag::Frozen, Qt::EditRole);
+				case Layer::Column::Locked:
+					return flag(Layer::Flag::Frozen, Qt::EditRole);
 
-				case LayerColumn::ID:
+				case Layer::Column::ID:
 					return id(Qt::EditRole);
 
-				case LayerColumn::Name:
+				case Layer::Column::Name:
 					return name(Qt::EditRole);
 
-				case LayerColumn::Dataset:
+				case Layer::Column::Dataset:
 					return dataset(Qt::EditRole);
 
-				case LayerColumn::Flags:
+				case Layer::Column::Flags:
 					return flags(Qt::EditRole);
 
-				case LayerColumn::Frozen:
-					return flag(LayerFlag::Frozen, Qt::EditRole);
+				case Layer::Column::Frozen:
+					return flag(Layer::Flag::Frozen, Qt::EditRole);
 
-				case LayerColumn::Removable:
-					return flag(LayerFlag::Removable, Qt::EditRole);
+				case Layer::Column::Removable:
+					return flag(Layer::Flag::Removable, Qt::EditRole);
 
-				case LayerColumn::Mask:
-					return flag(LayerFlag::Mask, Qt::EditRole);
+				case Layer::Column::Mask:
+					return flag(Layer::Flag::Mask, Qt::EditRole);
 
-				case LayerColumn::Renamable:
-					return flag(LayerFlag::Renamable, Qt::EditRole);
+				case Layer::Column::Renamable:
+					return flag(Layer::Flag::Renamable, Qt::EditRole);
 
-				case LayerColumn::Order:
+				case Layer::Column::Order:
 					return order(Qt::EditRole);
 
-				case LayerColumn::Opacity:
+				case Layer::Column::Opacity:
 					return opacity(Qt::EditRole);
 
-				case LayerColumn::WindowNormalized:
+				case Layer::Column::WindowNormalized:
 					return windowNormalized(Qt::EditRole);
 
-				case LayerColumn::LevelNormalized:
+				case Layer::Column::LevelNormalized:
 					return levelNormalized(Qt::EditRole);
 
-				case LayerColumn::ColorMap:
+				case Layer::Column::ColorMap:
 					return colorMap(Qt::EditRole);
 
-				case LayerColumn::Image:
+				case Layer::Column::Image:
 					return image(Qt::EditRole);
 
-				case LayerColumn::ImageRange:
+				case Layer::Column::ImageRange:
 					return imageRange(Qt::EditRole);
 
-				case LayerColumn::DisplayRange:
+				case Layer::Column::DisplayRange:
 					return displayRange(Qt::EditRole);
 
 				default:
@@ -268,62 +268,62 @@ QVariant GeneralSettings::data(const LayerColumn& column, int role) const
 
 		case Qt::ToolTipRole:
 		{
-			switch (static_cast<LayerColumn>(column)) {
-				case LayerColumn::Enabled:
-					return flag(LayerFlag::Enabled, Qt::ToolTipRole);
+			switch (static_cast<Layer::Column>(column)) {
+				case Layer::Column::Enabled:
+					return flag(Layer::Flag::Enabled, Qt::ToolTipRole);
 
-				case LayerColumn::Type:
+				case Layer::Column::Type:
 					return type(Qt::ToolTipRole);
 
-				case LayerColumn::Locked:
-					return flag(LayerFlag::Frozen, Qt::ToolTipRole);
+				case Layer::Column::Locked:
+					return flag(Layer::Flag::Frozen, Qt::ToolTipRole);
 
-				case LayerColumn::ID:
+				case Layer::Column::ID:
 					return name(Qt::ToolTipRole);
 
-				case LayerColumn::Name:
+				case Layer::Column::Name:
 					return name(Qt::ToolTipRole);
 
-				case LayerColumn::Dataset:
+				case Layer::Column::Dataset:
 					return dataset(Qt::ToolTipRole);
 
-				case LayerColumn::Flags:
+				case Layer::Column::Flags:
 					return flags(Qt::ToolTipRole);
 
-				case LayerColumn::Frozen:
-					return flag(LayerFlag::Frozen, Qt::ToolTipRole);
+				case Layer::Column::Frozen:
+					return flag(Layer::Flag::Frozen, Qt::ToolTipRole);
 
-				case LayerColumn::Removable:
-					return flag(LayerFlag::Removable, Qt::ToolTipRole);
+				case Layer::Column::Removable:
+					return flag(Layer::Flag::Removable, Qt::ToolTipRole);
 
-				case LayerColumn::Mask:
-					return flag(LayerFlag::Mask, Qt::ToolTipRole);
+				case Layer::Column::Mask:
+					return flag(Layer::Flag::Mask, Qt::ToolTipRole);
 
-				case LayerColumn::Renamable:
-					return flag(LayerFlag::Renamable, Qt::ToolTipRole);
+				case Layer::Column::Renamable:
+					return flag(Layer::Flag::Renamable, Qt::ToolTipRole);
 
-				case LayerColumn::Order:
+				case Layer::Column::Order:
 					return order(Qt::ToolTipRole);
 
-				case LayerColumn::Opacity:
+				case Layer::Column::Opacity:
 					return opacity(Qt::ToolTipRole);
 
-				case LayerColumn::WindowNormalized:
+				case Layer::Column::WindowNormalized:
 					return windowNormalized(Qt::ToolTipRole);
 
-				case LayerColumn::LevelNormalized:
+				case Layer::Column::LevelNormalized:
 					return levelNormalized(Qt::ToolTipRole);
 
-				case LayerColumn::ColorMap:
+				case Layer::Column::ColorMap:
 					return colorMap(Qt::ToolTipRole);
 
-				case LayerColumn::Image:
+				case Layer::Column::Image:
 					return image(Qt::ToolTipRole);
 
-				case LayerColumn::ImageRange:
+				case Layer::Column::ImageRange:
 					return imageRange(Qt::ToolTipRole);
 
-				case LayerColumn::DisplayRange:
+				case Layer::Column::DisplayRange:
 					return displayRange(Qt::ToolTipRole);
 
 				default:
@@ -335,32 +335,32 @@ QVariant GeneralSettings::data(const LayerColumn& column, int role) const
 
 		case Qt::TextAlignmentRole:
 		{
-			switch (static_cast<LayerColumn>(column)) {
-				case LayerColumn::Enabled:
-				case LayerColumn::Type:
+			switch (static_cast<Layer::Column>(column)) {
+				case Layer::Column::Enabled:
+				case Layer::Column::Type:
 					return Qt::AlignLeft + Qt::AlignVCenter;
 
-				case LayerColumn::Locked:
-				case LayerColumn::ID:
-				case LayerColumn::Name:
-				case LayerColumn::Dataset:
+				case Layer::Column::Locked:
+				case Layer::Column::ID:
+				case Layer::Column::Name:
+				case Layer::Column::Dataset:
 					return Qt::AlignLeft + Qt::AlignVCenter;
 
-				case LayerColumn::Flags:
-				case LayerColumn::Frozen:
-				case LayerColumn::Removable:
-				case LayerColumn::Mask:
-				case LayerColumn::Renamable:
-				case LayerColumn::Order:
-				case LayerColumn::Opacity:
-				case LayerColumn::WindowNormalized:
-				case LayerColumn::LevelNormalized:
-				case LayerColumn::ColorMap:
-				case LayerColumn::Image:
+				case Layer::Column::Flags:
+				case Layer::Column::Frozen:
+				case Layer::Column::Removable:
+				case Layer::Column::Mask:
+				case Layer::Column::Renamable:
+				case Layer::Column::Order:
+				case Layer::Column::Opacity:
+				case Layer::Column::WindowNormalized:
+				case Layer::Column::LevelNormalized:
+				case Layer::Column::ColorMap:
+				case Layer::Column::Image:
 					return Qt::AlignRight + Qt::AlignVCenter;
 
-				case LayerColumn::ImageRange:
-				case LayerColumn::DisplayRange:
+				case Layer::Column::ImageRange:
+				case Layer::Column::DisplayRange:
 					return Qt::AlignRight + Qt::AlignVCenter;
 
 				default:
@@ -377,12 +377,12 @@ QVariant GeneralSettings::data(const LayerColumn& column, int role) const
 	return QVariant();
 }
 
-void GeneralSettings::setData(const LayerColumn& column, const QVariant& value, const int& role)
+void GeneralSettings::setData(const Layer::Column& column, const QVariant& value, const int& role)
 {
 	if (role == Qt::CheckStateRole) {
-		switch (static_cast<LayerColumn>(column)) {
-			case LayerColumn::Enabled:
-				setFlag(LayerFlag::Enabled, value == Qt::Checked ? true : false);
+		switch (static_cast<Layer::Column>(column)) {
+			case Layer::Column::Enabled:
+				setFlag(Layer::Flag::Enabled, value == Qt::Checked ? true : false);
 				break;
 
 			default:
@@ -391,75 +391,75 @@ void GeneralSettings::setData(const LayerColumn& column, const QVariant& value, 
 	}
 
 	if (role == Qt::DisplayRole) {
-		switch (static_cast<LayerColumn>(column)) {
-			case LayerColumn::Enabled:
-				setFlag(LayerFlag::Enabled, value.toBool());
+		switch (static_cast<Layer::Column>(column)) {
+			case Layer::Column::Enabled:
+				setFlag(Layer::Flag::Enabled, value.toBool());
 				break;
 
-			case LayerColumn::Type:
-				setType(static_cast<LayerType>(value.toInt()));
+			case Layer::Column::Type:
+				setType(static_cast<Layer::Type>(value.toInt()));
 				break;
 
-			case LayerColumn::Locked:
+			case Layer::Column::Locked:
 				break;
 
-			case LayerColumn::ID:
+			case Layer::Column::ID:
 				setId(value.toString());
 				break;
 
-			case LayerColumn::Name:
+			case Layer::Column::Name:
 				setName(value.toString());
 				break;
 
-			case LayerColumn::Dataset:
+			case Layer::Column::Dataset:
 				break;
 
-			case LayerColumn::Flags:
+			case Layer::Column::Flags:
 				setFlags(value.toInt());
 				break;
 
-			case LayerColumn::Frozen:
-				setFlag(LayerFlag::Frozen, value.toBool());
+			case Layer::Column::Frozen:
+				setFlag(Layer::Flag::Frozen, value.toBool());
 				break;
 
-			case LayerColumn::Removable:
-				setFlag(LayerFlag::Removable, value.toBool());
+			case Layer::Column::Removable:
+				setFlag(Layer::Flag::Removable, value.toBool());
 				break;
 
-			case LayerColumn::Mask:
-				setFlag(LayerFlag::Mask, value.toBool());
+			case Layer::Column::Mask:
+				setFlag(Layer::Flag::Mask, value.toBool());
 				break;
 
-			case LayerColumn::Renamable:
-				setFlag(LayerFlag::Renamable, value.toBool());
+			case Layer::Column::Renamable:
+				setFlag(Layer::Flag::Renamable, value.toBool());
 				break;
 
-			case LayerColumn::Order:
+			case Layer::Column::Order:
 				setOrder(value.toInt());
 				break;
 
-			case LayerColumn::Opacity:
+			case Layer::Column::Opacity:
 				setOpacity(value.toFloat());
 				break;
 
-			case LayerColumn::WindowNormalized:
+			case Layer::Column::WindowNormalized:
 				setWindowNormalized(value.toFloat());
 				break;
 
-			case LayerColumn::LevelNormalized:
+			case Layer::Column::LevelNormalized:
 				setLevelNormalized(value.toFloat());
 				break;
 
-			case LayerColumn::ColorMap:
+			case Layer::Column::ColorMap:
 				setColorMap(value.value<QImage>());
 				break;
 
-			case LayerColumn::Image:
+			case Layer::Column::Image:
 				setImage(value.value<QImage>());
 				break;
 
-			case LayerColumn::ImageRange:
-			case LayerColumn::DisplayRange:
+			case Layer::Column::ImageRange:
+			case Layer::Column::DisplayRange:
 				break;
 
 			default:
@@ -536,7 +536,7 @@ QVariant GeneralSettings::dataset(const int& role) const
 
 QVariant GeneralSettings::type(const int& role) const
 {
-	const auto typeName = layerTypeName(_type);
+	const auto typeName = Layer::typeName(_type);
 
 	switch (role)
 	{
@@ -555,16 +555,16 @@ QVariant GeneralSettings::type(const int& role) const
 		case Roles::FontIconText:
 		{
 			switch (_type) {
-				case LayerType::Images:
+				case Layer::Type::Images:
 					return u8"\uf03e";
 
-				case LayerType::Selection:
+				case Layer::Type::Selection:
 					return u8"\uf065";
 
-				case LayerType::Clusters:
+				case Layer::Type::Clusters:
 					return u8"\uf141";
 
-				case LayerType::Points:
+				case Layer::Type::Points:
 					return u8"\uf03e";
 
 				default:
@@ -581,7 +581,7 @@ QVariant GeneralSettings::type(const int& role) const
 	return QVariant();
 }
 
-void GeneralSettings::setType(const LayerType& type)
+void GeneralSettings::setType(const Layer::Type& type)
 {
 	_type = type;
 }
@@ -608,7 +608,7 @@ QVariant GeneralSettings::flags(const int& role) const
 	return QVariant();
 }
 
-QVariant GeneralSettings::flag(const LayerFlag& flag, const int& role) const
+QVariant GeneralSettings::flag(const Layer::Flag& flag, const int& role) const
 {
 	const auto isFlagSet = _flags & static_cast<int>(flag);
 	const auto flagString = isFlagSet ? "true" : "false";
@@ -625,19 +625,19 @@ QVariant GeneralSettings::flag(const LayerFlag& flag, const int& role) const
 		{
 			switch (flag)
 			{
-				case LayerFlag::Enabled:
+				case Layer::Flag::Enabled:
 					return QString("Enabled: %1").arg(flagString);
 
-				case LayerFlag::Frozen:
+				case Layer::Flag::Frozen:
 					return QString("Frozen: %1").arg(flagString);
 
-				case LayerFlag::Removable:
+				case Layer::Flag::Removable:
 					return QString("Removable: %1").arg(flagString);
 
-				case LayerFlag::Mask:
+				case Layer::Flag::Mask:
 					return QString("Mask: %1").arg(flagString);
 
-				case LayerFlag::Renamable:
+				case Layer::Flag::Renamable:
 					return QString("Renamable: %1").arg(flagString);
 
 				default:
@@ -654,7 +654,7 @@ QVariant GeneralSettings::flag(const LayerFlag& flag, const int& role) const
 	return QVariant();
 }
 
-void GeneralSettings::setFlag(const LayerFlag& flag, const bool& enabled /*= true*/)
+void GeneralSettings::setFlag(const Layer::Flag& flag, const bool& enabled /*= true*/)
 {
 	if (enabled)
 		_flags |= static_cast<int>(flag);

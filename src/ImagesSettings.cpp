@@ -4,41 +4,41 @@
 
 #include <QDebug>
 
-ImagesSettings::ImagesSettings(Dataset* _dataset) :
-	Settings(_dataset),
+ImagesSettings::ImagesSettings(QObject* parent, Dataset* dataset) :
+	Settings(parent, _dataset),
 	_currentImage(0),
 	_average()
 {
 }
 
-Qt::ItemFlags ImagesSettings::itemFlags(const LayerColumn& column) const
+Qt::ItemFlags ImagesSettings::itemFlags(const Layer::Column& column) const
 {
 	int flags = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
 
-	switch (static_cast<LayerColumn>(column)) {
-		case LayerColumn::NoImages:
-		case LayerColumn::Width:
-		case LayerColumn::Height:
-		case LayerColumn::Size:
-		case LayerColumn::NoPoints:
-		case LayerColumn::NoDimensions:
-		case LayerColumn::ImageNames:
-		case LayerColumn::FilteredImageNames:
-		case LayerColumn::ImageIDs:
-		case LayerColumn::ImageFilePaths:
-		case LayerColumn::CurrentImageId:
+	switch (static_cast<Layer::Column>(column)) {
+		case Layer::Column::NoImages:
+		case Layer::Column::Width:
+		case Layer::Column::Height:
+		case Layer::Column::Size:
+		case Layer::Column::NoPoints:
+		case Layer::Column::NoDimensions:
+		case Layer::Column::ImageNames:
+		case Layer::Column::FilteredImageNames:
+		case Layer::Column::ImageIDs:
+		case Layer::Column::ImageFilePaths:
+		case Layer::Column::CurrentImageId:
 			flags |= Qt::ItemIsEditable;
 			break;
 
-		case LayerColumn::CurrentImageName:
-		case LayerColumn::CurrentImageFilePath:
+		case Layer::Column::CurrentImageName:
+		case Layer::Column::CurrentImageFilePath:
 			break;
 
-		case LayerColumn::Average:
+		case Layer::Column::Average:
 			flags |= Qt::ItemIsEditable;
 			break;
 
-		case LayerColumn::Selection:
+		case Layer::Column::Selection:
 
 			break;
 		default:
@@ -48,52 +48,52 @@ Qt::ItemFlags ImagesSettings::itemFlags(const LayerColumn& column) const
 	return flags;
 }
 
-QVariant ImagesSettings::data(const LayerColumn& column, int role) const
+QVariant ImagesSettings::data(const Layer::Column& column, int role) const
 {
-	switch (static_cast<LayerColumn>(column)) {
-		case LayerColumn::NoImages:
+	switch (static_cast<Layer::Column>(column)) {
+		case Layer::Column::NoImages:
 			_dataset->noImages(role);
 
-		case LayerColumn::Width:
+		case Layer::Column::Width:
 			_dataset->width(role);
 
-		case LayerColumn::Height:
+		case Layer::Column::Height:
 			_dataset->height(role);
 
-		case LayerColumn::Size:
+		case Layer::Column::Size:
 			_dataset->size(role);
 
-		case LayerColumn::NoPoints:
+		case Layer::Column::NoPoints:
 			_dataset->noPoints(role);
 
-		case LayerColumn::NoDimensions:
+		case Layer::Column::NoDimensions:
 			_dataset->noDimensions(role);
 
-		case LayerColumn::ImageNames:
+		case Layer::Column::ImageNames:
 			_dataset->imageNames(role);
 
-		case LayerColumn::FilteredImageNames:
+		case Layer::Column::FilteredImageNames:
 			return filteredImageNames(role);
 
-		case LayerColumn::ImageIDs:
+		case Layer::Column::ImageIDs:
 			_dataset->imageIds(role);
 
-		case LayerColumn::ImageFilePaths:
+		case Layer::Column::ImageFilePaths:
 			_dataset->imageFilePaths(role);
 
-		case LayerColumn::CurrentImageId:
+		case Layer::Column::CurrentImageId:
 			return currentImageId(role);
 
-		case LayerColumn::CurrentImageName:
+		case Layer::Column::CurrentImageName:
 			return currentImageName(role);
 
-		case LayerColumn::CurrentImageFilePath:
+		case Layer::Column::CurrentImageFilePath:
 			return currentImageFilePath(role);
 
-		case LayerColumn::Average:
+		case Layer::Column::Average:
 			return average(role);
 
-		case LayerColumn::Selection:
+		case Layer::Column::Selection:
 			_dataset->selection(role);
 
 		default:
@@ -103,34 +103,34 @@ QVariant ImagesSettings::data(const LayerColumn& column, int role) const
 	return QVariant();
 }
 
-void ImagesSettings::setData(const LayerColumn& column, const QVariant& value, const int& role)
+void ImagesSettings::setData(const Layer::Column& column, const QVariant& value, const int& role)
 {
-	switch (static_cast<LayerColumn>(column)) {
-		case LayerColumn::NoImages:
-		case LayerColumn::Width:
-		case LayerColumn::Height:
-		case LayerColumn::Size:
-		case LayerColumn::NoPoints:
-		case LayerColumn::NoDimensions:
-		case LayerColumn::ImageNames:
-		case LayerColumn::FilteredImageNames:
-		case LayerColumn::ImageIDs:
-		case LayerColumn::ImageFilePaths:
+	switch (static_cast<Layer::Column>(column)) {
+		case Layer::Column::NoImages:
+		case Layer::Column::Width:
+		case Layer::Column::Height:
+		case Layer::Column::Size:
+		case Layer::Column::NoPoints:
+		case Layer::Column::NoDimensions:
+		case Layer::Column::ImageNames:
+		case Layer::Column::FilteredImageNames:
+		case Layer::Column::ImageIDs:
+		case Layer::Column::ImageFilePaths:
 			break;
 
-		case LayerColumn::CurrentImageId:
+		case Layer::Column::CurrentImageId:
 			setCurrentImageId(value.toInt());
 			break;
 
-		case LayerColumn::CurrentImageName:
-		case LayerColumn::CurrentImageFilePath:
+		case Layer::Column::CurrentImageName:
+		case Layer::Column::CurrentImageFilePath:
 			break;
 
-		case LayerColumn::Average:
+		case Layer::Column::Average:
 			setAverage(value.toBool());
 			break;
 
-		case LayerColumn::Selection:
+		case Layer::Column::Selection:
 			break;
 
 		default:

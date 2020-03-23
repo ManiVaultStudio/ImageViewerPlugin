@@ -143,214 +143,47 @@ enum Roles {
 };
 
 /** TODO */
-enum class LayerType {
-	Points,			/** TODO */
-	Images,			/** TODO */
-	Clusters,		/** TODO */
-	Selection		/** TODO */
-};
+class Range
+{
+public:
 
-/** TODO */
-static QString layerTypeName(const LayerType& type) {
-	switch (type)
+	/** TODO */
+	Range(const float& min = 0.0f, const float& max = 0.0f) :
+		_min(std::min(min, max)),
+		_max(std::max(min, max))
 	{
-		case LayerType::Images:
-			return "Image";
-
-		case LayerType::Selection:
-			return "Selection";
-
-		case LayerType::Clusters:
-			return "Clusters";
-
-		case LayerType::Points:
-			return "Points";
-
-		default:
-			break;
 	}
 
-	return "";
-}
+	/** TODO */
+	float min() const { return _min; }
 
-/** TODO */
-enum LayerColumn {
-	Enabled,
-	Type,
-	Locked,
-	ID,						// Name for internal use
-	Name,					// Name in the user interface
-	Dataset,				// Name in the user interface
-	Flags,
-	Frozen,
-	Removable,
-	Mask,
-	Renamable,
-	Order,
-	Opacity,
-	WindowNormalized,
-	LevelNormalized,
-	ColorMap,
-	Image,
-	ImageRange,
-	DisplayRange,
+	/** TODO */
+	void setMin(const float& min) { _min = std::min(min, _max); }
 
-	// Selection
-	// Points
+	/** TODO */
+	float max() const { return _max; }
 
-	// Images
-	NoImages,
-	Width,
-	Height,
-	Size,
-	NoPoints,
-	NoDimensions,
-	ImageNames,
-	FilteredImageNames,
-	ImageIDs,
-	ImageFilePaths,
-	CurrentImageId,
-	CurrentImageName,
-	CurrentImageFilePath,
-	Average,
-	Selection,
+	/** TODO */
+	void setMax(const float& max) { _max = std::max(_min, max); }
 
-	// Clusters
-	ClustersStart,
-	ClustersEnd,
-
-	// General settings column range
-	GeneralStart = Enabled,
-	GeneralEnd = DisplayRange,
-
-	// Selection layer settings column range
-	SelectionStart,
-	SelectionEnd,
-
-	// Points layer settings column range
-	PointsStart,
-	PointsEnd,
-
-	// Images layer settings column range
-	ImagesStart,
-	ImagesEnd,
-
-	End
-};
-
-static QString layerColumnName(const LayerColumn& column) {
-	switch (column) {
-		case LayerColumn::Enabled:
-		case LayerColumn::Type:
-		case LayerColumn::Locked:
-			return "";
-
-		case LayerColumn::ID:
-			return "ID";
-
-		case LayerColumn::Name:
-			return "Name";
-
-		case LayerColumn::Dataset:
-			return "Dataset";
-
-		case LayerColumn::Flags:
-			return "Flags";
-
-		case LayerColumn::Frozen:
-			return "Frozen";
-
-		case LayerColumn::Removable:
-			return "Removable";
-
-		case LayerColumn::Mask:
-			return "Mask";
-
-		case LayerColumn::Renamable:
-			return "Renamable";
-
-		case LayerColumn::Order:
-			return "Order";
-
-		case LayerColumn::Opacity:
-			return "Opacity";
-
-		case LayerColumn::WindowNormalized:
-			return "Window";
-
-		case LayerColumn::LevelNormalized:
-			return "Level";
-
-		case LayerColumn::ColorMap:
-			return "Color";
-
-		case LayerColumn::Image:
-			return "Image";
-
-		case LayerColumn::ImageRange:
-			return "Image range";
-
-		case LayerColumn::DisplayRange:
-			return "Display range";
-
-		case LayerColumn::NoImages:
-			return "No. images";
-
-		case LayerColumn::Width:
-			return "Width";
-
-		case LayerColumn::Height:
-			return "Height";
-
-		case LayerColumn::Size:
-			return "Size";
-
-		case LayerColumn::NoPoints:
-			return "NoPoints";
-
-		case LayerColumn::NoDimensions:
-			return "NoDimensions";
-
-		case LayerColumn::ImageNames:
-			return "ImageNames";
-
-		case LayerColumn::FilteredImageNames:
-			return "FilteredImageNames";
-
-		case LayerColumn::ImageIDs:
-			return "ImageIDs";
-
-		case LayerColumn::ImageFilePaths:
-			return "ImageFilePaths";
-
-		case LayerColumn::CurrentImageId:
-			return "CurrentImageId";
-
-		case LayerColumn::CurrentImageName:
-			return "CurrentImageName";
-
-		case LayerColumn::CurrentImageFilePath:
-			return "CurrentImageFilePath";
-
-		case LayerColumn::Average:
-			return "Average";
-
-		case LayerColumn::Selection:
-			return "Selection";
-
-		default:
-			return QString();
+	/** TODO */
+	void include(const float& value) {
+		_min = std::min(_min, value);
+		_max = std::max(_max, value);
 	}
 
-	return QString();
-}
+	/** TODO */
+	void setFullRange() {
+		_max = std::numeric_limits<float>::min();
+		_min = std::numeric_limits<float>::max();
+	}
 
-/** TODO */
-enum class LayerFlag {
-	Enabled		= 0x01,		/** TODO */
-	Frozen		= 0x02,		/** TODO */
-	Removable	= 0x04,		/** TODO */
-	Mask		= 0x08,		/** TODO */
-	Renamable	= 0x20,		/** TODO */
-	Renderable	= 0x40		/** TODO */
+	/** TODO */
+	float length() const { return _max - _min; }
+
+private:
+	float	_min;	/** TODO */
+	float	_max;	/** TODO */
 };
+
+Q_DECLARE_METATYPE(Range);

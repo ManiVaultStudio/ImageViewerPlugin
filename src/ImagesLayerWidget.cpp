@@ -24,7 +24,7 @@ void ImagesLayerWidget::updateData(const QModelIndex &topLeft, const QModelIndex
 	if (selectedRows.size() != 1)
 		return;
 
-	const auto filteredImageNames = _layersModel->data(topLeft.row(), LayerColumn::FilteredImageNames, Qt::EditRole).toStringList();
+	const auto filteredImageNames = _layersModel->data(topLeft.row(), Layer::Column::FilteredImageNames, Qt::EditRole).toStringList();
 
 	_ui->imagesComboBox->setModel(new QStringListModel(filteredImageNames));
 }

@@ -81,4 +81,4 @@ protected:
 	QImage					_selectionImage;		/** TODO */
 };
 
-//using Datasets = QList<Dataset*>;
+using Datasets = QList<Dataset*>;

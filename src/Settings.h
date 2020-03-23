@@ -1,35 +1,35 @@
 #pragma once
 
 #include "Common.h"
-
-#include "Dataset.h"
+#include "Layer.h"
 
 #include <QVariant>
 
-//class Dataset;
+class Dataset;
 
 /** TODO */
 template<typename DatasetType>
-class Settings
+class Settings : public QObject
 {
 public:
 
 	/** TODO */
-	Settings(Dataset* dataset) :
+	Settings(QObject* parent, Dataset* dataset) :
+		QObject(parent),
 		_dataset(reinterpret_cast<DatasetType*>(dataset))
 	{
 	}
 
-public: // MVC
+public: // TODO
 
 	/** TODO */
-	virtual Qt::ItemFlags itemFlags(const LayerColumn& column) const = 0;
+	virtual Qt::ItemFlags itemFlags(const Layer::Column& column) const = 0;
 
 	/** TODO */
-	virtual QVariant data(const LayerColumn& column, int role) const = 0;
+	virtual QVariant data(const Layer::Column& column, int role) const = 0;
 
 	/** TODO */
-	virtual void setData(const LayerColumn& column, const QVariant& value, const int& role) = 0;
+	virtual void setData(const Layer::Column& column, const QVariant& value, const int& role) = 0;
 
 protected:
 	DatasetType*	_dataset;		/** TODO */
