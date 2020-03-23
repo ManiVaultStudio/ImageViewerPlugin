@@ -53,13 +53,13 @@ public: // Inherited members
 public: // Overloaded data access
 	
 	/** TODO */
-	QVariant data(const int& row, const Layer::Column& column, int role) const;
+	QVariant data(const int& row, const int& column, int role) const;
 
 	/** TODO */
-	void setData(const int& row, const Layer::Column& column, const QVariant& value, int role = Qt::DisplayRole);
+	void setData(const int& row, const int& column, const QVariant& value, int role = Qt::DisplayRole);
 
 	/** TODO */
-	Qt::ItemFlags flags(const int& row, const Layer::Column& column) const;
+	Qt::ItemFlags flags(const int& row, const int& column) const;
 
 public: // TODO
 

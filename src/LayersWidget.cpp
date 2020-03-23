@@ -56,14 +56,14 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 
 	headerView->setSectionResizeMode(QHeaderView::ResizeToContents);
 
-	for (int column = Layer::columnId(Layer::Column::Enabled); column < Layer::columnId(Layer::Column::DisplayRange); column++)
+	for (int column = to_underlying(Layer::Column::Enabled); column < to_underlying(Layer::Column::DisplayRange); column++)
 		headerView->hideSection(column);
 
-	headerView->showSection(Layer::columnId(Layer::Column::Type));
-	headerView->showSection(Layer::columnId(Layer::Column::Name));
-	headerView->showSection(Layer::columnId(Layer::Column::Opacity));
+	headerView->showSection(to_underlying(Layer::Column::Type));
+	headerView->showSection(to_underlying(Layer::Column::Name));
+	headerView->showSection(to_underlying(Layer::Column::Opacity));
 
-	headerView->setSectionResizeMode(Layer::columnId(Layer::Column::Name), QHeaderView::Interactive);
+	headerView->setSectionResizeMode(to_underlying(Layer::Column::Name), QHeaderView::Interactive);
 
 	auto updateButtons = [this]() {
 		const auto selectedRows = _ui->layersTreeView->selectionModel()->selectedRows();
@@ -79,8 +79,8 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 
 		if (noSelectedRows == 1) {
 			const auto row = selectedRows.at(0).row();
-			const auto name = layersModel()->data(row, Layer::Column::Name, Qt::EditRole).toString();
-			const auto mayRemove = layersModel()->data(row, Layer::Column::Removable, Qt::EditRole).toBool();
+			const auto name = layersModel()->data(row, to_underlying(Layer::Column::Name), Qt::EditRole).toString();
+			const auto mayRemove = layersModel()->data(row, to_underlying(Layer::Column::Removable), Qt::EditRole).toBool();
 
 			_ui->layerRemovePushButton->setEnabled(mayRemove);
 			_ui->layerRemovePushButton->setToolTip(mayRemove ? QString("Remove %1").arg(name) : "");
@@ -101,9 +101,9 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 			auto mayRemove = false;
 
 			for (auto index : selectedRows) {
-				if (layersModel()->data(index.row(), Layer::Column::Removable, Qt::EditRole).toBool()) {
+				if (layersModel()->data(index.row(), to_underlying(Layer::Column::Removable), Qt::EditRole).toBool()) {
 					mayRemove = true;
-					names << layersModel()->data(index.row(), Layer::Column::Name, Qt::EditRole).toString();
+					names << layersModel()->data(index.row(), to_underlying(Layer::Column::Name), Qt::EditRole).toString();
 				}
 			}
 
@@ -120,9 +120,9 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 		const auto selectedRows = _ui->layersTreeView->selectionModel()->selectedRows();
 
 		if (selectedRows.isEmpty())
-			_ui->layerWidget->updateData(layersModel()->index(0, 0), layersModel()->index(0, layersModel()->columnCount() - 1));
+			_ui->layerWidget->onDataChanged(layersModel()->index(0, 0), layersModel()->index(0, layersModel()->columnCount() - 1));
 		else
-			_ui->layerWidget->updateData(layersModel()->index(selectedRows.first().row(), 0), layersModel()->index(selectedRows.first().row(), layersModel()->columnCount() - 1));
+			_ui->layerWidget->onDataChanged(layersModel()->index(selectedRows.first().row(), 0), layersModel()->index(selectedRows.first().row(), layersModel()->columnCount() - 1));
 	});
 
 	// Handle model rows reorganization
@@ -130,7 +130,7 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 		updateButtons();
 	});
 
-	QObject::connect(layersModel(), &LayersModel::dataChanged, _ui->layerWidget, &LayerWidget::updateData);
+	QObject::connect(layersModel(), &LayersModel::dataChanged, _ui->layerWidget, &LayerWidget::onDataChanged);
 
 	_ui->layersTreeView->selectionModel()->setCurrentIndex(layersModel()->index(0), QItemSelectionModel::Rows | QItemSelectionModel::Current);
 }

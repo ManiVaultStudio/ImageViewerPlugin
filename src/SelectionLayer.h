@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Settings.h"
+#include "Layer.h"
 
 /** TODO */
 class SelectionLayer : public Layer

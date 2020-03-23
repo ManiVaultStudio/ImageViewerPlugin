@@ -1,6 +1,5 @@
 #include "LayersModel.h"
 #include "ImageViewerPlugin.h"
-#include "GeneralSettings.h"
 
 #include <QItemSelectionModel>
 #include <QFont>
@@ -58,7 +57,7 @@ Qt::ItemFlags LayersModel::flags(const QModelIndex& index) const
 	return _layers.at(index.row())->itemFlags(index.column());
 }
 
-Qt::ItemFlags LayersModel::flags(const int& row, const Layer::Column& column) const
+Qt::ItemFlags LayersModel::flags(const int& row, const int& column) const
 {
 	return flags(index(row, static_cast<int>(column)));
 }
@@ -122,7 +121,7 @@ bool LayersModel::moveRows(const QModelIndex& sourceParent, int sourceRow, int c
 	return true;
 }
 
-QVariant LayersModel::data(const int& row, const Layer::Column& column, int role) const
+QVariant LayersModel::data(const int& row, const int& column, int role) const
 {
 	const auto modelIndex = index(row, static_cast<int>(column));
 
@@ -132,7 +131,7 @@ QVariant LayersModel::data(const int& row, const Layer::Column& column, int role
 	return data(index(row, static_cast<int>(column)), role);
 }
 
-void LayersModel::setData(const int& row, const Layer::Column& column, const QVariant& value, int role /*= Qt::DisplayRole*/)
+void LayersModel::setData(const int& row, const int& column, const QVariant& value, int role /*= Qt::DisplayRole*/)
 {
 	const auto modelIndex = index(row, static_cast<int>(column));
 
@@ -185,7 +184,7 @@ void LayersModel::moveDown(const int& row)
 void LayersModel::sortOrder()
 {
 	for (int row = 0; row < rowCount(); row++)
-		setData(row, Layer::Column::Order, rowCount() - row);
+		setData(row, to_underlying(Layer::Column::Order), rowCount() - row);
 }
 
 void LayersModel::removeRows(const QModelIndexList& rows)
@@ -225,7 +224,7 @@ void LayersModel::renameLayer(const QString& id, const QString& name)
 
 	const auto firstHit = hits.first();
 
-	setData(firstHit.row(), Layer::Column::Name, name);
+	setData(firstHit.row(), to_underlying(Layer::Column::Name), name);
 }
 
 Layer* LayersModel::findLayerById(const QString& id)

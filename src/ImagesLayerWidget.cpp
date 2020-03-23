@@ -8,29 +8,41 @@
 #include <QDebug>
 
 ImagesLayerWidget::ImagesLayerWidget(QWidget* parent) :
-	_ui{ std::make_unique<Ui::ImagesLayerWidget>() }
+	_ui{ std::make_unique<Ui::ImagesLayerWidget>() },
+	_layersModel(nullptr)
 {
 	_ui->setupUi(this);
 }
 
-void ImagesLayerWidget::setImagesLayer(ImagesLayer* imagesLayer)
+void ImagesLayerWidget::initialize(LayersModel* layersModel)
 {
-	_imagesLayer = imagesLayer;
+	_layersModel = layersModel;
+
+	QObject::connect(_layersModel, &LayersModel::dataChanged, this, &ImagesLayerWidget::onDataChanged);
+
+	QObject::connect(&_layersModel->selectionModel(), &QItemSelectionModel::selectionChanged, [this](const QItemSelection &selected, const QItemSelection &deselected) {
+		const auto selectedRows = _layersModel->selectionModel().selectedRows();
+
+		if (!selectedRows.isEmpty())
+			onDataChanged(_layersModel->index(selectedRows.first().row(), 0), _layersModel->index(selectedRows.first().row(), _layersModel->columnCount() - 1));
+	});
 }
 
-void ImagesLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>& roles /*= QVector<int>()*/)
+void ImagesLayerWidget::onDataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int> &roles /*= QVector<int>()*/)
 {
-	auto columnIds = QSet<int>();
+	/*
+	const auto selectedRows			= _layersModel->selectionModel().selectedRows();
+	const auto noSelectedRows		= selectedRows.size();
+	const auto singleRowSelection	= noSelectedRows == 1;
 
-	for (int columnId = topLeft.column(); columnId <= bottomRight.column(); columnId++) {
-		columnIds.insert(columnId);
+	auto columns = QSet<int>();
+
+	for (int c = topLeft.column(); c <= bottomRight.column(); c++) {
+		columns.insert(c);
 	}
 
-	/*
-	if (columnIds.contains(static_cast<int>(ImagesLayer::Column::FilteredImageNames))) {
-		const auto filteredImageNames = _layersModel->data(topLeft.row(), static_cast<int>(ImagesLayer::Column::FilteredImageNames), Qt::EditRole).toStringList();
-
-		_ui->imagesComboBox->setModel(new QStringListModel(filteredImageNames));
+	if (columns.contains(to_underlying(ImagesLayer::Column::FilteredImageNames))) {
+		const auto filteredImageNames = _layersModel->data(row, );
 	}
 	*/
 }

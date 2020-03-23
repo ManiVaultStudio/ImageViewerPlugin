@@ -8,7 +8,7 @@ namespace Ui {
 	class ImagesLayerWidget;
 }
 
-class ImagesLayer;
+class LayersModel;
 
 /** TODO */
 class ImagesLayerWidget : public QWidget
@@ -18,12 +18,12 @@ public:
 	ImagesLayerWidget(QWidget* parent);
 
 	/** TODO */
-	void setImagesLayer(ImagesLayer* imagesLayer);
+	void initialize(LayersModel* layersModel);
 
 	/** TODO */
-	void updateData(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles = QVector<int>());
+	void onDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles = QVector<int>());
 
 private:
 	std::unique_ptr<Ui::ImagesLayerWidget>	_ui;				/** TODO */
-	ImagesLayer*							_imagesLayer;		/** TODO */
+	LayersModel*							_layersModel;		/** TODO */
 };

@@ -24,7 +24,9 @@ public:
 		CurrentImageName,
 		CurrentImageFilePath,
 		Average,
-		Selection
+		Selection,
+
+		Count
 	};
 
 	/** TODO */

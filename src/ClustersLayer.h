@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Settings.h"
+#include "Layer.h"
 #include "ClustersDataset.h"
 
 /** TODO */

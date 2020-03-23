@@ -189,9 +189,6 @@ public:
 	};
 
 	/** TODO */
-	static int columnId(const Layer::Column& column) { return static_cast<int>(column); };
-
-	/** TODO */
 	Layer(Dataset* dataset, const Type& type, const QString& id, const QString& name, const std::uint32_t& flags);
 
 public: // MVC
