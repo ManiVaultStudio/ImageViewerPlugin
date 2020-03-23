@@ -28,7 +28,7 @@ int LayersModel::columnCount(const QModelIndex& parent /*= QModelIndex()*/) cons
 {
 	Q_UNUSED(parent);
 
-	return 20;
+	return Layer::columnCount();
 }
 
 QVariant LayersModel::data(const QModelIndex& index, int role) const

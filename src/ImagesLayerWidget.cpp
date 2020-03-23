@@ -17,14 +17,17 @@ void ImagesLayerWidget::initialize(LayersModel* layersModel)
 	_layersModel = layersModel;
 }
 
-void ImagesLayerWidget::updateData(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles /*= QVector<int>()*/)
+void ImagesLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>& roles /*= QVector<int>()*/)
 {
-	const auto selectedRows = _layersModel->selectionModel().selectedRows();
+	auto columnIds = QSet<int>();
 
-	if (selectedRows.size() != 1)
-		return;
+	for (int columnId = topLeft.column(); columnId <= bottomRight.column(); columnId++) {
+		columnIds.insert(columnId);
+	}
 
-	const auto filteredImageNames = _layersModel->data(topLeft.row(), Layer::Column::FilteredImageNames, Qt::EditRole).toStringList();
+	if (columnIds.contains(Layer::columnId(Layer::Column::FilteredImageNames))) {
+		const auto filteredImageNames = _layersModel->data(topLeft.row(), Layer::Column::FilteredImageNames, Qt::EditRole).toStringList();
 
-	_ui->imagesComboBox->setModel(new QStringListModel(filteredImageNames));
+		_ui->imagesComboBox->setModel(new QStringListModel(filteredImageNames));
+	}
 }
