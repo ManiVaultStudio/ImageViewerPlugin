@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Common.h"
+
 #include <QColor>
 #include <QObject>
 #include <QImage>
@@ -78,7 +80,9 @@ public:
 		ColorMap,
 		Image,
 		ImageRange,
-		DisplayRange
+		DisplayRange,
+
+		Count
 	};
 
 	static QString columnName(const Column& column) {
@@ -188,7 +192,7 @@ public:
 	static int columnId(const Layer::Column& column) { return static_cast<int>(column); };
 
 	/** TODO */
-	Layer(Dataset* dataset, const QString& id /*= ""*/, const QString& name /*= ""*/, const Type& type /*= Type::Image*/, const std::uint32_t& flags);
+	Layer(Dataset* dataset, const Type& type, const QString& id, const QString& name, const std::uint32_t& flags);
 
 public: // MVC
 
@@ -199,13 +203,13 @@ public: // MVC
 	static QVariant headerData(int section, Qt::Orientation orientation, int role);
 
 	/** TODO */
-	virtual Qt::ItemFlags itemFlags(const Column& column) const;
+	virtual Qt::ItemFlags itemFlags(const int& column) const;
 
 	/** TODO */
-	virtual QVariant data(const Column& column, int role) const;
+	virtual QVariant data(const int& column, int role) const;
 
 	/** TODO */
-	virtual void setData(const Column& column, const QVariant& value, const int& role);
+	virtual void setData(const int& column, const QVariant& value, const int& role);
 
 public: // Getters/setters
 

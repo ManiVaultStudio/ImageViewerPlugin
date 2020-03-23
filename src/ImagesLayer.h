@@ -1,26 +1,47 @@
 #pragma once
 
-#include "Settings.h"
+#include "Layer.h"
 #include "ImagesDataset.h"
 
 /** TODO */
-class ImagesSettings : public Settings<ImagesDataset>
+class ImagesLayer : public Layer
 {
 public:
 
 	/** TODO */
-	ImagesSettings(QObject* parent, Dataset* dataset);
+	enum class Column {
+		NoImages = static_cast<int>(Layer::Column::Count),
+		Width,
+		Height,
+		Size,
+		NoPoints,
+		NoDimensions,
+		ImageNames,
+		FilteredImageNames,
+		ImageIDs,
+		ImageFilePaths,
+		CurrentImageId,
+		CurrentImageName,
+		CurrentImageFilePath,
+		Average,
+		Selection
+	};
+
+	/** TODO */
+	ImagesLayer(Dataset* dataset, const QString& id, const QString& name, const std::uint32_t& flags);
+
+	const ImagesDataset* imagesDataset() const { return reinterpret_cast<ImagesDataset*>(_dataset); }
 
 public: // MVC
 
 	/** TODO */
-	Qt::ItemFlags itemFlags(const Layer::Column& column) const override;
+	Qt::ItemFlags itemFlags(const int& column) const override;
 
 	/** TODO */
-	QVariant data(const Layer::Column& column, int role) const override;
+	QVariant data(const int& column, int role) const override;
 
 	/** TODO */
-	void setData(const Layer::Column& column, const QVariant& value, const int& role) override;
+	void setData(const int& column, const QVariant& value, const int& role) override;
 
 public: // Getters/setters
 

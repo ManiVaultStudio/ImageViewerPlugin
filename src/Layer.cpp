@@ -1,15 +1,10 @@
 #include "Layer.h"
 #include "Dataset.h"
 
-#include "Layer.h"
-#include "PointsSettings.h"
-#include "ImagesSettings.h"
-#include "ClustersSettings.h"
-
 #include <QFont>
 #include <QDebug>
 
-Layer::Layer(Dataset* dataset, const QString& id /*= ""*/, const QString& name /*= ""*/, const Type& type /*= Type::Image*/, const std::uint32_t& flags) :
+Layer::Layer(Dataset* dataset, const Type& type, const QString& id, const QString& name, const std::uint32_t& flags) :
 	QObject(dataset),
 	_dataset(dataset),
 	_id(id),
@@ -32,7 +27,7 @@ Layer::Layer(Dataset* dataset, const QString& id /*= ""*/, const QString& name /
 
 int Layer::columnCount()
 {
-	return static_cast<int>(Layer::Column::DisplayRange);
+	return static_cast<int>(Layer::Column::Count);
 }
 
 QVariant Layer::headerData(int section, Qt::Orientation orientation, int role)
@@ -44,7 +39,7 @@ QVariant Layer::headerData(int section, Qt::Orientation orientation, int role)
 	return QVariant();
 }
 
-Qt::ItemFlags Layer::itemFlags(const Column& column) const
+Qt::ItemFlags Layer::itemFlags(const int& column) const
 {
 	int flags = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
 
@@ -127,7 +122,7 @@ Qt::ItemFlags Layer::itemFlags(const Column& column) const
 	return flags;
 }
 
-QVariant Layer::data(const Column& column, int role) const
+QVariant Layer::data(const int& column, int role) const
 {
 	switch (role)
 	{
@@ -399,7 +394,7 @@ QVariant Layer::data(const Column& column, int role) const
 	return QVariant();
 }
 
-void Layer::setData(const Column& column, const QVariant& value, const int& role)
+void Layer::setData(const int& column, const QVariant& value, const int& role)
 {
 	if (role == Qt::CheckStateRole) {
 		switch (static_cast<Layer::Column>(column)) {

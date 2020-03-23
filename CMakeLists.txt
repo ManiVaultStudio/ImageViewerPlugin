@@ -29,7 +29,7 @@ set(PLUGIN
 	src/Selection.cpp
 )
 
-file(GLOB MODEL src/*Model.* src/*Layer.* src/*Dataset.* src/*Settings.*)
+file(GLOB MODEL src/*Model.* src/*Layer.* src/*Dataset.* src/*Layer.*)
 file(GLOB RENDERING src/*Renderer.* src/*Actor.* src/*Prop.* src/*Shape.*)
 file(GLOB WIDGETS src/*Widget.*)
 file(GLOB UIS src/*.ui)

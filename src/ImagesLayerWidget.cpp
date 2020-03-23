@@ -1,5 +1,6 @@
 #include "ImagesLayerWidget.h"
 #include "LayersModel.h"
+#include "ImagesLayer.h"
 
 #include "ui_ImagesLayerWidget.h"
 
@@ -12,9 +13,9 @@ ImagesLayerWidget::ImagesLayerWidget(QWidget* parent) :
 	_ui->setupUi(this);
 }
 
-void ImagesLayerWidget::initialize(LayersModel* layersModel)
+void ImagesLayerWidget::setImagesLayer(ImagesLayer* imagesLayer)
 {
-	_layersModel = layersModel;
+	_imagesLayer = imagesLayer;
 }
 
 void ImagesLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>& roles /*= QVector<int>()*/)
@@ -25,9 +26,11 @@ void ImagesLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 		columnIds.insert(columnId);
 	}
 
-	if (columnIds.contains(Layer::columnId(Layer::Column::FilteredImageNames))) {
-		const auto filteredImageNames = _layersModel->data(topLeft.row(), Layer::Column::FilteredImageNames, Qt::EditRole).toStringList();
+	/*
+	if (columnIds.contains(static_cast<int>(ImagesLayer::Column::FilteredImageNames))) {
+		const auto filteredImageNames = _layersModel->data(topLeft.row(), static_cast<int>(ImagesLayer::Column::FilteredImageNames), Qt::EditRole).toStringList();
 
 		_ui->imagesComboBox->setModel(new QStringListModel(filteredImageNames));
 	}
+	*/
 }

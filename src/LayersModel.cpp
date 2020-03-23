@@ -39,7 +39,7 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 	if (index.row() >= rowCount() || index.row() < 0)
 		return QVariant();
 
-	return _layers.at(index.row())->data(static_cast<Layer::Column>(index.column()), role);
+	return _layers.at(index.row())->data(index.column(), role);
 }
 
 QVariant LayersModel::headerData(int section, Qt::Orientation orientation, int role) const
@@ -55,7 +55,7 @@ Qt::ItemFlags LayersModel::flags(const QModelIndex& index) const
 	if (!index.isValid())
 		return Qt::ItemIsEnabled;
 
-	return _layers.at(index.row())->itemFlags(static_cast<Layer::Column>(index.column()));
+	return _layers.at(index.row())->itemFlags(index.column());
 }
 
 Qt::ItemFlags LayersModel::flags(const int& row, const Layer::Column& column) const
@@ -68,7 +68,7 @@ bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int r
 	if (!index.isValid())
 		return false;
 
-	_layers.value(index.row())->setData(static_cast<Layer::Column>(index.column()), value, role);
+	_layers.value(index.row())->setData(index.column(), value, role);
 
 	emit dataChanged(index, index);
 
@@ -147,7 +147,7 @@ bool LayersModel::mayMoveUp(const int& row)
 	if (row <= 0)
 		return false;
 
-	if (_layers.at(row)->general()->flag(Layer::Flag::Frozen, Qt::EditRole).toBool() || _layers.at(row - 1)->general()->flag(Layer::Flag::Frozen, Qt::EditRole).toBool())
+	if (_layers.at(row)->flag(Layer::Flag::Frozen, Qt::EditRole).toBool() || _layers.at(row - 1)->flag(Layer::Flag::Frozen, Qt::EditRole).toBool())
 		return false;
 
 	return true;
@@ -158,7 +158,7 @@ bool LayersModel::mayMoveDown(const int& row)
 	if (row >= rowCount() - 1)
 		return false;
 
-	if (_layers.at(row)->general()->flag(Layer::Flag::Frozen, Qt::EditRole).toBool() || _layers.at(row + 1)->general()->flag(Layer::Flag::Frozen, Qt::EditRole).toBool())
+	if (_layers.at(row)->flag(Layer::Flag::Frozen, Qt::EditRole).toBool() || _layers.at(row + 1)->flag(Layer::Flag::Frozen, Qt::EditRole).toBool())
 		return false;
 
 	return true;
@@ -195,7 +195,7 @@ void LayersModel::removeRows(const QModelIndexList& rows)
 	for (const auto& index : rows) {
 		const auto row = index.row();
 
-		if (_layers.at(row)->general()->flag(Layer::Flag::Removable, Qt::EditRole).toBool()) {
+		if (_layers.at(row)->flag(Layer::Flag::Removable, Qt::EditRole).toBool()) {
 			rowsToRemove.append(row);
 		}
 	}

@@ -1,8 +1,10 @@
 #include "LayersWidget.h"
 #include "ImageViewerPlugin.h"
 #include "LayersModel.h"
-#include "PointsSettings.h"
-#include "ImagesSettings.h"
+#include "SelectionLayer.h"
+#include "PointsLayer.h"
+#include "ImagesLayer.h"
+#include "ClustersLayer.h"
 
 #include "ui_LayersWidget.h"
 
@@ -54,7 +56,7 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 
 	headerView->setSectionResizeMode(QHeaderView::ResizeToContents);
 
-	for (int column = Layer::columnId(Layer::Column::Start); column < Layer::columnId(Layer::Column::End); column++)
+	for (int column = Layer::columnId(Layer::Column::Enabled); column < Layer::columnId(Layer::Column::DisplayRange); column++)
 		headerView->hideSection(column);
 
 	headerView->showSection(Layer::columnId(Layer::Column::Type));
@@ -173,15 +175,15 @@ void LayersWidget::dropEvent(QDropEvent* dropEvent)
 		switch (points.getNumDimensions())
 		{
 			case 1:
-				layersModel()->addLayer(new Layer(dataset, datasetName, datasetName, Layer::Type::Points, layerFlags));
+				layersModel()->addLayer(new PointsLayer(dataset, datasetName, datasetName, layerFlags));
 				break;
 
 			case 2:
-				layersModel()->addLayer(new Layer(dataset, datasetName, datasetName, Layer::Type::Points, layerFlags));
+				layersModel()->addLayer(new PointsLayer(dataset, datasetName, datasetName, layerFlags));
 				break;
 
 			case 3:
-				layersModel()->addLayer(new Layer(dataset, datasetName, datasetName, Layer::Type::Points, layerFlags));
+				layersModel()->addLayer(new PointsLayer(dataset, datasetName, datasetName, layerFlags));
 				break;
 
 			default:
@@ -189,7 +191,7 @@ void LayersWidget::dropEvent(QDropEvent* dropEvent)
 		}
 
 		if (createSelectionLayer)
-			layersModel()->addLayer(new Layer(dataset, selectionName, selectionName, Layer::Type::Selection, layerFlags));
+			layersModel()->addLayer(new SelectionLayer(dataset, selectionName, selectionName, layerFlags));
 
 		dataset->init();
 	}
@@ -200,10 +202,10 @@ void LayersWidget::dropEvent(QDropEvent* dropEvent)
 
 		auto dataset = datasetsModel()->addDataset(datasetName, Dataset::Type::Images);
 
-		layersModel()->addLayer(new Layer(dataset, imagesName, imagesName, Layer::Type::Images, layerFlags));
+		layersModel()->addLayer(new ImagesLayer(dataset, imagesName, imagesName, layerFlags));
 
 		if (createSelectionLayer)
-			layersModel()->addLayer(new Layer(dataset, selectionName, selectionName, Layer::Type::Selection, layerFlags));
+			layersModel()->addLayer(new SelectionLayer(dataset, selectionName, selectionName, layerFlags));
 
 		dataset->init();
 	}
