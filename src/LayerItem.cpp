@@ -1,11 +1,15 @@
 #include "LayerItem.h"
 #include "Dataset.h"
+#include "PointsItem.h"
+#include "ImagesItem.h"
+#include "ClustersItem.h"
+#include "SelectionItem.h"
 
 #include <QFont>
 #include <QDebug>
 
-LayerItem::LayerItem(TreeItem* parentItem, Dataset* dataset, const Type& type, const QString& id, const QString& name, const std::uint32_t& flags) :
-	TreeItem(parentItem),
+LayerItem::LayerItem(Item* parentItem, Dataset* dataset, const Type& type, const QString& id, const QString& name, const std::uint32_t& flags) :
+	Item(parentItem),
 	_dataset(dataset),
 	_id(id),
 	_name(name),
@@ -22,7 +26,27 @@ LayerItem::LayerItem(TreeItem* parentItem, Dataset* dataset, const Type& type, c
 	_window(),
 	_level()
 {
+	switch (_type)
+	{
+		case LayerItem::Type::Points:
+			appendChild(new PointsItem(this, reinterpret_cast<PointsDataset*>(dataset)));
+			break;
 
+		case LayerItem::Type::Images:
+			appendChild(new ImagesItem(this, reinterpret_cast<ImagesDataset*>(dataset)));
+			break;
+
+		case LayerItem::Type::Clusters:
+			appendChild(new ClustersItem(this, reinterpret_cast<ClustersDataset*>(dataset)));
+			break;
+
+		case LayerItem::Type::Selection:
+			appendChild(new SelectionItem(this, dataset));
+			break;
+
+		default:
+			break;
+	}
 }
 
 int LayerItem::columnCount() const

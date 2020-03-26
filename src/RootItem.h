@@ -1,12 +1,12 @@
 #pragma once
 
 #include "Item.h"
+#include "LayerItem.h"
 
 class LayerItem;
-class PointsDataset;
 
 /** TODO */
-class PointsItem : public Item
+class RootItem : public Item
 {
 public:
 
@@ -17,7 +17,10 @@ public:
 public:
 
 	/** TODO */
-	PointsItem(LayerItem* layeritem, PointsDataset* pointsDataset);
+	RootItem();
+
+	/** TODO */
+	void addLayer(Dataset* dataset, const LayerItem::Type& type, const QString& id, const QString& name, const std::uint32_t& flags);
 
 public: // Inherited
 
@@ -37,5 +40,4 @@ public: // Inherited
 	void setData(const int& column, const QVariant& value, const int& role) override;
 
 private:
-	PointsDataset*	_dataset;	/** TODO */
 };

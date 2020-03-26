@@ -1,26 +1,34 @@
 #include "ImagesItem.h"
+#include "LayerItem.h"
+#include "ImagesDataset.h"
 
 #include "ImageData/Images.h"
 
 #include <QDebug>
 
-ImagesLayer::ImagesLayer(Dataset* dataset, const QString& id, const QString& name, const std::uint32_t& flags) :
-	LayerItem(dataset, Type::Images, id, name, flags),
+ImagesItem::ImagesItem(LayerItem* layeritem, ImagesDataset* imagesDataset) :
+	Item(layeritem),
 	_currentImage(0),
-	_average()
+	_average(),
+	_dataset(imagesDataset)
 {
 }
 
-Qt::ItemFlags ImagesLayer::itemFlags(const QModelIndex& index) const
+int ImagesItem::columnCount() const
 {
-	if (index.parent() == QModelIndex())
-		return LayerItem::itemFlags(index);
-	
-	const auto column = static_cast<Column>(index.column());
+	return 0;
+}
 
+QVariant ImagesItem::headerData(const int& section, const Qt::Orientation& orientation, const int& role) const
+{
+	return QVariant();
+}
+
+Qt::ItemFlags ImagesItem::flags(const int& column) const
+{
 	int flags = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
 
-	switch (column) {
+	switch (static_cast<Column>(column)) {
 		case Column::NoImages:
 		case Column::Width:
 		case Column::Height:
@@ -53,43 +61,38 @@ Qt::ItemFlags ImagesLayer::itemFlags(const QModelIndex& index) const
 	return flags;
 }
 
-QVariant ImagesLayer::data(const QModelIndex& index, int role) const
+QVariant ImagesItem::data(const int& column, const int& role) const
 {
-	if (index.parent() == QModelIndex())
-		return LayerItem::data(index, role);
-
-	const auto column = static_cast<Column>(index.column());
-
-	switch (column) {
+	switch (static_cast<Column>(column)) {
 		case Column::NoImages:
-			imagesDataset()->noImages(role);
+			_dataset->noImages(role);
 
 		case Column::Width:
-			imagesDataset()->width(role);
+			_dataset->width(role);
 
 		case Column::Height:
-			imagesDataset()->height(role);
+			_dataset->height(role);
 
 		case Column::Size:
-			imagesDataset()->size(role);
+			_dataset->size(role);
 
 		case Column::NoPoints:
-			imagesDataset()->noPoints(role);
+			_dataset->noPoints(role);
 
 		case Column::NoDimensions:
-			imagesDataset()->noDimensions(role);
+			_dataset->noDimensions(role);
 
 		case Column::ImageNames:
-			imagesDataset()->imageNames(role);
+			_dataset->imageNames(role);
 
 		case Column::FilteredImageNames:
 			return filteredImageNames(role);
 
 		case Column::ImageIDs:
-			imagesDataset()->imageIds(role);
+			_dataset->imageIds(role);
 
 		case Column::ImageFilePaths:
-			imagesDataset()->imageFilePaths(role);
+			_dataset->imageFilePaths(role);
 
 		case Column::CurrentImageId:
 			return currentImageId(role);
@@ -104,7 +107,7 @@ QVariant ImagesLayer::data(const QModelIndex& index, int role) const
 			return average(role);
 
 		case Column::Selection:
-			imagesDataset()->selection(role);
+			_dataset->selection(role);
 
 		default:
 			break;
@@ -113,13 +116,8 @@ QVariant ImagesLayer::data(const QModelIndex& index, int role) const
 	return QVariant();
 }
 
-void ImagesLayer::setData(const QModelIndex& index, const QVariant& value, const int& role)
+void ImagesItem::setData(const int& column, const QVariant& value, const int& role)
 {
-	if (index.parent() == QModelIndex())
-		return LayerItem::setData(index, value, role);
-
-	const auto column = static_cast<Column>(index.column());
-
 	switch (static_cast<Column>(column)) {
 		case Column::NoImages:
 		case Column::Width:
@@ -153,19 +151,19 @@ void ImagesLayer::setData(const QModelIndex& index, const QVariant& value, const
 	}
 }
 
-QVariant ImagesLayer::filteredImageNames(const int& role /*= Qt::DisplayRole*/) const
+QVariant ImagesItem::filteredImageNames(const int& role /*= Qt::DisplayRole*/) const
 {
-	const auto selectionSize	= imagesDataset()->selectionSize(Qt::EditRole).toInt();
-	const auto imageNames		= imagesDataset()->imageNames(Qt::EditRole).toStringList();
+	const auto selectionSize	= _dataset->selectionSize(Qt::EditRole).toInt();
+	const auto imageNames		= _dataset->imageNames(Qt::EditRole).toStringList();
 
 	auto filtered = QStringList();
 
-	switch (imagesDataset()->type(Qt::EditRole).toInt())
+	switch (_dataset->type(Qt::EditRole).toInt())
 	{
 		case ImageData::Type::Sequence:
 		{
 			if (selectionSize > 0) {
-				for (auto id : imagesDataset()->selection().value<Indices>()) {
+				for (auto id : _dataset->selection().value<Indices>()) {
 					filtered << imageNames[id];
 				}
 			}
@@ -213,7 +211,7 @@ QVariant ImagesLayer::filteredImageNames(const int& role /*= Qt::DisplayRole*/) 
 	return QVariant();
 }
 
-QVariant ImagesLayer::currentImageId(const int& role /*= Qt::DisplayRole*/) const
+QVariant ImagesItem::currentImageId(const int& role /*= Qt::DisplayRole*/) const
 {
 	switch (role)
 	{
@@ -230,9 +228,9 @@ QVariant ImagesLayer::currentImageId(const int& role /*= Qt::DisplayRole*/) cons
 	return QVariant();
 }
 
-QVariant ImagesLayer::currentImageName(const int& role /*= Qt::DisplayRole*/) const
+QVariant ImagesItem::currentImageName(const int& role /*= Qt::DisplayRole*/) const
 {
-	const auto imageNames	= imagesDataset()->imageNames(Qt::EditRole).toStringList();
+	const auto imageNames	= _dataset->imageNames(Qt::EditRole).toStringList();
 	const auto imageName	= imageNames.isEmpty() ? "" : imageNames[_currentImage];
 
 	switch (role)
@@ -248,9 +246,9 @@ QVariant ImagesLayer::currentImageName(const int& role /*= Qt::DisplayRole*/) co
 	return QVariant();
 }
 
-QVariant ImagesLayer::currentImageFilePath(const int& role /*= Qt::DisplayRole*/) const
+QVariant ImagesItem::currentImageFilePath(const int& role /*= Qt::DisplayRole*/) const
 {
-	const auto imageFilePathString = imagesDataset()->imageFilePaths(Qt::EditRole).toStringList()[_currentImage];
+	const auto imageFilePathString = _dataset->imageFilePaths(Qt::EditRole).toStringList()[_currentImage];
 
 	switch (role)
 	{
@@ -268,13 +266,13 @@ QVariant ImagesLayer::currentImageFilePath(const int& role /*= Qt::DisplayRole*/
 	return QVariant();
 }
 
-void ImagesLayer::setCurrentImageId(const std::uint32_t& currentImage)
+void ImagesItem::setCurrentImageId(const std::uint32_t& currentImage)
 {
-	switch (static_cast<ImageData::Type>(imagesDataset()->type(Qt::EditRole).toInt()))
+	switch (static_cast<ImageData::Type>(_dataset->type(Qt::EditRole).toInt()))
 	{
 		case ImageData::Type::Sequence:
 		{
-			auto selection = imagesDataset()->selection().value<Indices>();
+			auto selection = _dataset->selection().value<Indices>();
 
 			if (selection.isEmpty())
 				_currentImage = currentImage;
@@ -293,7 +291,7 @@ void ImagesLayer::setCurrentImageId(const std::uint32_t& currentImage)
 	}
 }
 
-QVariant ImagesLayer::average(const int& role /*= Qt::DisplayRole*/) const
+QVariant ImagesItem::average(const int& role /*= Qt::DisplayRole*/) const
 {
 	const auto averageString = _average ? "true" : "false";
 
@@ -315,7 +313,7 @@ QVariant ImagesLayer::average(const int& role /*= Qt::DisplayRole*/) const
 	return QVariant();
 }
 
-void ImagesLayer::setAverage(const bool& average)
+void ImagesItem::setAverage(const bool& average)
 {
 	_average = average;
 }

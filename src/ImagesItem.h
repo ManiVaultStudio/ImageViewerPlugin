@@ -1,38 +1,12 @@
 #pragma once
 
-#include "TreeItem.h"
-#include "ImagesDataset.h"
+#include "Item.h"
+
+class LayerItem;
+class ImagesDataset;
 
 /** TODO */
-class ClustersItem : public TreeItem
-{
-public:
-
-	/** TODO */
-	enum class Column {
-	};
-
-public:
-
-	/** TODO */
-	ClustersItem(TreeItem *parentItem, const QString& id, const QString& name, const std::uint32_t& flags);
-
-public: // TODO
-
-	/** TODO */
-	Qt::ItemFlags flags(const int& column) const override;
-
-	/** TODO */
-	QVariant data(const int& column, const int& role) const override;
-
-	/** TODO */
-	void setData(const int& column, const QVariant& value, const int& role) override;
-
-private:
-};
-
-/** TODO */
-class ImagesLayer : public LayerItem
+class ImagesItem : public Item
 {
 public:
 
@@ -59,20 +33,24 @@ public:
 	};
 
 	/** TODO */
-	ImagesLayer(Dataset* dataset, const QString& id, const QString& name, const std::uint32_t& flags);
+	ImagesItem(LayerItem* layeritem, ImagesDataset* imagesDataset);
 
-	const ImagesDataset* imagesDataset() const { return reinterpret_cast<ImagesDataset*>(_dataset); }
-
-public: // MVC
+public: // Inherited
 
 	/** TODO */
-	Qt::ItemFlags itemFlags(const QModelIndex& index) const override;
+	int columnCount() const override;
 
 	/** TODO */
-	QVariant data(const QModelIndex& index, int role) const override;
+	QVariant headerData(const int& section, const Qt::Orientation& orientation, const int& role) const override;
 
 	/** TODO */
-	void setData(const QModelIndex& index, const QVariant& value, const int& role) override;
+	Qt::ItemFlags flags(const int& column) const override;
+
+	/** TODO */
+	QVariant data(const int& column, const int& role) const override;
+
+	/** TODO */
+	void setData(const int& column, const QVariant& value, const int& role) override;
 
 public: // Getters/setters
 
@@ -98,6 +76,7 @@ public: // Getters/setters
 	void setAverage(const bool& average);
 
 private:
-	std::int32_t		_currentImage;			/** TODO */
-	bool				_average;				/** TODO */
+	std::int32_t		_currentImage;		/** TODO */
+	bool				_average;			/** TODO */
+	ImagesDataset*		_dataset;			/** TODO */
 };

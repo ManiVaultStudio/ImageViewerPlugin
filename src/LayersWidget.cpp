@@ -1,10 +1,9 @@
 #include "LayersWidget.h"
 #include "ImageViewerPlugin.h"
 #include "LayersModel.h"
-#include "SelectionLayer.h"
-#include "PointsLayer.h"
-#include "ImagesLayer.h"
-#include "ClustersLayer.h"
+#include "SelectionItem.h"
+#include "LayerItem.h"
+#include "RootItem.h"
 
 #include "ui_LayersWidget.h"
 
@@ -60,7 +59,7 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 	//_ui->layersTreeView->setModel(layersModel());
 
 	auto headerView = _ui->layersTreeView->header();
-
+/*
 	headerView->setSectionResizeMode(QHeaderView::ResizeToContents);
 
 	for (int column = to_underlying(LayerItem::Column::Enabled); column < to_underlying(LayerItem::Column::DisplayRange); column++)
@@ -72,6 +71,7 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 
 	headerView->setSectionResizeMode(to_underlying(LayerItem::Column::Name), QHeaderView::Interactive);
 
+	
 	auto updateButtons = [this]() {
 		const auto selectedRows = layersModel()->selectionModel()->selectedRows();
 		const auto noSelectedRows = selectedRows.size();
@@ -136,8 +136,9 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 	QObject::connect(layersModel(), &QAbstractListModel::rowsMoved, [this, updateButtons](const QModelIndex& parent, int start, int end, const QModelIndex& destination, int row) {
 		updateButtons();
 	});
+	*/
 
-	layersModel()->selectionModel()->setCurrentIndex(layersModel()->index(0), QItemSelectionModel::Rows | QItemSelectionModel::Current);
+	//layersModel()->selectionModel()->setCurrentIndex(layersModel()->index(0), QItemSelectionModel::Rows | QItemSelectionModel::Current);
 }
 
 LayersWidget::~LayersWidget() = default;
@@ -165,6 +166,7 @@ void LayersWidget::dragEnterEvent(QDragEnterEvent* dragEnterEvent)
 
 void LayersWidget::dropEvent(QDropEvent* dropEvent)
 {
+	
 	const auto items					= dropEvent->mimeData()->text().split("\n");
 	const auto datasetName				= items.at(0);
 	const auto datasetType				= items.at(1);
@@ -177,26 +179,10 @@ void LayersWidget::dropEvent(QDropEvent* dropEvent)
 
 		auto dataset = datasetsModel()->addDataset(datasetName, Dataset::Type::Points);
 		
-		switch (points.getNumDimensions())
-		{
-			case 1:
-				layersModel()->addLayer(new PointsLayer(dataset, datasetName, datasetName, layerFlags));
-				break;
-
-			case 2:
-				layersModel()->addLayer(new PointsLayer(dataset, datasetName, datasetName, layerFlags));
-				break;
-
-			case 3:
-				layersModel()->addLayer(new PointsLayer(dataset, datasetName, datasetName, layerFlags));
-				break;
-
-			default:
-				break;
-		}
+		layersModel()->addLayer(dataset, LayerItem::Type::Points, datasetName, datasetName, layerFlags);
 
 		if (createSelectionLayer)
-			layersModel()->addLayer(new SelectionLayer(dataset, selectionName, selectionName, layerFlags));
+			layersModel()->addLayer(dataset, LayerItem::Type::Selection, selectionName, selectionName, layerFlags);
 
 		dataset->init();
 	}
@@ -207,10 +193,12 @@ void LayersWidget::dropEvent(QDropEvent* dropEvent)
 
 		auto dataset = datasetsModel()->addDataset(datasetName, Dataset::Type::Images);
 
+		/*
 		layersModel()->addLayer(new ImagesLayer(dataset, imagesName, imagesName, layerFlags));
 
 		if (createSelectionLayer)
 			layersModel()->addLayer(new SelectionLayer(dataset, selectionName, selectionName, layerFlags));
+		*/
 
 		dataset->init();
 	}
@@ -221,6 +209,7 @@ void LayersWidget::dropEvent(QDropEvent* dropEvent)
 	}
 
 	dropEvent->acceptProposedAction();
+	/**/
 }
 
 DatasetsModel* LayersWidget::datasetsModel()

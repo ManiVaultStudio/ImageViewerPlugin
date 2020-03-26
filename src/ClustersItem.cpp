@@ -1,10 +1,12 @@
 #include "ClustersItem.h"
 #include "LayerItem.h"
+#include "ClustersDataset.h"
 
 #include <QDebug>
 
-ClustersItem::ClustersItem(LayerItem* layeritem) :
-	TreeItem(layeritem)
+ClustersItem::ClustersItem(LayerItem* layeritem, ClustersDataset* clustersDataset) :
+	Item(layeritem),
+	_dataset(clustersDataset)
 {
 }
 

@@ -1,12 +1,12 @@
 #pragma once
 
-#include "TreeItem.h"
-#include "ClustersDataset.h"
+#include "Item.h"
 
 class LayerItem;
+class ClustersDataset;
 
 /** TODO */
-class ClustersItem : public TreeItem
+class ClustersItem : public Item
 {
 public:
 	
@@ -17,7 +17,7 @@ public:
 public:
 
 	/** TODO */
-	ClustersItem(LayerItem* layeritem);
+	ClustersItem(LayerItem* layeritem, ClustersDataset* clustersDataset);
 
 public: // Inherited
 
@@ -37,4 +37,5 @@ public: // Inherited
 	void setData(const int& column, const QVariant& value, const int& role) override;
 
 private:
+	ClustersDataset*	_dataset;	/** TODO */
 };

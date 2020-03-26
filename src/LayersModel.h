@@ -1,11 +1,12 @@
 #pragma once
 
-#include "LayerItem.h"
+#include "RootItem.h"
 
 #include <QItemSelectionModel>
 #include <QAbstractListModel>
 
 class ImageViewerPlugin;
+class Dataset;
 
 /** TODO */
 class LayersModel : public QAbstractItemModel
@@ -30,7 +31,10 @@ public: // Inherited members
 	int columnCount(const QModelIndex& parent = QModelIndex()) const override;
 
 	/** TODO */
-	QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
+	QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
+
+	/** TODO */
+	QModelIndex parent(const QModelIndex &index) const override;
 
 	/** TODO */
 	QVariant data(const QModelIndex& index, int role) const override;
@@ -88,12 +92,13 @@ public: // TODO
 	LayerItem* findLayerById(const QString& id);
 
 	/** TODO */
-	void addLayer(LayerItem* layer);
+	void addLayer(Dataset* dataset, const LayerItem::Type& type, const QString& id, const QString& name, const std::uint32_t& flags);
 
 private:
 	ImageViewerPlugin*		_imageViewerPlugin;		/** TODO */
-	Layers					_layers;				/** TODO */
+//	Layers					_layers;				/** TODO */
 	QItemSelectionModel		_selectionModel;		/** TODO */
+	RootItem*				_rootItem;				/** TODO */
 
 	friend class MainModel;
 };

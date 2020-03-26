@@ -2,7 +2,7 @@
 
 #include "Common.h"
 
-#include "TreeItem.h"
+#include "Item.h"
 
 #include <QColor>
 #include <QObject>
@@ -58,7 +58,7 @@ private:
 Q_DECLARE_METATYPE(Range);
 
 /** TODO */
-class LayerItem : public TreeItem
+class LayerItem : public Item
 {
 public:
 
@@ -192,7 +192,7 @@ public:
 	};
 
 	/** TODO */
-	LayerItem(TreeItem* parentItem, Dataset* dataset, const Type& type, const QString& id, const QString& name, const std::uint32_t& flags);
+	LayerItem(Item* parentItem, Dataset* dataset, const Type& type, const QString& id, const QString& name, const std::uint32_t& flags);
 
 public: // Inherited
 

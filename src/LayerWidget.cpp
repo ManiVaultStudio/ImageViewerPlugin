@@ -1,5 +1,6 @@
 #include "LayerWidget.h"
 #include "LayersModel.h"
+#include "LayerItem.h"
 
 #include "ui_LayerWidget.h"
 

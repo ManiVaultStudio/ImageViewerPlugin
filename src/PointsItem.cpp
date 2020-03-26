@@ -1,10 +1,12 @@
 #include "PointsItem.h"
 #include "LayerItem.h"
+#include "PointsDataset.h"
 
 #include <QDebug>
 
-PointsItem::PointsItem(LayerItem* layeritem) :
-	TreeItem(layeritem)
+PointsItem::PointsItem(LayerItem* layeritem, PointsDataset* pointsDataset) :
+	Item(layeritem),
+	_dataset(pointsDataset)
 {
 }
 

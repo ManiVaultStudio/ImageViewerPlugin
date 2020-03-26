@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Prop.h"
-#include "Layer.h"
+#include "LayerItem.h"
 
 class Actor;
 
@@ -49,10 +49,10 @@ protected:
 
 private:
 	LayerItem::Type		_type;
-	QImage			_image;
-	float			_displayRange[2];
-	float			_opacity;
-	std::uint32_t	_order;
+	QImage				_image;
+	float				_displayRange[2];
+	float				_opacity;
+	std::uint32_t		_order;
 };
 
 using SharedImageLayerProp = QSharedPointer<ImageLayerProp>;

@@ -1,6 +1,6 @@
 #include "ImagesLayerWidget.h"
 #include "LayersModel.h"
-#include "ImagesLayer.h"
+#include "ImagesItem.h"
 
 #include "ui_ImagesLayerWidget.h"
 
@@ -9,7 +9,7 @@
 #include <QDebug>
 
 ImagesLayerWidget::ImagesLayerWidget(QWidget* parent) :
-	ModelWidget(parent, static_cast<int>(ImagesLayer::Column::End)),
+	ModelWidget(parent, static_cast<int>(ImagesItem::Column::End)),
 	_ui{ std::make_unique<Ui::ImagesLayerWidget>() }
 {
 	_ui->setupUi(this);
@@ -33,9 +33,13 @@ void ImagesLayerWidget::updateData(const QModelIndex& index)
 
 bool ImagesLayerWidget::shouldUpdate(const QModelIndex& index) const
 {
+	/*
 	qDebug() << "index.parent()" << index.parent();
 	return true;
 	const auto type = static_cast<LayerItem::Type>(_layersModel->data(index.parent().row(), static_cast<int>(LayerItem::Column::Type), Qt::EditRole).toInt());
 
 	return type == LayerItem::Type::Images;
+	*/
+
+	return true;
 }

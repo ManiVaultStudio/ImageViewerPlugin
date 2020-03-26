@@ -1,24 +1,26 @@
 #pragma once
 
+#include "Common.h"
+
 #include <QList>
 #include <QString>
 #include <QImage>
 #include <QModelIndex>
 
-class TreeItem
+class Item
 {
 public:
 	/** TODO */
-	explicit TreeItem(TreeItem *parentItem = nullptr);
+	explicit Item(Item *parentItem = nullptr);
 
 	/** TODO */
-	~TreeItem();
+	~Item();
 
 	/** TODO */
-	void appendChild(TreeItem *child);
+	void appendChild(Item *child);
 
 	/** TODO */
-	TreeItem *child(int row);
+	Item *child(int row);
 
 	/** TODO */
 	int childCount() const;
@@ -41,9 +43,9 @@ public:
 	int row() const;
 
 	/** TODO */
-	TreeItem *parentItem();
+	Item *parentItem();
 
 private:
-	QVector<TreeItem*>	_childItems;		/** TODO */
-	TreeItem *			_parentItem;		/** TODO */
+	QVector<Item*>	_childItems;		/** TODO */
+	Item *			_parentItem;		/** TODO */
 };

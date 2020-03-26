@@ -3,10 +3,10 @@
 #include "Item.h"
 
 class LayerItem;
-class PointsDataset;
+class Dataset;
 
 /** TODO */
-class PointsItem : public Item
+class SelectionItem : public Item
 {
 public:
 
@@ -17,7 +17,7 @@ public:
 public:
 
 	/** TODO */
-	PointsItem(LayerItem* layeritem, PointsDataset* pointsDataset);
+	SelectionItem(LayerItem* layeritem, Dataset* dataset);
 
 public: // Inherited
 
@@ -37,5 +37,5 @@ public: // Inherited
 	void setData(const int& column, const QVariant& value, const int& role) override;
 
 private:
-	PointsDataset*	_dataset;	/** TODO */
+	Dataset*	_dataset;	/** TODO */
 };
