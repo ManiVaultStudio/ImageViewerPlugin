@@ -3,28 +3,44 @@
 #include <QDebug>
 
 SelectionLayer::SelectionLayer(Dataset* dataset, const QString& id, const QString& name, const std::uint32_t& flags) :
-	Layer(dataset, Type::Selection, id, name, flags)
+	LayerItem(dataset, Type::Selection, id, name, flags)
 {
 }
 
-Qt::ItemFlags SelectionLayer::itemFlags(const int& column) const
+Qt::ItemFlags SelectionLayer::itemFlags(const QModelIndex& index) const
 {
-	if (column < static_cast<int>(Layer::Column::Count))
-		return Layer::itemFlags(column);
+	if (index.parent() == QModelIndex())
+		return LayerItem::itemFlags(index);
 
-	return 0;
+	const auto column = static_cast<Column>(index.column());
+
+	int flags = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+
+	switch (column) {
+		default:
+			break;
+	}
+
+	return flags;
 }
 
-QVariant SelectionLayer::data(const int& column, int role) const
+QVariant SelectionLayer::data(const QModelIndex& index, int role) const
 {
-	if (column < static_cast<int>(Layer::Column::Count))
-		return Layer::data(column, role);
+	if (index.parent() == QModelIndex())
+		return LayerItem::data(index, role);
+
+	const auto column = static_cast<Column>(index.column());
+
+	switch (column) {
+		default:
+			break;
+	}
 
 	return QVariant();
 }
 
-void SelectionLayer::setData(const int& column, const QVariant& value, const int& role)
+void SelectionLayer::setData(const QModelIndex& index, const QVariant& value, const int& role)
 {
-	if (column < static_cast<int>(Layer::Column::Count))
-		return Layer::setData(column, value, role);
+	if (index.parent() == QModelIndex())
+		return LayerItem::setData(index, value, role);
 }

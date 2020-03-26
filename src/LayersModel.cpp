@@ -1,16 +1,15 @@
 #include "LayersModel.h"
 #include "ImageViewerPlugin.h"
 
-#include <QItemSelectionModel>
 #include <QFont>
 #include <QBrush>
 #include <QDebug>
 
 LayersModel::LayersModel(ImageViewerPlugin* imageViewerPlugin) :
-	QAbstractListModel(imageViewerPlugin),
+	QAbstractItemModel(imageViewerPlugin),
 	_imageViewerPlugin(imageViewerPlugin),
 	_layers(),
-	_selectionModel()
+	_selectionModel(this)
 {
 }
 
@@ -27,18 +26,30 @@ int LayersModel::columnCount(const QModelIndex& parent /*= QModelIndex()*/) cons
 {
 	Q_UNUSED(parent);
 
-	return Layer::columnCount();
+	return LayerItem::columnCount();
+}
+
+QModelIndex LayersModel::index(int row, int column, const QModelIndex& parent /*= QModelIndex()*/) const
+{
+	if (!hasIndex(row, column, parent))
+		return QModelIndex();
+	
+	return createIndex(row, column, );
+
+	return QModelIndex();
 }
 
 QVariant LayersModel::data(const QModelIndex& index, int role) const
 {
-	if (!index.isValid())
+	if (!index.isValid()) {
+		qDebug() << "Index is invalid!";
 		return QVariant();
-
+	}
+		
 	if (index.row() >= rowCount() || index.row() < 0)
 		return QVariant();
 
-	return _layers.at(index.row())->data(index.column(), role);
+	return _layers.at(index.row())->data(index, role);
 }
 
 QVariant LayersModel::headerData(int section, Qt::Orientation orientation, int role) const
@@ -46,7 +57,7 @@ QVariant LayersModel::headerData(int section, Qt::Orientation orientation, int r
 	if (role != Qt::DisplayRole)
 		return QVariant();
 
-	return Layer::headerData(section, Qt::Horizontal, Qt::DisplayRole);
+	return LayerItem::headerData(section, Qt::Horizontal, Qt::DisplayRole);
 }
 
 Qt::ItemFlags LayersModel::flags(const QModelIndex& index) const
@@ -54,12 +65,7 @@ Qt::ItemFlags LayersModel::flags(const QModelIndex& index) const
 	if (!index.isValid())
 		return Qt::ItemIsEnabled;
 
-	return _layers.at(index.row())->itemFlags(index.column());
-}
-
-Qt::ItemFlags LayersModel::flags(const int& row, const int& column) const
-{
-	return flags(index(row, static_cast<int>(column)));
+	return _layers.at(index.row())->itemFlags(index);
 }
 
 bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int role /*= Qt::DisplayRole*/)
@@ -67,7 +73,7 @@ bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int r
 	if (!index.isValid())
 		return false;
 
-	_layers.value(index.row())->setData(index.column(), value, role);
+	_layers.value(index.row())->setData(index, value, role);
 
 	emit dataChanged(index, index);
 
@@ -121,24 +127,20 @@ bool LayersModel::moveRows(const QModelIndex& sourceParent, int sourceRow, int c
 	return true;
 }
 
-QVariant LayersModel::data(const int& row, const int& column, int role) const
+QVariant LayersModel::data(const int& row, const int& column, int role, const QModelIndex& parent /*= QModelIndex()*/) const
 {
-	const auto modelIndex = index(row, static_cast<int>(column));
+	if (parent == QModelIndex())
+		return data(index(row, column), role);
 
-	if (!modelIndex.isValid())
-		return QVariant();
-
-	return data(index(row, static_cast<int>(column)), role);
+	return data(index(row, column, parent), role);
 }
 
-void LayersModel::setData(const int& row, const int& column, const QVariant& value, int role /*= Qt::DisplayRole*/)
+void LayersModel::setData(const int& row, const int& column, const QVariant& value, const QModelIndex& parent /*= QModelIndex()*/)
 {
-	const auto modelIndex = index(row, static_cast<int>(column));
-
-	if (!modelIndex.isValid())
-		return;
-
-	setData(modelIndex, value, role);
+	if (parent == QModelIndex())
+		setData(index(row, column), value);
+	else
+		setData(index(row, column, parent), value);
 }
 
 bool LayersModel::mayMoveUp(const int& row)
@@ -146,7 +148,7 @@ bool LayersModel::mayMoveUp(const int& row)
 	if (row <= 0)
 		return false;
 
-	if (_layers.at(row)->flag(Layer::Flag::Frozen, Qt::EditRole).toBool() || _layers.at(row - 1)->flag(Layer::Flag::Frozen, Qt::EditRole).toBool())
+	if (_layers.at(row)->flag(LayerItem::Flag::Frozen, Qt::EditRole).toBool() || _layers.at(row - 1)->flag(LayerItem::Flag::Frozen, Qt::EditRole).toBool())
 		return false;
 
 	return true;
@@ -157,7 +159,7 @@ bool LayersModel::mayMoveDown(const int& row)
 	if (row >= rowCount() - 1)
 		return false;
 
-	if (_layers.at(row)->flag(Layer::Flag::Frozen, Qt::EditRole).toBool() || _layers.at(row + 1)->flag(Layer::Flag::Frozen, Qt::EditRole).toBool())
+	if (_layers.at(row)->flag(LayerItem::Flag::Frozen, Qt::EditRole).toBool() || _layers.at(row + 1)->flag(LayerItem::Flag::Frozen, Qt::EditRole).toBool())
 		return false;
 
 	return true;
@@ -184,7 +186,7 @@ void LayersModel::moveDown(const int& row)
 void LayersModel::sortOrder()
 {
 	for (int row = 0; row < rowCount(); row++)
-		setData(row, to_underlying(Layer::Column::Order), rowCount() - row);
+		setData(index(row, to_underlying(LayerItem::Column::Order)), rowCount() - row);
 }
 
 void LayersModel::removeRows(const QModelIndexList& rows)
@@ -194,7 +196,7 @@ void LayersModel::removeRows(const QModelIndexList& rows)
 	for (const auto& index : rows) {
 		const auto row = index.row();
 
-		if (_layers.at(row)->flag(Layer::Flag::Removable, Qt::EditRole).toBool()) {
+		if (_layers.at(row)->flag(LayerItem::Flag::Removable, Qt::EditRole).toBool()) {
 			rowsToRemove.append(row);
 		}
 	}
@@ -217,19 +219,19 @@ void LayersModel::removeRows(const QModelIndexList& rows)
 
 void LayersModel::renameLayer(const QString& id, const QString& name)
 {
-	const auto hits = match(index(0, static_cast<int>(Layer::Column::ID)), Qt::EditRole, id, -1, Qt::MatchExactly);
+	const auto hits = match(index(0, static_cast<int>(LayerItem::Column::ID)), Qt::EditRole, id, -1, Qt::MatchExactly);
 
 	if (hits.isEmpty())
 		return;
 
 	const auto firstHit = hits.first();
 
-	setData(firstHit.row(), to_underlying(Layer::Column::Name), name);
+	setData(index(firstHit.row(), to_underlying(LayerItem::Column::Name)), name);
 }
 
-Layer* LayersModel::findLayerById(const QString& id)
+LayerItem* LayersModel::findLayerById(const QString& id)
 {
-	const auto hits = match(index(0, static_cast<int>(Layer::Column::ID)), Qt::DisplayRole, id, -1, Qt::MatchExactly);
+	const auto hits = match(index(0, static_cast<int>(LayerItem::Column::ID)), Qt::DisplayRole, id, -1, Qt::MatchExactly);
 
 	if (hits.isEmpty())
 		return nullptr;
@@ -237,7 +239,7 @@ Layer* LayersModel::findLayerById(const QString& id)
 	return _layers[hits.first().row()];
 }
 
-void LayersModel::addLayer(Layer* layer)
+void LayersModel::addLayer(LayerItem* layer)
 {
 	beginInsertRows(QModelIndex(), 0, 0);
 

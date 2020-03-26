@@ -1,14 +1,14 @@
 #pragma once
 
-#include "Layer.h"
+#include "LayerItem.h"
 
-#include <QAbstractListModel>
 #include <QItemSelectionModel>
+#include <QAbstractListModel>
 
 class ImageViewerPlugin;
 
 /** TODO */
-class LayersModel : public QAbstractListModel
+class LayersModel : public QAbstractItemModel
 {
 public: // Construction/destruction
 
@@ -19,47 +19,47 @@ public: // Construction/destruction
 	~LayersModel();
 
 	/** TODO */
-	QItemSelectionModel& selectionModel() { return _selectionModel; }
-
+	QItemSelectionModel* selectionModel() { return &_selectionModel; }
+	
 public: // Inherited members
 
 	/** TODO */
-	int rowCount(const QModelIndex& parent = QModelIndex()) const;
+	int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 
 	/** TODO */
-	int columnCount(const QModelIndex& parent = QModelIndex()) const;
+	int columnCount(const QModelIndex& parent = QModelIndex()) const override;
 
 	/** TODO */
-	QVariant data(const QModelIndex& index, int role) const;
+	QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
 
 	/** TODO */
-	QVariant headerData(int section, Qt::Orientation orientation, int role) const;
+	QVariant data(const QModelIndex& index, int role) const override;
 
 	/** TODO */
-	Qt::ItemFlags flags(const QModelIndex &index) const;
+	QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
 
 	/** TODO */
-	bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::DisplayRole);
+	Qt::ItemFlags flags(const QModelIndex &index) const override;
 
 	/** TODO */
-	bool insertRows(int position, int rows, const QModelIndex& index = QModelIndex());
+	bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::DisplayRole) override;
 
 	/** TODO */
-	bool removeRows(int position, int rows, const QModelIndex& index = QModelIndex());
+	bool insertRows(int position, int rows, const QModelIndex& index = QModelIndex()) override;
 
 	/** TODO */
-	bool moveRows(const QModelIndex& sourceParent, int sourceRow, int count, const QModelIndex& destinationParent, int destinationChild);
+	bool removeRows(int position, int rows, const QModelIndex& index = QModelIndex()) override;
+
+	/** TODO */
+	bool moveRows(const QModelIndex& sourceParent, int sourceRow, int count, const QModelIndex& destinationParent, int destinationChild) override;
 
 public: // Overloaded data access
-	
-	/** TODO */
-	QVariant data(const int& row, const int& column, int role) const;
+
+/** TODO */
+	QVariant data(const int& row, const int& column, int role, const QModelIndex& parent = QModelIndex()) const;
 
 	/** TODO */
-	void setData(const int& row, const int& column, const QVariant& value, int role = Qt::DisplayRole);
-
-	/** TODO */
-	Qt::ItemFlags flags(const int& row, const int& column) const;
+	void setData(const int& row, const int& column, const QVariant& value, const QModelIndex& parent = QModelIndex());
 
 public: // TODO
 
@@ -85,10 +85,10 @@ public: // TODO
 	void renameLayer(const QString& id, const QString& name);
 
 	/** TODO */
-	Layer* findLayerById(const QString& id);
+	LayerItem* findLayerById(const QString& id);
 
 	/** TODO */
-	void addLayer(Layer* layer);
+	void addLayer(LayerItem* layer);
 
 private:
 	ImageViewerPlugin*		_imageViewerPlugin;		/** TODO */

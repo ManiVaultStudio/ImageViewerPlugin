@@ -2,8 +2,11 @@
 
 #include "Common.h"
 
+#include "TreeItem.h"
+
 #include <QColor>
 #include <QObject>
+#include <QModelIndex>
 #include <QImage>
 
 class Dataset;
@@ -55,9 +58,8 @@ private:
 Q_DECLARE_METATYPE(Range);
 
 /** TODO */
-class Layer : public QObject
+class LayerItem : public TreeItem
 {
-
 public:
 
 	/** TODO */
@@ -82,7 +84,8 @@ public:
 		ImageRange,
 		DisplayRange,
 
-		Count
+		Start = Enabled,
+		End = DisplayRange
 	};
 
 	static QString columnName(const Column& column) {
@@ -189,24 +192,24 @@ public:
 	};
 
 	/** TODO */
-	Layer(Dataset* dataset, const Type& type, const QString& id, const QString& name, const std::uint32_t& flags);
+	LayerItem(TreeItem* parentItem, Dataset* dataset, const Type& type, const QString& id, const QString& name, const std::uint32_t& flags);
 
-public: // MVC
-
-	/** TODO */
-	static int columnCount();
+public: // Inherited
 
 	/** TODO */
-	static QVariant headerData(int section, Qt::Orientation orientation, int role);
+	int columnCount() const override;
 
 	/** TODO */
-	virtual Qt::ItemFlags itemFlags(const int& column) const;
+	QVariant headerData(const int& section, const Qt::Orientation& orientation, const int& role) const override;
 
 	/** TODO */
-	virtual QVariant data(const int& column, int role) const;
+	Qt::ItemFlags flags(const int& column) const override;
 
 	/** TODO */
-	virtual void setData(const int& column, const QVariant& value, const int& role);
+	QVariant data(const int& column, const int& role) const override;
+
+	/** TODO */
+	void setData(const int& column, const QVariant& value, const int& role) override;
 
 public: // Getters/setters
 
@@ -229,16 +232,13 @@ public: // Getters/setters
 	QVariant type(const int& role) const;
 
 	/** TODO */
-	void setType(const Layer::Type& type);
+	void setType(const LayerItem::Type& type);
 
 	/** TODO */
-	QVariant flags(const int& role) const;
+	QVariant flag(const LayerItem::Flag& flag, const int& role) const;
 
 	/** TODO */
-	QVariant flag(const Layer::Flag& flag, const int& role) const;
-
-	/** TODO */
-	void setFlag(const Layer::Flag& flag, const bool& enabled = true);
+	void setFlag(const LayerItem::Flag& flag, const bool& enabled = true);
 
 	/** TODO */
 	void setFlags(const std::uint32_t& flags);
@@ -307,11 +307,16 @@ protected:
 	/** TODO */
 	void computeDisplayRange();
 
+signals:
+
+	/** TODO */
+	void dataChanged();
+
 protected:
 	Dataset*			_dataset;				/** TODO */
 	QString				_id;					/** TODO */
 	QString				_name;					/** TODO */
-	Layer::Type			_type;					/** TODO */
+	LayerItem::Type			_type;					/** TODO */
 	std::uint32_t		_flags;					/** TODO */
 	std::uint32_t		_order;					/** TODO */
 	float				_opacity;				/** TODO */
@@ -325,4 +330,4 @@ protected:
 	float				_level;					/** TODO */
 };
 
-using Layers = QList<Layer*>;
+using Layers = QList<LayerItem*>;

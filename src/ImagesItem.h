@@ -1,16 +1,44 @@
 #pragma once
 
-#include "Layer.h"
+#include "TreeItem.h"
 #include "ImagesDataset.h"
 
 /** TODO */
-class ImagesLayer : public Layer
+class ClustersItem : public TreeItem
 {
 public:
 
 	/** TODO */
 	enum class Column {
-		NoImages = static_cast<int>(Layer::Column::Count),
+	};
+
+public:
+
+	/** TODO */
+	ClustersItem(TreeItem *parentItem, const QString& id, const QString& name, const std::uint32_t& flags);
+
+public: // TODO
+
+	/** TODO */
+	Qt::ItemFlags flags(const int& column) const override;
+
+	/** TODO */
+	QVariant data(const int& column, const int& role) const override;
+
+	/** TODO */
+	void setData(const int& column, const QVariant& value, const int& role) override;
+
+private:
+};
+
+/** TODO */
+class ImagesLayer : public LayerItem
+{
+public:
+
+	/** TODO */
+	enum class Column {
+		NoImages,
 		Width,
 		Height,
 		Size,
@@ -26,7 +54,8 @@ public:
 		Average,
 		Selection,
 
-		Count
+		Start = NoImages,
+		End = Selection
 	};
 
 	/** TODO */
@@ -37,13 +66,13 @@ public:
 public: // MVC
 
 	/** TODO */
-	Qt::ItemFlags itemFlags(const int& column) const override;
+	Qt::ItemFlags itemFlags(const QModelIndex& index) const override;
 
 	/** TODO */
-	QVariant data(const int& column, int role) const override;
+	QVariant data(const QModelIndex& index, int role) const override;
 
 	/** TODO */
-	void setData(const int& column, const QVariant& value, const int& role) override;
+	void setData(const QModelIndex& index, const QVariant& value, const int& role) override;
 
 public: // Getters/setters
 

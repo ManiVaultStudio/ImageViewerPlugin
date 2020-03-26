@@ -3,7 +3,7 @@
 #include "Layer.h"
 
 /** TODO */
-class SelectionLayer : public Layer
+class SelectionLayer : public LayerItem
 {
 public:
 
@@ -13,13 +13,13 @@ public:
 public: // TODO
 
 	/** TODO */
-	Qt::ItemFlags itemFlags(const int& column) const override;
+	Qt::ItemFlags itemFlags(const QModelIndex& index) const override;
 
 	/** TODO */
-	QVariant data(const int& column, int role) const override;
+	QVariant data(const QModelIndex& index, int role) const override;
 
 	/** TODO */
-	void setData(const int& column, const QVariant& value, const int& role) override;
+	void setData(const QModelIndex& index, const QVariant& value, const int& role) override;
 
 private:
 };

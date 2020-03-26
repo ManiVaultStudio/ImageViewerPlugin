@@ -4,45 +4,38 @@
 
 #include "ui_ImagesLayerWidget.h"
 
+#include <QItemSelectionModel>
 #include <QStringListModel>
 #include <QDebug>
 
 ImagesLayerWidget::ImagesLayerWidget(QWidget* parent) :
-	_ui{ std::make_unique<Ui::ImagesLayerWidget>() },
-	_layersModel(nullptr)
+	ModelWidget(parent, static_cast<int>(ImagesLayer::Column::End)),
+	_ui{ std::make_unique<Ui::ImagesLayerWidget>() }
 {
 	_ui->setupUi(this);
 }
 
 void ImagesLayerWidget::initialize(LayersModel* layersModel)
 {
-	_layersModel = layersModel;
+	ModelWidget::initialize(layersModel);
 
-	QObject::connect(_layersModel, &LayersModel::dataChanged, this, &ImagesLayerWidget::onDataChanged);
-
-	QObject::connect(&_layersModel->selectionModel(), &QItemSelectionModel::selectionChanged, [this](const QItemSelection &selected, const QItemSelection &deselected) {
-		const auto selectedRows = _layersModel->selectionModel().selectedRows();
-
-		if (!selectedRows.isEmpty())
-			onDataChanged(_layersModel->index(selectedRows.first().row(), 0), _layersModel->index(selectedRows.first().row(), _layersModel->columnCount() - 1));
+	QObject::connect(_layersModel->selectionModel(), &QItemSelectionModel::currentRowChanged, [this](const QModelIndex& current, const QModelIndex& previous) {
+		qDebug() << "Current" << current;
+		qDebug() << "Index" << _layersModel->index(0, 0, current);
+		setIndex(_layersModel->index(0, 0, current));
 	});
 }
 
-void ImagesLayerWidget::onDataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int> &roles /*= QVector<int>()*/)
+void ImagesLayerWidget::updateData(const QModelIndex& index)
 {
-	/*
-	const auto selectedRows			= _layersModel->selectionModel().selectedRows();
-	const auto noSelectedRows		= selectedRows.size();
-	const auto singleRowSelection	= noSelectedRows == 1;
+	qDebug() << "Update data" << index.data(Qt::DisplayRole);
+}
 
-	auto columns = QSet<int>();
+bool ImagesLayerWidget::shouldUpdate(const QModelIndex& index) const
+{
+	qDebug() << "index.parent()" << index.parent();
+	return true;
+	const auto type = static_cast<LayerItem::Type>(_layersModel->data(index.parent().row(), static_cast<int>(LayerItem::Column::Type), Qt::EditRole).toInt());
 
-	for (int c = topLeft.column(); c <= bottomRight.column(); c++) {
-		columns.insert(c);
-	}
-
-	if (columns.contains(to_underlying(ImagesLayer::Column::FilteredImageNames))) {
-		const auto filteredImageNames = _layersModel->data(row, );
-	}
-	*/
+	return type == LayerItem::Type::Images;
 }

@@ -1,24 +1,26 @@
-#include "ImagesLayer.h"
+#include "ImagesItem.h"
 
 #include "ImageData/Images.h"
 
 #include <QDebug>
 
 ImagesLayer::ImagesLayer(Dataset* dataset, const QString& id, const QString& name, const std::uint32_t& flags) :
-	Layer(dataset, Type::Images, id, name, flags),
+	LayerItem(dataset, Type::Images, id, name, flags),
 	_currentImage(0),
 	_average()
 {
 }
 
-Qt::ItemFlags ImagesLayer::itemFlags(const int& column) const
+Qt::ItemFlags ImagesLayer::itemFlags(const QModelIndex& index) const
 {
-	if (column < static_cast<int>(Layer::Column::Count))
-		return Layer::itemFlags(column);
+	if (index.parent() == QModelIndex())
+		return LayerItem::itemFlags(index);
+	
+	const auto column = static_cast<Column>(index.column());
 
 	int flags = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
 
-	switch (static_cast<Column>(column)) {
+	switch (column) {
 		case Column::NoImages:
 		case Column::Width:
 		case Column::Height:
@@ -42,8 +44,8 @@ Qt::ItemFlags ImagesLayer::itemFlags(const int& column) const
 			break;
 
 		case Column::Selection:
-
 			break;
+
 		default:
 			break;
 	}
@@ -51,12 +53,14 @@ Qt::ItemFlags ImagesLayer::itemFlags(const int& column) const
 	return flags;
 }
 
-QVariant ImagesLayer::data(const int& column, int role) const
+QVariant ImagesLayer::data(const QModelIndex& index, int role) const
 {
-	if (column < static_cast<int>(Layer::Column::Count))
-		return Layer::data(column, role);
+	if (index.parent() == QModelIndex())
+		return LayerItem::data(index, role);
 
-	switch (static_cast<Column>(column)) {
+	const auto column = static_cast<Column>(index.column());
+
+	switch (column) {
 		case Column::NoImages:
 			imagesDataset()->noImages(role);
 
@@ -109,10 +113,12 @@ QVariant ImagesLayer::data(const int& column, int role) const
 	return QVariant();
 }
 
-void ImagesLayer::setData(const int& column, const QVariant& value, const int& role)
+void ImagesLayer::setData(const QModelIndex& index, const QVariant& value, const int& role)
 {
-	if (column < static_cast<int>(Layer::Column::Count))
-		return Layer::setData(column, value, role);
+	if (index.parent() == QModelIndex())
+		return LayerItem::setData(index, value, role);
+
+	const auto column = static_cast<Column>(index.column());
 
 	switch (static_cast<Column>(column)) {
 		case Column::NoImages:
