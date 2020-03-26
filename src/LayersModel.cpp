@@ -83,9 +83,6 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 	if (!index.isValid())
 		return QVariant();
 
-	if (role != Qt::DisplayRole)
-		return QVariant();
-
 	auto item = static_cast<Item*>(index.internalPointer());
 
 	return item->data(index.column(), role);
@@ -197,10 +194,11 @@ bool LayersModel::mayMoveUp(const int& row)
 	if (row <= 0)
 		return false;
 
-	/*
-	if (_layers.at(row)->flag(LayerItem::Flag::Frozen, Qt::EditRole).toBool() || _layers.at(row - 1)->flag(LayerItem::Flag::Frozen, Qt::EditRole).toBool())
+	auto itemA = static_cast<LayerItem*>(index(row, 0).internalPointer());
+	auto itemB = static_cast<LayerItem*>(index(row - 1, 0).internalPointer());
+	
+	if (itemA->flag(LayerItem::Flag::Frozen, Qt::EditRole).toBool() || itemB->flag(LayerItem::Flag::Frozen, Qt::EditRole).toBool())
 		return false;
-	*/
 
 	return true;
 }
@@ -210,10 +208,11 @@ bool LayersModel::mayMoveDown(const int& row)
 	if (row >= rowCount() - 1)
 		return false;
 
-	/*
-	if (_layers.at(row)->flag(LayerItem::Flag::Frozen, Qt::EditRole).toBool() || _layers.at(row + 1)->flag(LayerItem::Flag::Frozen, Qt::EditRole).toBool())
+	auto itemA = static_cast<LayerItem*>(index(row, 0).internalPointer());
+	auto itemB = static_cast<LayerItem*>(index(row + 1, 0).internalPointer());
+
+	if (itemA->flag(LayerItem::Flag::Frozen, Qt::EditRole).toBool() || itemB->flag(LayerItem::Flag::Frozen, Qt::EditRole).toBool())
 		return false;
-	*/
 
 	return true;
 }
@@ -224,7 +223,7 @@ void LayersModel::moveUp(const int& row)
 		return;
 
 	moveRows(QModelIndex(), row, 1, QModelIndex(), row - 1);
-	sortOrder();
+	//sortOrder();
 }
 
 void LayersModel::moveDown(const int& row)
@@ -233,7 +232,7 @@ void LayersModel::moveDown(const int& row)
 		return;
 
 	moveRows(QModelIndex(), row + 1, 1, QModelIndex(), row);
-	sortOrder();
+	//sortOrder();
 }
 
 void LayersModel::sortOrder()
@@ -290,16 +289,12 @@ void LayersModel::renameLayer(const QString& id, const QString& name)
 
 LayerItem* LayersModel::findLayerById(const QString& id)
 {
-	/*
 	const auto hits = match(index(0, static_cast<int>(LayerItem::Column::ID)), Qt::DisplayRole, id, -1, Qt::MatchExactly);
 
 	if (hits.isEmpty())
 		return nullptr;
 
-	return _layers[hits.first().row()];
-	*/
-
-	return nullptr;
+	return reinterpret_cast<LayerItem*>(hits.first().internalPointer());
 }
 
 void LayersModel::addLayer(Dataset* dataset, const LayerItem::Type& type, const QString& id, const QString& name, const std::uint32_t& flags)

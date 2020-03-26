@@ -379,16 +379,13 @@ QVariant LayerItem::type(const int& role) const
 		case Qt::FontRole:
 			return QFont("Font Awesome 5 Free Solid", 9);
 
-		case Qt::DisplayRole:
-			return typeName;
-
 		case Qt::EditRole:
 			return static_cast<int>(_type);
 
 		case Qt::ToolTipRole:
 			return QString("Type: %1").arg(typeName);
 
-		case Roles::FontIconText:
+		case Qt::DisplayRole:
 		{
 			switch (_type) {
 				case Type::Images:

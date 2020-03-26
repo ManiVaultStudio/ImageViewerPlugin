@@ -59,7 +59,7 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 	//_ui->layersTreeView->setModel(layersModel());
 
 	auto headerView = _ui->layersTreeView->header();
-/*
+
 	headerView->setSectionResizeMode(QHeaderView::ResizeToContents);
 
 	for (int column = to_underlying(LayerItem::Column::Enabled); column < to_underlying(LayerItem::Column::DisplayRange); column++)
@@ -68,9 +68,9 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 	headerView->showSection(to_underlying(LayerItem::Column::Type));
 	headerView->showSection(to_underlying(LayerItem::Column::Name));
 	headerView->showSection(to_underlying(LayerItem::Column::Opacity));
+	headerView->showSection(to_underlying(LayerItem::Column::Order));
 
 	headerView->setSectionResizeMode(to_underlying(LayerItem::Column::Name), QHeaderView::Interactive);
-
 	
 	auto updateButtons = [this]() {
 		const auto selectedRows = layersModel()->selectionModel()->selectedRows();
@@ -136,7 +136,6 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 	QObject::connect(layersModel(), &QAbstractListModel::rowsMoved, [this, updateButtons](const QModelIndex& parent, int start, int end, const QModelIndex& destination, int row) {
 		updateButtons();
 	});
-	*/
 
 	//layersModel()->selectionModel()->setCurrentIndex(layersModel()->index(0), QItemSelectionModel::Rows | QItemSelectionModel::Current);
 }
@@ -193,12 +192,10 @@ void LayersWidget::dropEvent(QDropEvent* dropEvent)
 
 		auto dataset = datasetsModel()->addDataset(datasetName, Dataset::Type::Images);
 
-		/*
-		layersModel()->addLayer(new ImagesLayer(dataset, imagesName, imagesName, layerFlags));
+		layersModel()->addLayer(dataset, LayerItem::Type::Images, imagesName, imagesName, layerFlags);
 
 		if (createSelectionLayer)
-			layersModel()->addLayer(new SelectionLayer(dataset, selectionName, selectionName, layerFlags));
-		*/
+			layersModel()->addLayer(dataset, LayerItem::Type::Selection, selectionName, selectionName, layerFlags);
 
 		dataset->init();
 	}
@@ -209,7 +206,6 @@ void LayersWidget::dropEvent(QDropEvent* dropEvent)
 	}
 
 	dropEvent->acceptProposedAction();
-	/**/
 }
 
 DatasetsModel* LayersWidget::datasetsModel()
