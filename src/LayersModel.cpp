@@ -1,6 +1,7 @@
 #include "LayersModel.h"
 #include "ImageViewerPlugin.h"
 #include "Dataset.h"
+#include "Layer.h"
 #include "GroupLayer.h"
 
 #include <QFont>
@@ -8,24 +9,32 @@
 #include <QDebug>
 
 LayersModel::LayersModel(ImageViewerPlugin* imageViewerPlugin) :
-	QAbstractListModel(imageViewerPlugin),
+	QAbstractItemModel(imageViewerPlugin),
 	_imageViewerPlugin(imageViewerPlugin),
 	_layers(),
 	_selectionModel(this),
-	_root(new GroupLayer(nullptr, "root", "Root", static_cast<int>(Layer::Flag::Enabled)))
+	_rootItem(new GroupLayer("root", "Root", static_cast<int>(Layer::Flag::Enabled)))
 {
 }
 
 LayersModel::~LayersModel()
 {
-	delete _root;
+	delete _rootItem;
 }
 
-int LayersModel::rowCount(const QModelIndex& index /*= QModelIndex()*/) const
+int LayersModel::rowCount(const QModelIndex& parentIndex /*= QModelIndex()*/) const
 {
-	auto parent = getItem(index);
+	Layer* parentItem = nullptr;
 
-	return parent ? parent->childCount() : 0;
+	if (parentIndex.column() > 0)
+		return 0;
+
+	if (!parentIndex.isValid())
+		parentItem = _rootItem;
+	else
+		parentItem = static_cast<Layer*>(parentIndex.internalPointer());
+
+	return parentItem->childCount();
 }
 
 int LayersModel::columnCount(const QModelIndex& parent /*= QModelIndex()*/) const
@@ -37,48 +46,46 @@ int LayersModel::columnCount(const QModelIndex& parent /*= QModelIndex()*/) cons
 
 QModelIndex LayersModel::index(int row, int column, const QModelIndex& parent /*= QModelIndex()*/) const
 {
-	if (parent.isValid() && parent.column() != 0)
+	if (!hasIndex(row, column, parent))
 		return QModelIndex();
 
-	if (!getItem(parent))
-		return QModelIndex();
+	Layer* parentItem = nullptr;
 
-	auto child = getItem(parent)->child(row);
+	if (!parent.isValid())
+		parentItem = _rootItem;
+	else
+		parentItem = static_cast<Layer*>(parent.internalPointer());
 
-	if (child)
-		return createIndex(row, column, child);
+	Layer* childItem = parentItem->child(row);
+
+	if (childItem)
+		return createIndex(row, column, childItem);
 
 	return QModelIndex();
 }
 
-QModelIndex LayersModel::parent(const QModelIndex &index) const
+QModelIndex LayersModel::parent(const QModelIndex& index) const
 {
 	if (!index.isValid())
 		return QModelIndex();
 
-	auto child	= getItem(index);
-	auto parent	= child ? child->parent() : nullptr;
+	auto childItem	= static_cast<Layer*>(index.internalPointer());
+	auto parentItem	= childItem->parent();
 
-	if (parent == _root || !parent)
+	if (parentItem == _rootItem)
 		return QModelIndex();
 
-	return createIndex(parent->childIndex(), 0, parent);
-
-	return QModelIndex();
+	return createIndex(childItem->row(), 0, const_cast<Layer*>(parentItem));
 }
 
 QVariant LayersModel::data(const QModelIndex& index, int role) const
 {
-	/*
 	if (!index.isValid())
 		return QVariant();
 
-	auto item = static_cast<Item*>(index.internalPointer());
+	auto item = reinterpret_cast<Layer*>(index.internalPointer());
 
-	return item->data(index.column(), role);
-	*/
-
-	return QVariant();
+	return item->data(index, role);
 }
 
 QVariant LayersModel::headerData(int section, Qt::Orientation orientation, int role) const
@@ -91,12 +98,12 @@ QVariant LayersModel::headerData(int section, Qt::Orientation orientation, int r
 
 Qt::ItemFlags LayersModel::flags(const QModelIndex& index) const
 {
+	return Qt::NoItemFlags;
+
 	if (!index.isValid())
 		return Qt::NoItemFlags;
 
-	auto layer = static_cast<Layer*>(index.internalPointer());
-
-	return layer->flags(index);
+	return index.flags();
 }
 
 bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int role /*= Qt::DisplayRole*/)
@@ -157,18 +164,6 @@ bool LayersModel::moveRows(const QModelIndex& sourceParent, int sourceRow, int c
 	endMoveRows();
 
 	return true;
-}
-
-Layer* LayersModel::getItem(const QModelIndex& index) const
-{
-	if (index.isValid()) {
-		auto layer = static_cast<Layer*>(index.internalPointer());
-		
-		if (layer)
-			return layer;
-	}
-
-	return _root;
 }
 
 QVariant LayersModel::data(const int& row, const int& column, int role, const QModelIndex& parent /*= QModelIndex()*/) const
@@ -293,14 +288,18 @@ Layer* LayersModel::findLayerById(const QString& id)
 	return reinterpret_cast<Layer*>(hits.first().internalPointer());
 }
 
-/*
-void LayersModel::addLayer(Dataset* dataset, const Layer::Type& type, const QString& id, const QString& name, const int& flags)
+void LayersModel::addLayer(Layer* layer, const QModelIndex& parentIndex /*= QModelIndex()*/)
 {
-	beginInsertRows(QModelIndex(), 0, 0);
+	Layer* parentItem = nullptr;
+	
+	if (!parentIndex.isValid())
+		parentItem = _rootItem;
+	else
+		parentItem = static_cast<Layer*>(parentIndex.internalPointer());
 
-	_rootItem->appendChild(new Layer(_rootItem, dataset, type, id, name, flags));
+	beginInsertRows(parentIndex, 0, 0);
+
+	parentItem->appendChild(layer);
 
 	endInsertRows();
-	
 }
-*/

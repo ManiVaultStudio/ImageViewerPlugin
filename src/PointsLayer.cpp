@@ -3,14 +3,17 @@
 
 #include <QDebug>
 
-PointsLayer::PointsLayer(Layer* parent, PointsDataset* pointsDataset, const QString& id, const QString& name, const int& flags) :
-	Layer(parent, pointsDataset, Layer::Type::Points, id, name, flags),
+PointsLayer::PointsLayer(PointsDataset* pointsDataset, const QString& id, const QString& name, const int& flags) :
+	Layer(pointsDataset, Layer::Type::Points, id, name, flags),
 	_points(pointsDataset)
 {
 }
 
 Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
 {
+	if (!isSettingsIndex(index))
+		return Layer::flags(index);
+
 	int flags = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
 
 	switch (static_cast<Column>(index.column())) {
@@ -23,6 +26,9 @@ Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
 
 QVariant PointsLayer::data(const QModelIndex& index, const int& role) const
 {
+	if (!isSettingsIndex(index))
+		return Layer::data(index, role);
+
 	switch (static_cast<Column>(index.column())) {
 		default:
 			break;
@@ -33,4 +39,6 @@ QVariant PointsLayer::data(const QModelIndex& index, const int& role) const
 
 void PointsLayer::setData(const QModelIndex& index, const QVariant& value, const int& role)
 {
+	if (!isSettingsIndex(index))
+		return Layer::setData(index, value, role);
 }

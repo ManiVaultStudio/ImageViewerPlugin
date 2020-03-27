@@ -2,8 +2,8 @@
 
 #include <QDebug>
 
-GroupLayer::GroupLayer(Layer* parent, const QString& id, const QString& name, const int& flags) :
-	Layer(parent, nullptr, Layer::Type::Group, id, name, flags)
+GroupLayer::GroupLayer(const QString& id, const QString& name, const int& flags) :
+	Layer(nullptr, Layer::Type::Group, id, name, flags)
 {
 }
 

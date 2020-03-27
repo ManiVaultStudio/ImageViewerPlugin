@@ -5,7 +5,7 @@
 class ImagesDataset;
 
 /** TODO */
-class ImagesItem : public Layer
+class ImagesLayer : public Layer
 {
 public:
 
@@ -32,7 +32,7 @@ public:
 	};
 
 	/** TODO */
-	ImagesItem(Layer* parent, ImagesDataset* imagesDataset, const QString& id, const QString& name, const int& flags);
+	ImagesLayer(ImagesDataset* imagesDataset, const QString& id, const QString& name, const int& flags);
 
 public: // Inherited MVC
 

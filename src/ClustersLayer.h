@@ -16,7 +16,7 @@ public:
 public:
 
 	/** TODO */
-	ClustersLayer(Layer* parent, ClustersDataset* clustersDataset, const QString& id, const QString& name, const int& flags);
+	ClustersLayer(ClustersDataset* clustersDataset, const QString& id, const QString& name, const int& flags);
 
 public: // Inherited MVC
 

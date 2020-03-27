@@ -1,6 +1,5 @@
 #pragma once
 
-#include "TreeItem.h"
 #include "ImageRange.h"
 
 #include <QColor>
@@ -11,7 +10,7 @@
 class Dataset;
 
 /** TODO */
-class Layer : public TreeItem<Layer>
+class Layer
 {
 public:
 
@@ -144,10 +143,36 @@ public:
 	};
 
 	/** Constructor */
-	Layer(Layer* parent, Dataset* dataset, const Type& type, const QString& id, const QString& name, const int& flags);
+	Layer(Dataset* dataset, const Type& type, const QString& id, const QString& name, const int& flags);
 
 	/** Destructor */
 	virtual ~Layer();
+
+public: // Tree
+
+	/** TODO */
+	void appendChild(Layer* child);
+
+	/** TODO */
+	const Layer* child(const int& row) const;
+
+	/** TODO */
+	Layer* child(const int& row);
+
+	/** TODO */
+	int childCount() const;
+
+	/** TODO */
+	int row() const;
+
+	/** TODO */
+	const Layer* parent() const;
+
+	/** TODO */
+	Layer* parent();
+
+	/** TODO */
+	void setParent(Layer* parent);
 
 public: // MVC
 
@@ -165,6 +190,9 @@ public: // MVC
 
 	/** TODO */
 	virtual void setData(const QModelIndex& index, const QVariant& value, const int& role);
+
+	/** TODO */
+	bool isSettingsIndex(const QModelIndex& index) const;
 
 public: // Getters/setters
 
@@ -268,6 +296,8 @@ signals:
 	void dataChanged();
 
 protected:
+	QVector<Layer*>		_children;				/** TODO */
+	Layer*				_parent;				/** TODO */
 	Dataset*			_dataset;				/** TODO */
 	QString				_id;					/** TODO */
 	QString				_name;					/** TODO */

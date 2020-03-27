@@ -2,13 +2,16 @@
 
 #include <QDebug>
 
-SelectionLayer::SelectionLayer(Layer* parent, Dataset* dataset, const QString& id, const QString& name, const int& flags) :
-	Layer(parent, dataset, Layer::Type::Selection, id, name, flags)
+SelectionLayer::SelectionLayer(Dataset* dataset, const QString& id, const QString& name, const int& flags) :
+	Layer(dataset, Layer::Type::Selection, id, name, flags)
 {
 }
 
 Qt::ItemFlags SelectionLayer::flags(const QModelIndex& index) const
 {
+	if (!isSettingsIndex(index))
+		return Layer::flags(index);
+
 	int flags = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
 
 	switch (static_cast<Column>(index.column())) {
@@ -21,6 +24,9 @@ Qt::ItemFlags SelectionLayer::flags(const QModelIndex& index) const
 
 QVariant SelectionLayer::data(const QModelIndex& index, const int& role) const
 {
+	if (!isSettingsIndex(index))
+		return Layer::data(index, role);
+
 	switch (static_cast<Column>(index.column())) {
 		default:
 			break;
@@ -31,4 +37,6 @@ QVariant SelectionLayer::data(const QModelIndex& index, const int& role) const
 
 void SelectionLayer::setData(const QModelIndex& index, const QVariant& value, const int& role)
 {
+	if (!isSettingsIndex(index))
+		return Layer::setData(index, value, role);
 }

@@ -16,7 +16,7 @@ public:
 public:
 
 	/** TODO */
-	GroupLayer(Layer* parent, const QString& id, const QString& name, const int& flags);
+	GroupLayer(const QString& id, const QString& name, const int& flags);
 
 public: // Inherited MVC
 
@@ -28,6 +28,19 @@ public: // Inherited MVC
 
 	/** TODO */
 	void setData(const QModelIndex& index, const QVariant& value, const int& role) override;
+
+	/** TODO */
+	template<typename LayerType, typename ...Args>
+	void addLayer(Args... args)
+	{
+		try {
+			appendChild(new LayerType(args...));
+		}
+		catch (const std::exception& e)
+		{
+			throw std::exception(QString("Unable to add layer").toLatin1());
+		}
+	}
 
 private:
 };

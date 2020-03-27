@@ -16,7 +16,7 @@ public:
 public:
 
 	/** TODO */
-	SelectionLayer(Layer* parent, Dataset* dataset, const QString& id, const QString& name, const int& flags);
+	SelectionLayer(Dataset* dataset, const QString& id, const QString& name, const int& flags);
 
 public: // Inherited MVC
 

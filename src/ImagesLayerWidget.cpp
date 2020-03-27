@@ -9,7 +9,7 @@
 #include <QDebug>
 
 ImagesLayerWidget::ImagesLayerWidget(QWidget* parent) :
-	ModelWidget(parent, static_cast<int>(ImagesItem::Column::End)),
+	ModelWidget(parent, static_cast<int>(ImagesLayer::Column::End)),
 	_ui{ std::make_unique<Ui::ImagesLayerWidget>() }
 {
 	_ui->setupUi(this);

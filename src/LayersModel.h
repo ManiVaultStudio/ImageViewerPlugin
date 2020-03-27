@@ -10,7 +10,7 @@ class Dataset;
 class GroupLayer;
 
 /** TODO */
-class LayersModel : public QAbstractListModel
+class LayersModel : public QAbstractItemModel
 {
 public: // Construction/destruction
 
@@ -26,7 +26,7 @@ public: // Construction/destruction
 public: // Inherited members
 
 	/** TODO */
-	int rowCount(const QModelIndex& index = QModelIndex()) const override;
+	int rowCount(const QModelIndex& parentIndex = QModelIndex()) const override;
 
 	/** TODO */
 	int columnCount(const QModelIndex& parent = QModelIndex()) const override;
@@ -35,7 +35,7 @@ public: // Inherited members
 	QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
 
 	/** TODO */
-	QModelIndex parent(const QModelIndex &index) const override;
+	QModelIndex parent(const QModelIndex& index) const override;
 
 	/** TODO */
 	QVariant data(const QModelIndex& index, int role) const override;
@@ -57,9 +57,6 @@ public: // Inherited members
 
 	/** TODO */
 	bool moveRows(const QModelIndex& sourceParent, int sourceRow, int count, const QModelIndex& destinationParent, int destinationChild) override;
-
-	/** TODO */
-	Layer* getItem(const QModelIndex& index) const;
 
 public: // Overloaded data access
 
@@ -96,13 +93,13 @@ public: // TODO
 	Layer* findLayerById(const QString& id);
 
 	/** TODO */
-	void addLayer(Layer* layer);
+	void addLayer(Layer* layer, const QModelIndex& parentIndex = QModelIndex());
 
 private:
 	ImageViewerPlugin*		_imageViewerPlugin;		/** TODO */
 	Layers					_layers;				/** TODO */
 	QItemSelectionModel		_selectionModel;		/** TODO */
-	GroupLayer*				_root;					/** TODO */
+	GroupLayer*				_rootItem;					/** TODO */
 
 	friend class MainModel;
 };

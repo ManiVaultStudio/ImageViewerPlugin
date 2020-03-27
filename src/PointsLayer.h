@@ -16,7 +16,7 @@ public:
 public:
 
 	/** TODO */
-	PointsLayer(Layer* parent, PointsDataset* pointsDataset, const QString& id, const QString& name, const int& flags);
+	PointsLayer(PointsDataset* pointsDataset, const QString& id, const QString& name, const int& flags);
 
 public: // Inherited MVC
 

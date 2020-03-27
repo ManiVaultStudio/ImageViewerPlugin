@@ -3,6 +3,11 @@
 #include "LayersModel.h"
 #include "SelectionLayer.h"
 #include "Layer.h"
+#include "GroupLayer.h"
+#include "PointsLayer.h"
+#include "ImagesLayer.h"
+#include "ClustersLayer.h"
+#include "SelectionLayer.h"
 
 #include "ui_LayersWidget.h"
 
@@ -164,7 +169,6 @@ void LayersWidget::dragEnterEvent(QDragEnterEvent* dragEnterEvent)
 
 void LayersWidget::dropEvent(QDropEvent* dropEvent)
 {
-	
 	const auto items					= dropEvent->mimeData()->text().split("\n");
 	const auto datasetName				= items.at(0);
 	const auto datasetType				= items.at(1);
@@ -172,17 +176,17 @@ void LayersWidget::dropEvent(QDropEvent* dropEvent)
 	const auto createSelectionLayer		= layersModel()->findLayerById(selectionName) == nullptr;
 	const auto layerFlags				= static_cast<int>(Layer::Flag::Enabled) | static_cast<int>(Layer::Flag::Removable);
 
+	const auto rootIndex = layersModel()->index(0, 0);
+
 	if (datasetType == "Points") {
 		const auto points = _imageViewerPlugin->requestData<Points>(datasetName);
 
 		auto dataset = datasetsModel()->addDataset(datasetName, Dataset::Type::Points);
 		
-		/*
-		layersModel()->addLayer(dataset, Layer::Type::Points, datasetName, datasetName, layerFlags);
-
+		layersModel()->addLayer(new PointsLayer(reinterpret_cast<PointsDataset*>(dataset), datasetName, datasetName, layerFlags));
+		
 		if (createSelectionLayer)
-			layersModel()->addLayer(dataset, Layer::Type::Selection, selectionName, selectionName, layerFlags);
-		*/
+			layersModel()->addLayer(new SelectionLayer(dataset, selectionName, selectionName, layerFlags));
 
 		dataset->init();
 	}
@@ -193,12 +197,10 @@ void LayersWidget::dropEvent(QDropEvent* dropEvent)
 
 		auto dataset = datasetsModel()->addDataset(datasetName, Dataset::Type::Images);
 
-		/*
-		layersModel()->addLayer(dataset, Layer::Type::Images, imagesName, imagesName, layerFlags);
+		layersModel()->addLayer(new ImagesLayer(reinterpret_cast<ImagesDataset*>(dataset), imagesName, imagesName, layerFlags));
 
 		if (createSelectionLayer)
-			layersModel()->addLayer(dataset, Layer::Type::Selection, selectionName, selectionName, layerFlags);
-		*/
+			layersModel()->addLayer(new SelectionLayer(dataset, selectionName, selectionName, layerFlags));
 
 		dataset->init();
 	}

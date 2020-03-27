@@ -5,16 +5,19 @@
 
 #include <QDebug>
 
-ImagesItem::ImagesItem(Layer* parent, ImagesDataset* imagesDataset, const QString& id, const QString& name, const int& flags) :
-	Layer(parent, imagesDataset, Layer::Type::Images, id, name, flags),
+ImagesLayer::ImagesLayer(ImagesDataset* imagesDataset, const QString& id, const QString& name, const int& flags) :
+	Layer(imagesDataset, Layer::Type::Images, id, name, flags),
 	_currentImage(0),
 	_average(),
 	_images(imagesDataset)
 {
 }
 
-Qt::ItemFlags ImagesItem::flags(const QModelIndex& index) const
+Qt::ItemFlags ImagesLayer::flags(const QModelIndex& index) const
 {
+	if (!isSettingsIndex(index))
+		return Layer::flags(index);
+
 	int flags = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
 
 	switch (static_cast<Column>(index.column())) {
@@ -50,8 +53,11 @@ Qt::ItemFlags ImagesItem::flags(const QModelIndex& index) const
 	return flags;
 }
 
-QVariant ImagesItem::data(const QModelIndex& index, const int& role) const
+QVariant ImagesLayer::data(const QModelIndex& index, const int& role) const
 {
+	if (!isSettingsIndex(index))
+		return Layer::data(index, role);
+
 	switch (static_cast<Column>(index.column())) {
 		case Column::NoImages:
 			_images->noImages(role);
@@ -105,8 +111,11 @@ QVariant ImagesItem::data(const QModelIndex& index, const int& role) const
 	return QVariant();
 }
 
-void ImagesItem::setData(const QModelIndex& index, const QVariant& value, const int& role)
+void ImagesLayer::setData(const QModelIndex& index, const QVariant& value, const int& role)
 {
+	if (!isSettingsIndex(index))
+		return Layer::setData(index, value, role);
+
 	switch (static_cast<Column>(index.column())) {
 		case Column::NoImages:
 		case Column::Width:
@@ -140,7 +149,7 @@ void ImagesItem::setData(const QModelIndex& index, const QVariant& value, const 
 	}
 }
 
-QVariant ImagesItem::filteredImageNames(const int& role /*= Qt::DisplayRole*/) const
+QVariant ImagesLayer::filteredImageNames(const int& role /*= Qt::DisplayRole*/) const
 {
 	const auto selectionSize	= _images->selectionSize(Qt::EditRole).toInt();
 	const auto imageNames		= _images->imageNames(Qt::EditRole).toStringList();
@@ -200,7 +209,7 @@ QVariant ImagesItem::filteredImageNames(const int& role /*= Qt::DisplayRole*/) c
 	return QVariant();
 }
 
-QVariant ImagesItem::currentImageId(const int& role /*= Qt::DisplayRole*/) const
+QVariant ImagesLayer::currentImageId(const int& role /*= Qt::DisplayRole*/) const
 {
 	switch (role)
 	{
@@ -217,7 +226,7 @@ QVariant ImagesItem::currentImageId(const int& role /*= Qt::DisplayRole*/) const
 	return QVariant();
 }
 
-QVariant ImagesItem::currentImageName(const int& role /*= Qt::DisplayRole*/) const
+QVariant ImagesLayer::currentImageName(const int& role /*= Qt::DisplayRole*/) const
 {
 	const auto imageNames	= _images->imageNames(Qt::EditRole).toStringList();
 	const auto imageName	= imageNames.isEmpty() ? "" : imageNames[_currentImage];
@@ -235,7 +244,7 @@ QVariant ImagesItem::currentImageName(const int& role /*= Qt::DisplayRole*/) con
 	return QVariant();
 }
 
-QVariant ImagesItem::currentImageFilePath(const int& role /*= Qt::DisplayRole*/) const
+QVariant ImagesLayer::currentImageFilePath(const int& role /*= Qt::DisplayRole*/) const
 {
 	const auto imageFilePathString = _images->imageFilePaths(Qt::EditRole).toStringList()[_currentImage];
 
@@ -255,7 +264,7 @@ QVariant ImagesItem::currentImageFilePath(const int& role /*= Qt::DisplayRole*/)
 	return QVariant();
 }
 
-void ImagesItem::setCurrentImageId(const std::uint32_t& currentImage)
+void ImagesLayer::setCurrentImageId(const std::uint32_t& currentImage)
 {
 	switch (static_cast<ImageData::Type>(_images->type(Qt::EditRole).toInt()))
 	{
@@ -280,7 +289,7 @@ void ImagesItem::setCurrentImageId(const std::uint32_t& currentImage)
 	}
 }
 
-QVariant ImagesItem::average(const int& role /*= Qt::DisplayRole*/) const
+QVariant ImagesLayer::average(const int& role /*= Qt::DisplayRole*/) const
 {
 	const auto averageString = _average ? "true" : "false";
 
@@ -302,7 +311,7 @@ QVariant ImagesItem::average(const int& role /*= Qt::DisplayRole*/) const
 	return QVariant();
 }
 
-void ImagesItem::setAverage(const bool& average)
+void ImagesLayer::setAverage(const bool& average)
 {
 	_average = average;
 }

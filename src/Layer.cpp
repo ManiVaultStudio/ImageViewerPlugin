@@ -4,13 +4,14 @@
 #include <QFont>
 #include <QDebug>
 
-Layer::Layer(Layer* parent, Dataset* dataset, const Type& type, const QString& id, const QString& name, const int& flags) :
-	TreeItem<Layer>(parent),
+Layer::Layer(Dataset* dataset, const Type& type, const QString& id, const QString& name, const int& flags) :
+	_children(),
+	_parent(nullptr),
 	_dataset(dataset),
 	_id(id),
 	_name(name),
 	_type(type),
-	_flags(0),
+	_flags(flags),
 	_order(0),
 	_opacity(1.0f),
 	_colorMap(),
@@ -24,7 +25,61 @@ Layer::Layer(Layer* parent, Dataset* dataset, const Type& type, const QString& i
 {
 }
 
-Layer::~Layer() = default;
+Layer::~Layer()
+{
+	qDeleteAll(_children);
+}
+
+void Layer::appendChild(Layer* child)
+{
+	_children.append(child);
+
+	child->setParent(this);
+	child->setOrder(_children.size());
+}
+
+const Layer* Layer::child(const int& row) const
+{
+	if (row < 0 || row >= _children.size())
+		return nullptr;
+
+	return _children.at(row);
+}
+
+Layer* Layer::child(const int& row)
+{
+	const auto constThis = const_cast<const Layer*>(this);
+	return const_cast<Layer*>(constThis->child(row));
+}
+
+int Layer::childCount() const
+{
+	return _children.count();
+}
+
+int Layer::row() const
+{
+	if (_parent)
+		return _parent->_children.indexOf(const_cast<Layer*>(this));
+
+	return 0;
+}
+
+const Layer* Layer::parent() const
+{
+	return _parent;
+}
+
+Layer* Layer::parent()
+{
+	const auto constThis = const_cast<const Layer*>(this);
+	return const_cast<Layer*>(constThis->parent());
+}
+
+void Layer::setParent(Layer* parent)
+{
+	_parent = parent;
+}
 
 int Layer::columnCount()
 {
@@ -273,6 +328,11 @@ void Layer::setData(const QModelIndex& index, const QVariant& value, const int& 
 				break;
 		}
 	}
+}
+
+bool Layer::isSettingsIndex(const QModelIndex& index) const
+{
+	return index.parent().isValid() && index.parent().column() == static_cast<int>(Layer::Column::Settings);
 }
 
 QVariant Layer::id(const int& role) const
