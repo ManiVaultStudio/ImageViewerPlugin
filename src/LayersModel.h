@@ -1,15 +1,16 @@
 #pragma once
 
-#include "RootItem.h"
+#include "Layer.h"
 
 #include <QItemSelectionModel>
 #include <QAbstractListModel>
 
 class ImageViewerPlugin;
 class Dataset;
+class GroupLayer;
 
 /** TODO */
-class LayersModel : public QAbstractItemModel
+class LayersModel : public QAbstractListModel
 {
 public: // Construction/destruction
 
@@ -25,7 +26,7 @@ public: // Construction/destruction
 public: // Inherited members
 
 	/** TODO */
-	int rowCount(const QModelIndex& parent = QModelIndex()) const override;
+	int rowCount(const QModelIndex& index = QModelIndex()) const override;
 
 	/** TODO */
 	int columnCount(const QModelIndex& parent = QModelIndex()) const override;
@@ -56,6 +57,9 @@ public: // Inherited members
 
 	/** TODO */
 	bool moveRows(const QModelIndex& sourceParent, int sourceRow, int count, const QModelIndex& destinationParent, int destinationChild) override;
+
+	/** TODO */
+	Layer* getItem(const QModelIndex& index) const;
 
 public: // Overloaded data access
 
@@ -89,16 +93,16 @@ public: // TODO
 	void renameLayer(const QString& id, const QString& name);
 
 	/** TODO */
-	LayerItem* findLayerById(const QString& id);
+	Layer* findLayerById(const QString& id);
 
 	/** TODO */
-	void addLayer(Dataset* dataset, const LayerItem::Type& type, const QString& id, const QString& name, const std::uint32_t& flags);
+	void addLayer(Layer* layer);
 
 private:
 	ImageViewerPlugin*		_imageViewerPlugin;		/** TODO */
-//	Layers					_layers;				/** TODO */
+	Layers					_layers;				/** TODO */
 	QItemSelectionModel		_selectionModel;		/** TODO */
-	RootItem*				_rootItem;				/** TODO */
+	GroupLayer*				_root;					/** TODO */
 
 	friend class MainModel;
 };

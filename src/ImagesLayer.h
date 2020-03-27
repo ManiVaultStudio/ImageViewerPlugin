@@ -1,12 +1,11 @@
 #pragma once
 
-#include "Item.h"
+#include "Layer.h"
 
-class LayerItem;
 class ImagesDataset;
 
 /** TODO */
-class ImagesItem : public Item
+class ImagesItem : public Layer
 {
 public:
 
@@ -33,24 +32,18 @@ public:
 	};
 
 	/** TODO */
-	ImagesItem(LayerItem* layeritem, ImagesDataset* imagesDataset);
+	ImagesItem(Layer* parent, ImagesDataset* imagesDataset, const QString& id, const QString& name, const int& flags);
 
-public: // Inherited
-
-	/** TODO */
-	int columnCount() const override;
+public: // Inherited MVC
 
 	/** TODO */
-	QVariant headerData(const int& section, const Qt::Orientation& orientation, const int& role) const override;
+	Qt::ItemFlags flags(const QModelIndex& index) const override;
 
 	/** TODO */
-	Qt::ItemFlags flags(const int& column) const override;
+	QVariant data(const QModelIndex& index, const int& role) const override;
 
 	/** TODO */
-	QVariant data(const int& column, const int& role) const override;
-
-	/** TODO */
-	void setData(const int& column, const QVariant& value, const int& role) override;
+	void setData(const QModelIndex& index, const QVariant& value, const int& role) override;
 
 public: // Getters/setters
 
@@ -78,5 +71,5 @@ public: // Getters/setters
 private:
 	std::int32_t		_currentImage;		/** TODO */
 	bool				_average;			/** TODO */
-	ImagesDataset*		_dataset;			/** TODO */
+	ImagesDataset*		_images;			/** TODO */
 };

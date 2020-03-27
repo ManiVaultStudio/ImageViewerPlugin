@@ -1,64 +1,17 @@
 #pragma once
 
-#include "Common.h"
-
-#include "Item.h"
+#include "TreeItem.h"
+#include "ImageRange.h"
 
 #include <QColor>
 #include <QObject>
-#include <QModelIndex>
 #include <QImage>
+#include <QModelIndex>
 
 class Dataset;
 
 /** TODO */
-class Range
-{
-public:
-
-	/** TODO */
-	Range(const float& min = 0.0f, const float& max = 0.0f) :
-		_min(std::min(min, max)),
-		_max(std::max(min, max))
-	{
-	}
-
-	/** TODO */
-	float min() const { return _min; }
-
-	/** TODO */
-	void setMin(const float& min) { _min = std::min(min, _max); }
-
-	/** TODO */
-	float max() const { return _max; }
-
-	/** TODO */
-	void setMax(const float& max) { _max = std::max(_min, max); }
-
-	/** TODO */
-	void include(const float& value) {
-		_min = std::min(_min, value);
-		_max = std::max(_max, value);
-	}
-
-	/** TODO */
-	void setFullRange() {
-		_max = std::numeric_limits<float>::min();
-		_min = std::numeric_limits<float>::max();
-	}
-
-	/** TODO */
-	float length() const { return _max - _min; }
-
-private:
-	float	_min;	/** TODO */
-	float	_max;	/** TODO */
-};
-
-Q_DECLARE_METATYPE(Range);
-
-/** TODO */
-class LayerItem : public Item
+class Layer : public TreeItem<Layer>
 {
 public:
 
@@ -70,7 +23,6 @@ public:
 		ID,						// Name for internal use
 		Name,					// Name in the user interface
 		Dataset,				// Name in the user interface
-		Flags,
 		Frozen,
 		Removable,
 		Mask,
@@ -83,6 +35,8 @@ public:
 		Image,
 		ImageRange,
 		DisplayRange,
+
+		Settings,
 
 		Start = Enabled,
 		End = DisplayRange
@@ -103,9 +57,6 @@ public:
 
 			case Column::Dataset:
 				return "Dataset";
-
-			case Column::Flags:
-				return "Flags";
 
 			case Column::Frozen:
 				return "Frozen";
@@ -155,7 +106,8 @@ public:
 		Points,			/** TODO */
 		Images,			/** TODO */
 		Clusters,		/** TODO */
-		Selection		/** TODO */
+		Selection,		/** TODO */
+		Group			/** TODO */
 	};
 
 	/** TODO */
@@ -191,25 +143,28 @@ public:
 		Renderable	= 0x40		/** TODO */
 	};
 
-	/** TODO */
-	LayerItem(Item* parentItem, Dataset* dataset, const Type& type, const QString& id, const QString& name, const std::uint32_t& flags);
+	/** Constructor */
+	Layer(Layer* parent, Dataset* dataset, const Type& type, const QString& id, const QString& name, const int& flags);
 
-public: // Inherited
+	/** Destructor */
+	virtual ~Layer();
 
-	/** TODO */
-	int columnCount() const override;
+public: // MVC
 
-	/** TODO */
-	QVariant headerData(const int& section, const Qt::Orientation& orientation, const int& role) const override;
-
-	/** TODO */
-	Qt::ItemFlags flags(const int& column) const override;
+	/** Returns the number of columns */
+	static int columnCount();
 
 	/** TODO */
-	QVariant data(const int& column, const int& role) const override;
+	QVariant headerData(const int& section, const Qt::Orientation& orientation, const int& role) const;
 
 	/** TODO */
-	void setData(const int& column, const QVariant& value, const int& role) override;
+	virtual Qt::ItemFlags flags(const QModelIndex& index) const;
+
+	/** TODO */
+	virtual QVariant data(const QModelIndex& index, const int& role) const;
+
+	/** TODO */
+	virtual void setData(const QModelIndex& index, const QVariant& value, const int& role);
 
 public: // Getters/setters
 
@@ -232,16 +187,16 @@ public: // Getters/setters
 	QVariant type(const int& role) const;
 
 	/** TODO */
-	void setType(const LayerItem::Type& type);
+	void setType(const Layer::Type& type);
 
 	/** TODO */
-	QVariant flag(const LayerItem::Flag& flag, const int& role) const;
+	QVariant flag(const Layer::Flag& flag, const int& role) const;
 
 	/** TODO */
-	void setFlag(const LayerItem::Flag& flag, const bool& enabled = true);
+	void setFlag(const Layer::Flag& flag, const bool& enabled = true);
 
 	/** TODO */
-	void setFlags(const std::uint32_t& flags);
+	void setFlags(const int& flags);
 
 	/** TODO */
 	QVariant order(const int& role) const;
@@ -316,7 +271,7 @@ protected:
 	Dataset*			_dataset;				/** TODO */
 	QString				_id;					/** TODO */
 	QString				_name;					/** TODO */
-	LayerItem::Type			_type;					/** TODO */
+	Layer::Type			_type;					/** TODO */
 	std::uint32_t		_flags;					/** TODO */
 	std::uint32_t		_order;					/** TODO */
 	float				_opacity;				/** TODO */
@@ -330,4 +285,4 @@ protected:
 	float				_level;					/** TODO */
 };
 
-using Layers = QList<LayerItem*>;
+using Layers = QList<Layer*>;

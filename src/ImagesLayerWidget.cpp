@@ -1,6 +1,6 @@
 #include "ImagesLayerWidget.h"
 #include "LayersModel.h"
-#include "ImagesItem.h"
+#include "ImagesLayer.h"
 
 #include "ui_ImagesLayerWidget.h"
 

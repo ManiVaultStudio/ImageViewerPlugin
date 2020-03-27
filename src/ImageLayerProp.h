@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Prop.h"
-#include "LayerItem.h"
+#include "Layer.h"
 
 class Actor;
 
@@ -15,7 +15,7 @@ class ImageLayerProp : public Prop
 
 public:
 	/** TODO */
-	ImageLayerProp(Actor* actor, const QString& name, const LayerItem::Type& type);
+	ImageLayerProp(Actor* actor, const QString& name, const Layer::Type& type);
 
 	/** Destructor */
 	~ImageLayerProp();
@@ -48,11 +48,11 @@ protected:
 	void updateModelMatrix();
 
 private:
-	LayerItem::Type		_type;
-	QImage				_image;
-	float				_displayRange[2];
-	float				_opacity;
-	std::uint32_t		_order;
+	Layer::Type		_type;					/** TODO */
+	QImage			_image;					/** TODO */
+	float			_displayRange[2];		/** TODO */
+	float			_opacity;				/** TODO */
+	std::uint32_t	_order;					/** TODO */
 };
 
 using SharedImageLayerProp = QSharedPointer<ImageLayerProp>;

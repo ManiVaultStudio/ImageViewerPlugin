@@ -1,6 +1,6 @@
 #include "LayerWidget.h"
 #include "LayersModel.h"
-#include "LayerItem.h"
+#include "Layer.h"
 
 #include "ui_LayerWidget.h"
 
@@ -189,7 +189,7 @@ void LayerWidget::onDataChanged(const QModelIndex &topLeft, const QModelIndex &b
 	const auto colorFlags = _layersModel->flags(topLeft.row(), to_underlying(Layer::Column::ColorMap));
 	*/
 
-	const auto type = _layersModel->data(topLeft.row(), to_underlying(LayerItem::Column::Type), Qt::EditRole).toInt();
+	const auto type = _layersModel->data(topLeft.row(), to_underlying(Layer::Column::Type), Qt::EditRole).toInt();
 
 	_ui->settingsStackedWidget->setCurrentIndex(type);
 
