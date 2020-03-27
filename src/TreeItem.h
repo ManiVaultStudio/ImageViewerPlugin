@@ -7,7 +7,7 @@ class TreeItem
 {
 public:
 	/** TODO */
-	explicit TreeItem(T* parent = nullptr) :
+	explicit TreeItem(TreeItem<T>* parent = nullptr) :
 		_children(),
 		_parent(parent)
 	{
@@ -26,7 +26,7 @@ public:
 	}
 
 	/** TODO */
-	T* child(const int& row)
+	TreeItem<T>* child(const int& row)
 	{
 		if (row < 0 || row >= _children.size())
 			return nullptr;
@@ -44,23 +44,26 @@ public:
 	int row() const
 	{
 		if (_parent)
-			return _parent->childIndex(const_cast<Layer*>(this));
+			return _parent->childIndex(const_cast<T*>(this));
 
 		return 0;
 	}
 
 	/** TODO */
-	T* parent()
+	TreeItem<T>* parent()
 	{
 		return _parent;
 	}
 
-	int childIndex(T* layer) const
+	int childIndex() const
 	{
-		_children.indexOf(layer);
+		if (_parent)
+			return _parent->_children.indexOf(const_cast<TreeItem*>(this));
+
+		return 0;
 	}
 
-private:
-	QVector<T*>		_children;		/** TODO */
-	T *				_parent;		/** TODO */
+protected:
+	QVector<TreeItem<T>*>		_children;		/** TODO */
+	TreeItem<T>*				_parent;		/** TODO */
 };

@@ -37,40 +37,32 @@ int LayersModel::columnCount(const QModelIndex& parent /*= QModelIndex()*/) cons
 
 QModelIndex LayersModel::index(int row, int column, const QModelIndex& parent /*= QModelIndex()*/) const
 {
-	/*
-	if (!hasIndex(row, column, parent))
+	if (parent.isValid() && parent.column() != 0)
 		return QModelIndex();
 
-	Item* parentItem = nullptr;
+	if (!getItem(parent))
+		return QModelIndex();
 
-	if (!parent.isValid())
-		parentItem = _rootItem;
-	else
-		parentItem = static_cast<Item*>(parent.internalPointer());
+	auto child = getItem(parent)->child(row);
 
-	Item* childItem = parentItem->child(row);
-
-	if (childItem)
-		return createIndex(row, column, childItem);
-	*/
+	if (child)
+		return createIndex(row, column, child);
 
 	return QModelIndex();
 }
 
 QModelIndex LayersModel::parent(const QModelIndex &index) const
 {
-	/*
 	if (!index.isValid())
 		return QModelIndex();
 
-	auto childItem	= static_cast<Item*>(index.internalPointer());
-	auto parentItem	= childItem->parentItem();
+	auto child	= getItem(index);
+	auto parent	= child ? child->parent() : nullptr;
 
-	if (parentItem == _rootItem)
+	if (parent == _root || !parent)
 		return QModelIndex();
 
-	return createIndex(parentItem->row(), 0, parentItem);
-	*/
+	return createIndex(parent->childIndex(), 0, parent);
 
 	return QModelIndex();
 }
