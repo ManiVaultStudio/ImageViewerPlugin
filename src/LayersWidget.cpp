@@ -32,7 +32,7 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_ui->layerWidget->initialize(layersModel());
 	_ui->datasetsTreeView->setModel(&_imageViewerPlugin->datasetsModel());
 
-	_ui->layersTreeView->setModel(layersModel());
+	_ui->layersTreeView->setModel(layersModel()->proxyModel());
 	_ui->layersTreeView->setSelectionModel(layersModel()->selectionModel());
 
 	//layersModel()->setSelectionModel(_ui->datasetsTreeView->selectionModel());

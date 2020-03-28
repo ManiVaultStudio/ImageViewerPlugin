@@ -1,9 +1,10 @@
 #pragma once
 
 #include "Layer.h"
+#include "ProxyModel.h"
 
 #include <QItemSelectionModel>
-#include <QAbstractListModel>
+#include <QAbstractItemModel>
 
 class ImageViewerPlugin;
 class Dataset;
@@ -22,6 +23,10 @@ public: // Construction/destruction
 
 	/** TODO */
 	QItemSelectionModel* selectionModel() { return &_selectionModel; }
+
+	/** TODO */
+	ProxyModel* proxyModel() { return &_proxyModel; }
+
 	
 public: // Inherited members
 

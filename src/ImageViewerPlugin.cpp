@@ -20,9 +20,12 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	_imageViewerWidget(),
 	_settingsWidget(),
 	_datasetModel(this),
-	_layersModel(this)
+	_layersModel(this),
+	_layersProxyModel()
 {
 	qRegisterMetaType<QVector<int> >("QVector<int>");
+
+	_layersProxyModel.setSourceModel(&_layersModel);
 
 	//setFocusPolicy(Qt::FocusPolicy::StrongFocus);
 

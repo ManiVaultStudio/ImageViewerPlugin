@@ -14,6 +14,7 @@ LayersModel::LayersModel(ImageViewerPlugin* imageViewerPlugin) :
 	_selectionModel(this),
 	_rootItem(new GroupLayer("root", "Root", static_cast<int>(Layer::Flag::Enabled)))
 {
+	_selectionModel.setModel(&_proxyModel);
 }
 
 LayersModel::~LayersModel()

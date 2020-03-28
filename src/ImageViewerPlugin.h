@@ -67,6 +67,7 @@ private:
 	SettingsWidget*		_settingsWidget;		/** TODO */
 	DatasetsModel		_datasetModel;			/** TODO */
 	LayersModel			_layersModel;			/** TODO */
+	ProxyModel			_layersProxyModel;			/** TODO */
 };
 
 /**
