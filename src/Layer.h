@@ -174,6 +174,9 @@ public: // Tree
 	/** TODO */
 	void setParent(Layer* parent);
 
+	/** TODO */
+	void sortChildren();
+
 public: // MVC
 
 	/** Returns the number of columns */

@@ -32,10 +32,10 @@ Layer::~Layer()
 
 void Layer::appendChild(Layer* child)
 {
-	_children.append(child);
-
 	child->setParent(this);
 	child->setOrder(_children.size());
+
+	_children.append(child);
 }
 
 const Layer* Layer::child(const int& row) const
@@ -79,6 +79,13 @@ Layer* Layer::parent()
 void Layer::setParent(Layer* parent)
 {
 	_parent = parent;
+}
+
+void Layer::sortChildren()
+{
+	std::sort(_children.begin(), _children.end(), [] (auto a, auto b) {
+		return a->order(Qt::EditRole) > b->order(Qt::EditRole);
+	});
 }
 
 int Layer::columnCount()

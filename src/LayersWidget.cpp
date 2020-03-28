@@ -48,15 +48,21 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_ui->layerMoveDownPushButton->setText(u8"\uf0d7");
 
 	QObject::connect(_ui->layerMoveUpPushButton, &QPushButton::clicked, [this]() {
-		layersModel()->moveUp(layersModel()->selectionModel()->currentIndex().row());
+		const auto selectedRows = layersModel()->selectionModel()->selectedRows();
+
+		if (selectedRows.size() == 1)
+			layersModel()->moveUp(selectedRows.first());
 	});
 
 	QObject::connect(_ui->layerMoveDownPushButton, &QPushButton::clicked, [this]() {
-		layersModel()->moveDown(layersModel()->selectionModel()->currentIndex().row());
+		const auto selectedRows = layersModel()->selectionModel()->selectedRows();
+
+		if (selectedRows.size() == 1)
+			layersModel()->moveDown(selectedRows.first());
 	});
 
 	QObject::connect(_ui->layerRemovePushButton, &QPushButton::clicked, [this]() {
-		layersModel()->removeRows(layersModel()->selectionModel()->selectedRows());
+		//layersModel()->removeRows(layersModel()->selectionModel()->selectedRows());
 	});
 
 	_ui->layersGroupBox->setEnabled(true);
@@ -87,26 +93,29 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 		_ui->layerRemovePushButton->setToolTip("");
 		_ui->layerMoveUpPushButton->setToolTip("");
 		_ui->layerMoveDownPushButton->setToolTip("");
-
+		
 		if (noSelectedRows == 1) {
-			const auto row = selectedRows.at(0).row();
-			const auto name = layersModel()->data(row, to_underlying(Layer::Column::Name), Qt::EditRole).toString();
-			const auto mayRemove = layersModel()->data(row, to_underlying(Layer::Column::Removable), Qt::EditRole).toBool();
+			const auto firstRow		= selectedRows.first();
+			const auto row			= firstRow.row();
+			const auto name			= firstRow.siblingAtColumn(to_underlying(Layer::Column::Name)).data(Qt::EditRole).toString();
+			const auto mayRemove	= firstRow.siblingAtColumn(to_underlying(Layer::Column::Removable)).data(Qt::EditRole).toBool();
+			
+			auto layer = static_cast<Layer*>(firstRow.internalPointer());
 
 			_ui->layerRemovePushButton->setEnabled(mayRemove);
 			_ui->layerRemovePushButton->setToolTip(mayRemove ? QString("Remove %1").arg(name) : "");
 
-			const auto mayMoveUp = layersModel()->mayMoveUp(row);
+			const auto mayMoveUp = layersModel()->mayMoveUp(firstRow);
 
 			_ui->layerMoveUpPushButton->setEnabled(mayMoveUp);
 			_ui->layerMoveUpPushButton->setToolTip(mayMoveUp ? QString("Move %1 up one level").arg(name) : "");
 
-			const auto mayMoveDown = layersModel()->mayMoveDown(row);
+			const auto mayMoveDown = layersModel()->mayMoveDown(firstRow);
 
 			_ui->layerMoveDownPushButton->setEnabled(mayMoveDown);
 			_ui->layerMoveDownPushButton->setToolTip(mayMoveDown ? QString("Move %1 down one level").arg(name) : "");
 		}
-
+		/*
 		if (noSelectedRows >= 1) {
 			auto names = QStringList();
 			auto mayRemove = false;
@@ -123,6 +132,7 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 				_ui->layerRemovePushButton->setToolTip(QString("Remove %1").arg(names.join(", ")));
 			}
 		}
+		*/
 	};
 
 	QObject::connect(layersModel()->selectionModel(), &QItemSelectionModel::selectionChanged, [this, updateButtons](const QItemSelection &selected, const QItemSelection &deselected) {

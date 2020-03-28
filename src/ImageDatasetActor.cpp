@@ -9,6 +9,7 @@ ImageDatasetActor::ImageDatasetActor(Renderer* renderer, const QString& name, La
 	Actor(renderer, name, visible),
 	_layersModel(layersModel)
 {
+	/*
 	for (int row = 0; row < _layersModel->rowCount(); row++) {
 		const auto id	= _layersModel->data(row, to_underlying(Layer::Column::ID), Qt::EditRole).toString();
 		const auto type	= _layersModel->data(row, to_underlying(Layer::Column::Type), Qt::EditRole).toInt();
@@ -29,9 +30,11 @@ ImageDatasetActor::ImageDatasetActor(Renderer* renderer, const QString& name, La
 	});
 
 	updateData(_layersModel->index(0, 0), _layersModel->index(_layersModel->rowCount() - 1, _layersModel->columnCount() - 1));
+	*/
 }
 
 void ImageDatasetActor::updateData(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int> &roles /*= QVector<int>()*/) {
+	/*
 	for (int row = topLeft.row(); row <= bottomRight.row(); row++) {
 		const auto layerId = _layersModel->data(row, to_underlying(Layer::Column::ID), Qt::EditRole).toString();
 		const auto layerProp = this->propByName<ImageLayerProp>(layerId);
@@ -63,10 +66,12 @@ void ImageDatasetActor::updateData(const QModelIndex& topLeft, const QModelIndex
 
 		emit becameDirty(this);
 	}
+	*/
 }
 
 void ImageDatasetActor::render()
 {
+	/*
 	if (!canRender())
 		return;
 
@@ -74,4 +79,5 @@ void ImageDatasetActor::render()
 		const auto layerId = _layersModel->data(_layersModel->rowCount() - 1 - row, to_underlying(Layer::Column::ID), Qt::EditRole).toString();
 		this->propByName<ImageLayerProp>(layerId)->render();
 	}
+	*/
 }

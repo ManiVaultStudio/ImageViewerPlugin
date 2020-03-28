@@ -11,7 +11,6 @@
 LayersModel::LayersModel(ImageViewerPlugin* imageViewerPlugin) :
 	QAbstractItemModel(imageViewerPlugin),
 	_imageViewerPlugin(imageViewerPlugin),
-	_layers(),
 	_selectionModel(this),
 	_rootItem(new GroupLayer("root", "Root", static_cast<int>(Layer::Flag::Enabled)))
 {
@@ -98,12 +97,12 @@ QVariant LayersModel::headerData(int section, Qt::Orientation orientation, int r
 
 Qt::ItemFlags LayersModel::flags(const QModelIndex& index) const
 {
-	return Qt::NoItemFlags;
-
 	if (!index.isValid())
 		return Qt::NoItemFlags;
 
-	return index.flags();
+	auto item = reinterpret_cast<Layer*>(index.internalPointer());
+
+	return item->flags(index);
 }
 
 bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int role /*= Qt::DisplayRole*/)
@@ -111,7 +110,9 @@ bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int r
 	if (!index.isValid())
 		return false;
 
-	_layers.value(index.row())->setData(index, value, role);
+	auto item = reinterpret_cast<Layer*>(index.internalPointer());
+
+	item->setData(index, value, Qt::DisplayRole);
 
 	emit dataChanged(index, index);
 
@@ -135,133 +136,81 @@ bool LayersModel::insertRows(int position, int rows, const QModelIndex& index /*
 	return true;
 }
 
-bool LayersModel::removeRows(int position, int rows, const QModelIndex& index /*= QModelIndex()*/)
+int LayersModel::order(const QModelIndex& layerIndex) const
 {
-	Q_UNUSED(index);
+	if (!layerIndex.isValid())
+		return -1;
 
-	beginRemoveRows(QModelIndex(), position, position + rows - 1);
+	return layerIndex.siblingAtColumn(to_underlying(Layer::Column::Order)).data(Qt::EditRole).toInt();
+}
 
-	for (int row = 0; row < rows; ++row) {
-		_layers.removeAt(position);
-	}
+int LayersModel::noSiblings(const QModelIndex& layerIndex) const
+{
+	return rowCount(layerIndex.parent());
+}
 
-	endRemoveRows();
+bool LayersModel::mayMoveUp(const QModelIndex& layerIndex) const
+{
+	if (!layerIndex.isValid())
+		return false;
+
+	if (order(layerIndex) >= noSiblings(layerIndex) - 1)
+		return false;
 
 	return true;
 }
 
-bool LayersModel::moveRows(const QModelIndex& sourceParent, int sourceRow, int count, const QModelIndex& destinationParent, int destinationChild)
+bool LayersModel::mayMoveDown(const QModelIndex& layerIndex) const
 {
-	if (!beginMoveRows(QModelIndex(), sourceRow, sourceRow + count - 1, QModelIndex(), destinationChild))
+	if (!layerIndex.isValid())
 		return false;
 
-	for (int i = 0; i < count; ++i) {
-		_layers.insert(destinationChild + i, _layers.at(sourceRow));
-		int removeIndex = destinationChild > sourceRow ? sourceRow : sourceRow + 1;
-		_layers.removeAt(removeIndex);
-	}
+	if (order(layerIndex) <= 0)
+		return false;
+	
+	return true;
+}
+
+void LayersModel::moveUp(const QModelIndex& layerIndex)
+{
+	if (!mayMoveUp(layerIndex))
+		return;
+
+	const auto indexA = layerIndex;
+	const auto indexB = layerIndex.siblingAtRow(layerIndex.row() - 1);
+
+	const auto orderA = order(indexA);
+	const auto orderB = order(indexB);
+
+	const auto parent = layerIndex.parent();
+
+	beginMoveRows(parent, indexA.row(), indexA.row(), parent, indexB.row());
+
+	setData(indexA, orderB, Qt::EditRole);
+	setData(indexB, orderA, Qt::EditRole);
 
 	endMoveRows();
-
-	return true;
 }
 
-QVariant LayersModel::data(const int& row, const int& column, int role, const QModelIndex& parent /*= QModelIndex()*/) const
+void LayersModel::moveDown(const QModelIndex& layerIndex)
 {
-	if (parent == QModelIndex())
-		return data(index(row, column), role);
-
-	return data(index(row, column, parent), role);
-}
-
-void LayersModel::setData(const int& row, const int& column, const QVariant& value, const QModelIndex& parent /*= QModelIndex()*/)
-{
-	if (parent == QModelIndex())
-		setData(index(row, column), value);
-	else
-		setData(index(row, column, parent), value);
-}
-
-bool LayersModel::mayMoveUp(const int& row)
-{
-	if (row <= 0)
-		return false;
-
-	auto itemA = static_cast<Layer*>(index(row, 0).internalPointer());
-	auto itemB = static_cast<Layer*>(index(row - 1, 0).internalPointer());
-	
-	if (itemA->flag(Layer::Flag::Frozen, Qt::EditRole).toBool() || itemB->flag(Layer::Flag::Frozen, Qt::EditRole).toBool())
-		return false;
-
-	return true;
-}
-
-bool LayersModel::mayMoveDown(const int& row)
-{
-	if (row >= rowCount() - 1)
-		return false;
-
-	auto itemA = static_cast<Layer*>(index(row, 0).internalPointer());
-	auto itemB = static_cast<Layer*>(index(row + 1, 0).internalPointer());
-
-	if (itemA->flag(Layer::Flag::Frozen, Qt::EditRole).toBool() || itemB->flag(Layer::Flag::Frozen, Qt::EditRole).toBool())
-		return false;
-
-	return true;
-}
-
-void LayersModel::moveUp(const int& row)
-{
-	if (!mayMoveUp(row))
+	if (!mayMoveUp(layerIndex))
 		return;
 
-	moveRows(QModelIndex(), row, 1, QModelIndex(), row - 1);
-	//sortOrder();
-}
+	const auto indexA = layerIndex;
+	const auto indexB = layerIndex.siblingAtRow(layerIndex.row() + 1);
 
-void LayersModel::moveDown(const int& row)
-{
-	if (!mayMoveDown(row))
-		return;
+	const auto orderA = order(indexA);
+	const auto orderB = order(indexB);
 
-	moveRows(QModelIndex(), row + 1, 1, QModelIndex(), row);
-	//sortOrder();
-}
+	const auto parent = layerIndex.parent();
 
-void LayersModel::sortOrder()
-{
-	/*
-	for (int row = 0; row < rowCount(); row++)
-		setData(index(row, to_underlying(LayerItem::Column::Order)), rowCount() - row);
-	*/
-}
+	beginMoveRows(parent, indexA.row(), indexA.row(), parent, indexB.row());
 
-void LayersModel::removeRows(const QModelIndexList& rows)
-{
-	QList<int> rowsToRemove;
+	setData(indexA, orderB, Qt::EditRole);
+	setData(indexB, orderA, Qt::EditRole);
 
-	for (const auto& index : rows) {
-		const auto row = index.row();
-
-		if (_layers.at(row)->flag(Layer::Flag::Removable, Qt::EditRole).toBool()) {
-			rowsToRemove.append(row);
-		}
-	}
-
-	if (rowsToRemove.isEmpty())
-		return;
-
-	std::sort(rowsToRemove.begin(), rowsToRemove.end(), std::greater<int>());
-
-	beginRemoveRows(QModelIndex(), rowsToRemove.last(), rowsToRemove.first());
-
-	for (auto rowToRemove : rowsToRemove) {
-		_layers.removeAt(rowToRemove);
-	}
-
-	endRemoveRows();
-
-	sortOrder();
+	endMoveRows();
 }
 
 void LayersModel::renameLayer(const QString& id, const QString& name)

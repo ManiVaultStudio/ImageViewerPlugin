@@ -52,39 +52,27 @@ public: // Inherited members
 	/** TODO */
 	bool insertRows(int position, int rows, const QModelIndex& index = QModelIndex()) override;
 
-	/** TODO */
-	bool removeRows(int position, int rows, const QModelIndex& index = QModelIndex()) override;
+public: // Reorganization
 
 	/** TODO */
-	bool moveRows(const QModelIndex& sourceParent, int sourceRow, int count, const QModelIndex& destinationParent, int destinationChild) override;
-
-public: // Overloaded data access
-
-/** TODO */
-	QVariant data(const int& row, const int& column, int role, const QModelIndex& parent = QModelIndex()) const;
+	int order(const QModelIndex& layerIndex) const;
 
 	/** TODO */
-	void setData(const int& row, const int& column, const QVariant& value, const QModelIndex& parent = QModelIndex());
+	int noSiblings(const QModelIndex& layerIndex) const;
+
+	/** TODO */
+	bool mayMoveUp(const QModelIndex& layerIndex) const;
+
+	/** TODO */
+	bool mayMoveDown(const QModelIndex& layerIndex) const;
+
+	/** TODO */
+	void moveUp(const QModelIndex& layerIndex);
+
+	/** TODO */
+	void moveDown(const QModelIndex& layerIndex);
 
 public: // TODO
-
-	/** TODO */
-	bool mayMoveUp(const int& row);
-
-	/** TODO */
-	bool mayMoveDown(const int& row);
-
-	/** TODO */
-	void moveUp(const int& row);
-
-	/** TODO */
-	void moveDown(const int& row);
-
-	/** TODO */
-	void sortOrder();
-
-	/** TODO */
-	void removeRows(const QModelIndexList& rows);
 
 	/** TODO */
 	void renameLayer(const QString& id, const QString& name);
@@ -97,9 +85,8 @@ public: // TODO
 
 private:
 	ImageViewerPlugin*		_imageViewerPlugin;		/** TODO */
-	Layers					_layers;				/** TODO */
 	QItemSelectionModel		_selectionModel;		/** TODO */
-	GroupLayer*				_rootItem;					/** TODO */
+	GroupLayer*				_rootItem;				/** TODO */
 
 	friend class MainModel;
 };
