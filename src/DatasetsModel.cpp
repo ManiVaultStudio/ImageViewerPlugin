@@ -9,8 +9,7 @@
 DatasetsModel::DatasetsModel(ImageViewerPlugin* imageViewerPlugin) :
 	QAbstractListModel(imageViewerPlugin),
 	_imageViewerPlugin(imageViewerPlugin),
-	_datasets(),
-	_selectionModel()
+	_datasets()
 {
 }
 

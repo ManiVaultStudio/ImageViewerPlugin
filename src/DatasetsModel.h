@@ -3,7 +3,6 @@
 #include "Dataset.h"
 
 #include <QAbstractListModel>
-#include <QItemSelectionModel>
 
 class ImageViewerPlugin;
 
@@ -26,9 +25,6 @@ public: // Construction/destruction
 
 	/** Destructor */
 	~DatasetsModel();
-
-	/** TODO */
-	QItemSelectionModel& selectionModel() { return _selectionModel; }
 
 public: // Inherited members
 
@@ -81,7 +77,6 @@ public: //
 private:
 	ImageViewerPlugin*		_imageViewerPlugin;		/** TODO */
 	Datasets				_datasets;				/** TODO */
-	QItemSelectionModel		_selectionModel;		/** TODO */
 
 	friend class MainModel;
 };

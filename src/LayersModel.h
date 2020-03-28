@@ -1,9 +1,7 @@
 #pragma once
 
 #include "Layer.h"
-#include "ProxyModel.h"
 
-#include <QItemSelectionModel>
 #include <QAbstractItemModel>
 
 class ImageViewerPlugin;
@@ -21,13 +19,6 @@ public: // Construction/destruction
 	/** Destructor */
 	~LayersModel();
 
-	/** TODO */
-	QItemSelectionModel* selectionModel() { return &_selectionModel; }
-
-	/** TODO */
-	ProxyModel* proxyModel() { return &_proxyModel; }
-
-	
 public: // Inherited members
 
 	/** TODO */
@@ -90,7 +81,6 @@ public: // TODO
 
 private:
 	ImageViewerPlugin*		_imageViewerPlugin;		/** TODO */
-	QItemSelectionModel		_selectionModel;		/** TODO */
 	GroupLayer*				_rootItem;				/** TODO */
 
 	friend class MainModel;

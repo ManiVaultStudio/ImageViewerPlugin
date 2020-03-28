@@ -28,14 +28,16 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 
 	_ui->setupUi(this);
 
-	
 	_ui->layerWidget->initialize(layersModel());
-	_ui->datasetsTreeView->setModel(&_imageViewerPlugin->datasetsModel());
 
-	_ui->layersTreeView->setModel(layersModel()->proxyModel());
-	_ui->layersTreeView->setSelectionModel(layersModel()->selectionModel());
+	// Initialize dataset tree view
+	_ui->datasetsTreeView->setModel(&_imageViewerPlugin->datasetsProxyModel());
+	_ui->datasetsTreeView->setSelectionModel(&_imageViewerPlugin->datasetsSelectionModel());
 
-	//layersModel()->setSelectionModel(_ui->datasetsTreeView->selectionModel());
+	// Initialize layers tree view
+	_ui->layersTreeView->setModel(&_imageViewerPlugin->layersProxyModel());
+	_ui->layersTreeView->setSelectionModel(&_imageViewerPlugin->layersSelectionModel());
+	_ui->layersTreeView->setSortingEnabled(true);
 
 	QFont font = QFont("Font Awesome 5 Free Solid", 9);
 
@@ -48,14 +50,14 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_ui->layerMoveDownPushButton->setText(u8"\uf0d7");
 
 	QObject::connect(_ui->layerMoveUpPushButton, &QPushButton::clicked, [this]() {
-		const auto selectedRows = layersModel()->selectionModel()->selectedRows();
+		const auto selectedRows = _imageViewerPlugin->layersSelectionModel().selectedRows();
 
 		if (selectedRows.size() == 1)
 			layersModel()->moveUp(selectedRows.first());
 	});
 
 	QObject::connect(_ui->layerMoveDownPushButton, &QPushButton::clicked, [this]() {
-		const auto selectedRows = layersModel()->selectionModel()->selectedRows();
+		const auto selectedRows = _imageViewerPlugin->layersSelectionModel().selectedRows();
 
 		if (selectedRows.size() == 1)
 			layersModel()->moveDown(selectedRows.first());
@@ -83,7 +85,7 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 	headerView->setSectionResizeMode(to_underlying(Layer::Column::Name), QHeaderView::Interactive);
 	
 	auto updateButtons = [this]() {
-		const auto selectedRows = layersModel()->selectionModel()->selectedRows();
+		const auto selectedRows = _imageViewerPlugin->layersSelectionModel().selectedRows();
 		const auto noSelectedRows = selectedRows.size();
 
 		_ui->layerRemovePushButton->setEnabled(false);
@@ -135,10 +137,10 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 		*/
 	};
 
-	QObject::connect(layersModel()->selectionModel(), &QItemSelectionModel::selectionChanged, [this, updateButtons](const QItemSelection &selected, const QItemSelection &deselected) {
+	QObject::connect(&_imageViewerPlugin->layersSelectionModel(), &QItemSelectionModel::selectionChanged, [this, updateButtons](const QItemSelection &selected, const QItemSelection &deselected) {
 		updateButtons();
 
-		const auto selectedRows = layersModel()->selectionModel()->selectedRows();
+		const auto selectedRows = _imageViewerPlugin->layersSelectionModel().selectedRows();
 
 		if (selectedRows.isEmpty())
 			_ui->layerWidget->onDataChanged(layersModel()->index(0, 0), layersModel()->index(0, layersModel()->columnCount() - 1));

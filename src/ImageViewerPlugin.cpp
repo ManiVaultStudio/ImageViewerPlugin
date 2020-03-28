@@ -19,16 +19,19 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	ViewPlugin("Image Viewer"),
 	_imageViewerWidget(),
 	_settingsWidget(),
-	_datasetModel(this),
+	_datasetsModel(this),
+	_datasetsProxyModel(),
+	_datasetsSelectionModel(&_datasetsProxyModel),
 	_layersModel(this),
-	_layersProxyModel()
+	_layersProxyModel(),
+	_layersSelectionModel(&_layersProxyModel)
 {
 	qRegisterMetaType<QVector<int> >("QVector<int>");
 
+	_datasetsProxyModel.setSourceModel(&_datasetsModel);
 	_layersProxyModel.setSourceModel(&_layersModel);
-
-	//setFocusPolicy(Qt::FocusPolicy::StrongFocus);
-
+	
+	// TODO
 	_imageViewerWidget	= new ViewerWidget(this);
 	_settingsWidget		= new SettingsWidget(this);
 

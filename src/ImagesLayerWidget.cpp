@@ -19,11 +19,13 @@ void ImagesLayerWidget::initialize(LayersModel* layersModel)
 {
 	ModelWidget::initialize(layersModel);
 
-	QObject::connect(_layersModel->selectionModel(), &QItemSelectionModel::currentRowChanged, [this](const QModelIndex& current, const QModelIndex& previous) {
+	/*
+	QObject::connect(_->selectionModel(), &QItemSelectionModel::currentRowChanged, [this](const QModelIndex& current, const QModelIndex& previous) {
 		qDebug() << "Current" << current;
 		qDebug() << "Index" << _layersModel->index(0, 0, current);
 		setIndex(_layersModel->index(0, 0, current));
 	});
+	*/
 }
 
 void ImagesLayerWidget::updateData(const QModelIndex& index)

@@ -11,10 +11,8 @@
 LayersModel::LayersModel(ImageViewerPlugin* imageViewerPlugin) :
 	QAbstractItemModel(imageViewerPlugin),
 	_imageViewerPlugin(imageViewerPlugin),
-	_selectionModel(this),
 	_rootItem(new GroupLayer("root", "Root", static_cast<int>(Layer::Flag::Enabled)))
 {
-	_selectionModel.setModel(&_proxyModel);
 }
 
 LayersModel::~LayersModel()
@@ -195,9 +193,12 @@ void LayersModel::moveUp(const QModelIndex& layerIndex)
 
 void LayersModel::moveDown(const QModelIndex& layerIndex)
 {
-	if (!mayMoveUp(layerIndex))
-		return;
+	//if (!mayMoveDown(layerIndex))
+	//	return;
 
+	setData(layerIndex, 0, Qt::EditRole);
+
+	/*
 	const auto indexA = layerIndex;
 	const auto indexB = layerIndex.siblingAtRow(layerIndex.row() + 1);
 
@@ -212,6 +213,7 @@ void LayersModel::moveDown(const QModelIndex& layerIndex)
 	setData(indexB, orderA, Qt::EditRole);
 
 	endMoveRows();
+	*/
 }
 
 void LayersModel::renameLayer(const QString& id, const QString& name)
