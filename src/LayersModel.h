@@ -19,6 +19,9 @@ public:
 	~LayersModel();
 
 	QVariant data(const QModelIndex &index, int role) const override;
+	
+	QVariant data(const int& row, const int& column, const int& role) const;
+
 	QVariant headerData(int section, Qt::Orientation orientation,
 		int role = Qt::DisplayRole) const override;
 
@@ -35,13 +38,11 @@ public:
 	bool setHeaderData(int section, Qt::Orientation orientation,
 		const QVariant &value, int role = Qt::EditRole) override;
 
-	bool insertColumns(int position, int columns,
-		const QModelIndex &parent = QModelIndex()) override;
-	bool removeColumns(int position, int columns, const QModelIndex &parent = QModelIndex()) override;
-
 	bool insertLayer(int row, Layer* layer, const QModelIndex& parent = QModelIndex());
 
 	bool removeRows(int position, int rows, const QModelIndex &parent = QModelIndex()) override;
+
+	bool mayMoveRow(const QModelIndex& index, const int& delta) const;
 
 	bool moveRow(const QModelIndex& sourceParent, const int& sourceRow, const QModelIndex& targetParent, int targetRow);
 	

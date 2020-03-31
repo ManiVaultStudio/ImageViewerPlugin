@@ -52,23 +52,23 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 	QObject::connect(_ui->layerMoveUpPushButton, &QPushButton::clicked, [this]() {
 		const auto selectedRows = _imageViewerPlugin->layersSelectionModel().selectedRows();
 
-		/*
 		if (selectedRows.size() == 1) {
-			const auto row = _imageViewerPlugin->layersProxyModel().mapToSource(selectedRows.first()).row();
-			layersModel()->moveRow(row, 1);
+			const auto firstRow = selectedRows.first();
+			const auto parent	= firstRow.parent();
+
+			layersModel()->moveRow(parent, firstRow.row(), parent, firstRow.row() - 1);
 		}
-		*/
 	});
 
 	QObject::connect(_ui->layerMoveDownPushButton, &QPushButton::clicked, [this]() {
 		const auto selectedRows = _imageViewerPlugin->layersSelectionModel().selectedRows();
 
-		/*
 		if (selectedRows.size() == 1) {
-			const auto row = _imageViewerPlugin->layersProxyModel().mapToSource(selectedRows.first()).row();
-			layersModel()->moveRow(row, -1);
+			const auto firstRow = selectedRows.first();
+			const auto parent	= firstRow.parent();
+
+			layersModel()->moveRow(parent, firstRow.row(), parent, firstRow.row() + 1);
 		}
-		*/
 	});
 
 	QObject::connect(_ui->layerRemovePushButton, &QPushButton::clicked, [this]() {
@@ -77,11 +77,12 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 
 	_ui->layersGroupBox->setEnabled(true);
 	//_ui->layersTreeView->setModel(layersModel());
-	/*
+	
 	auto headerView = _ui->layersTreeView->header();
 
 	headerView->setSectionResizeMode(QHeaderView::ResizeToContents);
 
+	/*
 	for (int column = to_underlying(Layer::Column::Enabled); column < to_underlying(Layer::Column::DisplayRange); column++)
 		headerView->hideSection(column);
 
@@ -91,7 +92,8 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 	headerView->showSection(to_underlying(Layer::Column::Order));
 
 	headerView->setSectionResizeMode(to_underlying(Layer::Column::Name), QHeaderView::Interactive);
-	
+	*/
+
 	auto updateButtons = [this]() {
 		const auto selectedRows = _imageViewerPlugin->layersSelectionModel().selectedRows();
 		const auto noSelectedRows = selectedRows.size();
@@ -113,12 +115,12 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 			_ui->layerRemovePushButton->setEnabled(mayRemove);
 			_ui->layerRemovePushButton->setToolTip(mayRemove ? QString("Remove %1").arg(name) : "");
 
-			const auto mayMoveUp = layersModel()->mayMoveRow(firstRow.row(), 1);
+			const auto mayMoveUp = layersModel()->mayMoveRow(firstRow, -1);
 
 			_ui->layerMoveUpPushButton->setEnabled(mayMoveUp);
 			_ui->layerMoveUpPushButton->setToolTip(mayMoveUp ? QString("Move %1 up one level").arg(name) : "");
 
-			const auto mayMoveDown = layersModel()->mayMoveRow(firstRow.row(), -1);
+			const auto mayMoveDown = layersModel()->mayMoveRow(firstRow, 1);
 
 			_ui->layerMoveDownPushButton->setEnabled(mayMoveDown);
 			_ui->layerMoveDownPushButton->setToolTip(mayMoveDown ? QString("Move %1 down one level").arg(name) : "");
@@ -142,7 +144,7 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 		}
 		
 	};
-
+	
 	QObject::connect(&_imageViewerPlugin->layersSelectionModel(), &QItemSelectionModel::selectionChanged, [this, updateButtons](const QItemSelection &selected, const QItemSelection &deselected) {
 		updateButtons();
 
@@ -158,7 +160,7 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 	QObject::connect(layersModel(), &QAbstractListModel::rowsMoved, [this, updateButtons](const QModelIndex& parent, int start, int end, const QModelIndex& destination, int row) {
 		updateButtons();
 	});
-	*/
+	
 	//layersModel()->selectionModel()->setCurrentIndex(layersModel()->index(0), QItemSelectionModel::Rows | QItemSelectionModel::Current);
 }
 

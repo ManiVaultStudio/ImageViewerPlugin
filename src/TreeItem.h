@@ -150,7 +150,7 @@ public:
 	int columnCount() const;
 	QVariant data(int column) const;
 	bool insertChildren(int position, int count, int columns);
-	bool insertChild(int position, int count, int columns, Layer* layer);
+	bool insertChild(const int& position, Layer* layer);
 	bool insertColumns(int position, int columns);
 	Layer *parent();
 	void setParent(Layer* parent);

@@ -77,7 +77,7 @@ bool Layer::insertChildren(int position, int count, int columns)
 	return true;
 }
 
-bool Layer::insertChild(int position, int count, int columns, Layer* layer)
+bool Layer::insertChild(const int& position, Layer* layer)
 {
 	if (position < 0 || position > childItems.size())
 		return false;

@@ -52,6 +52,11 @@ QVariant LayersModel::data(const QModelIndex &index, int role) const
 	return item->data(index.column());
 }
 
+QVariant LayersModel::data(const int& row, const int& column, const int& role) const
+{
+	return data(index(row, column), role);
+}
+
 Qt::ItemFlags LayersModel::flags(const QModelIndex &index) const
 {
 	int itemFlags = Qt::NoItemFlags;
@@ -99,15 +104,6 @@ QModelIndex LayersModel::index(int row, int column, const QModelIndex &parent) c
 	return QModelIndex();
 }
 
-bool LayersModel::insertColumns(int position, int columns, const QModelIndex &parent)
-{
-	beginInsertColumns(parent, position, position + columns - 1);
-	const bool success = rootItem->insertColumns(position, columns);
-	endInsertColumns();
-
-	return success;
-}
-
 bool LayersModel::insertLayer(int row, Layer* layer, const QModelIndex& parent /*= QModelIndex()*/)
 {
 	Layer* parentLayer = getItem(parent);
@@ -117,7 +113,7 @@ bool LayersModel::insertLayer(int row, Layer* layer, const QModelIndex& parent /
 
 	beginInsertRows(parent, row, row);
 
-	const bool success = parentLayer->insertChild(row, 1, rootItem->columnCount(), layer);
+	const bool success = parentLayer->insertChild(row, layer);
 
 	endInsertRows();
 
@@ -138,18 +134,6 @@ QModelIndex LayersModel::parent(const QModelIndex &index) const
 	return createIndex(parentItem->childNumber(), 0, parentItem);
 }
 
-bool LayersModel::removeColumns(int position, int columns, const QModelIndex &parent)
-{
-	beginRemoveColumns(parent, position, position + columns - 1);
-	const bool success = rootItem->removeColumns(position, columns);
-	endRemoveColumns();
-
-	if (rootItem->columnCount() == 0)
-		removeRows(0, rowCount());
-
-	return success;
-}
-
 bool LayersModel::removeRows(int position, int rows, const QModelIndex &parent)
 {
 	Layer *parentItem = getItem(parent);
@@ -163,10 +147,21 @@ bool LayersModel::removeRows(int position, int rows, const QModelIndex &parent)
 	return success;
 }
 
+bool LayersModel::mayMoveRow(const QModelIndex& index, const int& delta) const
+{
+	const auto sourceIndex = index;
+	const auto targetIndex = index.siblingAtRow(index.row() + delta);
+
+	if (!sourceIndex.isValid() || !targetIndex.isValid())
+		return false;
+
+	return true;
+}
+
 bool LayersModel::moveRow(const QModelIndex& sourceParent, const int& sourceRow, const QModelIndex& targetParent, int targetRow)
 {
-	if (!sourceParent.isValid() | !targetParent.isValid())
-		return false;
+	if (targetRow < 0)
+		targetRow = 0;
 
 	if (sourceParent == targetParent) {
 		if (beginMoveRows(sourceParent, sourceRow, sourceRow, targetParent, targetRow)) {
@@ -176,23 +171,20 @@ bool LayersModel::moveRow(const QModelIndex& sourceParent, const int& sourceRow,
 			auto sourceLayer = sourceParentLayer->child(sourceRow);
 
 			sourceParentLayer->removeChildren(sourceRow, 1, false);
-			targetParentLayer->insertChild(targetRow > sourceRow ? targetRow - 1 : targetRow, 1, 2, sourceLayer);
+			targetParentLayer->insertChild(targetRow > sourceRow ? targetRow - 1 : targetRow, sourceLayer);
 
 			endMoveRows();
 		}
 	}
 	else {
-		if (targetRow < 0)
-			targetRow = 0;
-
-		if (beginMoveRows(sourceParent, sourceRow, sourceRow, targetParent, targetRow < 0 ? 0 : targetRow)) {
+		if (beginMoveRows(sourceParent, sourceRow, sourceRow, targetParent, targetRow)) {
 			Layer* sourceParentLayer = getItem(sourceParent);
 			Layer* targetParentLayer = getItem(targetParent);
 
 			auto sourceLayer = sourceParentLayer->child(sourceRow);
 
 			sourceParentLayer->removeChildren(sourceRow, 1, false);
-			targetParentLayer->insertChild(targetRow, 1, 2, sourceLayer);
+			targetParentLayer->insertChild(targetRow, sourceLayer);
 
 			endMoveRows();
 		}
@@ -281,9 +273,14 @@ bool LayersModel::dropMimeData(const QMimeData *data, Qt::DropAction action, int
 		{
 			QByteArray bytes = data->data("layer");
 			QDataStream stream(&bytes, QIODevice::QIODevice::ReadOnly);
-			qintptr i; int r, c;
-			stream >> r >> c >> i;
-			QModelIndex index = createIndex(r, c, i);
+			
+			qintptr sourceInternalPointer;
+			int sourceRow;
+			int sourceColumn;
+
+			stream >> sourceRow >> sourceColumn >> sourceInternalPointer;
+
+			QModelIndex index = createIndex(sourceRow, sourceColumn, sourceInternalPointer);
 
 			moveRow(index.parent(), index.row(), parent, row);
 			
