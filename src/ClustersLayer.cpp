@@ -4,7 +4,7 @@
 #include <QDebug>
 
 ClustersLayer::ClustersLayer(ClustersDataset* clustersDataset, const QString& id, const QString& name, const int& flags) :
-	Layer(clustersDataset, Layer::Type::Clusters, id, name, flags),
+	_Layer(clustersDataset, _Layer::Type::Clusters, id, name, flags),
 	_clusters(clustersDataset)
 {
 }
@@ -12,7 +12,7 @@ ClustersLayer::ClustersLayer(ClustersDataset* clustersDataset, const QString& id
 Qt::ItemFlags ClustersLayer::flags(const QModelIndex& index) const
 {
 	if (!isSettingsIndex(index))
-		return Layer::flags(index);
+		return _Layer::flags(index);
 
 	int flags = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
 
@@ -27,7 +27,7 @@ Qt::ItemFlags ClustersLayer::flags(const QModelIndex& index) const
 QVariant ClustersLayer::data(const QModelIndex& index, const int& role) const
 {
 	if (!isSettingsIndex(index))
-		return Layer::data(index, role);
+		return _Layer::data(index, role);
 
 	switch (static_cast<Column>(index.column())) {
 		default:
@@ -40,5 +40,5 @@ QVariant ClustersLayer::data(const QModelIndex& index, const int& role) const
 void ClustersLayer::setData(const QModelIndex& index, const QVariant& value, const int& role)
 {
 	if (!isSettingsIndex(index))
-		return Layer::setData(index, value, role);
+		return _Layer::setData(index, value, role);
 }

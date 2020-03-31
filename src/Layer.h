@@ -10,7 +10,7 @@
 class Dataset;
 
 /** TODO */
-class Layer
+class _Layer
 {
 public:
 
@@ -143,21 +143,21 @@ public:
 	};
 
 	/** Constructor */
-	Layer(Dataset* dataset, const Type& type, const QString& id, const QString& name, const int& flags);
+	_Layer(Dataset* dataset, const Type& type, const QString& id, const QString& name, const int& flags);
 
 	/** Destructor */
-	virtual ~Layer();
+	virtual ~_Layer();
 
 public: // Tree
 
 	/** TODO */
-	void appendChild(Layer* child);
+	void appendChild(_Layer* child);
 
 	/** TODO */
-	const Layer* child(const int& row) const;
+	const _Layer* child(const int& row) const;
 
 	/** TODO */
-	Layer* child(const int& row);
+	_Layer* child(const int& row);
 
 	/** TODO */
 	int childCount() const;
@@ -166,13 +166,13 @@ public: // Tree
 	int row() const;
 
 	/** TODO */
-	const Layer* parent() const;
+	const _Layer* parent() const;
 
 	/** TODO */
-	Layer* parent();
+	_Layer* parent();
 
 	/** TODO */
-	void setParent(Layer* parent);
+	void setParent(_Layer* parent);
 
 	/** TODO */
 	void sortChildren();
@@ -218,13 +218,13 @@ public: // Getters/setters
 	QVariant type(const int& role) const;
 
 	/** TODO */
-	void setType(const Layer::Type& type);
+	void setType(const _Layer::Type& type);
 
 	/** TODO */
-	QVariant flag(const Layer::Flag& flag, const int& role) const;
+	QVariant flag(const _Layer::Flag& flag, const int& role) const;
 
 	/** TODO */
-	void setFlag(const Layer::Flag& flag, const bool& enabled = true);
+	void setFlag(const _Layer::Flag& flag, const bool& enabled = true);
 
 	/** TODO */
 	void setFlags(const int& flags);
@@ -299,12 +299,12 @@ signals:
 	void dataChanged();
 
 protected:
-	QVector<Layer*>		_children;				/** TODO */
-	Layer*				_parent;				/** TODO */
+	QVector<_Layer*>		_children;				/** TODO */
+	_Layer*				_parent;				/** TODO */
 	Dataset*			_dataset;				/** TODO */
 	QString				_id;					/** TODO */
 	QString				_name;					/** TODO */
-	Layer::Type			_type;					/** TODO */
+	_Layer::Type			_type;					/** TODO */
 	std::uint32_t		_flags;					/** TODO */
 	std::uint32_t		_order;					/** TODO */
 	float				_opacity;				/** TODO */
@@ -318,4 +318,4 @@ protected:
 	float				_level;					/** TODO */
 };
 
-using Layers = QList<Layer*>;
+using Layers = QList<_Layer*>;

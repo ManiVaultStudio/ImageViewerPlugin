@@ -5,7 +5,7 @@
 class ImagesDataset;
 
 /** TODO */
-class ImagesLayer : public Layer
+class ImagesLayer : public _Layer
 {
 public:
 

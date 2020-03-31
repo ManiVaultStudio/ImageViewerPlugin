@@ -189,7 +189,7 @@ void LayerWidget::onDataChanged(const QModelIndex &topLeft, const QModelIndex &b
 	const auto colorFlags = _layersModel->flags(topLeft.row(), to_underlying(Layer::Column::ColorMap));
 	*/
 
-	const auto type = topLeft.siblingAtColumn(to_underlying(Layer::Column::Type)).data(Qt::EditRole).toInt();
+	const auto type = topLeft.siblingAtColumn(to_underlying(_Layer::Column::Type)).data(Qt::EditRole).toInt();
 
 	_ui->settingsStackedWidget->setCurrentIndex(type);
 

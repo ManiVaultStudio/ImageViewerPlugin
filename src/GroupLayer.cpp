@@ -3,7 +3,7 @@
 #include <QDebug>
 
 GroupLayer::GroupLayer(const QString& id, const QString& name, const int& flags) :
-	Layer(nullptr, Layer::Type::Group, id, name, flags)
+	_Layer(nullptr, _Layer::Type::Group, id, name, flags)
 {
 }
 

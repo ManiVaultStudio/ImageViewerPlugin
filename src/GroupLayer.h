@@ -5,7 +5,7 @@
 class ClustersDataset;
 
 /** TODO */
-class GroupLayer : public Layer
+class GroupLayer : public _Layer
 {
 public:
 	

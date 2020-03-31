@@ -39,8 +39,10 @@ public:
 		const QModelIndex &parent = QModelIndex()) override;
 	bool removeColumns(int position, int columns,
 		const QModelIndex &parent = QModelIndex()) override;
-	bool insertRows(int position, int rows,
-		const QModelIndex &parent = QModelIndex()) override;
+	bool insertRows(int position, int rows, const QModelIndex &parent = QModelIndex()) override;
+
+	bool insertLayer(int row, const QModelIndex& parent = QModelIndex());
+
 	bool removeRows(int position, int rows,
 		const QModelIndex &parent = QModelIndex()) override;
 
@@ -66,7 +68,8 @@ public:
 		else
 			beginRow = rowCount(QModelIndex());
 
-		insertRow(beginRow, parent);
+		insertLayer(beginRow, parent);
+
 		setData(parent.child(beginRow, 0), "asdsad");
 
 		return true;
@@ -74,8 +77,8 @@ public:
 	}
 
 private:
-	void setupModelData(const QStringList &lines, TreeItem *parent);
-	TreeItem *getItem(const QModelIndex &index) const;
+	void setupModelData(const QStringList &lines, Layer *parent);
+	Layer *getItem(const QModelIndex &index) const;
 
-	TreeItem *rootItem;
+	Layer *rootItem;
 };

@@ -5,7 +5,7 @@
 class PointsDataset;
 
 /** TODO */
-class PointsLayer : public Layer
+class PointsLayer : public _Layer
 {
 public:
 

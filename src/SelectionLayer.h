@@ -5,7 +5,7 @@
 class Dataset;
 
 /** TODO */
-class SelectionLayer : public Layer
+class SelectionLayer : public _Layer
 {
 public:
 
