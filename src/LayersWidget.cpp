@@ -72,11 +72,13 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 	});
 
 	QObject::connect(_ui->layerRemovePushButton, &QPushButton::clicked, [this]() {
-		//layersModel()->removeRows(layersModel()->selectionModel()->selectedRows());
+		const auto selectedRows = _imageViewerPlugin->layersSelectionModel().selectedRows();
+
+		if (selectedRows.size() == 1)
+			layersModel()->removeRow(selectedRows.first());
 	});
 
 	_ui->layersGroupBox->setEnabled(true);
-	//_ui->layersTreeView->setModel(layersModel());
 	
 	auto headerView = _ui->layersTreeView->header();
 
@@ -126,23 +128,7 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 			_ui->layerMoveDownPushButton->setToolTip(mayMoveDown ? QString("Move %1 down one level").arg(name) : "");
 		}
 		
-		if (noSelectedRows >= 1) {
-			auto names = QStringList();
-			auto mayRemove = false;
-
-			for (auto index : selectedRows) {
-				if (layersModel()->data(index.row(), to_underlying(Layer::Column::Removable), Qt::EditRole).toBool()) {
-					mayRemove = true;
-					names << layersModel()->data(index.row(), to_underlying(Layer::Column::Name), Qt::EditRole).toString();
-				}
-			}
-
-			if (mayRemove) {
-				_ui->layerRemovePushButton->setEnabled(true);
-				_ui->layerRemovePushButton->setToolTip(QString("Remove %1").arg(names.join(", ")));
-			}
-		}
-		
+		_ui->layerRemovePushButton->setEnabled(noSelectedRows == 1);
 	};
 	
 	QObject::connect(&_imageViewerPlugin->layersSelectionModel(), &QItemSelectionModel::selectionChanged, [this, updateButtons](const QItemSelection &selected, const QItemSelection &deselected) {

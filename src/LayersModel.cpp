@@ -57,17 +57,22 @@ QVariant LayersModel::data(const int& row, const int& column, const int& role) c
 	return data(index(row, column), role);
 }
 
-Qt::ItemFlags LayersModel::flags(const QModelIndex &index) const
+Qt::ItemFlags LayersModel::flags(const QModelIndex& index) const
 {
-	int itemFlags = Qt::NoItemFlags;
+	int itemFlags = QAbstractItemModel::flags(index);
+
+	if (index == QModelIndex())
+		return itemFlags | Qt::ItemIsDropEnabled;
 
 	if (!index.isValid())
-		return itemFlags;
+		return itemFlags | Qt::ItemIsDropEnabled;
 
 	if (getItem(index)->childCount() > 0)
 		itemFlags |= Qt::ItemIsDropEnabled;
 
-	return itemFlags | Qt::ItemIsDragEnabled | Qt::ItemIsEditable | QAbstractItemModel::flags(index);
+	//itemFlags |= Qt::ItemIsDropEnabled;
+
+	return itemFlags | Qt::ItemIsDragEnabled | Qt::ItemIsEditable;
 }
 
 Layer *LayersModel::getItem(const QModelIndex &index) const
@@ -145,6 +150,19 @@ bool LayersModel::removeRows(int position, int rows, const QModelIndex &parent)
 	endRemoveRows();
 
 	return success;
+}
+
+bool LayersModel::removeRow(const QModelIndex& index)
+{
+	const auto row = index.row();
+
+	beginRemoveRows(index.parent(), row, row);
+	{
+		getItem(index.parent())->removeChild(row);
+	}
+	endRemoveRows();
+	
+	return true;
 }
 
 bool LayersModel::mayMoveRow(const QModelIndex& index, const int& delta) const

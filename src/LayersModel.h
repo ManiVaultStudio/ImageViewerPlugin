@@ -41,6 +41,8 @@ public:
 	bool insertLayer(int row, Layer* layer, const QModelIndex& parent = QModelIndex());
 
 	bool removeRows(int position, int rows, const QModelIndex &parent = QModelIndex()) override;
+	
+	bool removeRow(const QModelIndex& index);
 
 	bool mayMoveRow(const QModelIndex& index, const int& delta) const;
 
@@ -48,7 +50,7 @@ public:
 	
 	Qt::DropActions supportedDropActions() const
 	{
-		return Qt::MoveAction;
+		return Qt::MoveAction | Qt::CopyAction;
 	}
 
 public: // MIME
