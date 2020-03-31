@@ -77,6 +77,18 @@ bool Layer::insertChildren(int position, int count, int columns)
 	return true;
 }
 
+bool Layer::insertChild(int position, int count, int columns, Layer* layer)
+{
+	if (position < 0 || position > childItems.size())
+		return false;
+
+	layer->setParent(this);
+
+	childItems.insert(position, layer);
+
+	return true;
+}
+
 bool Layer::insertColumns(int position, int columns)
 {
 	if (position < 0 || position > itemData.size())
@@ -96,13 +108,22 @@ Layer *Layer::parent()
 	return parentItem;
 }
 
-bool Layer::removeChildren(int position, int count)
+void Layer::setParent(Layer* parent)
+{
+	parentItem = parent;
+}
+
+bool Layer::removeChildren(int position, int count, const bool& purge /*= true*/)
 {
 	if (position < 0 || position + count > childItems.size())
 		return false;
 
-	for (int row = 0; row < count; ++row)
-		delete childItems.takeAt(position);
+	for (int row = 0; row < count; ++row) {
+		if (purge)
+			delete childItems.at(position);
+
+		childItems.takeAt(position);
+	}
 
 	return true;
 }

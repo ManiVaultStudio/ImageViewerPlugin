@@ -8,6 +8,7 @@
 #include <QBrush>
 #include <QDebug>
 #include <QAbstractItemView>
+#include <QMimeData>
 
 LayersModel::LayersModel(QObject *parent)
 	: QAbstractItemModel(parent)
@@ -53,10 +54,15 @@ QVariant LayersModel::data(const QModelIndex &index, int role) const
 
 Qt::ItemFlags LayersModel::flags(const QModelIndex &index) const
 {
-	if (!index.isValid())
-		return Qt::NoItemFlags;
+	int itemFlags = Qt::NoItemFlags;
 
-	return Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled | Qt::ItemIsEditable | QAbstractItemModel::flags(index);
+	if (!index.isValid())
+		return itemFlags;
+
+	if (getItem(index)->childCount() > 0)
+		itemFlags |= Qt::ItemIsDropEnabled;
+
+	return itemFlags | Qt::ItemIsDragEnabled | Qt::ItemIsEditable | QAbstractItemModel::flags(index);
 }
 
 Layer *LayersModel::getItem(const QModelIndex &index) const
@@ -102,22 +108,7 @@ bool LayersModel::insertColumns(int position, int columns, const QModelIndex &pa
 	return success;
 }
 
-bool LayersModel::insertRows(int position, int rows, const QModelIndex &parent)
-{
-	Layer *parentItem = getItem(parent);
-	if (!parentItem)
-		return false;
-
-	beginInsertRows(parent, position, position + rows - 1);
-	const bool success = parentItem->insertChildren(position,
-		rows,
-		rootItem->columnCount());
-	endInsertRows();
-
-	return success;
-}
-
-bool LayersModel::insertLayer(int row, const QModelIndex& parent /*= QModelIndex()*/)
+bool LayersModel::insertLayer(int row, Layer* layer, const QModelIndex& parent /*= QModelIndex()*/)
 {
 	Layer* parentLayer = getItem(parent);
 
@@ -126,7 +117,7 @@ bool LayersModel::insertLayer(int row, const QModelIndex& parent /*= QModelIndex
 
 	beginInsertRows(parent, row, row);
 
-	const bool success = parentLayer->insertChildren(row, 1, rootItem->columnCount());
+	const bool success = parentLayer->insertChild(row, 1, rootItem->columnCount(), layer);
 
 	endInsertRows();
 
@@ -172,6 +163,45 @@ bool LayersModel::removeRows(int position, int rows, const QModelIndex &parent)
 	return success;
 }
 
+bool LayersModel::moveRow(const QModelIndex& sourceParent, const int& sourceRow, const QModelIndex& targetParent, int targetRow)
+{
+	if (!sourceParent.isValid() | !targetParent.isValid())
+		return false;
+
+	if (sourceParent == targetParent) {
+		if (beginMoveRows(sourceParent, sourceRow, sourceRow, targetParent, targetRow)) {
+			Layer* sourceParentLayer = getItem(sourceParent);
+			Layer* targetParentLayer = getItem(targetParent);
+
+			auto sourceLayer = sourceParentLayer->child(sourceRow);
+
+			sourceParentLayer->removeChildren(sourceRow, 1, false);
+			targetParentLayer->insertChild(targetRow > sourceRow ? targetRow - 1 : targetRow, 1, 2, sourceLayer);
+
+			endMoveRows();
+		}
+	}
+	else {
+		if (targetRow < 0)
+			targetRow = 0;
+
+		if (beginMoveRows(sourceParent, sourceRow, sourceRow, targetParent, targetRow < 0 ? 0 : targetRow)) {
+			Layer* sourceParentLayer = getItem(sourceParent);
+			Layer* targetParentLayer = getItem(targetParent);
+
+			auto sourceLayer = sourceParentLayer->child(sourceRow);
+
+			sourceParentLayer->removeChildren(sourceRow, 1, false);
+			targetParentLayer->insertChild(targetRow, 1, 2, sourceLayer);
+
+			endMoveRows();
+		}
+	}
+	
+
+	return true;
+}
+
 int LayersModel::rowCount(const QModelIndex &parent) const
 {
 	const Layer *parentItem = getItem(parent);
@@ -205,6 +235,66 @@ bool LayersModel::setHeaderData(int section, Qt::Orientation orientation,
 		emit headerDataChanged(orientation, section, section);
 
 	return result;
+}
+
+QStringList LayersModel::mimeTypes() const
+{
+	QStringList types;
+
+	types << "layer";
+
+	return types;
+}
+
+QMimeData* LayersModel::mimeData(const QModelIndexList& indexes) const
+{
+	if (!indexes[0].isValid())
+		return nullptr;
+
+	const auto index = indexes[0];
+
+	const auto layerAddress = (quintptr)indexes[0].internalPointer();
+
+	auto mimeData = new QMimeData();
+
+	QByteArray encodedData;
+
+	QDataStream dataStream(&encodedData, QIODevice::WriteOnly);
+
+	dataStream << index.row() << index.column() << layerAddress;
+
+	mimeData->setData("layer", encodedData);
+
+	return mimeData;
+}
+
+bool LayersModel::dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent)
+{
+	if (!canDropMimeData(data, action, row, column, parent))
+		return false;
+
+	switch (action) {
+		case Qt::IgnoreAction:
+			break;
+
+		case Qt::MoveAction:
+		{
+			QByteArray bytes = data->data("layer");
+			QDataStream stream(&bytes, QIODevice::QIODevice::ReadOnly);
+			qintptr i; int r, c;
+			stream >> r >> c >> i;
+			QModelIndex index = createIndex(r, c, i);
+
+			moveRow(index.parent(), index.row(), parent, row);
+			
+			break;
+		}
+
+		default:
+			break;
+	}
+
+	return true;
 }
 
 void LayersModel::setupModelData(const QStringList &lines, Layer *parent)

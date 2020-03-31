@@ -37,6 +37,7 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 	// Initialize layers tree view
 	_ui->layersTreeView->setModel(&_imageViewerPlugin->layersModel());
 	_ui->layersTreeView->setSelectionModel(&_imageViewerPlugin->layersSelectionModel());
+	_ui->layersTreeView->setDragDropOverwriteMode(true);
 
 	QFont font = QFont("Font Awesome 5 Free Solid", 9);
 

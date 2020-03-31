@@ -37,44 +37,26 @@ public:
 
 	bool insertColumns(int position, int columns,
 		const QModelIndex &parent = QModelIndex()) override;
-	bool removeColumns(int position, int columns,
-		const QModelIndex &parent = QModelIndex()) override;
-	bool insertRows(int position, int rows, const QModelIndex &parent = QModelIndex()) override;
+	bool removeColumns(int position, int columns, const QModelIndex &parent = QModelIndex()) override;
 
-	bool insertLayer(int row, const QModelIndex& parent = QModelIndex());
+	bool insertLayer(int row, Layer* layer, const QModelIndex& parent = QModelIndex());
 
-	bool removeRows(int position, int rows,
-		const QModelIndex &parent = QModelIndex()) override;
+	bool removeRows(int position, int rows, const QModelIndex &parent = QModelIndex()) override;
 
+	bool moveRow(const QModelIndex& sourceParent, const int& sourceRow, const QModelIndex& targetParent, int targetRow);
+	
 	Qt::DropActions supportedDropActions() const
 	{
 		return Qt::MoveAction;
 	}
 
-	bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent) {
+public: // MIME
 
-		if (!canDropMimeData(data, action, row, column, parent))
-			return false;
+	QStringList mimeTypes() const;
 
-		if (action == Qt::IgnoreAction)
-			return true;
+	QMimeData* mimeData(const QModelIndexList& indexes) const;
 
-		int beginRow;
-
-		if (row != -1)
-			beginRow = row;
-		else if (parent.isValid())
-			beginRow = parent.row();
-		else
-			beginRow = rowCount(QModelIndex());
-
-		insertLayer(beginRow, parent);
-
-		setData(parent.child(beginRow, 0), "asdsad");
-
-		return true;
-
-	}
+	bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent);
 
 private:
 	void setupModelData(const QStringList &lines, Layer *parent);

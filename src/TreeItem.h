@@ -150,9 +150,11 @@ public:
 	int columnCount() const;
 	QVariant data(int column) const;
 	bool insertChildren(int position, int count, int columns);
+	bool insertChild(int position, int count, int columns, Layer* layer);
 	bool insertColumns(int position, int columns);
 	Layer *parent();
-	bool removeChildren(int position, int count);
+	void setParent(Layer* parent);
+	bool removeChildren(int position, int count, const bool& purge = true);
 	bool removeColumns(int position, int columns);
 	int childNumber() const;
 	bool setData(int column, const QVariant &value);
