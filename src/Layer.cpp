@@ -104,7 +104,7 @@ QVariant Layer::headerData(const int& section, const Qt::Orientation& orientatio
 
 Qt::ItemFlags Layer::flags(const QModelIndex& index) const
 {
-	int flags = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+	int flags = Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled;
 
 	const auto type = static_cast<Type>(_type);
 

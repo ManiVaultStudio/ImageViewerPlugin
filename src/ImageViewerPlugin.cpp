@@ -23,13 +23,11 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	_datasetsProxyModel(),
 	_datasetsSelectionModel(&_datasetsProxyModel),
 	_layersModel(this),
-	_layersProxyModel(),
-	_layersSelectionModel(&_layersProxyModel)
+	_layersSelectionModel(&_layersModel)
 {
 	qRegisterMetaType<QVector<int> >("QVector<int>");
 
 	_datasetsProxyModel.setSourceModel(&_datasetsModel);
-	_layersProxyModel.setSourceModel(&_layersModel);
 	
 	// TODO
 	_imageViewerWidget	= new ViewerWidget(this);

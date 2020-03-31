@@ -70,7 +70,7 @@ public: //
 	LayersModel& layersModel() { return _layersModel; }
 
 	/** TODO */
-	LayersProxyModel& layersProxyModel() { return _layersProxyModel; }
+	//LayersProxyModel& layersProxyModel() { return _layersProxyModel; }
 
 	/** TODO */
 	QItemSelectionModel& layersSelectionModel() { return _layersSelectionModel; }
@@ -86,7 +86,7 @@ private:
 	DatasetsProxyModel		_datasetsProxyModel;		/** TODO */
 	QItemSelectionModel		_datasetsSelectionModel;	/** TODO */
 	LayersModel				_layersModel;				/** TODO */
-	LayersProxyModel		_layersProxyModel;			/** TODO */
+	//LayersProxyModel		_layersProxyModel;			/** TODO */
 	QItemSelectionModel		_layersSelectionModel;		/** TODO */
 };
 

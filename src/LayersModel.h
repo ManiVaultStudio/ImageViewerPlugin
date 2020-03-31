@@ -1,87 +1,81 @@
 #pragma once
 
-#include "Layer.h"
+#include "TreeItem.h"
 
-#include <QAbstractItemModel>
+#include <QAbstractListModel>
+#include <QAbstractItemView>
 
 class ImageViewerPlugin;
 class Dataset;
 class GroupLayer;
 
-/** TODO */
 class LayersModel : public QAbstractItemModel
 {
-public: // Construction/destruction
+	Q_OBJECT
 
-	/** Constructor */
-	LayersModel(ImageViewerPlugin* imageViewerPlugin);
+public:
+	LayersModel(QObject *parent = nullptr);
 
-	/** Destructor */
 	~LayersModel();
 
-public: // Inherited members
+	QVariant data(const QModelIndex &index, int role) const override;
+	QVariant headerData(int section, Qt::Orientation orientation,
+		int role = Qt::DisplayRole) const override;
 
-	/** TODO */
-	int rowCount(const QModelIndex& parentIndex = QModelIndex()) const override;
+	QModelIndex index(int row, int column,
+		const QModelIndex &parent = QModelIndex()) const override;
+	QModelIndex parent(const QModelIndex &index) const override;
 
-	/** TODO */
-	int columnCount(const QModelIndex& parent = QModelIndex()) const override;
+	int rowCount(const QModelIndex &parent = QModelIndex()) const override;
+	int columnCount(const QModelIndex &parent = QModelIndex()) const override;
 
-	/** TODO */
-	QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
-
-	/** TODO */
-	QModelIndex parent(const QModelIndex& index) const override;
-
-	/** TODO */
-	QVariant data(const QModelIndex& index, int role) const override;
-
-	/** TODO */
-	QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
-
-	/** TODO */
 	Qt::ItemFlags flags(const QModelIndex &index) const override;
+	bool setData(const QModelIndex &index, const QVariant &value,
+		int role = Qt::EditRole) override;
+	bool setHeaderData(int section, Qt::Orientation orientation,
+		const QVariant &value, int role = Qt::EditRole) override;
 
-	/** TODO */
-	bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::DisplayRole) override;
+	bool insertColumns(int position, int columns,
+		const QModelIndex &parent = QModelIndex()) override;
+	bool removeColumns(int position, int columns,
+		const QModelIndex &parent = QModelIndex()) override;
+	bool insertRows(int position, int rows,
+		const QModelIndex &parent = QModelIndex()) override;
+	bool removeRows(int position, int rows,
+		const QModelIndex &parent = QModelIndex()) override;
 
-	/** TODO */
-	bool insertRows(int position, int rows, const QModelIndex& index = QModelIndex()) override;
+	Qt::DropActions supportedDropActions() const
+	{
+		return Qt::MoveAction;
+	}
 
-public: // Reorganization
+	bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent) {
 
-	/** TODO */
-	int order(const QModelIndex& layerIndex) const;
+		if (!canDropMimeData(data, action, row, column, parent))
+			return false;
 
-	/** TODO */
-	int noSiblings(const QModelIndex& layerIndex) const;
+		if (action == Qt::IgnoreAction)
+			return true;
 
-	/** TODO */
-	bool mayMoveUp(const QModelIndex& layerIndex) const;
+		int beginRow;
 
-	/** TODO */
-	bool mayMoveDown(const QModelIndex& layerIndex) const;
+		if (row != -1)
+			beginRow = row;
+		else if (parent.isValid())
+			beginRow = parent.row();
+		else
+			beginRow = rowCount(QModelIndex());
 
-	/** TODO */
-	void moveUp(const QModelIndex& layerIndex);
+		insertRow(beginRow, parent);
+		setData(parent.child(beginRow, 0), "asdsad");
 
-	/** TODO */
-	void moveDown(const QModelIndex& layerIndex);
+		return true;
 
-public: // TODO
-
-	/** TODO */
-	void renameLayer(const QString& id, const QString& name);
-
-	/** TODO */
-	Layer* findLayerById(const QString& id);
-
-	/** TODO */
-	void addLayer(Layer* layer, const QModelIndex& parentIndex = QModelIndex());
+	}
 
 private:
-	ImageViewerPlugin*		_imageViewerPlugin;		/** TODO */
-	GroupLayer*				_rootItem;				/** TODO */
+	void setupModelData(const QStringList &lines, TreeItem *parent);
+	TreeItem *getItem(const QModelIndex &index) const;
 
-	friend class MainModel;
+	TreeItem *rootItem;
 };

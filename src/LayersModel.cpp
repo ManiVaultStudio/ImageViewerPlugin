@@ -7,251 +7,239 @@
 #include <QFont>
 #include <QBrush>
 #include <QDebug>
+#include <QAbstractItemView>
 
-LayersModel::LayersModel(ImageViewerPlugin* imageViewerPlugin) :
-	QAbstractItemModel(imageViewerPlugin),
-	_imageViewerPlugin(imageViewerPlugin),
-	_rootItem(new GroupLayer("root", "Root", static_cast<int>(Layer::Flag::Enabled)))
+LayersModel::LayersModel(QObject *parent)
+	: QAbstractItemModel(parent)
 {
+	const QStringList headers({ tr("Title"), tr("Description") });
+
+	QFile file(":/default.txt");
+	file.open(QIODevice::ReadOnly);
+	auto data = static_cast<QString>(file.readAll());
+	file.close();
+
+	QVector<QVariant> rootData;
+	for (const QString &header : headers)
+		rootData << header;
+
+	rootItem = new TreeItem(rootData);
+	setupModelData(data.split('\n'), rootItem);
 }
 
 LayersModel::~LayersModel()
 {
-	delete _rootItem;
+	delete rootItem;
 }
 
-int LayersModel::rowCount(const QModelIndex& parentIndex /*= QModelIndex()*/) const
-{
-	Layer* parentItem = nullptr;
-
-	if (parentIndex.column() > 0)
-		return 0;
-
-	if (!parentIndex.isValid())
-		parentItem = _rootItem;
-	else
-		parentItem = static_cast<Layer*>(parentIndex.internalPointer());
-
-	return parentItem->childCount();
-}
-
-int LayersModel::columnCount(const QModelIndex& parent /*= QModelIndex()*/) const
+int LayersModel::columnCount(const QModelIndex &parent) const
 {
 	Q_UNUSED(parent);
-
-	return static_cast<int>(Layer::Column::End);
+	return rootItem->columnCount();
 }
 
-QModelIndex LayersModel::index(int row, int column, const QModelIndex& parent /*= QModelIndex()*/) const
-{
-	if (!hasIndex(row, column, parent))
-		return QModelIndex();
-
-	Layer* parentItem = nullptr;
-
-	if (!parent.isValid())
-		parentItem = _rootItem;
-	else
-		parentItem = static_cast<Layer*>(parent.internalPointer());
-
-	Layer* childItem = parentItem->child(row);
-
-	if (childItem)
-		return createIndex(row, column, childItem);
-
-	return QModelIndex();
-}
-
-QModelIndex LayersModel::parent(const QModelIndex& index) const
-{
-	if (!index.isValid())
-		return QModelIndex();
-
-	auto childItem	= static_cast<Layer*>(index.internalPointer());
-	auto parentItem	= childItem->parent();
-
-	if (parentItem == _rootItem)
-		return QModelIndex();
-
-	return createIndex(childItem->row(), 0, const_cast<Layer*>(parentItem));
-}
-
-QVariant LayersModel::data(const QModelIndex& index, int role) const
+QVariant LayersModel::data(const QModelIndex &index, int role) const
 {
 	if (!index.isValid())
 		return QVariant();
 
-	auto item = reinterpret_cast<Layer*>(index.internalPointer());
+	if (role != Qt::DisplayRole && role != Qt::EditRole)
+		return QVariant();
 
-	return item->data(index, role);
+	TreeItem *item = getItem(index);
+
+	return item->data(index.column());
 }
 
-QVariant LayersModel::headerData(int section, Qt::Orientation orientation, int role) const
-{
-	if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
-		return Layer::columnName(static_cast<Layer::Column>(section));
-
-	return QVariant();
-}
-
-Qt::ItemFlags LayersModel::flags(const QModelIndex& index) const
+Qt::ItemFlags LayersModel::flags(const QModelIndex &index) const
 {
 	if (!index.isValid())
 		return Qt::NoItemFlags;
 
-	auto item = reinterpret_cast<Layer*>(index.internalPointer());
-
-	return item->flags(index);
+	return Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled | Qt::ItemIsEditable | QAbstractItemModel::flags(index);
 }
 
-bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int role /*= Qt::DisplayRole*/)
+TreeItem *LayersModel::getItem(const QModelIndex &index) const
+{
+	if (index.isValid()) {
+		TreeItem *item = static_cast<TreeItem*>(index.internalPointer());
+		if (item)
+			return item;
+	}
+	return rootItem;
+}
+
+QVariant LayersModel::headerData(int section, Qt::Orientation orientation,
+	int role) const
+{
+	if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
+		return rootItem->data(section);
+
+	return QVariant();
+}
+
+QModelIndex LayersModel::index(int row, int column, const QModelIndex &parent) const
+{
+	if (parent.isValid() && parent.column() != 0)
+		return QModelIndex();
+
+	TreeItem *parentItem = getItem(parent);
+	if (!parentItem)
+		return QModelIndex();
+
+	TreeItem *childItem = parentItem->child(row);
+	if (childItem)
+		return createIndex(row, column, childItem);
+	return QModelIndex();
+}
+
+bool LayersModel::insertColumns(int position, int columns, const QModelIndex &parent)
+{
+	beginInsertColumns(parent, position, position + columns - 1);
+	const bool success = rootItem->insertColumns(position, columns);
+	endInsertColumns();
+
+	return success;
+}
+
+bool LayersModel::insertRows(int position, int rows, const QModelIndex &parent)
+{
+	TreeItem *parentItem = getItem(parent);
+	if (!parentItem)
+		return false;
+
+	beginInsertRows(parent, position, position + rows - 1);
+	const bool success = parentItem->insertChildren(position,
+		rows,
+		rootItem->columnCount());
+	endInsertRows();
+
+	return success;
+}
+
+QModelIndex LayersModel::parent(const QModelIndex &index) const
 {
 	if (!index.isValid())
-		return false;
+		return QModelIndex();
 
-	auto item = reinterpret_cast<Layer*>(index.internalPointer());
+	TreeItem *childItem = getItem(index);
+	TreeItem *parentItem = childItem ? childItem->parent() : nullptr;
 
-	item->setData(index, value, Qt::DisplayRole);
+	if (parentItem == rootItem || !parentItem)
+		return QModelIndex();
 
-	emit dataChanged(index, index);
-
-	return true;
+	return createIndex(parentItem->childNumber(), 0, parentItem);
 }
 
-bool LayersModel::insertRows(int position, int rows, const QModelIndex& index /*= QModelIndex()*/)
+bool LayersModel::removeColumns(int position, int columns, const QModelIndex &parent)
 {
-	/*
-	Q_UNUSED(index);
+	beginRemoveColumns(parent, position, position + columns - 1);
+	const bool success = rootItem->removeColumns(position, columns);
+	endRemoveColumns();
 
-	beginInsertRows(QModelIndex(), position, position + rows - 1);
+	if (rootItem->columnCount() == 0)
+		removeRows(0, rowCount());
 
-	for (int row = 0; row < rows; row++) {
-		_layers.insert(position, new Layer(_imageViewerPlugin));
+	return success;
+}
+
+bool LayersModel::removeRows(int position, int rows, const QModelIndex &parent)
+{
+	TreeItem *parentItem = getItem(parent);
+	if (!parentItem)
+		return false;
+
+	beginRemoveRows(parent, position, position + rows - 1);
+	const bool success = parentItem->removeChildren(position, rows);
+	endRemoveRows();
+
+	return success;
+}
+
+int LayersModel::rowCount(const QModelIndex &parent) const
+{
+	const TreeItem *parentItem = getItem(parent);
+
+	return parentItem ? parentItem->childCount() : 0;
+}
+
+bool LayersModel::setData(const QModelIndex &index, const QVariant &value, int role)
+{
+	if (role != Qt::EditRole)
+		return false;
+
+	TreeItem *item = getItem(index);
+	bool result = item->setData(index.column(), value);
+
+	if (result)
+		emit dataChanged(index, index, { Qt::DisplayRole, Qt::EditRole });
+
+	return result;
+}
+
+bool LayersModel::setHeaderData(int section, Qt::Orientation orientation,
+	const QVariant &value, int role)
+{
+	if (role != Qt::EditRole || orientation != Qt::Horizontal)
+		return false;
+
+	const bool result = rootItem->setData(section, value);
+
+	if (result)
+		emit headerDataChanged(orientation, section, section);
+
+	return result;
+}
+
+void LayersModel::setupModelData(const QStringList &lines, TreeItem *parent)
+{
+	QVector<TreeItem*> parents;
+	QVector<int> indentations;
+	parents << parent;
+	indentations << 0;
+
+	int number = 0;
+
+	while (number < lines.count()) {
+		int position = 0;
+		while (position < lines[number].length()) {
+			if (lines[number].at(position) != ' ')
+				break;
+			++position;
+		}
+
+		const QString lineData = lines[number].mid(position).trimmed();
+
+		if (!lineData.isEmpty()) {
+			// Read the column data from the rest of the line.
+			const QStringList columnStrings = lineData.split('\t', QString::SkipEmptyParts);
+			QVector<QVariant> columnData;
+			columnData.reserve(columnStrings.size());
+			for (const QString &columnString : columnStrings)
+				columnData << columnString;
+
+			if (position > indentations.last()) {
+				// The last child of the current parent is now the new parent
+				// unless the current parent has no children.
+
+				if (parents.last()->childCount() > 0) {
+					parents << parents.last()->child(parents.last()->childCount() - 1);
+					indentations << position;
+				}
+			}
+			else {
+				while (position < indentations.last() && parents.count() > 0) {
+					parents.pop_back();
+					indentations.pop_back();
+				}
+			}
+
+			// Append a new item to the current parent's list of children.
+			TreeItem *parent = parents.last();
+			parent->insertChildren(parent->childCount(), 1, rootItem->columnCount());
+			for (int column = 0; column < columnData.size(); ++column)
+				parent->child(parent->childCount() - 1)->setData(column, columnData[column]);
+		}
+		++number;
 	}
-
-	endInsertRows();
-	*/
-
-	return true;
-}
-
-int LayersModel::order(const QModelIndex& layerIndex) const
-{
-	if (!layerIndex.isValid())
-		return -1;
-
-	return layerIndex.siblingAtColumn(to_underlying(Layer::Column::Order)).data(Qt::EditRole).toInt();
-}
-
-int LayersModel::noSiblings(const QModelIndex& layerIndex) const
-{
-	return rowCount(layerIndex.parent());
-}
-
-bool LayersModel::mayMoveUp(const QModelIndex& layerIndex) const
-{
-	if (!layerIndex.isValid())
-		return false;
-
-	if (order(layerIndex) >= noSiblings(layerIndex) - 1)
-		return false;
-
-	return true;
-}
-
-bool LayersModel::mayMoveDown(const QModelIndex& layerIndex) const
-{
-	if (!layerIndex.isValid())
-		return false;
-
-	if (order(layerIndex) <= 0)
-		return false;
-	
-	return true;
-}
-
-void LayersModel::moveUp(const QModelIndex& layerIndex)
-{
-	if (!mayMoveUp(layerIndex))
-		return;
-
-	const auto indexA = layerIndex;
-	const auto indexB = layerIndex.siblingAtRow(layerIndex.row() - 1);
-
-	const auto orderA = order(indexA);
-	const auto orderB = order(indexB);
-
-	const auto parent = layerIndex.parent();
-
-	beginMoveRows(parent, indexA.row(), indexA.row(), parent, indexB.row());
-
-	setData(indexA, orderB, Qt::EditRole);
-	setData(indexB, orderA, Qt::EditRole);
-
-	endMoveRows();
-}
-
-void LayersModel::moveDown(const QModelIndex& layerIndex)
-{
-	//if (!mayMoveDown(layerIndex))
-	//	return;
-
-	setData(layerIndex, 0, Qt::EditRole);
-
-	/*
-	const auto indexA = layerIndex;
-	const auto indexB = layerIndex.siblingAtRow(layerIndex.row() + 1);
-
-	const auto orderA = order(indexA);
-	const auto orderB = order(indexB);
-
-	const auto parent = layerIndex.parent();
-
-	beginMoveRows(parent, indexA.row(), indexA.row(), parent, indexB.row());
-
-	setData(indexA, orderB, Qt::EditRole);
-	setData(indexB, orderA, Qt::EditRole);
-
-	endMoveRows();
-	*/
-}
-
-void LayersModel::renameLayer(const QString& id, const QString& name)
-{
-	/*
-	const auto hits = match(index(0, static_cast<int>(LayerItem::Column::ID)), Qt::EditRole, id, -1, Qt::MatchExactly);
-
-	if (hits.isEmpty())
-		return;
-
-	const auto firstHit = hits.first();
-
-	setData(index(firstHit.row(), to_underlying(LayerItem::Column::Name)), name);
-	*/
-}
-
-Layer* LayersModel::findLayerById(const QString& id)
-{
-	const auto hits = match(index(0, static_cast<int>(Layer::Column::ID)), Qt::DisplayRole, id, -1, Qt::MatchExactly);
-
-	if (hits.isEmpty())
-		return nullptr;
-
-	return reinterpret_cast<Layer*>(hits.first().internalPointer());
-}
-
-void LayersModel::addLayer(Layer* layer, const QModelIndex& parentIndex /*= QModelIndex()*/)
-{
-	Layer* parentItem = nullptr;
-	
-	if (!parentIndex.isValid())
-		parentItem = _rootItem;
-	else
-		parentItem = static_cast<Layer*>(parentIndex.internalPointer());
-
-	beginInsertRows(parentIndex, 0, 0);
-
-	parentItem->appendChild(layer);
-
-	endInsertRows();
 }
