@@ -113,17 +113,15 @@ void Layer::setParent(Layer* parent)
 	parentItem = parent;
 }
 
-bool Layer::removeChildren(int position, int count, const bool& purge /*= true*/)
+bool Layer::removeChild(const int& position, const bool& purge /*= true*/)
 {
-	if (position < 0 || position + count > childItems.size())
+	if (position < 0 || position > childItems.size())
 		return false;
 
-	for (int row = 0; row < count; ++row) {
-		if (purge)
-			delete childItems.at(position);
+	if (purge)
+		delete childItems.at(position);
 
-		childItems.takeAt(position);
-	}
+	childItems.takeAt(position);
 
 	return true;
 }

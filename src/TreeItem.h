@@ -154,7 +154,7 @@ public:
 	bool insertColumns(int position, int columns);
 	Layer *parent();
 	void setParent(Layer* parent);
-	bool removeChildren(int position, int count, const bool& purge = true);
+	bool removeChild(const int& position, const bool& purge = true);
 	bool removeColumns(int position, int columns);
 	int childNumber() const;
 	bool setData(int column, const QVariant &value);

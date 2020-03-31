@@ -141,7 +141,7 @@ bool LayersModel::removeRows(int position, int rows, const QModelIndex &parent)
 		return false;
 
 	beginRemoveRows(parent, position, position + rows - 1);
-	const bool success = parentItem->removeChildren(position, rows);
+	const bool success = parentItem->removeChild(position);
 	endRemoveRows();
 
 	return success;
@@ -170,7 +170,7 @@ bool LayersModel::moveRow(const QModelIndex& sourceParent, const int& sourceRow,
 
 			auto sourceLayer = sourceParentLayer->child(sourceRow);
 
-			sourceParentLayer->removeChildren(sourceRow, 1, false);
+			sourceParentLayer->removeChild(sourceRow, false);
 			targetParentLayer->insertChild(targetRow > sourceRow ? targetRow - 1 : targetRow, sourceLayer);
 
 			endMoveRows();
@@ -183,7 +183,7 @@ bool LayersModel::moveRow(const QModelIndex& sourceParent, const int& sourceRow,
 
 			auto sourceLayer = sourceParentLayer->child(sourceRow);
 
-			sourceParentLayer->removeChildren(sourceRow, 1, false);
+			sourceParentLayer->removeChild(sourceRow, false);
 			targetParentLayer->insertChild(targetRow, sourceLayer);
 
 			endMoveRows();

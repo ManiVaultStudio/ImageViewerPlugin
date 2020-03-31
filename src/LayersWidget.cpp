@@ -66,8 +66,8 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 		if (selectedRows.size() == 1) {
 			const auto firstRow = selectedRows.first();
 			const auto parent	= firstRow.parent();
-
-			layersModel()->moveRow(parent, firstRow.row(), parent, firstRow.row() + 1);
+			
+			layersModel()->moveRow(parent, firstRow.row() + 1, parent, firstRow.row());
 		}
 	});
 
