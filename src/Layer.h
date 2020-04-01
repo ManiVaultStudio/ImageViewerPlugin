@@ -1,5 +1,6 @@
 #pragma once
 
+#include "TreeItem.h"
 #include "ImageRange.h"
 
 #include <QColor>
@@ -10,23 +11,17 @@
 class Dataset;
 
 /** TODO */
-class _Layer
+class Layer : public TreeItem
 {
 public:
 
 	/** TODO */
 	enum class Column {
+		Name,
 		Enabled,
 		Type,
-		Locked,
-		ID,						// Name for internal use
-		Name,					// Name in the user interface
-		Dataset,				// Name in the user interface
-		Frozen,
-		Removable,
-		Mask,
-		Renamable,
-		Order,
+		ID,
+		Dataset,
 		Opacity,
 		WindowNormalized,
 		LevelNormalized,
@@ -34,43 +29,28 @@ public:
 		Image,
 		ImageRange,
 		DisplayRange,
-
-		Settings,
+		Flags,
 
 		Start = Enabled,
-		End = DisplayRange
+		End = Flags
 	};
 
 	static QString columnName(const Column& column) {
 		switch (column) {
+			case Column::Name:
+				return "Name";
+
 			case Column::Enabled:
+				return "";
+
 			case Column::Type:
-			case Column::Locked:
 				return "";
 
 			case Column::ID:
 				return "ID";
 
-			case Column::Name:
-				return "Name";
-
 			case Column::Dataset:
 				return "Dataset";
-
-			case Column::Frozen:
-				return "Frozen";
-
-			case Column::Removable:
-				return "Removable";
-
-			case Column::Mask:
-				return "Mask";
-
-			case Column::Renamable:
-				return "Renamable";
-
-			case Column::Order:
-				return "Order";
 
 			case Column::Opacity:
 				return "Opacity";
@@ -92,6 +72,9 @@ public:
 
 			case Column::DisplayRange:
 				return "Display range";
+
+			case Column::Flags:
+				return "Flags";
 
 			default:
 				return QString();
@@ -143,47 +126,15 @@ public:
 	};
 
 	/** Constructor */
-	_Layer(Dataset* dataset, const Type& type, const QString& id, const QString& name, const int& flags);
+	Layer(Dataset* dataset, const Type& type, const QString& id, const QString& name, const int& flags);
 
 	/** Destructor */
-	virtual ~_Layer();
-
-public: // Tree
-
-	/** TODO */
-	void appendChild(_Layer* child);
-
-	/** TODO */
-	const _Layer* child(const int& row) const;
-
-	/** TODO */
-	_Layer* child(const int& row);
-
-	/** TODO */
-	int childCount() const;
-
-	/** TODO */
-	int row() const;
-
-	/** TODO */
-	const _Layer* parent() const;
-
-	/** TODO */
-	_Layer* parent();
-
-	/** TODO */
-	void setParent(_Layer* parent);
-
-	/** TODO */
-	void sortChildren();
+	virtual ~Layer();
 
 public: // MVC
 
-	/** Returns the number of columns */
-	static int columnCount();
-
 	/** TODO */
-	QVariant headerData(const int& section, const Qt::Orientation& orientation, const int& role) const;
+	virtual int noColumns() const;
 
 	/** TODO */
 	virtual Qt::ItemFlags flags(const QModelIndex& index) const;
@@ -195,7 +146,7 @@ public: // MVC
 	virtual void setData(const QModelIndex& index, const QVariant& value, const int& role);
 
 	/** TODO */
-	bool isSettingsIndex(const QModelIndex& index) const;
+	bool isBaseLayerIndex(const QModelIndex& index) const;
 
 public: // Getters/setters
 
@@ -218,22 +169,19 @@ public: // Getters/setters
 	QVariant type(const int& role) const;
 
 	/** TODO */
-	void setType(const _Layer::Type& type);
+	void setType(const Layer::Type& type);
 
 	/** TODO */
-	QVariant flag(const _Layer::Flag& flag, const int& role) const;
+	QVariant flag(const Layer::Flag& flag, const int& role) const;
 
 	/** TODO */
-	void setFlag(const _Layer::Flag& flag, const bool& enabled = true);
+	void setFlag(const Layer::Flag& flag, const bool& enabled = true);
+
+	/** TODO */
+	QVariant flags(const int& role) const;
 
 	/** TODO */
 	void setFlags(const int& flags);
-
-	/** TODO */
-	QVariant order(const int& role) const;
-
-	/** TODO */
-	void setOrder(const std::uint32_t& order);
 
 	/** TODO */
 	QVariant opacity(const int& role) const;
@@ -299,14 +247,11 @@ signals:
 	void dataChanged();
 
 protected:
-	QVector<_Layer*>		_children;				/** TODO */
-	_Layer*				_parent;				/** TODO */
 	Dataset*			_dataset;				/** TODO */
 	QString				_id;					/** TODO */
 	QString				_name;					/** TODO */
-	_Layer::Type			_type;					/** TODO */
+	Layer::Type			_type;					/** TODO */
 	std::uint32_t		_flags;					/** TODO */
-	std::uint32_t		_order;					/** TODO */
 	float				_opacity;				/** TODO */
 	QImage				_colorMap;				/** TODO */
 	QImage				_image;					/** TODO */
@@ -318,4 +263,4 @@ protected:
 	float				_level;					/** TODO */
 };
 
-using Layers = QList<_Layer*>;
+using Layers = QList<Layer*>;

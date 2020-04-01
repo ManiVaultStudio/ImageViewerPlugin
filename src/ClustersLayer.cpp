@@ -4,15 +4,20 @@
 #include <QDebug>
 
 ClustersLayer::ClustersLayer(ClustersDataset* clustersDataset, const QString& id, const QString& name, const int& flags) :
-	_Layer(clustersDataset, _Layer::Type::Clusters, id, name, flags),
+	Layer(clustersDataset, Layer::Type::Clusters, id, name, flags),
 	_clusters(clustersDataset)
 {
 }
 
+int ClustersLayer::noColumns() const
+{
+	return ult(Column::End);
+}
+
 Qt::ItemFlags ClustersLayer::flags(const QModelIndex& index) const
 {
-	if (!isSettingsIndex(index))
-		return _Layer::flags(index);
+	if (isBaseLayerIndex(index))
+		return Layer::flags(index);
 
 	int flags = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
 
@@ -26,8 +31,8 @@ Qt::ItemFlags ClustersLayer::flags(const QModelIndex& index) const
 
 QVariant ClustersLayer::data(const QModelIndex& index, const int& role) const
 {
-	if (!isSettingsIndex(index))
-		return _Layer::data(index, role);
+	if (isBaseLayerIndex(index))
+		return Layer::data(index, role);
 
 	switch (static_cast<Column>(index.column())) {
 		default:
@@ -39,6 +44,6 @@ QVariant ClustersLayer::data(const QModelIndex& index, const int& role) const
 
 void ClustersLayer::setData(const QModelIndex& index, const QVariant& value, const int& role)
 {
-	if (!isSettingsIndex(index))
-		return _Layer::setData(index, value, role);
+	if (isBaseLayerIndex(index))
+		return Layer::setData(index, value, role);
 }

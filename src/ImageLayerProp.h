@@ -15,7 +15,7 @@ class ImageLayerProp : public Prop
 
 public:
 	/** TODO */
-	ImageLayerProp(Actor* actor, const QString& name, const _Layer::Type& type);
+	ImageLayerProp(Actor* actor, const QString& name, const Layer::Type& type);
 
 	/** Destructor */
 	~ImageLayerProp();
@@ -48,7 +48,7 @@ protected:
 	void updateModelMatrix();
 
 private:
-	_Layer::Type		_type;					/** TODO */
+	Layer::Type		_type;					/** TODO */
 	QImage			_image;					/** TODO */
 	float			_displayRange[2];		/** TODO */
 	float			_opacity;				/** TODO */

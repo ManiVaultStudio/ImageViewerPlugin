@@ -4,15 +4,13 @@
 #include <QFont>
 #include <QDebug>
 
-_Layer::_Layer(Dataset* dataset, const Type& type, const QString& id, const QString& name, const int& flags) :
-	_children(),
-	_parent(nullptr),
+Layer::Layer(Dataset* dataset, const Type& type, const QString& id, const QString& name, const int& flags) :
+	TreeItem(),
 	_dataset(dataset),
 	_id(id),
 	_name(name),
 	_type(type),
 	_flags(flags),
-	_order(0),
 	_opacity(1.0f),
 	_colorMap(),
 	_image(),
@@ -25,121 +23,39 @@ _Layer::_Layer(Dataset* dataset, const Type& type, const QString& id, const QStr
 {
 }
 
-_Layer::~_Layer()
+Layer::~Layer()
 {
-	qDeleteAll(_children);
 }
 
-void _Layer::appendChild(_Layer* child)
+int Layer::noColumns() const
 {
-	child->setParent(this);
-	child->setOrder(_children.size());
-
-	_children.append(child);
+	return ult(Column::End);
 }
 
-const _Layer* _Layer::child(const int& row) const
-{
-	if (row < 0 || row >= _children.size())
-		return nullptr;
-
-	return _children.at(row);
-}
-
-_Layer* _Layer::child(const int& row)
-{
-	const auto constThis = const_cast<const _Layer*>(this);
-	return const_cast<_Layer*>(constThis->child(row));
-}
-
-int _Layer::childCount() const
-{
-	return _children.count();
-}
-
-int _Layer::row() const
-{
-	if (_parent)
-		return _parent->_children.indexOf(const_cast<_Layer*>(this));
-
-	return 0;
-}
-
-const _Layer* _Layer::parent() const
-{
-	return _parent;
-}
-
-_Layer* _Layer::parent()
-{
-	const auto constThis = const_cast<const _Layer*>(this);
-	return const_cast<_Layer*>(constThis->parent());
-}
-
-void _Layer::setParent(_Layer* parent)
-{
-	_parent = parent;
-}
-
-void _Layer::sortChildren()
-{
-	std::sort(_children.begin(), _children.end(), [] (auto a, auto b) {
-		return a->order(Qt::EditRole) > b->order(Qt::EditRole);
-	});
-}
-
-int _Layer::columnCount()
-{
-	return static_cast<int>(Column::End);
-}
-
-QVariant _Layer::headerData(const int& section, const Qt::Orientation& orientation, const int& role) const
-{
-	if (orientation == Qt::Horizontal) {
-		return columnName(static_cast<Column>(section));
-	}
-
-	return QVariant();
-}
-
-Qt::ItemFlags _Layer::flags(const QModelIndex& index) const
+Qt::ItemFlags Layer::flags(const QModelIndex& index) const
 {
 	int flags = Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled;
 
 	const auto type = static_cast<Type>(_type);
 
 	switch (static_cast<Column>(index.column())) {
+		case Column::Name:
+		{
+			if (flag(Layer::Flag::Renamable, Qt::EditRole).toBool())
+				flags |= Qt::ItemIsEditable;
+
+			break;
+		}
+
 		case Column::Enabled:
 			flags |= Qt::ItemIsEditable | Qt::ItemIsUserCheckable;
 			break;
 
 		case Column::Type:
-		case Column::Locked:
+			break;
+
 		case Column::ID:
-			break;
-
-		case Column::Name:
-		{
-			if (flag(_Layer::Flag::Renamable, Qt::EditRole).toBool())
-				flags |= Qt::ItemIsEditable;
-
-			break;
-		}
-
 		case Column::Dataset:
-		case Column::Frozen:
-		case Column::Removable:
-			break;
-
-		case Column::Mask:
-		{
-			if (type == Type::Selection)
-				flags |= Qt::ItemIsEditable;
-
-			break;
-		}
-
-		case Column::Order:
 			break;
 
 		case Column::Opacity:
@@ -175,6 +91,7 @@ Qt::ItemFlags _Layer::flags(const QModelIndex& index) const
 
 		case Column::ImageRange:
 		case Column::DisplayRange:
+		case Column::Flags:
 			break;
 
 		default:
@@ -184,41 +101,48 @@ Qt::ItemFlags _Layer::flags(const QModelIndex& index) const
 	return flags;
 }
 
-QVariant _Layer::data(const QModelIndex& index, const int& role) const
+QVariant Layer::flags(const int& role) const
+{
+	const auto flagsString = QString("%1%").arg(QString::number(_flags));
+
+	switch (role)
+	{
+		case Qt::DisplayRole:
+			return flagsString;
+
+		case Qt::EditRole:
+			return _flags;
+
+		case Qt::ToolTipRole:
+			return QString("Flags: %1").arg(flagsString);
+
+		default:
+			break;
+	}
+
+	return QVariant();
+}
+
+QVariant Layer::data(const QModelIndex& index, const int& role) const
 {
 	switch (static_cast<Column>(index.column())) {
+		case Column::Name:
+			return name(role);
+
 		case Column::Enabled:
-			return flag(_Layer::Flag::Enabled, role);
+			if (role == Qt::DisplayRole)
+				return "";
+			else
+				return flag(Layer::Flag::Enabled, role);
 
 		case Column::Type:
 			return type(role);
 
-		case Column::Locked:
-			return flag(_Layer::Flag::Frozen, role);
-
 		case Column::ID:
 			return id(role);
 
-		case Column::Name:
-			return name(role);
-
 		case Column::Dataset:
 			return dataset(role);
-
-		case Column::Frozen:
-			return flag(_Layer::Flag::Frozen, role);
-
-		case Column::Removable:
-			return flag(_Layer::Flag::Removable, role);
-
-		case Column::Mask:
-			return flag(_Layer::Flag::Mask, role);
-
-		case Column::Renamable:
-			return flag(_Layer::Flag::Renamable, role);
-
-		case Column::Order:
-			return order(role);
 
 		case Column::Opacity:
 			return opacity(role);
@@ -241,6 +165,9 @@ QVariant _Layer::data(const QModelIndex& index, const int& role) const
 		case Column::DisplayRange:
 			return displayRange(role);
 
+		case Column::Flags:
+			return flags(role);
+
 		default:
 			break;
 	}
@@ -248,101 +175,94 @@ QVariant _Layer::data(const QModelIndex& index, const int& role) const
 	return QVariant();
 }
 
-void _Layer::setData(const QModelIndex& index, const QVariant& value, const int& role)
+void Layer::setData(const QModelIndex& index, const QVariant& value, const int& role)
 {
 	const auto column = static_cast<Column>(index.column());
 
-	if (role == Qt::CheckStateRole) {
-		switch (column) {
-			case Column::Enabled:
-				setFlag(_Layer::Flag::Enabled, value == Qt::Checked ? true : false);
-				break;
+	switch (role)
+	{
+		case Qt::CheckStateRole:
+		{
+			switch (column) {
+				case Column::Enabled:
+					setFlag(Layer::Flag::Enabled, value == Qt::Checked ? true : false);
+					break;
 
-			default:
-				break;
+				default:
+					break;
+			}
+
+			break;
 		}
-	}
 
-	if (role == Qt::DisplayRole) {
-		switch (column) {
-			case Column::Enabled:
-				setFlag(_Layer::Flag::Enabled, value.toBool());
-				break;
+		case Qt::EditRole:
+		{
+			switch (column) {
+				case Column::Name:
+					setName(value.toString());
+					break;
 
-			case Column::Type:
-				setType(static_cast<Type>(value.toInt()));
-				break;
+				case Column::Enabled:
+					setFlag(Layer::Flag::Enabled, value.toBool());
+					break;
 
-			case Column::Locked:
-				break;
+				case Column::Type:
+					setType(static_cast<Type>(value.toInt()));
+					break;
 
-			case Column::ID:
-				setId(value.toString());
-				break;
+				case Column::ID:
+					setId(value.toString());
+					break;
 
-			case Column::Name:
-				setName(value.toString());
-				break;
+				case Column::Dataset:
+					break;
 
-			case Column::Dataset:
-				break;
+				case Column::Opacity:
+					setOpacity(value.toFloat());
+					break;
 
-			case Column::Frozen:
-				setFlag(_Layer::Flag::Frozen, value.toBool());
-				break;
+				case Column::WindowNormalized:
+					setWindowNormalized(value.toFloat());
+					break;
 
-			case Column::Removable:
-				setFlag(_Layer::Flag::Removable, value.toBool());
-				break;
+				case Column::LevelNormalized:
+					setLevelNormalized(value.toFloat());
+					break;
 
-			case Column::Mask:
-				setFlag(_Layer::Flag::Mask, value.toBool());
-				break;
+				case Column::ColorMap:
+					setColorMap(value.value<QImage>());
+					break;
 
-			case Column::Renamable:
-				setFlag(_Layer::Flag::Renamable, value.toBool());
-				break;
+				case Column::Image:
+					setImage(value.value<QImage>());
+					break;
 
-			case Column::Order:
-				setOrder(value.toInt());
-				break;
+				case Column::ImageRange:
+				case Column::DisplayRange:
+					break;
 
-			case Column::Opacity:
-				setOpacity(value.toFloat());
-				break;
+				case Column::Flags:
+					setFlags(value.toInt());
+					break;
 
-			case Column::WindowNormalized:
-				setWindowNormalized(value.toFloat());
-				break;
+				default:
+					break;
+			}
 
-			case Column::LevelNormalized:
-				setLevelNormalized(value.toFloat());
-				break;
-
-			case Column::ColorMap:
-				setColorMap(value.value<QImage>());
-				break;
-
-			case Column::Image:
-				setImage(value.value<QImage>());
-				break;
-
-			case Column::ImageRange:
-			case Column::DisplayRange:
-				break;
-
-			default:
-				break;
+			break;
 		}
+
+		default:
+			break;
 	}
 }
 
-bool _Layer::isSettingsIndex(const QModelIndex& index) const
+bool Layer::isBaseLayerIndex(const QModelIndex& index) const
 {
-	return index.parent().isValid() && index.parent().column() == static_cast<int>(_Layer::Column::Settings);
+	return index.column() <= ult(Layer::Column::End);
 }
 
-QVariant _Layer::id(const int& role) const
+QVariant Layer::id(const int& role) const
 {
 	switch (role)
 	{
@@ -360,12 +280,12 @@ QVariant _Layer::id(const int& role) const
 	return QVariant();
 }
 
-void _Layer::setId(const QString& id)
+void Layer::setId(const QString& id)
 {
 	_id = id;
 }
 
-QVariant _Layer::name(const int& role) const
+QVariant Layer::name(const int& role) const
 {
 	switch (role)
 	{
@@ -376,6 +296,38 @@ QVariant _Layer::name(const int& role) const
 		case Qt::ToolTipRole:
 			return QString("Name: %1").arg(_name);
 
+		/*
+		case Qt::CheckStateRole:
+			return flag(Layer::Flag::Enabled, Qt::EditRole).toBool() ? Qt::Checked : Qt::Unchecked;
+		*/
+		
+		/*
+		case Qt::DecorationRole:
+		{
+			switch (_type) {
+				case Type::Images:
+					return u8"\uf03e";
+
+				case Type::Selection:
+					return u8"\uf065";
+
+				case Type::Clusters:
+					return u8"\uf141";
+
+				case Type::Points:
+					return u8"\uf03e";
+
+				default:
+					break;
+			}
+
+			break;
+		}
+		*/
+
+		//case Qt::FontRole:
+		//	return QFont("Font Awesome 5 Free Solid", 9);
+
 		default:
 			break;
 	}
@@ -383,14 +335,14 @@ QVariant _Layer::name(const int& role) const
 	return QVariant();
 }
 
-void _Layer::setName(const QString& name)
+void Layer::setName(const QString& name)
 {
 	_name = name;
 }
 
-QVariant _Layer::dataset(const int& role) const
+QVariant Layer::dataset(const int& role) const
 {
-	const auto name = _dataset->name(role).toString();
+	const auto name = _dataset ? _dataset->name(role).toString() : "";
 
 	switch (role)
 	{
@@ -408,9 +360,9 @@ QVariant _Layer::dataset(const int& role) const
 	return QVariant();
 }
 
-QVariant _Layer::type(const int& role) const
+QVariant Layer::type(const int& role) const
 {
-	const auto typeName = _Layer::typeName(_type);
+	const auto typeName = Layer::typeName(_type);
 
 	switch (role)
 	{
@@ -452,12 +404,12 @@ QVariant _Layer::type(const int& role) const
 	return QVariant();
 }
 
-void _Layer::setType(const Type& type)
+void Layer::setType(const Type& type)
 {
 	_type = type;
 }
 
-QVariant _Layer::flag(const _Layer::Flag& flag, const int& role) const
+QVariant Layer::flag(const Layer::Flag& flag, const int& role) const
 {
 	const auto isFlagSet = _flags & static_cast<int>(flag);
 	const auto flagString = isFlagSet ? "true" : "false";
@@ -474,19 +426,19 @@ QVariant _Layer::flag(const _Layer::Flag& flag, const int& role) const
 		{
 			switch (flag)
 			{
-				case _Layer::Flag::Enabled:
+				case Layer::Flag::Enabled:
 					return QString("Enabled: %1").arg(flagString);
 
-				case _Layer::Flag::Frozen:
+				case Layer::Flag::Frozen:
 					return QString("Frozen: %1").arg(flagString);
 
-				case _Layer::Flag::Removable:
+				case Layer::Flag::Removable:
 					return QString("Removable: %1").arg(flagString);
 
-				case _Layer::Flag::Mask:
+				case Layer::Flag::Mask:
 					return QString("Mask: %1").arg(flagString);
 
-				case _Layer::Flag::Renamable:
+				case Layer::Flag::Renamable:
 					return QString("Renamable: %1").arg(flagString);
 
 				default:
@@ -498,7 +450,7 @@ QVariant _Layer::flag(const _Layer::Flag& flag, const int& role) const
 
 		case Qt::CheckStateRole:
 		{
-			if (flag == _Layer::Flag::Enabled)
+			if (flag == Layer::Flag::Enabled)
 				return isFlagSet ? Qt::Checked : Qt::Unchecked;
 
 			break;
@@ -511,7 +463,7 @@ QVariant _Layer::flag(const _Layer::Flag& flag, const int& role) const
 	return QVariant();
 }
 
-void _Layer::setFlag(const _Layer::Flag& flag, const bool& enabled /*= true*/)
+void Layer::setFlag(const Layer::Flag& flag, const bool& enabled /*= true*/)
 {
 	if (enabled)
 		_flags |= static_cast<int>(flag);
@@ -519,39 +471,12 @@ void _Layer::setFlag(const _Layer::Flag& flag, const bool& enabled /*= true*/)
 		_flags = _flags & ~static_cast<int>(flag);
 }
 
-void _Layer::setFlags(const int& flags)
+void Layer::setFlags(const int& flags)
 {
 	_flags = flags;
 }
 
-QVariant _Layer::order(const int& role) const
-{
-	const auto orderString = QString::number(_order);
-
-	switch (role)
-	{
-		case Qt::DisplayRole:
-			return orderString;
-
-		case Qt::EditRole:
-			return _order;
-
-		case Qt::ToolTipRole:
-			return QString("Order: %1").arg(orderString);
-
-		default:
-			break;
-	}
-
-	return QVariant();
-}
-
-void _Layer::setOrder(const std::uint32_t& order)
-{
-	_order = order;
-}
-
-QVariant _Layer::opacity(const int& role) const
+QVariant Layer::opacity(const int& role) const
 {
 	const auto opacityString = QString("%1%").arg(QString::number(100.0f * _opacity, 'f', 1));
 
@@ -573,12 +498,12 @@ QVariant _Layer::opacity(const int& role) const
 	return QVariant();
 }
 
-void _Layer::setOpacity(const float& opacity)
+void Layer::setOpacity(const float& opacity)
 {
 	_opacity = opacity;
 }
 
-QVariant _Layer::colorMap(const int& role) const
+QVariant Layer::colorMap(const int& role) const
 {
 	const auto colorMapString = "Image";
 
@@ -600,12 +525,12 @@ QVariant _Layer::colorMap(const int& role) const
 	return QVariant();
 }
 
-void _Layer::setColorMap(const QImage& colorMap)
+void Layer::setColorMap(const QImage& colorMap)
 {
 	_colorMap = colorMap;
 }
 
-QVariant _Layer::image(const int& role) const
+QVariant Layer::image(const int& role) const
 {
 	const auto imageString = "image";
 
@@ -627,7 +552,7 @@ QVariant _Layer::image(const int& role) const
 	return QVariant();
 }
 
-void _Layer::setImage(const QImage& image)
+void Layer::setImage(const QImage& image)
 {
 	_image = image;
 	_windowNormalized = 1.0f;
@@ -637,7 +562,7 @@ void _Layer::setImage(const QImage& image)
 	computeDisplayRange();
 }
 
-QVariant _Layer::imageRange(const int& role) const
+QVariant Layer::imageRange(const int& role) const
 {
 	const auto imageRangeString = QString("[%1, %2]").arg(QString::number(_imageRange.min(), 'f', 2), QString::number(_imageRange.max(), 'f', 2));
 
@@ -659,7 +584,7 @@ QVariant _Layer::imageRange(const int& role) const
 	return QVariant();
 }
 
-QVariant _Layer::displayRange(const int& role) const
+QVariant Layer::displayRange(const int& role) const
 {
 	const auto displayRangeString = QString("[%1, %2]").arg(QString::number(_displayRange.min(), 'f', 2), QString::number(_displayRange.max(), 'f', 2));
 
@@ -681,7 +606,7 @@ QVariant _Layer::displayRange(const int& role) const
 	return QVariant();
 }
 
-QVariant _Layer::windowNormalized(const int& role) const
+QVariant Layer::windowNormalized(const int& role) const
 {
 	const auto windowNormalizedString = QString::number(_windowNormalized, 'f', 2);
 
@@ -703,14 +628,14 @@ QVariant _Layer::windowNormalized(const int& role) const
 	return QVariant();
 }
 
-void _Layer::setWindowNormalized(const float& windowNormalized)
+void Layer::setWindowNormalized(const float& windowNormalized)
 {
 	_windowNormalized = windowNormalized;
 
 	computeDisplayRange();
 }
 
-QVariant _Layer::levelNormalized(const int& role) const
+QVariant Layer::levelNormalized(const int& role) const
 {
 	const auto levelNormalizedString = QString::number(_levelNormalized, 'f', 2);
 
@@ -732,34 +657,34 @@ QVariant _Layer::levelNormalized(const int& role) const
 	return QVariant();
 }
 
-void _Layer::setLevelNormalized(const float& levelNormalized)
+void Layer::setLevelNormalized(const float& levelNormalized)
 {
 	_levelNormalized = levelNormalized;
 
 	computeDisplayRange();
 }
 
-QVariant _Layer::window(const int& role) const
+QVariant Layer::window(const int& role) const
 {
 	return _window;
 }
 
-void _Layer::setWindow(const float& window)
+void Layer::setWindow(const float& window)
 {
 	_window = window;
 }
 
-QVariant _Layer::level(const int& role) const
+QVariant Layer::level(const int& role) const
 {
 	return _level;
 }
 
-void _Layer::setLevel(const float& level)
+void Layer::setLevel(const float& level)
 {
 	_level = level;
 }
 
-void _Layer::computeImageRange()
+void Layer::computeImageRange()
 {
 	if (_image.isNull())
 		return;
@@ -806,7 +731,7 @@ void _Layer::computeImageRange()
 	}
 }
 
-void _Layer::computeDisplayRange()
+void Layer::computeDisplayRange()
 {
 	//qDebug() << "Compute display range";
 
@@ -818,5 +743,3 @@ void _Layer::computeDisplayRange()
 	_displayRange.setMin(std::clamp(_level - (_window / 2.0f), _imageRange.min(), _imageRange.max()));
 	_displayRange.setMax(std::clamp(_level + (_window / 2.0f), _imageRange.min(), _imageRange.max()));
 }
-
-

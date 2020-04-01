@@ -8,6 +8,8 @@ namespace Ui {
 	class LayersWidget;
 }
 
+class QItemSelectionModel;
+
 class ImageViewerPlugin;
 class DatasetsModel;
 class LayersModel;
@@ -37,7 +39,10 @@ private: // Miscellaneous
 	DatasetsModel* datasetsModel();
 
 	/** TODO */
-	LayersModel* layersModel();
+	LayersModel& layersModel();
+
+	/** TODO */
+	QItemSelectionModel& layersSelectionModel();
 
 private:
 	ImageViewerPlugin*					_imageViewerPlugin;		/** TODO */

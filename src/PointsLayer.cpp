@@ -4,15 +4,20 @@
 #include <QDebug>
 
 PointsLayer::PointsLayer(PointsDataset* pointsDataset, const QString& id, const QString& name, const int& flags) :
-	_Layer(pointsDataset, _Layer::Type::Points, id, name, flags),
+	Layer(pointsDataset, Layer::Type::Points, id, name, flags),
 	_points(pointsDataset)
 {
 }
 
+int PointsLayer::noColumns() const
+{
+	return ult(Column::End);
+}
+
 Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
 {
-	if (!isSettingsIndex(index))
-		return _Layer::flags(index);
+	if (isBaseLayerIndex(index))
+		return Layer::flags(index);
 
 	int flags = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
 
@@ -26,8 +31,8 @@ Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
 
 QVariant PointsLayer::data(const QModelIndex& index, const int& role) const
 {
-	if (!isSettingsIndex(index))
-		return _Layer::data(index, role);
+	if (isBaseLayerIndex(index))
+		return Layer::data(index, role);
 
 	switch (static_cast<Column>(index.column())) {
 		default:
@@ -39,6 +44,6 @@ QVariant PointsLayer::data(const QModelIndex& index, const int& role) const
 
 void PointsLayer::setData(const QModelIndex& index, const QVariant& value, const int& role)
 {
-	if (!isSettingsIndex(index))
-		return _Layer::setData(index, value, role);
+	if (isBaseLayerIndex(index))
+		return Layer::setData(index, value, role);
 }

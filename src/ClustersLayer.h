@@ -5,12 +5,17 @@
 class ClustersDataset;
 
 /** TODO */
-class ClustersLayer : public _Layer
+class ClustersLayer : public Layer
 {
 public:
 	
 	/** TODO */
 	enum class Column {
+		ParamA = ult(Layer::Column::End) + 1,
+		ParamB,
+
+		Start = ParamA,
+		End = ParamB
 	};
 
 public:
@@ -19,6 +24,9 @@ public:
 	ClustersLayer(ClustersDataset* clustersDataset, const QString& id, const QString& name, const int& flags);
 
 public: // Inherited MVC
+
+	/** TODO */
+	int noColumns() const override;
 
 	/** TODO */
 	Qt::ItemFlags flags(const QModelIndex& index) const override;

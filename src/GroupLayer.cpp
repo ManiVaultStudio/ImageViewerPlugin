@@ -3,8 +3,13 @@
 #include <QDebug>
 
 GroupLayer::GroupLayer(const QString& id, const QString& name, const int& flags) :
-	_Layer(nullptr, _Layer::Type::Group, id, name, flags)
+	Layer(nullptr, Layer::Type::Group, id, name, flags)
 {
+}
+
+int GroupLayer::noColumns() const
+{
+	return ult(Column::End);
 }
 
 Qt::ItemFlags GroupLayer::flags(const QModelIndex& index) const

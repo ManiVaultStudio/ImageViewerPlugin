@@ -1,150 +1,72 @@
 #include "TreeItem.h"
+#include "Dataset.h"
 
 #include <QDebug>
+#include <QFont>
 
-Layer::Layer(const QVector<QVariant>& data, Layer* parent)
-	: itemData(data),
-	parentItem(parent)
-{
-	/*
+TreeItem::TreeItem(TreeItem* parent /*= nullptr*/) :
 	_children(),
-	_parent(nullptr),
-	_dataset(dataset),
-	_id(id),
-	_name(name),
-	_type(type),
-	_flags(flags),
-	_order(0),
-	_opacity(1.0f),
-	_colorMap(),
-	_image(),
-	_imageRange(),
-	_displayRange(),
-	_windowNormalized(1.0f),
-	_levelNormalized(0.5f),
-	_window(),
-	_level()
-	*/
+	_parent(parent)
+{
 }
 
-Layer::~Layer()
+TreeItem::~TreeItem()
 {
-	qDeleteAll(childItems);
+	qDeleteAll(_children);
 }
 
-Layer *Layer::child(int number)
+TreeItem* TreeItem::child(const int& index)
 {
-	if (number < 0 || number >= childItems.size())
+	if (index < 0 || index >= _children.size())
 		return nullptr;
-	return childItems.at(number);
+
+	return _children.at(index);
 }
 
-int Layer::childCount() const
+int TreeItem::childCount() const
 {
-	return childItems.count();
+	return _children.count();
 }
 
-int Layer::childNumber() const
+bool TreeItem::insertChild(const int& position, TreeItem* layer)
 {
-	if (parentItem)
-		return parentItem->childItems.indexOf(const_cast<Layer*>(this));
-	return 0;
-}
-
-int Layer::columnCount() const
-{
-	return itemData.count();
-}
-
-QVariant Layer::data(int column) const
-{
-	if (column < 0 || column >= itemData.size())
-		return QVariant();
-	return itemData.at(column);
-}
-
-bool Layer::insertChildren(int position, int count, int columns)
-{
-	if (position < 0 || position > childItems.size())
-		return false;
-
-	for (int row = 0; row < count; ++row) {
-		QVector<QVariant> data(columns);
-		Layer *item = new Layer(data, this);
-		childItems.insert(position, item);
-	}
-
-	return true;
-}
-
-bool Layer::insertChild(const int& position, Layer* layer)
-{
-	if (position < 0 || position > childItems.size())
+	if (position < 0 || position > _children.size())
 		return false;
 
 	layer->setParent(this);
 
-	childItems.insert(position, layer);
+	_children.insert(position, layer);
 
 	return true;
 }
 
-bool Layer::insertColumns(int position, int columns)
+TreeItem* TreeItem::parent()
 {
-	if (position < 0 || position > itemData.size())
-		return false;
-
-	for (int column = 0; column < columns; ++column)
-		itemData.insert(position, QVariant());
-
-	for (Layer *child : qAsConst(childItems))
-		child->insertColumns(position, columns);
-
-	return true;
+	return _parent;
 }
 
-Layer *Layer::parent()
+void TreeItem::setParent(TreeItem* parent)
 {
-	return parentItem;
+	_parent = parent;
 }
 
-void Layer::setParent(Layer* parent)
+bool TreeItem::removeChild(const int& position, const bool& purge /*= true*/)
 {
-	parentItem = parent;
-}
-
-bool Layer::removeChild(const int& position, const bool& purge /*= true*/)
-{
-	if (position < 0 || position > childItems.size())
+	if (position < 0 || position > _children.size())
 		return false;
 
 	if (purge)
-		delete childItems.at(position);
+		delete _children.at(position);
 
-	childItems.takeAt(position);
-
-	return true;
-}
-
-bool Layer::removeColumns(int position, int columns)
-{
-	if (position < 0 || position + columns > itemData.size())
-		return false;
-
-	for (int column = 0; column < columns; ++column)
-		itemData.remove(position);
-
-	for (Layer *child : qAsConst(childItems))
-		child->removeColumns(position, columns);
+	_children.takeAt(position);
 
 	return true;
 }
 
-bool Layer::setData(int column, const QVariant &value)
+int TreeItem::childIndex() const
 {
-	if (column < 0 || column >= itemData.size())
-		return false;
+	if (_parent)
+		return _parent->_children.indexOf(const_cast<TreeItem*>(this));
 
-	itemData[column] = value;
-	return true;
+	return 0;
 }

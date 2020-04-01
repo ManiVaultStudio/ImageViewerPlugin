@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>300</width>
-    <height>562</height>
+    <height>314</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -50,7 +50,7 @@
    <property name="bottomMargin">
     <number>0</number>
    </property>
-   <item row="1" column="0">
+   <item row="0" column="0">
     <widget class="QGroupBox" name="layersGroupBox">
      <property name="enabled">
       <bool>true</bool>
@@ -165,10 +165,7 @@
           <attribute name="headerMinimumSectionSize">
            <number>0</number>
           </attribute>
-          <attribute name="headerDefaultSectionSize">
-           <number>150</number>
-          </attribute>
-          <attribute name="headerStretchLastSection">
+          <attribute name="headerShowSortIndicator" stdset="0">
            <bool>false</bool>
           </attribute>
          </widget>
@@ -279,15 +276,12 @@
      </layout>
     </widget>
    </item>
-   <item row="0" column="0">
-    <widget class="QTreeView" name="datasetsTreeView"/>
-   </item>
-   <item row="2" column="0">
+   <item row="1" column="0">
     <widget class="LayerWidget" name="layerWidget" native="true">
      <property name="minimumSize">
       <size>
        <width>0</width>
-       <height>100</height>
+       <height>50</height>
       </size>
      </property>
     </widget>

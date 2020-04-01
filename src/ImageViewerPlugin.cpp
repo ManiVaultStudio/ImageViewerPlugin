@@ -20,15 +20,11 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	_imageViewerWidget(),
 	_settingsWidget(),
 	_datasetsModel(this),
-	_datasetsProxyModel(),
-	_datasetsSelectionModel(&_datasetsProxyModel),
-	_layersModel(this),
-	_layersSelectionModel(&_layersModel)
+	_datasetsSelectionModel(&_datasetsModel),
+	_layersModel(this)
 {
 	qRegisterMetaType<QVector<int> >("QVector<int>");
 
-	_datasetsProxyModel.setSourceModel(&_datasetsModel);
-	
 	// TODO
 	_imageViewerWidget	= new ViewerWidget(this);
 	_settingsWidget		= new SettingsWidget(this);
@@ -119,77 +115,14 @@ void ImageViewerPlugin::updateWindowTitle()
 
 void ImageViewerPlugin::dataAdded(const QString dataset)
 {
-	/*
-	qDebug() << "Data added" << dataset;
-
-	auto imagesDataset = _core->requestData<Images>(dataset);
-
-	auto imageDataset = new ImageDataset(this);
-
-	imageDataset->setName(dataset);
-	imageDataset->setType(imagesDataset.type());
-	imageDataset->setSize(imagesDataset.imageSize());
-	imageDataset->setNoPoints(imagesDataset.points()->getNumPoints());
-	imageDataset->setNoDimensions(imagesDataset.points()->getNumDimensions());
-	imageDataset->setCurrentImage(0);
-	imageDataset->setAverage(false);
-
-	auto imageFilePaths = QStringList();
-
-	for (const auto& imageFilePath : imagesDataset.imageFilePaths()) {
-		imageFilePaths << imageFilePath;
-	}
-
-	switch (imagesDataset.type())
-	{
-		case ImageData::Type::Sequence:
-		{
-			auto imageNames = QStringList();
-
-			for (const auto& imageFilePath : imagesDataset.imageFilePaths()) {
-				imageNames << QFileInfo(imageFilePath).fileName();
-			}
-
-			imageDataset->setImageNames(imageNames);
-			imageDataset->addLayer("default_color", "Color", Layer::Type::Image, LayerFlags::Enabled | LayerFlags::Enabled);
-			break;
-		}
-
-		case ImageData::Type::Stack:
-		{
-			auto dimensionNames = QStringList();
-
-			for (const auto& dimensionName : imagesDataset.dimensionNames()) {
-				dimensionNames << dimensionName;
-			}
-
-			imageDataset->setImageNames(dimensionNames);
-
-			imageDataset->addLayer("default_color", "Color", Layer::Type::Image, LayerFlags::Enabled);
-			imageDataset->addLayer("default_selection", "Selection", Layer::Type::Selection, LayerFlags::Enabled);
-			//imageDataset->addLayer("layer_0", "Cluster", Layer::Type::MetaData, LayerFlags::Enabled | LayerFlags::Removable | LayerFlags::Renamable);
-			break;
-		}
-
-		default:
-			break;
-	}
-
-	imageDataset->setImageFilePaths(imageFilePaths);
-	imageDataset->setPointsName(imagesDataset.points()->getDataName());
-
-	_layersModel.add(imageDataset);
-	*/
 }
 
 void ImageViewerPlugin::dataChanged(const QString dataset)
 {
-	qDebug() << "Data changed" << dataset;
 }
 
 void ImageViewerPlugin::dataRemoved(const QString dataset)
 {
-	qDebug() << "Data removed" << dataset;
 }
 
 void ImageViewerPlugin::selectionChanged(const QString dataset)

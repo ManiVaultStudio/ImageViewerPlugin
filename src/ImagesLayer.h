@@ -5,13 +5,13 @@
 class ImagesDataset;
 
 /** TODO */
-class ImagesLayer : public _Layer
+class ImagesLayer : public Layer
 {
 public:
 
 	/** TODO */
 	enum class Column {
-		NoImages,
+		NoImages = ult(Layer::Column::End) + 1,
 		Width,
 		Height,
 		Size,
@@ -35,6 +35,9 @@ public:
 	ImagesLayer(ImagesDataset* imagesDataset, const QString& id, const QString& name, const int& flags);
 
 public: // Inherited MVC
+
+	/** TODO */
+	int noColumns() const override;
 
 	/** TODO */
 	Qt::ItemFlags flags(const QModelIndex& index) const override;

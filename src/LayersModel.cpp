@@ -3,6 +3,9 @@
 #include "Dataset.h"
 #include "Layer.h"
 #include "GroupLayer.h"
+#include "PointsLayer.h"
+#include "ImagesLayer.h"
+#include "ClustersLayer.h"
 
 #include <QFont>
 #include <QBrush>
@@ -10,33 +13,35 @@
 #include <QAbstractItemView>
 #include <QMimeData>
 
-LayersModel::LayersModel(QObject *parent)
-	: QAbstractItemModel(parent)
+LayersModel::LayersModel(QObject *parent) :
+	QAbstractItemModel(parent),
+	_selectionModel(this),
+	_root(new GroupLayer("root", "Root", ult(Layer::Flag::Enabled)))
 {
-	const QStringList headers({ tr("Title"), tr("Description") });
+	auto pointsLayer	= new PointsLayer(nullptr, "points", "Points", ult(Layer::Flag::Enabled) | ult(Layer::Flag::Renamable));
+	auto imagesLayer	= new ImagesLayer(nullptr, "images", "Images", ult(Layer::Flag::Enabled));
+	auto clusterLayer	= new ClustersLayer(nullptr, "clusters", "Clusters", ult(Layer::Flag::Enabled) | ult(Layer::Flag::Renamable));
 
-	QFile file(":/default.txt");
-	file.open(QIODevice::ReadOnly);
-	auto data = static_cast<QString>(file.readAll());
-	file.close();
+	pointsLayer->insertChild(0, imagesLayer);
+	pointsLayer->insertChild(0, clusterLayer);
 
-	QVector<QVariant> rootData;
-	for (const QString &header : headers)
-		rootData << header;
-
-	rootItem = new Layer(rootData);
-	setupModelData(data.split('\n'), rootItem);
+	_root->insertChild(0, pointsLayer);
+	_root->insertChild(0, new ImagesLayer(nullptr, "images", "Images", ult(Layer::Flag::Enabled) | ult(Layer::Flag::Renamable)));
+	_root->insertChild(0, new ClustersLayer(nullptr, "clusters", "Clusters", ult(Layer::Flag::Enabled) | ult(Layer::Flag::Renamable)));
+	_root->insertChild(0, new ImagesLayer(nullptr, "images", "Images", ult(Layer::Flag::Enabled) | ult(Layer::Flag::Renamable)));
+	_root->insertChild(0, new ClustersLayer(nullptr, "clusters", "Clusters", ult(Layer::Flag::Enabled) | ult(Layer::Flag::Renamable)));
 }
 
 LayersModel::~LayersModel()
 {
-	delete rootItem;
+	delete _root;
 }
 
 int LayersModel::columnCount(const QModelIndex &parent) const
 {
 	Q_UNUSED(parent);
-	return rootItem->columnCount();
+
+	return ult(Layer::Column::End);
 }
 
 QVariant LayersModel::data(const QModelIndex &index, int role) const
@@ -44,17 +49,35 @@ QVariant LayersModel::data(const QModelIndex &index, int role) const
 	if (!index.isValid())
 		return QVariant();
 
-	if (role != Qt::DisplayRole && role != Qt::EditRole)
-		return QVariant();
+	auto layer = getLayer(index);
 
-	Layer *item = getItem(index);
-
-	return item->data(index.column());
+	return layer->data(index, role);
 }
 
 QVariant LayersModel::data(const int& row, const int& column, const int& role) const
 {
 	return data(index(row, column), role);
+}
+
+bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int role /*= Qt::EditRole*/)
+{
+	auto layer = getLayer(index);
+
+	layer->setData(index, value, role);
+
+	if (index.column() == ult(Layer::Column::Enabled))
+		emit dataChanged(this->index(index.row(), 0), this->index(index.row(), layer->noColumns() - 1));
+	else 
+		emit dataChanged(index, index);
+
+	//emit dataChanged(index, index);
+
+	return true;
+}
+
+bool LayersModel::setData(const int& row, const int& column, const QVariant& value, int role /*= Qt::EditRole*/)
+{
+	return setData(index(row, column), value, role);
 }
 
 Qt::ItemFlags LayersModel::flags(const QModelIndex& index) const
@@ -67,7 +90,7 @@ Qt::ItemFlags LayersModel::flags(const QModelIndex& index) const
 	if (!index.isValid())
 		return itemFlags | Qt::ItemIsDropEnabled;
 
-	if (getItem(index)->childCount() > 0)
+	if (getLayer(index)->childCount() > 0)
 		itemFlags |= Qt::ItemIsDropEnabled;
 
 	//itemFlags |= Qt::ItemIsDropEnabled;
@@ -75,21 +98,31 @@ Qt::ItemFlags LayersModel::flags(const QModelIndex& index) const
 	return itemFlags | Qt::ItemIsDragEnabled | Qt::ItemIsEditable;
 }
 
-Layer *LayersModel::getItem(const QModelIndex &index) const
+Qt::ItemFlags LayersModel::flags(const int& row, const int& column) const
 {
-	if (index.isValid()) {
-		Layer *item = static_cast<Layer*>(index.internalPointer());
-		if (item)
-			return item;
-	}
-	return rootItem;
+	return flags(index(row, column));
 }
 
-QVariant LayersModel::headerData(int section, Qt::Orientation orientation,
-	int role) const
+Layer* LayersModel::getLayer(const QModelIndex& index) const
 {
-	if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
-		return rootItem->data(section);
+	if (index.isValid()) {
+		auto layer = static_cast<Layer*>(index.internalPointer());
+		
+		if (layer)
+			return layer;
+	}
+
+	return _root;
+}
+
+QVariant LayersModel::headerData(int section, Qt::Orientation orientation, int role) const
+{
+	if (role != Qt::DisplayRole)
+		return QVariant();
+
+	if (orientation == Qt::Horizontal) {
+		return Layer::columnName(static_cast<Layer::Column>(section));
+	}
 
 	return QVariant();
 }
@@ -99,30 +132,33 @@ QModelIndex LayersModel::index(int row, int column, const QModelIndex &parent) c
 	if (parent.isValid() && parent.column() != 0)
 		return QModelIndex();
 
-	Layer *parentItem = getItem(parent);
-	if (!parentItem)
+	auto parentLayer = getLayer(parent);
+
+	if (!parentLayer)
 		return QModelIndex();
 
-	Layer *childItem = parentItem->child(row);
-	if (childItem)
-		return createIndex(row, column, childItem);
+	auto childLayer = parentLayer->child(row);
+
+	if (childLayer)
+		return createIndex(row, column, childLayer);
+
 	return QModelIndex();
 }
 
 bool LayersModel::insertLayer(int row, Layer* layer, const QModelIndex& parent /*= QModelIndex()*/)
 {
-	Layer* parentLayer = getItem(parent);
+	auto parentLayer = getLayer(parent);
 
 	if (!parentLayer)
 		return false;
 
 	beginInsertRows(parent, row, row);
-
-	const bool success = parentLayer->insertChild(row, layer);
-
+	{
+		parentLayer->insertChild(row, layer);
+	}
 	endInsertRows();
 
-	return success;
+	return true;
 }
 
 QModelIndex LayersModel::parent(const QModelIndex &index) const
@@ -130,42 +166,29 @@ QModelIndex LayersModel::parent(const QModelIndex &index) const
 	if (!index.isValid())
 		return QModelIndex();
 
-	Layer *childItem = getItem(index);
-	Layer *parentItem = childItem ? childItem->parent() : nullptr;
+	auto childLayer		= getLayer(index);
+	auto parentLayer	= childLayer ? childLayer->parent() : nullptr;
 
-	if (parentItem == rootItem || !parentItem)
+	if (parentLayer == _root || !parentLayer)
 		return QModelIndex();
 
-	return createIndex(parentItem->childNumber(), 0, parentItem);
+	return createIndex(parentLayer->childIndex(), 0, parentLayer);
 }
 
-bool LayersModel::removeRows(int position, int rows, const QModelIndex &parent)
-{
-	Layer *parentItem = getItem(parent);
-	if (!parentItem)
-		return false;
-
-	beginRemoveRows(parent, position, position + rows - 1);
-	const bool success = parentItem->removeChild(position);
-	endRemoveRows();
-
-	return success;
-}
-
-bool LayersModel::removeRow(const QModelIndex& index)
+bool LayersModel::removeLayer(const QModelIndex& index)
 {
 	const auto row = index.row();
 
 	beginRemoveRows(index.parent(), row, row);
 	{
-		getItem(index.parent())->removeChild(row);
+		getLayer(index.parent())->removeChild(row);
 	}
 	endRemoveRows();
 	
 	return true;
 }
 
-bool LayersModel::mayMoveRow(const QModelIndex& index, const int& delta) const
+bool LayersModel::mayMoveLayer(const QModelIndex& index, const int& delta) const
 {
 	const auto sourceIndex = index;
 	const auto targetIndex = index.siblingAtRow(index.row() + delta);
@@ -176,17 +199,16 @@ bool LayersModel::mayMoveRow(const QModelIndex& index, const int& delta) const
 	return true;
 }
 
-bool LayersModel::moveRow(const QModelIndex& sourceParent, const int& sourceRow, const QModelIndex& targetParent, int targetRow)
+bool LayersModel::moveLayer(const QModelIndex& sourceParent, const int& sourceRow, const QModelIndex& targetParent, int targetRow)
 {
 	if (targetRow < 0)
 		targetRow = 0;
 
 	if (sourceParent == targetParent) {
 		if (beginMoveRows(sourceParent, sourceRow, sourceRow, targetParent, targetRow)) {
-			Layer* sourceParentLayer = getItem(sourceParent);
-			Layer* targetParentLayer = getItem(targetParent);
-
-			auto sourceLayer = sourceParentLayer->child(sourceRow);
+			auto sourceParentLayer	= getLayer(sourceParent);
+			auto targetParentLayer	= getLayer(targetParent);
+			auto sourceLayer		= sourceParentLayer->child(sourceRow);
 
 			sourceParentLayer->removeChild(sourceRow, false);
 			targetParentLayer->insertChild(targetRow > sourceRow ? targetRow - 1 : targetRow, sourceLayer);
@@ -196,10 +218,9 @@ bool LayersModel::moveRow(const QModelIndex& sourceParent, const int& sourceRow,
 	}
 	else {
 		if (beginMoveRows(sourceParent, sourceRow, sourceRow, targetParent, targetRow)) {
-			Layer* sourceParentLayer = getItem(sourceParent);
-			Layer* targetParentLayer = getItem(targetParent);
-
-			auto sourceLayer = sourceParentLayer->child(sourceRow);
+			auto sourceParentLayer	= getLayer(sourceParent);
+			auto targetParentLayer	= getLayer(targetParent);
+			auto sourceLayer		= sourceParentLayer->child(sourceRow);
 
 			sourceParentLayer->removeChild(sourceRow, false);
 			targetParentLayer->insertChild(targetRow, sourceLayer);
@@ -207,44 +228,15 @@ bool LayersModel::moveRow(const QModelIndex& sourceParent, const int& sourceRow,
 			endMoveRows();
 		}
 	}
-	
 
 	return true;
 }
 
 int LayersModel::rowCount(const QModelIndex &parent) const
 {
-	const Layer *parentItem = getItem(parent);
+	const auto parentLayer = getLayer(parent);
 
-	return parentItem ? parentItem->childCount() : 0;
-}
-
-bool LayersModel::setData(const QModelIndex &index, const QVariant &value, int role)
-{
-	if (role != Qt::EditRole)
-		return false;
-
-	Layer *item = getItem(index);
-	bool result = item->setData(index.column(), value);
-
-	if (result)
-		emit dataChanged(index, index, { Qt::DisplayRole, Qt::EditRole });
-
-	return result;
-}
-
-bool LayersModel::setHeaderData(int section, Qt::Orientation orientation,
-	const QVariant &value, int role)
-{
-	if (role != Qt::EditRole || orientation != Qt::Horizontal)
-		return false;
-
-	const bool result = rootItem->setData(section, value);
-
-	if (result)
-		emit headerDataChanged(orientation, section, section);
-
-	return result;
+	return parentLayer ? parentLayer->childCount() : 0;
 }
 
 QStringList LayersModel::mimeTypes() const
@@ -300,7 +292,7 @@ bool LayersModel::dropMimeData(const QMimeData *data, Qt::DropAction action, int
 
 			QModelIndex index = createIndex(sourceRow, sourceColumn, sourceInternalPointer);
 
-			moveRow(index.parent(), index.row(), parent, row);
+			moveLayer(index.parent(), index.row(), parent, row);
 			
 			break;
 		}
@@ -310,57 +302,4 @@ bool LayersModel::dropMimeData(const QMimeData *data, Qt::DropAction action, int
 	}
 
 	return true;
-}
-
-void LayersModel::setupModelData(const QStringList &lines, Layer *parent)
-{
-	QVector<Layer*> parents;
-	QVector<int> indentations;
-	parents << parent;
-	indentations << 0;
-
-	int number = 0;
-
-	while (number < lines.count()) {
-		int position = 0;
-		while (position < lines[number].length()) {
-			if (lines[number].at(position) != ' ')
-				break;
-			++position;
-		}
-
-		const QString lineData = lines[number].mid(position).trimmed();
-
-		if (!lineData.isEmpty()) {
-			// Read the column data from the rest of the line.
-			const QStringList columnStrings = lineData.split('\t', QString::SkipEmptyParts);
-			QVector<QVariant> columnData;
-			columnData.reserve(columnStrings.size());
-			for (const QString &columnString : columnStrings)
-				columnData << columnString;
-
-			if (position > indentations.last()) {
-				// The last child of the current parent is now the new parent
-				// unless the current parent has no children.
-
-				if (parents.last()->childCount() > 0) {
-					parents << parents.last()->child(parents.last()->childCount() - 1);
-					indentations << position;
-				}
-			}
-			else {
-				while (position < indentations.last() && parents.count() > 0) {
-					parents.pop_back();
-					indentations.pop_back();
-				}
-			}
-
-			// Append a new item to the current parent's list of children.
-			Layer *parent = parents.last();
-			parent->insertChildren(parent->childCount(), 1, rootItem->columnCount());
-			for (int column = 0; column < columnData.size(); ++column)
-				parent->child(parent->childCount() - 1)->setData(column, columnData[column]);
-		}
-		++number;
-	}
 }

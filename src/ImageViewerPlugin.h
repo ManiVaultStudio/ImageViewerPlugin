@@ -3,9 +3,7 @@
 #include <ViewPlugin.h>
 
 #include "DatasetsModel.h"
-#include "DatasetsProxyModel.h"
 #include "LayersModel.h"
-#include "LayersProxyModel.h"
 
 #include <QItemSelectionModel>
 
@@ -61,20 +59,10 @@ public: //
 	DatasetsModel& datasetsModel() { return _datasetsModel; }
 
 	/** TODO */
-	DatasetsProxyModel& datasetsProxyModel() { return _datasetsProxyModel; }
-
-	/** TODO */
 	QItemSelectionModel& datasetsSelectionModel() { return _datasetsSelectionModel; }
 
 	/** TODO */
 	LayersModel& layersModel() { return _layersModel; }
-
-	/** TODO */
-	//LayersProxyModel& layersProxyModel() { return _layersProxyModel; }
-
-	/** TODO */
-	QItemSelectionModel& layersSelectionModel() { return _layersSelectionModel; }
-
 
 	/** Update the window title with some useful meta data */
 	void updateWindowTitle();
@@ -83,11 +71,8 @@ private:
 	ViewerWidget*			_imageViewerWidget;			/** TODO */
 	SettingsWidget*			_settingsWidget;			/** TODO */
 	DatasetsModel			_datasetsModel;				/** TODO */
-	DatasetsProxyModel		_datasetsProxyModel;		/** TODO */
 	QItemSelectionModel		_datasetsSelectionModel;	/** TODO */
 	LayersModel				_layersModel;				/** TODO */
-	//LayersProxyModel		_layersProxyModel;			/** TODO */
-	QItemSelectionModel		_layersSelectionModel;		/** TODO */
 };
 
 /**

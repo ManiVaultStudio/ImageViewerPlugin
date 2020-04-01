@@ -6,17 +6,22 @@
 #include <QDebug>
 
 ImagesLayer::ImagesLayer(ImagesDataset* imagesDataset, const QString& id, const QString& name, const int& flags) :
-	_Layer(imagesDataset, _Layer::Type::Images, id, name, flags),
+	Layer(imagesDataset, Layer::Type::Images, id, name, flags),
 	_currentImage(0),
 	_average(),
 	_images(imagesDataset)
 {
 }
 
+int ImagesLayer::noColumns() const
+{
+	return ult(Column::End);
+}
+
 Qt::ItemFlags ImagesLayer::flags(const QModelIndex& index) const
 {
-	if (!isSettingsIndex(index))
-		return _Layer::flags(index);
+	if (isBaseLayerIndex(index))
+		return Layer::flags(index);
 
 	int flags = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
 
@@ -55,8 +60,8 @@ Qt::ItemFlags ImagesLayer::flags(const QModelIndex& index) const
 
 QVariant ImagesLayer::data(const QModelIndex& index, const int& role) const
 {
-	if (!isSettingsIndex(index))
-		return _Layer::data(index, role);
+	if (isBaseLayerIndex(index))
+		return Layer::data(index, role);
 
 	switch (static_cast<Column>(index.column())) {
 		case Column::NoImages:
@@ -113,8 +118,8 @@ QVariant ImagesLayer::data(const QModelIndex& index, const int& role) const
 
 void ImagesLayer::setData(const QModelIndex& index, const QVariant& value, const int& role)
 {
-	if (!isSettingsIndex(index))
-		return _Layer::setData(index, value, role);
+	if (isBaseLayerIndex(index))
+		return Layer::setData(index, value, role);
 
 	switch (static_cast<Column>(index.column())) {
 		case Column::NoImages:
