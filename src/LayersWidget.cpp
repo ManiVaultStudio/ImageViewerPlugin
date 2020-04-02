@@ -32,7 +32,7 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 
 	_ui->layersTreeView->setModel(&_imageViewerPlugin->layersModel());
 	_ui->layersTreeView->setSelectionModel(&layersSelectionModel());
-	_ui->layersTreeView->setDragDropOverwriteMode(true);
+	_ui->layersTreeView->setDragDropOverwriteMode(false);
 	_ui->layersTreeView->setHeaderHidden(false);
 
 	QFont font = QFont("Font Awesome 5 Free Solid", 9);
@@ -84,9 +84,10 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 		headerView->hideSection(column);
 
 	headerView->showSection(ult(Layer::Column::Name));
-	headerView->showSection(ult(Layer::Column::Type));
+	//headerView->showSection(ult(Layer::Column::Enabled));
+	//headerView->showSection(ult(Layer::Column::Type));
 	headerView->showSection(ult(Layer::Column::Opacity));
-	headerView->showSection(ult(Layer::Column::Enabled));
+	//headerView->showSection(ult(Layer::Column::Enabled));
 
 	headerView->setSectionResizeMode(ult(Layer::Column::Name), QHeaderView::Interactive);
 
@@ -125,23 +126,13 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 		_ui->layerRemovePushButton->setEnabled(noSelectedRows == 1);
 	};
 	
-	QObject::connect(&layersSelectionModel(), &QItemSelectionModel::selectionChanged, [this, updateButtons](const QItemSelection &selected, const QItemSelection &deselected) {
-		updateButtons();
-
-		const auto selectedRows = layersSelectionModel().selectedRows();
-
-		if (selectedRows.isEmpty())
-			_ui->layerWidget->onDataChanged(layersModel().index(0, 0), layersModel().index(0, layersModel().columnCount() - 1));
-		else
-			_ui->layerWidget->onDataChanged(layersModel().index(selectedRows.first().row(), 0), layersModel().index(selectedRows.first().row(), layersModel().columnCount() - 1));
-	});
-
-	// Handle model rows reorganization
 	QObject::connect(&layersModel(), &QAbstractListModel::rowsMoved, [this, updateButtons](const QModelIndex& parent, int start, int end, const QModelIndex& destination, int row) {
 		updateButtons();
 	});
-	
-	//layersModel().selectionModel()->setCurrentIndex(layersModel().index(0), QItemSelectionModel::Rows | QItemSelectionModel::Current);
+
+	QObject::connect(&layersSelectionModel(), &QItemSelectionModel::selectionChanged, [this, updateButtons](const QItemSelection &selected, const QItemSelection &deselected) {
+		updateButtons();
+	});
 }
 
 LayersWidget::~LayersWidget() = default;

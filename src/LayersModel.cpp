@@ -6,6 +6,7 @@
 #include "PointsLayer.h"
 #include "ImagesLayer.h"
 #include "ClustersLayer.h"
+#include "SelectionLayer.h"
 
 #include <QFont>
 #include <QBrush>
@@ -18,18 +19,21 @@ LayersModel::LayersModel(QObject *parent) :
 	_selectionModel(this),
 	_root(new GroupLayer("root", "Root", ult(Layer::Flag::Enabled)))
 {
-	auto pointsLayer	= new PointsLayer(nullptr, "points", "Points", ult(Layer::Flag::Enabled) | ult(Layer::Flag::Renamable));
-	auto imagesLayer	= new ImagesLayer(nullptr, "images", "Images", ult(Layer::Flag::Enabled));
-	auto clusterLayer	= new ClustersLayer(nullptr, "clusters", "Clusters", ult(Layer::Flag::Enabled) | ult(Layer::Flag::Renamable));
+	auto pointsLayer = new PointsLayer(nullptr, "points", "Points", ult(Layer::Flag::Enabled) | ult(Layer::Flag::Renamable));
+	auto imagesLayer = new ImagesLayer(nullptr, "images", "Images", ult(Layer::Flag::Enabled));
+	auto clusterLayer = new ClustersLayer(nullptr, "clusters", "Clusters", ult(Layer::Flag::Enabled) | ult(Layer::Flag::Renamable));
+	auto selectionLayer = new SelectionLayer(nullptr, "selection", "Selection", ult(Layer::Flag::Enabled) | ult(Layer::Flag::Renamable));
 
-	pointsLayer->insertChild(0, imagesLayer);
-	pointsLayer->insertChild(0, clusterLayer);
+	insertLayer(0, pointsLayer);
 
-	_root->insertChild(0, pointsLayer);
-	_root->insertChild(0, new ImagesLayer(nullptr, "images", "Images", ult(Layer::Flag::Enabled) | ult(Layer::Flag::Renamable)));
-	_root->insertChild(0, new ClustersLayer(nullptr, "clusters", "Clusters", ult(Layer::Flag::Enabled) | ult(Layer::Flag::Renamable)));
-	_root->insertChild(0, new ImagesLayer(nullptr, "images", "Images", ult(Layer::Flag::Enabled) | ult(Layer::Flag::Renamable)));
-	_root->insertChild(0, new ClustersLayer(nullptr, "clusters", "Clusters", ult(Layer::Flag::Enabled) | ult(Layer::Flag::Renamable)));
+	insertLayer(0, imagesLayer, index(0, 0));
+	insertLayer(0, clusterLayer, index(0, 0));
+	insertLayer(0, selectionLayer, index(0, 0));
+
+	insertLayer(0, new ImagesLayer(nullptr, "images", "Images", ult(Layer::Flag::Enabled) | ult(Layer::Flag::Renamable)));
+	insertLayer(0, new ClustersLayer(nullptr, "clusters", "Clusters", ult(Layer::Flag::Enabled) | ult(Layer::Flag::Renamable)));
+	insertLayer(0, new ImagesLayer(nullptr, "images", "Images", ult(Layer::Flag::Enabled) | ult(Layer::Flag::Renamable)));
+	insertLayer(0, new ClustersLayer(nullptr, "clusters", "Clusters", ult(Layer::Flag::Enabled) | ult(Layer::Flag::Renamable)));
 }
 
 LayersModel::~LayersModel()
@@ -70,8 +74,6 @@ bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int r
 	else 
 		emit dataChanged(index, index);
 
-	//emit dataChanged(index, index);
-
 	return true;
 }
 
@@ -82,20 +84,7 @@ bool LayersModel::setData(const int& row, const int& column, const QVariant& val
 
 Qt::ItemFlags LayersModel::flags(const QModelIndex& index) const
 {
-	int itemFlags = QAbstractItemModel::flags(index);
-
-	if (index == QModelIndex())
-		return itemFlags | Qt::ItemIsDropEnabled;
-
-	if (!index.isValid())
-		return itemFlags | Qt::ItemIsDropEnabled;
-
-	if (getLayer(index)->childCount() > 0)
-		itemFlags |= Qt::ItemIsDropEnabled;
-
-	//itemFlags |= Qt::ItemIsDropEnabled;
-
-	return itemFlags | Qt::ItemIsDragEnabled | Qt::ItemIsEditable;
+	return getLayer(index)->flags(index);
 }
 
 Qt::ItemFlags LayersModel::flags(const int& row, const int& column) const

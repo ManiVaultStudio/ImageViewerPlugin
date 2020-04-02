@@ -20,10 +20,7 @@ int ImagesLayer::noColumns() const
 
 Qt::ItemFlags ImagesLayer::flags(const QModelIndex& index) const
 {
-	if (isBaseLayerIndex(index))
-		return Layer::flags(index);
-
-	int flags = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+	auto flags = Layer::flags(index);
 
 	switch (static_cast<Column>(index.column())) {
 		case Column::NoImages:

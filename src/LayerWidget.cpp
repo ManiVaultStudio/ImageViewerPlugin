@@ -24,11 +24,16 @@ void LayerWidget::initialize(LayersModel* layersModel)
 
 	_ui->maskCheckBox->setVisible(false);
 
+	_ui->pointsLayerWidget->initialize(_layersModel);
+	_ui->imagesLayerWidget->initialize(_layersModel);
+	_ui->clustersLayerWidget->initialize(_layersModel);
+	_ui->selectionLayerWidget->initialize(_layersModel);
+
 	QObject::connect(_ui->layerEnabledCheckBox, &QCheckBox::stateChanged, [this](int state) {
 		const auto selectedRows = _layersModel->selectionModel().selectedRows();
 
 		if (selectedRows.count() == 1) {
-			_layersModel->setData(selectedRows.first().row(), ult(Layer::Column::Enabled), static_cast<int>(state), Qt::CheckStateRole);
+			_layersModel->setData(selectedRows.first().siblingAtColumn(ult(Layer::Column::Enabled)), static_cast<int>(state), Qt::CheckStateRole);
 		}
 	});
 
@@ -36,7 +41,7 @@ void LayerWidget::initialize(LayersModel* layersModel)
 		const auto selectedRows = _layersModel->selectionModel().selectedRows();
 
 		if (selectedRows.count() == 1) {
-			_layersModel->setData(selectedRows.first().row(), ult(Layer::Column::Name), text);
+			_layersModel->setData(selectedRows.first().siblingAtColumn(ult(Layer::Column::Name)), text);
 		}
 	});
 
@@ -45,7 +50,7 @@ void LayerWidget::initialize(LayersModel* layersModel)
 
 		if (selectedRows.count() == 1) {
 			const auto range = _ui->layerOpacityDoubleSpinBox->maximum() - _ui->layerOpacityDoubleSpinBox->minimum();
-			_layersModel->setData(selectedRows.first().row(), ult(Layer::Column::Opacity), value / static_cast<float>(range));
+			_layersModel->setData(selectedRows.first().siblingAtColumn(ult(Layer::Column::Opacity)), value / static_cast<float>(range));
 		}
 	});
 
@@ -54,7 +59,7 @@ void LayerWidget::initialize(LayersModel* layersModel)
 
 		if (selectedRows.count() == 1) {
 			const auto range = _ui->layerOpacityHorizontalSlider->maximum() - _ui->layerOpacityHorizontalSlider->minimum();
-			_layersModel->setData(selectedRows.first().row(), ult(Layer::Column::Opacity), static_cast<float>(value) / static_cast<float>(range));
+			_layersModel->setData(selectedRows.first().siblingAtColumn(ult(Layer::Column::Opacity)), static_cast<float>(value) / static_cast<float>(range));
 		}
 	});
 
@@ -63,7 +68,7 @@ void LayerWidget::initialize(LayersModel* layersModel)
 		const auto selectedRows = _layersModel->selectionModel().selectedRows();
 
 		if (selectedRows.count() == 1) {
-			_layersModel->setData(selectedRows.first().row(), ult(Layer::Column::WindowNormalized), value);
+			_layersModel->setData(selectedRows.first().siblingAtColumn(ult(Layer::Column::WindowNormalized)), value);
 		}
 	});
 
@@ -72,7 +77,7 @@ void LayerWidget::initialize(LayersModel* layersModel)
 
 		if (selectedRows.count() == 1) {
 			const auto range = _ui->layerWindowHorizontalSlider->maximum() - _ui->layerWindowHorizontalSlider->minimum();
-			_layersModel->setData(selectedRows.first().row(), ult(Layer::Column::WindowNormalized), value / static_cast<float>(range));
+			_layersModel->setData(selectedRows.first().siblingAtColumn(ult(Layer::Column::WindowNormalized)), value / static_cast<float>(range));
 		}
 	});
 
@@ -80,7 +85,7 @@ void LayerWidget::initialize(LayersModel* layersModel)
 		const auto selectedRows = _layersModel->selectionModel().selectedRows();
 
 		if (selectedRows.count() == 1) {
-			_layersModel->setData(selectedRows.first().row(), ult(Layer::Column::LevelNormalized), value);
+			_layersModel->setData(selectedRows.first().siblingAtColumn(ult(Layer::Column::LevelNormalized)), value);
 		}
 	});
 
@@ -89,7 +94,7 @@ void LayerWidget::initialize(LayersModel* layersModel)
 
 		if (selectedRows.count() == 1) {
 			const auto range = _ui->layerLevelHorizontalSlider->maximum() - _ui->layerLevelHorizontalSlider->minimum();
-			_layersModel->setData(selectedRows.first().row(), ult(Layer::Column::LevelNormalized), value / static_cast<float>(range));
+			_layersModel->setData(selectedRows.first().siblingAtColumn(ult(Layer::Column::LevelNormalized)), value / static_cast<float>(range));
 		}
 	});
 
@@ -97,32 +102,25 @@ void LayerWidget::initialize(LayersModel* layersModel)
 		const auto selectedRows = _layersModel->selectionModel().selectedRows();
 
 		if (selectedRows.count() == 1) {
-			_layersModel->setData(selectedRows.first().row(), ult(Layer::Column::Opacity), 1.0f);
-			_layersModel->setData(selectedRows.first().row(), ult(Layer::Column::WindowNormalized), 1.0f);
-			_layersModel->setData(selectedRows.first().row(), ult(Layer::Column::LevelNormalized), 0.5f);
+			_layersModel->setData(selectedRows.first().siblingAtColumn(ult(Layer::Column::Opacity)), 1.0f);
+			_layersModel->setData(selectedRows.first().siblingAtColumn(ult(Layer::Column::WindowNormalized)), 1.0f);
+			_layersModel->setData(selectedRows.first().siblingAtColumn(ult(Layer::Column::LevelNormalized)), 0.5f);
 		}
 	});
 
-	/*
-	_ui->pointsLayerWidget->initialize(_layersModel);
-	_ui->imagesLayerWidget->initialize(_layersModel);
-	_ui->clustersLayerWidget->initialize(_layersModel);
-	_ui->selectionLayerWidget->initialize(_layersModel);
-	*/
+	QObject::connect(_layersModel, &LayersModel::dataChanged, this, &LayerWidget::updateData);
 
-	QObject::connect(_layersModel, &LayersModel::dataChanged, this, &LayerWidget::onDataChanged);
-
-	QObject::connect(&_layersModel->selectionModel(), &QItemSelectionModel::currentRowChanged, [this](const QModelIndex& current, const QModelIndex& previous) {
+	QObject::connect(&_layersModel->selectionModel(), &QItemSelectionModel::selectionChanged, [this](const QItemSelection& selected, const QItemSelection& deselected) {
 		const auto selectedRows = _layersModel->selectionModel().selectedRows();
 
 		if (selectedRows.isEmpty())
-			onDataChanged(QModelIndex(), QModelIndex());
+			updateData(QModelIndex(), QModelIndex());
 		else
-			onDataChanged(_layersModel->index(selectedRows.first().row(), 0), _layersModel->index(selectedRows.first().row(), _layersModel->columnCount() - 1));
+			updateData(selected.indexes().first(), selected.indexes().last());
 	});
 }
 
-void LayerWidget::onDataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>& roles /*= QVector<int>()*/)
+void LayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>& roles /*= QVector<int>()*/)
 {
 	const auto selectedRows		= _layersModel->selectionModel().selectedRows();
 	const auto noSelectedRows	= selectedRows.size();
@@ -136,7 +134,7 @@ void LayerWidget::onDataChanged(const QModelIndex& topLeft, const QModelIndex& b
 
 		if (index.isValid() && noSelectedRows == 1) {
 			validSelection	= true;
-			flags			= _layersModel->data(topLeft.row(), ult(Layer::Column::Flags), Qt::EditRole).toInt();
+			flags			= _layersModel->data(topLeft.siblingAtColumn(ult(Layer::Column::Flags)), Qt::EditRole).toInt();
 		}
 		
 		const auto mightEdit = validSelection && enabled;
@@ -151,8 +149,8 @@ void LayerWidget::onDataChanged(const QModelIndex& topLeft, const QModelIndex& b
 		}
 
 		if (column == ult(Layer::Column::Name)) {
-			const auto nameFlags	= _layersModel->flags(topLeft.row(), ult(Layer::Column::Name));
-			const auto name			= validSelection ? _layersModel->data(topLeft.row(), ult(Layer::Column::Name), Qt::EditRole).toString() : "";
+			const auto nameFlags	= _layersModel->flags(topLeft.siblingAtColumn(ult(Layer::Column::Name)));
+			const auto name			= validSelection ? _layersModel->data(topLeft.siblingAtColumn(ult(Layer::Column::Name)), Qt::EditRole).toString() : "";
 
 			_ui->layerNameLabel->setEnabled(mightEdit && nameFlags & Qt::ItemIsEditable);
 			_ui->layerNameLineEdit->setEnabled(mightEdit && nameFlags & Qt::ItemIsEditable);
@@ -164,14 +162,14 @@ void LayerWidget::onDataChanged(const QModelIndex& topLeft, const QModelIndex& b
 			}
 		}
 
-		const auto opacityFlags = _layersModel->flags(topLeft.row(), ult(Layer::Column::Opacity));
+		const auto opacityFlags = _layersModel->flags(topLeft.siblingAtColumn(ult(Layer::Column::Opacity)));
 
 		_ui->layerOpacityLabel->setEnabled(mightEdit && opacityFlags & Qt::ItemIsEditable);
 		_ui->layerOpacityDoubleSpinBox->setEnabled(mightEdit && opacityFlags & Qt::ItemIsEditable);
 		_ui->layerOpacityHorizontalSlider->setEnabled(mightEdit && opacityFlags & Qt::ItemIsEditable);
 
 		if (column == ult(Layer::Column::Opacity)) {
-			const auto opacity = validSelection ? _layersModel->data(topLeft.row(), ult(Layer::Column::Opacity), Qt::EditRole).toFloat() : 1.0f;
+			const auto opacity = validSelection ? _layersModel->data(topLeft.siblingAtColumn(ult(Layer::Column::Opacity)), Qt::EditRole).toFloat() : 1.0f;
 
 			_ui->layerOpacityDoubleSpinBox->blockSignals(true);
 			_ui->layerOpacityDoubleSpinBox->setValue(100.0f * opacity);
@@ -183,13 +181,13 @@ void LayerWidget::onDataChanged(const QModelIndex& topLeft, const QModelIndex& b
 		}
 
 		if (column == ult(Layer::Column::WindowNormalized)) {
-			const auto windowFlags = _layersModel->flags(topLeft.row(), ult(Layer::Column::WindowNormalized));
+			const auto windowFlags = _layersModel->flags(topLeft.siblingAtColumn(ult(Layer::Column::WindowNormalized)));
 
 			_ui->layerWindowLabel->setEnabled(mightEdit && windowFlags & Qt::ItemIsEditable);
 			_ui->layerWindowDoubleSpinBox->setEnabled(mightEdit && windowFlags & Qt::ItemIsEditable);
 			_ui->layerWindowHorizontalSlider->setEnabled(mightEdit && windowFlags & Qt::ItemIsEditable);
 
-			const auto window = validSelection ? _layersModel->data(topLeft.row(), ult(Layer::Column::WindowNormalized), Qt::EditRole).toFloat() : 1.0f;
+			const auto window = validSelection ? _layersModel->data(topLeft.siblingAtColumn(ult(Layer::Column::WindowNormalized)), Qt::EditRole).toFloat() : 1.0f;
 
 			_ui->layerWindowDoubleSpinBox->blockSignals(true);
 			_ui->layerWindowDoubleSpinBox->setValue(window);
@@ -201,13 +199,13 @@ void LayerWidget::onDataChanged(const QModelIndex& topLeft, const QModelIndex& b
 		}
 
 		if (column == ult(Layer::Column::LevelNormalized)) {
-			const auto levelFlags = _layersModel->flags(topLeft.row(), ult(Layer::Column::LevelNormalized));
+			const auto levelFlags = _layersModel->flags(topLeft.siblingAtColumn(ult(Layer::Column::LevelNormalized)));
 
 			_ui->layerLevelLabel->setEnabled(mightEdit && levelFlags & Qt::ItemIsEditable);
 			_ui->layerLevelDoubleSpinBox->setEnabled(mightEdit && levelFlags & Qt::ItemIsEditable);
 			_ui->layerLevelHorizontalSlider->setEnabled(mightEdit && levelFlags & Qt::ItemIsEditable);
 
-			const auto level = validSelection ? _layersModel->data(topLeft.row(), ult(Layer::Column::LevelNormalized), Qt::EditRole).toFloat() : 0.5f;
+			const auto level = validSelection ? _layersModel->data(topLeft.siblingAtColumn(ult(Layer::Column::LevelNormalized)), Qt::EditRole).toFloat() : 0.5f;
 
 			_ui->layerLevelDoubleSpinBox->blockSignals(true);
 			_ui->layerLevelDoubleSpinBox->setValue(level);
@@ -218,36 +216,16 @@ void LayerWidget::onDataChanged(const QModelIndex& topLeft, const QModelIndex& b
 			_ui->layerLevelHorizontalSlider->blockSignals(false);
 		}
 
-		if (column == ult(Layer::Column::WindowNormalized) || column == ult(Layer::Column::LevelNormalized)) {
-			const auto window	= _layersModel->data(topLeft.row(), ult(Layer::Column::WindowNormalized), Qt::EditRole).toFloat();
-			const auto level	= _layersModel->data(topLeft.row(), ult(Layer::Column::LevelNormalized), Qt::EditRole).toFloat();
+		if (column == ult(Layer::Column::Opacity) || column == ult(Layer::Column::WindowNormalized) || column == ult(Layer::Column::LevelNormalized)) {
+			const auto opacity	= _layersModel->data(topLeft.siblingAtColumn(ult(Layer::Column::Opacity)), Qt::EditRole).toFloat();
+			const auto window	= _layersModel->data(topLeft.siblingAtColumn(ult(Layer::Column::WindowNormalized)), Qt::EditRole).toFloat();
+			const auto level	= _layersModel->data(topLeft.siblingAtColumn(ult(Layer::Column::LevelNormalized)), Qt::EditRole).toFloat();
 
-			_ui->resetWindowLevelPushButton->setEnabled(window != 1.0f || level != 0.5f);
+			_ui->resetWindowLevelPushButton->setEnabled(opacity != 1.0f || window != 1.0f || level != 0.5f);
 		}
 	}
-
-
-
-
-	
-	/*
-	
-	
-
-	const auto maskFlags = _layersModel->flags(topLeft.row(), to_underlying(Layer::Column::Mask));
-
-	_ui->maskCheckBox->setEnabled(mightEdit && maskFlags & Qt::ItemIsEditable);
-
-	const auto colorFlags = _layersModel->flags(topLeft.row(), to_underlying(Layer::Column::ColorMap));
-	*/
 
 	const auto type = topLeft.siblingAtColumn(ult(Layer::Column::Type)).data(Qt::EditRole).toInt();
 
 	_ui->settingsStackedWidget->setCurrentIndex(type);
-
-	/*
-	_ui->pointsLayerWidget->updateData(topLeft, bottomRight, roles);
-	_ui->clustersLayerWidget->updateData(topLeft, bottomRight, roles);
-	_ui->selectionLayerWidget->updateData(topLeft, bottomRight, roles);
-	*/
 }

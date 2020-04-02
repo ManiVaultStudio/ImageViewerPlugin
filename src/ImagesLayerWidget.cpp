@@ -4,44 +4,71 @@
 
 #include "ui_ImagesLayerWidget.h"
 
-#include <QItemSelectionModel>
-#include <QStringListModel>
 #include <QDebug>
 
 ImagesLayerWidget::ImagesLayerWidget(QWidget* parent) :
-	ModelWidget(parent, static_cast<int>(ImagesLayer::Column::End)),
-	_ui{ std::make_unique<Ui::ImagesLayerWidget>() }
+	QWidget(parent),
+	_ui{ std::make_unique<Ui::ImagesLayerWidget>() },
+	_layersModel(nullptr)
 {
 	_ui->setupUi(this);
 }
 
 void ImagesLayerWidget::initialize(LayersModel* layersModel)
 {
-	ModelWidget::initialize(layersModel);
+	_layersModel = layersModel;
 
-	/*
-	QObject::connect(_->selectionModel(), &QItemSelectionModel::currentRowChanged, [this](const QModelIndex& current, const QModelIndex& previous) {
-		qDebug() << "Current" << current;
-		qDebug() << "Index" << _layersModel->index(0, 0, current);
-		setIndex(_layersModel->index(0, 0, current));
+	QObject::connect(_layersModel, &LayersModel::dataChanged, this, &ImagesLayerWidget::updateData);
+
+	QObject::connect(&_layersModel->selectionModel(), &QItemSelectionModel::selectionChanged, [this](const QItemSelection& selected, const QItemSelection& deselected) {
+		const auto selectedRows = _layersModel->selectionModel().selectedRows();
+
+		if (selectedRows.isEmpty())
+			updateData(QModelIndex(), QModelIndex());
+		else
+			updateData(selected.indexes().first(), selected.indexes().last());
 	});
-	*/
 }
 
-void ImagesLayerWidget::updateData(const QModelIndex& index)
+void ImagesLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>& roles /*= QVector<int>()*/)
 {
-	qDebug() << "Update data" << index.data(Qt::DisplayRole);
-}
+	const auto selectedRows		= _layersModel->selectionModel().selectedRows();
+	const auto noSelectedRows	= selectedRows.size();
+	const auto enabled			= _layersModel->data(topLeft.row(), ult(Layer::Column::Enabled), Qt::EditRole).toBool();
 
-bool ImagesLayerWidget::shouldUpdate(const QModelIndex& index) const
-{
-	/*
-	qDebug() << "index.parent()" << index.parent();
-	return true;
-	const auto type = static_cast<LayerItem::Type>(_layersModel->data(index.parent().row(), static_cast<int>(LayerItem::Column::Type), Qt::EditRole).toInt());
+	for (int column = topLeft.column(); column <= bottomRight.column(); column++) {
+		const auto index = _layersModel->index(topLeft.row(), column);
 
-	return type == LayerItem::Type::Images;
-	*/
+		auto validSelection = false;
+		auto flags = 0;
 
-	return true;
+		if (index.isValid() && noSelectedRows == 1) {
+			validSelection = true;
+			flags = _layersModel->data(topLeft.row(), ult(Layer::Column::Flags), Qt::EditRole).toInt();
+		}
+		
+		const auto mightEdit = validSelection && enabled;
+
+		_ui->groupBox->setEnabled(enabled);
+
+		/*
+		const auto opacityFlags = _layersModel->flags(topLeft.row(), ult(Layer::Column::Opacity));
+
+		_ui->layerOpacityLabel->setEnabled(mightEdit && opacityFlags & Qt::ItemIsEditable);
+		_ui->layerOpacityDoubleSpinBox->setEnabled(mightEdit && opacityFlags & Qt::ItemIsEditable);
+		_ui->layerOpacityHorizontalSlider->setEnabled(mightEdit && opacityFlags & Qt::ItemIsEditable);
+
+		if (column == ult(Layer::Column::Opacity)) {
+			const auto opacity = validSelection ? _layersModel->data(topLeft.row(), ult(Layer::Column::Opacity), Qt::EditRole).toFloat() : 1.0f;
+
+			_ui->layerOpacityDoubleSpinBox->blockSignals(true);
+			_ui->layerOpacityDoubleSpinBox->setValue(100.0f * opacity);
+			_ui->layerOpacityDoubleSpinBox->blockSignals(false);
+
+			_ui->layerOpacityHorizontalSlider->blockSignals(true);
+			_ui->layerOpacityHorizontalSlider->setValue(100.0f * opacity);
+			_ui->layerOpacityHorizontalSlider->blockSignals(false);
+		}
+		*/
+	}
 }

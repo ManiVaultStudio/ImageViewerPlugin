@@ -1,15 +1,17 @@
 #pragma once
 
-#include "ModelWidget.h"
-
 #include <memory>
+
+#include <QWidget>
 
 namespace Ui {
 	class ImagesLayerWidget;
 }
 
+class LayersModel;
+
 /** TODO */
-class ImagesLayerWidget : public ModelWidget
+class ImagesLayerWidget : public QWidget
 {
 public:
 	/** TODO */
@@ -18,14 +20,10 @@ public:
 	/** TODO */
 	void initialize(LayersModel* layersModel);
 
-protected: // Inherited
-
 	/** TODO */
-	void updateData(const QModelIndex& index);
-
-	/** TODO */
-	bool shouldUpdate(const QModelIndex& index) const;
+	void updateData(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>& roles = QVector<int>());
 
 private:
-	std::unique_ptr<Ui::ImagesLayerWidget>	_ui;	/** TODO */
+	std::unique_ptr<Ui::ImagesLayerWidget>	_ui;				/** TODO */
+	LayersModel*							_layersModel;		/** TODO */
 };

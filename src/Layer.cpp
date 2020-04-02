@@ -296,10 +296,8 @@ QVariant Layer::name(const int& role) const
 		case Qt::ToolTipRole:
 			return QString("Name: %1").arg(_name);
 
-		/*
 		case Qt::CheckStateRole:
 			return flag(Layer::Flag::Enabled, Qt::EditRole).toBool() ? Qt::Checked : Qt::Unchecked;
-		*/
 		
 		/*
 		case Qt::DecorationRole:
@@ -444,14 +442,6 @@ QVariant Layer::flag(const Layer::Flag& flag, const int& role) const
 				default:
 					break;
 			}
-
-			break;
-		}
-
-		case Qt::CheckStateRole:
-		{
-			if (flag == Layer::Flag::Enabled)
-				return isFlagSet ? Qt::Checked : Qt::Unchecked;
 
 			break;
 		}

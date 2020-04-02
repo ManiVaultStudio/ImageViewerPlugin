@@ -16,10 +16,10 @@ int ClustersLayer::noColumns() const
 
 Qt::ItemFlags ClustersLayer::flags(const QModelIndex& index) const
 {
-	if (isBaseLayerIndex(index))
-		return Layer::flags(index);
+	auto flags = Layer::flags(index);
 
-	int flags = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+	if (index.column() == ult(Layer::Column::WindowNormalized) || index.column() == ult(Layer::Column::LevelNormalized))
+		flags &= ~Qt::ItemIsEditable;
 
 	switch (static_cast<Column>(index.column())) {
 		default:

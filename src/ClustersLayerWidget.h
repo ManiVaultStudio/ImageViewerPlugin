@@ -21,7 +21,7 @@ public:
 	void initialize(LayersModel* layersModel);
 
 	/** TODO */
-	void updateData(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles = QVector<int>());
+	void updateData(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int> &roles = QVector<int>());
 
 private:
 	std::unique_ptr<Ui::ClustersLayerWidget>	_ui;				/** TODO */

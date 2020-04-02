@@ -47,8 +47,7 @@ public: // Data access
 		int role = Qt::DisplayRole) const override;
 
 	/** TODO */
-	QModelIndex index(int row, int column,
-		const QModelIndex &parent = QModelIndex()) const override;
+	QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
 	
 	/** TODO */
 	QModelIndex parent(const QModelIndex &index) const override;
@@ -58,8 +57,6 @@ public: // Data access
 
 	/** TODO */
 	int columnCount(const QModelIndex &parent = QModelIndex()) const override;
-
-	
 
 	/** TODO */
 	bool insertLayer(int row, Layer* layer, const QModelIndex& parent = QModelIndex());

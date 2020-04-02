@@ -16,10 +16,7 @@ int PointsLayer::noColumns() const
 
 Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
 {
-	if (isBaseLayerIndex(index))
-		return Layer::flags(index);
-
-	int flags = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+	auto flags = Layer::flags(index);
 
 	switch (static_cast<Column>(index.column())) {
 		default:
