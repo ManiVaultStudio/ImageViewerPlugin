@@ -41,15 +41,13 @@ Qt::ItemFlags Layer::flags(const QModelIndex& index) const
 	switch (static_cast<Column>(index.column())) {
 		case Column::Name:
 		{
+			flags |= Qt::ItemIsUserCheckable;
+
 			if (flag(Layer::Flag::Renamable, Qt::EditRole).toBool())
 				flags |= Qt::ItemIsEditable;
 
 			break;
 		}
-
-		case Column::Enabled:
-			flags |= Qt::ItemIsEditable | Qt::ItemIsUserCheckable;
-			break;
 
 		case Column::Type:
 			break;
@@ -129,12 +127,6 @@ QVariant Layer::data(const QModelIndex& index, const int& role) const
 		case Column::Name:
 			return name(role);
 
-		case Column::Enabled:
-			if (role == Qt::DisplayRole)
-				return "";
-			else
-				return flag(Layer::Flag::Enabled, role);
-
 		case Column::Type:
 			return type(role);
 
@@ -184,8 +176,8 @@ void Layer::setData(const QModelIndex& index, const QVariant& value, const int& 
 		case Qt::CheckStateRole:
 		{
 			switch (column) {
-				case Column::Enabled:
-					setFlag(Layer::Flag::Enabled, value == Qt::Checked ? true : false);
+				case Column::Name:
+					setFlag(Layer::Flag::Enabled, value.toBool());
 					break;
 
 				default:
@@ -200,10 +192,6 @@ void Layer::setData(const QModelIndex& index, const QVariant& value, const int& 
 			switch (column) {
 				case Column::Name:
 					setName(value.toString());
-					break;
-
-				case Column::Enabled:
-					setFlag(Layer::Flag::Enabled, value.toBool());
 					break;
 
 				case Column::Type:
@@ -297,35 +285,8 @@ QVariant Layer::name(const int& role) const
 			return QString("Name: %1").arg(_name);
 
 		case Qt::CheckStateRole:
-			return flag(Layer::Flag::Enabled, Qt::EditRole).toBool() ? Qt::Checked : Qt::Unchecked;
+			return aggregatedCheckState();
 		
-		/*
-		case Qt::DecorationRole:
-		{
-			switch (_type) {
-				case Type::Images:
-					return u8"\uf03e";
-
-				case Type::Selection:
-					return u8"\uf065";
-
-				case Type::Clusters:
-					return u8"\uf141";
-
-				case Type::Points:
-					return u8"\uf03e";
-
-				default:
-					break;
-			}
-
-			break;
-		}
-		*/
-
-		//case Qt::FontRole:
-		//	return QFont("Font Awesome 5 Free Solid", 9);
-
 		default:
 			break;
 	}
@@ -459,6 +420,14 @@ void Layer::setFlag(const Layer::Flag& flag, const bool& enabled /*= true*/)
 		_flags |= static_cast<int>(flag);
 	else
 		_flags = _flags & ~static_cast<int>(flag);
+
+	if (hasChildren()) {
+		for (auto treeItem : _children) {
+			auto layer = static_cast<Layer*>(treeItem);
+
+			layer->setFlag(flag, enabled);
+		}
+	}
 }
 
 void Layer::setFlags(const int& flags)
@@ -732,4 +701,23 @@ void Layer::computeDisplayRange()
 
 	_displayRange.setMin(std::clamp(_level - (_window / 2.0f), _imageRange.min(), _imageRange.max()));
 	_displayRange.setMax(std::clamp(_level + (_window / 2.0f), _imageRange.min(), _imageRange.max()));
+}
+
+Qt::CheckState Layer::aggregatedCheckState() const
+{
+	if (isLeaf())
+		return flag(Flag::Enabled, Qt::EditRole).toBool() ? Qt::Checked : Qt::Unchecked;
+
+	QSet<int> states;
+
+	for (auto treeItem : _children) {
+		auto layer = static_cast<Layer*>(treeItem);
+
+		states.insert(layer->aggregatedCheckState());
+	}
+
+	if (states.count() > 1)
+		return Qt::PartiallyChecked;
+
+	return static_cast<Qt::CheckState>(*states.begin());
 }

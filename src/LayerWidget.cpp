@@ -31,9 +31,10 @@ void LayerWidget::initialize(LayersModel* layersModel)
 
 	QObject::connect(_ui->layerEnabledCheckBox, &QCheckBox::stateChanged, [this](int state) {
 		const auto selectedRows = _layersModel->selectionModel().selectedRows();
-
+		
 		if (selectedRows.count() == 1) {
-			_layersModel->setData(selectedRows.first().siblingAtColumn(ult(Layer::Column::Enabled)), static_cast<int>(state), Qt::CheckStateRole);
+			qDebug() << selectedRows.first();
+			_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(Layer::Column::Name)), static_cast<int>(state), Qt::CheckStateRole);
 		}
 	});
 
@@ -124,10 +125,10 @@ void LayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex& bott
 {
 	const auto selectedRows		= _layersModel->selectionModel().selectedRows();
 	const auto noSelectedRows	= selectedRows.size();
-	const auto enabled			= _layersModel->data(topLeft.row(), ult(Layer::Column::Enabled), Qt::EditRole).toBool();
+	const auto enabled			= _layersModel->data(topLeft.siblingAtColumn(ult(Layer::Column::Name)), Qt::CheckStateRole).toBool();
 
 	for (int column = topLeft.column(); column <= bottomRight.column(); column++) {
-		const auto index	= _layersModel->index(topLeft.row(), column);
+		const auto index	= topLeft.siblingAtColumn(column);
 
 		auto validSelection	= false;
 		auto flags			= 0;
@@ -141,14 +142,12 @@ void LayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex& bott
 
 		_ui->generalGroupBox->setEnabled(noSelectedRows == 1);
 
-		if (column == ult(Layer::Column::Enabled)) {
+		if (column == ult(Layer::Column::Name)) {
 			_ui->layerEnabledCheckBox->setEnabled(noSelectedRows == 1);
 			_ui->layerEnabledCheckBox->blockSignals(true);
 			_ui->layerEnabledCheckBox->setChecked(enabled);
 			_ui->layerEnabledCheckBox->blockSignals(false);
-		}
 
-		if (column == ult(Layer::Column::Name)) {
 			const auto nameFlags	= _layersModel->flags(topLeft.siblingAtColumn(ult(Layer::Column::Name)));
 			const auto name			= validSelection ? _layersModel->data(topLeft.siblingAtColumn(ult(Layer::Column::Name)), Qt::EditRole).toString() : "";
 

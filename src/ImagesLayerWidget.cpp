@@ -34,7 +34,7 @@ void ImagesLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 {
 	const auto selectedRows		= _layersModel->selectionModel().selectedRows();
 	const auto noSelectedRows	= selectedRows.size();
-	const auto enabled			= _layersModel->data(topLeft.row(), ult(Layer::Column::Enabled), Qt::EditRole).toBool();
+	const auto enabled			= _layersModel->data(topLeft.siblingAtColumn(ult(Layer::Column::Name)), Qt::CheckStateRole).toBool();
 
 	for (int column = topLeft.column(); column <= bottomRight.column(); column++) {
 		const auto index = _layersModel->index(topLeft.row(), column);

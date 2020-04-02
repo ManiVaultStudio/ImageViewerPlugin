@@ -38,7 +38,13 @@ public: // Tree item
 	/** TODO */
 	int childIndex() const;
 
-private:
+	/** TODO */
+	bool hasChildren() const;
+
+	/** TODO */
+	bool isLeaf() const;
+
+protected:
 	QVector<TreeItem*>		_children;		/** TODO */
 	TreeItem*				_parent;		/** TODO */
 };

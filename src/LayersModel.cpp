@@ -69,10 +69,13 @@ bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int r
 
 	layer->setData(index, value, role);
 
-	if (index.column() == ult(Layer::Column::Enabled))
-		emit dataChanged(this->index(index.row(), 0), this->index(index.row(), layer->noColumns() - 1));
-	else 
+	if (index.column() == ult(Layer::Column::Name) && role == Qt::CheckStateRole) {
+		layer->setFlag(Layer::Flag::Enabled, value == Qt::Checked ? true : false);
+		emit dataChanged(index.siblingAtColumn(ult(Layer::Column::Start)), index.siblingAtColumn(ult(Layer::Column::End)));
+	}
+	else {
 		emit dataChanged(index, index);
+	}
 
 	return true;
 }

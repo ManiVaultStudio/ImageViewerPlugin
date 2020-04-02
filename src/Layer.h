@@ -18,7 +18,6 @@ public:
 	/** TODO */
 	enum class Column {
 		Name,
-		Enabled,
 		Type,
 		ID,
 		Dataset,
@@ -31,7 +30,7 @@ public:
 		DisplayRange,
 		Flags,
 
-		Start = Enabled,
+		Start = Name,
 		End = Flags
 	};
 
@@ -39,9 +38,6 @@ public:
 		switch (column) {
 			case Column::Name:
 				return "Name";
-
-			case Column::Enabled:
-				return "";
 
 			case Column::Type:
 				return "";
@@ -240,6 +236,9 @@ protected:
 
 	/** TODO */
 	void computeDisplayRange();
+
+	/** TODO */
+	Qt::CheckState aggregatedCheckState() const;
 
 signals:
 

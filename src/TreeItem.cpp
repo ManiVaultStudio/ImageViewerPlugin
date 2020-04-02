@@ -70,3 +70,13 @@ int TreeItem::childIndex() const
 
 	return 0;
 }
+
+bool TreeItem::hasChildren() const
+{
+	return childCount() > 0;
+}
+
+bool TreeItem::isLeaf() const
+{
+	return !hasChildren();
+}
