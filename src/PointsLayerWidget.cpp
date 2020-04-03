@@ -143,6 +143,14 @@ void PointsLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 			_ui->channel3ComboBox->setEnabled(noChannels == 3);
 			_ui->colormapLabel->setEnabled(noChannels <= 2);
 			_ui->colormapComboBox->setEnabled(noChannels <= 2);
+
+			_ui->colormapLabel->setText("Colormap");
+
+			if (noChannels == 1)
+				_ui->colormapLabel->setText("1D Colormap");
+
+			if (noChannels == 2)
+				_ui->colormapLabel->setText("2D Colormap");
 		}
 
 		if (column == ult(PointsLayer::Column::NoPoints)) {
