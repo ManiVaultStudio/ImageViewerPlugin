@@ -144,6 +144,9 @@
           <property name="selectionMode">
            <enum>QAbstractItemView::SingleSelection</enum>
           </property>
+          <property name="indentation">
+           <number>15</number>
+          </property>
           <property name="rootIsDecorated">
            <bool>true</bool>
           </property>

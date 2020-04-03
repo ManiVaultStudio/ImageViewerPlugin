@@ -33,11 +33,11 @@ void ImagesLayerWidget::initialize(LayersModel* layersModel)
 	});
 
 	QObject::connect(_ui->currentImageComboBox, qOverload<int>(&QComboBox::currentIndexChanged), [this](int currentIndex) {
-		_layersModel->setData(_layersModel->selectionModel().currentIndex().row(), ult(ImagesLayer::Column::CurrentImageId), currentIndex);
+		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(ImagesLayer::Column::CurrentImageId)), currentIndex);
 	});
 
 	QObject::connect(_ui->averageCheckBox, &QCheckBox::stateChanged, [this](int state) {
-		_layersModel->setData(_layersModel->selectionModel().currentIndex().row(), ult(ImagesLayer::Column::Average), state);
+		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(ImagesLayer::Column::Average)), state);
 	});
 }
 
@@ -80,6 +80,12 @@ void ImagesLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 			_ui->noDimensionsLineEdit->blockSignals(true);
 			_ui->noDimensionsLineEdit->setText(QString::number(_layersModel->data(topLeft.siblingAtColumn(ult(ImagesLayer::Column::NoDimensions)), Qt::EditRole).toInt()));
 			_ui->noDimensionsLineEdit->blockSignals(false);
+		}
+
+		if (column == ult(ImagesLayer::Column::SelectionSize)) {
+			_ui->selectionSizeLineEdit ->blockSignals(true);
+			_ui->selectionSizeLineEdit->setText(QString::number(_layersModel->data(topLeft.siblingAtColumn(ult(ImagesLayer::Column::SelectionSize)), Qt::EditRole).toInt()));
+			_ui->selectionSizeLineEdit->blockSignals(false);
 		}
 
 		const auto average				= _layersModel->data(topLeft.siblingAtColumn(ult(ImagesLayer::Column::Average)), Qt::EditRole).toBool();

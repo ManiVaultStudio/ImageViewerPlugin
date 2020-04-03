@@ -26,9 +26,10 @@ public:
 		CurrentImageFilePath,
 		Average,
 		Selection,
+		SelectionSize,
 
 		Start = NoImages,
-		End = Selection
+		End = SelectionSize
 	};
 
 	/** TODO */

@@ -46,6 +46,7 @@ Qt::ItemFlags ImagesLayer::flags(const QModelIndex& index) const
 			break;
 
 		case Column::Selection:
+		case Column::SelectionSize:
 			break;
 
 		default:
@@ -106,6 +107,9 @@ QVariant ImagesLayer::data(const QModelIndex& index, const int& role) const
 		case Column::Selection:
 			return _images->selection(role);
 
+		case Column::SelectionSize:
+			return _images->selectionSize(role);
+
 		default:
 			break;
 	}
@@ -147,6 +151,7 @@ QModelIndexList ImagesLayer::setData(const QModelIndex& index, const QVariant& v
 			break;
 
 		case Column::Selection:
+		case Column::SelectionSize:
 			break;
 
 		default:

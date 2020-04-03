@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>270</width>
-    <height>307</height>
+    <height>801</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -50,51 +50,10 @@
       <string>Images</string>
      </property>
      <layout class="QGridLayout" name="gridLayout">
-      <item row="2" column="0">
-       <widget class="QLabel" name="noPointsLabel">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="text">
-         <string>No. points</string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="1">
-       <widget class="QLineEdit" name="imageSizeLineEdit">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-       </widget>
-      </item>
       <item row="0" column="0">
        <widget class="QLabel" name="currentImageLabel">
         <property name="text">
          <string>Image(s)</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1">
-       <widget class="QLineEdit" name="noDimensionsLineEdit">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QLineEdit" name="noPointsLineEdit">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="0">
-       <widget class="QLabel" name="selectionSizeLabel">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="text">
-         <string>Selection size</string>
         </property>
        </widget>
       </item>
@@ -108,14 +67,37 @@
         </property>
        </widget>
       </item>
-      <item row="5" column="1">
-       <widget class="QLineEdit" name="selectionSizeLineEdit">
+      <item row="1" column="1">
+       <widget class="QCheckBox" name="averageCheckBox">
+        <property name="text">
+         <string>Average</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="datasetInfoGroupBox">
+     <property name="title">
+      <string>Dataset info</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_2">
+      <item row="0" column="1">
+       <widget class="QLineEdit" name="noPointsLineEdit">
         <property name="enabled">
          <bool>false</bool>
         </property>
        </widget>
       </item>
-      <item row="3" column="0">
+      <item row="1" column="1">
+       <widget class="QLineEdit" name="noDimensionsLineEdit">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
        <widget class="QLabel" name="noDimensionsLabel">
         <property name="enabled">
          <bool>false</bool>
@@ -125,7 +107,7 @@
         </property>
        </widget>
       </item>
-      <item row="4" column="0">
+      <item row="2" column="0">
        <widget class="QLabel" name="imageSizeLabel">
         <property name="enabled">
          <bool>false</bool>
@@ -135,10 +117,37 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="1">
-       <widget class="QCheckBox" name="averageCheckBox">
+      <item row="2" column="1">
+       <widget class="QLineEdit" name="imageSizeLineEdit">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="noPointsLabel">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="text">
-         <string>Average</string>
+         <string>No. points</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="selectionSizeLabel">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>Selection size</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QLineEdit" name="selectionSizeLineEdit">
+        <property name="enabled">
+         <bool>false</bool>
         </property>
        </widget>
       </item>

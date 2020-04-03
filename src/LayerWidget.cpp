@@ -16,6 +16,8 @@ LayerWidget::LayerWidget(QWidget* parent) :
 	_layersModel(nullptr)
 {
 	_ui->setupUi(this);
+
+	_ui->generalGroupBox->setVisible(false);
 }
 
 void LayerWidget::initialize(LayersModel* layersModel)
@@ -126,6 +128,9 @@ void LayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex& bott
 	const auto noSelectedRows	= selectedRows.size();
 	const auto enabled			= _layersModel->data(topLeft.siblingAtColumn(ult(Layer::Column::Name)), Qt::CheckStateRole).toInt() == Qt::Checked;
 
+	_ui->generalGroupBox->setVisible(noSelectedRows == 1);
+	_ui->generalGroupBox->setEnabled(noSelectedRows == 1);
+
 	for (int column = topLeft.column(); column <= bottomRight.column(); column++) {
 		const auto index	= topLeft.siblingAtColumn(column);
 
@@ -138,8 +143,6 @@ void LayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex& bott
 		}
 		
 		const auto mightEdit = validSelection && enabled;
-
-		_ui->generalGroupBox->setEnabled(noSelectedRows == 1);
 
 		if (column == ult(Layer::Column::Name)) {
 			_ui->layerEnabledCheckBox->setEnabled(noSelectedRows == 1);
@@ -225,5 +228,6 @@ void LayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex& bott
 
 	const auto type = topLeft.siblingAtColumn(ult(Layer::Column::Type)).data(Qt::EditRole).toInt();
 
+	_ui->settingsStackedWidget->setVisible(noSelectedRows == 1);
 	_ui->settingsStackedWidget->setCurrentIndex(type);
 }
