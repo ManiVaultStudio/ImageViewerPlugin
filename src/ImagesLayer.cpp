@@ -113,10 +113,12 @@ QVariant ImagesLayer::data(const QModelIndex& index, const int& role) const
 	return QVariant();
 }
 
-void ImagesLayer::setData(const QModelIndex& index, const QVariant& value, const int& role)
+QModelIndexList ImagesLayer::setData(const QModelIndex& index, const QVariant& value, const int& role)
 {
 	if (isBaseLayerIndex(index))
 		return Layer::setData(index, value, role);
+
+	QModelIndexList affectedIndices;
 
 	switch (static_cast<Column>(index.column())) {
 		case Column::NoImages:
@@ -141,6 +143,7 @@ void ImagesLayer::setData(const QModelIndex& index, const QVariant& value, const
 
 		case Column::Average:
 			setAverage(value.toBool());
+			affectedIndices << index.siblingAtColumn(ult(Column::FilteredImageNames));
 			break;
 
 		case Column::Selection:
@@ -149,6 +152,8 @@ void ImagesLayer::setData(const QModelIndex& index, const QVariant& value, const
 		default:
 			break;
 	}
+
+	return affectedIndices;
 }
 
 QVariant ImagesLayer::filteredImageNames(const int& role /*= Qt::DisplayRole*/) const

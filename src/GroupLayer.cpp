@@ -34,6 +34,8 @@ QVariant GroupLayer::data(const QModelIndex& index, const int& role) const
 	return QVariant();
 }
 
-void GroupLayer::setData(const QModelIndex& index, const QVariant& value, const int& role)
+QModelIndexList GroupLayer::setData(const QModelIndex& index, const QVariant& value, const int& role)
 {
+	if (isBaseLayerIndex(index))
+		return Layer::setData(index, value, role);
 }

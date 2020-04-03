@@ -39,7 +39,7 @@ QVariant PointsLayer::data(const QModelIndex& index, const int& role) const
 	return QVariant();
 }
 
-void PointsLayer::setData(const QModelIndex& index, const QVariant& value, const int& role)
+QModelIndexList PointsLayer::setData(const QModelIndex& index, const QVariant& value, const int& role)
 {
 	if (isBaseLayerIndex(index))
 		return Layer::setData(index, value, role);

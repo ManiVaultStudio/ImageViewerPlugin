@@ -46,7 +46,7 @@ public: // Inherited MVC
 	QVariant data(const QModelIndex& index, const int& role) const override;
 
 	/** TODO */
-	void setData(const QModelIndex& index, const QVariant& value, const int& role) override;
+	QModelIndexList setData(const QModelIndex& index, const QVariant& value, const int& role) override;
 
 public: // Getters/setters
 

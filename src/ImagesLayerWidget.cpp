@@ -32,7 +32,7 @@ void ImagesLayerWidget::initialize(LayersModel* layersModel)
 		}
 	});
 
-	QObject::connect(_ui->imagesComboBox, qOverload<int>(&QComboBox::currentIndexChanged), [this](int currentIndex) {
+	QObject::connect(_ui->currentImageComboBox, qOverload<int>(&QComboBox::currentIndexChanged), [this](int currentIndex) {
 		_layersModel->setData(_layersModel->selectionModel().currentIndex().row(), ult(ImagesLayer::Column::CurrentImageId), currentIndex);
 	});
 
@@ -82,17 +82,21 @@ void ImagesLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 			_ui->noDimensionsLineEdit->blockSignals(false);
 		}
 
-		const auto filteredImageNamesFlags = _layersModel->flags(topLeft.siblingAtColumn(ult(ImagesLayer::Column::FilteredImageNames)));
+		const auto average				= _layersModel->data(topLeft.siblingAtColumn(ult(ImagesLayer::Column::Average)), Qt::EditRole).toBool();
+		const auto averageImagesFlags	= _layersModel->flags(topLeft.siblingAtColumn(ult(ImagesLayer::Column::Average)));
 
-		_ui->imagesComboBox->setEnabled(mightEdit && filteredImageNamesFlags & Qt::ItemIsEditable);
-		_ui->imagesLabel->setEnabled(mightEdit && filteredImageNamesFlags & Qt::ItemIsEditable);
+		_ui->currentImageComboBox->setEnabled(mightEdit && !average);
+		_ui->currentImageLabel->setEnabled(mightEdit && !average);
 
-		if (column == ult(ImagesLayer::Column::FilteredImageNames)) {
-			const auto filteredImageNames = validSelection ? _layersModel->data(topLeft.siblingAtColumn(ult(ImagesLayer::Column::FilteredImageNames)), Qt::EditRole).toStringList() : QStringList();
+		if (column == ult(ImagesLayer::Column::CurrentImageName) || column == ult(ImagesLayer::Column::FilteredImageNames)) {
+			
+			const auto averageImageNames	= QStringList() << _layersModel->data(topLeft.siblingAtColumn(ult(ImagesLayer::Column::FilteredImageNames)), Qt::DisplayRole).toString();
+			const auto imageNames			= _layersModel->data(topLeft.siblingAtColumn(ult(ImagesLayer::Column::FilteredImageNames)), Qt::EditRole).toStringList();
 
-			_ui->imagesComboBox->blockSignals(true);
-			_ui->imagesComboBox->setModel(new QStringListModel(filteredImageNames));
-			_ui->imagesComboBox->blockSignals(false);
+			_ui->currentImageComboBox->blockSignals(true);
+			_ui->currentImageComboBox->setModel(new QStringListModel(average ? averageImageNames : imageNames));
+			_ui->currentImageComboBox->setCurrentText(_layersModel->data(topLeft.siblingAtColumn(ult(ImagesLayer::Column::CurrentImageName)), Qt::EditRole).toString());
+			_ui->currentImageComboBox->blockSignals(false);
 		}
 
 		const auto averageFlags = _layersModel->flags(topLeft.siblingAtColumn(ult(ImagesLayer::Column::Average)));

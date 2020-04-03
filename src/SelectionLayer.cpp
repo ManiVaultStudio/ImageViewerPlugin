@@ -40,7 +40,7 @@ QVariant SelectionLayer::data(const QModelIndex& index, const int& role) const
 	return QVariant();
 }
 
-void SelectionLayer::setData(const QModelIndex& index, const QVariant& value, const int& role)
+QModelIndexList SelectionLayer::setData(const QModelIndex& index, const QVariant& value, const int& role)
 {
 	if (isBaseLayerIndex(index))
 		return Layer::setData(index, value, role);

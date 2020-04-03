@@ -139,7 +139,7 @@ public: // MVC
 	virtual QVariant data(const QModelIndex& index, const int& role) const;
 
 	/** TODO */
-	virtual void setData(const QModelIndex& index, const QVariant& value, const int& role);
+	virtual QModelIndexList setData(const QModelIndex& index, const QVariant& value, const int& role);
 
 	/** TODO */
 	bool isBaseLayerIndex(const QModelIndex& index) const;

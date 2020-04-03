@@ -165,8 +165,12 @@ QVariant Layer::data(const QModelIndex& index, const int& role) const
 	return QVariant();
 }
 
-void Layer::setData(const QModelIndex& index, const QVariant& value, const int& role)
+QModelIndexList Layer::setData(const QModelIndex& index, const QVariant& value, const int& role)
 {
+	QModelIndexList affectedIndices;
+
+	affectedIndices.append(index);
+
 	const auto column = static_cast<Column>(index.column());
 
 	switch (role)
@@ -175,8 +179,15 @@ void Layer::setData(const QModelIndex& index, const QVariant& value, const int& 
 		{
 			switch (column) {
 				case Column::Name:
+				{
 					setFlag(Layer::Flag::Enabled, value.toBool());
+
+					for (int column = ult(Column::Type); column <= ult(Column::End); ++column) {
+						affectedIndices.append(index.siblingAtColumn(column));
+					}
+
 					break;
+				}
 
 				default:
 					break;
@@ -241,6 +252,8 @@ void Layer::setData(const QModelIndex& index, const QVariant& value, const int& 
 		default:
 			break;
 	}
+
+	return affectedIndices;
 }
 
 bool Layer::isBaseLayerIndex(const QModelIndex& index) const
