@@ -23,9 +23,7 @@ Layer::Layer(Dataset* dataset, const Type& type, const QString& id, const QStrin
 {
 }
 
-Layer::~Layer()
-{
-}
+Layer::~Layer() = default;
 
 int Layer::noColumns() const
 {

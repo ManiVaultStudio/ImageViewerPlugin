@@ -51,13 +51,48 @@
      </property>
      <layout class="QGridLayout" name="gridLayout">
       <item row="0" column="0">
+       <widget class="QLabel" name="noPointsLabel">
+        <property name="text">
+         <string>No. points</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLineEdit" name="noDimensionsLineEdit">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLineEdit" name="noPointsLineEdit">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QCheckBox" name="averageCheckBox">
+        <property name="text">
+         <string>Average</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="noDimensionsLabel">
+        <property name="text">
+         <string>No. dimensions</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
        <widget class="QLabel" name="imagesLabel">
         <property name="text">
          <string>Image(s)</string>
         </property>
        </widget>
       </item>
-      <item row="0" column="1">
+      <item row="3" column="1">
        <widget class="QComboBox" name="imagesComboBox">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -67,10 +102,17 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="1">
-       <widget class="QCheckBox" name="averageCheckBox">
+      <item row="2" column="0">
+       <widget class="QLabel" name="imageSizeLabel">
         <property name="text">
-         <string>Average</string>
+         <string>Image size</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QLineEdit" name="imageSizeLineEdit">
+        <property name="enabled">
+         <bool>false</bool>
         </property>
        </widget>
       </item>

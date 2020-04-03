@@ -33,7 +33,6 @@ void LayerWidget::initialize(LayersModel* layersModel)
 		const auto selectedRows = _layersModel->selectionModel().selectedRows();
 		
 		if (selectedRows.count() == 1) {
-			qDebug() << selectedRows.first();
 			_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(Layer::Column::Name)), static_cast<int>(state), Qt::CheckStateRole);
 		}
 	});
@@ -125,7 +124,7 @@ void LayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex& bott
 {
 	const auto selectedRows		= _layersModel->selectionModel().selectedRows();
 	const auto noSelectedRows	= selectedRows.size();
-	const auto enabled			= _layersModel->data(topLeft.siblingAtColumn(ult(Layer::Column::Name)), Qt::CheckStateRole).toBool();
+	const auto enabled			= _layersModel->data(topLeft.siblingAtColumn(ult(Layer::Column::Name)), Qt::CheckStateRole).toInt() == Qt::Checked;
 
 	for (int column = topLeft.column(); column <= bottomRight.column(); column++) {
 		const auto index	= topLeft.siblingAtColumn(column);

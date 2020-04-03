@@ -14,7 +14,7 @@ public:
 		NoImages = ult(Layer::Column::End) + 1,
 		Width,
 		Height,
-		Size,
+		ImageSize,
 		NoPoints,
 		NoDimensions,
 		ImageNames,

@@ -1,7 +1,6 @@
 #include "ImagesDataset.h"
 #include "ImageViewerPlugin.h"
 
-#include "ImageData/Images.h"
 #include "PointData.h"
 
 #include <QFont>
@@ -10,6 +9,7 @@
 
 ImagesDataset::ImagesDataset(ImageViewerPlugin* imageViewerPlugin, const QString& name) :
 	Dataset(imageViewerPlugin, name, Type::Images),
+	_imageDataType(ImageData::Type::Undefined),
 	_size(),
 	_noPoints(0),
 	_noDimensions(0),
@@ -24,7 +24,8 @@ void ImagesDataset::init()
 {
 	auto images = _imageViewerPlugin->requestData<Images>(_name);
 
-	setSize(images.imageSize());
+	setImageDataType(images.type());
+	setImageSize(images.imageSize());
 	setNoPoints(images.points()->getNumPoints());
 	setNoDimensions(images.points()->getNumDimensions());
 	
@@ -66,6 +67,33 @@ void ImagesDataset::init()
 
 	setImageFilePaths(imageFilePaths);
 	setPointsName(images.points()->getDataName());
+}
+
+QVariant ImagesDataset::imageDataType(const int& role /*= Qt::DisplayRole*/) const
+{
+	const auto imageDataTypeString = ImageData::typeName(_imageDataType);
+
+	switch (role)
+	{
+		case Qt::DisplayRole:
+			return imageDataTypeString;
+
+		case Qt::EditRole:
+			return _imageDataType;
+
+		case Qt::ToolTipRole:
+			return QString("Image data type: %1").arg(imageDataTypeString);
+
+		default:
+			break;
+	}
+
+	return QVariant();
+}
+
+void ImagesDataset::setImageDataType(const ImageData::Type& imageDataType)
+{
+	_imageDataType = imageDataType;
 }
 
 QVariant ImagesDataset::noImages(const int& role /*= Qt::DisplayRole*/) const
@@ -134,7 +162,7 @@ QVariant ImagesDataset::height(const int& role /*= Qt::DisplayRole*/) const
 	return QVariant();
 }
 
-QVariant ImagesDataset::size(const int& role /*= Qt::DisplayRole*/) const
+QVariant ImagesDataset::imageSize(const int& role /*= Qt::DisplayRole*/) const
 {
 	switch (role)
 	{
@@ -154,7 +182,7 @@ QVariant ImagesDataset::size(const int& role /*= Qt::DisplayRole*/) const
 	return QVariant();
 }
 
-void ImagesDataset::setSize(const QSize& size)
+void ImagesDataset::setImageSize(const QSize& size)
 {
 	_size = size;
 }

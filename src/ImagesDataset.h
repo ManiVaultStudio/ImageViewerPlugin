@@ -2,6 +2,8 @@
 
 #include "Dataset.h"
 
+#include "ImageData/Images.h"
+
 #include <QStringList>
 
 /** TODO */
@@ -17,6 +19,12 @@ public:
 public: // Getters/setters
 
 	/** TODO */
+	QVariant imageDataType(const int& role = Qt::DisplayRole) const;
+
+	/** TODO */
+	void setImageDataType(const ImageData::Type& imageDataType);
+
+	/** TODO */
 	QVariant noImages(const int& role = Qt::DisplayRole) const;
 
 	/** TODO */
@@ -26,10 +34,10 @@ public: // Getters/setters
 	QVariant height(const int& role = Qt::DisplayRole) const;
 
 	/** TODO */
-	QVariant size(const int& role = Qt::DisplayRole) const;
+	QVariant imageSize(const int& role = Qt::DisplayRole) const;
 
 	/** TODO */
-	void setSize(const QSize& size);
+	void setImageSize(const QSize& size);
 
 	/** TODO */
 	QVariant noPoints(const int& role = Qt::DisplayRole) const;
@@ -76,6 +84,7 @@ public: // Getters/setters
 	static QString displayStringList(const QStringList& stringList);
 
 private:
+	ImageData::Type		_imageDataType;			/** TODO */
 	QSize				_size;					/** TODO */
 	std::uint32_t		_noPoints;				/** TODO */
 	std::uint32_t		_noDimensions;			/** TODO */

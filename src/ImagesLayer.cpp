@@ -26,7 +26,7 @@ Qt::ItemFlags ImagesLayer::flags(const QModelIndex& index) const
 		case Column::NoImages:
 		case Column::Width:
 		case Column::Height:
-		case Column::Size:
+		case Column::ImageSize:
 		case Column::NoPoints:
 		case Column::NoDimensions:
 		case Column::ImageNames:
@@ -62,34 +62,34 @@ QVariant ImagesLayer::data(const QModelIndex& index, const int& role) const
 
 	switch (static_cast<Column>(index.column())) {
 		case Column::NoImages:
-			_images->noImages(role);
+			return _images->noImages(role);
 
 		case Column::Width:
-			_images->width(role);
+			return _images->width(role);
 
 		case Column::Height:
-			_images->height(role);
+			return _images->height(role);
 
-		case Column::Size:
-			_images->size(role);
+		case Column::ImageSize:
+			return _images->imageSize(role);
 
 		case Column::NoPoints:
-			_images->noPoints(role);
+			return _images->noPoints(role);
 
 		case Column::NoDimensions:
-			_images->noDimensions(role);
+			return _images->noDimensions(role);
 
 		case Column::ImageNames:
-			_images->imageNames(role);
+			return _images->imageNames(role);
 
 		case Column::FilteredImageNames:
 			return filteredImageNames(role);
 
 		case Column::ImageIDs:
-			_images->imageIds(role);
+			return _images->imageIds(role);
 
 		case Column::ImageFilePaths:
-			_images->imageFilePaths(role);
+			return _images->imageFilePaths(role);
 
 		case Column::CurrentImageId:
 			return currentImageId(role);
@@ -104,7 +104,7 @@ QVariant ImagesLayer::data(const QModelIndex& index, const int& role) const
 			return average(role);
 
 		case Column::Selection:
-			_images->selection(role);
+			return _images->selection(role);
 
 		default:
 			break;
@@ -122,7 +122,7 @@ void ImagesLayer::setData(const QModelIndex& index, const QVariant& value, const
 		case Column::NoImages:
 		case Column::Width:
 		case Column::Height:
-		case Column::Size:
+		case Column::ImageSize:
 		case Column::NoPoints:
 		case Column::NoDimensions:
 		case Column::ImageNames:
@@ -158,7 +158,7 @@ QVariant ImagesLayer::filteredImageNames(const int& role /*= Qt::DisplayRole*/) 
 
 	auto filtered = QStringList();
 
-	switch (_images->type(Qt::EditRole).toInt())
+	switch (_images->imageDataType(Qt::EditRole).toInt())
 	{
 		case ImageData::Type::Sequence:
 		{

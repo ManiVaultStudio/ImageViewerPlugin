@@ -160,12 +160,12 @@ void LayersWidget::dragEnterEvent(QDragEnterEvent* dragEnterEvent)
 
 void LayersWidget::dropEvent(QDropEvent* dropEvent)
 {
-	const auto items					= dropEvent->mimeData()->text().split("\n");
-	const auto datasetName				= items.at(0);
-	const auto datasetType				= items.at(1);
-	const auto selectionName			= QString("%1_selection").arg(datasetName);
+	const auto items			= dropEvent->mimeData()->text().split("\n");
+	const auto datasetName		= items.at(0);
+	const auto datasetType		= items.at(1);
+	const auto selectionName	= QString("%1_selection").arg(datasetName);
 	//const auto createSelectionLayer		= layersModel().findLayerById(selectionName) == nullptr;
-	const auto layerFlags				= ult(Layer::Flag::Enabled) | ult(Layer::Flag::Removable);
+	const auto layerFlags		= ult(Layer::Flag::Enabled) | ult(Layer::Flag::Removable) | ult(Layer::Flag::Renamable);
 
 	const auto rootIndex = layersModel().index(0, 0);
 

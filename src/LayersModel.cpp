@@ -19,8 +19,9 @@ LayersModel::LayersModel(QObject *parent) :
 	_selectionModel(this),
 	_root(new GroupLayer("root", "Root", ult(Layer::Flag::Enabled)))
 {
+	/*
 	auto pointsLayer = new PointsLayer(nullptr, "points", "Points", ult(Layer::Flag::Enabled) | ult(Layer::Flag::Renamable));
-	auto imagesLayer = new ImagesLayer(nullptr, "images", "Images", ult(Layer::Flag::Enabled));
+	auto imagesLayer = new ImagesLayer(nullptr, "images", "Images", ult(Layer::Flag::Enabled) | ult(Layer::Flag::Renamable));
 	auto clusterLayer = new ClustersLayer(nullptr, "clusters", "Clusters", ult(Layer::Flag::Enabled) | ult(Layer::Flag::Renamable));
 	auto selectionLayer = new SelectionLayer(nullptr, "selection", "Selection", ult(Layer::Flag::Enabled) | ult(Layer::Flag::Renamable));
 
@@ -34,6 +35,7 @@ LayersModel::LayersModel(QObject *parent) :
 	insertLayer(0, new ClustersLayer(nullptr, "clusters", "Clusters", ult(Layer::Flag::Enabled) | ult(Layer::Flag::Renamable)));
 	insertLayer(0, new ImagesLayer(nullptr, "images", "Images", ult(Layer::Flag::Enabled) | ult(Layer::Flag::Renamable)));
 	insertLayer(0, new ClustersLayer(nullptr, "clusters", "Clusters", ult(Layer::Flag::Enabled) | ult(Layer::Flag::Renamable)));
+	*/
 }
 
 LayersModel::~LayersModel()
