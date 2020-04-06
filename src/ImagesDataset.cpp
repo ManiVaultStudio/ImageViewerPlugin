@@ -239,7 +239,7 @@ void ImagesDataset::setNoDimensions(const std::uint32_t& noDimensions)
 
 QVariant ImagesDataset::imageNames(const int& role /*= Qt::DisplayRole*/) const
 {
-	const auto imageNamesString = ImagesDataset::displayStringList(_imageNames);
+	const auto imageNamesString = Dataset::displayStringList(_imageNames);
 
 	switch (role)
 	{
@@ -467,20 +467,4 @@ QVariant ImagesDataset::selectionSize(const int& role /*= Qt::DisplayRole*/) con
 	*/
 
 	return QVariant();
-}
-
-QString ImagesDataset::displayStringList(const QStringList& stringList)
-{
-	const auto noStrings = stringList.size();
-
-	if (noStrings == 1)
-		return QString("%1").arg(stringList.first());
-
-	if (noStrings == 2)
-		return QString("[%1, %2]").arg(stringList.first(), stringList.last());
-
-	if (noStrings > 2)
-		return QString("[%1, ..., %2]").arg(stringList.first(), stringList.last());
-
-	return QString("[]");
 }

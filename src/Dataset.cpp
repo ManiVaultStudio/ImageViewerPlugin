@@ -86,3 +86,19 @@ void Dataset::setSelectionImage(const QImage& selectionImage)
 {
 	_selectionImage = selectionImage;
 }
+
+QString Dataset::displayStringList(const QStringList& stringList)
+{
+	const auto noStrings = stringList.size();
+
+	if (noStrings == 1)
+		return QString("%1").arg(stringList.first());
+
+	if (noStrings == 2)
+		return QString("[%1, %2]").arg(stringList.first(), stringList.last());
+
+	if (noStrings > 2)
+		return QString("[%1, ..., %2]").arg(stringList.first(), stringList.last());
+
+	return QString("[]");
+}

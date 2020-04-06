@@ -81,8 +81,6 @@ public: // Getters/setters
 	/** TODO */
 	QVariant selectionSize(const int& role = Qt::DisplayRole) const;
 
-	static QString displayStringList(const QStringList& stringList);
-
 private:
 	ImageData::Type		_imageDataType;			/** TODO */
 	QSize				_size;					/** TODO */

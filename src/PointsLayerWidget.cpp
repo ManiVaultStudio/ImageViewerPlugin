@@ -5,6 +5,7 @@
 #include "ui_PointsLayerWidget.h"
 
 #include <QDebug>
+#include <QStringListModel>
 
 PointsLayerWidget::PointsLayerWidget(QWidget* parent) :
 	_ui{ std::make_unique<Ui::PointsLayerWidget>() },
@@ -125,22 +126,54 @@ void PointsLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 			_ui->squareCheckBox->blockSignals(false);
 		}
 
-		if (column == ult(PointsLayer::Column::NoChannels)) {
-			const auto noChannels = _layersModel->data(topLeft.siblingAtColumn(ult(PointsLayer::Column::NoChannels)), Qt::EditRole).toInt();
+		if (column == ult(PointsLayer::Column::DimensionNames)) {
+			const auto dimensionNames = _layersModel->data(topLeft.siblingAtColumn(ult(PointsLayer::Column::DimensionNames)), Qt::EditRole).toStringList();
 
-			_ui->channel2Label->setEnabled(noChannels >= 2);
+			auto dimensionNamesModel = new QStringListModel(dimensionNames, this);
+
+			_ui->channel1ComboBox->blockSignals(true);
+			_ui->channel1ComboBox->setModel(dimensionNamesModel);
+			_ui->channel1ComboBox->setCurrentIndex(0);
+			_ui->channel1ComboBox->blockSignals(false);
+
+			_ui->channel2ComboBox->blockSignals(true);
+			_ui->channel2ComboBox->setModel(dimensionNamesModel);
+			_ui->channel2ComboBox->setCurrentIndex(std::min(1, dimensionNames.count()));
+			_ui->channel2ComboBox->blockSignals(false);
+
+			_ui->channel3ComboBox->blockSignals(true);
+			_ui->channel3ComboBox->setModel(dimensionNamesModel);
+			_ui->channel3ComboBox->setCurrentIndex(std::min(2, dimensionNames.count()));
+			_ui->channel3ComboBox->blockSignals(false);
+		}
+
+		if (column == ult(PointsLayer::Column::NoChannels)) {
+			const auto noChannels		= _layersModel->data(topLeft.siblingAtColumn(ult(PointsLayer::Column::NoChannels)), Qt::EditRole).toInt();
+			const auto channel1Flags	= _layersModel->flags(topLeft.siblingAtColumn(ult(PointsLayer::Column::Channel1)));
+			const auto channel2Flags	= _layersModel->flags(topLeft.siblingAtColumn(ult(PointsLayer::Column::Channel2)));
+			const auto channel3Flags	= _layersModel->flags(topLeft.siblingAtColumn(ult(PointsLayer::Column::Channel3)));
+
+			_ui->channel1Label->setEnabled(channel1Flags & Qt::ItemIsEditable);
+			_ui->channel1CheckBox->setEnabled(noChannels >= 1);
+			_ui->channel1CheckBox->blockSignals(true);
+			_ui->channel1CheckBox->setChecked(channel1Flags & Qt::ItemIsEditable);
+			_ui->channel1CheckBox->blockSignals(false);
+			_ui->channel1ComboBox->setEnabled(channel1Flags & Qt::ItemIsEditable);
+
+			_ui->channel2Label->setEnabled(channel2Flags & Qt::ItemIsEditable);
 			_ui->channel2CheckBox->setEnabled(noChannels >= 1);
 			_ui->channel2CheckBox->blockSignals(true);
-			_ui->channel2CheckBox->setChecked(noChannels >= 2);
+			_ui->channel2CheckBox->setChecked(channel2Flags & Qt::ItemIsEditable);
 			_ui->channel2CheckBox->blockSignals(false);
-			_ui->channel2ComboBox->setEnabled(noChannels >= 2);
+			_ui->channel2ComboBox->setEnabled(channel2Flags & Qt::ItemIsEditable);
 
-			_ui->channel3Label->setEnabled(noChannels == 3);
+			_ui->channel3Label->setEnabled(channel3Flags & Qt::ItemIsEditable);
 			_ui->channel3CheckBox->setEnabled(noChannels >= 2);
 			_ui->channel3CheckBox->blockSignals(true);
-			_ui->channel3CheckBox->setChecked(noChannels == 3);
+			_ui->channel3CheckBox->setChecked(channel3Flags & Qt::ItemIsEditable);
 			_ui->channel3CheckBox->blockSignals(false);
-			_ui->channel3ComboBox->setEnabled(noChannels == 3);
+			_ui->channel3ComboBox->setEnabled(channel3Flags & Qt::ItemIsEditable);
+
 			_ui->colormapLabel->setEnabled(noChannels <= 2);
 			_ui->colormapComboBox->setEnabled(noChannels <= 2);
 

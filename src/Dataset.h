@@ -69,6 +69,9 @@ public: // Getters/setters
 	/** TODO */
 	void setSelectionImage(const QImage& selectionImage);
 
+	/** TODO */
+	static QString displayStringList(const QStringList& stringList);
+
 signals:
 	
 	/** TODO */

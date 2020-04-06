@@ -16,6 +16,7 @@ void PointsDataset::init()
 	
 	setNoPoints(points.getNumPoints());
 	setNoDimensions(points.getNumDimensions());
+	setDimensionNames(QStringList::fromVector(QVector<QString>::fromStdVector(points.getDimensionNames())));
 }
 
 QVariant PointsDataset::noPoints(const int& role /*= Qt::DisplayRole*/) const
@@ -131,4 +132,31 @@ QVariant PointsDataset::selectionSize(const int& role /*= Qt::DisplayRole*/) con
 	}
 
 	return QVariant();
+}
+
+QVariant PointsDataset::dimensionNames(const int& role /*= Qt::DisplayRole*/) const
+{
+	const auto imageNamesString = Dataset::displayStringList(_dimensionNames);
+
+	switch (role)
+	{
+		case Qt::DisplayRole:
+			return imageNamesString;
+
+		case Qt::EditRole:
+			return _dimensionNames;
+
+		case Qt::ToolTipRole:
+			return QString("Image names: %1").arg(imageNamesString);
+
+		default:
+			break;
+	}
+
+	return QVariant();
+}
+
+void PointsDataset::setDimensionNames(const QStringList& dimensionNames)
+{
+	_dimensionNames = dimensionNames;
 }

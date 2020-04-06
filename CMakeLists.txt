@@ -31,9 +31,9 @@ set(PLUGIN
 
 file(GLOB MODEL src/*Model.* src/*Layer.* src/*Dataset.* src/*Layer.* src/*Item.* src/ImageRange.* src/*ProxyModel.* src/*Item.*)
 file(GLOB RENDERING src/*Renderer.* src/*Actor.* src/*Prop.* src/*Shape.*)
-file(GLOB WIDGETS src/*Widget.*)
+file(GLOB WIDGETS src/*Widget.* src/*ColorMap*.*)
 file(GLOB UIS src/*.ui)
-file(GLOB SHADERS src/*.glsl )
+file(GLOB SHADERS src/*.glsl)
 file(GLOB JSON src/*.json)
 file(GLOB QRC src/*.qrc)
 

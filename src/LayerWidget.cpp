@@ -31,6 +31,8 @@ void LayerWidget::initialize(LayersModel* layersModel)
 	_ui->clustersLayerWidget->initialize(_layersModel);
 	_ui->selectionLayerWidget->initialize(_layersModel);
 
+	_ui->settingsStackedWidget->setVisible(false);
+
 	QObject::connect(_ui->layerEnabledCheckBox, &QCheckBox::stateChanged, [this](int state) {
 		const auto selectedRows = _layersModel->selectionModel().selectedRows();
 		

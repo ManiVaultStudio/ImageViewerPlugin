@@ -29,6 +29,12 @@ public: // Getters/setters
 	void setNoDimensions(const std::uint32_t& noDimensions);
 
 	/** TODO */
+	QVariant dimensionNames(const int& role = Qt::DisplayRole) const;
+
+	/** TODO */
+	void setDimensionNames(const QStringList& dimensionNames);
+
+	/** TODO */
 	QVariant selection(const int& role = Qt::DisplayRole) const;
 
 	/** TODO */
@@ -40,5 +46,6 @@ public: // Getters/setters
 private:
 	std::uint32_t		_noPoints;				/** TODO */
 	std::uint32_t		_noDimensions;			/** TODO */
+	QStringList			_dimensionNames;		/** TODO */
 	Indices				_selection;				/** TODO */
 };

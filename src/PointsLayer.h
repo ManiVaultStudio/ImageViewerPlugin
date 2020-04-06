@@ -19,6 +19,7 @@ public:
 		Channel2,
 		Channel3,
 		NoChannels,
+		DimensionNames,
 		NoPoints,
 		NoDimensions,
 		Selection,

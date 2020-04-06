@@ -41,7 +41,29 @@ Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
 		case Column::Square:
 			flags |= Qt::ItemIsEditable;
 			break;
+		
+		case Column::Channel1:
+			flags |= Qt::ItemIsEditable;
+			break;
 
+		case Column::Channel2:
+		{
+			if (_noChannels >= 2)
+				flags |= Qt::ItemIsEditable;
+
+			break;
+		}
+
+		case Column::Channel3:
+		{
+			if (_noChannels == 3)
+				flags |= Qt::ItemIsEditable;
+
+			break;
+		}
+
+		case Column::NoChannels:
+		case Column::DimensionNames:
 		case Column::NoPoints:
 		case Column::NoDimensions:
 		case Column::Selection:
@@ -85,6 +107,9 @@ QVariant PointsLayer::data(const QModelIndex& index, const int& role) const
 		case Column::NoChannels:
 			return noChannels(role);
 
+		case Column::DimensionNames:
+			return _points->dimensionNames(role);
+			
 		case Column::NoPoints:
 			return _points->noPoints(role);
 

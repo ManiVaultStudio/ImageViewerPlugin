@@ -257,7 +257,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QCheckBox" name="channel1checkBox">
+         <widget class="QCheckBox" name="channel1CheckBox">
           <property name="enabled">
            <bool>false</bool>
           </property>
