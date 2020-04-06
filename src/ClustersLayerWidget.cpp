@@ -1,6 +1,7 @@
 #include "ClustersLayerWidget.h"
 #include "LayersModel.h"
 #include "ClustersLayer.h"
+#include "ImageViewerPlugin.h"
 
 #include "ui_ClustersLayerWidget.h"
 
@@ -14,9 +15,10 @@ ClustersLayerWidget::ClustersLayerWidget(QWidget* parent) :
 	_ui->setupUi(this);
 }
 
-void ClustersLayerWidget::initialize(LayersModel* layersModel)
+void ClustersLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 {
-	_layersModel = layersModel;
+	_imageViewerPlugin = imageViewerPlugin;
+	_layersModel = &_imageViewerPlugin->layersModel();
 
 	QObject::connect(_layersModel, &LayersModel::dataChanged, this, &ClustersLayerWidget::updateData);
 

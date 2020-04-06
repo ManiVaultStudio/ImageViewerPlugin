@@ -1,6 +1,7 @@
 #include "ImagesLayerWidget.h"
 #include "LayersModel.h"
 #include "ImagesLayer.h"
+#include "ImageViewerPlugin.h"
 
 #include "ui_ImagesLayerWidget.h"
 
@@ -15,9 +16,10 @@ ImagesLayerWidget::ImagesLayerWidget(QWidget* parent) :
 	_ui->setupUi(this);
 }
 
-void ImagesLayerWidget::initialize(LayersModel* layersModel)
+void ImagesLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 {
-	_layersModel = layersModel;
+	_imageViewerPlugin = imageViewerPlugin;
+	_layersModel = &_imageViewerPlugin->layersModel();
 
 	QObject::connect(_layersModel, &LayersModel::dataChanged, this, &ImagesLayerWidget::updateData);
 

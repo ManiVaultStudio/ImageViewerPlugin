@@ -8,6 +8,7 @@ namespace Ui {
 	class LayerWidget;
 }
 
+class ImageViewerPlugin;
 class LayersModel;
 
 /** TODO */
@@ -18,12 +19,13 @@ public:
 	LayerWidget(QWidget* parent);
 
 	/** TODO */
-	void initialize(LayersModel* layersModel);
+	void initialize(ImageViewerPlugin* imageViewerPlugin);
 
 	/** TODO */
 	void updateData(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>& roles = QVector<int>());
 
 private:
+	ImageViewerPlugin*					_imageViewerPlugin;		/** TODO */
 	std::unique_ptr<Ui::LayerWidget>	_ui;				/** TODO */
 	LayersModel*						_layersModel;		/** TODO */
 };

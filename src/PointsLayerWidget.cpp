@@ -1,6 +1,7 @@
 #include "PointsLayerWidget.h"
 #include "LayersModel.h"
 #include "PointsLayer.h"
+#include "ImageViewerPlugin.h"
 
 #include "ui_PointsLayerWidget.h"
 
@@ -14,9 +15,10 @@ PointsLayerWidget::PointsLayerWidget(QWidget* parent) :
 	_ui->setupUi(this);
 }
 
-void PointsLayerWidget::initialize(LayersModel* layersModel)
+void PointsLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 {
-	_layersModel = layersModel;
+	_imageViewerPlugin = imageViewerPlugin;
+	_layersModel = &_imageViewerPlugin->layersModel();
 
 	QObject::connect(_layersModel, &LayersModel::dataChanged, this, &PointsLayerWidget::updateData);
 
@@ -70,6 +72,8 @@ void PointsLayerWidget::initialize(LayersModel* layersModel)
 		}
 
 	});
+
+	_ui->colormapComboBox->setModel(&_imageViewerPlugin->colorMapModel1D());
 }
 
 void PointsLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>& roles /*= QVector<int>()*/)

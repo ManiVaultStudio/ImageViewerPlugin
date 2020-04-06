@@ -43,8 +43,7 @@ public: // Data access
 	Qt::ItemFlags flags(const int& row, const int& column) const;
 
 	/** TODO */
-	QVariant headerData(int section, Qt::Orientation orientation,
-		int role = Qt::DisplayRole) const override;
+	QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
 	/** TODO */
 	QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;

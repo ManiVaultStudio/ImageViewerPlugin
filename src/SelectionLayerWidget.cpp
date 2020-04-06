@@ -1,6 +1,7 @@
 #include "SelectionLayerWidget.h"
 #include "LayersModel.h"
 #include "SelectionLayer.h"
+#include "ImageViewerPlugin.h"
 
 #include "ui_SelectionLayerWidget.h"
 
@@ -13,9 +14,10 @@ SelectionLayerWidget::SelectionLayerWidget(QWidget* parent) :
 	_ui->setupUi(this);
 }
 
-void SelectionLayerWidget::initialize(LayersModel* layersModel)
+void SelectionLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 {
-	_layersModel = layersModel;
+	_imageViewerPlugin = imageViewerPlugin;
+	_layersModel = &_imageViewerPlugin->layersModel();
 
 	QObject::connect(_layersModel, &LayersModel::dataChanged, this, &SelectionLayerWidget::updateData);
 

@@ -1,6 +1,7 @@
 #include "LayerWidget.h"
 #include "LayersModel.h"
 #include "Layer.h"
+#include "ImageViewerPlugin.h"
 
 #include "ui_LayerWidget.h"
 
@@ -20,16 +21,17 @@ LayerWidget::LayerWidget(QWidget* parent) :
 	_ui->generalGroupBox->setVisible(false);
 }
 
-void LayerWidget::initialize(LayersModel* layersModel)
+void LayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 {
-	_layersModel = layersModel;
+	_imageViewerPlugin = imageViewerPlugin;
+	_layersModel = &_imageViewerPlugin->layersModel();
 
 	_ui->maskCheckBox->setVisible(false);
 
-	_ui->pointsLayerWidget->initialize(_layersModel);
-	_ui->imagesLayerWidget->initialize(_layersModel);
-	_ui->clustersLayerWidget->initialize(_layersModel);
-	_ui->selectionLayerWidget->initialize(_layersModel);
+	_ui->pointsLayerWidget->initialize(_imageViewerPlugin);
+	_ui->imagesLayerWidget->initialize(_imageViewerPlugin);
+	_ui->clustersLayerWidget->initialize(_imageViewerPlugin);
+	_ui->selectionLayerWidget->initialize(_imageViewerPlugin);
 
 	_ui->settingsStackedWidget->setVisible(false);
 

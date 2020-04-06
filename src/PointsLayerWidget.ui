@@ -284,13 +284,6 @@
         </property>
        </widget>
       </item>
-      <item row="9" column="2">
-       <widget class="QComboBox" name="colormapComboBox">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-       </widget>
-      </item>
       <item row="1" column="0">
        <widget class="QLabel" name="imageSizeLabel">
         <property name="text">
@@ -310,6 +303,9 @@
          </sizepolicy>
         </property>
        </widget>
+      </item>
+      <item row="9" column="2">
+       <widget class="ColorMapComboBox" name="colormapComboBox" native="true"/>
       </item>
      </layout>
     </widget>
@@ -389,6 +385,14 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>ColorMapComboBox</class>
+   <extends>QWidget</extends>
+   <header>colormapcombobox.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

@@ -28,7 +28,7 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 
 	_ui->setupUi(this);
 
-	_ui->layerWidget->initialize(&layersModel());
+	_ui->layerWidget->initialize(_imageViewerPlugin);
 
 	_ui->layersTreeView->setModel(&_imageViewerPlugin->layersModel());
 	_ui->layersTreeView->setSelectionModel(&layersSelectionModel());
