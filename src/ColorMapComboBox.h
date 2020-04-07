@@ -49,10 +49,10 @@ public:
 	void setModel(ColorMapModel* colorMapModel);
 
 	/** TODO */
-	ColorMapModel::Type type() const { return _filteredColorMapModel.type(); }
+	ColorMapModel::Type type() const;
 
 	/** TODO */
-	void setType(const ColorMapModel::Type& type) { _filteredColorMapModel.setType(type); }
+	void setType(const ColorMapModel::Type& type);
 
 private:
 	ColorMapFilterModel		_filteredColorMapModel;		/** TODO */

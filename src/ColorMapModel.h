@@ -77,9 +77,6 @@ public:
 	/** TODO */
 	void setupModelData();
 
-	//void add1dGradient(const QColor& begin, const QColor& end);
-
-
 private:
 	QVector<ColorMap>	_colorMaps;		/** TODO */
 };

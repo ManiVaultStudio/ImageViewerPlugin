@@ -10,30 +10,6 @@ ColorMapComboBox::ColorMapComboBox(QWidget* parent, const ColorMapModel::Type& t
 	_view(new QListView(this))
 {
 	setView(_view);
-
-	//_view->setIndentation(0);
-	
-	switch (_filteredColorMapModel.type())
-	{
-		case ColorMapModel::Type::OneDimensional:
-			setIconSize(QSize(100, 10));
-			break;
-
-		case ColorMapModel::Type::TwoDimensional:
-			setIconSize(QSize(10, 10));
-			break;
-
-		default:
-			break;
-	}
-	
-	/*
-	auto headerView = _view->header();
-
-	headerView->setHidden(true);
-	headerView->hideSection(ult(ColorMapModel::Column::Name));
-	headerView->hideSection(ult(ColorMapModel::Column::Image));
-	*/
 }
 
 void ColorMapComboBox::setModel(ColorMapModel* colorMapModel)
@@ -41,4 +17,28 @@ void ColorMapComboBox::setModel(ColorMapModel* colorMapModel)
 	_filteredColorMapModel.setSourceModel(colorMapModel);
 
 	QComboBox::setModel(&_filteredColorMapModel);
+}
+
+ColorMapModel::Type ColorMapComboBox::type() const
+{
+	return _filteredColorMapModel.type();
+}
+
+void ColorMapComboBox::setType(const ColorMapModel::Type& type)
+{
+	_filteredColorMapModel.setType(type);
+
+	switch (_filteredColorMapModel.type())
+	{
+		case ColorMapModel::Type::OneDimensional:
+			setIconSize(QSize(65, 13));
+			break;
+
+		case ColorMapModel::Type::TwoDimensional:
+			setIconSize(QSize(13, 13));
+			break;
+
+		default:
+			break;
+	}
 }

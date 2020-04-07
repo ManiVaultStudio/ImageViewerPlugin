@@ -2,7 +2,7 @@
 
 #include <QDebug>
 #include <QDirIterator>
-#include <QBrush>
+#include <QPainter>
 
 ColorMapModel::ColorMapModel(QObject* parent, const Type& type) :
 	QAbstractListModel(parent),
@@ -28,6 +28,25 @@ QVariant ColorMapModel::data(const QModelIndex& index, int role /* = Qt::Display
 
 	const auto colorMap = _colorMaps.at(index.row());
 
+	auto icon = [](const QImage& image, const QSize& size) {
+		auto pixmap		= QPixmap::fromImage(image).scaled(size);
+		auto painter	= QPainter(&pixmap);
+
+		painter.setPen(QPen(QBrush(QColor(30, 30, 30)), 1.5f));
+
+		QPointF points[5] = {
+			QPointF(0.0f, 0.0f),
+			QPointF(size.width(), 0.0f),
+			QPointF(size.width(), size.height()),
+			QPointF(0.0f, size.height()),
+			QPointF(0.0f, 0.0f)
+		};
+
+		painter.drawPolyline(points, 5);
+
+		return pixmap;
+	};
+
 	switch (role) {
 		case Qt::DecorationRole:
 		{
@@ -37,10 +56,10 @@ QVariant ColorMapModel::data(const QModelIndex& index, int role /* = Qt::Display
 					switch (colorMap.noDimensions())
 					{
 						case 1:
-							return QPixmap::fromImage(colorMap.image().scaled(QSize(100, 20)));
+							return icon(colorMap.image(), QSize(100, 20));
 
 						case 2:
-							return QPixmap::fromImage(colorMap.image().scaled(QSize(64, 64)));
+							return icon(colorMap.image(), QSize(32, 32));
 
 						default:
 							break;
@@ -49,7 +68,6 @@ QVariant ColorMapModel::data(const QModelIndex& index, int role /* = Qt::Display
 					break;
 				}
 					
-
 				case ult(Column::Name):
 				case ult(Column::Image):
 				case ult(Column::ResourcePath):
@@ -59,23 +77,6 @@ QVariant ColorMapModel::data(const QModelIndex& index, int role /* = Qt::Display
 			break;
 		}
 
-		/*
-		case Qt::BackgroundRole:
-		{
-			switch (index.column()) {
-				case ult(Column::Preview):
-					return QBrush(colorMap.image());
-
-				case ult(Column::Name):
-				case ult(Column::Image):
-				case ult(Column::ResourcePath):
-					break;
-			}
-
-			break;
-		}
-
-		*/
 		case Qt::DisplayRole:
 		{
 			switch (index.column()) {
@@ -94,12 +95,12 @@ QVariant ColorMapModel::data(const QModelIndex& index, int role /* = Qt::Display
 
 			break;
 		}
-
+		
 		case Qt::EditRole:
 		{
 			switch (index.column()) {
 				case ult(Column::Preview):
-					return "asd";
+					return QVariant();
 
 				case ult(Column::Name):
 					return colorMap.name();

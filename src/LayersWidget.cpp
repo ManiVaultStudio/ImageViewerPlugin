@@ -147,7 +147,7 @@ void LayersWidget::dragEnterEvent(QDragEnterEvent* dragEnterEvent)
 		const auto points		= _imageViewerPlugin->requestData<Points>(datasetName);
 		const auto noDimensions	= points.getNumDimensions();
 
-		if (noDimensions >= 1 && noDimensions <= 3)
+		if (noDimensions >= 1)
 			dragEnterEvent->acceptProposedAction();
 	}
 

@@ -16,7 +16,16 @@ void PointsDataset::init()
 	
 	setNoPoints(points.getNumPoints());
 	setNoDimensions(points.getNumDimensions());
-	setDimensionNames(QStringList::fromVector(QVector<QString>::fromStdVector(points.getDimensionNames())));
+
+	auto dimensionNames = QStringList::fromVector(QVector<QString>::fromStdVector(points.getDimensionNames()));
+
+	if (dimensionNames.isEmpty()) {
+		for (int dimensionIndex = 0; dimensionIndex < noDimensions(Qt::EditRole).toInt(); dimensionIndex++) {
+			dimensionNames << QString("Dim %1").arg(dimensionIndex);
+		}
+	}
+
+	setDimensionNames(dimensionNames);
 }
 
 QVariant PointsDataset::noPoints(const int& role /*= Qt::DisplayRole*/) const
