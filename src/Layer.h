@@ -34,6 +34,7 @@ public:
 		End = Flags
 	};
 
+	/** TODO */
 	static QString columnName(const Column& column) {
 		switch (column) {
 			case Column::Name:
