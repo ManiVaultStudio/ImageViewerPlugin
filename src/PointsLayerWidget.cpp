@@ -73,8 +73,8 @@ void PointsLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 
 	});
 
-	_ui->colormapComboBox->setModel(&_imageViewerPlugin->colorMapModel1D());
-	_ui->colormapComboBox->setType(ColorMapModel::Type::TwoDimensional);
+	_ui->colormapComboBox->setModel(&_imageViewerPlugin->colorMapModel());
+	_ui->colormapComboBox->setType(ColorMap::Type::TwoDimensional);
 }
 
 void PointsLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>& roles /*= QVector<int>()*/)
@@ -189,7 +189,7 @@ void PointsLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 			if (noChannels == 2)
 				_ui->colormapLabel->setText("2D Colormap");
 
-			_ui->colormapComboBox->setType(static_cast<ColorMapModel::Type>(noChannels));
+			_ui->colormapComboBox->setType(static_cast<ColorMap::Type>(noChannels));
 		}
 
 		if (column == ult(PointsLayer::Column::NoPoints)) {

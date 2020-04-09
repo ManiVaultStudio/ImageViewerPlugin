@@ -4,7 +4,7 @@
 #include <QDirIterator>
 #include <QPainter>
 
-ColorMapModel::ColorMapModel(QObject* parent, const Type& type) :
+ColorMapModel::ColorMapModel(QObject* parent, const ColorMap::Type& type) :
 	QAbstractListModel(parent),
 	_colorMaps()
 {
@@ -135,16 +135,26 @@ void ColorMapModel::setupModelData()
 
 	while (iterator1D.hasNext()) {
 		const auto resourcePath = iterator1D.next();
-		_colorMaps.append(ColorMap(QFileInfo(resourcePath).baseName(), resourcePath, 1, QImage(resourcePath)));
+		_colorMaps.append(ColorMap(QFileInfo(resourcePath).baseName(), resourcePath, ColorMap::Type::OneDimensional, QImage(resourcePath)));
 	}
 
 	QDirIterator iterator2D(QString("%1/2D/").arg(prefix), QDirIterator::Subdirectories);
 
 	while (iterator2D.hasNext()) {
 		const auto resourcePath = iterator2D.next();
-		_colorMaps.append(ColorMap(QFileInfo(resourcePath).baseName(), resourcePath, 2, QImage(resourcePath)));
+		_colorMaps.append(ColorMap(QFileInfo(resourcePath).baseName(), resourcePath, ColorMap::Type::TwoDimensional, QImage(resourcePath)));
 	}
 
 	beginInsertRows(QModelIndex(), 0, _colorMaps.count());
 	endInsertRows();
+}
+
+const ColorMap* ColorMapModel::colorMap(const int& row) const
+{
+	const auto colorMapIndex = index(row, 0);
+
+	if (colorMapIndex.isValid())
+		return nullptr;
+
+	return &_colorMaps.at(row);
 }

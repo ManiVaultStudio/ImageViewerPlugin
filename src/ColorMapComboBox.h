@@ -7,54 +7,90 @@
 
 class QListView;
 
-/** TODO */
+/**
+ * Color map combobox class
+ *
+ * A combobox widget for picking color maps
+ * Support for 1D and 2D color maps
+ * Connects to the color map model class
+ *
+ * @author Thomas Kroes
+ */
 class ColorMapComboBox : public QComboBox
 {
 protected:
+
+	/**
+	 * Color map filter model class
+	 *
+	 * A class for filtering out 1D or 2D color maps from the color map model
+	 *
+	 * @author Thomas Kroes
+	 */
 	class ColorMapFilterModel : public QSortFilterProxyModel {
 	public:
-		/** TODO */
-		ColorMapFilterModel::ColorMapFilterModel(QObject *parent, const ColorMapModel::Type& type = ColorMapModel::Type::OneDimensional) :
+		/** Constructor */
+		ColorMapFilterModel::ColorMapFilterModel(QObject *parent, const ColorMap::Type& type = ColorMap::Type::OneDimensional) :
 			QSortFilterProxyModel(parent),
 			_type(type)
 		{
 		}
 
-		/** TODO */
+		/**
+		 * Returns whether a give row with give parent is filtered out (false) or in (true)
+		 * @param row Row index
+		 * @param parent Parent index
+		 */
 		bool filterAcceptsRow(int row, const QModelIndex& parent) const
 		{
 			const auto index = sourceModel()->index(row, ult(ColorMapModel::Column::NoDimensions));
 			return ult(_type) == sourceModel()->data(index, Qt::EditRole).toInt();
 		}
 
-		/** TODO */
-		ColorMapModel::Type type() const {
+		/** Returns the type of color map */
+		ColorMap::Type type() const {
 			return _type;
 		}
 
-		/** TODO */
-		void setType(const ColorMapModel::Type& type) {
+		/**
+		 * Sets the type of color map
+		 * @param type Type of color map (e.g. 1D, 2D)
+		 */
+		void setType(const ColorMap::Type& type) {
 			_type = type;
 			invalidateFilter();
 		}
 
 	private:
-		ColorMapModel::Type		_type;		/** TODO */
+		ColorMap::Type		_type;		/** Type of color map (e.g. 1D, 2D) */
 	};
 public:
-	/** TODO */
-	ColorMapComboBox(QWidget* parent, const ColorMapModel::Type& type = ColorMapModel::Type::OneDimensional);
+	/** Constructor */
+	ColorMapComboBox(QWidget* parent, const ColorMap::Type& type = ColorMap::Type::OneDimensional);
 
-	/** TODO */
+	/**
+	 * Sets the associated color map model
+	 * @param colorMapModel The color map model
+	 */
 	void setModel(ColorMapModel* colorMapModel);
 
-	/** TODO */
-	ColorMapModel::Type type() const;
+	/** Returns the type of color map */
+	ColorMap::Type type() const;
 
-	/** TODO */
-	void setType(const ColorMapModel::Type& type);
+	/**
+		 * Sets the type of color map
+		 * @param type Type of color map (e.g. 1D, 2D)
+		 */
+	void setType(const ColorMap::Type& type);
+
+signals:
+
+	/** Signals that the a color map has been picked
+	 * @param enabled Whether the Actor is enabled or not
+	 */
+	void colorMapPicked(ColorMap* colorMap);
 
 private:
-	ColorMapFilterModel		_filteredColorMapModel;		/** TODO */
-	QListView*				_view;						/** TODO */
+	ColorMapFilterModel		_filteredColorMapModel;		/** The filtered color map model (contains either 1D or 2D color maps) */
+	QListView*				_view;						/** List view which displays the color maps when the combobox is opened */
 };

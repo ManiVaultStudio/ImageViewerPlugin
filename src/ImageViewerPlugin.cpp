@@ -22,8 +22,7 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	_datasetsModel(this),
 	_datasetsSelectionModel(&_datasetsModel),
 	_layersModel(this),
-	_colorMapModel1D(this, ColorMapModel::Type::OneDimensional),
-	_colorMapModel2D(this, ColorMapModel::Type::TwoDimensional)
+	_colorMapModel(this, ColorMap::Type::OneDimensional)
 {
 	qRegisterMetaType<QVector<int> >("QVector<int>");
 

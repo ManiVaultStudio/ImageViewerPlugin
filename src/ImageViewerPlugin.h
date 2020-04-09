@@ -66,10 +66,7 @@ public: //
 	LayersModel& layersModel() { return _layersModel; }
 
 	/** TODO */
-	ColorMapModel& colorMapModel1D() { return _colorMapModel1D; }
-
-	/** TODO */
-	ColorMapModel& colorMapModel2D() { return _colorMapModel2D; }
+	ColorMapModel& colorMapModel() { return _colorMapModel; }
 
 	/** Update the window title with some useful meta data */
 	void updateWindowTitle();
@@ -80,8 +77,7 @@ private:
 	DatasetsModel			_datasetsModel;				/** TODO */
 	QItemSelectionModel		_datasetsSelectionModel;	/** TODO */
 	LayersModel				_layersModel;				/** TODO */
-	ColorMapModel			_colorMapModel1D;			/** TODO */
-	ColorMapModel			_colorMapModel2D;			/** TODO */
+	ColorMapModel			_colorMapModel;			/** TODO */
 };
 
 /**

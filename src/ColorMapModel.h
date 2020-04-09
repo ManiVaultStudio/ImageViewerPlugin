@@ -1,82 +1,68 @@
 #pragma once
 
-#include "Common.h"
+#include "ColorMap.h"
 
 #include <QAbstractListModel>
-#include <QImage>
 
-/** TODO */
+/**
+ * Color map model class
+ *
+ * Provides a central place where color maps are stored
+ * This model can contain 1D and 2D color maps (perhaps in the future also 3D)
+ *
+ * @author Thomas Kroes
+ */
 class ColorMapModel : public QAbstractListModel
 {
-private:
-
-	/** TODO */
-	class ColorMap {
-	public:
-		/** TODO */
-		ColorMap(const QString& name = "", const QString& resourcePath = "", const int& noDimensions = 1, const QImage& image = QImage()) :
-			_name(name),
-			_resourcePath(resourcePath),
-			_noDimensions(noDimensions),
-			_image(image)
-		{
-		}
-
-		/** TODO */
-		QString name() const { return _name; };
-
-		/** TODO */
-		QString resourcePath() const { return _resourcePath; };
-
-		/** TODO */
-		int noDimensions() const { return _noDimensions; };
-
-		/** TODO */
-		QImage image() const { return _image; };
-
-	private:
-		QString		_name;				/** TODO */
-		QString		_resourcePath;		/** TODO */
-		int			_noDimensions;		/** TODO */
-		QImage		_image;				/** TODO */
-	};
-
 public:
 
-	/** TODO */
-	enum class Type {
-		OneDimensional = 1,		/** TODO */
-		TwoDimensional = 2		/** TODO */
-	};
-
-	/** TODO */
+	/**
+	 * Color map model columns
+	 * Defines the color map model columns
+	 */
 	enum class Column {
-		Preview,			/** TODO */
-		Name,				/** TODO */
-		Image,				/** TODO */
-		NoDimensions,		/** TODO */
-		ResourcePath,		/** TODO */
+		Preview,					/** Preview */
+		Name,						/** Name column */
+		Image,						/** Image column */
+		NoDimensions,				/** Dimensionality */
+		ResourcePath,				/** Resource path */
 
-		Start = Preview,
-		End = ResourcePath
+		Start	= Preview,			/** Column start */
+		End		= ResourcePath		/** Column End */
 	};
 
 public:
-	/** TODO */
-	ColorMapModel(QObject* parent, const Type& type);
+	/** Constructor */
+	ColorMapModel(QObject* parent, const ColorMap::Type& type);
 
-	/** TODO */
+	/**
+	 * Returns the the number of model columns
+	 * @param parent Parent index
+	 */
 	int columnCount(const QModelIndex& parent) const override;
 
-	/** TODO */
+	/**
+	 * Returns the number of color maps in the model
+	 * @param parent Parent index
+	 */
 	int rowCount(const QModelIndex& parent /* = QModelIndex() */) const override;
 
-	/** TODO */
+	/**
+	 * Returns model data for the given index
+	 * @param index Index
+	 * @param role The data role
+	 */
 	QVariant data(const QModelIndex& index, int role /* = Qt::DisplayRole */) const override;
 
-	/** TODO */
+	/** Setups the model data (e.g. loads color maps from resources) */
 	void setupModelData();
 
+	/**
+	 * Returns a color map given a row index
+	 * @param row Row index
+	 */
+	const ColorMap* colorMap(const int& row) const;
+
 private:
-	QVector<ColorMap>	_colorMaps;		/** TODO */
+	QVector<ColorMap>	_colorMaps;		/** Color maps data */
 };
