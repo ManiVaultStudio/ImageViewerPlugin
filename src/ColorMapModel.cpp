@@ -56,7 +56,7 @@ QVariant ColorMapModel::data(const QModelIndex& index, int role /* = Qt::Display
 					switch (colorMap.noDimensions())
 					{
 						case 1:
-							return icon(colorMap.image(), QSize(100, 20));
+							return icon(colorMap.image(), QSize(60, 12));
 
 						case 2:
 							return icon(colorMap.image(), QSize(32, 32));

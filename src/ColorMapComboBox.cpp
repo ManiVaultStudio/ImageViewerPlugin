@@ -31,11 +31,11 @@ void ColorMapComboBox::setType(const ColorMap::Type& type)
 	switch (_filteredColorMapModel.type())
 	{
 		case ColorMap::Type::OneDimensional:
-			setIconSize(QSize(65, 13));
+			setIconSize(QSize(60, 12));
 			break;
 
 		case ColorMap::Type::TwoDimensional:
-			setIconSize(QSize(13, 13));
+			setIconSize(QSize(12, 12));
 			break;
 
 		default:

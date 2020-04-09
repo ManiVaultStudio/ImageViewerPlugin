@@ -85,8 +85,8 @@ public:
 
 signals:
 
-	/** Signals that the a color map has been picked
-	 * @param enabled Whether the Actor is enabled or not
+	/** Signals that a color map has been picked
+	 * @param colorMap Pointer to the picked color map
 	 */
 	void colorMapPicked(ColorMap* colorMap);
 
