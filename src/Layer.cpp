@@ -5,12 +5,9 @@
 #include <QDebug>
 
 Layer::Layer(Dataset* dataset, const Type& type, const QString& id, const QString& name, const int& flags) :
-	TreeItem(),
+	TreeItem(id, name, flags),
 	_dataset(dataset),
-	_id(id),
-	_name(name),
 	_type(type),
-	_flags(flags),
 	_opacity(1.0f),
 	_colorMap(),
 	_image(),
@@ -24,6 +21,11 @@ Layer::Layer(Dataset* dataset, const Type& type, const QString& id, const QStrin
 }
 
 Layer::~Layer() = default;
+
+void Layer::render()
+{
+	
+}
 
 int Layer::noColumns() const
 {
@@ -97,28 +99,6 @@ Qt::ItemFlags Layer::flags(const QModelIndex& index) const
 	return flags;
 }
 
-QVariant Layer::flags(const int& role) const
-{
-	const auto flagsString = QString("%1%").arg(QString::number(_flags));
-
-	switch (role)
-	{
-		case Qt::DisplayRole:
-			return flagsString;
-
-		case Qt::EditRole:
-			return _flags;
-
-		case Qt::ToolTipRole:
-			return QString("Flags: %1").arg(flagsString);
-
-		default:
-			break;
-	}
-
-	return QVariant();
-}
-
 QVariant Layer::data(const QModelIndex& index, const int& role) const
 {
 	switch (static_cast<Column>(index.column())) {
@@ -156,7 +136,7 @@ QVariant Layer::data(const QModelIndex& index, const int& role) const
 			return displayRange(role);
 
 		case Column::Flags:
-			return flags(role);
+			return TreeItem::flags(role);
 
 		default:
 			break;
@@ -261,55 +241,6 @@ bool Layer::isBaseLayerIndex(const QModelIndex& index) const
 	return index.column() <= ult(Layer::Column::End);
 }
 
-QVariant Layer::id(const int& role) const
-{
-	switch (role)
-	{
-		case Qt::DisplayRole:
-		case Qt::EditRole:
-			return _id;
-
-		case Qt::ToolTipRole:
-			return QString("ID: %1").arg(_id);
-
-		default:
-			break;
-	}
-
-	return QVariant();
-}
-
-void Layer::setId(const QString& id)
-{
-	_id = id;
-}
-
-QVariant Layer::name(const int& role) const
-{
-	switch (role)
-	{
-		case Qt::DisplayRole:
-		case Qt::EditRole:
-			return _name;
-
-		case Qt::ToolTipRole:
-			return QString("Name: %1").arg(_name);
-
-		case Qt::CheckStateRole:
-			return aggregatedCheckState();
-		
-		default:
-			break;
-	}
-
-	return QVariant();
-}
-
-void Layer::setName(const QString& name)
-{
-	_name = name;
-}
-
 QVariant Layer::dataset(const int& role) const
 {
 	const auto name = _dataset ? _dataset->name(role).toString() : "";
@@ -377,73 +308,6 @@ QVariant Layer::type(const int& role) const
 void Layer::setType(const Type& type)
 {
 	_type = type;
-}
-
-QVariant Layer::flag(const Layer::Flag& flag, const int& role) const
-{
-	const auto isFlagSet = _flags & static_cast<int>(flag);
-	const auto flagString = isFlagSet ? "true" : "false";
-
-	switch (role)
-	{
-		case Qt::DisplayRole:
-			return flagString;
-
-		case Qt::EditRole:
-			return isFlagSet;
-
-		case Qt::ToolTipRole:
-		{
-			switch (flag)
-			{
-				case Layer::Flag::Enabled:
-					return QString("Enabled: %1").arg(flagString);
-
-				case Layer::Flag::Frozen:
-					return QString("Frozen: %1").arg(flagString);
-
-				case Layer::Flag::Removable:
-					return QString("Removable: %1").arg(flagString);
-
-				case Layer::Flag::Mask:
-					return QString("Mask: %1").arg(flagString);
-
-				case Layer::Flag::Renamable:
-					return QString("Renamable: %1").arg(flagString);
-
-				default:
-					break;
-			}
-
-			break;
-		}
-
-		default:
-			break;
-	}
-
-	return QVariant();
-}
-
-void Layer::setFlag(const Layer::Flag& flag, const bool& enabled /*= true*/)
-{
-	if (enabled)
-		_flags |= static_cast<int>(flag);
-	else
-		_flags = _flags & ~static_cast<int>(flag);
-
-	if (hasChildren()) {
-		for (auto treeItem : _children) {
-			auto layer = static_cast<Layer*>(treeItem);
-
-			layer->setFlag(flag, enabled);
-		}
-	}
-}
-
-void Layer::setFlags(const int& flags)
-{
-	_flags = flags;
 }
 
 QVariant Layer::opacity(const int& role) const
@@ -712,23 +576,4 @@ void Layer::computeDisplayRange()
 
 	_displayRange.setMin(std::clamp(_level - (_window / 2.0f), _imageRange.min(), _imageRange.max()));
 	_displayRange.setMax(std::clamp(_level + (_window / 2.0f), _imageRange.min(), _imageRange.max()));
-}
-
-Qt::CheckState Layer::aggregatedCheckState() const
-{
-	if (isLeaf())
-		return flag(Flag::Enabled, Qt::EditRole).toBool() ? Qt::Checked : Qt::Unchecked;
-
-	QSet<int> states;
-
-	for (auto treeItem : _children) {
-		auto layer = static_cast<Layer*>(treeItem);
-
-		states.insert(layer->aggregatedCheckState());
-	}
-
-	if (states.count() > 1)
-		return Qt::PartiallyChecked;
-
-	return static_cast<Qt::CheckState>(*states.begin());
 }

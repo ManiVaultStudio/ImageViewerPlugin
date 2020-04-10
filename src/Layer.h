@@ -112,21 +112,14 @@ public:
 		return "";
 	}
 
-	/** TODO */
-	enum class Flag {
-		Enabled		= 0x01,		/** TODO */
-		Frozen		= 0x02,		/** TODO */
-		Removable	= 0x04,		/** TODO */
-		Mask		= 0x08,		/** TODO */
-		Renamable	= 0x20,		/** TODO */
-		Renderable	= 0x40		/** TODO */
-	};
-
 	/** Constructor */
 	Layer(Dataset* dataset, const Type& type, const QString& id, const QString& name, const int& flags);
 
 	/** Destructor */
 	virtual ~Layer();
+
+	/** Renders the layer */
+	void render();
 
 public: // MVC
 
@@ -148,18 +141,6 @@ public: // MVC
 public: // Getters/setters
 
 	/** TODO */
-	QVariant id(const int& role) const;
-
-	/** TODO */
-	void setId(const QString& id);
-
-	/** TODO */
-	QVariant name(const int& role) const;
-
-	/** TODO */
-	void setName(const QString& name);
-
-	/** TODO */
 	QVariant dataset(const int& role) const;
 
 	/** TODO */
@@ -167,18 +148,6 @@ public: // Getters/setters
 
 	/** TODO */
 	void setType(const Layer::Type& type);
-
-	/** TODO */
-	QVariant flag(const Layer::Flag& flag, const int& role) const;
-
-	/** TODO */
-	void setFlag(const Layer::Flag& flag, const bool& enabled = true);
-
-	/** TODO */
-	QVariant flags(const int& role) const;
-
-	/** TODO */
-	void setFlags(const int& flags);
 
 	/** TODO */
 	QVariant opacity(const int& role) const;
@@ -238,9 +207,6 @@ protected:
 	/** TODO */
 	void computeDisplayRange();
 
-	/** TODO */
-	Qt::CheckState aggregatedCheckState() const;
-
 signals:
 
 	/** TODO */
@@ -248,10 +214,7 @@ signals:
 
 protected:
 	Dataset*			_dataset;				/** TODO */
-	QString				_id;					/** TODO */
-	QString				_name;					/** TODO */
 	Layer::Type			_type;					/** TODO */
-	std::uint32_t		_flags;					/** TODO */
 	float				_opacity;				/** TODO */
 	QImage				_colorMap;				/** TODO */
 	QImage				_image;					/** TODO */
