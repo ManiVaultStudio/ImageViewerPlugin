@@ -2,8 +2,7 @@
 
 #include "Actor.h"
 
-class Renderer;
-class LayersModel;
+class Layer;
 
 /**
  * Layer actor class
@@ -17,12 +16,12 @@ class LayerActor : public Actor
 
 public:
 	/** TODO */
-	LayerActor(Actor* actor, const QString& name, LayersModel* layersModel, const bool& visible = true);
+	LayerActor(Layer* layer, const QString& name);
 
 public: // 
 
 	void render();
 
 private:
-	LayersModel*	_layersModel;		/** TODO */
+	Layer*	_layer;		/** TODO */
 };

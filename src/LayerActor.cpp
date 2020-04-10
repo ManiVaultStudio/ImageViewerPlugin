@@ -5,9 +5,9 @@
 
 #include <QDebug>
 
-LayerActor::LayerActor(Actor* actor, const QString& name, LayersModel* layersModel, const bool& visible /*= true*/) :
-	Actor(actor, name, visible),
-	_layersModel(layersModel)
+LayerActor::LayerActor(Layer* layer, const QString& name) :
+	Actor(nullptr, name),
+	_layer(layer)
 {
 }
 

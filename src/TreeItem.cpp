@@ -11,8 +11,7 @@ TreeItem::TreeItem(const QString& id, const QString& name, const int& flags) :
 	_name(name),
 	_flags(flags),
 	_children(),
-	_parent(nullptr),
-	_actor(nullptr)
+	_parent(nullptr)
 {
 }
 
@@ -100,11 +99,6 @@ TreeItem* TreeItem::rootItem()
 	return _parent->rootItem();
 }
 
-LayerActor* TreeItem::actor()
-{
-	return _actor;
-}
-
 void TreeItem::render()
 {
 	if (!_flags & ult(Flag::Enabled))
@@ -115,8 +109,10 @@ void TreeItem::render()
 	for (auto child : _children)
 		child->render();
 
+	/*
 	if (_actor != nullptr)
 		_actor->render();
+	*/
 }
 
 QVariant TreeItem::id(const int& role) const

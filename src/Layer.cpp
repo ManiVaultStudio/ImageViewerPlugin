@@ -1,5 +1,6 @@
 #include "Layer.h"
 #include "Dataset.h"
+#include "LayerActor.h"
 
 #include <QFont>
 #include <QDebug>
@@ -16,8 +17,11 @@ Layer::Layer(Dataset* dataset, const Type& type, const QString& id, const QStrin
 	_windowNormalized(1.0f),
 	_levelNormalized(0.5f),
 	_window(),
-	_level()
+	_level(),
+	_modelMatrix(),
+	_props()
 {
+//	_actor = new LayerActor()
 }
 
 Layer::~Layer() = default;

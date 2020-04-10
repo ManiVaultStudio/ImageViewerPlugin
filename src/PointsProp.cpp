@@ -111,6 +111,7 @@ bool PointsProp::canRender() const
 
 void PointsProp::render()
 {
+	/*
 	try {
 		if (!canRender())
 			return;
@@ -144,6 +145,7 @@ void PointsProp::render()
 	catch (...) {
 		qDebug() << _name << "render failed due to unhandled exception";
 	}
+	*/
 }
 
 void PointsProp::setPoints(const QVector<Point>& points)

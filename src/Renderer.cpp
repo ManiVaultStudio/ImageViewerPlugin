@@ -7,7 +7,6 @@
 #include <QOpenGLWidget>
 
 #include "SelectionPickerActor.h"
-#include "ImageDatasetActor.h"
 
 Renderer::Renderer(QOpenGLWidget* parent) :
 	QObject(parent),

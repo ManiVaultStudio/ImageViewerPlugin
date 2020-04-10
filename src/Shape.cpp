@@ -18,14 +18,14 @@ Shape::~Shape() = default;
 
 QString Shape::fullName()
 {
-	return QString("%1::%2::%3").arg(prop()->actor()->name(), prop()->name(), _name);
+	return QString("%2::%3").arg(prop()->name(), _name);
 }
 
 void Shape::initialize()
 {
 	//qDebug() << "Initialize" << fullName();
 
-	renderer()->bindOpenGLContext();
+	Prop::renderer->bindOpenGLContext();
 
 	_vao.create();
 	_vbo.create();
@@ -35,7 +35,7 @@ void Shape::destroy()
 {
 	//qDebug() << "Destroy" << fullName();
 
-	renderer()->bindOpenGLContext();
+	Prop::renderer->bindOpenGLContext();
 
 	_vao.destroy();
 	_vao.release();
@@ -69,9 +69,4 @@ void Shape::setName(const QString& name)
 Prop* Shape::prop()
 {
 	return _prop;
-}
-
-Renderer* Shape::renderer()
-{
-	return _prop->renderer();
 }

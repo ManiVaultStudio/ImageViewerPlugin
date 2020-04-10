@@ -8,7 +8,7 @@
 #include <QModelIndex>
 
 class Dataset;
-class LayerActor;
+class Actor;
 
 /**
  * Tree item class
@@ -17,7 +17,7 @@ class LayerActor;
  *
  * @author Thomas Kroes
  */
-class TreeItem
+class TreeItem : public QObject
 {
 public:
 	/** TODO */
@@ -89,7 +89,7 @@ public:
 	TreeItem* rootItem();
 
 	/** Returns the associated actor */
-	LayerActor* actor();
+	Actor* actor();
 
 	/** Render the prop and its children */
 	virtual void render();
@@ -158,5 +158,5 @@ protected:
 	std::uint32_t			_flags;			/** Configuration flags */
 	QVector<TreeItem*>		_children;		/** Child tree items */
 	TreeItem*				_parent;		/** Parent tree item */
-	LayerActor*				_actor;			/** Actor for rendering the layer on the screen */
+//	Actor*					_actor;			/** Actor for rendering the layer on the screen */
 };

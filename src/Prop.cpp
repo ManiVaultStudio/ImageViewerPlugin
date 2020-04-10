@@ -8,8 +8,10 @@
 #include <QOpenGLFramebufferObject>
 #include <QDebug>
 
-Prop::Prop(Renderer* renderer, const QString& name) :
-	QObject(renderer),
+Renderer* Prop::renderer = nullptr;
+
+Prop::Prop(QObject* parent, const QString& name) :
+	QObject(parent),
 	_initialized(false),
 	_name(name),
 	_visible(true),
@@ -26,7 +28,7 @@ void Prop::initialize()
 {
 	//qDebug() << "Initialize" << fullName();
 
-	renderer()->bindOpenGLContext();
+	renderer->bindOpenGLContext();
 
 	for (auto shape : _shapes) {
 		shape->initialize();
@@ -37,7 +39,7 @@ void Prop::destroy()
 {
 	//qDebug() << "Destroy" << fullName();
 
-	renderer()->bindOpenGLContext();
+	renderer->bindOpenGLContext();
 
 	for (auto shape : _shapes) {
 		shape->destroy();
@@ -46,9 +48,6 @@ void Prop::destroy()
 
 bool Prop::canRender() const
 {
-	if (!_actor->canRender())
-		return false;
-
 	return isInitialized() && isVisible();
 }
 
@@ -106,7 +105,7 @@ void Prop::hide()
 
 QString Prop::fullName()
 {
-	return QString("%2::%3").arg(actor()->name(), _name);
+	return _name;
 }
 
 QMatrix4x4 Prop::modelMatrix() const
@@ -122,6 +121,7 @@ void Prop::setModelMatrix(const QMatrix4x4& modelMatrix)
 	_modelMatrix = modelMatrix;
 }
 
+/*
 QMatrix4x4 Prop::modelViewMatrix() const
 {
 	return _actor->modelViewMatrix() * _modelMatrix;
@@ -141,3 +141,4 @@ Renderer* Prop::renderer()
 {
 	return _actor->renderer();
 }
+*/

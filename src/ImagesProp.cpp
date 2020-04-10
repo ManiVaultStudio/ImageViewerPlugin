@@ -1,4 +1,4 @@
-#include "ImagesLayerProp.h"
+#include "ImagesProp.h"
 #include "QuadShape.h"
 #include "Actor.h"
 #include "LayersModel.h"
@@ -24,7 +24,7 @@ ImagesLayerProp::ImagesLayerProp(Actor* actor, const QString& name, const Layer:
 	addShaderProgram("Quad");
 	addTexture("Quad", QOpenGLTexture::Target2D);
 
-	_actor->bindOpenGLContext();
+//	_actor->bindOpenGLContext();
 
 	initialize();
 }
@@ -87,6 +87,7 @@ void ImagesLayerProp::initialize()
 
 void ImagesLayerProp::render()
 {
+	/*
 	try {
 		if (!canRender())
 			return;
@@ -124,6 +125,7 @@ void ImagesLayerProp::render()
 	catch (...) {
 		qDebug() << _name << "render failed due to unhandled exception";
 	}
+	*/
 }
 
 void ImagesLayerProp::setImage(const QImage& image)

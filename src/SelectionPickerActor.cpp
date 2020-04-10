@@ -1,7 +1,6 @@
 #include "SelectionPickerActor.h"
 #include "PolylineProp.h"
 #include "PointsProp.h"
-#include "InterimSelectionProp.h"
 #include "Renderer.h"
 
 #include <QKeyEvent>
@@ -15,7 +14,7 @@
 #include <QtMath>
 
 SelectionPickerActor::SelectionPickerActor(Renderer* renderer, const QString& name) :
-	Actor(renderer, name),
+	Actor(nullptr, name),
 	_imageSize(),
 	_selectionType(SelectionType::Rectangle),
 	_selectionModifier(SelectionModifier::Replace),
@@ -344,9 +343,7 @@ void SelectionPickerActor::clearSelection()
 
 	_mouseEvents.clear();
 
-	interimSelectionProp()->reset();
-
-	emit becameDirty(this);
+//	interimSelectionProp()->reset();
 }
 
 void SelectionPickerActor::startSelection()
@@ -409,8 +406,6 @@ void SelectionPickerActor::update()
 		default:
 			break;
 	}
-
-	emit becameDirty(this);
 }
 
 void SelectionPickerActor::updateSelectionRectangle()
@@ -559,7 +554,7 @@ void SelectionPickerActor::updateInterimSelectionProp()
 //	if (!_selecting)
 //		return;
 
-	interimSelectionProp()->update();
+	//interimSelectionProp()->update();
 }
 
 QSize SelectionPickerActor::imageSize() const
@@ -581,7 +576,7 @@ void SelectionPickerActor::setImageSize(const QSize& imageSize)
 	setBrushRadius(brushRadius);
 	setBrushRadiusDelta(0.2f * brushRadius);
 
-	interimSelectionProp()->setImageSize(_imageSize);
+	//interimSelectionProp()->setImageSize(_imageSize);
 
 	emit imageSizeChanged(_imageSize);
 }
@@ -718,11 +713,12 @@ PointsProp* SelectionPickerActor::polygonPointsProp()
 	return propByName<PointsProp>("PolygonPointsProp");
 }
 
+/*
 InterimSelectionProp* SelectionPickerActor::interimSelectionProp()
 {
 	return propByName<InterimSelectionProp>("InterimSelectionProp");
 }
-
+*/
 QMenu* SelectionPickerActor::contextMenu()
 {
 	auto* selectionMenu = new QMenu("Selection");

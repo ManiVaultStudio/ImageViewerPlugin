@@ -7,8 +7,10 @@
 #include <QObject>
 #include <QImage>
 #include <QModelIndex>
+#include <QMatrix4x4>
 
 class Dataset;
+class Prop;
 
 /** TODO */
 class Layer : public TreeItem
@@ -210,17 +212,19 @@ signals:
 	void dataChanged();
 
 protected:
-	Dataset*			_dataset;				/** TODO */
-	Layer::Type			_type;					/** TODO */
-	float				_opacity;				/** TODO */
-	QImage				_colorMap;				/** TODO */
-	QImage				_image;					/** TODO */
-	Range				_imageRange;			/** TODO */
-	Range				_displayRange;			/** TODO */
-	float				_windowNormalized;		/** TODO */
-	float				_levelNormalized;		/** TODO */
-	float				_window;				/** TODO */
-	float				_level;					/** TODO */
+	Dataset*				_dataset;				/** TODO */
+	Layer::Type				_type;					/** TODO */
+	float					_opacity;				/** TODO */
+	QImage					_colorMap;				/** TODO */
+	QImage					_image;					/** TODO */
+	Range					_imageRange;			/** TODO */
+	Range					_displayRange;			/** TODO */
+	float					_windowNormalized;		/** TODO */
+	float					_levelNormalized;		/** TODO */
+	float					_window;				/** TODO */
+	float					_level;					/** TODO */
+	QMatrix4x4				_modelMatrix;			/** Model matrix */
+	QMap<QString, Prop*>	_props;					/** Props map */
 };
 
 using Layers = QList<Layer*>;

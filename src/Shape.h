@@ -49,9 +49,6 @@ public:
 	/** Returns the actor */
 	Prop* prop();
 
-	/** Returns the renderer */
-	Renderer* renderer();
-
 	/** Returns the full shape name (actor_name::prop_name::shape_name */
 	QString fullName();
 

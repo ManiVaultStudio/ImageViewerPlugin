@@ -1,6 +1,6 @@
 #include "ViewerWidget.h"
 #include "ImageViewerPlugin.h"
-#include "ImageDatasetActor.h"
+//#include "ImageDatasetActor.h"
 #include "Renderer.h"
 #include "SelectionPickerActor.h"
 #include "LayersModel.h"
@@ -27,10 +27,6 @@ ViewerWidget::ViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
 	setFocusPolicy(Qt::StrongFocus);
 	setMouseTracking(true);
-
-	QObject::connect(_renderer, &Renderer::becameDirty, [this]() {
-		update();
-	});
 
 	QSurfaceFormat surfaceFormat;
 

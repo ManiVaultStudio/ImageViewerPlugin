@@ -25,7 +25,7 @@ public:
 	 * @param renderer Renderer
 	 * @param name Name of the prop
 	 */
-	Prop(Renderer* renderer, const QString& name);
+	Prop(QObject* parent, const QString& name);
 
 	/** Destructor */
 	virtual ~Prop();
@@ -70,16 +70,13 @@ public:
 	void setModelMatrix(const QMatrix4x4& modelMatrix);
 
 	/** Returns the model-view matrix (viewMatrix * actorMatrix * propModelMatrix) */
-	QMatrix4x4 modelViewMatrix() const;
+	//QMatrix4x4 modelViewMatrix() const;
 
 	/** Returns the model-view-projection matrix (projectionMatrix * viewMatrix * actorModelMatrix * propModelMatrix) */
-	QMatrix4x4 modelViewProjectionMatrix() const;
+	//QMatrix4x4 modelViewProjectionMatrix() const;
 
 	/** Returns the parent actor */
-	Actor* actor();
-
-	/** Returns the renderer */
-	Renderer* renderer();
+	//Actor* actor();
 
 	/** Renders the prop */
 	virtual void render();
@@ -174,7 +171,6 @@ signals:
 	void becameDirty(Prop* prop);
 
 protected:
-	Renderer*												_renderer;				/** Renderer */
 	Actor*													_parent;				/** Pointer to parent (if any) */
 	bool													_initialized;			/** Whether the prop is ready for rendering */
 	QString													_name;					/** Name of the prop */
@@ -185,6 +181,9 @@ private:
 	QMap<QString, QSharedPointer<QOpenGLShaderProgram>>		_shaderPrograms;		/** OpenGL shader programs */
 	QMap<QString, QSharedPointer<QOpenGLTexture>>			_textures;				/** OpenGL textures */
 	QMap<QString, QSharedPointer<Shape>>					_shapes;				/** Shapes */
+
+public:
+	static Renderer* renderer;
 
 	friend class Actor;
 };

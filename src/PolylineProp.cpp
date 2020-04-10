@@ -106,6 +106,7 @@ bool PolylineProp::canRender() const
 
 void PolylineProp::render()
 {
+	/*
 	try {
 		if (!canRender())
 			return;
@@ -141,6 +142,7 @@ void PolylineProp::render()
 	catch (...) {
 		qDebug() << _name << "render failed due to unhandled exception";
 	}
+	*/
 }
 
 void PolylineProp::updateShapes()
