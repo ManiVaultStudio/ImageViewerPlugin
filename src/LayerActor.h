@@ -17,7 +17,7 @@ class LayerActor : public Actor
 
 public:
 	/** TODO */
-	LayerActor(Actor* renderer, const QString& name, LayersModel* layersModel, const bool& visible = true);
+	LayerActor(Actor* actor, const QString& name, LayersModel* layersModel, const bool& visible = true);
 
 public: // 
 

@@ -21,9 +21,9 @@
         <file>resources/colormaps/1D/YlGnBu.png</file>
         <file>resources/colormaps/1D/YlOrBr.png</file>
         <file>resources/colormaps/1D/YlOrRd.png</file>
-        <file>resources/colormaps/2D/example_a.png</file>
-        <file>resources/colormaps/2D/example_b.png</file>
-        <file>resources/colormaps/2D/example_c.png</file>
-        <file>resources/colormaps/2D/example_d.png</file>
+        <file>resources/colormaps/2D/a.png</file>
+        <file>resources/colormaps/2D/b.png</file>
+        <file>resources/colormaps/2D/c.png</file>
+        <file>resources/colormaps/2D/d.png</file>
     </qresource>
 </RCC>
