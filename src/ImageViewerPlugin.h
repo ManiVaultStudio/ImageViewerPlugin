@@ -56,6 +56,12 @@ public: // Inherited from ViewPlugin
 
 public: //
 
+	/** Returns the image viewer widget */
+	ViewerWidget* imageViewerWidget() { return _imageViewerWidget; }
+
+	/** Returns the settings widget */
+	SettingsWidget* settingsWidget() { return _settingsWidget; }
+
 	/** TODO */
 	DatasetsModel& datasetsModel() { return _datasetsModel; }
 

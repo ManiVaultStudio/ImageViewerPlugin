@@ -22,10 +22,10 @@ class Prop : public QObject
 
 public:
 	/** Constructor
-	 * @param actor Parent actor
+	 * @param renderer Renderer
 	 * @param name Name of the prop
 	 */
-	Prop(Actor* actor, const QString& name);
+	Prop(Renderer* renderer, const QString& name);
 
 	/** Destructor */
 	virtual ~Prop();
@@ -174,7 +174,8 @@ signals:
 	void becameDirty(Prop* prop);
 
 protected:
-	Actor*													_actor;					/** Pointer to owning actor */
+	Renderer*												_renderer;				/** Renderer */
+	Actor*													_parent;				/** Pointer to parent (if any) */
 	bool													_initialized;			/** Whether the prop is ready for rendering */
 	QString													_name;					/** Name of the prop */
 	bool													_visible;				/** Whether the prop is visible or not */

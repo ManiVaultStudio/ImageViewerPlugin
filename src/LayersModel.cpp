@@ -14,11 +14,12 @@
 #include <QAbstractItemView>
 #include <QMimeData>
 
-LayersModel::LayersModel(QObject *parent) :
-	QAbstractItemModel(parent),
+LayersModel::LayersModel(ImageViewerPlugin* imageViewerPlugin) :
+	QAbstractItemModel(imageViewerPlugin),
 	_selectionModel(this),
 	_root(new GroupLayer("root", "Root", ult(Layer::Flag::Enabled)))
 {
+	//_root->st
 	/*
 	auto pointsLayer = new PointsLayer(nullptr, "points", "Points", ult(Layer::Flag::Enabled) | ult(Layer::Flag::Renamable));
 	auto imagesLayer = new ImagesLayer(nullptr, "images", "Images", ult(Layer::Flag::Enabled) | ult(Layer::Flag::Renamable));

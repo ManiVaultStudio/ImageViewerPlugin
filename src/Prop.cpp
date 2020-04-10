@@ -8,9 +8,8 @@
 #include <QOpenGLFramebufferObject>
 #include <QDebug>
 
-Prop::Prop(Actor* actor, const QString& name) :
-	QObject(actor),
-	_actor(actor),
+Prop::Prop(Renderer* renderer, const QString& name) :
+	QObject(renderer),
 	_initialized(false),
 	_name(name),
 	_visible(true),

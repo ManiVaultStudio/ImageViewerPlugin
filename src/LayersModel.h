@@ -17,7 +17,7 @@ class LayersModel : public QAbstractItemModel
 public:
 
 	/** TODO */
-	LayersModel(QObject *parent = nullptr);
+	LayersModel(ImageViewerPlugin* imageViewerPlugin);
 
 	/** TODO */
 	~LayersModel();

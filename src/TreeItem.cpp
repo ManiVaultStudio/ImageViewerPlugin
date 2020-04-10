@@ -1,5 +1,7 @@
 #include "TreeItem.h"
 #include "Dataset.h"
+#include "Prop.h"
+#include "LayerActor.h"
 
 #include <QDebug>
 #include <QFont>
@@ -10,7 +12,7 @@ TreeItem::TreeItem(const QString& id, const QString& name, const int& flags) :
 	_flags(flags),
 	_children(),
 	_parent(nullptr),
-	_prop(nullptr)
+	_actor(nullptr)
 {
 }
 
@@ -80,6 +82,11 @@ bool TreeItem::hasChildren() const
 	return childCount() > 0;
 }
 
+bool TreeItem::isRoot() const
+{
+	return _parent == nullptr;
+}
+
 bool TreeItem::isLeaf() const
 {
 	return !hasChildren();
@@ -93,13 +100,23 @@ TreeItem* TreeItem::rootItem()
 	return _parent->rootItem();
 }
 
+LayerActor* TreeItem::actor()
+{
+	return _actor;
+}
+
 void TreeItem::render()
 {
 	if (!_flags & ult(Flag::Enabled))
 		return;
 
+	qDebug() << "Render" << _id << _name;
+
 	for (auto child : _children)
 		child->render();
+
+	if (_actor != nullptr)
+		_actor->render();
 }
 
 QVariant TreeItem::id(const int& role) const

@@ -118,9 +118,6 @@ public:
 	/** Destructor */
 	virtual ~Layer();
 
-	/** Renders the layer */
-	void render();
-
 public: // MVC
 
 	/** TODO */

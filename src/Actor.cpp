@@ -5,8 +5,8 @@
 
 #include "Renderer.h"
 
-Actor::Actor(Renderer* renderer, const QString& name, const bool& visible /*= true*/) :
-	QObject(renderer),
+Actor::Actor(Actor* parent, const QString& name, const bool& visible /*= true*/) :
+	QObject(nullptr),
 	_registeredEvents(static_cast<int>(ActorEvent::None)),
 	_mouseEvents(),
 	_name(name),
@@ -58,10 +58,6 @@ void Actor::setName(const QString& name)
 	_name = name;
 
 	qDebug() << "Rename" << oldName << "to" << _name;
-
-	emit nameChanged(_name);
-
-	emit becameDirty(this);
 }
 
 bool Actor::isEnabled() const
@@ -77,10 +73,6 @@ void Actor::setEnabled(const bool& enabled)
 	_enabled = enabled;
 
 	qDebug() << "Set " << _name << (_enabled ? "enabled" : "disabled");
-
-	emit enabledChanged(_enabled);
-
-	emit becameDirty(this);
 }
 
 void Actor::enable()
@@ -109,8 +101,6 @@ void Actor::setModelMatrix(const QMatrix4x4& modelMatrix)
 		return;
 
 	_modelMatrix = modelMatrix;
-
-	emit modelMatrixChanged(_modelMatrix);
 }
 
 QMatrix4x4 Actor::modelViewMatrix() const
@@ -287,10 +277,6 @@ void Actor::setOpacity(const float& opacity)
 	_opacity = opacity;
 
 	qDebug() << "Set opacity to" << QString::number(opacity, 'f', 2) << "for" << _name;
-
-	emit opacityChanged(_opacity);
-
-	emit becameDirty(this);
 }
 
 void Actor::bindOpenGLContext()

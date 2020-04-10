@@ -9,16 +9,16 @@ class Actor;
  * Image prop class
  * @author Thomas Kroes
  */
-class ImageLayerProp : public Prop
+class ImagesLayerProp : public Prop
 {
 	Q_OBJECT
 
 public:
 	/** TODO */
-	ImageLayerProp(Actor* actor, const QString& name, const Layer::Type& type);
+	ImagesLayerProp(Actor* actor, const QString& name, const Layer::Type& type);
 
 	/** Destructor */
-	~ImageLayerProp();
+	~ImagesLayerProp();
 
 	/** Renders the prop */
 	void render() override;
@@ -55,4 +55,4 @@ private:
 	std::uint32_t	_order;					/** TODO */
 };
 
-using SharedImageLayerProp = QSharedPointer<ImageLayerProp>;
+using SharedImageLayerProp = QSharedPointer<ImagesLayerProp>;

@@ -60,7 +60,7 @@ public:
 
 public:
 	/** TODO */
-	Actor(Renderer* renderer, const QString& name, const bool& visible = true);
+	Actor(Actor* parent, const QString& name, const bool& visible = true);
 
 	/** Destructor */
 	~Actor();
@@ -251,7 +251,7 @@ protected: // Prop management
 		return _props;
 	}
 
-protected:
+public:
 	/** Destroys the actor */
 	virtual void destroy();
 
@@ -284,30 +284,6 @@ protected:
 	 */
 	void addMouseEvent(QMouseEvent* mouseEvent);
 
-signals:
-	/** Signals that the Actor name changed
-	 * @param name New Actor name
-	 */
-	void nameChanged(const QString& name);
-
-	/** Signals that the Actor has been enabled or disabled
-	 * @param enabled Whether the Actor is enabled or not
-	 */
-	void enabledChanged(const bool& enabled);
-
-	/** Signals that the opacity changed
-	 * @param opacity Opacity
-	 */
-	void opacityChanged(const float& opacity);
-
-	/** Signals that the model matrix changed
-	 * @param modelMatrix Model matrix
-	 */
-	void modelMatrixChanged(const QMatrix4x4& modelMatrix);
-
-	/** Signals that the Actor changed */
-	void becameDirty(Actor* Actor);
-
 protected:
 	int							_registeredEvents;		/** Defines which (mouse) events should be received by the actor */
 	QVector<MouseEvent>			_mouseEvents;			/** Recorded mouse events */
@@ -320,5 +296,8 @@ private:
 	QMatrix4x4					_modelMatrix;		/** Model matrix */
 	QMap<QString, SharedProp>	_props;				/** Props map */
 
+	static Renderer*			_renderer;			
+
+	friend class TreeItem;
 	friend class Renderer;
 };

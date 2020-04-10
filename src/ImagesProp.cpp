@@ -1,4 +1,4 @@
-#include "ImageLayerProp.h"
+#include "ImagesLayerProp.h"
 #include "QuadShape.h"
 #include "Actor.h"
 #include "LayersModel.h"
@@ -13,7 +13,7 @@ const std::string fragmentShaderSource =
 #include "ImageLayerFragment.glsl"
 ;
 
-ImageLayerProp::ImageLayerProp(Actor* actor, const QString& name, const Layer::Type& type) :
+ImagesLayerProp::ImagesLayerProp(Actor* actor, const QString& name, const Layer::Type& type) :
 	Prop(actor, name),
 	_type(type),
 	_image(),
@@ -29,9 +29,9 @@ ImageLayerProp::ImageLayerProp(Actor* actor, const QString& name, const Layer::T
 	initialize();
 }
 
-ImageLayerProp::~ImageLayerProp() = default;
+ImagesLayerProp::~ImagesLayerProp() = default;
 
-void ImageLayerProp::initialize()
+void ImagesLayerProp::initialize()
 {
 	try
 	{
@@ -85,7 +85,7 @@ void ImageLayerProp::initialize()
 	}
 }
 
-void ImageLayerProp::render()
+void ImagesLayerProp::render()
 {
 	try {
 		if (!canRender())
@@ -126,7 +126,7 @@ void ImageLayerProp::render()
 	}
 }
 
-void ImageLayerProp::setImage(const QImage& image)
+void ImagesLayerProp::setImage(const QImage& image)
 {
 	//qDebug() << fullName() << "set image";
 
@@ -178,7 +178,7 @@ void ImageLayerProp::setImage(const QImage& image)
 	updateModelMatrix();
 }
 
-void ImageLayerProp::setDisplayRange(const float& min, const float& max)
+void ImagesLayerProp::setDisplayRange(const float& min, const float& max)
 {
 	//qDebug() << fullName() << "set display range" << min << max;
 
@@ -186,14 +186,14 @@ void ImageLayerProp::setDisplayRange(const float& min, const float& max)
 	_displayRange[1] = max;
 }
 
-void ImageLayerProp::setOpacity(const float& opacity)
+void ImagesLayerProp::setOpacity(const float& opacity)
 {
 	//qDebug() << fullName() << "set opacity" << QString::number(opacity, 'f', 2);
 
 	_opacity = opacity;
 }
 
-void ImageLayerProp::setOrder(const std::uint32_t& order)
+void ImagesLayerProp::setOrder(const std::uint32_t& order)
 {
 	//qDebug() << fullName() << "set order" << QString::number(order);
 
@@ -202,7 +202,7 @@ void ImageLayerProp::setOrder(const std::uint32_t& order)
 	updateModelMatrix();
 }
 
-void ImageLayerProp::updateModelMatrix()
+void ImagesLayerProp::updateModelMatrix()
 {
 	QMatrix4x4 modelMatrix;
 

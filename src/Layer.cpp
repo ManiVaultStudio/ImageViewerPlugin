@@ -22,11 +22,6 @@ Layer::Layer(Dataset* dataset, const Type& type, const QString& id, const QStrin
 
 Layer::~Layer() = default;
 
-void Layer::render()
-{
-	
-}
-
 int Layer::noColumns() const
 {
 	return ult(Column::End);
@@ -232,6 +227,8 @@ QModelIndexList Layer::setData(const QModelIndex& index, const QVariant& value, 
 		default:
 			break;
 	}
+
+	rootItem()->render();
 
 	return affectedIndices;
 }

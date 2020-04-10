@@ -8,7 +8,7 @@
 #include <QModelIndex>
 
 class Dataset;
-class Prop;
+class LayerActor;
 
 /**
  * Tree item class
@@ -79,11 +79,17 @@ public:
 	/** Returns whether the tree item has children or not */
 	bool hasChildren() const;
 
+	/** Returns whether the tree item is the root item or not */
+	bool isRoot() const;
+
 	/** Returns whether the tree item is a leaf item or not */
 	bool isLeaf() const;
 
 	/** Returns the root item */
 	TreeItem* rootItem();
+
+	/** Returns the associated actor */
+	LayerActor* actor();
 
 	/** Render the prop and its children */
 	virtual void render();
@@ -152,5 +158,5 @@ protected:
 	std::uint32_t			_flags;			/** Configuration flags */
 	QVector<TreeItem*>		_children;		/** Child tree items */
 	TreeItem*				_parent;		/** Parent tree item */
-	Prop*					_prop;			/** OpenGL render prop */
+	LayerActor*				_actor;			/** Actor for rendering the layer on the screen */
 };
