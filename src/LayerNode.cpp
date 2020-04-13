@@ -236,11 +236,6 @@ QModelIndexList LayerNode::setData(const QModelIndex& index, const QVariant& val
 	return affectedIndices;
 }
 
-bool LayerNode::isBaseLayerIndex(const QModelIndex& index) const
-{
-	return index.column() <= ult(LayerNode::Column::End);
-}
-
 QVariant LayerNode::dataset(const int& role) const
 {
 	const auto name = _dataset ? _dataset->name(role).toString() : "";

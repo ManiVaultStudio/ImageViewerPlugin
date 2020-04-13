@@ -139,9 +139,6 @@ public: // MVC
 	/** TODO */
 	virtual QModelIndexList setData(const QModelIndex& index, const QVariant& value, const int& role);
 
-	/** TODO */
-	bool isBaseLayerIndex(const QModelIndex& index) const;
-
 public: // Getters/setters
 
 	/** TODO */

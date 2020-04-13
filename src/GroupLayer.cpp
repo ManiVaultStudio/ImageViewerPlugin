@@ -14,7 +14,7 @@ int GroupLayer::noColumns() const
 
 Qt::ItemFlags GroupLayer::flags(const QModelIndex& index) const
 {
-	int flags = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+	auto flags = LayerNode::flags(index);
 
 	switch (static_cast<Column>(index.column())) {
 		default:
@@ -26,6 +26,9 @@ Qt::ItemFlags GroupLayer::flags(const QModelIndex& index) const
 
 QVariant GroupLayer::data(const QModelIndex& index, const int& role) const
 {
+	if (index.column() < ult(Column::Start))
+		return LayerNode::data(index, role);
+
 	switch (static_cast<Column>(index.column())) {
 		default:
 			break;
@@ -36,6 +39,10 @@ QVariant GroupLayer::data(const QModelIndex& index, const int& role) const
 
 QModelIndexList GroupLayer::setData(const QModelIndex& index, const QVariant& value, const int& role)
 {
-	if (isBaseLayerIndex(index))
+	if (index.column() < ult(Column::Start))
 		return LayerNode::setData(index, value, role);
+
+	QModelIndexList affectedIndices{ index };
+
+	return affectedIndices;
 }
