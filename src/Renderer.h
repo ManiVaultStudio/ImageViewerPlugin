@@ -1,11 +1,12 @@
 #pragma once
 
+#include "Common.h"
+
 #include "renderers/Renderer.h"
 
-#include "Actor.h"
-
-#include <QColor>
 #include <QWidget>
+#include <QColor>
+#include <QVector2D>
 
 class ViewerWidget;
 class ImageDatasetsModel;
@@ -36,14 +37,14 @@ public:
 	/** Initialize the renderer */
 	void init() override;
 
+	/** TODO */
+	void render() {};
+	
+	/** TODO */
+	void destroy() {};
+
 	/** Resizes the renderer */
 	void resize(QSize renderSize) override {};
-
-	/** Renders the content */
-	void render() override;
-
-	/** Destroys the renderer */
-	void destroy() override;
 
 	/** Returns mouse events that were recorded during interaction */
 	QVector<QSharedPointer<QMouseEvent>> mouseEvents() const;
@@ -205,95 +206,10 @@ public:
 	/** Releases the OpenGL context */
 	void releaseOpenGLContext();
 
-protected: // Event handlers
-
-	/**
-	 * Invoked when an actor has changed
-	 * @param actor Actor
-	 */
-	void onActorChanged(Actor* actor);
-	
-public: // Actors management
-
-	/** TODO */
-	template<typename T, typename ...Args>
-	void addActor(Args... args)
-	{
-		try
-		{
-			auto actor = dynamic_cast<Actor*>(new T(args...));
-
-			if (actor == nullptr)
-				throw std::exception(QString("Supplied type is not an Actor").toLatin1());
-
-			auto name = actor->name();
-
-			if (_actors.contains(name))
-				throw std::exception(QString("%2 already exists").arg(name).toLatin1());
-
-			_actors.insert(name, actor);
-
-			QObject::connect(actor, &Actor::becameDirty, this, &Renderer::becameDirty);
-		}
-		catch (const std::exception& e)
-		{
-			throw std::exception(QString("Unable to add actor: %1").arg(e.what()).toLatin1());
-		}
-	}
-
-	/** TODO */
-	void removeActor(const QString& name)
-	{
-		try
-		{
-			if (!_actors.contains(name))
-				throw std::exception(QString("%2 does not exist").arg(name).toLatin1());
-
-			_actors.remove(name);
-		}
-		catch (const std::exception& e)
-		{
-			throw std::exception(QString("Unable to remove actor: %1").arg(e.what()).toLatin1());
-		}
-	}
-
-	/** Returns const pointer to actor by name */
-	template<typename T>
-	const T* actorByName(const QString& name) const
-	{
-		return dynamic_cast<T*>(_actors[name].get());
-	}
-
-	/** Returns pointer to actor by name */
-	template<typename T>
-	T* actorByName(const QString& name)
-	{
-		const auto constThis = const_cast<const Renderer*>(this);
-		return const_cast<T*>(constThis->actorByName<T>(name));
-	}
-
-	/** TODO */
-	void renderActors();
-
-	/** TODO */
-	void destroyActors();
-
 signals:
 
 	/** Signals that the renderer just became dirty */
 	void becameDirty();
-
-	/**
-	 * Signals a key is pressed
-	 * @param keyEvent Key event
-	 */
-	void keyPress(QKeyEvent* keyEvent);
-
-	/**
-	 * Signals a key is released
-	 * @param keyEvent Key event
-	 */
-	void keyRelease(QKeyEvent* keyEvent);
 
 	/**
 	 * Signals the mouse button is pressed
@@ -319,6 +235,18 @@ signals:
 	 */
 	void mouseWheel(QWheelEvent* wheelEvent);
 
+	/**
+	 * Signals a key is pressed
+	 * @param keyEvent Key event
+	 */
+	void keyPress(QKeyEvent* keyEvent);
+
+	/**
+	 * Signals a key is released
+	 * @param keyEvent Key event
+	 */
+	void keyRelease(QKeyEvent* keyEvent);
+
 protected:
 	InteractionMode							_interactionMode;		/** Type of interaction e.g. navigation, selection and window/level */
 	QVector<QSharedPointer<QMouseEvent>>	_mouseEvents;			/** Recorded mouse events during interaction */
@@ -327,7 +255,4 @@ protected:
 	float									_zoomSensitivity;		/** Zoom sensitivity */
 	int										_margin;				/** Margin between image and viewer widget boundaries */
 	QMap<QString, QColor>					_colorMap;				/** Color map */
-
-private:
-	QMap<QString, Actor*>	_actors;				/** TODO */
 };

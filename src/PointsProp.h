@@ -50,7 +50,7 @@ public:
 	 * @param actor Parent actor
 	 * @param name Name of the prop
 	 */
-	PointsProp(Actor* actor, const QString& name);
+	PointsProp(RenderNode* renderNode, const QString& name);
 
 protected: // Inherited
 

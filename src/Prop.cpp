@@ -1,6 +1,6 @@
 #include "Prop.h"
 #include "Renderer.h"
-#include "Actor.h"
+#include "RenderNode.h"
 #include "Shape.h"
 
 #include <QOpenGLShaderProgram>
@@ -10,8 +10,9 @@
 
 Renderer* Prop::renderer = nullptr;
 
-Prop::Prop(QObject* parent, const QString& name) :
-	QObject(parent),
+Prop::Prop(RenderNode* renderNode, const QString& name) :
+	QObject(renderNode),
+	_renderNode(renderNode),
 	_initialized(false),
 	_name(name),
 	_visible(true),

@@ -15,7 +15,7 @@ class ImagesLayerProp : public Prop
 
 public:
 	/** TODO */
-	ImagesLayerProp(Actor* actor, const QString& name, const Layer::Type& type);
+	ImagesLayerProp(RenderNode* renderNode, const QString& name, const Layer::Type& type);
 
 	/** Destructor */
 	~ImagesLayerProp();

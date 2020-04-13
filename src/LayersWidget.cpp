@@ -107,11 +107,7 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 			const auto firstRow		= selectedRows.first();
 			const auto row			= firstRow.row();
 			const auto name			= firstRow.siblingAtColumn(ult(Layer::Column::Name)).data(Qt::EditRole).toString();
-			const auto mayRemove	= firstRow.siblingAtColumn(ult(Layer::Column::Flags)).data(Qt::EditRole).toInt() & ult(Layer::Flag::Removable);
 			
-			_ui->layerRemovePushButton->setEnabled(mayRemove);
-			_ui->layerRemovePushButton->setToolTip(mayRemove ? QString("Remove %1").arg(name) : "");
-
 			const auto mayMoveUp = layersModel().mayMoveLayer(firstRow, -1);
 
 			_ui->layerMoveUpPushButton->setEnabled(mayMoveUp);
@@ -165,7 +161,7 @@ void LayersWidget::dropEvent(QDropEvent* dropEvent)
 	const auto datasetType		= items.at(1);
 	const auto selectionName	= QString("%1_selection").arg(datasetName);
 	//const auto createSelectionLayer		= layersModel().findLayerById(selectionName) == nullptr;
-	const auto layerFlags		= ult(Layer::Flag::Enabled) | ult(Layer::Flag::Removable) | ult(Layer::Flag::Renamable);
+	const auto layerFlags		= ult(Layer::Flag::Enabled) | ult(Layer::Flag::Renamable);
 
 	const auto rootIndex = layersModel().index(0, 0);
 

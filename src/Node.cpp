@@ -1,12 +1,10 @@
-#include "TreeItem.h"
-#include "Dataset.h"
+#include "Node.h"
 #include "Prop.h"
-#include "LayerActor.h"
 
 #include <QDebug>
 #include <QFont>
 
-TreeItem::TreeItem(const QString& id, const QString& name, const int& flags) :
+Node::Node(const QString& id, const QString& name, const int& flags) :
 	_id(id),
 	_name(name),
 	_flags(flags),
@@ -15,12 +13,12 @@ TreeItem::TreeItem(const QString& id, const QString& name, const int& flags) :
 {
 }
 
-TreeItem::~TreeItem()
+Node::~Node()
 {
 	qDeleteAll(_children);
 }
 
-TreeItem* TreeItem::child(const int& index)
+Node* Node::child(const int& index)
 {
 	if (index < 0 || index >= _children.size())
 		return nullptr;
@@ -28,34 +26,34 @@ TreeItem* TreeItem::child(const int& index)
 	return _children.at(index);
 }
 
-int TreeItem::childCount() const
+int Node::childCount() const
 {
 	return _children.count();
 }
 
-bool TreeItem::insertChild(const int& position, TreeItem* treeItem)
+bool Node::insertChild(const int& position, Node* node)
 {
 	if (position < 0 || position > _children.size())
 		return false;
 
-	treeItem->setParent(this);
+	node->setParent(this);
 
-	_children.insert(position, treeItem);
+	_children.insert(position, node);
 
 	return true;
 }
 
-TreeItem* TreeItem::parent()
+Node* Node::parent()
 {
 	return _parent;
 }
 
-void TreeItem::setParent(TreeItem* parent)
+void Node::setParent(Node* parent)
 {
 	_parent = parent;
 }
 
-bool TreeItem::removeChild(const int& position, const bool& purge /*= true*/)
+bool Node::removeChild(const int& position, const bool& purge /*= true*/)
 {
 	if (position < 0 || position > _children.size())
 		return false;
@@ -68,30 +66,30 @@ bool TreeItem::removeChild(const int& position, const bool& purge /*= true*/)
 	return true;
 }
 
-int TreeItem::childIndex() const
+int Node::childIndex() const
 {
 	if (_parent)
-		return _parent->_children.indexOf(const_cast<TreeItem*>(this));
+		return _parent->_children.indexOf(const_cast<Node*>(this));
 
 	return 0;
 }
 
-bool TreeItem::hasChildren() const
+bool Node::hasChildren() const
 {
 	return childCount() > 0;
 }
 
-bool TreeItem::isRoot() const
+bool Node::isRoot() const
 {
 	return _parent == nullptr;
 }
 
-bool TreeItem::isLeaf() const
+bool Node::isLeaf() const
 {
 	return !hasChildren();
 }
 
-TreeItem* TreeItem::rootItem()
+Node* Node::rootItem()
 {
 	if (parent() == nullptr)
 		return this;
@@ -99,7 +97,7 @@ TreeItem* TreeItem::rootItem()
 	return _parent->rootItem();
 }
 
-void TreeItem::render()
+void Node::render()
 {
 	if (!_flags & ult(Flag::Enabled))
 		return;
@@ -115,7 +113,7 @@ void TreeItem::render()
 	*/
 }
 
-QVariant TreeItem::id(const int& role) const
+QVariant Node::id(const int& role) const
 {
 	switch (role)
 	{
@@ -133,12 +131,12 @@ QVariant TreeItem::id(const int& role) const
 	return QVariant();
 }
 
-void TreeItem::setId(const QString& id)
+void Node::setId(const QString& id)
 {
 	_id = id;
 }
 
-QVariant TreeItem::name(const int& role) const
+QVariant Node::name(const int& role) const
 {
 	switch (role)
 	{
@@ -159,15 +157,19 @@ QVariant TreeItem::name(const int& role) const
 	return QVariant();
 }
 
-void TreeItem::setName(const QString& name)
+void Node::setName(const QString& name)
 {
 	_name = name;
 }
 
-QVariant TreeItem::flag(const Flag& flag, const int& role) const
+bool Node::isFlagSet(const Flag& flag) const
 {
-	const auto isFlagSet = _flags & static_cast<int>(flag);
-	const auto flagString = isFlagSet ? "true" : "false";
+	return _flags & static_cast<int>(flag);
+}
+
+QVariant Node::flag(const Flag& flag, const int& role) const
+{
+	const auto flagString = isFlagSet(flag) ? "true" : "false";
 
 	switch (role)
 	{
@@ -175,7 +177,7 @@ QVariant TreeItem::flag(const Flag& flag, const int& role) const
 			return flagString;
 
 		case Qt::EditRole:
-			return isFlagSet;
+			return isFlagSet(flag);
 
 		case Qt::ToolTipRole:
 		{
@@ -184,17 +186,11 @@ QVariant TreeItem::flag(const Flag& flag, const int& role) const
 				case Flag::Enabled:
 					return QString("Enabled: %1").arg(flagString);
 
-				case Flag::Frozen:
-					return QString("Frozen: %1").arg(flagString);
-
-				case Flag::Removable:
-					return QString("Removable: %1").arg(flagString);
-
-				case Flag::Mask:
-					return QString("Mask: %1").arg(flagString);
-
 				case Flag::Renamable:
 					return QString("Renamable: %1").arg(flagString);
+
+				case Flag::Renderable:
+					return QString("Renderable: %1").arg(flagString);
 
 				default:
 					break;
@@ -210,7 +206,7 @@ QVariant TreeItem::flag(const Flag& flag, const int& role) const
 	return QVariant();
 }
 
-void TreeItem::setFlag(const Flag& flag, const bool& enabled /*= true*/)
+void Node::setFlag(const Flag& flag, const bool& enabled /*= true*/)
 {
 	if (enabled)
 		_flags |= static_cast<int>(flag);
@@ -219,14 +215,14 @@ void TreeItem::setFlag(const Flag& flag, const bool& enabled /*= true*/)
 
 	if (hasChildren()) {
 		for (auto treeItem : _children) {
-			auto layer = static_cast<TreeItem*>(treeItem);
+			auto layer = static_cast<Node*>(treeItem);
 
 			layer->setFlag(flag, enabled);
 		}
 	}
 }
 
-QVariant TreeItem::flags(const int& role) const
+QVariant Node::flags(const int& role) const
 {
 	const auto flagsString = QString("%1%").arg(QString::number(_flags));
 
@@ -248,12 +244,22 @@ QVariant TreeItem::flags(const int& role) const
 	return QVariant();
 }
 
-void TreeItem::setFlags(const int& flags)
+void Node::setFlags(const int& flags)
 {
 	_flags = flags;
 }
 
-Qt::CheckState TreeItem::aggregatedCheckState() const
+bool Node::isEnabled() const
+{
+	return isFlagSet(Flag::Enabled);
+}
+
+bool Node::isRenderable() const
+{
+	return isFlagSet(Flag::Renderable);
+}
+
+Qt::CheckState Node::aggregatedCheckState() const
 {
 	if (isLeaf())
 		return flag(Flag::Enabled, Qt::EditRole).toBool() ? Qt::Checked : Qt::Unchecked;
@@ -261,7 +267,7 @@ Qt::CheckState TreeItem::aggregatedCheckState() const
 	QSet<int> states;
 
 	for (auto treeItem : _children) {
-		auto layer = static_cast<TreeItem*>(treeItem);
+		auto layer = static_cast<Node*>(treeItem);
 
 		states.insert(layer->aggregatedCheckState());
 	}

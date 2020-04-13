@@ -30,6 +30,7 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	_imageViewerWidget	= new ViewerWidget(this);
 	_settingsWidget		= new SettingsWidget(this);
 
+	
 	/*
 	if (!QFontDatabase::addApplicationFont(":/FontAwesome.otf"))
 		qDebug() << "Unable to load Font Awesome";

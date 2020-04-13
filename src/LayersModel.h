@@ -1,7 +1,5 @@
 #pragma once
 
-#include "TreeItem.h"
-
 #include <QAbstractListModel>
 #include <QAbstractItemView>
 

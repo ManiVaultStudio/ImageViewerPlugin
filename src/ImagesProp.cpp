@@ -1,6 +1,5 @@
 #include "ImagesProp.h"
 #include "QuadShape.h"
-#include "Actor.h"
 #include "LayersModel.h"
 
 #include <QDebug>
@@ -13,8 +12,8 @@ const std::string fragmentShaderSource =
 #include "ImageLayerFragment.glsl"
 ;
 
-ImagesLayerProp::ImagesLayerProp(Actor* actor, const QString& name, const Layer::Type& type) :
-	Prop(actor, name),
+ImagesLayerProp::ImagesLayerProp(RenderNode* renderNode, const QString& name, const Layer::Type& type) :
+	Prop(renderNode, name),
 	_type(type),
 	_image(),
 	_displayRange{0.0f, 1000.0f},

@@ -17,7 +17,7 @@ public:
 	 * @param actor Parent actor
 	 * @param name Name of the prop
 	 */
-	PolylineProp(Actor* actor, const QString& name);
+	PolylineProp(RenderNode* renderNode, const QString& name);
 
 protected: // Inherited
 

@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Actor.h"
-
 #include "ImageData/ImageData.h"
 
 #include <QColor>
@@ -21,8 +19,7 @@ class InterimSelectionProp;
  * Selection picker actor class
  * @author Thomas Kroes
  */
-class SelectionPickerActor : public Actor
-{
+class SelectionPickerActor
 	Q_OBJECT
 
 public:

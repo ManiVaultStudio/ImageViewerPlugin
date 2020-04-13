@@ -1,5 +1,4 @@
 #include "PolylineProp.h"
-#include "Actor.h"
 #include "Renderer.h"
 #include "PolylineShape.h"
 
@@ -17,8 +16,8 @@ const std::string fragmentShaderSource =
 #include "PolylineShapeFragment.glsl"
 ;
 
-PolylineProp::PolylineProp(Actor* actor, const QString& name) :
-	Prop(actor, name),
+PolylineProp::PolylineProp(RenderNode* renderNode, const QString& name) :
+	Prop(renderNode, name),
 	_closed(true),
 	_lineWidth(0.01f),
 	_lineColor(255, 255, 255, 255)

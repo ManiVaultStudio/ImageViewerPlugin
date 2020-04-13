@@ -5,13 +5,14 @@
 #include <QMenu>
 #include <QDebug>
 #include <QOpenGLWidget>
-
-#include "SelectionPickerActor.h"
+#include <QVector2D>
+#include <QVector3D>
+#include <QVector4D>
+#include <QMatrix4x4>
 
 Renderer::Renderer(QOpenGLWidget* parent) :
 	QObject(parent),
 	hdps::Renderer(),
-	_actors(),
 	_interactionMode(InteractionMode::Selection),
 	_mouseEvents(),
 	_pan(),
@@ -27,16 +28,6 @@ void Renderer::init()
 {
 }
 
-void Renderer::render()
-{
-	renderActors();
-}
-
-void Renderer::destroy()
-{
-	destroyActors();
-}
-
 QVector<QSharedPointer<QMouseEvent>> Renderer::mouseEvents() const
 {
 	return _mouseEvents;
@@ -46,6 +37,7 @@ void Renderer::mousePressEvent(QMouseEvent* mouseEvent)
 {
 	//qDebug() << "Mouse press event";
 
+	/*
 	if (mouseEvent->buttons() & Qt::RightButton) {
 		if (_interactionMode != InteractionMode::Navigation)
 			setInteractionMode(InteractionMode::WindowLevel);
@@ -60,12 +52,14 @@ void Renderer::mousePressEvent(QMouseEvent* mouseEvent)
 		if (actor->shouldReceiveMousePressEvents())
 			actor->onMousePressEvent(mouseEvent);
 	}
+	*/
 }
 
 void Renderer::mouseReleaseEvent(QMouseEvent* mouseEvent)
 {
 	//qDebug() << "Mouse release event";
 
+	/*
 	for (auto key : _actors.keys()) {
 		auto actor = _actors[key];
 
@@ -74,6 +68,7 @@ void Renderer::mouseReleaseEvent(QMouseEvent* mouseEvent)
 	}
 
 	_mouseEvents.clear();
+	*/
 }
 
 void Renderer::mouseMoveEvent(QMouseEvent* mouseEvent)
@@ -87,6 +82,7 @@ void Renderer::mouseMoveEvent(QMouseEvent* mouseEvent)
 	}
 	*/
 
+	/*
 	switch (mouseEvent->buttons())
 	{
 		case Qt::LeftButton:
@@ -121,12 +117,14 @@ void Renderer::mouseMoveEvent(QMouseEvent* mouseEvent)
 		if (actor->shouldReceiveMouseMoveEvents())
 			actor->onMouseMoveEvent(mouseEvent);
 	}
+	*/
 }
 
 void Renderer::mouseWheelEvent(QWheelEvent* wheelEvent)
 {
 	//qDebug() << "Mouse wheel event";
 
+	/*
 	switch (_interactionMode)
 	{
 		case InteractionMode::Navigation:
@@ -154,6 +152,7 @@ void Renderer::mouseWheelEvent(QWheelEvent* wheelEvent)
 		if (actor->shouldReceiveMouseWheelEvents())
 			actor->onMouseWheelEvent(wheelEvent);
 	}
+	*/
 }
 
 void Renderer::keyPressEvent(QKeyEvent* keyEvent)
@@ -205,12 +204,14 @@ void Renderer::keyPressEvent(QKeyEvent* keyEvent)
 		}
 	}
 
+	/*
 	for (auto key : _actors.keys()) {
 		auto actor = _actors[key];
 
 		if (actor->shouldReceiveKeyPressEvents())
 			actor->onKeyPressEvent(keyEvent);
 	}
+	*/
 }
 
 void Renderer::keyReleaseEvent(QKeyEvent* keyEvent)
@@ -234,12 +235,14 @@ void Renderer::keyReleaseEvent(QKeyEvent* keyEvent)
 		}
 	}
 
+	/*
 	for (auto key : _actors.keys()) {
 		auto actor = _actors[key];
 
 		if (actor->shouldReceiveKeyReleaseEvents())
 			actor->onKeyReleaseEvent(keyEvent);
 	}
+	*/
 }
 
 QVector3D Renderer::screenPointToWorldPosition(const QMatrix4x4& modelViewMatrix, const QVector2D& screenPoint) const
@@ -447,28 +450,6 @@ void Renderer::bindOpenGLContext()
 void Renderer::releaseOpenGLContext()
 {
 	parentWidget()->doneCurrent();
-}
-
-void Renderer::renderActors()
-{
-	//qDebug() << "Render" << _actors.size() << "actor(s)";
-
-	bindOpenGLContext();
-
-	for (auto name : _actors.keys()) {
-		_actors[name]->render();
-	}
-}
-
-void Renderer::destroyActors()
-{
-	//qDebug() << "Destroying" << _actors.size() << "actor(s)";
-
-	bindOpenGLContext();
-
-	for (auto name : _actors.keys()) {
-		_actors[name]->destroy();
-	}
 }
 
 QMenu* Renderer::viewMenu()

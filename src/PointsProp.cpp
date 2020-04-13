@@ -1,5 +1,4 @@
 #include "PointsProp.h"
-#include "Actor.h"
 #include "Renderer.h"
 
 #include <QDebug>
@@ -34,8 +33,8 @@ std::uint32_t PointsProp::Point::_positionAttribute = 0;
 std::uint32_t PointsProp::Point::_radiusAttribute	= 1;
 std::uint32_t PointsProp::Point::_colorAttribute	= 2;
 
-PointsProp::PointsProp(Actor* actor, const QString& name) :
-	Prop(actor, name),
+PointsProp::PointsProp(RenderNode* renderNode, const QString& name) :
+	Prop(renderNode, name),
 	_points(),
 	_vao(),
 	_vbo(),

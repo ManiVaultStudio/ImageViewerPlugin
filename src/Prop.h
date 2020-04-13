@@ -9,7 +9,7 @@
 #include <QOpenGLTexture>
 
 class Renderer;
-class Actor;
+class RenderNode;
 class Shape;
 
 /**
@@ -25,7 +25,7 @@ public:
 	 * @param renderer Renderer
 	 * @param name Name of the prop
 	 */
-	Prop(QObject* parent, const QString& name);
+	Prop(RenderNode* renderNode, const QString& name);
 
 	/** Destructor */
 	virtual ~Prop();
@@ -170,8 +170,11 @@ signals:
 	/** TODO */
 	void becameDirty(Prop* prop);
 
+public:
+	static Renderer* renderer;
+
 protected:
-	Actor*													_parent;				/** Pointer to parent (if any) */
+	RenderNode*												_renderNode;			/** Pointer to parent (if any) */
 	bool													_initialized;			/** Whether the prop is ready for rendering */
 	QString													_name;					/** Name of the prop */
 	bool													_visible;				/** Whether the prop is visible or not */
@@ -181,11 +184,6 @@ private:
 	QMap<QString, QSharedPointer<QOpenGLShaderProgram>>		_shaderPrograms;		/** OpenGL shader programs */
 	QMap<QString, QSharedPointer<QOpenGLTexture>>			_textures;				/** OpenGL textures */
 	QMap<QString, QSharedPointer<Shape>>					_shapes;				/** Shapes */
-
-public:
-	static Renderer* renderer;
-
-	friend class Actor;
 };
 
 using SharedProp = QSharedPointer<Prop>;

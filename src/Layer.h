@@ -1,6 +1,6 @@
 #pragma once
 
-#include "TreeItem.h"
+#include "RenderNode.h"
 #include "ImageRange.h"
 
 #include <QColor>
@@ -13,7 +13,7 @@ class Dataset;
 class Prop;
 
 /** TODO */
-class Layer : public TreeItem
+class Layer : public RenderNode
 {
 public:
 
@@ -149,12 +149,6 @@ public: // Getters/setters
 	void setType(const Layer::Type& type);
 
 	/** TODO */
-	QVariant opacity(const int& role) const;
-
-	/** TODO */
-	void setOpacity(const float& opacity);
-
-	/** TODO */
 	QVariant colorMap(const int& role) const;
 
 	/** TODO */
@@ -214,7 +208,6 @@ signals:
 protected:
 	Dataset*				_dataset;				/** TODO */
 	Layer::Type				_type;					/** TODO */
-	float					_opacity;				/** TODO */
 	QImage					_colorMap;				/** TODO */
 	QImage					_image;					/** TODO */
 	Range					_imageRange;			/** TODO */

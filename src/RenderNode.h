@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Common.h"
+#include "Node.h"
 
 #include <QObject>
 #include <QColor>
@@ -16,10 +16,13 @@ class QWheelEvent;
 class QKeyEvent;
 
 /**
- * Actor class
+ * Render node class
+ *
+ * Contains props for rendering in OpenGL
+ *
  * @author Thomas Kroes
  */
-class Actor : public QObject
+class RenderNode : public Node
 {
 	Q_OBJECT
 
@@ -59,39 +62,22 @@ public:
 	};
 
 public:
-	/** TODO */
-	Actor(Actor* parent, const QString& name, const bool& visible = true);
+	/**
+	 * Constructor
+	 * @param id Identifier for internal use
+	 * @param name Name in the GUI
+	 * @param flags Configuration bit flags
+	 */
+	RenderNode(const QString& id, const QString& name, const int& flags);
 
 	/** Destructor */
-	~Actor();
+	~RenderNode();
 
-	/** Returns the Actor name */
-	QString name() const;
+	/** Renders the node */
+	virtual void render();
 
-	/**
-	 * Sets the name
-	 * @param name Actor name
-	 */
-	void setName(const QString& name);
+public: // Matrix functions
 
-	/** Returns whether the Actor is enabled (visible) */
-	bool isEnabled() const;
-
-	/**
-	 * Sets whether the Actor is enabled or not (visible)
-	 * @param enabled Whether the Actor is enabled or not
-	 */
-	void setEnabled(const bool& enabled);
-
-	/** Enables the Actor */
-	void enable();
-
-	/** Disables the Actor */
-	void disable();
-
-	/** Returns whether the Actor can be rendered */
-	virtual bool canRender() const;
-	
 	/** Returns the model matrix */
 	QMatrix4x4 modelMatrix() const;
 
@@ -106,6 +92,26 @@ public:
 
 	/** Returns the model-view-projection matrix (projectionMatrix * viewMatrix * actorModelMatrix) */
 	QMatrix4x4 modelViewProjectionMatrix() const;
+
+protected: // Key/mouse handlers
+
+	/** Node will register mouse press events */
+	void registerMousePressEvents();
+
+	/** Node will register mouse release events */
+	void registerMouseReleaseEvents();
+
+	/** Node will register mouse move press events */
+	void registerMouseMoveEvents();
+
+	/** Node will register mouse wheel events */
+	void registerMouseWheelEvents();
+
+	/** Node will register key press events */
+	void registerKeyPressEvents();
+
+	/** Node will register key release events */
+	void registerKeyReleaseEvents();
 
 	/** Invoked when a mouse button is pressed */
 	virtual void onMousePressEvent(QMouseEvent* mouseEvent);
@@ -125,60 +131,24 @@ public:
 	/** Invoked when a key is released */
 	virtual void onKeyReleaseEvent(QKeyEvent* keyEvent);
 
-	/** Returns whether this actor should receive mouse press events */
-	bool shouldReceiveMousePressEvents() const;
-
-	/** Returns whether this actor should receive mouse release events */
-	bool shouldReceiveMouseReleaseEvents() const;
-
-	/** Returns whether this actor should receive mouse move events */
-	bool shouldReceiveMouseMoveEvents() const;
-
-	/** Returns whether this actor should receive mouse wheel events */
-	bool shouldReceiveMouseWheelEvents() const;
-
-	/** Returns whether this actor should receive key press events */
-	bool shouldReceiveKeyPressEvents() const;
-
-	/** Returns whether this actor should receive key release events */
-	bool shouldReceiveKeyReleaseEvents() const;
-	
-	/** Returns whether the actor is visible */
-	bool isVisible() const;
-
-	/** Show the actor */
-	virtual void show();
-
-	/** Hide the actor */
-	virtual void hide();
-
-	/** Set visible
-	 * @param visible Visible
+	/**
+	 * Records a mouse event
+	 * @param mouseEvent Mouse event
 	 */
-	virtual void setVisible(const bool& visible);
+	void addMouseEvent(QMouseEvent* mouseEvent);
+
+	/** Returns the recorded mouse events */
+	QVector<MouseEvent> mouseEvents();
+
+public: // Opacity
 
 	/** Returns the render opacity */
-	float opacity() const;
+	QVariant opacity(const int& role) const;
 
 	/** Sets the render opacity
 	 * @param opacity Render opacity
 	*/
 	void setOpacity(const float& opacity);
-
-	/** Binds the OpenGL context */
-	void bindOpenGLContext();
-
-	/** Releases the OpenGL context */
-	void releaseOpenGLContext();
-
-	/** TODO */
-	const Renderer* renderer() const;
-
-	/** TODO */
-	Renderer* renderer();
-
-	/** Returns the recorded mouse events */
-	QVector<MouseEvent> mouseEvents();
 
 protected: // Prop management
 
@@ -252,52 +222,14 @@ protected: // Prop management
 	}
 
 public:
-	/** Destroys the actor */
-	virtual void destroy();
-
-	virtual void initialize() {};
-
-	/** Renders the actor */
-	virtual void render();
-
-	/** Returns whether this actor may process mouse press events */
-	bool mayProcessMousePressEvent() const;
-
-	/** Returns whether this actor may process mouse release events */
-	bool mayProcessMouseReleaseEvent() const;
-
-	/** Returns whether this actor may process mouse move events */
-	bool mayProcessMouseMoveEvent() const;
-
-	/** Returns whether this actor may process mouse wheel events */
-	bool mayProcessMouseWheelEvent() const;
-
-	/** Returns whether this actor may process key press events */
-	bool mayProcessKeyPressEvent() const;
-
-	/** Returns whether this actor may process key release events */
-	bool mayProcessKeyReleaseEvent() const;
-
-	/**
-	 * Records a mouse event
-	 * @param mouseEvent Mouse event
-	 */
-	void addMouseEvent(QMouseEvent* mouseEvent);
+	static Renderer* renderer;
 
 protected:
 	int							_registeredEvents;		/** Defines which (mouse) events should be received by the actor */
 	QVector<MouseEvent>			_mouseEvents;			/** Recorded mouse events */
 
 private:
-	QString						_name;				/** Name of the Actor */
-	bool						_enabled;			/** Whether interaction with this actor is enabled */
-	bool						_visible;			/** Whether the actor is visible */
 	float						_opacity;			/** Render opacity */
 	QMatrix4x4					_modelMatrix;		/** Model matrix */
 	QMap<QString, SharedProp>	_props;				/** Props map */
-
-	static Renderer*			_renderer;			
-
-	friend class TreeItem;
-	friend class Renderer;
 };

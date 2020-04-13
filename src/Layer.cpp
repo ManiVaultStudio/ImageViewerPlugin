@@ -1,15 +1,13 @@
 #include "Layer.h"
 #include "Dataset.h"
-#include "LayerActor.h"
 
 #include <QFont>
 #include <QDebug>
 
 Layer::Layer(Dataset* dataset, const Type& type, const QString& id, const QString& name, const int& flags) :
-	TreeItem(id, name, flags),
+	RenderNode(id, name, flags),
 	_dataset(dataset),
 	_type(type),
-	_opacity(1.0f),
 	_colorMap(),
 	_image(),
 	_imageRange(),
@@ -21,7 +19,6 @@ Layer::Layer(Dataset* dataset, const Type& type, const QString& id, const QStrin
 	_modelMatrix(),
 	_props()
 {
-//	_actor = new LayerActor()
 }
 
 Layer::~Layer() = default;
@@ -135,7 +132,7 @@ QVariant Layer::data(const QModelIndex& index, const int& role) const
 			return displayRange(role);
 
 		case Column::Flags:
-			return TreeItem::flags(role);
+			return Node::flags(role);
 
 		default:
 			break;
@@ -309,33 +306,6 @@ QVariant Layer::type(const int& role) const
 void Layer::setType(const Type& type)
 {
 	_type = type;
-}
-
-QVariant Layer::opacity(const int& role) const
-{
-	const auto opacityString = QString("%1%").arg(QString::number(100.0f * _opacity, 'f', 1));
-
-	switch (role)
-	{
-		case Qt::DisplayRole:
-			return opacityString;
-
-		case Qt::EditRole:
-			return _opacity;
-
-		case Qt::ToolTipRole:
-			return QString("Opacity: %1").arg(opacityString);
-
-		default:
-			break;
-	}
-
-	return QVariant();
-}
-
-void Layer::setOpacity(const float& opacity)
-{
-	_opacity = opacity;
 }
 
 QVariant Layer::colorMap(const int& role) const

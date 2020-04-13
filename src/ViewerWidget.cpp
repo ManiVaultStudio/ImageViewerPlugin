@@ -1,11 +1,9 @@
 #include "ViewerWidget.h"
 #include "ImageViewerPlugin.h"
-//#include "ImageDatasetActor.h"
 #include "Renderer.h"
-#include "SelectionPickerActor.h"
 #include "LayersModel.h"
-
 #include "ClusterData.h"
+#include "RenderNode.h"
 
 #include <vector>
 #include <algorithm>
@@ -24,6 +22,9 @@ ViewerWidget::ViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_renderer(new Renderer(this)),
 	_openglDebugLogger(std::make_unique<QOpenGLDebugLogger>())
 {
+	RenderNode::renderer = _renderer;
+	Prop::renderer = _renderer;
+
 	setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
 	setFocusPolicy(Qt::StrongFocus);
 	setMouseTracking(true);
