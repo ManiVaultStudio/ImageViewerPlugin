@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Prop.h"
-#include "Layer.h"
+#include "LayerNode.h"
 
 class Actor;
 
@@ -15,7 +15,7 @@ class ImagesLayerProp : public Prop
 
 public:
 	/** TODO */
-	ImagesLayerProp(RenderNode* renderNode, const QString& name, const Layer::Type& type);
+	ImagesLayerProp(RenderNode* renderNode, const QString& name, const LayerNode::Type& type);
 
 	/** Destructor */
 	~ImagesLayerProp();
@@ -48,7 +48,7 @@ protected:
 	void updateModelMatrix();
 
 private:
-	Layer::Type		_type;					/** TODO */
+	LayerNode::Type		_type;					/** TODO */
 	QImage			_image;					/** TODO */
 	float			_displayRange[2];		/** TODO */
 	float			_opacity;				/** TODO */

@@ -3,7 +3,7 @@
 #include <QDebug>
 
 GroupLayer::GroupLayer(const QString& id, const QString& name, const int& flags) :
-	Layer(nullptr, Layer::Type::Group, id, name, flags)
+	LayerNode(nullptr, LayerNode::Type::Group, id, name, flags)
 {
 }
 
@@ -37,5 +37,5 @@ QVariant GroupLayer::data(const QModelIndex& index, const int& role) const
 QModelIndexList GroupLayer::setData(const QModelIndex& index, const QVariant& value, const int& role)
 {
 	if (isBaseLayerIndex(index))
-		return Layer::setData(index, value, role);
+		return LayerNode::setData(index, value, role);
 }

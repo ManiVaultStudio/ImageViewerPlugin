@@ -5,7 +5,7 @@
 
 class ImageViewerPlugin;
 class Dataset;
-class Layer;
+class LayerNode;
 class GroupLayer;
 
 class LayersModel : public QAbstractItemModel
@@ -56,7 +56,7 @@ public: // Data access
 	int columnCount(const QModelIndex &parent = QModelIndex()) const override;
 
 	/** TODO */
-	bool insertLayer(int row, Layer* layer, const QModelIndex& parent = QModelIndex());
+	bool insertLayer(int row, LayerNode* layer, const QModelIndex& parent = QModelIndex());
 
 	/** TODO */
 	bool removeLayer(const QModelIndex& index);
@@ -90,7 +90,7 @@ public: // MIME drag and drop
 	bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent);
 
 private:
-	Layer* getLayer(const QModelIndex& index) const;
+	LayerNode* getLayer(const QModelIndex& index) const;
 
 private:
 	QItemSelectionModel		_selectionModel;	/** TODO */

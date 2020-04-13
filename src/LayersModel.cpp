@@ -1,7 +1,7 @@
 #include "LayersModel.h"
 #include "ImageViewerPlugin.h"
 #include "Dataset.h"
-#include "Layer.h"
+#include "LayerNode.h"
 #include "GroupLayer.h"
 #include "PointsLayer.h"
 #include "ImagesLayer.h"
@@ -17,7 +17,7 @@
 LayersModel::LayersModel(ImageViewerPlugin* imageViewerPlugin) :
 	QAbstractItemModel(imageViewerPlugin),
 	_selectionModel(this),
-	_root(new GroupLayer("root", "Root", ult(Layer::Flag::Enabled)))
+	_root(new GroupLayer("root", "Root", ult(LayerNode::Flag::Enabled)))
 {
 	//_root->st
 	/*
@@ -48,7 +48,7 @@ int LayersModel::columnCount(const QModelIndex &parent) const
 {
 	Q_UNUSED(parent);
 
-	return ult(Layer::Column::End);
+	return ult(LayerNode::Column::End);
 }
 
 QVariant LayersModel::data(const QModelIndex &index, int role) const
@@ -94,10 +94,10 @@ Qt::ItemFlags LayersModel::flags(const int& row, const int& column) const
 	return flags(index(row, column));
 }
 
-Layer* LayersModel::getLayer(const QModelIndex& index) const
+LayerNode* LayersModel::getLayer(const QModelIndex& index) const
 {
 	if (index.isValid()) {
-		auto layer = static_cast<Layer*>(index.internalPointer());
+		auto layer = static_cast<LayerNode*>(index.internalPointer());
 		
 		if (layer)
 			return layer;
@@ -112,7 +112,7 @@ QVariant LayersModel::headerData(int section, Qt::Orientation orientation, int r
 		return QVariant();
 
 	if (orientation == Qt::Horizontal) {
-		return Layer::columnName(static_cast<Layer::Column>(section));
+		return LayerNode::columnName(static_cast<LayerNode::Column>(section));
 	}
 
 	return QVariant();
@@ -136,7 +136,7 @@ QModelIndex LayersModel::index(int row, int column, const QModelIndex &parent) c
 	return QModelIndex();
 }
 
-bool LayersModel::insertLayer(int row, Layer* layer, const QModelIndex& parent /*= QModelIndex()*/)
+bool LayersModel::insertLayer(int row, LayerNode* layer, const QModelIndex& parent /*= QModelIndex()*/)
 {
 	auto parentLayer = getLayer(parent);
 

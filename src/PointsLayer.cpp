@@ -4,7 +4,7 @@
 #include <QDebug>
 
 PointsLayer::PointsLayer(PointsDataset* pointsDataset, const QString& id, const QString& name, const int& flags) :
-	Layer(pointsDataset, Layer::Type::Points, id, name, flags),
+	LayerNode(pointsDataset, LayerNode::Type::Points, id, name, flags),
 	_points(pointsDataset),
 	_channels{-1,-1,-1},
 	_noChannels(1),
@@ -20,7 +20,7 @@ int PointsLayer::noColumns() const
 
 Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
 {
-	auto flags = Layer::flags(index);
+	auto flags = LayerNode::flags(index);
 
 	switch (static_cast<Column>(index.column())) {
 		case Column::Size:
@@ -80,7 +80,7 @@ Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
 QVariant PointsLayer::data(const QModelIndex& index, const int& role) const
 {
 	if (isBaseLayerIndex(index))
-		return Layer::data(index, role);
+		return LayerNode::data(index, role);
 
 	switch (static_cast<Column>(index.column())) {
 		case Column::Size:
@@ -132,7 +132,7 @@ QVariant PointsLayer::data(const QModelIndex& index, const int& role) const
 QModelIndexList PointsLayer::setData(const QModelIndex& index, const QVariant& value, const int& role)
 {
 	if (isBaseLayerIndex(index))
-		return Layer::setData(index, value, role);
+		return LayerNode::setData(index, value, role);
 
 	QModelIndexList affectedIds({ index });
 

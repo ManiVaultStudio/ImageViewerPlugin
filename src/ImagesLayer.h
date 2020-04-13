@@ -1,19 +1,22 @@
 #pragma once
 
-#include "Layer.h"
+#include "LayerNode.h"
+#include "WindowLevelImage.h"
 
 class ImagesDataset;
 
 /** TODO */
-class ImagesLayer : public Layer
+class ImagesLayer : public LayerNode
 {
 public:
 
 	/** TODO */
 	enum class Column {
-		NoImages = ult(Layer::Column::End) + 1,
+		NoImages = ult(LayerNode::Column::End) + 1,
 		Width,
 		Height,
+		WindowNormalized,
+		LevelNormalized,
 		ImageSize,
 		NoPoints,
 		NoDimensions,
@@ -75,5 +78,6 @@ public: // Getters/setters
 private:
 	std::int32_t		_currentImage;		/** TODO */
 	bool				_average;			/** TODO */
+	WindowLevelImage	_image;				/** Image */
 	ImagesDataset*		_images;			/** TODO */
 };

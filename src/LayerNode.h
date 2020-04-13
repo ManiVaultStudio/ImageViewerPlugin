@@ -12,8 +12,14 @@
 class Dataset;
 class Prop;
 
-/** TODO */
-class Layer : public RenderNode
+/**
+ * Layer node class
+ *
+ * Contains props for rendering in OpenGL
+ *
+ * @author Thomas Kroes
+ */
+class LayerNode : public RenderNode
 {
 public:
 
@@ -24,12 +30,8 @@ public:
 		ID,
 		Dataset,
 		Opacity,
-		WindowNormalized,
-		LevelNormalized,
 		ColorMap,
 		Image,
-		ImageRange,
-		DisplayRange,
 		Flags,
 
 		Start = Name,
@@ -53,16 +55,18 @@ public:
 
 			case Column::Opacity:
 				return "Opacity";
-
+			
+				/*
 			case Column::WindowNormalized:
 				return "Window";
 
 			case Column::LevelNormalized:
 				return "Level";
-
+				*/
 			case Column::ColorMap:
 				return "Color";
 
+				/*
 			case Column::Image:
 				return "Image";
 
@@ -71,6 +75,7 @@ public:
 
 			case Column::DisplayRange:
 				return "Display range";
+				*/
 
 			case Column::Flags:
 				return "Flags";
@@ -115,10 +120,10 @@ public:
 	}
 
 	/** Constructor */
-	Layer(Dataset* dataset, const Type& type, const QString& id, const QString& name, const int& flags);
+	LayerNode(Dataset* dataset, const Type& type, const QString& id, const QString& name, const int& flags);
 
 	/** Destructor */
-	virtual ~Layer();
+	virtual ~LayerNode();
 
 public: // MVC
 
@@ -146,7 +151,7 @@ public: // Getters/setters
 	QVariant type(const int& role) const;
 
 	/** TODO */
-	void setType(const Layer::Type& type);
+	void setType(const LayerNode::Type& type);
 
 	/** TODO */
 	QVariant colorMap(const int& role) const;
@@ -154,70 +159,15 @@ public: // Getters/setters
 	/** TODO */
 	void setColorMap(const QImage& colorMap);
 
-public: // Image functions
-
-	/** TODO */
-	QVariant image(const int& role) const;
-
-	/** TODO */
-	void setImage(const QImage& image);
-
-	/** TODO */
-	QVariant imageRange(const int& role) const;
-
-	/** TODO */
-	QVariant displayRange(const int& role) const;
-
-	/** TODO */
-	QVariant windowNormalized(const int& role) const;
-
-	/** TODO */
-	void setWindowNormalized(const float& windowNormalized);
-
-	/** TODO */
-	QVariant levelNormalized(const int& role) const;
-
-	/** TODO */
-	void setLevelNormalized(const float& levelNormalized);
-
-	/** TODO */
-	QVariant window(const int& role) const;
-
-	/** TODO */
-	void setWindow(const float& window);
-
-	/** TODO */
-	QVariant level(const int& role) const;
-
-	/** TODO */
-	void setLevel(const float& level);
-
-protected:
-
-	/** TODO */
-	void computeImageRange();
-
-	/** TODO */
-	void computeDisplayRange();
-
 signals:
 
 	/** TODO */
 	void dataChanged();
 
 protected:
-	Dataset*				_dataset;				/** TODO */
-	Layer::Type				_type;					/** TODO */
-	QImage					_colorMap;				/** TODO */
-	QImage					_image;					/** TODO */
-	Range					_imageRange;			/** TODO */
-	Range					_displayRange;			/** TODO */
-	float					_windowNormalized;		/** TODO */
-	float					_levelNormalized;		/** TODO */
-	float					_window;				/** TODO */
-	float					_level;					/** TODO */
-	QMatrix4x4				_modelMatrix;			/** Model matrix */
-	QMap<QString, Prop*>	_props;					/** Props map */
+	Dataset*				_dataset;		/** TODO */
+	LayerNode::Type			_type;			/** TODO */
+	QImage					_colorMap;		/** TODO */
 };
 
-using Layers = QList<Layer*>;
+using Layers = QList<LayerNode*>;

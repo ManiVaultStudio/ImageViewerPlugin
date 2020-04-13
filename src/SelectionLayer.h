@@ -1,17 +1,17 @@
 #pragma once
 
-#include "Layer.h"
+#include "LayerNode.h"
 
 class Dataset;
 
 /** TODO */
-class SelectionLayer : public Layer
+class SelectionLayer : public LayerNode
 {
 public:
 
 	/** TODO */
 	enum class Column {
-		ParamA = ult(Layer::Column::End) + 1,
+		ParamA = ult(LayerNode::Column::End) + 1,
 		ParamB,
 
 		Start = ParamA,

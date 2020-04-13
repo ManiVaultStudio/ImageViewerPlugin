@@ -2,7 +2,7 @@
 #include "ImageViewerPlugin.h"
 #include "LayersModel.h"
 #include "SelectionLayer.h"
-#include "Layer.h"
+#include "LayerNode.h"
 #include "GroupLayer.h"
 #include "PointsLayer.h"
 #include "ImagesLayer.h"
@@ -80,16 +80,16 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 
 	headerView->setSectionResizeMode(QHeaderView::ResizeToContents);
 
-	for (int column = ult(Layer::Column::Start); column < ult(Layer::Column::End); column++)
+	for (int column = ult(LayerNode::Column::Start); column < ult(LayerNode::Column::End); column++)
 		headerView->hideSection(column);
 
-	headerView->showSection(ult(Layer::Column::Name));
+	headerView->showSection(ult(LayerNode::Column::Name));
 	//headerView->showSection(ult(Layer::Column::Enabled));
 	//headerView->showSection(ult(Layer::Column::Type));
-	headerView->showSection(ult(Layer::Column::Opacity));
+	headerView->showSection(ult(LayerNode::Column::Opacity));
 	//headerView->showSection(ult(Layer::Column::Enabled));
 
-	headerView->setSectionResizeMode(ult(Layer::Column::Name), QHeaderView::Interactive);
+	headerView->setSectionResizeMode(ult(LayerNode::Column::Name), QHeaderView::Interactive);
 
 	auto updateButtons = [this]() {
 		const auto selectedRows = layersSelectionModel().selectedRows();
@@ -106,7 +106,7 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 		if (noSelectedRows == 1) {
 			const auto firstRow		= selectedRows.first();
 			const auto row			= firstRow.row();
-			const auto name			= firstRow.siblingAtColumn(ult(Layer::Column::Name)).data(Qt::EditRole).toString();
+			const auto name			= firstRow.siblingAtColumn(ult(LayerNode::Column::Name)).data(Qt::EditRole).toString();
 			
 			const auto mayMoveUp = layersModel().mayMoveLayer(firstRow, -1);
 
@@ -161,7 +161,7 @@ void LayersWidget::dropEvent(QDropEvent* dropEvent)
 	const auto datasetType		= items.at(1);
 	const auto selectionName	= QString("%1_selection").arg(datasetName);
 	//const auto createSelectionLayer		= layersModel().findLayerById(selectionName) == nullptr;
-	const auto layerFlags		= ult(Layer::Flag::Enabled) | ult(Layer::Flag::Renamable);
+	const auto layerFlags		= ult(LayerNode::Flag::Enabled) | ult(LayerNode::Flag::Renamable);
 
 	const auto rootIndex = layersModel().index(0, 0);
 

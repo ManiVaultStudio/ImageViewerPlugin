@@ -4,7 +4,7 @@
 #include <QDebug>
 
 ClustersLayer::ClustersLayer(ClustersDataset* clustersDataset, const QString& id, const QString& name, const int& flags) :
-	Layer(clustersDataset, Layer::Type::Clusters, id, name, flags),
+	LayerNode(clustersDataset, LayerNode::Type::Clusters, id, name, flags),
 	_clusters(clustersDataset)
 {
 }
@@ -16,10 +16,7 @@ int ClustersLayer::noColumns() const
 
 Qt::ItemFlags ClustersLayer::flags(const QModelIndex& index) const
 {
-	auto flags = Layer::flags(index);
-
-	if (index.column() == ult(Layer::Column::WindowNormalized) || index.column() == ult(Layer::Column::LevelNormalized))
-		flags &= ~Qt::ItemIsEditable;
+	auto flags = LayerNode::flags(index);
 
 	switch (static_cast<Column>(index.column())) {
 		default:
@@ -32,7 +29,7 @@ Qt::ItemFlags ClustersLayer::flags(const QModelIndex& index) const
 QVariant ClustersLayer::data(const QModelIndex& index, const int& role) const
 {
 	if (isBaseLayerIndex(index))
-		return Layer::data(index, role);
+		return LayerNode::data(index, role);
 
 	switch (static_cast<Column>(index.column())) {
 		default:
@@ -45,5 +42,5 @@ QVariant ClustersLayer::data(const QModelIndex& index, const int& role) const
 QModelIndexList ClustersLayer::setData(const QModelIndex& index, const QVariant& value, const int& role)
 {
 	if (isBaseLayerIndex(index))
-		return Layer::setData(index, value, role);
+		return LayerNode::setData(index, value, role);
 }

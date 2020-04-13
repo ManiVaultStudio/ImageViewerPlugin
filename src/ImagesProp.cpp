@@ -12,7 +12,7 @@ const std::string fragmentShaderSource =
 #include "ImageLayerFragment.glsl"
 ;
 
-ImagesLayerProp::ImagesLayerProp(RenderNode* renderNode, const QString& name, const Layer::Type& type) :
+ImagesLayerProp::ImagesLayerProp(RenderNode* renderNode, const QString& name, const LayerNode::Type& type) :
 	Prop(renderNode, name),
 	_type(type),
 	_image(),

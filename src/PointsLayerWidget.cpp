@@ -81,7 +81,7 @@ void PointsLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 {
 	const auto selectedRows = _layersModel->selectionModel().selectedRows();
 	const auto noSelectedRows = selectedRows.size();
-	const auto enabled = _layersModel->data(topLeft.siblingAtColumn(ult(Layer::Column::Name)), Qt::CheckStateRole).toInt() == Qt::Checked;
+	const auto enabled = _layersModel->data(topLeft.siblingAtColumn(ult(LayerNode::Column::Name)), Qt::CheckStateRole).toInt() == Qt::Checked;
 
 	for (int column = topLeft.column(); column <= bottomRight.column(); column++) {
 		const auto index = topLeft.siblingAtColumn(column);
@@ -91,7 +91,7 @@ void PointsLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 
 		if (index.isValid() && noSelectedRows == 1) {
 			validSelection = true;
-			flags = _layersModel->data(topLeft.siblingAtColumn(ult(Layer::Column::Flags)), Qt::EditRole).toInt();
+			flags = _layersModel->data(topLeft.siblingAtColumn(ult(LayerNode::Column::Flags)), Qt::EditRole).toInt();
 		}
 
 		const auto mightEdit = validSelection && enabled;

@@ -29,11 +29,11 @@ set(PLUGIN
 	src/Selection.cpp
 )
 
-file(GLOB MODEL src/*Model.* src/*Layer.* src/*Dataset.* src/*Layer.* src/*Item.* src/ImageRange.* src/*ProxyModel.* src/*Node.*)
+file(GLOB MODEL src/*Model.* src/*Layer.* src/*Dataset.* src/*Layer.* src/*Item.* src/ImageRange.* src/*ProxyModel.* src/*Node.* src/WindowLevelImage.*)
 file(GLOB RENDERING src/*Renderer.* src/*Actor.* src/*Prop.* src/*Shape.*)
 file(GLOB WIDGETS src/*Widget.* src/*Color*.*)
 file(GLOB UIS src/*.ui)
-file(GLOB SHADERS src/*.glsl)
+file(GLOB SHADERS src/*.glsl )
 file(GLOB JSON src/*.json)
 file(GLOB QRC src/*.qrc)
 

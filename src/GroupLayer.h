@@ -1,17 +1,17 @@
 #pragma once
 
-#include "Layer.h"
+#include "LayerNode.h"
 
 class ClustersDataset;
 
 /** TODO */
-class GroupLayer : public Layer
+class GroupLayer : public LayerNode
 {
 public:
 	
 	/** TODO */
 	enum class Column {
-		ParamA = ult(Layer::Column::End) + 1,
+		ParamA = ult(LayerNode::Column::End) + 1,
 		ParamB,
 
 		Start = ParamA,

@@ -3,7 +3,7 @@
 #include <QDebug>
 
 SelectionLayer::SelectionLayer(Dataset* dataset, const QString& id, const QString& name, const int& flags) :
-	Layer(dataset, Layer::Type::Selection, id, name, flags)
+	LayerNode(dataset, LayerNode::Type::Selection, id, name, flags)
 {
 }
 
@@ -14,10 +14,7 @@ int SelectionLayer::noColumns() const
 
 Qt::ItemFlags SelectionLayer::flags(const QModelIndex& index) const
 {
-	auto flags = Layer::flags(index);
-
-	if (index.column() == ult(Layer::Column::WindowNormalized) || index.column() == ult(Layer::Column::LevelNormalized))
-		flags &= ~Qt::ItemIsEditable;
+	auto flags = LayerNode::flags(index);
 
 	switch (static_cast<Column>(index.column())) {
 		default:
@@ -30,7 +27,7 @@ Qt::ItemFlags SelectionLayer::flags(const QModelIndex& index) const
 QVariant SelectionLayer::data(const QModelIndex& index, const int& role) const
 {
 	if (isBaseLayerIndex(index))
-		return Layer::data(index, role);
+		return LayerNode::data(index, role);
 
 	switch (static_cast<Column>(index.column())) {
 		default:
@@ -43,5 +40,5 @@ QVariant SelectionLayer::data(const QModelIndex& index, const int& role) const
 QModelIndexList SelectionLayer::setData(const QModelIndex& index, const QVariant& value, const int& role)
 {
 	if (isBaseLayerIndex(index))
-		return Layer::setData(index, value, role);
+		return LayerNode::setData(index, value, role);
 }

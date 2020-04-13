@@ -6,9 +6,10 @@
 #include <QDebug>
 
 ImagesLayer::ImagesLayer(ImagesDataset* imagesDataset, const QString& id, const QString& name, const int& flags) :
-	Layer(imagesDataset, Layer::Type::Images, id, name, flags),
+	LayerNode(imagesDataset, LayerNode::Type::Images, id, name, flags),
 	_currentImage(0),
 	_average(),
+	_image(),
 	_images(imagesDataset)
 {
 }
@@ -20,12 +21,19 @@ int ImagesLayer::noColumns() const
 
 Qt::ItemFlags ImagesLayer::flags(const QModelIndex& index) const
 {
-	auto flags = Layer::flags(index);
+	auto flags = LayerNode::flags(index);
 
 	switch (static_cast<Column>(index.column())) {
 		case Column::NoImages:
 		case Column::Width:
 		case Column::Height:
+			break;
+		
+		case Column::WindowNormalized:
+		case Column::LevelNormalized:
+			flags |= Qt::ItemIsEditable;
+			break;
+
 		case Column::ImageSize:
 		case Column::NoPoints:
 		case Column::NoDimensions:
@@ -58,8 +66,8 @@ Qt::ItemFlags ImagesLayer::flags(const QModelIndex& index) const
 
 QVariant ImagesLayer::data(const QModelIndex& index, const int& role) const
 {
-	if (isBaseLayerIndex(index))
-		return Layer::data(index, role);
+	if (index.column() < ult(Column::Start))
+		return LayerNode::data(index, role);
 
 	switch (static_cast<Column>(index.column())) {
 		case Column::NoImages:
@@ -70,6 +78,12 @@ QVariant ImagesLayer::data(const QModelIndex& index, const int& role) const
 
 		case Column::Height:
 			return _images->height(role);
+
+		case Column::WindowNormalized:
+			return _image.windowNormalized(role);
+
+		case Column::LevelNormalized:
+			return _image.levelNormalized(role);
 
 		case Column::ImageSize:
 			return _images->imageSize(role);
@@ -119,15 +133,25 @@ QVariant ImagesLayer::data(const QModelIndex& index, const int& role) const
 
 QModelIndexList ImagesLayer::setData(const QModelIndex& index, const QVariant& value, const int& role)
 {
-	if (isBaseLayerIndex(index))
-		return Layer::setData(index, value, role);
+	if (index.column() < ult(Column::Start))
+		return LayerNode::setData(index, value, role);
 
-	QModelIndexList affectedIndices;
+	QModelIndexList affectedIndices{ index };
 
 	switch (static_cast<Column>(index.column())) {
 		case Column::NoImages:
 		case Column::Width:
 		case Column::Height:
+			break;
+
+		case Column::WindowNormalized:
+			_image.setWindowNormalized(value.toFloat());
+			break;
+
+		case Column::LevelNormalized:
+			_image.setLevelNormalized(value.toFloat());
+			break;
+
 		case Column::ImageSize:
 		case Column::NoPoints:
 		case Column::NoDimensions:

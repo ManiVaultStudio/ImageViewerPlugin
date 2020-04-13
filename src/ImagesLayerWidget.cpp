@@ -21,6 +21,50 @@ void ImagesLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 	_imageViewerPlugin = imageViewerPlugin;
 	_layersModel = &_imageViewerPlugin->layersModel();
 
+	QObject::connect(_ui->windowDoubleSpinBox, qOverload<double>(&QDoubleSpinBox::valueChanged), [this](double value) {
+		const auto selectedRows = _layersModel->selectionModel().selectedRows();
+
+		if (selectedRows.count() == 1) {
+			_layersModel->setData(selectedRows.first().siblingAtColumn(ult(ImagesLayer::Column::WindowNormalized)), value);
+		}
+	});
+
+	QObject::connect(_ui->windowHorizontalSlider, &QSlider::valueChanged, [this](int value) {
+		const auto selectedRows = _layersModel->selectionModel().selectedRows();
+
+		if (selectedRows.count() == 1) {
+			const auto range = _ui->windowHorizontalSlider->maximum() - _ui->windowHorizontalSlider->minimum();
+			_layersModel->setData(selectedRows.first().siblingAtColumn(ult(ImagesLayer::Column::WindowNormalized)), value / static_cast<float>(range));
+		}
+	});
+
+	QObject::connect(_ui->levelDoubleSpinBox, qOverload<double>(&QDoubleSpinBox::valueChanged), [this](double value) {
+		const auto selectedRows = _layersModel->selectionModel().selectedRows();
+
+		if (selectedRows.count() == 1) {
+			_layersModel->setData(selectedRows.first().siblingAtColumn(ult(ImagesLayer::Column::LevelNormalized)), value);
+		}
+	});
+
+	QObject::connect(_ui->levelHorizontalSlider, &QSlider::valueChanged, [this](int value) {
+		const auto selectedRows = _layersModel->selectionModel().selectedRows();
+
+		if (selectedRows.count() == 1) {
+			const auto range = _ui->levelHorizontalSlider->maximum() - _ui->levelHorizontalSlider->minimum();
+			_layersModel->setData(selectedRows.first().siblingAtColumn(ult(ImagesLayer::Column::LevelNormalized)), value / static_cast<float>(range));
+		}
+	});
+
+	QObject::connect(_ui->resetWindowLevelPushButton, &QPushButton::clicked, [this]() {
+		const auto selectedRows = _layersModel->selectionModel().selectedRows();
+
+		if (selectedRows.count() == 1) {
+			_layersModel->setData(selectedRows.first().siblingAtColumn(ult(LayerNode::Column::Opacity)), 1.0f);
+			_layersModel->setData(selectedRows.first().siblingAtColumn(ult(ImagesLayer::Column::WindowNormalized)), 1.0f);
+			_layersModel->setData(selectedRows.first().siblingAtColumn(ult(ImagesLayer::Column::LevelNormalized)), 0.5f);
+		}
+	});
+
 	QObject::connect(_layersModel, &LayersModel::dataChanged, this, &ImagesLayerWidget::updateData);
 
 	QObject::connect(&_layersModel->selectionModel(), &QItemSelectionModel::selectionChanged, [this](const QItemSelection& selected, const QItemSelection& deselected) {
@@ -47,7 +91,7 @@ void ImagesLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 {
 	const auto selectedRows		= _layersModel->selectionModel().selectedRows();
 	const auto noSelectedRows	= selectedRows.size();
-	const auto enabled			= _layersModel->data(topLeft.siblingAtColumn(ult(Layer::Column::Name)), Qt::CheckStateRole).toInt() == Qt::Checked;
+	const auto enabled			= _layersModel->data(topLeft.siblingAtColumn(ult(LayerNode::Column::Name)), Qt::CheckStateRole).toInt() == Qt::Checked;
 
 	for (int column = topLeft.column(); column <= bottomRight.column(); column++) {
 		const auto index = topLeft.siblingAtColumn(column);
@@ -57,7 +101,7 @@ void ImagesLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 
 		if (index.isValid() && noSelectedRows == 1) {
 			validSelection = true;
-			flags = _layersModel->data(topLeft.siblingAtColumn(ult(Layer::Column::Flags)), Qt::EditRole).toInt();
+			flags = _layersModel->data(topLeft.siblingAtColumn(ult(LayerNode::Column::Flags)), Qt::EditRole).toInt();
 		}
 		
 		const auto mightEdit = validSelection && enabled;
@@ -70,6 +114,49 @@ void ImagesLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 			_ui->imageSizeLineEdit->blockSignals(true);
 			_ui->imageSizeLineEdit->setText(QString("[%1, %2]").arg(QString::number(imageSize.width()), QString::number(imageSize.height())));
 			_ui->imageSizeLineEdit->blockSignals(false);
+		}
+
+		if (column == ult(ImagesLayer::Column::WindowNormalized)) {
+			const auto windowFlags = _layersModel->flags(topLeft.siblingAtColumn(ult(ImagesLayer::Column::WindowNormalized)));
+
+			_ui->windowLabel->setEnabled(mightEdit && windowFlags & Qt::ItemIsEditable);
+			_ui->windowDoubleSpinBox->setEnabled(mightEdit && windowFlags & Qt::ItemIsEditable);
+			_ui->windowHorizontalSlider->setEnabled(mightEdit && windowFlags & Qt::ItemIsEditable);
+
+			const auto window = validSelection ? _layersModel->data(topLeft.siblingAtColumn(ult(ImagesLayer::Column::WindowNormalized)), Qt::EditRole).toFloat() : 1.0f;
+
+			_ui->windowDoubleSpinBox->blockSignals(true);
+			_ui->windowDoubleSpinBox->setValue(window);
+			_ui->windowDoubleSpinBox->blockSignals(false);
+
+			_ui->windowHorizontalSlider->blockSignals(true);
+			_ui->windowHorizontalSlider->setValue(100.0f * window);
+			_ui->windowHorizontalSlider->blockSignals(false);
+		}
+
+		if (column == ult(ImagesLayer::Column::LevelNormalized)) {
+			const auto levelFlags = _layersModel->flags(topLeft.siblingAtColumn(ult(ImagesLayer::Column::LevelNormalized)));
+
+			_ui->levelLabel->setEnabled(mightEdit && levelFlags & Qt::ItemIsEditable);
+			_ui->levelDoubleSpinBox->setEnabled(mightEdit && levelFlags & Qt::ItemIsEditable);
+			_ui->levelHorizontalSlider->setEnabled(mightEdit && levelFlags & Qt::ItemIsEditable);
+
+			const auto level = validSelection ? _layersModel->data(topLeft.siblingAtColumn(ult(ImagesLayer::Column::LevelNormalized)), Qt::EditRole).toFloat() : 0.5f;
+
+			_ui->levelDoubleSpinBox->blockSignals(true);
+			_ui->levelDoubleSpinBox->setValue(level);
+			_ui->levelDoubleSpinBox->blockSignals(false);
+
+			_ui->levelHorizontalSlider->blockSignals(true);
+			_ui->levelHorizontalSlider->setValue(100.0f * level);
+			_ui->levelHorizontalSlider->blockSignals(false);
+		}
+
+		if (column == ult(ImagesLayer::Column::WindowNormalized) || column == ult(ImagesLayer::Column::LevelNormalized)) {
+			const auto window	= _layersModel->data(topLeft.siblingAtColumn(ult(ImagesLayer::Column::WindowNormalized)), Qt::EditRole).toFloat();
+			const auto level	= _layersModel->data(topLeft.siblingAtColumn(ult(ImagesLayer::Column::LevelNormalized)), Qt::EditRole).toFloat();
+
+			_ui->resetWindowLevelPushButton->setEnabled(window != 1.0f || level != 0.5f);
 		}
 
 		if (column == ult(ImagesLayer::Column::NoPoints)) {

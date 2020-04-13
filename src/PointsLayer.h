@@ -1,17 +1,17 @@
 #pragma once
 
-#include "Layer.h"
+#include "LayerNode.h"
 
 class PointsDataset;
 
 /** TODO */
-class PointsLayer : public Layer
+class PointsLayer : public LayerNode
 {
 public:
 
 	/** TODO */
 	enum class Column {
-		Size = ult(Layer::Column::End) + 1,
+		Size = ult(LayerNode::Column::End) + 1,
 		Width,
 		Height,
 		Square,
