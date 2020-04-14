@@ -2,7 +2,7 @@
 #include "ImageViewerPlugin.h"
 #include "Renderer.h"
 #include "LayersModel.h"
-#include "ClusterData.h"
+#include "LayerNode.h"
 #include "RenderNode.h"
 
 #include <vector>
@@ -22,6 +22,7 @@ ViewerWidget::ViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_renderer(new Renderer(this)),
 	_openglDebugLogger(std::make_unique<QOpenGLDebugLogger>())
 {
+	LayerNode::imageViewerPlugin = _imageViewerPlugin;
 	RenderNode::renderer = _renderer;
 	Prop::renderer = _renderer;
 

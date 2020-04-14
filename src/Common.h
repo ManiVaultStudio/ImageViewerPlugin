@@ -5,6 +5,7 @@
 #include <type_traits>
 
 #include <QSet>
+#include <QVector>
 #include <QSharedPointer>
 
 class QOpenGLTexture;
@@ -147,4 +148,25 @@ template <typename E>
 constexpr auto ult(E e) noexcept
 {
 	return static_cast<std::underlying_type_t<E>>(e);
+}
+
+using Indices = QVector<std::uint32_t>;
+
+Q_DECLARE_METATYPE(Indices);
+
+/** Turns a lengthy list of strings into an abbreviated string */
+inline QString abbreviatedStringList(const QStringList& stringList)
+{
+	const auto noStrings = stringList.size();
+
+	if (noStrings == 1)
+		return QString("%1").arg(stringList.first());
+
+	if (noStrings == 2)
+		return QString("[%1, %2]").arg(stringList.first(), stringList.last());
+
+	if (noStrings > 2)
+		return QString("[%1, ..., %2]").arg(stringList.first(), stringList.last());
+
+	return QString("[]");
 }

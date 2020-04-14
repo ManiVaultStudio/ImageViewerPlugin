@@ -204,9 +204,9 @@ void PointsLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 			_ui->noDimensionsLineEdit->blockSignals(false);
 		}
 
-		if (column == ult(PointsLayer::Column::SelectionSize)) {
+		if (column == ult(LayerNode::Column::SelectionSize)) {
 			_ui->selectionSizeLineEdit->blockSignals(true);
-			_ui->selectionSizeLineEdit->setText(QString::number(_layersModel->data(topLeft.siblingAtColumn(ult(PointsLayer::Column::SelectionSize)), Qt::EditRole).toInt()));
+			_ui->selectionSizeLineEdit->setText(QString::number(_layersModel->data(topLeft.siblingAtColumn(ult(LayerNode::Column::SelectionSize)), Qt::EditRole).toInt()));
 			_ui->selectionSizeLineEdit->blockSignals(false);
 		}
 	}

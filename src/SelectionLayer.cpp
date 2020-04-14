@@ -2,7 +2,7 @@
 
 #include <QDebug>
 
-SelectionLayer::SelectionLayer(Dataset* dataset, const QString& id, const QString& name, const int& flags) :
+SelectionLayer::SelectionLayer(const QString& dataset, const QString& id, const QString& name, const int& flags) :
 	LayerNode(dataset, LayerNode::Type::Selection, id, name, flags)
 {
 }

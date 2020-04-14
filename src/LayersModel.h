@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Common.h"
+
 #include <QAbstractListModel>
 #include <QAbstractItemView>
 
@@ -74,6 +76,12 @@ public: // Data access
 	}
 
 public: // Miscellaneous
+
+	/**
+	 * Call this when a dataset selection has changed
+	 * @param name Dataset name
+	 */
+	void selectionChanged(const QString& name, const Indices& indices);
 
 	/** TODO */
 	QItemSelectionModel& selectionModel() { return _selectionModel; }

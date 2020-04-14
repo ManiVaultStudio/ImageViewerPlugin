@@ -21,7 +21,7 @@ public:
 public:
 
 	/** TODO */
-	ClustersLayer(ClustersDataset* clustersDataset, const QString& id, const QString& name, const int& flags);
+	ClustersLayer(const QString& dataset, const QString& id, const QString& name, const int& flags);
 
 public: // Inherited MVC
 
@@ -38,5 +38,4 @@ public: // Inherited MVC
 	QModelIndexList setData(const QModelIndex& index, const QVariant& value, const int& role) override;
 
 private:
-	ClustersDataset*	_clusters;		/** TODO */
 };

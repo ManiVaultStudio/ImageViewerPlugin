@@ -168,45 +168,34 @@ void LayersWidget::dropEvent(QDropEvent* dropEvent)
 	if (datasetType == "Points") {
 		const auto points = _imageViewerPlugin->requestData<Points>(datasetName);
 
-		auto dataset = datasetsModel()->addDataset(datasetName, Dataset::Type::Points);
-		
-		layersModel().insertLayer(0, new PointsLayer(reinterpret_cast<PointsDataset*>(dataset), datasetName, datasetName, layerFlags));
+		layersModel().insertLayer(0, new PointsLayer(datasetName, datasetName, datasetName, layerFlags));
 		
 		/*
 		if (createSelectionLayer)
 			layersModel().addLayer(new SelectionLayer(dataset, selectionName, selectionName, layerFlags));
 		*/
-
-		dataset->init();
 	}
 
 	if (datasetType == "Images") {
 		const auto imagesName		= datasetName;
 		const auto selectionName	= QString("%1_selection").arg(datasetName);
 
-		auto dataset = datasetsModel()->addDataset(datasetName, Dataset::Type::Images);
+		//auto dataset = datasetsModel()->addDataset(datasetName, Dataset::Type::Images);
 
-		layersModel().insertLayer(0, new ImagesLayer(reinterpret_cast<ImagesDataset*>(dataset), imagesName, imagesName, layerFlags));
+		layersModel().insertLayer(0, new ImagesLayer(datasetName, imagesName, imagesName, layerFlags));
 
 		/*
 		if (createSelectionLayer)
 			layersModel().addLayer(new SelectionLayer(dataset, selectionName, selectionName, layerFlags));
 		*/
-
-		dataset->init();
 	}
 
 	if (datasetType == "Clusters") {
 
-		auto dataset = datasetsModel()->addDataset(datasetName, Dataset::Type::Clusters);
+		//auto dataset = datasetsModel()->addDataset(datasetName, Dataset::Type::Clusters);
 	}
 
 	dropEvent->acceptProposedAction();
-}
-
-DatasetsModel* LayersWidget::datasetsModel()
-{
-	return &_imageViewerPlugin->datasetsModel();
 }
 
 LayersModel& LayersWidget::layersModel()

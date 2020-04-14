@@ -1,16 +1,35 @@
 #include "PointsLayer.h"
-#include "PointsDataset.h"
+#include "ImageViewerPlugin.h"
 
 #include <QDebug>
 
-PointsLayer::PointsLayer(PointsDataset* pointsDataset, const QString& id, const QString& name, const int& flags) :
-	LayerNode(pointsDataset, LayerNode::Type::Points, id, name, flags),
-	_points(pointsDataset),
+PointsLayer::PointsLayer(const QString& dataset, const QString& id, const QString& name, const int& flags) :
+	LayerNode(dataset, LayerNode::Type::Points, id, name, flags),
+	_points(nullptr),
 	_channels{-1,-1,-1},
 	_noChannels(1),
 	_size(),
 	_square(true)
 {
+	init();
+}
+
+void PointsLayer::init()
+{
+	_points = &imageViewerPlugin->requestData<Points>(_name);
+
+	setNoPoints(_points->getNumPoints());
+	setNoDimensions(_points->getNumDimensions());
+
+	auto dimensionNames = QStringList::fromVector(QVector<QString>::fromStdVector(_points->getDimensionNames()));
+
+	if (dimensionNames.isEmpty()) {
+		for (int dimensionIndex = 0; dimensionIndex < noDimensions(Qt::EditRole).toInt(); dimensionIndex++) {
+			dimensionNames << QString("Dim %1").arg(dimensionIndex);
+		}
+	}
+
+	setDimensionNames(dimensionNames);
 }
 
 int PointsLayer::noColumns() const
@@ -66,8 +85,6 @@ Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
 		case Column::DimensionNames:
 		case Column::NoPoints:
 		case Column::NoDimensions:
-		case Column::Selection:
-		case Column::SelectionSize:
 			break;
 
 		default:
@@ -108,19 +125,13 @@ QVariant PointsLayer::data(const QModelIndex& index, const int& role) const
 			return noChannels(role);
 
 		case Column::DimensionNames:
-			return _points->dimensionNames(role);
+			return dimensionNames(role);
 			
 		case Column::NoPoints:
-			return _points->noPoints(role);
+			return noPoints(role);
 
 		case Column::NoDimensions:
-			return _points->noDimensions(role);
-
-		case Column::Selection:
-			return _points->selection(role);
-
-		case Column::SelectionSize:
-			return _points->selectionSize(role);
+			return noDimensions(role);
 
 		default:
 			break;
@@ -199,8 +210,6 @@ QModelIndexList PointsLayer::setData(const QModelIndex& index, const QVariant& v
 
 		case Column::NoPoints:
 		case Column::NoDimensions:
-		case Column::Selection:
-		case Column::SelectionSize:
 			break;
 
 		default:
@@ -208,6 +217,87 @@ QModelIndexList PointsLayer::setData(const QModelIndex& index, const QVariant& v
 	}
 
 	return affectedIds;
+}
+
+QVariant PointsLayer::noPoints(const int& role /*= Qt::DisplayRole*/) const
+{
+	const auto noPointsString = QString::number(_noPoints);
+
+	switch (role)
+	{
+		case Qt::DisplayRole:
+			return noPointsString;
+
+		case Qt::EditRole:
+			return _noPoints;
+
+		case Qt::ToolTipRole:
+			return QString("No. points: %1").arg(noPointsString);
+
+		default:
+			break;
+	}
+
+	return QVariant();
+}
+
+void PointsLayer::setNoPoints(const std::uint32_t& noPoints)
+{
+	_noPoints = noPoints;
+}
+
+QVariant PointsLayer::noDimensions(const int& role /*= Qt::DisplayRole*/) const
+{
+	const auto noDimensionsString = QString::number(_noDimensions);
+
+	switch (role)
+	{
+		case Qt::DisplayRole:
+			return noDimensionsString;
+
+		case Qt::EditRole:
+			return _noDimensions;
+
+		case Qt::ToolTipRole:
+			return QString("No. dimensions: %1").arg(noDimensionsString);
+
+		default:
+			break;
+	}
+
+	return QVariant();
+}
+
+void PointsLayer::setNoDimensions(const std::uint32_t& noDimensions)
+{
+	_noDimensions = noDimensions;
+}
+
+QVariant PointsLayer::dimensionNames(const int& role /*= Qt::DisplayRole*/) const
+{
+	const auto imageNamesString = abbreviatedStringList(_dimensionNames);
+
+	switch (role)
+	{
+		case Qt::DisplayRole:
+			return imageNamesString;
+
+		case Qt::EditRole:
+			return _dimensionNames;
+
+		case Qt::ToolTipRole:
+			return QString("Image names: %1").arg(imageNamesString);
+
+		default:
+			break;
+	}
+
+	return QVariant();
+}
+
+void PointsLayer::setDimensionNames(const QStringList& dimensionNames)
+{
+	_dimensionNames = dimensionNames;
 }
 
 QVariant PointsLayer::size(const int& role /*= Qt::DisplayRole*/) const

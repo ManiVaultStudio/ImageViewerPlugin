@@ -1,10 +1,11 @@
 #include "LayerNode.h"
-#include "Dataset.h"
 
 #include <QFont>
 #include <QDebug>
 
-LayerNode::LayerNode(Dataset* dataset, const Type& type, const QString& id, const QString& name, const int& flags) :
+ImageViewerPlugin* LayerNode::imageViewerPlugin = nullptr;
+
+LayerNode::LayerNode(const QString& dataset, const Type& type, const QString& id, const QString& name, const int& flags) :
 	RenderNode(id, name, flags),
 	_dataset(dataset),
 	_type(type),
@@ -47,24 +48,6 @@ Qt::ItemFlags LayerNode::flags(const QModelIndex& index) const
 			flags |= Qt::ItemIsEditable;
 			break;
 			
-		/*
-		case Column::WindowNormalized:
-		{
-			if (type == Type::Images)
-				flags |= Qt::ItemIsEditable;
-
-			break;
-		}
-		
-		case Column::LevelNormalized:
-		{
-			if (type == Type::Images)
-				flags |= Qt::ItemIsEditable;
-
-			break;
-		}
-		*/
-
 		case Column::ColorMap:
 		{
 			if (type == Type::Selection)
@@ -73,14 +56,8 @@ Qt::ItemFlags LayerNode::flags(const QModelIndex& index) const
 			break;
 		}
 
-		case Column::Image:
-			break;
-		
-		/*
-		case Column::ImageRange:
-		case Column::DisplayRange:
-		*/
-
+		case Column::Selection:
+		case Column::SelectionSize:
 		case Column::Flags:
 			break;
 
@@ -109,28 +86,15 @@ QVariant LayerNode::data(const QModelIndex& index, const int& role) const
 		case Column::Opacity:
 			return opacity(role);
 
-		/*
-		case Column::WindowNormalized:
-			return windowNormalized(role);
-
-		case Column::LevelNormalized:
-			return levelNormalized(role);
-		*/
-
 		case Column::ColorMap:
 			return colorMap(role);
-		
-		/*
-		case Column::Image:
-			return image(role);
-		
-		case Column::ImageRange:
-			return imageRange(role);
 
-		case Column::DisplayRange:
-			return displayRange(role);
-		*/
+		case Column::Selection:
+			return selection(role);
 
+		case Column::SelectionSize:
+			return selectionSize(role);
+		
 		case Column::Flags:
 			return Node::flags(role);
 
@@ -192,30 +156,18 @@ QModelIndexList LayerNode::setData(const QModelIndex& index, const QVariant& val
 					setOpacity(value.toFloat());
 					break;
 				
-				/*
-				case Column::WindowNormalized:
-					setWindowNormalized(value.toFloat());
-					break;
-
-				case Column::LevelNormalized:
-					setLevelNormalized(value.toFloat());
-					break;
-				*/
-
 				case Column::ColorMap:
 					setColorMap(value.value<QImage>());
 					break;
+
+				case Column::Selection:
+					setSelection(value.value<Indices>());
+					affectedIndices.append(index.siblingAtColumn(ult(Column::SelectionSize)));
+					break;
+
+				case Column::SelectionSize:
+					break;
 				
-				/*
-				case Column::Image:
-					setImage(value.value<QImage>());
-					break;
-
-				case Column::ImageRange:
-				case Column::DisplayRange:
-					break;
-				*/
-
 				case Column::Flags:
 					setFlags(value.toInt());
 					break;
@@ -238,16 +190,14 @@ QModelIndexList LayerNode::setData(const QModelIndex& index, const QVariant& val
 
 QVariant LayerNode::dataset(const int& role) const
 {
-	const auto name = _dataset ? _dataset->name(role).toString() : "";
-
 	switch (role)
 	{
 		case Qt::DisplayRole:
 		case Qt::EditRole:
-			return name;
+			return _dataset;
 
 		case Qt::ToolTipRole:
-			return QString("Dataset name: %1").arg(name);
+			return QString("Dataset name: %1").arg(_dataset);
 
 		default:
 			break;
@@ -330,4 +280,79 @@ QVariant LayerNode::colorMap(const int& role) const
 void LayerNode::setColorMap(const QImage& colorMap)
 {
 	_colorMap = colorMap;
+}
+
+QVariant LayerNode::selection(const int& role /*= Qt::DisplayRole*/) const
+{
+	auto selection = QStringList();
+
+	if (_selection.size() <= 2) {
+		for (const auto& id : _selection)
+			selection << QString::number(id);
+	}
+	else {
+		selection << QString::number(_selection.first());
+		selection << "...";
+		selection << QString::number(_selection.last());
+	}
+
+	const auto selectionString = QString("[%1]").arg(selection.join(", "));
+
+	switch (role)
+	{
+		case Qt::DisplayRole:
+			return selectionString;
+
+		case Qt::EditRole:
+			return QVariant::fromValue(_selection);
+
+		case Qt::ToolTipRole:
+			return QString("Selection: %1").arg(selectionString);
+
+		default:
+			break;
+	}
+
+	return QVariant();
+}
+
+void LayerNode::setSelection(const Indices& selection)
+{
+	_selection = selection;
+}
+
+QVariant LayerNode::selectionSize(const int& role /*= Qt::DisplayRole*/) const
+{
+	/*
+	const auto selectionSizeString = QString::number(_selection.size());
+
+	switch (role)
+	{
+		case Qt::DisplayRole:
+			return selectionSizeString;
+
+		case Qt::EditRole:
+			return _selection.size();
+
+		case Qt::ToolTipRole:
+		{
+			switch (_type)
+			{
+				case ImageData::Type::Sequence:
+					return QString("No. selected images: %1").arg(selectionSizeString);
+
+				case ImageData::Type::Stack:
+					return QString("No. selected pixels: %1").arg(selectionSizeString);
+
+				default:
+					break;
+			}
+		}
+
+		default:
+			break;
+	}
+	*/
+
+	return QVariant();
 }

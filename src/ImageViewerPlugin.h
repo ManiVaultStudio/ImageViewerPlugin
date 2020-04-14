@@ -2,7 +2,6 @@
 
 #include <ViewPlugin.h>
 
-#include "DatasetsModel.h"
 #include "LayersModel.h"
 #include "ColorMapModel.h"
 
@@ -42,7 +41,7 @@ public: // Inherited from ViewPlugin
 	void dataRemoved(const QString name) Q_DECL_OVERRIDE;
 
 	/** Invoked when the selection changes */
-	void selectionChanged(const QString dataName) Q_DECL_OVERRIDE;
+	void selectionChanged(const QString name) Q_DECL_OVERRIDE;
 
 	/** Determines which data types this the image viewer is compatible with */
 	hdps::DataTypes supportedDataTypes() const Q_DECL_OVERRIDE;
@@ -63,12 +62,6 @@ public: //
 	SettingsWidget* settingsWidget() { return _settingsWidget; }
 
 	/** TODO */
-	DatasetsModel& datasetsModel() { return _datasetsModel; }
-
-	/** TODO */
-	QItemSelectionModel& datasetsSelectionModel() { return _datasetsSelectionModel; }
-
-	/** TODO */
 	LayersModel& layersModel() { return _layersModel; }
 
 	/** TODO */
@@ -80,8 +73,6 @@ public: //
 private:
 	ViewerWidget*			_imageViewerWidget;			/** TODO */
 	SettingsWidget*			_settingsWidget;			/** TODO */
-	DatasetsModel			_datasetsModel;				/** TODO */
-	QItemSelectionModel		_datasetsSelectionModel;	/** TODO */
 	LayersModel				_layersModel;				/** TODO */
 	ColorMapModel			_colorMapModel;			/** TODO */
 };

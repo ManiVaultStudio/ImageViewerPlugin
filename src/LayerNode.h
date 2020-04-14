@@ -9,6 +9,7 @@
 #include <QModelIndex>
 #include <QMatrix4x4>
 
+class ImageViewerPlugin;
 class Dataset;
 class Prop;
 
@@ -31,7 +32,8 @@ public:
 		Dataset,
 		Opacity,
 		ColorMap,
-		Image,
+		Selection,
+		SelectionSize,
 		Flags,
 
 		Start = Name,
@@ -56,26 +58,14 @@ public:
 			case Column::Opacity:
 				return "Opacity";
 			
-				/*
-			case Column::WindowNormalized:
-				return "Window";
-
-			case Column::LevelNormalized:
-				return "Level";
-				*/
 			case Column::ColorMap:
 				return "Color";
 
-				/*
-			case Column::Image:
-				return "Image";
+			case Column::Selection:
+				return "Selection";
 
-			case Column::ImageRange:
-				return "Image range";
-
-			case Column::DisplayRange:
-				return "Display range";
-				*/
+			case Column::SelectionSize:
+				return "Selection Size";
 
 			case Column::Flags:
 				return "Flags";
@@ -120,7 +110,7 @@ public:
 	}
 
 	/** Constructor */
-	LayerNode(Dataset* dataset, const Type& type, const QString& id, const QString& name, const int& flags);
+	LayerNode(const QString& dataset, const Type& type, const QString& id, const QString& name, const int& flags);
 
 	/** Destructor */
 	virtual ~LayerNode();
@@ -156,15 +146,28 @@ public: // Getters/setters
 	/** TODO */
 	void setColorMap(const QImage& colorMap);
 
+	/** TODO */
+	QVariant selection(const int& role = Qt::DisplayRole) const;
+
+	/** TODO */
+	void setSelection(const Indices& selection);
+
+	/** TODO */
+	QVariant selectionSize(const int& role = Qt::DisplayRole) const;
+
 signals:
 
 	/** TODO */
 	void dataChanged();
 
+public:
+	static ImageViewerPlugin* imageViewerPlugin;
+
 protected:
-	Dataset*				_dataset;		/** TODO */
-	LayerNode::Type			_type;			/** TODO */
-	QImage					_colorMap;		/** TODO */
+	QString				_dataset;		/** TODO */
+	LayerNode::Type		_type;			/** TODO */
+	QImage				_colorMap;		/** TODO */
+	Indices				_selection;		/** TODO */
 };
 
 using Layers = QList<LayerNode*>;

@@ -9,6 +9,7 @@
 #include <QFileInfo>
 #include <QDebug>
 
+#include "PointData.h"
 #include "IndexSet.h"
 
 using namespace hdps;
@@ -19,8 +20,6 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	ViewPlugin("Image Viewer"),
 	_imageViewerWidget(),
 	_settingsWidget(),
-	_datasetsModel(this),
-	_datasetsSelectionModel(&_datasetsModel),
 	_layersModel(this),
 	_colorMapModel(this, ColorMap::Type::OneDimensional)
 {
@@ -127,25 +126,30 @@ void ImageViewerPlugin::dataRemoved(const QString dataset)
 {
 }
 
-void ImageViewerPlugin::selectionChanged(const QString dataset)
+void ImageViewerPlugin::selectionChanged(const QString name)
 {
-	/*
-	const auto hits = _layersModel.match(_layersModel.index(0, DatasetsModel::Columns::PointsName), Qt::DisplayRole, dataset, -1, Qt::MatchExactly);
-	
+	const auto hits = _layersModel.match(_layersModel.index(0, LayerNode::Column::PointsName), Qt::DisplayRole, dataset, -1, Qt::MatchExactly);
+
 	if (hits.isEmpty())
 		return;
 
-	const auto firstHit		= hits.first();
-	const auto datasetType	= _layersModel.data(_layersModel.index(firstHit.row(), DatasetsModel::Columns::Type), Qt::EditRole).toInt();
-	const auto datasetName	=_layersModel.data(_layersModel.index(firstHit.row(), DatasetsModel::Columns::Name), Qt::EditRole).toString();
+	const auto firstHit = hits.first();
+	const auto datasetType = _layersModel.data(_layersModel.index(firstHit.row(), DatasetsModel::Columns::Type), Qt::EditRole).toInt();
+	const auto datasetName = _layersModel.data(_layersModel.index(firstHit.row(), DatasetsModel::Columns::Name), Qt::EditRole).toString();
 
 	auto imagesDataset = _core->requestData<Images>(datasetName);
 
 	_layersModel.setData(_layersModel.index(hits.first().row(), DatasetsModel::Columns::Selection), QVariant::fromValue(Indices::fromStdVector(imagesDataset.indices())));
 
-	if (datasetType == ImageData::Type::Stack)
-		_layersModel.layersModel(firstHit.row())->setDefaultSelectionImage(imagesDataset.selectionImage());
-	*/
+
+
+	auto selection = dynamic_cast<Points&>(_core->requestSelection(name));
+	
+	//auto sd = selection.getSourceData<Points>();
+
+	if (selection.indices.size() > 0) {
+		_layersModel.selectionChanged(DataSet::getSourceData(selection).getDataName(), Indices::fromStdVector(selection.indices));
+	}
 }
 
 hdps::DataTypes ImageViewerPlugin::supportedDataTypes() const

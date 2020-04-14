@@ -3,7 +3,7 @@
 #include <QDebug>
 
 GroupLayer::GroupLayer(const QString& id, const QString& name, const int& flags) :
-	LayerNode(nullptr, LayerNode::Type::Group, id, name, flags)
+	LayerNode("", LayerNode::Type::Group, id, name, flags)
 {
 }
 

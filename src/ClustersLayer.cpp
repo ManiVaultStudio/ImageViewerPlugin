@@ -1,11 +1,9 @@
 #include "ClustersLayer.h"
-#include "ClustersDataset.h"
 
 #include <QDebug>
 
-ClustersLayer::ClustersLayer(ClustersDataset* clustersDataset, const QString& id, const QString& name, const int& flags) :
-	LayerNode(clustersDataset, LayerNode::Type::Clusters, id, name, flags),
-	_clusters(clustersDataset)
+ClustersLayer::ClustersLayer(const QString& dataset, const QString& id, const QString& name, const int& flags) :
+	LayerNode(dataset, LayerNode::Type::Clusters, id, name, flags)
 {
 }
 

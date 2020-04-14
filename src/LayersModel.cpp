@@ -1,6 +1,5 @@
 #include "LayersModel.h"
 #include "ImageViewerPlugin.h"
-#include "Dataset.h"
 #include "LayerNode.h"
 #include "GroupLayer.h"
 #include "PointsLayer.h"
@@ -221,6 +220,17 @@ bool LayersModel::moveLayer(const QModelIndex& sourceParent, const int& sourceRo
 	}
 
 	return true;
+}
+
+void LayersModel::selectionChanged(const QString& name, const Indices& indices)
+{
+	const auto hits = match(index(0, ult(LayerNode::Column::Dataset)), Qt::DisplayRole, name, -1, Qt::MatchExactly);
+
+	for (auto hit : hits) {
+		qDebug() << data(hit.siblingAtColumn(ult(LayerNode::Column::Name)), Qt::DisplayRole);
+	}
+
+	//_datasetsModel.setData(hits.first().siblingAtColumn(ult(DatasetsModel::Column::Selection)), QVariant::fromValue(Indices::fromStdVector(dataset.indices())));
 }
 
 int LayersModel::rowCount(const QModelIndex &parent) const
