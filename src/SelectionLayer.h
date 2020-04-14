@@ -38,5 +38,5 @@ public: // Inherited MVC
 	QModelIndexList setData(const QModelIndex& index, const QVariant& value, const int& role) override;
 
 private:
-	Dataset*	_dataset;	/** TODO */
+	Dataset*	_datasetName;	/** TODO */
 };

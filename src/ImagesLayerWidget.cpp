@@ -89,9 +89,16 @@ void ImagesLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 
 void ImagesLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>& roles /*= QVector<int>()*/)
 {
-	const auto selectedRows		= _layersModel->selectionModel().selectedRows();
-	const auto noSelectedRows	= selectedRows.size();
-	const auto enabled			= _layersModel->data(topLeft.siblingAtColumn(ult(LayerNode::Column::Name)), Qt::CheckStateRole).toInt() == Qt::Checked;
+	const auto selectedRows = _layersModel->selectionModel().selectedRows();
+	const auto noSelectedRows = selectedRows.size();
+
+	if (noSelectedRows != 1)
+		return;
+
+	//if (selectedRows.first().row() != topLeft.row())
+	//	return;
+
+	const auto enabled = _layersModel->data(topLeft.siblingAtColumn(ult(LayerNode::Column::Name)), Qt::CheckStateRole).toInt() == Qt::Checked;
 
 	for (int column = topLeft.column(); column <= bottomRight.column(); column++) {
 		const auto index = topLeft.siblingAtColumn(column);
@@ -171,9 +178,9 @@ void ImagesLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 			_ui->noDimensionsLineEdit->blockSignals(false);
 		}
 
-		if (column == ult(ImagesLayer::Column::SelectionSize)) {
+		if (column == ult(LayerNode::Column::SelectionSize)) {
 			_ui->selectionSizeLineEdit ->blockSignals(true);
-			_ui->selectionSizeLineEdit->setText(QString::number(_layersModel->data(topLeft.siblingAtColumn(ult(ImagesLayer::Column::SelectionSize)), Qt::EditRole).toInt()));
+			_ui->selectionSizeLineEdit->setText(QString::number(_layersModel->data(topLeft.siblingAtColumn(ult(LayerNode::Column::SelectionSize)), Qt::EditRole).toInt()));
 			_ui->selectionSizeLineEdit->blockSignals(false);
 		}
 

@@ -41,7 +41,7 @@ public: // Inherited from ViewPlugin
 	void dataRemoved(const QString name) Q_DECL_OVERRIDE;
 
 	/** Invoked when the selection changes */
-	void selectionChanged(const QString name) Q_DECL_OVERRIDE;
+	void selectionChanged(const QString dataset) Q_DECL_OVERRIDE;
 
 	/** Determines which data types this the image viewer is compatible with */
 	hdps::DataTypes supportedDataTypes() const Q_DECL_OVERRIDE;
@@ -52,6 +52,9 @@ public: // Inherited from ViewPlugin
 	{
 		return _core->requestData<T>(datasetName);
 	}
+
+	/** Returns a pointer to the core interface */
+	hdps::CoreInterface* core() { return _core; }
 
 public: //
 

@@ -16,9 +16,8 @@
 LayersModel::LayersModel(ImageViewerPlugin* imageViewerPlugin) :
 	QAbstractItemModel(imageViewerPlugin),
 	_selectionModel(this),
-	_root(new GroupLayer("root", "Root", ult(LayerNode::Flag::Enabled)))
+	_root(nullptr)
 {
-	//_root->st
 	/*
 	auto pointsLayer = new PointsLayer(nullptr, "points", "Points", ult(Layer::Flag::Enabled) | ult(Layer::Flag::Renamable));
 	auto imagesLayer = new ImagesLayer(nullptr, "images", "Images", ult(Layer::Flag::Enabled) | ult(Layer::Flag::Renamable));
@@ -222,9 +221,14 @@ bool LayersModel::moveLayer(const QModelIndex& sourceParent, const int& sourceRo
 	return true;
 }
 
+void LayersModel::initialize()
+{
+	_root = new GroupLayer("root", "Root", ult(LayerNode::Flag::Enabled));
+}
+
 void LayersModel::selectionChanged(const QString& name, const Indices& indices)
 {
-	const auto hits = match(index(0, ult(LayerNode::Column::Dataset)), Qt::DisplayRole, name, -1, Qt::MatchExactly);
+	const auto hits = match(index(0, ult(LayerNode::Column::DatasetName)), Qt::DisplayRole, name, -1, Qt::MatchExactly);
 
 	for (auto hit : hits) {
 		qDebug() << data(hit.siblingAtColumn(ult(LayerNode::Column::Name)), Qt::DisplayRole);

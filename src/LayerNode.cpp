@@ -1,4 +1,8 @@
 #include "LayerNode.h"
+#include "ImageViewerPlugin.h"
+
+#include "ImageData/Images.h"
+#include "PointData.h"
 
 #include <QFont>
 #include <QDebug>
@@ -7,10 +11,35 @@ ImageViewerPlugin* LayerNode::imageViewerPlugin = nullptr;
 
 LayerNode::LayerNode(const QString& dataset, const Type& type, const QString& id, const QString& name, const int& flags) :
 	RenderNode(id, name, flags),
-	_dataset(dataset),
+	_datasetName(dataset),
+	_rawDataName(),
 	_type(type),
 	_colorMap()
 {
+	if (!dataset.isEmpty()) {
+		switch (_type)
+		{
+			case LayerNode::Type::Points:
+			{
+				const Points& points = imageViewerPlugin->core()->requestData<Points>(_datasetName);
+				_rawDataName = hdps::DataSet::getSourceData(points).getDataName();
+				break;
+			}
+
+			case LayerNode::Type::Images:
+			{
+				Images& images = imageViewerPlugin->core()->requestData<Images>(_datasetName);
+				_rawDataName = hdps::DataSet::getSourceData(*(images.points())).getDataName();
+				break;
+			}
+
+			case LayerNode::Type::Clusters:
+			case LayerNode::Type::Selection:
+			case LayerNode::Type::Group:
+			default:
+				break;
+		}
+	}
 }
 
 LayerNode::~LayerNode() = default;
@@ -41,7 +70,8 @@ Qt::ItemFlags LayerNode::flags(const QModelIndex& index) const
 			break;
 
 		case Column::ID:
-		case Column::Dataset:
+		case Column::DatasetName:
+		case Column::RawDataName:
 			break;
 
 		case Column::Opacity:
@@ -56,9 +86,11 @@ Qt::ItemFlags LayerNode::flags(const QModelIndex& index) const
 			break;
 		}
 
+		case Column::Flags:
+			break;
+
 		case Column::Selection:
 		case Column::SelectionSize:
-		case Column::Flags:
 			break;
 
 		default:
@@ -80,8 +112,11 @@ QVariant LayerNode::data(const QModelIndex& index, const int& role) const
 		case Column::ID:
 			return id(role);
 
-		case Column::Dataset:
-			return dataset(role);
+		case Column::DatasetName:
+			return datasetName(role);
+
+		case Column::RawDataName:
+			return rawDataName(role);
 
 		case Column::Opacity:
 			return opacity(role);
@@ -89,14 +124,14 @@ QVariant LayerNode::data(const QModelIndex& index, const int& role) const
 		case Column::ColorMap:
 			return colorMap(role);
 
+		case Column::Flags:
+			return Node::flags(role);
+
 		case Column::Selection:
 			return selection(role);
 
 		case Column::SelectionSize:
 			return selectionSize(role);
-		
-		case Column::Flags:
-			return Node::flags(role);
 
 		default:
 			break;
@@ -149,7 +184,8 @@ QModelIndexList LayerNode::setData(const QModelIndex& index, const QVariant& val
 					setId(value.toString());
 					break;
 
-				case Column::Dataset:
+				case Column::DatasetName:
+				case Column::RawDataName:
 					break;
 
 				case Column::Opacity:
@@ -160,16 +196,16 @@ QModelIndexList LayerNode::setData(const QModelIndex& index, const QVariant& val
 					setColorMap(value.value<QImage>());
 					break;
 
+				case Column::Flags:
+					setFlags(value.toInt());
+					break;
+
 				case Column::Selection:
 					setSelection(value.value<Indices>());
-					affectedIndices.append(index.siblingAtColumn(ult(Column::SelectionSize)));
+					affectedIndices << index.siblingAtColumn(ult(Column::SelectionSize));
 					break;
 
 				case Column::SelectionSize:
-					break;
-				
-				case Column::Flags:
-					setFlags(value.toInt());
 					break;
 
 				default:
@@ -188,16 +224,34 @@ QModelIndexList LayerNode::setData(const QModelIndex& index, const QVariant& val
 	return affectedIndices;
 }
 
-QVariant LayerNode::dataset(const int& role) const
+QVariant LayerNode::datasetName(const int& role) const
 {
 	switch (role)
 	{
 		case Qt::DisplayRole:
 		case Qt::EditRole:
-			return _dataset;
+			return _datasetName;
 
 		case Qt::ToolTipRole:
-			return QString("Dataset name: %1").arg(_dataset);
+			return QString("Dataset name: %1").arg(_datasetName);
+
+		default:
+			break;
+	}
+
+	return QVariant();
+}
+
+QVariant LayerNode::rawDataName(const int& role) const
+{
+	switch (role)
+	{
+		case Qt::DisplayRole:
+		case Qt::EditRole:
+			return _rawDataName;
+
+		case Qt::ToolTipRole:
+			return QString("Raw data name: %1").arg(_rawDataName);
 
 		default:
 			break;
@@ -323,7 +377,6 @@ void LayerNode::setSelection(const Indices& selection)
 
 QVariant LayerNode::selectionSize(const int& role /*= Qt::DisplayRole*/) const
 {
-	/*
 	const auto selectionSizeString = QString::number(_selection.size());
 
 	switch (role)
@@ -336,23 +389,12 @@ QVariant LayerNode::selectionSize(const int& role /*= Qt::DisplayRole*/) const
 
 		case Qt::ToolTipRole:
 		{
-			switch (_type)
-			{
-				case ImageData::Type::Sequence:
-					return QString("No. selected images: %1").arg(selectionSizeString);
-
-				case ImageData::Type::Stack:
-					return QString("No. selected pixels: %1").arg(selectionSizeString);
-
-				default:
-					break;
-			}
+			return QString("Selection size: %1").arg(selectionSizeString);
 		}
 
 		default:
 			break;
 	}
-	*/
 
 	return QVariant();
 }

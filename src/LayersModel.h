@@ -77,6 +77,8 @@ public: // Data access
 
 public: // Miscellaneous
 
+	void initialize();
+
 	/**
 	 * Call this when a dataset selection has changed
 	 * @param name Dataset name

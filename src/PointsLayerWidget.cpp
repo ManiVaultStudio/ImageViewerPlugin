@@ -81,6 +81,13 @@ void PointsLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 {
 	const auto selectedRows = _layersModel->selectionModel().selectedRows();
 	const auto noSelectedRows = selectedRows.size();
+
+	if (noSelectedRows != 1)
+		return;
+
+	if (selectedRows.first().row() != topLeft.row())
+		return;
+
 	const auto enabled = _layersModel->data(topLeft.siblingAtColumn(ult(LayerNode::Column::Name)), Qt::CheckStateRole).toInt() == Qt::Checked;
 
 	for (int column = topLeft.column(); column <= bottomRight.column(); column++) {

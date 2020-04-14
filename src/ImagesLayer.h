@@ -30,11 +30,9 @@ public:
 		CurrentImageName,
 		CurrentImageFilePath,
 		Average,
-		Selection,
-		SelectionSize,
 
 		Start = NoImages,
-		End = SelectionSize
+		End = Average
 	};
 
 	/** TODO */
@@ -143,7 +141,6 @@ private:
 	QStringList			_imageNames;		/** TODO */
 	QStringList			_imageFilePaths;	/** TODO */
 	QString				_pointsName;		/** TODO */
-	Indices				_selection;			/** TODO */
 	std::int32_t		_currentImage;		/** TODO */
 	bool				_average;			/** TODO */
 	WindowLevelImage	_image;				/** Image */

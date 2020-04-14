@@ -29,15 +29,16 @@ public:
 		Name,
 		Type,
 		ID,
-		Dataset,
+		DatasetName,
+		RawDataName,
 		Opacity,
 		ColorMap,
+		Flags,
 		Selection,
 		SelectionSize,
-		Flags,
 
 		Start = Name,
-		End = Flags
+		End = SelectionSize
 	};
 
 	/** TODO */
@@ -52,8 +53,11 @@ public:
 			case Column::ID:
 				return "ID";
 
-			case Column::Dataset:
-				return "Dataset";
+			case Column::DatasetName:
+				return "Dataset Name";
+
+			case Column::RawDataName:
+				return "Raw Data Name";
 
 			case Column::Opacity:
 				return "Opacity";
@@ -61,14 +65,14 @@ public:
 			case Column::ColorMap:
 				return "Color";
 
+			case Column::Flags:
+				return "Flags";
+
 			case Column::Selection:
 				return "Selection";
 
 			case Column::SelectionSize:
 				return "Selection Size";
-
-			case Column::Flags:
-				return "Flags";
 
 			default:
 				return QString();
@@ -132,7 +136,10 @@ public: // MVC
 public: // Getters/setters
 
 	/** TODO */
-	QVariant dataset(const int& role) const;
+	QVariant datasetName(const int& role) const;
+
+	/** TODO */
+	QVariant rawDataName(const int& role) const;
 
 	/** TODO */
 	QVariant type(const int& role) const;
@@ -164,7 +171,8 @@ public:
 	static ImageViewerPlugin* imageViewerPlugin;
 
 protected:
-	QString				_dataset;		/** TODO */
+	QString				_datasetName;	/** TODO */
+	QString				_rawDataName;	/** TODO */
 	LayerNode::Type		_type;			/** TODO */
 	QImage				_colorMap;		/** TODO */
 	Indices				_selection;		/** TODO */

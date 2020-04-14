@@ -76,6 +76,13 @@ void LayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 			updateData(QModelIndex(), QModelIndex());
 		else
 			updateData(selected.indexes().first(), selected.indexes().last());
+
+		_ui->settingsStackedWidget->setVisible(selectedRows.count() == 1);
+
+		if (!selectedRows.isEmpty()) {
+			const auto type = selectedRows.first().siblingAtColumn(ult(LayerNode::Column::Type)).data(Qt::EditRole).toInt();
+			_ui->settingsStackedWidget->setCurrentIndex(type);
+		}
 	});
 }
 
@@ -83,7 +90,14 @@ void LayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex& bott
 {
 	const auto selectedRows		= _layersModel->selectionModel().selectedRows();
 	const auto noSelectedRows	= selectedRows.size();
-	const auto enabled			= _layersModel->data(topLeft.siblingAtColumn(ult(LayerNode::Column::Name)), Qt::CheckStateRole).toInt() == Qt::Checked;
+
+	if (noSelectedRows != 1)
+		return;
+
+	if (selectedRows.first().row() != topLeft.row())
+		return;
+
+	const auto enabled = _layersModel->data(topLeft.siblingAtColumn(ult(LayerNode::Column::Name)), Qt::CheckStateRole).toInt() == Qt::Checked;
 
 	_ui->generalGroupBox->setVisible(noSelectedRows == 1);
 	_ui->generalGroupBox->setEnabled(noSelectedRows == 1);
@@ -138,9 +152,4 @@ void LayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex& bott
 			_ui->layerOpacityHorizontalSlider->blockSignals(false);
 		}
 	}
-
-	const auto type = topLeft.siblingAtColumn(ult(LayerNode::Column::Type)).data(Qt::EditRole).toInt();
-
-	_ui->settingsStackedWidget->setVisible(noSelectedRows == 1);
-	_ui->settingsStackedWidget->setCurrentIndex(type);
 }

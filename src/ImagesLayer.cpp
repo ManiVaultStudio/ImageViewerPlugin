@@ -8,7 +8,7 @@
 #include <QFileInfo>
 
 ImagesLayer::ImagesLayer(const QString& dataset, const QString& id, const QString& name, const int& flags) :
-	LayerNode(dataset, LayerNode::Type::Images, id, name, flags),
+	LayerNode(dataset, ImagesLayer::Type::Images, id, name, flags),
 	_images(nullptr),
 	_imageDataType(ImageData::Type::Undefined),
 	_size(),
@@ -26,7 +26,7 @@ ImagesLayer::ImagesLayer(const QString& dataset, const QString& id, const QStrin
 
 void ImagesLayer::init()
 {
-	_images = &imageViewerPlugin->requestData<Images>(_dataset);
+	_images = &imageViewerPlugin->requestData<Images>(_datasetName);
 
 	setImageDataType(_images->type());
 	setImageSize(_images->imageSize());
@@ -71,6 +71,11 @@ void ImagesLayer::init()
 
 	setImageFilePaths(imageFilePaths);
 	setPointsName(_images->points()->getDataName());
+
+	//const auto points = imageViewerPlugin->core()->requestData<Images>(_datasetName);
+	//const auto points2 = dynamic_cast<Images&>(imageViewerPlugin->core()->requestSelection(_rawDataName));
+	//auto rawPoints = hdps::DataSet::getSourceData(points);
+	//rawPoints.indices
 }
 
 int ImagesLayer::noColumns() const
@@ -110,10 +115,6 @@ Qt::ItemFlags ImagesLayer::flags(const QModelIndex& index) const
 
 		case Column::Average:
 			flags |= Qt::ItemIsEditable;
-			break;
-
-		case Column::Selection:
-		case Column::SelectionSize:
 			break;
 
 		default:
@@ -177,12 +178,6 @@ QVariant ImagesLayer::data(const QModelIndex& index, const int& role) const
 		case Column::Average:
 			return average(role);
 
-		case Column::Selection:
-			return selection(role);
-
-		case Column::SelectionSize:
-			return selectionSize(role);
-
 		default:
 			break;
 	}
@@ -192,10 +187,20 @@ QVariant ImagesLayer::data(const QModelIndex& index, const int& role) const
 
 QModelIndexList ImagesLayer::setData(const QModelIndex& index, const QVariant& value, const int& role)
 {
-	if (index.column() < ult(Column::Start))
-		return LayerNode::setData(index, value, role);
+	QModelIndexList affectedIndices;
 
-	QModelIndexList affectedIndices{ index };
+	if (index.column() < ult(Column::Start)) {
+		affectedIndices = LayerNode::setData(index, value, role);
+
+		if (index.column() == ult(LayerNode::Column::Selection)) {
+			affectedIndices << index.siblingAtColumn(ult(Column::FilteredImageNames));
+			affectedIndices << index.siblingAtColumn(ult(Column::ImageIDs));
+		}
+
+		return affectedIndices;
+	}
+
+	affectedIndices << index;
 
 	switch (static_cast<Column>(index.column())) {
 		case Column::NoImages:
@@ -231,10 +236,6 @@ QModelIndexList ImagesLayer::setData(const QModelIndex& index, const QVariant& v
 		case Column::Average:
 			setAverage(value.toBool());
 			affectedIndices << index.siblingAtColumn(ult(Column::FilteredImageNames));
-			break;
-
-		case Column::Selection:
-		case Column::SelectionSize:
 			break;
 
 		default:

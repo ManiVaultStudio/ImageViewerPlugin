@@ -80,8 +80,8 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 
 	headerView->setSectionResizeMode(QHeaderView::ResizeToContents);
 
-	for (int column = ult(LayerNode::Column::Start); column < ult(LayerNode::Column::End); column++)
-		headerView->hideSection(column);
+	//for (int column = ult(LayerNode::Column::Start); column < ult(LayerNode::Column::End); column++)
+	//	headerView->hideSection(column);
 
 	headerView->showSection(ult(LayerNode::Column::Name));
 	//headerView->showSection(ult(Layer::Column::Enabled));

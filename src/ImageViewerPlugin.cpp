@@ -2,6 +2,7 @@
 #include "ViewerWidget.h"
 #include "SettingsWidget.h"
 #include "LayersModel.h"
+#include "LayerNode.h"
 #include "Renderer.h"
 
 #include <QFontDatabase>
@@ -25,10 +26,14 @@ ImageViewerPlugin::ImageViewerPlugin() :
 {
 	qRegisterMetaType<QVector<int> >("QVector<int>");
 
+	//_root->st
+	LayerNode::imageViewerPlugin = this;
+
 	// TODO
 	_imageViewerWidget	= new ViewerWidget(this);
 	_settingsWidget		= new SettingsWidget(this);
 
+	
 	
 	/*
 	if (!QFontDatabase::addApplicationFont(":/FontAwesome.otf"))
@@ -86,6 +91,8 @@ void ImageViewerPlugin::init()
 	addWidget(_settingsWidget);
 
 	layout->setStretchFactor(_imageViewerWidget, 1);
+
+	_layersModel.initialize();
 }
 
 void ImageViewerPlugin::updateWindowTitle()
@@ -126,29 +133,13 @@ void ImageViewerPlugin::dataRemoved(const QString dataset)
 {
 }
 
-void ImageViewerPlugin::selectionChanged(const QString name)
+void ImageViewerPlugin::selectionChanged(const QString dataset)
 {
-	const auto hits = _layersModel.match(_layersModel.index(0, LayerNode::Column::PointsName), Qt::DisplayRole, dataset, -1, Qt::MatchExactly);
+	const auto hits = _layersModel.match(_layersModel.index(0, ult(LayerNode::Column::RawDataName)), Qt::DisplayRole, dataset, -1, Qt::MatchExactly);
 
-	if (hits.isEmpty())
-		return;
-
-	const auto firstHit = hits.first();
-	const auto datasetType = _layersModel.data(_layersModel.index(firstHit.row(), DatasetsModel::Columns::Type), Qt::EditRole).toInt();
-	const auto datasetName = _layersModel.data(_layersModel.index(firstHit.row(), DatasetsModel::Columns::Name), Qt::EditRole).toString();
-
-	auto imagesDataset = _core->requestData<Images>(datasetName);
-
-	_layersModel.setData(_layersModel.index(hits.first().row(), DatasetsModel::Columns::Selection), QVariant::fromValue(Indices::fromStdVector(imagesDataset.indices())));
-
-
-
-	auto selection = dynamic_cast<Points&>(_core->requestSelection(name));
-	
-	//auto sd = selection.getSourceData<Points>();
-
-	if (selection.indices.size() > 0) {
-		_layersModel.selectionChanged(DataSet::getSourceData(selection).getDataName(), Indices::fromStdVector(selection.indices));
+	for (auto hit : hits) {
+		auto selection = dynamic_cast<Points&>(_core->requestSelection(dataset));
+		_layersModel.setData(hit.siblingAtColumn(ult(LayerNode::Column::Selection)), QVariant::fromValue(Indices::fromStdVector(selection.indices)));
 	}
 }
 
