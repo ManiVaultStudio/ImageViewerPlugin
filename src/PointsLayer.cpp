@@ -30,6 +30,11 @@ void PointsLayer::init()
 	}
 
 	setDimensionNames(dimensionNames);
+
+	auto selection = dynamic_cast<Points*>(&imageViewerPlugin->core()->requestSelection(_rawDataName));
+
+	if (selection)
+		setSelection(Indices::fromStdVector(selection->indices));
 }
 
 Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const

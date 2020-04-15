@@ -74,7 +74,7 @@ void ImagesLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 			updateData(QModelIndex(), QModelIndex());
 		else {
 			const auto first = selected.indexes().first();
-			updateData(first.siblingAtColumn(ult(ImagesLayer::Column::Start)), first.siblingAtColumn(ult(ImagesLayer::Column::End)));
+			updateData(first.siblingAtColumn(0), first.siblingAtColumn(ult(ImagesLayer::Column::End)));
 		}
 	});
 

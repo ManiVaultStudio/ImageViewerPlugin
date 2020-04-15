@@ -72,10 +72,10 @@ void ImagesLayer::init()
 	setImageFilePaths(imageFilePaths);
 	setPointsName(_images->points()->getDataName());
 
-	//const auto points = imageViewerPlugin->core()->requestData<Images>(_datasetName);
-	//const auto points2 = dynamic_cast<Images&>(imageViewerPlugin->core()->requestSelection(_rawDataName));
-	//auto rawPoints = hdps::DataSet::getSourceData(points);
-	//rawPoints.indices
+	auto selection = dynamic_cast<Points*>(&imageViewerPlugin->core()->requestSelection(_rawDataName));
+	
+	if (selection)
+		setSelection(Indices::fromStdVector(selection->indices));
 }
 
 Qt::ItemFlags ImagesLayer::flags(const QModelIndex& index) const
