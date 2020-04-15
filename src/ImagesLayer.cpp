@@ -78,11 +78,6 @@ void ImagesLayer::init()
 	//rawPoints.indices
 }
 
-int ImagesLayer::noColumns() const
-{
-	return ult(Column::End);
-}
-
 Qt::ItemFlags ImagesLayer::flags(const QModelIndex& index) const
 {
 	auto flags = LayerNode::flags(index);

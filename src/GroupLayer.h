@@ -26,7 +26,7 @@ public:
 public: // Inherited MVC
 
 	/** TODO */
-	int noColumns() const override;
+	int columnCount() const override { return ult(Column::End) + 1; }
 
 	/** TODO */
 	Qt::ItemFlags flags(const QModelIndex& index) const override;

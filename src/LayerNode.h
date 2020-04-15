@@ -120,9 +120,9 @@ public:
 	virtual ~LayerNode();
 
 public: // MVC
-
+	
 	/** TODO */
-	virtual int noColumns() const;
+	virtual int columnCount() const { return ult(Column::End) + 1; }
 
 	/** TODO */
 	virtual Qt::ItemFlags flags(const QModelIndex& index) const;

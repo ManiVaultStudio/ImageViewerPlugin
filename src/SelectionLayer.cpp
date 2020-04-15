@@ -7,11 +7,6 @@ SelectionLayer::SelectionLayer(const QString& dataset, const QString& id, const 
 {
 }
 
-int SelectionLayer::noColumns() const
-{
-	return ult(Column::End);
-}
-
 Qt::ItemFlags SelectionLayer::flags(const QModelIndex& index) const
 {
 	auto flags = LayerNode::flags(index);

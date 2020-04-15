@@ -95,8 +95,8 @@ void ImagesLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 	if (noSelectedRows != 1)
 		return;
 
-	//if (selectedRows.first().row() != topLeft.row())
-	//	return;
+	if (selectedRows.first().row() != topLeft.row())
+		return;
 
 	const auto enabled = _layersModel->data(topLeft.siblingAtColumn(ult(LayerNode::Column::Name)), Qt::CheckStateRole).toInt() == Qt::Checked;
 
@@ -201,16 +201,18 @@ void ImagesLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 			_ui->currentImageComboBox->blockSignals(false);
 		}
 
-		const auto averageFlags = _layersModel->flags(topLeft.siblingAtColumn(ult(ImagesLayer::Column::Average)));
-
-		_ui->averageCheckBox->setEnabled(mightEdit && averageFlags & Qt::ItemIsEditable);
-
 		if (column == ult(ImagesLayer::Column::Average)) {
-			const auto average = validSelection ? _layersModel->data(topLeft.siblingAtColumn(ult(ImagesLayer::Column::Average)), Qt::EditRole).toBool() : false;
+			const auto averageFlags = _layersModel->flags(topLeft.siblingAtColumn(ult(ImagesLayer::Column::Average)));
 
-			_ui->averageCheckBox->blockSignals(true);
-			_ui->averageCheckBox->setChecked(average);
-			_ui->averageCheckBox->blockSignals(false);
+			_ui->averageCheckBox->setEnabled(mightEdit && averageFlags & Qt::ItemIsEditable);
+
+			if (column == ult(ImagesLayer::Column::Average)) {
+				const auto average = validSelection ? _layersModel->data(topLeft.siblingAtColumn(ult(ImagesLayer::Column::Average)), Qt::EditRole).toBool() : false;
+
+				_ui->averageCheckBox->blockSignals(true);
+				_ui->averageCheckBox->setChecked(average);
+				_ui->averageCheckBox->blockSignals(false);
+			}
 		}
 	}
 }

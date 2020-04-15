@@ -7,11 +7,6 @@ ClustersLayer::ClustersLayer(const QString& dataset, const QString& id, const QS
 {
 }
 
-int ClustersLayer::noColumns() const
-{
-	return ult(Column::End);
-}
-
 Qt::ItemFlags ClustersLayer::flags(const QModelIndex& index) const
 {
 	auto flags = LayerNode::flags(index);

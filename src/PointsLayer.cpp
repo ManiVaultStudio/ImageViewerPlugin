@@ -32,11 +32,6 @@ void PointsLayer::init()
 	setDimensionNames(dimensionNames);
 }
 
-int PointsLayer::noColumns() const
-{
-	return ult(Column::End);
-}
-
 Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
 {
 	auto flags = LayerNode::flags(index);

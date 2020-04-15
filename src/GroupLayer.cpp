@@ -7,11 +7,6 @@ GroupLayer::GroupLayer(const QString& id, const QString& name, const int& flags)
 {
 }
 
-int GroupLayer::noColumns() const
-{
-	return ult(Column::End);
-}
-
 Qt::ItemFlags GroupLayer::flags(const QModelIndex& index) const
 {
 	auto flags = LayerNode::flags(index);

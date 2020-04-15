@@ -46,7 +46,7 @@ int LayersModel::columnCount(const QModelIndex &parent) const
 {
 	Q_UNUSED(parent);
 
-	return ult(LayerNode::Column::End);
+	return ult(LayerNode::Column::End) + 1;
 }
 
 QVariant LayersModel::data(const QModelIndex &index, int role) const

@@ -44,11 +44,6 @@ LayerNode::LayerNode(const QString& dataset, const Type& type, const QString& id
 
 LayerNode::~LayerNode() = default;
 
-int LayerNode::noColumns() const
-{
-	return ult(Column::End);
-}
-
 Qt::ItemFlags LayerNode::flags(const QModelIndex& index) const
 {
 	int flags = Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled;
