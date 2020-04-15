@@ -33,18 +33,6 @@ void PointsLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 		}
 	});
 
-	QObject::connect(_ui->widthSpinBox, qOverload<int>(&QSpinBox::valueChanged), [this](int value) {
-		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Width)), value);
-	});
-
-	QObject::connect(_ui->heightSpinBox, qOverload<int>(&QSpinBox::valueChanged), [this](int value) {
-		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Height)), value);
-	});
-
-	QObject::connect(_ui->squareCheckBox, &QCheckBox::stateChanged, [this](int state) {
-		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Square)), state);
-	});
-
 	QObject::connect(_ui->channel2CheckBox, &QCheckBox::stateChanged, [this](int state) {
 		switch (state)
 		{
@@ -104,39 +92,6 @@ void PointsLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 		const auto mightEdit = validSelection && enabled;
 
 		_ui->groupBox->setEnabled(enabled);
-		_ui->heightSpinBox->setEnabled(enabled);
-
-		const auto widthFlags = _layersModel->flags(topLeft.siblingAtColumn(ult(PointsLayer::Column::Width)));
-
-		_ui->widthSpinBox->setEnabled(mightEdit && widthFlags & Qt::ItemIsEditable);
-
-		if (column == ult(PointsLayer::Column::Width)) {
-			const auto width = _layersModel->data(topLeft.siblingAtColumn(ult(PointsLayer::Column::Width)), Qt::EditRole).toInt();
-
-			_ui->widthSpinBox->blockSignals(true);
-			_ui->widthSpinBox->setValue(width);
-			_ui->widthSpinBox->blockSignals(false);
-		}
-
-		const auto heightFlags = _layersModel->flags(topLeft.siblingAtColumn(ult(PointsLayer::Column::Height)));
-
-		_ui->heightSpinBox->setEnabled(mightEdit && heightFlags & Qt::ItemIsEditable);
-
-		if (column == ult(PointsLayer::Column::Height)) {
-			const auto height = _layersModel->data(topLeft.siblingAtColumn(ult(PointsLayer::Column::Height)), Qt::EditRole).toInt();
-
-			_ui->heightSpinBox->blockSignals(true);
-			_ui->heightSpinBox->setValue(height);
-			_ui->heightSpinBox->blockSignals(false);
-		}
-
-		if (column == ult(PointsLayer::Column::Square)) {
-			const auto square = _layersModel->data(topLeft.siblingAtColumn(ult(PointsLayer::Column::Square)), Qt::EditRole).toBool();
-
-			_ui->squareCheckBox->blockSignals(true);
-			_ui->squareCheckBox->setChecked(square);
-			_ui->squareCheckBox->blockSignals(false);
-		}
 
 		if (column == ult(PointsLayer::Column::DimensionNames)) {
 			const auto dimensionNames = _layersModel->data(topLeft.siblingAtColumn(ult(PointsLayer::Column::DimensionNames)), Qt::EditRole).toStringList();

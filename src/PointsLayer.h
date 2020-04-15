@@ -12,9 +12,6 @@ public:
 	/** TODO */
 	enum class Column {
 		Size = ult(LayerNode::Column::End) + 1,
-		Width,
-		Height,
-		Square,
 		Channel1,
 		Channel2,
 		Channel3,
@@ -82,30 +79,6 @@ public: // Getters/setters
 	void setDimensionNames(const QStringList& dimensionNames);
 
 	/** TODO */
-	QVariant size(const int& role = Qt::DisplayRole) const;
-
-	/** TODO */
-	void setSize(const QSize& size);
-
-	/** TODO */
-	QVariant width(const int& role = Qt::DisplayRole) const;
-
-	/** TODO */
-	void setWidth(const int& width);
-
-	/** TODO */
-	QVariant height(const int& role = Qt::DisplayRole) const;
-
-	/** TODO */
-	void setHeight(const int& height);
-
-	/** TODO */
-	QVariant square(const int& role = Qt::DisplayRole) const;
-
-	/** TODO */
-	void setSquare(const bool& square);
-
-	/** TODO */
 	QVariant channel(const int& channel, const int& role = Qt::DisplayRole) const;
 
 	/** TODO */
@@ -124,6 +97,4 @@ private:
 	QStringList			_dimensionNames;	/** TODO */
 	int					_channels[3];		/** TODO */
 	int					_noChannels;		/** TODO */
-	QSize				_size;				/** TODO */
-	bool				_square;			/** TODO */
 };
