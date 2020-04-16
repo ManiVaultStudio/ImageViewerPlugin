@@ -2,26 +2,24 @@
 
 #include "LayerNode.h"
 
-class ClustersDataset;
-
 /** TODO */
-class GroupLayer : public LayerNode
+class RootLayer : public LayerNode
 {
 public:
 	
 	/** TODO */
 	enum class Column {
-		ParamA = ult(LayerNode::Column::End) + 1,
-		ParamB,
-
-		Start = ParamA,
-		End = ParamB
+		Start = ult(LayerNode::Column::End) + 1,
+		End = Start
 	};
 
 public:
 
 	/** TODO */
-	GroupLayer(const QString& id, const QString& name, const int& flags);
+	RootLayer();
+
+	/** TODO */
+	void render(const QMatrix4x4& parentMVP, const float& opacity);
 
 public: // Inherited MVC
 

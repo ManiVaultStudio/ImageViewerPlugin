@@ -1,13 +1,9 @@
 #pragma once
 
-#include "RenderNode.h"
 #include "ImageRange.h"
 
 #include <QColor>
-#include <QObject>
 #include <QImage>
-#include <QModelIndex>
-#include <QMatrix4x4>
 
 /**
 * Range image class

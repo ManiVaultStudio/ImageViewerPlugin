@@ -1,7 +1,7 @@
 #pragma once
 
 #include "LayerNode.h"
-#include "WindowLevelImage.h"
+#include "ImagesProp.h"
 
 #include "ImageData/Images.h"
 
@@ -58,79 +58,84 @@ public: // Inherited MVC
 public: // Getters/setters
 
 	/** TODO */
-	QVariant imageDataType(const int& role = Qt::DisplayRole) const;
+	QVariant imageDataType(const int& role) const;
 
 	/** TODO */
 	void setImageDataType(const ImageData::Type& imageDataType);
 
 	/** TODO */
-	QVariant noImages(const int& role = Qt::DisplayRole) const;
+	QVariant noImages(const int& role) const;
 
 	/** TODO */
-	QVariant width(const int& role = Qt::DisplayRole) const;
+	QVariant width(const int& role) const;
 
 	/** TODO */
-	QVariant height(const int& role = Qt::DisplayRole) const;
+	QVariant height(const int& role) const;
 
 	/** TODO */
-	QVariant imageSize(const int& role = Qt::DisplayRole) const;
+	QVariant imageSize(const int& role) const;
 
 	/** TODO */
 	void setImageSize(const QSize& size);
 
 	/** TODO */
-	QVariant noPoints(const int& role = Qt::DisplayRole) const;
+	QVariant noPoints(const int& role) const;
 
 	/** TODO */
 	void setNoPoints(const std::uint32_t& noPoints);
 
 	/** TODO */
-	QVariant noDimensions(const int& role = Qt::DisplayRole) const;
+	QVariant noDimensions(const int& role) const;
 
 	/** TODO */
 	void setNoDimensions(const std::uint32_t& noDimensions);
 
 	/** TODO */
-	QVariant imageNames(const int& role = Qt::DisplayRole) const;
+	QVariant imageNames(const int& role) const;
 
 	/** TODO */
-	QVariant imageIds(const int& role = Qt::DisplayRole) const;
+	QVariant imageIds(const int& role) const;
 
 	/** TODO */
 	void setImageNames(const QStringList& imageNames);
 
 	/** TODO */
-	QVariant imageFilePaths(const int& role = Qt::DisplayRole) const;
+	QVariant imageFilePaths(const int& role) const;
 
 	/** TODO */
 	void setImageFilePaths(const QStringList& imageFilePaths);
 
 	/** TODO */
-	QVariant pointsName(const int& role = Qt::DisplayRole) const;
+	QVariant pointsName(const int& role) const;
 
 	/** TODO */
 	void setPointsName(const QString& pointsName);
 
 	/** TODO */
-	QVariant filteredImageNames(const int& role = Qt::DisplayRole) const;
+	QVariant filteredImageNames(const int& role) const;
 
 	/** TODO */
-	QVariant currentImageId(const int& role = Qt::DisplayRole) const;
+	QVariant currentImageId(const int& role) const;
 
 	/** TODO */
 	void setCurrentImageId(const std::uint32_t& currentImage);
 
 	/** TODO */
-	QVariant currentImageName(const int& role = Qt::DisplayRole) const;
+	QVariant currentImageName(const int& role) const;
 
 	/** TODO */
-	QVariant currentImageFilePath(const int& role = Qt::DisplayRole) const;
+	QVariant currentImageFilePath(const int& role) const;
 
 	/** TODO */
-	QVariant average(const int& role = Qt::DisplayRole) const;
+	QVariant average(const int& role) const;
 
 	/** TODO */
 	void setAverage(const bool& average);
+
+private:
+
+	/** TODO */
+	void computeImage();
 
 private:
 	Images*				_images;			/** TODO */
@@ -143,5 +148,4 @@ private:
 	QString				_pointsName;		/** TODO */
 	std::int32_t		_currentImage;		/** TODO */
 	bool				_average;			/** TODO */
-	WindowLevelImage	_image;				/** Image */
 };

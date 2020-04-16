@@ -9,7 +9,7 @@
 #include <QOpenGLTexture>
 
 class Renderer;
-class RenderNode;
+class Node;
 class Shape;
 
 /**
@@ -22,10 +22,10 @@ class Prop : public QObject
 
 public:
 	/** Constructor
-	 * @param renderer Renderer
+	 * @param node Node
 	 * @param name Name of the prop
 	 */
-	Prop(RenderNode* renderNode, const QString& name);
+	Prop(Node* node, const QString& name);
 
 	/** Destructor */
 	virtual ~Prop();
@@ -69,17 +69,8 @@ public:
 	 */
 	void setModelMatrix(const QMatrix4x4& modelMatrix);
 
-	/** Returns the model-view matrix (viewMatrix * actorMatrix * propModelMatrix) */
-	//QMatrix4x4 modelViewMatrix() const;
-
-	/** Returns the model-view-projection matrix (projectionMatrix * viewMatrix * actorModelMatrix * propModelMatrix) */
-	//QMatrix4x4 modelViewProjectionMatrix() const;
-
-	/** Returns the parent actor */
-	//Actor* actor();
-
 	/** Renders the prop */
-	virtual void render();
+	virtual void render(const QMatrix4x4& nodeMVP, const float& opacity);
 
 protected:
 	/** Initializes the prop */
@@ -174,7 +165,7 @@ public:
 	static Renderer* renderer;
 
 protected:
-	RenderNode*												_renderNode;			/** Pointer to parent (if any) */
+	Node*													_node;					/** Pointer to parent (if any) */
 	bool													_initialized;			/** Whether the prop is ready for rendering */
 	QString													_name;					/** Name of the prop */
 	bool													_visible;				/** Whether the prop is visible or not */

@@ -28,6 +28,11 @@ void Renderer::init()
 {
 }
 
+void Renderer::render()
+{
+	//static_cast<QOpenGLWidget*>(parent())->glDraw();
+}
+
 QVector<QSharedPointer<QMouseEvent>> Renderer::mouseEvents() const
 {
 	return _mouseEvents;
@@ -37,7 +42,6 @@ void Renderer::mousePressEvent(QMouseEvent* mouseEvent)
 {
 	//qDebug() << "Mouse press event";
 
-	/*
 	if (mouseEvent->buttons() & Qt::RightButton) {
 		if (_interactionMode != InteractionMode::Navigation)
 			setInteractionMode(InteractionMode::WindowLevel);
@@ -45,44 +49,25 @@ void Renderer::mousePressEvent(QMouseEvent* mouseEvent)
 
 	_mouseEvents.clear();
 	_mouseEvents.push_back(QSharedPointer<QMouseEvent>::create(*mouseEvent));
-
-	for (auto key : _actors.keys()) {
-		auto actor = _actors[key];
-
-		if (actor->shouldReceiveMousePressEvents())
-			actor->onMousePressEvent(mouseEvent);
-	}
-	*/
 }
 
 void Renderer::mouseReleaseEvent(QMouseEvent* mouseEvent)
 {
 	//qDebug() << "Mouse release event";
 
-	/*
-	for (auto key : _actors.keys()) {
-		auto actor = _actors[key];
-
-		if (actor->shouldReceiveMouseReleaseEvents())
-			actor->onMouseReleaseEvent(mouseEvent);
-	}
-
 	_mouseEvents.clear();
-	*/
 }
 
 void Renderer::mouseMoveEvent(QMouseEvent* mouseEvent)
 {
 	//qDebug() << "Mouse move event";
 
-	/*
+	
 	if (mouseEvent->buttons() & Qt::RightButton) {
 		if (_interactionMode != InteractionMode::Navigation && mouseEvent->pos() != _mouseEvents.first()->pos())
 			setInteractionMode(InteractionMode::WindowLevel);
 	}
-	*/
-
-	/*
+	
 	switch (mouseEvent->buttons())
 	{
 		case Qt::LeftButton:
@@ -100,7 +85,7 @@ void Renderer::mouseMoveEvent(QMouseEvent* mouseEvent)
 
 						pan(vDelta);
 
-						emit becameDirty();
+						static_cast<QOpenGLWidget*>(parent())->update();
 					}
 					
 					break;
@@ -110,21 +95,12 @@ void Renderer::mouseMoveEvent(QMouseEvent* mouseEvent)
 	}
 
 	_mouseEvents.push_back(QSharedPointer<QMouseEvent>::create(*mouseEvent));
-
-	for (auto key : _actors.keys()) {
-		auto actor = _actors[key];
-
-		if (actor->shouldReceiveMouseMoveEvents())
-			actor->onMouseMoveEvent(mouseEvent);
-	}
-	*/
 }
 
 void Renderer::mouseWheelEvent(QWheelEvent* wheelEvent)
 {
 	//qDebug() << "Mouse wheel event";
 
-	/*
 	switch (_interactionMode)
 	{
 		case InteractionMode::Navigation:
@@ -139,20 +115,13 @@ void Renderer::mouseWheelEvent(QWheelEvent* wheelEvent)
 			}
 
 			emit becameDirty();
+			static_cast<QOpenGLWidget*>(parent())->update();
 			break;
 		}
 
 		default:
 			break;
 	}
-
-	for (auto key : _actors.keys()) {
-		auto actor = _actors[key];
-
-		if (actor->shouldReceiveMouseWheelEvents())
-			actor->onMouseWheelEvent(wheelEvent);
-	}
-	*/
 }
 
 void Renderer::keyPressEvent(QKeyEvent* keyEvent)
@@ -204,14 +173,7 @@ void Renderer::keyPressEvent(QKeyEvent* keyEvent)
 		}
 	}
 
-	/*
-	for (auto key : _actors.keys()) {
-		auto actor = _actors[key];
-
-		if (actor->shouldReceiveKeyPressEvents())
-			actor->onKeyPressEvent(keyEvent);
-	}
-	*/
+	
 }
 
 void Renderer::keyReleaseEvent(QKeyEvent* keyEvent)
@@ -234,15 +196,6 @@ void Renderer::keyReleaseEvent(QKeyEvent* keyEvent)
 				break;
 		}
 	}
-
-	/*
-	for (auto key : _actors.keys()) {
-		auto actor = _actors[key];
-
-		if (actor->shouldReceiveKeyReleaseEvents())
-			actor->onKeyReleaseEvent(keyEvent);
-	}
-	*/
 }
 
 QVector3D Renderer::screenPointToWorldPosition(const QMatrix4x4& modelViewMatrix, const QVector2D& screenPoint) const
@@ -317,7 +270,7 @@ QMatrix4x4 Renderer::projectionMatrix() const
 
 void Renderer::pan(const QVector2D& delta)
 {
-	//qDebug() << "Pan by" << delta;
+	qDebug() << "Pan by" << delta;
 
 	_pan.setX(_pan.x() + delta.x());
 	_pan.setY(_pan.y() + delta.y());
@@ -396,16 +349,6 @@ void Renderer::resetView()
 	_zoom = 1.f;
 }
 
-void Renderer::setColorImage(QSharedPointer<QImage> colorImage)
-{
-	bindOpenGLContext();
-
-	/*
-	colorImageActor()->setImage(colorImage);
-	selectionPickerActor()->setImageSize(colorImage->size());
-	*/
-}
-
 InteractionMode Renderer::interactionMode() const
 {
 	return _interactionMode;
@@ -436,10 +379,6 @@ void Renderer::setInteractionMode(const InteractionMode& interactionMode)
 	}
 	
 	_interactionMode = interactionMode;
-
-	//actorByName<ColorImageActor>("ColorImageActor")->setEnabled(_interactionMode == InteractionMode::WindowLevel);
-	//actorByName<SelectionPickerActor>("SelectionPickerActor")->setEnabled(_interactionMode == InteractionMode::Selection);
-	//actorByName<SelectionPickerActor>("SelectionPickerActor")->setVisible(_interactionMode == InteractionMode::Selection);
 }
 
 void Renderer::bindOpenGLContext()

@@ -1,79 +1,83 @@
 #include "ImagesProp.h"
 #include "QuadShape.h"
 #include "LayersModel.h"
+#include "ImageRange.h"
+#include "Renderer.h"
+#include "Node.h"
 
 #include <QDebug>
 
 const std::string vertexShaderSource =
-#include "ImageLayerVertex.glsl"
+	#include "ImageLayerVertex.glsl"
 ;
 
 const std::string fragmentShaderSource =
-#include "ImageLayerFragment.glsl"
+	#include "ImageLayerFragment.glsl"
 ;
 
-ImagesLayerProp::ImagesLayerProp(RenderNode* renderNode, const QString& name, const LayerNode::Type& type) :
-	Prop(renderNode, name),
-	_type(type),
-	_image(),
-	_displayRange{0.0f, 1000.0f},
-	_opacity(0.0f)
+ImagesProp::ImagesProp(Node* node, const QString& name) :
+	Prop(node, name),
+	_windowLevelImage(),
+	_opacity(1.0f),
+	_order(0)
 {
 	addShape<QuadShape>("Quad");
 	addShaderProgram("Quad");
 	addTexture("Quad", QOpenGLTexture::Target2D);
 
-//	_actor->bindOpenGLContext();
-
 	initialize();
 }
 
-ImagesLayerProp::~ImagesLayerProp() = default;
+ImagesProp::~ImagesProp() = default;
 
-void ImagesLayerProp::initialize()
+void ImagesProp::initialize()
 {
 	try
 	{
-		Prop::initialize();
+		renderer->bindOpenGLContext();
+		{
+			Prop::initialize();
 
-		const auto shaderProgram = shaderProgramByName("Quad");
+			const auto shaderProgram = shaderProgramByName("Quad");
 
-		if (!shaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSource.c_str()))
-			throw std::exception("Unable to compile quad vertex shader");
+			if (!shaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSource.c_str()))
+				throw std::exception("Unable to compile quad vertex shader");
 
-		if (!shaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSource.c_str()))
-			throw std::exception("Unable to compile quad fragment shader");
+			if (!shaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSource.c_str()))
+				throw std::exception("Unable to compile quad fragment shader");
 
-		if (!shaderProgram->link())
-			throw std::exception("Unable to link quad shader program");
+			if (!shaderProgram->link())
+				throw std::exception("Unable to link quad shader program");
 
-		const auto stride = 5 * sizeof(GLfloat);
+			const auto stride = 5 * sizeof(GLfloat);
 
-		auto shape = shapeByName<QuadShape>("Quad");
+			auto shape = shapeByName<QuadShape>("Quad");
 
-		if (shaderProgram->bind()) {
-			shape->vao().bind();
-			shape->vbo().bind();
+			if (shaderProgram->bind()) {
+				shape->vao().bind();
+				shape->vbo().bind();
 
-			shaderProgram->enableAttributeArray(QuadShape::_vertexAttribute);
-			shaderProgram->enableAttributeArray(QuadShape::_textureAttribute);
-			shaderProgram->setAttributeBuffer(QuadShape::_vertexAttribute, GL_FLOAT, 0, 3, stride);
-			shaderProgram->setAttributeBuffer(QuadShape::_textureAttribute, GL_FLOAT, 3 * sizeof(GLfloat), 2, stride);
-			shaderProgram->release();
+				shaderProgram->enableAttributeArray(QuadShape::_vertexAttribute);
+				shaderProgram->enableAttributeArray(QuadShape::_textureAttribute);
+				shaderProgram->setAttributeBuffer(QuadShape::_vertexAttribute, GL_FLOAT, 0, 3, stride);
+				shaderProgram->setAttributeBuffer(QuadShape::_textureAttribute, GL_FLOAT, 3 * sizeof(GLfloat), 2, stride);
+				shaderProgram->release();
 
-			shape->vao().release();
-			shape->vbo().release();
+				shape->vao().release();
+				shape->vbo().release();
+			}
+			else {
+				throw std::exception("Unable to bind quad shader program");
+			}
+
+			const auto texture = textureByName("Quad");
+
+			texture->setWrapMode(QOpenGLTexture::Repeat);
+			texture->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
+
+			_initialized = true;
 		}
-		else {
-			throw std::exception("Unable to bind quad shader program");
-		}
-
-		const auto texture = textureByName("Quad");
-
-		texture->setWrapMode(QOpenGLTexture::Repeat);
-		texture->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
-
-		_initialized = true;
+		Renderable::renderer->releaseOpenGLContext();
 	}
 	catch (std::exception& e)
 	{
@@ -84,38 +88,45 @@ void ImagesLayerProp::initialize()
 	}
 }
 
-void ImagesLayerProp::render()
+void ImagesProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 {
-	/*
 	try {
 		if (!canRender())
 			return;
 
-		Prop::render();
+		renderer->bindOpenGLContext();
+		{
+			Prop::render(nodeMVP, opacity);
 
-		const auto shape			= shapeByName<QuadShape>("Quad");
-		const auto shaderProgram	= shaderProgramByName("Quad");
-		const auto texture			= textureByName("Quad");
+			const auto shape			= shapeByName<QuadShape>("Quad");
+			const auto shaderProgram	= shaderProgramByName("Quad");
+			const auto texture			= textureByName("Quad");
 
-		texture->bind();
+			texture->bind();
 
-		if (shaderProgram->bind()) {
-			shaderProgram->setUniformValue("imageTexture", 0);
-			shaderProgram->setUniformValue("type", static_cast<int>(_type));
-			shaderProgram->setUniformValue("minPixelValue", _displayRange[0]);
-			shaderProgram->setUniformValue("maxPixelValue", _displayRange[1]);
-			shaderProgram->setUniformValue("opacity", _opacity);
-			shaderProgram->setUniformValue("transform", modelViewProjectionMatrix());
+			if (shaderProgram->bind()) {
+				const auto displayRange = _windowLevelImage.displayRange(Qt::EditRole).value<Range>();
+			
+				//qDebug() << _node->modelViewProjectionMatrix();
 
-			shape->render();
+				shaderProgram->setUniformValue("imageTexture", 0);
+				shaderProgram->setUniformValue("minPixelValue", displayRange.min());
+				shaderProgram->setUniformValue("maxPixelValue", displayRange.max());
+				shaderProgram->setUniformValue("opacity", _opacity);
+				shaderProgram->setUniformValue("transform", nodeMVP * modelMatrix());
 
-			shaderProgram->release();
+			
+				shape->render();
+
+				shaderProgram->release();
+			}
+			else {
+				throw std::exception("Unable to bind quad shader program");
+			}
+
+			texture->release();
 		}
-		else {
-			throw std::exception("Unable to bind quad shader program");
-		}
-
-		texture->release();
+		Renderable::renderer->releaseOpenGLContext();
 	}
 	catch (std::exception& e)
 	{
@@ -124,77 +135,54 @@ void ImagesLayerProp::render()
 	catch (...) {
 		qDebug() << _name << "render failed due to unhandled exception";
 	}
-	*/
 }
 
-void ImagesLayerProp::setImage(const QImage& image)
+WindowLevelImage& ImagesProp::image()
+{
+	return _windowLevelImage;
+}
+
+const WindowLevelImage& ImagesProp::image() const
+{
+	return _windowLevelImage;
+}
+
+void ImagesProp::setImage(const QImage& image)
 {
 	//qDebug() << fullName() << "set image";
 
-	_image = image;
-	
-	auto texture = textureByName("Quad");
-
-	switch (_image.format())
+	renderer->bindOpenGLContext();
 	{
-		case QImage::Format::Format_RGB32:
-		{
-			texture->destroy();
-			texture->create();
-			texture->setSize(image.size().width(), image.size().height());
-			texture->setFormat(QOpenGLTexture::RGBA8_UNorm);
-			texture->setWrapMode(QOpenGLTexture::ClampToEdge);
-			texture->setMinMagFilters(QOpenGLTexture::Nearest, QOpenGLTexture::Nearest);
-			texture->allocateStorage();
-			texture->setData(QOpenGLTexture::PixelFormat::RGBA, QOpenGLTexture::PixelType::UInt8, image.bits());
+		_windowLevelImage.setImage(image);
 
-			break;
-		}
+		auto texture = textureByName("Quad");
 
-		case QImage::Format::Format_RGBX64:
-		case QImage::Format::Format_RGBA64:
-		case QImage::Format::Format_RGBA64_Premultiplied:
-		{
-			texture->destroy();
-			texture->create();
-			texture->setSize(image.size().width(), image.size().height());
-			texture->setFormat(QOpenGLTexture::RGBA16_UNorm);
-			texture->setWrapMode(QOpenGLTexture::ClampToEdge);
-			texture->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
-			texture->allocateStorage();
-			texture->setData(QOpenGLTexture::PixelFormat::RGBA, QOpenGLTexture::PixelType::UInt16, image.bits());
+		texture->destroy();
+		texture->create();
+		texture->setSize(image.size().width(), image.size().height());
+		texture->setFormat(QOpenGLTexture::RGBA16_UNorm);
+		texture->setWrapMode(QOpenGLTexture::ClampToEdge);
+		texture->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
+		texture->allocateStorage();
+		texture->setData(QOpenGLTexture::PixelFormat::RGBA, QOpenGLTexture::PixelType::UInt16, image.bits());
 
-			break;
-		}
+		const auto rectangle = QRectF(QPointF(0.f, 0.f), QSizeF(static_cast<float>(image.width()), static_cast<float>(image.height())));
 
-		default:
-			break;
+		shapeByName<QuadShape>("Quad")->setRectangle(rectangle);
+
+		updateModelMatrix();
 	}
-	
-
-	const auto rectangle = QRectF(QPointF(0.f, 0.f), QSizeF(static_cast<float>(image.width()), static_cast<float>(image.height())));
-
-	shapeByName<QuadShape>("Quad")->setRectangle(rectangle);
-	
-	updateModelMatrix();
+	Renderable::renderer->releaseOpenGLContext();
 }
 
-void ImagesLayerProp::setDisplayRange(const float& min, const float& max)
-{
-	//qDebug() << fullName() << "set display range" << min << max;
-
-	_displayRange[0] = min;
-	_displayRange[1] = max;
-}
-
-void ImagesLayerProp::setOpacity(const float& opacity)
+void ImagesProp::setOpacity(const float& opacity)
 {
 	//qDebug() << fullName() << "set opacity" << QString::number(opacity, 'f', 2);
 
 	_opacity = opacity;
 }
 
-void ImagesLayerProp::setOrder(const std::uint32_t& order)
+void ImagesProp::setOrder(const std::uint32_t& order)
 {
 	//qDebug() << fullName() << "set order" << QString::number(order);
 
@@ -203,7 +191,7 @@ void ImagesLayerProp::setOrder(const std::uint32_t& order)
 	updateModelMatrix();
 }
 
-void ImagesLayerProp::updateModelMatrix()
+void ImagesProp::updateModelMatrix()
 {
 	QMatrix4x4 modelMatrix;
 

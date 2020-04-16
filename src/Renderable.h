@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Node.h"
-
 #include <QObject>
 #include <QColor>
 #include <QVector2D>
@@ -22,11 +20,10 @@ class QKeyEvent;
  *
  * @author Thomas Kroes
  */
-class RenderNode : public Node
+class Renderable
 {
-	Q_OBJECT
-
 public:
+
 	/**
 	 * Mouse point class
 	 * @author Thomas Kroes
@@ -62,19 +59,14 @@ public:
 	};
 
 public:
-	/**
-	 * Constructor
-	 * @param id Identifier for internal use
-	 * @param name Name in the GUI
-	 * @param flags Configuration bit flags
-	 */
-	RenderNode(const QString& id, const QString& name, const int& flags);
+	/** Default constructor */
+	Renderable();
 
 	/** Destructor */
-	~RenderNode();
+	~Renderable();
 
 	/** Renders the node */
-	virtual void render();
+	virtual void render(const QMatrix4x4& parentMVP, const float& opacity) = 0;
 
 public: // Matrix functions
 
@@ -92,53 +84,6 @@ public: // Matrix functions
 
 	/** Returns the model-view-projection matrix (projectionMatrix * viewMatrix * actorModelMatrix) */
 	QMatrix4x4 modelViewProjectionMatrix() const;
-
-protected: // Key/mouse handlers
-
-	/** Node will register mouse press events */
-	void registerMousePressEvents();
-
-	/** Node will register mouse release events */
-	void registerMouseReleaseEvents();
-
-	/** Node will register mouse move press events */
-	void registerMouseMoveEvents();
-
-	/** Node will register mouse wheel events */
-	void registerMouseWheelEvents();
-
-	/** Node will register key press events */
-	void registerKeyPressEvents();
-
-	/** Node will register key release events */
-	void registerKeyReleaseEvents();
-
-	/** Invoked when a mouse button is pressed */
-	virtual void onMousePressEvent(QMouseEvent* mouseEvent);
-
-	/** Invoked when a mouse button is released */
-	virtual void onMouseReleaseEvent(QMouseEvent* mouseEvent);
-
-	/** Invoked when the mouse pointer is moved */
-	virtual void onMouseMoveEvent(QMouseEvent* mouseEvent);
-
-	/** Invoked when the mouse wheel is rotated */
-	virtual void onMouseWheelEvent(QWheelEvent* wheelEvent);
-
-	/** Invoked when a key is pressed */
-	virtual void onKeyPressEvent(QKeyEvent* keyEvent);
-
-	/** Invoked when a key is released */
-	virtual void onKeyReleaseEvent(QKeyEvent* keyEvent);
-
-	/**
-	 * Records a mouse event
-	 * @param mouseEvent Mouse event
-	 */
-	void addMouseEvent(QMouseEvent* mouseEvent);
-
-	/** Returns the recorded mouse events */
-	QVector<MouseEvent> mouseEvents();
 
 public: // Opacity
 
@@ -162,17 +107,13 @@ protected: // Prop management
 			auto propName = prop->name();
 
 			if (_props.contains(propName))
-				throw std::exception(QString("%1 already has a prop named %2").arg(_name, propName).toLatin1());
+				throw std::exception(QString("%1 already exists").arg(propName).toLatin1());
 
 			_props.insert(propName, sharedProp);
-
-			QObject::connect(prop, &Prop::becameDirty, [this](Prop* prop) {
-				emit becameDirty(this);
-			});
 		}
 		catch (const std::exception& e)
 		{
-			throw std::exception(QString("Unable to add prop to %1: %2").arg(_name, e.what()).toLatin1());
+			throw std::exception(QString("Unable to add prop: %1").arg(e.what()).toLatin1());
 		}
 	}
 
@@ -181,13 +122,13 @@ protected: // Prop management
 	{
 		try {
 			if (!_props.contains(name))
-				throw std::exception(QString("%1 does not have a prop named %2").arg(_name, name).toLatin1());
+				throw std::exception(QString("%1 does not exist").arg(name).toLatin1());
 
 			_props.remove(name);
 		}
 		catch (const std::exception& e)
 		{
-			throw std::exception(QString("Unable to remove prop from %1: %2").arg(_name, e.what()).toLatin1());
+			throw std::exception(QString("Unable to remove prop: %1").arg(e.what()).toLatin1());
 		}
 	}
 
@@ -197,13 +138,13 @@ protected: // Prop management
 	{
 		try {
 			if (!_props.contains(name))
-				throw std::exception(QString("%1 has no prop named %2").arg(_name, name).toLatin1());
+				throw std::exception(QString("no prop named %1").arg(name).toLatin1());
 
 			return dynamic_cast<T*>(_props[name].get());
 		}
 		catch (const std::exception& e)
 		{
-			throw std::exception(QString("Unable to retrieve prop by name from %1: %2").arg(_name, e.what()).toLatin1());
+			throw std::exception(QString("Unable to retrieve prop: %1").arg(e.what()).toLatin1());
 		}
 	}
 
@@ -211,7 +152,7 @@ protected: // Prop management
 	template<typename T>
 	T* propByName(const QString& name)
 	{
-		const auto constThis = const_cast<const Actor*>(this);
+		const auto constThis = const_cast<const Renderable*>(this);
 		return const_cast<T*>(constThis->propByName<T>(name));
 	}
 	
@@ -225,10 +166,7 @@ public:
 	static Renderer* renderer;
 
 protected:
-	int							_registeredEvents;		/** Defines which (mouse) events should be received by the actor */
-	QVector<MouseEvent>			_mouseEvents;			/** Recorded mouse events */
-
-private:
+	QVector<MouseEvent>			_mouseEvents;		/** Recorded mouse events */
 	float						_opacity;			/** Render opacity */
 	QMatrix4x4					_modelMatrix;		/** Model matrix */
 	QMap<QString, SharedProp>	_props;				/** Props map */

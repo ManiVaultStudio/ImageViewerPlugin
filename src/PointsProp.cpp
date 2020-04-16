@@ -4,15 +4,15 @@
 #include <QDebug>
 
 const std::string vertexShaderSource =
-#include "PointsVertex.glsl"
+	#include "PointsVertex.glsl"
 ;
 
 const std::string geometryShaderSource =
-#include "PointsGeometry.glsl"
+	#include "PointsGeometry.glsl"
 ;
 
 const std::string fragmentShaderSource =
-#include "PointsFragment.glsl"
+	#include "PointsFragment.glsl"
 ;
 
 PointsProp::Point::Point():
@@ -33,8 +33,8 @@ std::uint32_t PointsProp::Point::_positionAttribute = 0;
 std::uint32_t PointsProp::Point::_radiusAttribute	= 1;
 std::uint32_t PointsProp::Point::_colorAttribute	= 2;
 
-PointsProp::PointsProp(RenderNode* renderNode, const QString& name) :
-	Prop(renderNode, name),
+PointsProp::PointsProp(Node* node, const QString& name) :
+	Prop(node, name),
 	_points(),
 	_vao(),
 	_vbo(),
@@ -108,7 +108,7 @@ bool PointsProp::canRender() const
 	return true;
 }
 
-void PointsProp::render()
+void PointsProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 {
 	/*
 	try {

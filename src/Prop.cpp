@@ -1,6 +1,5 @@
 #include "Prop.h"
 #include "Renderer.h"
-#include "RenderNode.h"
 #include "Shape.h"
 
 #include <QOpenGLShaderProgram>
@@ -10,9 +9,9 @@
 
 Renderer* Prop::renderer = nullptr;
 
-Prop::Prop(RenderNode* renderNode, const QString& name) :
-	QObject(renderNode),
-	_renderNode(renderNode),
+Prop::Prop(Node* node, const QString& name) :
+	QObject(reinterpret_cast<QObject*>(node)),
+	_node(node),
 	_initialized(false),
 	_name(name),
 	_visible(true),
@@ -52,7 +51,7 @@ bool Prop::canRender() const
 	return isInitialized() && isVisible();
 }
 
-void Prop::render()
+void Prop::render(const QMatrix4x4& nodeMVP, const float& opacity)
 {
 	//qDebug() << "Render" << fullName();
 }
@@ -121,25 +120,3 @@ void Prop::setModelMatrix(const QMatrix4x4& modelMatrix)
 
 	_modelMatrix = modelMatrix;
 }
-
-/*
-QMatrix4x4 Prop::modelViewMatrix() const
-{
-	return _actor->modelViewMatrix() * _modelMatrix;
-}
-
-QMatrix4x4 Prop::modelViewProjectionMatrix() const
-{
-	return _actor->modelViewProjectionMatrix() * _modelMatrix;
-}
-
-Actor* Prop::actor()
-{
-	return _actor;
-}
-
-Renderer* Prop::renderer()
-{
-	return _actor->renderer();
-}
-*/

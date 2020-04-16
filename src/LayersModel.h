@@ -8,7 +8,7 @@
 class ImageViewerPlugin;
 class Dataset;
 class LayerNode;
-class GroupLayer;
+class RootLayer;
 
 class LayersModel : public QAbstractItemModel
 {
@@ -99,10 +99,10 @@ public: // MIME drag and drop
 	/** TODO */
 	bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent);
 
-private:
+public:
 	LayerNode* getLayer(const QModelIndex& index) const;
 
 private:
 	QItemSelectionModel		_selectionModel;	/** TODO */
-	GroupLayer*				_root;				/** TODO */
+	RootLayer*				_root;				/** TODO */
 };

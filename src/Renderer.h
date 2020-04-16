@@ -38,7 +38,7 @@ public:
 	void init() override;
 
 	/** TODO */
-	void render() {};
+	void render();
 	
 	/** TODO */
 	void destroy() {};
@@ -185,11 +185,6 @@ public: // Parent widget queries
 	QSize parentWidgetSize() const;
 
 public:
-	/**
-	 * Sets the color image
-	 * @param colorImage Color image
-	 */
-	void setColorImage(QSharedPointer<QImage> colorImage);
 
 	/** Returns the interaction mode */
 	InteractionMode interactionMode() const;

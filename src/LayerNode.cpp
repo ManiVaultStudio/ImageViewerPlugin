@@ -10,7 +10,7 @@
 ImageViewerPlugin* LayerNode::imageViewerPlugin = nullptr;
 
 LayerNode::LayerNode(const QString& dataset, const Type& type, const QString& id, const QString& name, const int& flags) :
-	RenderNode(id, name, flags),
+	Node(id, name, flags),
 	_datasetName(dataset),
 	_rawDataName(),
 	_type(type),
@@ -214,7 +214,7 @@ QModelIndexList LayerNode::setData(const QModelIndex& index, const QVariant& val
 			break;
 	}
 
-	rootItem()->render();
+	//rootItem()->render(TODO, TODO);
 
 	return affectedIndices;
 }

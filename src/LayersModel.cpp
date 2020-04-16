@@ -1,6 +1,7 @@
 #include "LayersModel.h"
 #include "ImageViewerPlugin.h"
 #include "LayerNode.h"
+#include "RootLayer.h"
 #include "GroupLayer.h"
 #include "PointsLayer.h"
 #include "ImagesLayer.h"
@@ -223,7 +224,7 @@ bool LayersModel::moveLayer(const QModelIndex& sourceParent, const int& sourceRo
 
 void LayersModel::initialize()
 {
-	_root = new GroupLayer("root", "Root", ult(LayerNode::Flag::Enabled));
+	_root = new RootLayer();
 }
 
 void LayersModel::selectionChanged(const QString& name, const Indices& indices)

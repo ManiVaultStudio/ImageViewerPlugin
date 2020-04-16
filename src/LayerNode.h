@@ -1,6 +1,6 @@
 #pragma once
 
-#include "RenderNode.h"
+#include "Node.h"
 #include "ImageRange.h"
 
 #include <QColor>
@@ -20,7 +20,7 @@ class Prop;
  *
  * @author Thomas Kroes
  */
-class LayerNode : public RenderNode
+class LayerNode : public Node
 {
 public:
 

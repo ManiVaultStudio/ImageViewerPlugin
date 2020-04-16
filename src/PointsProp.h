@@ -47,10 +47,10 @@ public:
 
 public:
 	/** Constructor
-	 * @param actor Parent actor
+	 * @param node Node
 	 * @param name Name of the prop
 	 */
-	PointsProp(RenderNode* renderNode, const QString& name);
+	PointsProp(Node* node, const QString& name);
 
 protected: // Inherited
 
@@ -61,7 +61,7 @@ protected: // Inherited
 	bool canRender() const override;
 
 	/** Renders the prop */
-	void render() override;
+	void render(const QMatrix4x4& nodeMVP, const float& opacity) override;
 
 public:
 	/** Set points */

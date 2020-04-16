@@ -1,27 +1,27 @@
 #pragma once
 
 #include "Prop.h"
-#include "LayerNode.h"
+#include "WindowLevelImage.h"
 
-class Actor;
+class Node;
 
 /**
  * Image prop class
  * @author Thomas Kroes
  */
-class ImagesLayerProp : public Prop
+class ImagesProp : public Prop
 {
 	Q_OBJECT
 
 public:
 	/** TODO */
-	ImagesLayerProp(RenderNode* renderNode, const QString& name, const LayerNode::Type& type);
+	ImagesProp(Node* node, const QString& name);
 
 	/** Destructor */
-	~ImagesLayerProp();
+	~ImagesProp();
 
 	/** Renders the prop */
-	void render() override;
+	void render(const QMatrix4x4& nodeMVP, const float& opacity) override;
 
 protected: // Inherited
 
@@ -31,10 +31,13 @@ protected: // Inherited
 public: // Configuration
 
 	/** TODO */
-	void setImage(const QImage& image);
+	WindowLevelImage& image();
 
 	/** TODO */
-	void setDisplayRange(const float& min, const float& max);
+	const WindowLevelImage& image() const;
+
+	/** TODO */
+	void setImage(const QImage& image);
 
 	/** TODO */
 	void setOpacity(const float& opacity);
@@ -48,11 +51,9 @@ protected:
 	void updateModelMatrix();
 
 private:
-	LayerNode::Type		_type;					/** TODO */
-	QImage			_image;					/** TODO */
-	float			_displayRange[2];		/** TODO */
-	float			_opacity;				/** TODO */
-	std::uint32_t	_order;					/** TODO */
+	WindowLevelImage	_windowLevelImage;				/** Image */
+	float				_opacity;			/** TODO */
+	std::uint32_t		_order;				/** TODO */
 };
 
-using SharedImageLayerProp = QSharedPointer<ImagesLayerProp>;
+using SharedImageLayerProp = QSharedPointer<ImagesProp>;

@@ -18,8 +18,7 @@ ImagesLayer::ImagesLayer(const QString& dataset, const QString& id, const QStrin
 	_imageFilePaths(),
 	_pointsName(),
 	_currentImage(0),
-	_average(),
-	_image()
+	_average()
 {
 	init();
 }
@@ -76,6 +75,8 @@ void ImagesLayer::init()
 	
 	if (selection)
 		setSelection(Indices::fromStdVector(selection->indices));
+
+	addProp<ImagesProp>(this, "Images");
 }
 
 Qt::ItemFlags ImagesLayer::flags(const QModelIndex& index) const
@@ -135,10 +136,10 @@ QVariant ImagesLayer::data(const QModelIndex& index, const int& role) const
 			return height(role);
 
 		case Column::WindowNormalized:
-			return _image.windowNormalized(role);
+			return propByName<ImagesProp>("Images")->image().windowNormalized(role);
 
 		case Column::LevelNormalized:
-			return _image.levelNormalized(role);
+			return propByName<ImagesProp>("Images")->image().levelNormalized(role);
 
 		case Column::ImageSize:
 			return imageSize(role);
@@ -188,6 +189,10 @@ QModelIndexList ImagesLayer::setData(const QModelIndex& index, const QVariant& v
 		affectedIndices = LayerNode::setData(index, value, role);
 
 		if (index.column() == ult(LayerNode::Column::Selection)) {
+			computeImage();
+			setCurrentImageId(0);
+
+			affectedIndices << index.siblingAtColumn(ult(Column::CurrentImageId));
 			affectedIndices << index.siblingAtColumn(ult(Column::FilteredImageNames));
 			affectedIndices << index.siblingAtColumn(ult(Column::ImageIDs));
 		}
@@ -204,11 +209,11 @@ QModelIndexList ImagesLayer::setData(const QModelIndex& index, const QVariant& v
 			break;
 
 		case Column::WindowNormalized:
-			_image.setWindowNormalized(value.toFloat());
+			propByName<ImagesProp>("Images")->image().setWindowNormalized(value.toFloat());
 			break;
 
 		case Column::LevelNormalized:
-			_image.setLevelNormalized(value.toFloat());
+			propByName<ImagesProp>("Images")->image().setLevelNormalized(value.toFloat());
 			break;
 
 		case Column::ImageSize:
@@ -221,26 +226,32 @@ QModelIndexList ImagesLayer::setData(const QModelIndex& index, const QVariant& v
 			break;
 
 		case Column::CurrentImageId:
+		{
 			setCurrentImageId(value.toInt());
 			break;
+		}
 
 		case Column::CurrentImageName:
 		case Column::CurrentImageFilePath:
 			break;
 
 		case Column::Average:
+		{
 			setAverage(value.toBool());
 			affectedIndices << index.siblingAtColumn(ult(Column::FilteredImageNames));
 			break;
+		}
 
 		default:
 			break;
 	}
 
+//	rootItem()->render(TODO, TODO);
+
 	return affectedIndices;
 }
 
-QVariant ImagesLayer::imageDataType(const int& role /*= Qt::DisplayRole*/) const
+QVariant ImagesLayer::imageDataType(const int& role) const
 {
 	const auto imageDataTypeString = ImageData::typeName(_imageDataType);
 
@@ -267,7 +278,7 @@ void ImagesLayer::setImageDataType(const ImageData::Type& imageDataType)
 	_imageDataType = imageDataType;
 }
 
-QVariant ImagesLayer::noImages(const int& role /*= Qt::DisplayRole*/) const
+QVariant ImagesLayer::noImages(const int& role) const
 {
 	const auto count = _imageFilePaths.size();
 
@@ -289,7 +300,7 @@ QVariant ImagesLayer::noImages(const int& role /*= Qt::DisplayRole*/) const
 	return QVariant();
 }
 
-QVariant ImagesLayer::width(const int& role /*= Qt::DisplayRole*/) const
+QVariant ImagesLayer::width(const int& role) const
 {
 	const auto widthString = QString::number(_size.width());
 
@@ -311,7 +322,7 @@ QVariant ImagesLayer::width(const int& role /*= Qt::DisplayRole*/) const
 	return QVariant();
 }
 
-QVariant ImagesLayer::height(const int& role /*= Qt::DisplayRole*/) const
+QVariant ImagesLayer::height(const int& role) const
 {
 	const auto heightString = QString::number(_size.height());
 
@@ -333,7 +344,7 @@ QVariant ImagesLayer::height(const int& role /*= Qt::DisplayRole*/) const
 	return QVariant();
 }
 
-QVariant ImagesLayer::imageSize(const int& role /*= Qt::DisplayRole*/) const
+QVariant ImagesLayer::imageSize(const int& role) const
 {
 	switch (role)
 	{
@@ -358,7 +369,7 @@ void ImagesLayer::setImageSize(const QSize& size)
 	_size = size;
 }
 
-QVariant ImagesLayer::noPoints(const int& role /*= Qt::DisplayRole*/) const
+QVariant ImagesLayer::noPoints(const int& role) const
 {
 	switch (role)
 	{
@@ -383,7 +394,7 @@ void ImagesLayer::setNoPoints(const std::uint32_t& noPoints)
 	_noPoints = noPoints;
 }
 
-QVariant ImagesLayer::noDimensions(const int& role /*= Qt::DisplayRole*/) const
+QVariant ImagesLayer::noDimensions(const int& role) const
 {
 	switch (role)
 	{
@@ -408,7 +419,7 @@ void ImagesLayer::setNoDimensions(const std::uint32_t& noDimensions)
 	_noDimensions = noDimensions;
 }
 
-QVariant ImagesLayer::imageNames(const int& role /*= Qt::DisplayRole*/) const
+QVariant ImagesLayer::imageNames(const int& role) const
 {
 	const auto imageNamesString = abbreviatedStringList(_imageNames);
 
@@ -430,14 +441,13 @@ QVariant ImagesLayer::imageNames(const int& role /*= Qt::DisplayRole*/) const
 	return QVariant();
 }
 
-QVariant ImagesLayer::imageIds(const int& role /*= Qt::DisplayRole*/) const
+QVariant ImagesLayer::imageIds(const int& role) const
 {
 	const auto selectionSize = _selection.size();
 
 	auto ids = Indices();
 
-	/*
-	switch (_type)
+	switch (_imageDataType)
 	{
 		case ImageData::Type::Sequence:
 		{
@@ -475,7 +485,7 @@ QVariant ImagesLayer::imageIds(const int& role /*= Qt::DisplayRole*/) const
 		default:
 			break;
 	}
-	*/
+	
 	auto imageIdsString = QString();
 
 	if (ids.size() == 1)
@@ -510,7 +520,7 @@ void ImagesLayer::setImageNames(const QStringList& imageNames)
 	_imageNames = imageNames;
 }
 
-QVariant ImagesLayer::imageFilePaths(const int& role /*= Qt::DisplayRole*/) const
+QVariant ImagesLayer::imageFilePaths(const int& role) const
 {
 	const auto imageFilePathsString = QString("[%1]").arg(_imageFilePaths.join(", "));
 
@@ -537,7 +547,7 @@ void ImagesLayer::setImageFilePaths(const QStringList& imageFilePaths)
 	_imageFilePaths = imageFilePaths;
 }
 
-QVariant ImagesLayer::pointsName(const int& role /*= Qt::DisplayRole*/) const
+QVariant ImagesLayer::pointsName(const int& role) const
 {
 	switch (role)
 	{
@@ -560,7 +570,7 @@ void ImagesLayer::setPointsName(const QString& pointsName)
 	_pointsName = pointsName;
 }
 
-QVariant ImagesLayer::filteredImageNames(const int& role /*= Qt::DisplayRole*/) const
+QVariant ImagesLayer::filteredImageNames(const int& role) const
 {
 	const auto selectionSize	= this->selectionSize(Qt::EditRole).toInt();
 	const auto imageNames		= this->imageNames(Qt::EditRole).toStringList();
@@ -620,7 +630,7 @@ QVariant ImagesLayer::filteredImageNames(const int& role /*= Qt::DisplayRole*/) 
 	return QVariant();
 }
 
-QVariant ImagesLayer::currentImageId(const int& role /*= Qt::DisplayRole*/) const
+QVariant ImagesLayer::currentImageId(const int& role) const
 {
 	switch (role)
 	{
@@ -637,7 +647,7 @@ QVariant ImagesLayer::currentImageId(const int& role /*= Qt::DisplayRole*/) cons
 	return QVariant();
 }
 
-QVariant ImagesLayer::currentImageName(const int& role /*= Qt::DisplayRole*/) const
+QVariant ImagesLayer::currentImageName(const int& role) const
 {
 	const auto imageNames	= this->imageNames(Qt::EditRole).toStringList();
 	const auto imageName	= imageNames.isEmpty() ? "" : imageNames[_currentImage];
@@ -655,7 +665,7 @@ QVariant ImagesLayer::currentImageName(const int& role /*= Qt::DisplayRole*/) co
 	return QVariant();
 }
 
-QVariant ImagesLayer::currentImageFilePath(const int& role /*= Qt::DisplayRole*/) const
+QVariant ImagesLayer::currentImageFilePath(const int& role) const
 {
 	const auto imageFilePathString = imageFilePaths(Qt::EditRole).toStringList()[_currentImage];
 
@@ -696,9 +706,11 @@ void ImagesLayer::setCurrentImageId(const std::uint32_t& currentImage)
 		default:
 			break;
 	}
+
+	computeImage();
 }
 
-QVariant ImagesLayer::average(const int& role /*= Qt::DisplayRole*/) const
+QVariant ImagesLayer::average(const int& role) const
 {
 	const auto averageString = _average ? "true" : "false";
 
@@ -723,4 +735,24 @@ QVariant ImagesLayer::average(const int& role /*= Qt::DisplayRole*/) const
 void ImagesLayer::setAverage(const bool& average)
 {
 	_average = average;
+
+	computeImage();
+}
+
+void ImagesLayer::computeImage()
+{
+	const auto imageIds = this->imageIds(Qt::EditRole).value<Indices>();
+
+	switch (static_cast<ImageData::Type>(type(Qt::EditRole).toInt()))
+	{
+		case ImageData::Type::Sequence:
+			propByName<ImagesProp>("Images")->setImage(_images->sequenceImage(imageIds.toStdVector()));
+			break;
+
+		case ImageData::Type::Stack:
+			break;
+
+		default:
+			break;
+	}
 }

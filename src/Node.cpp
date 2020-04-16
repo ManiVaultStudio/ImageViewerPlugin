@@ -1,10 +1,12 @@
 #include "Node.h"
 #include "Prop.h"
+#include "Renderer.h"
 
 #include <QDebug>
-#include <QFont>
+#include <QMouseEvent>
 
 Node::Node(const QString& id, const QString& name, const int& flags) :
+	Renderable(),
 	_id(id),
 	_name(name),
 	_flags(flags),
@@ -97,20 +99,26 @@ Node* Node::rootItem()
 	return _parent->rootItem();
 }
 
-void Node::render()
+void Node::render(const QMatrix4x4& parentMVP, const float& opacity)
 {
-	if (!_flags & ult(Flag::Enabled))
-		return;
-
-	qDebug() << "Render" << _id << _name;
-
-	for (auto child : _children)
-		child->render();
+	qDebug() << "Render" << _id;
 
 	/*
-	if (_actor != nullptr)
-		_actor->render();
+	if (!isEnabled())
+		return;
+
+	
+	if (!isRenderable())
+		return;
 	*/
+
+	const auto mvp = parentMVP * _modelMatrix;
+
+	for (auto child : _children)
+		child->render(mvp, opacity * _opacity);
+
+	for (auto prop : _props.values())
+		prop->render(mvp, opacity);
 }
 
 QVariant Node::id(const int& role) const
@@ -190,7 +198,7 @@ QVariant Node::flag(const Flag& flag, const int& role) const
 					return QString("Renamable: %1").arg(flagString);
 
 				case Flag::Renderable:
-					return QString("Renderable: %1").arg(flagString);
+					return QString("Node: %1").arg(flagString);
 
 				default:
 					break;
@@ -276,4 +284,95 @@ Qt::CheckState Node::aggregatedCheckState() const
 		return Qt::PartiallyChecked;
 
 	return static_cast<Qt::CheckState>(*states.begin());
+}
+
+void Node::registerMousePressEvents()
+{
+	QObject::connect(renderer, &Renderer::mousePressEvent, [this](QMouseEvent* mouseEvent) {
+		if (isEnabled() && isRenderable())
+			onMousePressEvent(mouseEvent);
+	});
+}
+
+void Node::registerMouseReleaseEvents()
+{
+	QObject::connect(renderer, &Renderer::mouseReleaseEvent, [this](QMouseEvent* mouseEvent) {
+		if (isEnabled() && isRenderable())
+			onMouseReleaseEvent(mouseEvent);
+	});
+}
+
+void Node::registerMouseMoveEvents()
+{
+	QObject::connect(renderer, &Renderer::mouseMoveEvent, [this](QMouseEvent* mouseEvent) {
+		if (isEnabled() && isRenderable())
+			onMouseMoveEvent(mouseEvent);
+	});
+}
+
+void Node::registerMouseWheelEvents()
+{
+	QObject::connect(renderer, &Renderer::mouseWheelEvent, [this](QWheelEvent* wheelEvent) {
+		if (isEnabled() && isRenderable())
+			onMouseWheelEvent(wheelEvent);
+	});
+}
+
+void Node::registerKeyPressEvents()
+{
+	QObject::connect(renderer, &Renderer::keyPressEvent, [this](QKeyEvent* keyEvent) {
+		if (isEnabled() && isRenderable())
+			onKeyPressEvent(keyEvent);
+	});
+}
+
+void Node::registerKeyReleaseEvents()
+{
+	QObject::connect(renderer, &Renderer::keyReleaseEvent, [this](QKeyEvent* keyEvent) {
+		if (isEnabled() && isRenderable())
+			onKeyReleaseEvent(keyEvent);
+	});
+}
+
+void Node::onMousePressEvent(QMouseEvent* mouseEvent)
+{
+	qDebug() << "Mouse press event in" << _name;
+}
+
+void Node::onMouseReleaseEvent(QMouseEvent* mouseEvent)
+{
+	qDebug() << "Mouse release event in" << _name;
+}
+
+void Node::onMouseMoveEvent(QMouseEvent* mouseEvent)
+{
+	qDebug() << "Mouse move event in" << _name;
+}
+
+void Node::onMouseWheelEvent(QWheelEvent* wheelEvent)
+{
+	qDebug() << "Mouse wheel event in" << _name;
+}
+
+void Node::onKeyPressEvent(QKeyEvent* keyEvent)
+{
+	qDebug() << "Key press event in" << _name;
+}
+
+void Node::onKeyReleaseEvent(QKeyEvent* keyEvent)
+{
+	qDebug() << "Key release event in" << _name;
+}
+
+void Node::addMouseEvent(QMouseEvent* mouseEvent)
+{
+	const auto screenPoint = QVector2D(mouseEvent->pos());
+	const auto worldPosition = renderer->screenPointToWorldPosition(modelViewMatrix(), screenPoint);
+
+	_mouseEvents.append(MouseEvent(screenPoint, worldPosition));
+}
+
+QVector<Node::MouseEvent> Node::mouseEvents()
+{
+	return _mouseEvents;
 }

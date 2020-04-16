@@ -3,7 +3,6 @@
 #include "Renderer.h"
 #include "LayersModel.h"
 #include "LayerNode.h"
-#include "RenderNode.h"
 
 #include <vector>
 #include <algorithm>
@@ -23,7 +22,7 @@ ViewerWidget::ViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_openglDebugLogger(std::make_unique<QOpenGLDebugLogger>())
 {
 	LayerNode::imageViewerPlugin = _imageViewerPlugin;
-	RenderNode::renderer = _renderer;
+	Renderable::renderer = _renderer;
 	Prop::renderer = _renderer;
 
 	setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
@@ -105,21 +104,24 @@ void ViewerWidget::initializeGL()
 
 	//glEnable(GL_MULTISAMPLE);
 
-	_renderer->init();
-
 #ifdef _DEBUG
 	_openglDebugLogger->initialize();
 #endif
 
+	_renderer->zoomToRectangle(QRectF(-40, -40, 80, 80));
+
 	doneCurrent();
 }
 
-void ViewerWidget::paintGL() {
-
+void ViewerWidget::paintGL()
+{
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	_renderer->render();
+	auto root = _imageViewerPlugin->layersModel().getLayer(QModelIndex());
+
+	if (root)
+		root->render(_renderer->projectionMatrix() * _renderer->viewMatrix(), 1.0f);
 
 #ifdef _DEBUG
 	for (const QOpenGLDebugMessage& message : _openglDebugLogger->loggedMessages())

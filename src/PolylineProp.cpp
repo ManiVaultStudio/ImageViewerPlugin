@@ -5,19 +5,19 @@
 #include <QDebug>
 
 const std::string vertexShaderSource =
-#include "PolylineShapeVertex.glsl"
+	#include "PolylineShapeVertex.glsl"
 ;
 
 const std::string geometryShaderSource =
-#include "PolylineShapeGeometry.glsl"
+	#include "PolylineShapeGeometry.glsl"
 ;
 
 const std::string fragmentShaderSource =
-#include "PolylineShapeFragment.glsl"
+	#include "PolylineShapeFragment.glsl"
 ;
 
-PolylineProp::PolylineProp(RenderNode* renderNode, const QString& name) :
-	Prop(renderNode, name),
+PolylineProp::PolylineProp(Node* node, const QString& name) :
+	Prop(node, name),
 	_closed(true),
 	_lineWidth(0.01f),
 	_lineColor(255, 255, 255, 255)
@@ -103,7 +103,7 @@ bool PolylineProp::canRender() const
 	return true;
 }
 
-void PolylineProp::render()
+void PolylineProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 {
 	/*
 	try {
