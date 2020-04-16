@@ -12,16 +12,22 @@ uniform float opacity;
 in vec2 uv;
 out vec4 fragmentColor;
 
+float toneMapChannel(double minPixelValue, double maxPixelValue, double pixelValue)
+{
+	double range	= maxPixelValue - minPixelValue;
+	double fraction	= (pixelValue * 65535.0) - minPixelValue;
+
+	return float(clamp(fraction / range, 0.0, 1.0));
+}
+
 void main(void)
 {
 	fragmentColor = texture(imageTexture, uv);
 
 	double range = maxPixelValue - minPixelValue;
 
-	for (int c = 0; c < 3; c++)
-	{
-		double fraction		= (double(fragmentColor[c]) * 65535.0) - double(minPixelValue);
-		fragmentColor[c]	= float(clamp(fraction / range, 0.0, 1.0));
+	for (int c = 0; c < 3; c++) {
+		fragmentColor[c] = toneMapChannel(minPixelValue, maxPixelValue, fragmentColor[c]);
 	}
 
 	fragmentColor.a = opacity;

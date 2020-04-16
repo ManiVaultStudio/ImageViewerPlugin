@@ -8,11 +8,11 @@
 #include <QDebug>
 
 const std::string vertexShaderSource =
-	#include "ImageLayerVertex.glsl"
+	#include "ImagesPropVertex.glsl"
 ;
 
 const std::string fragmentShaderSource =
-	#include "ImageLayerFragment.glsl"
+	#include "ImagesPropFragment.glsl"
 ;
 
 ImagesProp::ImagesProp(Node* node, const QString& name) :
@@ -92,39 +92,32 @@ void ImagesProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 		if (!canRender())
 			return;
 
-		renderer->bindOpenGLContext();
-		{
-			Prop::render(nodeMVP, opacity);
+		Prop::render(nodeMVP, opacity);
 
-			const auto shape			= shapeByName<QuadShape>("Quad");
-			const auto shaderProgram	= shaderProgramByName("Quad");
-			const auto texture			= textureByName("Quad");
+		const auto shape			= shapeByName<QuadShape>("Quad");
+		const auto shaderProgram	= shaderProgramByName("Quad");
+		const auto texture			= textureByName("Quad");
 
-			texture->bind();
+		texture->bind();
 
-			if (shaderProgram->bind()) {
-				const auto displayRange = _windowLevelImage.displayRange(Qt::EditRole).value<Range>();
+		if (shaderProgram->bind()) {
+			const auto displayRange = _windowLevelImage.displayRange(Qt::EditRole).value<Range>();
 			
-				//qDebug() << _node->modelViewProjectionMatrix();
+			shaderProgram->setUniformValue("imageTexture", 0);
+			shaderProgram->setUniformValue("minPixelValue", displayRange.min());
+			shaderProgram->setUniformValue("maxPixelValue", displayRange.max());
+			shaderProgram->setUniformValue("opacity", opacity);
+			shaderProgram->setUniformValue("transform", nodeMVP * modelMatrix());
 
-				shaderProgram->setUniformValue("imageTexture", 0);
-				shaderProgram->setUniformValue("minPixelValue", displayRange.min());
-				shaderProgram->setUniformValue("maxPixelValue", displayRange.max());
-				shaderProgram->setUniformValue("opacity", opacity);
-				shaderProgram->setUniformValue("transform", nodeMVP * modelMatrix());
+			shape->render();
 
-			
-				shape->render();
-
-				shaderProgram->release();
-			}
-			else {
-				throw std::exception("Unable to bind quad shader program");
-			}
-
-			texture->release();
+			shaderProgram->release();
 		}
-		Renderable::renderer->releaseOpenGLContext();
+		else {
+			throw std::exception("Unable to bind quad shader program");
+		}
+
+		texture->release();
 	}
 	catch (std::exception& e)
 	{
