@@ -4,7 +4,6 @@ R"(
 #extension GL_ARB_gpu_shader_fp64 : enable
 
 uniform sampler2D imageTexture;
-uniform int type;
 uniform float minPixelValue;
 uniform float maxPixelValue;
 uniform float opacity;
