@@ -152,9 +152,16 @@ QModelIndexList LayerNode::setData(const QModelIndex& index, const QVariant& val
 					setFlag(LayerNode::Flag::Enabled, value.toBool());
 
 					for (int column = ult(Column::Type); column <= ult(Column::End); ++column) {
-						affectedIndices.append(index.siblingAtColumn(column));
+						affectedIndices << index.siblingAtColumn(column);
 					}
 
+					auto parent = index.parent();
+
+					while (parent.isValid()) {
+						affectedIndices << parent;
+						parent = parent.parent();
+					}
+					
 					break;
 				}
 
