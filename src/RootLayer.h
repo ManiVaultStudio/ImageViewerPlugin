@@ -19,7 +19,7 @@ public:
 	RootLayer();
 
 	/** TODO */
-	void render(const QMatrix4x4& parentMVP, const float& opacity);
+	void render(const QMatrix4x4& parentMVP);
 
 public: // Inherited MVC
 

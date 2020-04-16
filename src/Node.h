@@ -95,7 +95,7 @@ public:
 	Node* rootItem();
 
 	/** Renders the node */
-	void render(const QMatrix4x4& parentMVP, const float& opacity) override;
+	void render(const QMatrix4x4& parentMVP) override;
 
 public: // Getters/setters
 

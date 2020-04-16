@@ -17,9 +17,7 @@ const std::string fragmentShaderSource =
 
 ImagesProp::ImagesProp(Node* node, const QString& name) :
 	Prop(node, name),
-	_windowLevelImage(),
-	_opacity(1.0f),
-	_order(0)
+	_windowLevelImage()
 {
 	addShape<QuadShape>("Quad");
 	addShaderProgram("Quad");
@@ -112,7 +110,7 @@ void ImagesProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 				shaderProgram->setUniformValue("imageTexture", 0);
 				shaderProgram->setUniformValue("minPixelValue", displayRange.min());
 				shaderProgram->setUniformValue("maxPixelValue", displayRange.max());
-				shaderProgram->setUniformValue("opacity", _opacity);
+				shaderProgram->setUniformValue("opacity", opacity);
 				shaderProgram->setUniformValue("transform", nodeMVP * modelMatrix());
 
 			
@@ -175,29 +173,13 @@ void ImagesProp::setImage(const QImage& image)
 	Renderable::renderer->releaseOpenGLContext();
 }
 
-void ImagesProp::setOpacity(const float& opacity)
-{
-	//qDebug() << fullName() << "set opacity" << QString::number(opacity, 'f', 2);
-
-	_opacity = opacity;
-}
-
-void ImagesProp::setOrder(const std::uint32_t& order)
-{
-	//qDebug() << fullName() << "set order" << QString::number(order);
-
-	_order = order;
-
-	updateModelMatrix();
-}
-
 void ImagesProp::updateModelMatrix()
 {
 	QMatrix4x4 modelMatrix;
 
 	const auto rectangle = shapeByName<QuadShape>("Quad")->rectangle();
 
-	modelMatrix.translate(-0.5f * rectangle.width(), -0.5f * rectangle.height(), static_cast<float>(_order));
+	modelMatrix.translate(-0.5f * rectangle.width(), -0.5f * rectangle.height(), 0.0f);
 
 	setModelMatrix(modelMatrix);
 }

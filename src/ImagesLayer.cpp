@@ -77,6 +77,8 @@ void ImagesLayer::init()
 		setSelection(Indices::fromStdVector(selection->indices));
 
 	addProp<ImagesProp>(this, "Images");
+
+	setCurrentImageId(0);
 }
 
 Qt::ItemFlags ImagesLayer::flags(const QModelIndex& index) const
@@ -183,24 +185,16 @@ QVariant ImagesLayer::data(const QModelIndex& index, const int& role) const
 
 QModelIndexList ImagesLayer::setData(const QModelIndex& index, const QVariant& value, const int& role)
 {
-	QModelIndexList affectedIndices;
+	QModelIndexList affectedIds = LayerNode::setData(index, value, role);
 
-	if (index.column() < ult(Column::Start)) {
-		affectedIndices = LayerNode::setData(index, value, role);
+	if (index.column() == ult(LayerNode::Column::Selection)) {
+		computeImage();
+		setCurrentImageId(0);
 
-		if (index.column() == ult(LayerNode::Column::Selection)) {
-			computeImage();
-			setCurrentImageId(0);
-
-			affectedIndices << index.siblingAtColumn(ult(Column::CurrentImageId));
-			affectedIndices << index.siblingAtColumn(ult(Column::FilteredImageNames));
-			affectedIndices << index.siblingAtColumn(ult(Column::ImageIDs));
-		}
-
-		return affectedIndices;
+		affectedIds << index.siblingAtColumn(ult(Column::CurrentImageId));
+		affectedIds << index.siblingAtColumn(ult(Column::FilteredImageNames));
+		affectedIds << index.siblingAtColumn(ult(Column::ImageIDs));
 	}
-
-	affectedIndices << index;
 
 	switch (static_cast<Column>(index.column())) {
 		case Column::NoImages:
@@ -238,7 +232,7 @@ QModelIndexList ImagesLayer::setData(const QModelIndex& index, const QVariant& v
 		case Column::Average:
 		{
 			setAverage(value.toBool());
-			affectedIndices << index.siblingAtColumn(ult(Column::FilteredImageNames));
+			affectedIds << index.siblingAtColumn(ult(Column::FilteredImageNames));
 			break;
 		}
 
@@ -246,9 +240,7 @@ QModelIndexList ImagesLayer::setData(const QModelIndex& index, const QVariant& v
 			break;
 	}
 
-//	rootItem()->render(TODO, TODO);
-
-	return affectedIndices;
+	return affectedIds;
 }
 
 QVariant ImagesLayer::imageDataType(const int& role) const
@@ -743,13 +735,14 @@ void ImagesLayer::computeImage()
 {
 	const auto imageIds = this->imageIds(Qt::EditRole).value<Indices>();
 
-	switch (static_cast<ImageData::Type>(type(Qt::EditRole).toInt()))
+	switch (static_cast<ImageData::Type>(imageDataType(Qt::EditRole).toInt()))
 	{
 		case ImageData::Type::Sequence:
 			propByName<ImagesProp>("Images")->setImage(_images->sequenceImage(imageIds.toStdVector()));
 			break;
 
 		case ImageData::Type::Stack:
+			propByName<ImagesProp>("Images")->setImage(_images->stackImage(imageIds.first()));
 			break;
 
 		default:

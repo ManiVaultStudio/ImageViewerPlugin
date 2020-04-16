@@ -66,7 +66,7 @@ public:
 	~Renderable();
 
 	/** Renders the node */
-	virtual void render(const QMatrix4x4& parentMVP, const float& opacity) = 0;
+	virtual void render(const QMatrix4x4& parentMVP) = 0;
 
 public: // Matrix functions
 

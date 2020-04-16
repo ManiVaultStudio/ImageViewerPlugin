@@ -39,12 +39,6 @@ public: // Configuration
 	/** TODO */
 	void setImage(const QImage& image);
 
-	/** TODO */
-	void setOpacity(const float& opacity);
-
-	/** TODO */
-	void setOrder(const std::uint32_t& order);
-
 protected:
 
 	/** TODO */
@@ -52,8 +46,6 @@ protected:
 
 private:
 	WindowLevelImage	_windowLevelImage;				/** Image */
-	float				_opacity;			/** TODO */
-	std::uint32_t		_order;				/** TODO */
 };
 
 using SharedImageLayerProp = QSharedPointer<ImagesProp>;

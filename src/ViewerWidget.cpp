@@ -121,7 +121,7 @@ void ViewerWidget::paintGL()
 	auto root = _imageViewerPlugin->layersModel().getLayer(QModelIndex());
 
 	if (root)
-		root->render(_renderer->projectionMatrix() * _renderer->viewMatrix(), 1.0f);
+		root->render(_renderer->projectionMatrix() * _renderer->viewMatrix());
 
 #ifdef _DEBUG
 	for (const QOpenGLDebugMessage& message : _openglDebugLogger->loggedMessages())

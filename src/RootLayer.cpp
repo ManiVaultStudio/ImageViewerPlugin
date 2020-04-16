@@ -5,23 +5,13 @@
 #include <QOpenGLWidget>
 
 RootLayer::RootLayer() :
-	LayerNode("", LayerNode::Type::Group, "root", "Root", 0)
+	LayerNode("", LayerNode::Type::Group, "root", "Root", ult(Flag::Enabled))
 {
 }
 
-void RootLayer::render(const QMatrix4x4& parentMVP, const float& opacity)
+void RootLayer::render(const QMatrix4x4& parentMVP)
 {
-	Renderable::renderer->bindOpenGLContext();
-
-	glClearColor(0.1f, 0.5f, 0.1f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	
-	LayerNode::render(parentMVP, opacity);
-
-	//Renderable::renderer->zoomToRectangle(QRectF(-40, -40, 80, 80));
-	Renderable::renderer->releaseOpenGLContext();
-
-	//dynamic_cast<QOpenGLWidget*>(Renderable::renderer->parent())->update();
+	LayerNode::render(parentMVP);
 }
 
 Qt::ItemFlags RootLayer::flags(const QModelIndex& index) const
@@ -51,10 +41,12 @@ QVariant RootLayer::data(const QModelIndex& index, const int& role) const
 
 QModelIndexList RootLayer::setData(const QModelIndex& index, const QVariant& value, const int& role)
 {
-	if (index.column() < ult(Column::Start))
-		return LayerNode::setData(index, value, role);
+	QModelIndexList affectedIds = LayerNode::setData(index, value, role);
 
-	QModelIndexList affectedIndices{ index };
+	switch (static_cast<Column>(index.column())) {
+		default:
+			break;
+	}
 
-	return affectedIndices;
+	return affectedIds;
 }

@@ -112,10 +112,7 @@ QVariant PointsLayer::data(const QModelIndex& index, const int& role) const
 
 QModelIndexList PointsLayer::setData(const QModelIndex& index, const QVariant& value, const int& role)
 {
-	if (index.column() < ult(Column::Start))
-		return LayerNode::setData(index, value, role);
-
-	QModelIndexList affectedIds({ index });
+	QModelIndexList affectedIds = LayerNode::setData(index, value, role);
 
 	switch (static_cast<Column>(index.column())) {
 		case Column::Channel1:

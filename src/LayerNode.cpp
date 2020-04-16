@@ -1,5 +1,6 @@
 #include "LayerNode.h"
 #include "ImageViewerPlugin.h"
+#include "Renderer.h"
 
 #include "ImageData/Images.h"
 #include "PointData.h"
@@ -214,7 +215,7 @@ QModelIndexList LayerNode::setData(const QModelIndex& index, const QVariant& val
 			break;
 	}
 
-	//rootItem()->render(TODO, TODO);
+	Renderable::renderer->render();
 
 	return affectedIndices;
 }

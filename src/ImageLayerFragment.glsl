@@ -14,9 +14,6 @@ out vec4 fragmentColor;
 
 void main(void)
 {
-	fragmentColor = vec4(0.5);
-
-	/*
 	fragmentColor = texture(imageTexture, uv);
 
 	double range = maxPixelValue - minPixelValue;
@@ -26,6 +23,7 @@ void main(void)
 		double fraction		= (double(fragmentColor[c]) * 65535.0) - double(minPixelValue);
 		fragmentColor[c]	= float(clamp(fraction / range, 0.0, 1.0));
 	}
-	*/
+
+	fragmentColor.a = opacity;
 }
 )"

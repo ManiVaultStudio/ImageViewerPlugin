@@ -30,7 +30,7 @@ void Renderer::init()
 
 void Renderer::render()
 {
-	//static_cast<QOpenGLWidget*>(parent())->glDraw();
+	static_cast<QOpenGLWidget*>(parent())->update();
 }
 
 QVector<QSharedPointer<QMouseEvent>> Renderer::mouseEvents() const

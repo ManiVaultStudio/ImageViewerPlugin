@@ -42,6 +42,8 @@ bool Node::insertChild(const int& position, Node* node)
 
 	_children.insert(position, node);
 
+	Renderable::renderer->render();
+	
 	return true;
 }
 
@@ -64,6 +66,8 @@ bool Node::removeChild(const int& position, const bool& purge /*= true*/)
 		delete _children.at(position);
 
 	_children.takeAt(position);
+
+	Renderable::renderer->render();
 
 	return true;
 }
@@ -99,26 +103,27 @@ Node* Node::rootItem()
 	return _parent->rootItem();
 }
 
-void Node::render(const QMatrix4x4& parentMVP, const float& opacity)
+void Node::render(const QMatrix4x4& parentMVP)
 {
 	qDebug() << "Render" << _id;
 
-	/*
 	if (!isEnabled())
 		return;
-
 	
+	/*
 	if (!isRenderable())
 		return;
 	*/
 
 	const auto mvp = parentMVP * _modelMatrix;
 
-	for (auto child : _children)
-		child->render(mvp, opacity * _opacity);
+	for (auto it = _children.rbegin(); it != _children.rend(); ++it)
+	{
+		(*it)->render(mvp);
+	}
 
 	for (auto prop : _props.values())
-		prop->render(mvp, opacity);
+		prop->render(mvp, _opacity);
 }
 
 QVariant Node::id(const int& role) const
