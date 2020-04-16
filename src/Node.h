@@ -42,7 +42,7 @@ public:
 	/** Destructor */
 	virtual ~Node();
 
-public:
+public: // Hierarchy
 
 	/**
 	 * Returns a child node by index
@@ -94,8 +94,13 @@ public:
 	/** Returns the root node */
 	Node* rootItem();
 
+public: // Rendering
+
 	/** Renders the node */
 	void render(const QMatrix4x4& parentMVP) override;
+
+	/** Computes the enveloping bounding rectangle of the node and its descendants */
+	QRectF boundingRectangle() const;
 
 public: // Getters/setters
 

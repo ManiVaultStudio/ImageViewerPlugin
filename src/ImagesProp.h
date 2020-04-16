@@ -23,6 +23,9 @@ public:
 	/** Renders the prop */
 	void render(const QMatrix4x4& nodeMVP, const float& opacity) override;
 
+	/** Computes the enveloping bounding rectangle of the prop */
+	QRectF boundingRectangle() const;
+
 protected: // Inherited
 
 	/** Initializes the prop */

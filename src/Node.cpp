@@ -43,6 +43,8 @@ bool Node::insertChild(const int& position, Node* node)
 	_children.insert(position, node);
 
 	Renderable::renderer->render();
+
+	Renderable::renderer->zoomToRectangle(rootItem()->boundingRectangle());
 	
 	return true;
 }
@@ -105,7 +107,7 @@ Node* Node::rootItem()
 
 void Node::render(const QMatrix4x4& parentMVP)
 {
-	qDebug() << "Render" << _id;
+	// qDebug() << "Render" << _id;
 
 	if (!isEnabled())
 		return;
@@ -124,6 +126,21 @@ void Node::render(const QMatrix4x4& parentMVP)
 
 	for (auto prop : _props.values())
 		prop->render(mvp, _opacity);
+}
+
+QRectF Node::boundingRectangle() const
+{
+	QRectF bounds;
+
+	for (auto prop : _props.values())
+		bounds |= prop->boundingRectangle();
+
+	for (auto child : _children)
+	{
+		bounds |= child->boundingRectangle();
+	}
+
+	return bounds;
 }
 
 QVariant Node::id(const int& role) const

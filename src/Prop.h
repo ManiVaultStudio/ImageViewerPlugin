@@ -72,7 +72,11 @@ public:
 	/** Renders the prop */
 	virtual void render(const QMatrix4x4& nodeMVP, const float& opacity);
 
+	/** Computes the enveloping bounding rectangle of the port */
+	virtual QRectF boundingRectangle() const = 0;
+
 protected:
+
 	/** Initializes the prop */
 	virtual void initialize();
 

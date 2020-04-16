@@ -135,6 +135,11 @@ void ImagesProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 	}
 }
 
+QRectF ImagesProp::boundingRectangle() const
+{
+	return shapeByName<QuadShape>("Quad")->rectangle();
+}
+
 WindowLevelImage& ImagesProp::image()
 {
 	return _windowLevelImage;
