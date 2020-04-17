@@ -2,6 +2,8 @@
 
 #include "Common.h"
 
+#include <QVector2D>
+
 /** TODO */
 class Range
 {
@@ -40,6 +42,10 @@ public:
 
 	/** TODO */
 	float length() const { return _max - _min; }
+
+	QVector2D toVector2D() const {
+		return QVector2D(_min, _max);
+	}
 
 private:
 	float	_min;	/** TODO */

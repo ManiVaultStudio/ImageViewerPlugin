@@ -25,6 +25,8 @@ ImagesLayer::ImagesLayer(const QString& imagesDatasetName, const QString& id, co
 
 void ImagesLayer::init()
 {
+	addProp<ImagesProp>(this, "Images");
+
 	_images = &imageViewerPlugin->requestData<Images>(_datasetName);
 
 	Images& images = imageViewerPlugin->core()->requestData<Images>(_datasetName);
@@ -79,8 +81,6 @@ void ImagesLayer::init()
 	
 	if (selection)
 		setSelection(Indices::fromStdVector(selection->indices));
-
-	addProp<ImagesProp>(this, "Images");
 
 	setCurrentImageId(0);
 }

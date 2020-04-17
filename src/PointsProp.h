@@ -41,7 +41,10 @@ public: // Configuration
 	const WindowLevelImage& channel(const int& id) const;
 
 	/** TODO */
-	void setChannel(const int& id, const QImage& channel);
+	void setChannelImage(const std::uint32_t& channelId, const QImage& image);
+
+	/** TODO */
+	void setColorMap(const QImage& colorMap);
 
 protected:
 
@@ -49,5 +52,6 @@ protected:
 	void updateModelMatrix();
 
 private:
-	WindowLevelImage	_channels[3];				/** Image */
+	std::int32_t		_noChannels;		/** Number of active channels */
+	WindowLevelImage	_channels[3];		/** Image */
 };

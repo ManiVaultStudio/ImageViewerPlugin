@@ -33,16 +33,33 @@ public:
 		End = ColorMap
 	};
 
-	/** Channel struct */
-	struct Channel {
-		Channel() :
-			_enabled(false),
-			_dimension(0)
-		{
-		}
+	/**
+	 * Channel class
+	 *
+	 * @author Thomas Kroes
+	 */
+	class Channel
+	{
+	public:
+		/** Default constructor */
+		Channel(PointsLayer* pointsLayer = nullptr);
 
-		bool	_enabled;		/** TODO */
-		int		_dimension;		/** TODO */
+		/** Returns the channel dimension identifier */
+		std::uint32_t dimensionId() const;
+
+		/**
+		 * Sets the channel dimension identifier
+		 * @param dimensionId Dimension identifier
+		 */
+		void setDimensionId(const std::uint32_t& dimensionId);
+
+		/** Returns the channel image */
+		QImage image() const;
+
+	private:
+		PointsLayer*	_pointsLayer;	/** Pointer to paren points layer */
+		std::uint32_t	_dimensionId;	/** Dimension identifier */
+		QImage			_image;			/** Image */
 	};
 
 public:
@@ -142,14 +159,14 @@ public: // Getters/setters
 	 * @param role Data role
 	 * @return Channel variant form
 	 */
-	QVariant channel(const int& channel, const int& role = Qt::DisplayRole) const;
+	QVariant channelDimensionId(const int& channel, const int& role = Qt::DisplayRole) const;
 
 	/**
 	 * Sets a channel dimension identifier
 	 * @param channel Channel identifier
 	 * @param dimension Dimension identifier
 	 */
-	void setChannel(const int& channel, const int& dimension);
+	void setChannelDimensionId(const int& channelId, const std::uint32_t& dimensionId);
 
 	/**
 	 * Returns the maximum number of channels
@@ -196,7 +213,7 @@ private:
 	std::uint32_t		_noPoints;				/** Number of points in the dataset */
 	std::uint32_t		_noDimensions;			/** First input channel */
 	QStringList			_dimensionNames;		/** Second input channel */
-	int					_channels[3];			/** Third input channel */
+	QVector<Channel>	_channels;				/** Third input channel */
 	std::uint32_t		_maxNoChannels;			/** Maximum number of channels (determined by the number of dimensions) */
 	std::uint32_t		_noChannels;			/** Occupied number of channels */
 	QImage				_colorMap;				/** Color map (1D/2D) */

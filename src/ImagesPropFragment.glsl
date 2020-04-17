@@ -23,8 +23,6 @@ void main(void)
 {
 	fragmentColor = texture(imageTexture, uv);
 
-	double range = maxPixelValue - minPixelValue;
-
 	for (int c = 0; c < 3; c++) {
 		fragmentColor[c] = toneMapChannel(minPixelValue, maxPixelValue, fragmentColor[c]);
 	}

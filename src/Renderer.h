@@ -181,6 +181,9 @@ public: // Parent widget queries
 	/** Returns the parent widget */
 	QOpenGLWidget* parentWidget() const;
 
+	/** Returns the parent widget */
+	QOpenGLContext* openGLContext() const;
+
 	/** Returns the parent widget size */
 	QSize parentWidgetSize() const;
 

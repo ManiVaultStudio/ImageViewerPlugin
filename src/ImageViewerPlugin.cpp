@@ -61,7 +61,7 @@ Images* ImageViewerPlugin::sourceImagesSetFromPointsSet(const QString& pointSetN
 	auto originatesFromImages = false;
 
 	for (auto imageDataset : _imagesDatasets) {
-		auto imagesSet = _core->requestData<Images>(imageDataset);
+		Images& imagesSet = _core->requestData<Images>(imageDataset);
 
 		if (imagesSet.points()->getDataName() == sourcePointsDataName)
 			return &imagesSet;

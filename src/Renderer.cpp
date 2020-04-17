@@ -485,6 +485,11 @@ QOpenGLWidget* Renderer::parentWidget() const
 	return dynamic_cast<QOpenGLWidget*>(parent());
 }
 
+QOpenGLContext* Renderer::openGLContext() const
+{
+	return parentWidget()->context();
+}
+
 QSize Renderer::parentWidgetSize() const
 {
 	return parentWidget()->size();

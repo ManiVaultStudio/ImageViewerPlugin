@@ -7,11 +7,35 @@
 
 #include <QDebug>
 
+PointsLayer::Channel::Channel(PointsLayer* pointsLayer /*= nullptr*/) :
+	_pointsLayer(pointsLayer),
+	_dimensionId(0),
+	_image()
+{
+}
+
+std::uint32_t PointsLayer::Channel::dimensionId() const
+{
+	return _dimensionId;
+}
+
+void PointsLayer::Channel::setDimensionId(const std::uint32_t& dimensionId)
+{
+	_dimensionId = dimensionId;
+
+	_image = _pointsLayer->_imagesDataset->stackImage(_dimensionId);
+}
+
+QImage PointsLayer::Channel::image() const
+{
+	return _image;
+}
+
 PointsLayer::PointsLayer(const QString& pointsDatasetName, const QString& id, const QString& name, const int& flags) :
 	LayerNode(pointsDatasetName, LayerNode::Type::Points, id, name, flags),
 	_pointsDataset(nullptr),
 	_imagesDataset(nullptr),
-	_channels{-1,-1,-1},
+	_channels(),
 	_maxNoChannels(0),
 	_noChannels(1),
 	_colorMap()
@@ -21,11 +45,19 @@ PointsLayer::PointsLayer(const QString& pointsDatasetName, const QString& id, co
 
 void PointsLayer::init()
 {
+	addProp<PointsProp>(this, "Points");
+
+	_channels << Channel(this) << Channel(this) << Channel(this);
+
 	_pointsDataset = &imageViewerPlugin->requestData<Points>(_name);
+	_imagesDataset = imageViewerPlugin->sourceImagesSetFromPointsSet(_datasetName);
+
 	//LayerNode::imageViewerPlugin->requestData(_imagesDatasetName);
 	setNoPoints(_pointsDataset->getNumPoints());
 	setNoDimensions(_pointsDataset->getNumDimensions());
 	setMaxNoChannels(std::min(3u, _noDimensions));
+	setNoChannels(1);
+	setChannelDimensionId(0, 0);
 
 	auto dimensionNames = QStringList::fromVector(QVector<QString>::fromStdVector(_pointsDataset->getDimensionNames()));
 
@@ -43,8 +75,6 @@ void PointsLayer::init()
 
 	if (selection)
 		setSelection(Indices::fromStdVector(selection->indices));
-
-	addProp<PointsProp>(this, "Points");
 }
 
 Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
@@ -103,13 +133,13 @@ QVariant PointsLayer::data(const QModelIndex& index, const int& role) const
 			return imageSize(role);
 
 		case Column::Channel1:
-			return channel(1, role);
+			return channelDimensionId(0, role);
 
 		case Column::Channel2:
-			return channel(2, role);
+			return channelDimensionId(1, role);
 
 		case Column::Channel3:
-			return channel(3, role);
+			return channelDimensionId(2, role);
 
 		case Column::MaxNoChannels:
 			return maxNoChannels(role);
@@ -145,15 +175,15 @@ QModelIndexList PointsLayer::setData(const QModelIndex& index, const QVariant& v
 			break;
 
 		case Column::Channel1:
-			setChannel(1, value.toInt());
+			setChannelDimensionId(0, value.toInt());
 			break;
 
 		case Column::Channel2:
-			setChannel(2, value.toInt());
+			setChannelDimensionId(1, value.toInt());
 			break;
 
 		case Column::Channel3:
-			setChannel(3, value.toInt());
+			setChannelDimensionId(2, value.toInt());
 			break;
 
 		case Column::MaxNoChannels:
@@ -265,20 +295,20 @@ void PointsLayer::setDimensionNames(const QStringList& dimensionNames)
 	_dimensionNames = dimensionNames;
 }
 
-QVariant PointsLayer::channel(const int& channel, const int& role /*= Qt::DisplayRole*/) const
+QVariant PointsLayer::channelDimensionId(const int& channel, const int& role /*= Qt::DisplayRole*/) const
 {
-	const auto noChannel1String = QString::number(_channels[channel]);
+	const auto dimensionIdString = QString::number(_channels[channel].dimensionId());
 
 	switch (role)
 	{
 		case Qt::DisplayRole:
-			return noChannel1String;
+			return dimensionIdString;
 
 		case Qt::EditRole:
-			return _channels[channel];
+			return _channels[channel].dimensionId();
 
 		case Qt::ToolTipRole:
-			return QString("Width: %1").arg(noChannel1String);
+			return QString("Dimension identifier: %1").arg(dimensionIdString);
 
 		default:
 			break;
@@ -287,9 +317,11 @@ QVariant PointsLayer::channel(const int& channel, const int& role /*= Qt::Displa
 	return QVariant();
 }
 
-void PointsLayer::setChannel(const int& channel, const int& dimension)
+void PointsLayer::setChannelDimensionId(const int& channelId, const std::uint32_t& dimensionId)
 {
-	_channels[channel] = dimension;
+	_channels[channelId].setDimensionId(dimensionId);
+
+	propByName<PointsProp>("Points")->setChannelImage(channelId, _channels[channelId].image());
 }
 
 QVariant PointsLayer::maxNoChannels(const int& role /*= Qt::DisplayRole*/) const
@@ -354,4 +386,6 @@ QVariant PointsLayer::colorMap(const int& role) const
 void PointsLayer::setColorMap(const QImage& colorMap)
 {
 	_colorMap = colorMap;
+
+	propByName<PointsProp>("Points")->setColorMap(_colorMap);
 }

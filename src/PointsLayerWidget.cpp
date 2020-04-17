@@ -61,6 +61,18 @@ void PointsLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 
 	});
 
+	QObject::connect(_ui->channel1ComboBox, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
+		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Channel1)), index);
+	});
+
+	QObject::connect(_ui->channel2ComboBox, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
+		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Channel2)), index);
+	});
+
+	QObject::connect(_ui->channel2ComboBox, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
+		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Channel3)), index);
+	});
+
 	_ui->colormapComboBox->setModel(&_imageViewerPlugin->colorMapModel());
 	_ui->colormapComboBox->setType(ColorMap::Type::TwoDimensional);
 
