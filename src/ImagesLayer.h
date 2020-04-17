@@ -19,22 +19,22 @@ public:
 
 	/**  Columns */
 	enum class Column {
-		NoImages = ult(LayerNode::Column::End) + 1,		// Number of images in the dataset
-		Width,											// Width of the image(s)
-		Height,											// Height of the image(s)
-		WindowNormalized,								// Normalized window
-		LevelNormalized,								// Normalized level
-		ImageSize,										// Size of the image(s)
-		NoPoints,										// Number of points in the dataset
-		NoDimensions,									// Number of dimensions in the dataset
-		ImageNames,										// Image name(s)
-		FilteredImageNames,								// Filtered image name(s) (depends on the selection)
-		ImageIDs,										// Image identifiers
-		ImageFilePaths,									// Absolute image file paths
-		CurrentImageId,									// Current image identifier
-		CurrentImageName,								// Current image name
-		CurrentImageFilePath,							// Current image file path
-		Average,										// Whether to average the images
+		NoImages = ult(LayerNode::Column::End) + 1,				// Number of images in the dataset
+		Width,													// Width of the image(s)
+		Height,													// Height of the image(s)
+		WindowNormalized,										// Normalized window
+		LevelNormalized,										// Normalized level
+		ImageSize,												// Size of the image(s)
+		NoPoints,												// Number of points in the dataset
+		NoDimensions,											// Number of dimensions in the dataset
+		ImageNames,												// Image name(s)
+		FilteredImageNames,										// Filtered image name(s) (depends on the selection)
+		ImageIDs,												// Image identifiers
+		ImageFilePaths,											// Absolute image file paths
+		CurrentImageId,											// Current image identifier
+		CurrentImageName,										// Current image name
+		CurrentImageFilePath,									// Current image file path
+		Average,												// Whether to average the images
 
 		Start = NoImages,
 		End = Average
@@ -47,7 +47,7 @@ public:
 	 * @param name Layer name
 	 * @param flags Configuration bit flags
 	 */
-	ImagesLayer(const QString& dataset, const QString& id, const QString& name, const int& flags);
+	ImagesLayer(const QString& imagesDatasetName, const QString& id, const QString& name, const int& flags);
 
 	/** Initializes the layer */
 	void init();
@@ -254,14 +254,14 @@ private:
 	void computeImage();
 
 private:
-	Images*				_images;			/** Pointer to the images plugin instance */
-	ImageData::Type		_imageDataType;		/** Image data type (e.g. sequence or stack) */
-	QSize				_size;				/** Image size */
-	std::uint32_t		_noPoints;			/** Number of points in the referenced points dataset */
-	std::uint32_t		_noDimensions;		/** Number of dimensions in the referenced points dataset */
-	QStringList			_imageNames;		/** Image names */
-	QStringList			_imageFilePaths;	/** Image file paths */
-	QString				_pointsName;		/** Name of the referenced points dataset */
-	std::int32_t		_currentImageId;	/** Current image identifier */
-	bool				_average;			/** Whether to average images */
+	Images*				_images;				/** Pointer to the images plugin instance */
+	ImageData::Type		_imageDataType;			/** Image data type (e.g. sequence or stack) */
+	QSize				_size;					/** Image size */
+	std::uint32_t		_noPoints;				/** Number of points in the referenced points dataset */
+	std::uint32_t		_noDimensions;			/** Number of dimensions in the referenced points dataset */
+	QStringList			_imageNames;			/** Image names */
+	QStringList			_imageFilePaths;		/** Image file paths */
+	QString				_pointsName;			/** Name of the referenced points dataset */
+	std::int32_t		_currentImageId;		/** Current image identifier */
+	bool				_average;				/** Whether to average images */
 };

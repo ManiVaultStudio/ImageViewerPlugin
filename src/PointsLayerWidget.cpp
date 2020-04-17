@@ -65,7 +65,7 @@ void PointsLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 	_ui->colormapComboBox->setType(ColorMap::Type::TwoDimensional);
 
 	QObject::connect(_ui->colormapComboBox, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
-		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::NoChannels)), _ui->colormapComboBox->currentImage());
+		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::ColorMap)), _ui->colormapComboBox->currentImage());
 	});
 }
 
@@ -119,7 +119,9 @@ void PointsLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 		}
 
 		if (column == ult(PointsLayer::Column::NoChannels)) {
+			
 			const auto noChannels		= _layersModel->data(topLeft.siblingAtColumn(ult(PointsLayer::Column::NoChannels)), Qt::EditRole).toInt();
+			const auto maxNoChannels	= _layersModel->data(topLeft.siblingAtColumn(ult(PointsLayer::Column::MaxNoChannels)), Qt::EditRole).toInt();
 			const auto channel1Flags	= _layersModel->flags(topLeft.siblingAtColumn(ult(PointsLayer::Column::Channel1)));
 			const auto channel2Flags	= _layersModel->flags(topLeft.siblingAtColumn(ult(PointsLayer::Column::Channel2)));
 			const auto channel3Flags	= _layersModel->flags(topLeft.siblingAtColumn(ult(PointsLayer::Column::Channel3)));
@@ -131,14 +133,14 @@ void PointsLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 			_ui->channel1ComboBox->setEnabled(channel1Flags & Qt::ItemIsEditable);
 
 			_ui->channel2Label->setEnabled(channel2Flags & Qt::ItemIsEditable);
-			_ui->channel2CheckBox->setEnabled(noChannels >= 1);
+			_ui->channel2CheckBox->setEnabled(maxNoChannels >= 2);
 			_ui->channel2CheckBox->blockSignals(true);
 			_ui->channel2CheckBox->setChecked(channel2Flags & Qt::ItemIsEditable);
 			_ui->channel2CheckBox->blockSignals(false);
 			_ui->channel2ComboBox->setEnabled(channel2Flags & Qt::ItemIsEditable);
 
 			_ui->channel3Label->setEnabled(channel3Flags & Qt::ItemIsEditable);
-			_ui->channel3CheckBox->setEnabled(noChannels >= 2);
+			_ui->channel3CheckBox->setEnabled(maxNoChannels >= 3);
 			_ui->channel3CheckBox->blockSignals(true);
 			_ui->channel3CheckBox->setChecked(channel3Flags & Qt::ItemIsEditable);
 			_ui->channel3CheckBox->blockSignals(false);

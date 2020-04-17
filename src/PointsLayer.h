@@ -2,7 +2,8 @@
 
 #include "LayerNode.h"
 
-#include "PointData.h"
+class Points;
+class Images;
 
 /**
  * Points layer class
@@ -17,18 +18,18 @@ public:
 
 	/**  Columns */
 	enum class Column {
-		ImagesDatasetName = ult(LayerNode::Column::End) + 1,	// Name of the images dataset from which the points dataset originates
-		Size,													// Image size
-		Channel1,												// First input channel
-		Channel2,												// Second input channel
-		Channel3,												// Third input channel
-		NoChannels,												// Occupied number of channels
-		DimensionNames,											// Dimension names
-		NoPoints,												// Number of points in the dataset
-		NoDimensions,											// Number of dimensions in the dataset
-		ColorMap,												// Color map image
+		ImageSize = ult(LayerNode::Column::End) + 1,		// Image size
+		Channel1,											// First input channel
+		Channel2,											// Second input channel
+		Channel3,											// Third input channel
+		NoChannels,											// Occupied number of channels
+		MaxNoChannels,										// The maximum number of channels
+		DimensionNames,										// Dimension names
+		NoPoints,											// Number of points in the dataset
+		NoDimensions,										// Number of dimensions in the dataset
+		ColorMap,											// Color map image
 
-		Start = Size,
+		Start = ImageSize,
 		End = ColorMap
 	};
 
@@ -48,12 +49,12 @@ public:
 
 	/**
 	 * Constructor
-	 * @param dataset Name of the points dataset
+	 * @param pointsDatasetName Name of the points dataset
 	 * @param id Layer identifier
 	 * @param name Layer name
 	 * @param flags Configuration bit flags
 	 */
-	PointsLayer(const QString& dataset, const QString& id, const QString& name, const int& flags);
+	PointsLayer(const QString& pointsDatasetName, const QString& id, const QString& name, const int& flags);
 
 	/** Initializes the layer */
 	void init();
@@ -90,17 +91,11 @@ public: // Inherited MVC
 public: // Getters/setters
 
 	/**
-	 * Returns the name of the images dataset from which the points dataset originates
+	 * Returns the image size
 	 * @param role Data role
-	 * @return Images dataset name in variant form
+	 * @return Image size in variant form
 	 */
-	QVariant imagesDatasetName(const int& role = Qt::DisplayRole) const;
-
-	/**
-	 * Sets the images dataset name
-	 * @param imagesDatasetName Images dataset name
-	 */
-	void setImagesDatasetName(const QString& imagesDatasetName);
+	QVariant imageSize(const int& role = Qt::DisplayRole) const;
 
 	/**
 	 * Returns the number of points in the dataset
@@ -157,6 +152,19 @@ public: // Getters/setters
 	void setChannel(const int& channel, const int& dimension);
 
 	/**
+	 * Returns the maximum number of channels
+	 * @param role Data role
+	 * @return Maximum number of channels in variant form
+	 */
+	QVariant maxNoChannels(const int& role = Qt::DisplayRole) const;
+
+	/**
+	 * Sets the maximum number of channels
+	 * @param maxNoChannels Maximum number of channels
+	 */
+	void setMaxNoChannels(const std::uint32_t& maxNoChannels);
+
+	/**
 	 * Returns the number of channels
 	 * @param role Data role
 	 * @return Number of channels in variant form
@@ -167,7 +175,7 @@ public: // Getters/setters
 	 * Sets the number of channels
 	 * @param noChannels Number of channels
 	 */
-	void setNoChannels(const int& noChannels);
+	void setNoChannels(const std::uint32_t& noChannels);
 
 	/**
 	 * Returns the color map image
@@ -183,12 +191,13 @@ public: // Getters/setters
 	void setColorMap(const QImage& colorMap);
 
 private:
-	QString				_imagesDatasetName;		/** Name of the images dataset from which the points dataset originates */
-	Points*				_points;				/** Image size */
+	Points*				_pointsDataset;			/** Points dataset to which the layer refers */
+	Images*				_imagesDataset;			/** Images dataset from which the points dataset originates */
 	std::uint32_t		_noPoints;				/** Number of points in the dataset */
 	std::uint32_t		_noDimensions;			/** First input channel */
 	QStringList			_dimensionNames;		/** Second input channel */
 	int					_channels[3];			/** Third input channel */
-	int					_noChannels;			/** Occupied number of channels */
+	std::uint32_t		_maxNoChannels;			/** Maximum number of channels (determined by the number of dimensions) */
+	std::uint32_t		_noChannels;			/** Occupied number of channels */
 	QImage				_colorMap;				/** Color map (1D/2D) */
 };

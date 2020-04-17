@@ -10,36 +10,12 @@
 
 ImageViewerPlugin* LayerNode::imageViewerPlugin = nullptr;
 
-LayerNode::LayerNode(const QString& dataset, const Type& type, const QString& id, const QString& name, const int& flags) :
+LayerNode::LayerNode(const QString& datasetName, const Type& type, const QString& id, const QString& name, const int& flags) :
 	Node(id, name, flags),
-	_datasetName(dataset),
-	_rawDataName(),
+	_datasetName(datasetName),
+	_dataName(),
 	_type(type)
 {
-	if (!dataset.isEmpty()) {
-		switch (_type)
-		{
-			case LayerNode::Type::Points:
-			{
-				const Points& points = imageViewerPlugin->core()->requestData<Points>(_datasetName);
-				_rawDataName = hdps::DataSet::getSourceData(points).getDataName();
-				break;
-			}
-
-			case LayerNode::Type::Images:
-			{
-				Images& images = imageViewerPlugin->core()->requestData<Images>(_datasetName);
-				_rawDataName = hdps::DataSet::getSourceData(*(images.points())).getDataName();
-				break;
-			}
-
-			case LayerNode::Type::Clusters:
-			case LayerNode::Type::Selection:
-			case LayerNode::Type::Group:
-			default:
-				break;
-		}
-	}
 }
 
 LayerNode::~LayerNode() = default;
@@ -61,12 +37,14 @@ Qt::ItemFlags LayerNode::flags(const QModelIndex& index) const
 			break;
 		}
 
+		case Column::DatasetName:
+		case Column::DataName:
+			break;
+
 		case Column::Type:
 			break;
 
 		case Column::ID:
-		case Column::DatasetName:
-		case Column::RawDataName:
 			break;
 
 		case Column::Opacity:
@@ -93,17 +71,17 @@ QVariant LayerNode::data(const QModelIndex& index, const int& role) const
 		case Column::Name:
 			return name(role);
 
+		case Column::DatasetName:
+			return datasetName(role);
+
+		case Column::DataName:
+			return dataName(role);
+
 		case Column::Type:
 			return type(role);
 
 		case Column::ID:
 			return id(role);
-
-		case Column::DatasetName:
-			return datasetName(role);
-
-		case Column::RawDataName:
-			return rawDataName(role);
 
 		case Column::Opacity:
 			return opacity(role);
@@ -167,16 +145,16 @@ QModelIndexList LayerNode::setData(const QModelIndex& index, const QVariant& val
 					setName(value.toString());
 					break;
 
+				case Column::DatasetName:
+				case Column::DataName:
+					break;
+
 				case Column::Type:
 					setType(static_cast<Type>(value.toInt()));
 					break;
 
 				case Column::ID:
 					setId(value.toString());
-					break;
-
-				case Column::DatasetName:
-				case Column::RawDataName:
 					break;
 
 				case Column::Opacity:
@@ -229,16 +207,16 @@ QVariant LayerNode::datasetName(const int& role) const
 	return QVariant();
 }
 
-QVariant LayerNode::rawDataName(const int& role) const
+QVariant LayerNode::dataName(const int& role) const
 {
 	switch (role)
 	{
 		case Qt::DisplayRole:
 		case Qt::EditRole:
-			return _rawDataName;
+			return _dataName;
 
 		case Qt::ToolTipRole:
-			return QString("Raw data name: %1").arg(_rawDataName);
+			return QString("Data name: %1").arg(_dataName);
 
 		default:
 			break;

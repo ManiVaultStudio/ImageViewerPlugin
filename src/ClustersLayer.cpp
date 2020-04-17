@@ -2,8 +2,10 @@
 
 #include <QDebug>
 
-ClustersLayer::ClustersLayer(const QString& dataset, const QString& id, const QString& name, const int& flags) :
-	LayerNode(dataset, LayerNode::Type::Clusters, id, name, flags)
+ClustersLayer::ClustersLayer(const QString& clusterDatasetName, const QString& id, const QString& name, const int& flags) :
+	LayerNode(clusterDatasetName, LayerNode::Type::Clusters, id, name, flags),
+	_clustersDatasetName(clusterDatasetName),
+	_clustersDataset(nullptr)
 {
 }
 
@@ -42,4 +44,24 @@ QModelIndexList ClustersLayer::setData(const QModelIndex& index, const QVariant&
 	}
 
 	return affectedIds;
+}
+
+QVariant ClustersLayer::clustersDatasetName(const int& role /*= Qt::DisplayRole*/) const
+{
+	switch (role)
+	{
+		case Qt::DisplayRole:
+			return _clustersDatasetName;
+
+		case Qt::EditRole:
+			return _clustersDatasetName;
+
+		case Qt::ToolTipRole:
+			return QString("Clusters dataset name: %1").arg(_clustersDatasetName);
+
+		default:
+			break;
+	}
+
+	return QVariant();
 }

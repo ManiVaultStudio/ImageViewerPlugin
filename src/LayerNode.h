@@ -28,9 +28,9 @@ public:
 	enum class Column {
 		Name,				// Name of the layer
 		Type,				// Type of layer
+		DatasetName,		// Name of the dataset (if any)
+		DataName,			// Name of the data (if any)
 		ID,					// Layer identifier (for internal use)
-		DatasetName,		// Name of the dataset to which the layer refers
-		RawDataName,		// Name of the raw data to which the dataset refers
 		Opacity,			// Layer opacity
 		Flags,				// Configuration bit flags
 		Selection,			// Selection
@@ -49,14 +49,14 @@ public:
 			case Column::Type:
 				return "";
 
-			case Column::ID:
-				return "ID";
-
 			case Column::DatasetName:
 				return "Dataset Name";
 
-			case Column::RawDataName:
-				return "Raw Data Name";
+			case Column::DataName:
+				return "Data Name";
+
+			case Column::ID:
+				return "ID";
 
 			case Column::Opacity:
 				return "Opacity";
@@ -111,12 +111,12 @@ public:
 
 	/**
 	 * Constructor
-	 * @param dataset Name of the dataset
+	 * @param datasetName Name of the dataset
 	 * @param id Layer identifier
 	 * @param name Layer name
 	 * @param flags Configuration bit flags
 	 */
-	LayerNode(const QString& dataset, const Type& type, const QString& id, const QString& name, const int& flags);
+	LayerNode(const QString& datasetName, const Type& type, const QString& id, const QString& name, const int& flags);
 
 	/** Destructor */
 	virtual ~LayerNode();
@@ -160,11 +160,11 @@ public: // Getters/setters
 	QVariant datasetName(const int& role) const;
 
 	/**
-	 * Returns the raw data name
+	 * Returns the data name
 	 * @param role The data role
-	 * @return Raw data name in variant form
+	 * @return Data name in variant form
 	 */
-	QVariant rawDataName(const int& role) const;
+	QVariant dataName(const int& role) const;
 
 	/**
 	 * Returns the layer type
@@ -205,8 +205,8 @@ public:
 	static ImageViewerPlugin* imageViewerPlugin;
 
 protected:
-	QString				_datasetName;		/** Name of the dataset */
-	QString				_rawDataName;		/** Name of the raw data */
+	QString				_datasetName;		/** Name of the dataset to which the layer refers */
+	QString				_dataName;			/** Name of the raw data to which the layer refers */
 	LayerNode::Type		_type;				/** Type of layer */
 	Indices				_selection;			/** Data point selection */
 };

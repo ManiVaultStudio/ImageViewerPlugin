@@ -2,7 +2,7 @@
 
 #include "LayerNode.h"
 
-class ClustersDataset;
+class Clusters;
 
 /**
  * Clusters layer class
@@ -25,12 +25,12 @@ public:
 
 	/**
 	 * Constructor
-	 * @param dataset Name of the cluster dataset
+	 * @param clusterDatasetName Name of the cluster dataset
 	 * @param id Layer identifier
 	 * @param name Layer name
 	 * @param flags Configuration bit flags
 	 */
-	ClustersLayer(const QString& dataset, const QString& id, const QString& name, const int& flags);
+	ClustersLayer(const QString& clusterDatasetName, const QString& id, const QString& name, const int& flags);
 
 public: // Inherited MVC
 
@@ -60,4 +60,17 @@ public: // Inherited MVC
 	 * @return Model indices that are affected by the operation
 	 */
 	QModelIndexList setData(const QModelIndex& index, const QVariant& value, const int& role) override;
+
+public: // Getters/setters
+
+	/**
+	 * Returns the name of the clusters dataset to which the layer refers
+	 * @param role Data role
+	 * @return Name of the clusters dataset to which the layer refers in variant form
+	 */
+	QVariant clustersDatasetName(const int& role = Qt::DisplayRole) const;
+
+private:
+	QString			_clustersDatasetName;		/** Name of the clusters dataset to which the layer refers */
+	Clusters*		_clustersDataset;			/** Clusters dataset to which the layer refers */
 };

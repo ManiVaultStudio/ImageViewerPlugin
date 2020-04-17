@@ -71,9 +71,6 @@ public: //
 	/** TODO */
 	ColorMapModel& colorMapModel() { return _colorMapModel; }
 
-	/** Update the window title with some useful meta data */
-	void updateWindowTitle();
-
 	QVector<QString> imageDatasets() const { return _imagesDatasets; }
 
 	/** TODO */

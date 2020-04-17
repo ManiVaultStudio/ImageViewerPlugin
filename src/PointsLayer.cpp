@@ -2,12 +2,17 @@
 #include "ImageViewerPlugin.h"
 #include "PointsProp.h"
 
+#include "PointData.h"
+#include "ImageData/Images.h"
+
 #include <QDebug>
 
-PointsLayer::PointsLayer(const QString& dataset, const QString& id, const QString& name, const int& flags) :
-	LayerNode(dataset, LayerNode::Type::Points, id, name, flags),
-	_points(nullptr),
+PointsLayer::PointsLayer(const QString& pointsDatasetName, const QString& id, const QString& name, const int& flags) :
+	LayerNode(pointsDatasetName, LayerNode::Type::Points, id, name, flags),
+	_pointsDataset(nullptr),
+	_imagesDataset(nullptr),
 	_channels{-1,-1,-1},
+	_maxNoChannels(0),
 	_noChannels(1),
 	_colorMap()
 {
@@ -16,12 +21,13 @@ PointsLayer::PointsLayer(const QString& dataset, const QString& id, const QStrin
 
 void PointsLayer::init()
 {
-	_points = &imageViewerPlugin->requestData<Points>(_name);
+	_pointsDataset = &imageViewerPlugin->requestData<Points>(_name);
+	//LayerNode::imageViewerPlugin->requestData(_imagesDatasetName);
+	setNoPoints(_pointsDataset->getNumPoints());
+	setNoDimensions(_pointsDataset->getNumDimensions());
+	setMaxNoChannels(std::min(3u, _noDimensions));
 
-	setNoPoints(_points->getNumPoints());
-	setNoDimensions(_points->getNumDimensions());
-
-	auto dimensionNames = QStringList::fromVector(QVector<QString>::fromStdVector(_points->getDimensionNames()));
+	auto dimensionNames = QStringList::fromVector(QVector<QString>::fromStdVector(_pointsDataset->getDimensionNames()));
 
 	if (dimensionNames.isEmpty()) {
 		for (int dimensionIndex = 0; dimensionIndex < noDimensions(Qt::EditRole).toInt(); dimensionIndex++) {
@@ -31,7 +37,9 @@ void PointsLayer::init()
 
 	setDimensionNames(dimensionNames);
 
-	auto selection = dynamic_cast<Points*>(&imageViewerPlugin->core()->requestSelection(_rawDataName));
+	const auto pointsDataName = hdps::DataSet::getSourceData(*_pointsDataset).getDataName();
+
+	auto selection = dynamic_cast<Points*>(&imageViewerPlugin->core()->requestSelection(pointsDataName));
 
 	if (selection)
 		setSelection(Indices::fromStdVector(selection->indices));
@@ -44,7 +52,7 @@ Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
 	auto flags = LayerNode::flags(index);
 
 	switch (static_cast<Column>(index.column())) {
-		case Column::Size:
+		case Column::ImageSize:
 			break;
 
 		case Column::Channel1:
@@ -53,7 +61,7 @@ Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
 
 		case Column::Channel2:
 		{
-			if (_noChannels >= 2)
+			if (_maxNoChannels >= 2 && _noChannels >= 2)
 				flags |= Qt::ItemIsEditable;
 
 			break;
@@ -61,12 +69,13 @@ Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
 
 		case Column::Channel3:
 		{
-			if (_noChannels == 3)
+			if (_maxNoChannels >= 3 && _noChannels >= 3)
 				flags |= Qt::ItemIsEditable;
 
 			break;
 		}
 
+		case Column::MaxNoChannels:
 		case Column::NoChannels:
 		case Column::DimensionNames:
 		case Column::NoPoints:
@@ -90,6 +99,9 @@ QVariant PointsLayer::data(const QModelIndex& index, const int& role) const
 		return LayerNode::data(index, role);
 
 	switch (static_cast<Column>(index.column())) {
+		case Column::ImageSize:
+			return imageSize(role);
+
 		case Column::Channel1:
 			return channel(1, role);
 
@@ -98,6 +110,9 @@ QVariant PointsLayer::data(const QModelIndex& index, const int& role) const
 
 		case Column::Channel3:
 			return channel(3, role);
+
+		case Column::MaxNoChannels:
+			return maxNoChannels(role);
 
 		case Column::NoChannels:
 			return noChannels(role);
@@ -126,6 +141,9 @@ QModelIndexList PointsLayer::setData(const QModelIndex& index, const QVariant& v
 	QModelIndexList affectedIds = LayerNode::setData(index, value, role);
 
 	switch (static_cast<Column>(index.column())) {
+		case Column::ImageSize:
+			break;
+
 		case Column::Channel1:
 			setChannel(1, value.toInt());
 			break;
@@ -136,6 +154,10 @@ QModelIndexList PointsLayer::setData(const QModelIndex& index, const QVariant& v
 
 		case Column::Channel3:
 			setChannel(3, value.toInt());
+			break;
+
+		case Column::MaxNoChannels:
+			setMaxNoChannels(value.toInt());
 			break;
 
 		case Column::NoChannels:
@@ -157,29 +179,9 @@ QModelIndexList PointsLayer::setData(const QModelIndex& index, const QVariant& v
 	return affectedIds;
 }
 
-QVariant PointsLayer::imagesDatasetName(const int& role /*= Qt::DisplayRole*/) const
+QVariant PointsLayer::imageSize(const int& role /*= Qt::DisplayRole*/) const
 {
-	switch (role)
-	{
-		case Qt::DisplayRole:
-			return _imagesDatasetName;
-
-		case Qt::EditRole:
-			return _imagesDatasetName;
-
-		case Qt::ToolTipRole:
-			return QString("Images dataset name: %1").arg(_imagesDatasetName);
-
-		default:
-			break;
-	}
-
-	return QVariant();
-}
-
-void PointsLayer::setImagesDatasetName(const QString& imagesDatasetName)
-{
-	_imagesDatasetName = imagesDatasetName;
+	return _imagesDataset->imageSize();
 }
 
 QVariant PointsLayer::noPoints(const int& role /*= Qt::DisplayRole*/) const
@@ -290,12 +292,39 @@ void PointsLayer::setChannel(const int& channel, const int& dimension)
 	_channels[channel] = dimension;
 }
 
+QVariant PointsLayer::maxNoChannels(const int& role /*= Qt::DisplayRole*/) const
+{
+	const auto maxNoChannelsString = QString::number(_maxNoChannels);
+
+	switch (role)
+	{
+		case Qt::DisplayRole:
+			return maxNoChannelsString;
+
+		case Qt::EditRole:
+			return _maxNoChannels;
+
+		case Qt::ToolTipRole:
+			return QString("Maximum number of channels: %1").arg(maxNoChannelsString);
+
+		default:
+			break;
+	}
+
+	return QVariant();
+}
+
+void PointsLayer::setMaxNoChannels(const std::uint32_t& maxNoChannels)
+{
+	_maxNoChannels = maxNoChannels;
+}
+
 QVariant PointsLayer::noChannels(const int& role /*= Qt::DisplayRole*/) const
 {
 	return _noChannels;
 }
 
-void PointsLayer::setNoChannels(const int& noChannels)
+void PointsLayer::setNoChannels(const std::uint32_t& noChannels)
 {
 	_noChannels = noChannels;
 }

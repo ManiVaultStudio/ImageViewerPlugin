@@ -11,6 +11,8 @@
 
 #include "ui_LayersWidget.h"
 
+#include "PointData.h"
+
 #include <QItemSelectionModel>
 #include <QDebug>
 #include <QDragEnterEvent>

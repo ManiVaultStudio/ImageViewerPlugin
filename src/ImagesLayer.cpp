@@ -7,8 +7,8 @@
 #include <QDebug>
 #include <QFileInfo>
 
-ImagesLayer::ImagesLayer(const QString& dataset, const QString& id, const QString& name, const int& flags) :
-	LayerNode(dataset, ImagesLayer::Type::Images, id, name, flags),
+ImagesLayer::ImagesLayer(const QString& imagesDatasetName, const QString& id, const QString& name, const int& flags) :
+	LayerNode(imagesDatasetName, ImagesLayer::Type::Images, id, name, flags),
 	_images(nullptr),
 	_imageDataType(ImageData::Type::Undefined),
 	_size(),
@@ -26,6 +26,10 @@ ImagesLayer::ImagesLayer(const QString& dataset, const QString& id, const QStrin
 void ImagesLayer::init()
 {
 	_images = &imageViewerPlugin->requestData<Images>(_datasetName);
+
+	Images& images = imageViewerPlugin->core()->requestData<Images>(_datasetName);
+
+	_dataName = hdps::DataSet::getSourceData(*(images.points())).getDataName();
 
 	setImageDataType(_images->type());
 	setImageSize(_images->imageSize());
@@ -71,7 +75,7 @@ void ImagesLayer::init()
 	setImageFilePaths(imageFilePaths);
 	setPointsName(_images->points()->getDataName());
 
-	auto selection = dynamic_cast<Points*>(&imageViewerPlugin->core()->requestSelection(_rawDataName));
+	auto selection = dynamic_cast<Points*>(&imageViewerPlugin->core()->requestSelection(_dataName));
 	
 	if (selection)
 		setSelection(Indices::fromStdVector(selection->indices));
