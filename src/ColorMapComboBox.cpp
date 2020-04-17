@@ -42,3 +42,8 @@ void ColorMapComboBox::setType(const ColorMap::Type& type)
 			break;
 	}
 }
+
+QImage ColorMapComboBox::currentImage() const
+{
+	return _filteredColorMapModel.data(_filteredColorMapModel.index(currentIndex(), ult(ColorMapModel::Column::Image)), Qt::EditRole).value<QImage>();
+}

@@ -11,7 +11,7 @@ class Actor;
  * Disk prop class
  * @author Thomas Kroes
  */
-class PointsProp : public Prop
+class _PointsProp : public Prop
 {
 	Q_OBJECT
 
@@ -50,7 +50,7 @@ public:
 	 * @param node Node
 	 * @param name Name of the prop
 	 */
-	PointsProp(Node* node, const QString& name);
+	_PointsProp(Node* node, const QString& name);
 
 protected: // Inherited
 

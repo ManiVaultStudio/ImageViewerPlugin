@@ -14,8 +14,7 @@ LayerNode::LayerNode(const QString& dataset, const Type& type, const QString& id
 	Node(id, name, flags),
 	_datasetName(dataset),
 	_rawDataName(),
-	_type(type),
-	_colorMap()
+	_type(type)
 {
 	if (!dataset.isEmpty()) {
 		switch (_type)
@@ -73,14 +72,6 @@ Qt::ItemFlags LayerNode::flags(const QModelIndex& index) const
 		case Column::Opacity:
 			flags |= Qt::ItemIsEditable;
 			break;
-			
-		case Column::ColorMap:
-		{
-			if (type == Type::Selection)
-				flags |= Qt::ItemIsEditable;
-
-			break;
-		}
 
 		case Column::Flags:
 			break;
@@ -116,9 +107,6 @@ QVariant LayerNode::data(const QModelIndex& index, const int& role) const
 
 		case Column::Opacity:
 			return opacity(role);
-
-		case Column::ColorMap:
-			return colorMap(role);
 
 		case Column::Flags:
 			return Node::flags(role);
@@ -193,10 +181,6 @@ QModelIndexList LayerNode::setData(const QModelIndex& index, const QVariant& val
 
 				case Column::Opacity:
 					setOpacity(value.toFloat());
-					break;
-				
-				case Column::ColorMap:
-					setColorMap(value.value<QImage>());
 					break;
 
 				case Column::Flags:
@@ -310,33 +294,6 @@ QVariant LayerNode::type(const int& role) const
 void LayerNode::setType(const Type& type)
 {
 	_type = type;
-}
-
-QVariant LayerNode::colorMap(const int& role) const
-{
-	const auto colorMapString = "Image";
-
-	switch (role)
-	{
-		case Qt::DisplayRole:
-			return colorMapString;
-
-		case Qt::EditRole:
-			return _colorMap;
-
-		case Qt::ToolTipRole:
-			return QString("%1").arg(colorMapString);
-
-		default:
-			break;
-	}
-
-	return QVariant();
-}
-
-void LayerNode::setColorMap(const QImage& colorMap)
-{
-	_colorMap = colorMap;
 }
 
 QVariant LayerNode::selection(const int& role /*= Qt::DisplayRole*/) const

@@ -50,5 +50,3 @@ protected:
 private:
 	WindowLevelImage	_windowLevelImage;				/** Image */
 };
-
-using SharedImageLayerProp = QSharedPointer<ImagesProp>;

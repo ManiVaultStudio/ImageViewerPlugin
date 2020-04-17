@@ -10,6 +10,7 @@
 using hdps::plugin::ViewPluginFactory;
 using hdps::plugin::ViewPlugin;
 
+class Images;
 class ViewerWidget;
 class SettingsWidget;
 
@@ -73,11 +74,17 @@ public: //
 	/** Update the window title with some useful meta data */
 	void updateWindowTitle();
 
+	QVector<QString> imageDatasets() const { return _imagesDatasets; }
+
+	/** TODO */
+	Images* sourceImagesSetFromPointsSet(const QString& pointSetName);
+
 private:
-	ViewerWidget*			_imageViewerWidget;			/** TODO */
-	SettingsWidget*			_settingsWidget;			/** TODO */
-	LayersModel				_layersModel;				/** TODO */
+	ViewerWidget*			_imageViewerWidget;		/** TODO */
+	SettingsWidget*			_settingsWidget;		/** TODO */
+	LayersModel				_layersModel;			/** TODO */
 	ColorMapModel			_colorMapModel;			/** TODO */
+	QVector<QString>		_imagesDatasets;		/** Very unhappy with this approach, but there's (currently) no other way */
 };
 
 /**

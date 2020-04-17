@@ -1,4 +1,4 @@
-#include "PointsProp.h"
+#include "_PointsProp.h"
 #include "Renderer.h"
 
 #include <QDebug>
@@ -15,25 +15,25 @@ const std::string fragmentShaderSource =
 	#include "PointsFragment.glsl"
 ;
 
-PointsProp::Point::Point():
+_PointsProp::Point::Point():
 	_position(),
 	_radius(),
 	_color()
 {
 }
 
-PointsProp::Point::Point(const QVector3D& position, const float& radius, const QColor& color) :
+_PointsProp::Point::Point(const QVector3D& position, const float& radius, const QColor& color) :
 	_position(position),
 	_radius(radius),
 	_color(QVector4D(color.redF(), color.greenF(), color.blueF(), color.alphaF()))
 {
 }
 
-std::uint32_t PointsProp::Point::_positionAttribute = 0;
-std::uint32_t PointsProp::Point::_radiusAttribute	= 1;
-std::uint32_t PointsProp::Point::_colorAttribute	= 2;
+std::uint32_t _PointsProp::Point::_positionAttribute = 0;
+std::uint32_t _PointsProp::Point::_radiusAttribute	= 1;
+std::uint32_t _PointsProp::Point::_colorAttribute	= 2;
 
-PointsProp::PointsProp(Node* node, const QString& name) :
+_PointsProp::_PointsProp(Node* node, const QString& name) :
 	Prop(node, name),
 	_points(),
 	_vao(),
@@ -43,7 +43,7 @@ PointsProp::PointsProp(Node* node, const QString& name) :
 	addShaderProgram("PointsShape");
 }
 
-void PointsProp::initialize()
+void _PointsProp::initialize()
 {
 	try
 	{
@@ -97,7 +97,7 @@ void PointsProp::initialize()
 	}
 }
 
-bool PointsProp::canRender() const
+bool _PointsProp::canRender() const
 {
 	if (!Prop::canRender())
 		return false;
@@ -108,7 +108,7 @@ bool PointsProp::canRender() const
 	return true;
 }
 
-void PointsProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
+void _PointsProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 {
 	/*
 	try {
@@ -147,7 +147,7 @@ void PointsProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 	*/
 }
 
-void PointsProp::setPoints(const QVector<Point>& points)
+void _PointsProp::setPoints(const QVector<Point>& points)
 {
 	_points = points;
 
@@ -163,12 +163,12 @@ void PointsProp::setPoints(const QVector<Point>& points)
 	_vao.release();
 }
 
-std::uint32_t PointsProp::noSegments() const
+std::uint32_t _PointsProp::noSegments() const
 {
 	return _noSegments;
 }
 
-void PointsProp::setNoSegments(const std::uint32_t& noSegments)
+void _PointsProp::setNoSegments(const std::uint32_t& noSegments)
 {
 	_noSegments = noSegments;
 }

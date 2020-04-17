@@ -1,5 +1,6 @@
 #include "PointsLayer.h"
 #include "ImageViewerPlugin.h"
+#include "PointsProp.h"
 
 #include <QDebug>
 
@@ -7,7 +8,8 @@ PointsLayer::PointsLayer(const QString& dataset, const QString& id, const QStrin
 	LayerNode(dataset, LayerNode::Type::Points, id, name, flags),
 	_points(nullptr),
 	_channels{-1,-1,-1},
-	_noChannels(1)
+	_noChannels(1),
+	_colorMap()
 {
 	init();
 }
@@ -33,6 +35,8 @@ void PointsLayer::init()
 
 	if (selection)
 		setSelection(Indices::fromStdVector(selection->indices));
+
+	addProp<PointsProp>(this, "Points");
 }
 
 Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
@@ -69,6 +73,10 @@ Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
 		case Column::NoDimensions:
 			break;
 
+		case Column::ColorMap:
+			flags |= Qt::ItemIsEditable;
+			break;
+
 		default:
 			break;
 	}
@@ -103,6 +111,9 @@ QVariant PointsLayer::data(const QModelIndex& index, const int& role) const
 		case Column::NoDimensions:
 			return noDimensions(role);
 
+		case Column::ColorMap:
+			return colorMap(role);
+
 		default:
 			break;
 	}
@@ -135,11 +146,40 @@ QModelIndexList PointsLayer::setData(const QModelIndex& index, const QVariant& v
 		case Column::NoDimensions:
 			break;
 
+		case Column::ColorMap:
+			setColorMap(value.value<QImage>());
+			break;
+
 		default:
 			break;
 	}
 
 	return affectedIds;
+}
+
+QVariant PointsLayer::imagesDatasetName(const int& role /*= Qt::DisplayRole*/) const
+{
+	switch (role)
+	{
+		case Qt::DisplayRole:
+			return _imagesDatasetName;
+
+		case Qt::EditRole:
+			return _imagesDatasetName;
+
+		case Qt::ToolTipRole:
+			return QString("Images dataset name: %1").arg(_imagesDatasetName);
+
+		default:
+			break;
+	}
+
+	return QVariant();
+}
+
+void PointsLayer::setImagesDatasetName(const QString& imagesDatasetName)
+{
+	_imagesDatasetName = imagesDatasetName;
 }
 
 QVariant PointsLayer::noPoints(const int& role /*= Qt::DisplayRole*/) const
@@ -258,4 +298,31 @@ QVariant PointsLayer::noChannels(const int& role /*= Qt::DisplayRole*/) const
 void PointsLayer::setNoChannels(const int& noChannels)
 {
 	_noChannels = noChannels;
+}
+
+QVariant PointsLayer::colorMap(const int& role) const
+{
+	const auto colorMapString = "Image";
+
+	switch (role)
+	{
+		case Qt::DisplayRole:
+			return colorMapString;
+
+		case Qt::EditRole:
+			return _colorMap;
+
+		case Qt::ToolTipRole:
+			return QString("%1").arg(colorMapString);
+
+		default:
+			break;
+	}
+
+	return QVariant();
+}
+
+void PointsLayer::setColorMap(const QImage& colorMap)
+{
+	_colorMap = colorMap;
 }

@@ -11,9 +11,6 @@
 
 #include "ui_LayersWidget.h"
 
-#include "ImageData/Images.h"
-#include "PointData.h"
-
 #include <QItemSelectionModel>
 #include <QDebug>
 #include <QDragEnterEvent>
@@ -140,10 +137,12 @@ void LayersWidget::dragEnterEvent(QDragEnterEvent* dragEnterEvent)
 	const auto datasetType	= items.at(1);
 	
 	if (datasetType == "Points") {
-		const auto points		= _imageViewerPlugin->requestData<Points>(datasetName);
-		const auto noDimensions	= points.getNumDimensions();
+		auto imagesSet = _imageViewerPlugin->sourceImagesSetFromPointsSet(datasetName);
 
-		if (noDimensions >= 1)
+		if (imagesSet == nullptr)
+			return;
+
+		if (imagesSet->points()->getNumDimensions() >= 1)
 			dragEnterEvent->acceptProposedAction();
 	}
 
@@ -168,6 +167,9 @@ void LayersWidget::dropEvent(QDropEvent* dropEvent)
 	if (datasetType == "Points") {
 		const auto points = _imageViewerPlugin->requestData<Points>(datasetName);
 
+		auto sourcePoints = hdps::DataSet::getSourceData(points);
+
+		//_imageViewerPlugin->core()->getDataManager()
 		layersModel().insertLayer(0, new PointsLayer(datasetName, datasetName, datasetName, layerFlags));
 		
 		/*

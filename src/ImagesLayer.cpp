@@ -1,6 +1,6 @@
 #include "ImagesLayer.h"
-#include "ImagesLayer.h"
 #include "ImageViewerPlugin.h"
+#include "ImagesProp.h"
 
 #include "PointData.h"
 
@@ -17,7 +17,7 @@ ImagesLayer::ImagesLayer(const QString& dataset, const QString& id, const QStrin
 	_imageNames(),
 	_imageFilePaths(),
 	_pointsName(),
-	_currentImage(0),
+	_currentImageId(0),
 	_average()
 {
 	init();
@@ -455,7 +455,7 @@ QVariant ImagesLayer::imageIds(const int& role) const
 				}
 			}
 			else {
-				ids << _currentImage;
+				ids << _currentImageId;
 			}
 
 			break;
@@ -468,7 +468,7 @@ QVariant ImagesLayer::imageIds(const int& role) const
 				std::iota(ids.begin(), ids.end(), 0);
 			}
 			else {
-				ids << _currentImage;
+				ids << _currentImageId;
 			}
 
 			break;
@@ -601,7 +601,7 @@ QVariant ImagesLayer::filteredImageNames(const int& role) const
 		imageNamesString = abbreviatedStringList(filtered);
 	}
 	else {
-		imageNamesString = imageNames.isEmpty() ? "" : imageNames[_currentImage];
+		imageNamesString = imageNames.isEmpty() ? "" : imageNames[_currentImageId];
 	}
 
 	switch (role)
@@ -627,13 +627,13 @@ QVariant ImagesLayer::currentImageId(const int& role) const
 	switch (role)
 	{
 		case Qt::DisplayRole:
-			return QString::number(_currentImage);
+			return QString::number(_currentImageId);
 
 		case Qt::EditRole:
-			return _currentImage;
+			return _currentImageId;
 
 		case Qt::ToolTipRole:
-			return QString("Current image: %1").arg(QString::number(_currentImage));
+			return QString("Current image: %1").arg(QString::number(_currentImageId));
 	}
 
 	return QVariant();
@@ -642,7 +642,7 @@ QVariant ImagesLayer::currentImageId(const int& role) const
 QVariant ImagesLayer::currentImageName(const int& role) const
 {
 	const auto imageNames	= this->imageNames(Qt::EditRole).toStringList();
-	const auto imageName	= imageNames.isEmpty() ? "" : imageNames[_currentImage];
+	const auto imageName	= imageNames.isEmpty() ? "" : imageNames[_currentImageId];
 
 	switch (role)
 	{
@@ -659,7 +659,7 @@ QVariant ImagesLayer::currentImageName(const int& role) const
 
 QVariant ImagesLayer::currentImageFilePath(const int& role) const
 {
-	const auto imageFilePathString = imageFilePaths(Qt::EditRole).toStringList()[_currentImage];
+	const auto imageFilePathString = imageFilePaths(Qt::EditRole).toStringList()[_currentImageId];
 
 	switch (role)
 	{
@@ -677,22 +677,22 @@ QVariant ImagesLayer::currentImageFilePath(const int& role) const
 	return QVariant();
 }
 
-void ImagesLayer::setCurrentImageId(const std::uint32_t& currentImage)
+void ImagesLayer::setCurrentImageId(const std::uint32_t& currentImageId)
 {
 	switch (static_cast<ImageData::Type>(type(Qt::EditRole).toInt()))
 	{
 		case ImageData::Type::Sequence:
 		{
 			if (_selection.isEmpty())
-				_currentImage = currentImage;
+				_currentImageId = currentImageId;
 			else
-				_currentImage = _selection[currentImage];
+				_currentImageId = _selection[currentImageId];
 
 			break;
 		}
 
 		case ImageData::Type::Stack:
-			_currentImage = currentImage;
+			_currentImageId = currentImageId;
 			break;
 
 		default:

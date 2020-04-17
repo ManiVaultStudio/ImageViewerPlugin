@@ -1,41 +1,52 @@
 #pragma once
 
 #include "LayerNode.h"
-#include "ImagesProp.h"
 
 #include "ImageData/Images.h"
 
 class Images;
 
-/** TODO */
+/**
+ * Images layer class
+ *
+ * Layer for images data
+ *
+ * @author Thomas Kroes
+ */
 class ImagesLayer : public LayerNode
 {
 public:
 
-	/** TODO */
+	/**  Columns */
 	enum class Column {
-		NoImages = ult(LayerNode::Column::End) + 1,
-		Width,
-		Height,
-		WindowNormalized,
-		LevelNormalized,
-		ImageSize,
-		NoPoints,
-		NoDimensions,
-		ImageNames,
-		FilteredImageNames,
-		ImageIDs,
-		ImageFilePaths,
-		CurrentImageId,
-		CurrentImageName,
-		CurrentImageFilePath,
-		Average,
+		NoImages = ult(LayerNode::Column::End) + 1,		// Number of images in the dataset
+		Width,											// Width of the image(s)
+		Height,											// Height of the image(s)
+		WindowNormalized,								// Normalized window
+		LevelNormalized,								// Normalized level
+		ImageSize,										// Size of the image(s)
+		NoPoints,										// Number of points in the dataset
+		NoDimensions,									// Number of dimensions in the dataset
+		ImageNames,										// Image name(s)
+		FilteredImageNames,								// Filtered image name(s) (depends on the selection)
+		ImageIDs,										// Image identifiers
+		ImageFilePaths,									// Absolute image file paths
+		CurrentImageId,									// Current image identifier
+		CurrentImageName,								// Current image name
+		CurrentImageFilePath,							// Current image file path
+		Average,										// Whether to average the images
 
 		Start = NoImages,
 		End = Average
 	};
 
-	/** TODO */
+	/**
+	 * Constructor
+	 * @param dataset Name of the images dataset
+	 * @param id Layer identifier
+	 * @param name Layer name
+	 * @param flags Configuration bit flags
+	 */
 	ImagesLayer(const QString& dataset, const QString& id, const QString& name, const int& flags);
 
 	/** Initializes the layer */
@@ -43,109 +54,214 @@ public:
 
 public: // Inherited MVC
 
-	/** TODO */
+	/** Returns the number of columns */
 	int columnCount() const override { return ult(Column::End) + 1; }
 
-	/** TODO */
+	/**
+	 * Returns the item flags for the given model index
+	 * @param index Model index
+	 * @return Item flags for the index
+	 */
 	Qt::ItemFlags flags(const QModelIndex& index) const override;
 
-	/** TODO */
+	/**
+	 * Returns the data for the given model index and data role
+	 * @param index Model index
+	 * @param role Data role
+	 * @return Data in variant form
+	 */
 	QVariant data(const QModelIndex& index, const int& role) const override;
 
-	/** TODO */
+	/**
+	 * Sets the data value for the given model index and data role
+	 * @param index Model index
+	 * @param value Data value in variant form
+	 * @param role Data role
+	 * @return Model indices that are affected by the operation
+	 */
 	QModelIndexList setData(const QModelIndex& index, const QVariant& value, const int& role) override;
 
 public: // Getters/setters
 
-	/** TODO */
+	/**
+	 * Returns the image data type (e.g. sequence or stack)
+	 * @param role The data role
+	 * @return Image data type in variant form
+	 */
 	QVariant imageDataType(const int& role) const;
 
-	/** TODO */
+	/**
+	 * Sets the image data type
+	 * @param imageDataType Image data type
+	 */
 	void setImageDataType(const ImageData::Type& imageDataType);
 
-	/** TODO */
+	/**
+	 * Returns the number of images in the dataset
+	 * @param role The data role
+	 * @return Number of images in variant form
+	 */
 	QVariant noImages(const int& role) const;
 
-	/** TODO */
+	/**
+	 * Returns the width of the images in the dataset
+	 * @param role The data role
+	 * @return Image width in variant form
+	 */
 	QVariant width(const int& role) const;
 
-	/** TODO */
+	/**
+	 * Returns the height of the images in the dataset
+	 * @param role The data role
+	 * @return Image height in variant form
+	 */
 	QVariant height(const int& role) const;
 
-	/** TODO */
+	/**
+	 * Returns the size of the images in the dataset
+	 * @param role The data role
+	 * @return Image size in variant form
+	 */
 	QVariant imageSize(const int& role) const;
 
-	/** TODO */
+	/**
+	 * Sets the image size
+	 * @param size Image size
+	 */
 	void setImageSize(const QSize& size);
 
-	/** TODO */
+	/**
+	 * Returns the number of data points in the dataset
+	 * @param role The data role
+	 * @return Number of data points in variant form
+	 */
 	QVariant noPoints(const int& role) const;
 
-	/** TODO */
+	/**
+	 * Sets the number of points in the dataset
+	 * @param noPoints Number of points in the dataset
+	 */
 	void setNoPoints(const std::uint32_t& noPoints);
 
-	/** TODO */
+	/**
+	 * Returns the number of dimensions in the dataset
+	 * @param role The data role
+	 * @return Number of dimensions in variant form
+	 */
 	QVariant noDimensions(const int& role) const;
 
-	/** TODO */
+	/**
+	 * Sets the number of dimensions in the dataset
+	 * @param noDimensions Number of dimensions in the dataset
+	 */
 	void setNoDimensions(const std::uint32_t& noDimensions);
 
-	/** TODO */
+	/**
+	 * Returns the image names in the dataset
+	 * @param role The data role
+	 * @return Image names in variant form
+	 */
 	QVariant imageNames(const int& role) const;
 
-	/** TODO */
+	/**
+	 * Returns the image identifiers in the dataset
+	 * @param role The data role
+	 * @return Image identifiers in variant form
+	 */
 	QVariant imageIds(const int& role) const;
 
-	/** TODO */
+	/**
+	 * Sets the image names
+	 * @param imageNames Image names
+	 */
 	void setImageNames(const QStringList& imageNames);
 
-	/** TODO */
+	/**
+	 * Returns the image file paths in the dataset
+	 * @param role The data role
+	 * @return Image file paths in variant form
+	 */
 	QVariant imageFilePaths(const int& role) const;
 
-	/** TODO */
+	/**
+	 * Sets the image file paths (absolute)
+	 * @param imageFilePaths Image file paths
+	 */
 	void setImageFilePaths(const QStringList& imageFilePaths);
 
-	/** TODO */
+	/**
+	 * Returns the referenced points dataset name
+	 * @param role The data role
+	 * @return Referenced points dataset name in variant form
+	 */
 	QVariant pointsName(const int& role) const;
 
-	/** TODO */
+	/**
+	 * Sets the referenced points dataset name
+	 * @param pointsName Referenced points dataset name
+	 */
 	void setPointsName(const QString& pointsName);
 
-	/** TODO */
+	/**
+	 * Returns the filtered image names (based on selection)
+	 * @param role The data role
+	 * @return Filtered image names in variant form
+	 */
 	QVariant filteredImageNames(const int& role) const;
 
-	/** TODO */
+	/**
+	 * Returns the current image identifier
+	 * @param role The data role
+	 * @return Current image identifier in variant form
+	 */
 	QVariant currentImageId(const int& role) const;
 
-	/** TODO */
-	void setCurrentImageId(const std::uint32_t& currentImage);
+	/**
+	 * Sets the current image identifier
+	 * @param currentImageId Current image identifier
+	 */
+	void setCurrentImageId(const std::uint32_t& currentImageId);
 
-	/** TODO */
+	/**
+	 * Returns the current image name
+	 * @param role The data role
+	 * @return Current image name in variant form
+	 */
 	QVariant currentImageName(const int& role) const;
 
-	/** TODO */
+	/**
+	 * Sets the current image file path
+	 * @param currentImage Current image file path
+	 */
 	QVariant currentImageFilePath(const int& role) const;
 
-	/** TODO */
+	/**
+	 * Returns whether images are averaged
+	 * @param role The data role
+	 * @return Whether images are averaged in variant form
+	 */
 	QVariant average(const int& role) const;
 
-	/** TODO */
+	/**
+	 * Sets whether images are averaged
+	 * @param average Average images
+	 */
 	void setAverage(const bool& average);
 
 private:
 
-	/** TODO */
+	/** Computes the (averaged) image */
 	void computeImage();
 
 private:
-	Images*				_images;			/** TODO */
-	ImageData::Type		_imageDataType;		/** TODO */
-	QSize				_size;				/** TODO */
-	std::uint32_t		_noPoints;			/** TODO */
-	std::uint32_t		_noDimensions;		/** TODO */
-	QStringList			_imageNames;		/** TODO */
-	QStringList			_imageFilePaths;	/** TODO */
-	QString				_pointsName;		/** TODO */
-	std::int32_t		_currentImage;		/** TODO */
-	bool				_average;			/** TODO */
+	Images*				_images;			/** Pointer to the images plugin instance */
+	ImageData::Type		_imageDataType;		/** Image data type (e.g. sequence or stack) */
+	QSize				_size;				/** Image size */
+	std::uint32_t		_noPoints;			/** Number of points in the referenced points dataset */
+	std::uint32_t		_noDimensions;		/** Number of dimensions in the referenced points dataset */
+	QStringList			_imageNames;		/** Image names */
+	QStringList			_imageFilePaths;	/** Image file paths */
+	QString				_pointsName;		/** Name of the referenced points dataset */
+	std::int32_t		_currentImageId;	/** Current image identifier */
+	bool				_average;			/** Whether to average images */
 };

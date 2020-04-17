@@ -5,13 +5,14 @@
 #include "LayerNode.h"
 #include "Renderer.h"
 
+#include "PointData.h"
+#include "IndexSet.h"
+#include "ImageData/Images.h"
+
 #include <QFontDatabase>
 #include <QItemSelectionModel>
 #include <QFileInfo>
 #include <QDebug>
-
-#include "PointData.h"
-#include "IndexSet.h"
 
 using namespace hdps;
 
@@ -22,7 +23,8 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	_imageViewerWidget(),
 	_settingsWidget(),
 	_layersModel(this),
-	_colorMapModel(this, ColorMap::Type::OneDimensional)
+	_colorMapModel(this, ColorMap::Type::OneDimensional),
+	_imagesDatasets()
 {
 	qRegisterMetaType<QVector<int> >("QVector<int>");
 
@@ -121,8 +123,30 @@ void ImageViewerPlugin::updateWindowTitle()
 	setWindowTitle(QString("%1").arg(properties.join(", ")));
 }
 
+Images* ImageViewerPlugin::sourceImagesSetFromPointsSet(const QString& pointSetName)
+{
+	const auto pointsSet			= _core->requestData<Points>(pointSetName);
+	const auto sourcePointsSet		= hdps::DataSet::getSourceData(pointsSet);
+	const auto sourcePointsDataName	= sourcePointsSet.getDataName();
+
+	auto originatesFromImages = false;
+
+	for (auto imageDataset : _imagesDatasets) {
+		auto imagesSet = _core->requestData<Images>(imageDataset);
+
+		if (imagesSet.points()->getDataName() == sourcePointsDataName)
+			return &imagesSet;
+	}
+
+	return nullptr;
+}
+
 void ImageViewerPlugin::dataAdded(const QString dataset)
 {
+	auto images = dynamic_cast<Images*>(&_core->requestData(dataset));
+
+	if (images != nullptr)
+		_imagesDatasets << dataset;
 }
 
 void ImageViewerPlugin::dataChanged(const QString dataset)

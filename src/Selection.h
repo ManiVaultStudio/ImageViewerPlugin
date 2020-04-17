@@ -101,6 +101,7 @@ private: // Event handlers
 	void onMouseWheel(QWheelEvent* wheelEvent);
 
 signals:
+
 	/**
 	 * Signals the selection type changed
 	 * @param selectionType Selection type

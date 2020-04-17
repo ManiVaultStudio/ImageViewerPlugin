@@ -78,10 +78,13 @@ public:
 	ColorMap::Type type() const;
 
 	/**
-		 * Sets the type of color map
-		 * @param type Type of color map (e.g. 1D, 2D)
-		 */
+	* Sets the type of color map
+	* @param type Type of color map (e.g. 1D, 2D)
+	*/
 	void setType(const ColorMap::Type& type);
+
+	/** Returns the currently selected color map image */
+	QImage currentImage() const;
 
 signals:
 
