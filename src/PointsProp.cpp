@@ -1,7 +1,7 @@
 #include "PointsProp.h"
 #include "QuadShape.h"
 #include "LayersModel.h"
-#include "ImageRange.h"
+#include "Range.h"
 #include "Renderer.h"
 #include "Node.h"
 

@@ -43,7 +43,7 @@ LayersModel::~LayersModel()
 	delete _root;
 }
 
-int LayersModel::columnCount(const QModelIndex &parent) const
+int LayersModel::columnCount(const QModelIndex& parent /*= QModelIndex()*/) const
 {
 	Q_UNUSED(parent);
 
@@ -238,7 +238,7 @@ void LayersModel::selectionChanged(const QString& name, const Indices& indices)
 	//_datasetsModel.setData(hits.first().siblingAtColumn(ult(DatasetsModel::Column::Selection)), QVariant::fromValue(Indices::fromStdVector(dataset.indices())));
 }
 
-int LayersModel::rowCount(const QModelIndex &parent) const
+int LayersModel::rowCount(const QModelIndex& parent /*= QModelIndex()*/) const
 {
 	const auto parentLayer = getLayer(parent);
 
@@ -276,7 +276,7 @@ QMimeData* LayersModel::mimeData(const QModelIndexList& indexes) const
 	return mimeData;
 }
 
-bool LayersModel::dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent)
+bool LayersModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent)
 {
 	if (!canDropMimeData(data, action, row, column, parent))
 		return false;

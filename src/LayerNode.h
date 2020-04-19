@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Node.h"
-#include "ImageRange.h"
+#include "Range.h"
 
 #include <QColor>
 #include <QObject>

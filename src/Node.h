@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Renderable.h"
-#include "ImageRange.h"
+#include "Range.h"
 
 #include <QColor>
 #include <QObject>

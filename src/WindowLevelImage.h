@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ImageRange.h"
+#include "Range.h"
 
 #include <QColor>
 #include <QImage>
