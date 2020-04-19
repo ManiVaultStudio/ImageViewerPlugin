@@ -4,9 +4,9 @@ R"(
 #extension GL_ARB_gpu_shader_fp64 : enable
 
 uniform sampler2D colorMap;
-uniform sampler2D channels[3];
+uniform sampler2D channels;
 uniform int noChannels;
-uniform vec2 channelRange[3];
+uniform vec2 channelRange;
 uniform float opacity;
 
 in vec2 uv;
@@ -22,7 +22,7 @@ float toneMapChannel(double minPixelValue, double maxPixelValue, double pixelVal
 
 void main(void)
 {
-	float channel1 = toneMapChannel(channelRange[0].x, channelRange[0].y, texture(channels[0], uv).r);
+	float channel1 = toneMapChannel(channelRange.x, channelRange.y, texture(channels, uv).r);
 
 	fragmentColor = texture(colorMap, vec2(channel1, 0));
 	fragmentColor.a = opacity;

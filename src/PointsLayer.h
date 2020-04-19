@@ -53,13 +53,9 @@ public:
 		 */
 		void setDimensionId(const std::uint32_t& dimensionId);
 
-		/** Returns the channel image */
-		QImage image() const;
-
 	private:
 		PointsLayer*	_pointsLayer;	/** Pointer to paren points layer */
 		std::uint32_t	_dimensionId;	/** Dimension identifier */
-		QImage			_image;			/** Image */
 	};
 
 public:
@@ -206,6 +202,11 @@ public: // Getters/setters
 	 * @param colorMap Color map image
 	 */
 	void setColorMap(const QImage& colorMap);
+
+private:
+
+	/** Computes the channels image */
+	void computeImage();
 
 private:
 	Points*				_pointsDataset;			/** Points dataset to which the layer refers */

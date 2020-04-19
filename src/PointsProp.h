@@ -35,13 +35,7 @@ protected: // Inherited
 public: // Configuration
 
 	/** TODO */
-	WindowLevelImage& channel(const int& id);
-
-	/** TODO */
-	const WindowLevelImage& channel(const int& id) const;
-
-	/** TODO */
-	void setChannelImage(const std::uint32_t& channelId, const QImage& image);
+	void setChannelsImage(const QImage& image);
 
 	/** TODO */
 	void setColorMap(const QImage& colorMap);
@@ -52,6 +46,6 @@ protected:
 	void updateModelMatrix();
 
 private:
-	std::int32_t		_noChannels;		/** Number of active channels */
-	WindowLevelImage	_channels[3];		/** Image */
+	std::int32_t		_noChannels;	/** Number of active channels */
+	WindowLevelImage	_channels;		/** Image */
 };

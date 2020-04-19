@@ -4,7 +4,13 @@
 
 #include <QVector2D>
 
-/** TODO */
+/**
+ * Group layer class
+ *
+ * Layer that contains child layers
+ *
+ * @author Thomas Kroes
+ */
 class Range
 {
 public:

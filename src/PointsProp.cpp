@@ -19,14 +19,13 @@ const std::string fragmentShaderSource =
 
 PointsProp::PointsProp(Node* node, const QString& name) :
 	Prop(node, name),
+	_noChannels(0),
 	_channels()
 {
 	addShape<QuadShape>("Quad");
 	addShaderProgram("Quad");
 	addTexture("ColorMap", QOpenGLTexture::Target2D);
-	addTexture("Channel0", QOpenGLTexture::Target2D);
-	addTexture("Channel1", QOpenGLTexture::Target2D);
-	addTexture("Channel2", QOpenGLTexture::Target2D);
+	addTexture("Channels", QOpenGLTexture::Target2D);
 
 	initialize();
 }
@@ -73,14 +72,8 @@ void PointsProp::initialize()
 				throw std::exception("Unable to bind quad shader program");
 			}
 
-			textureByName("Channel0")->setWrapMode(QOpenGLTexture::Repeat);
-			textureByName("Channel0")->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
-
-			textureByName("Channel1")->setWrapMode(QOpenGLTexture::Repeat);
-			textureByName("Channel1")->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
-
-			textureByName("Channel2")->setWrapMode(QOpenGLTexture::Repeat);
-			textureByName("Channel2")->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
+			textureByName("Channels")->setWrapMode(QOpenGLTexture::Repeat);
+			textureByName("Channels")->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
 
 			_initialized = true;
 		}
@@ -111,39 +104,19 @@ void PointsProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 			textureByName("ColorMap")->bind();
 		}
 
-		if (textureByName("Channel0")->isCreated()) {
+		if (textureByName("Channels")->isCreated()) {
 			renderer->openGLContext()->functions()->glActiveTexture(GL_TEXTURE1);
-			textureByName("Channel0")->bind();
+			textureByName("Channels")->bind();
 		}
 			
-		if (textureByName("Channel1")->isCreated()) {
-			renderer->openGLContext()->functions()->glActiveTexture(GL_TEXTURE2);
-			textureByName("Channel1")->bind();
-		}
-
-		if (textureByName("Channel2")->isCreated()) {
-			renderer->openGLContext()->functions()->glActiveTexture(GL_TEXTURE3);
-			textureByName("Channel2")->bind();
-		}
-
 		if (shaderProgram->bind()) {
 			const GLuint channels[] = { 1, 2, 3 };
 
-			qDebug() << channels[0] << channels[1] << channels[2];
-
 			shaderProgram->setUniformValue("colorMap", 0);
-			shaderProgram->setUniformValueArray("channels", channels, 3);
+			shaderProgram->setUniformValue("channels", 1);
 			shaderProgram->setUniformValueArray("noChannels", channels, 3);
 
-			const QVector2D displayRange[3] = {
-				_channels[0].displayRange(Qt::EditRole).value<Range>().toVector2D(),
-				_channels[1].displayRange(Qt::EditRole).value<Range>().toVector2D(),
-				_channels[2].displayRange(Qt::EditRole).value<Range>().toVector2D()
-			};
-
-			qDebug() << displayRange[0] << displayRange[1] << displayRange[2];
-
-			shaderProgram->setUniformValueArray("channelRange", displayRange, 3);
+			shaderProgram->setUniformValue("channelRange", _channels.displayRange(Qt::EditRole).value<Range>().toVector2D());
 			shaderProgram->setUniformValue("opacity", opacity);
 			shaderProgram->setUniformValue("transform", nodeMVP * modelMatrix());
 
@@ -155,14 +128,8 @@ void PointsProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 			throw std::exception("Unable to bind quad shader program");
 		}
 
-		if (textureByName("Channel2")->isCreated())
-			textureByName("Channel2")->release();
-
-		if (textureByName("Channel1")->isCreated())
-			textureByName("Channel1")->release();
-
-		if (textureByName("Channel0")->isCreated())
-			textureByName("Channel0")->release();
+		if (textureByName("Channels")->isCreated())
+			textureByName("Channels")->release();
 
 		if (textureByName("ColorMap")->isCreated())
 			textureByName("ColorMap")->release();
@@ -181,25 +148,15 @@ QRectF PointsProp::boundingRectangle() const
 	return shapeByName<QuadShape>("Quad")->rectangle();
 }
 
-WindowLevelImage& PointsProp::channel(const int& id)
-{
-	return _channels[id];
-}
-
-const WindowLevelImage& PointsProp::channel(const int& id) const
-{
-	return _channels[id];
-}
-
-void PointsProp::setChannelImage(const std::uint32_t& channelId, const QImage& image)
+void PointsProp::setChannelsImage(const QImage& image)
 {
 	//qDebug() << fullName() << "set image";
 
 	renderer->bindOpenGLContext();
 	{
-		_channels[channelId].setImage(image);
+		_channels.setImage(image);
 
-		auto texture = textureByName(QString("Channel%1").arg(channelId));
+		auto texture = textureByName("Channels");
 
 		texture->destroy();
 		texture->create();

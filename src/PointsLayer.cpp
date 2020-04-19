@@ -9,8 +9,7 @@
 
 PointsLayer::Channel::Channel(PointsLayer* pointsLayer /*= nullptr*/) :
 	_pointsLayer(pointsLayer),
-	_dimensionId(0),
-	_image()
+	_dimensionId(0)
 {
 }
 
@@ -22,13 +21,6 @@ std::uint32_t PointsLayer::Channel::dimensionId() const
 void PointsLayer::Channel::setDimensionId(const std::uint32_t& dimensionId)
 {
 	_dimensionId = dimensionId;
-
-	_image = _pointsLayer->_imagesDataset->stackImage(_dimensionId);
-}
-
-QImage PointsLayer::Channel::image() const
-{
-	return _image;
 }
 
 PointsLayer::PointsLayer(const QString& pointsDatasetName, const QString& id, const QString& name, const int& flags) :
@@ -321,7 +313,7 @@ void PointsLayer::setChannelDimensionId(const int& channelId, const std::uint32_
 {
 	_channels[channelId].setDimensionId(dimensionId);
 
-	propByName<PointsProp>("Points")->setChannelImage(channelId, _channels[channelId].image());
+	computeImage();
 }
 
 QVariant PointsLayer::maxNoChannels(const int& role /*= Qt::DisplayRole*/) const
@@ -359,6 +351,8 @@ QVariant PointsLayer::noChannels(const int& role /*= Qt::DisplayRole*/) const
 void PointsLayer::setNoChannels(const std::uint32_t& noChannels)
 {
 	_noChannels = noChannels;
+
+	computeImage();
 }
 
 QVariant PointsLayer::colorMap(const int& role) const
@@ -388,4 +382,35 @@ void PointsLayer::setColorMap(const QImage& colorMap)
 	_colorMap = colorMap;
 
 	propByName<PointsProp>("Points")->setColorMap(_colorMap);
+}
+
+void PointsLayer::computeImage()
+{
+	const auto size = imageSize(Qt::EditRole).toSize();
+
+	auto image = QImage(size, QImage::Format::Format_RGBA64);
+
+	auto imageData = std::vector<std::uint16_t>();
+
+	const auto noPixels = size.width() * size.height();
+
+	imageData.resize(noPixels * 4);
+
+	for (int x = 0; x < size.width(); x++)
+	{
+		for (int y = 0; y < size.height(); y++)
+		{
+			const auto pixelIndex = y * size.width() + x;
+
+			//imageData[0 * noPixels + pixelIndex] = _pointsDataset->getData()[_channels[0].dimensionId() * noPixels + pixelIndex];
+			imageData[pixelIndex * 4] = _pointsDataset->getData()[pixelIndex * _pointsDataset->getNumDimensions() + _channels[0].dimensionId()];
+			
+			//if (_noChannels > 1)
+			//	imageData[0 * noPixels + pixelIndex] = _pointsDataset->getData()[_channels[1].dimensionId() * noPixels + pixelIndex];
+		}
+	}
+
+	memcpy(image.bits(), imageData.data(), imageData.size() * sizeof(std::uint16_t));
+
+	propByName<PointsProp>("Points")->setChannelsImage(image);
 }
