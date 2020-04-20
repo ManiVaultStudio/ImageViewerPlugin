@@ -21,7 +21,8 @@ public:
 		ColorMap = 0,
 		Channel1,
 		Channel2,
-		Channel3
+		Channel3,
+		Channel4
 	};
 
 public:

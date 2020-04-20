@@ -1,15 +1,15 @@
 R"(
 #version 330
 
-#extension GL_ARB_gpu_shader_fp64 : enable
+uniform sampler2D colorMapTexture;		// Colormap texture sampler
+uniform sampler2DArray channelTextures;	// Texture samplers (0: Channel 1, 1: Channel 2, 2: Channel 3, 3: Alpha)
+uniform vec2 displayRanges[4];			// Display ranges for each channel
+uniform int noChannels;					// Number of active channels
+uniform bool invertAlpha;				// Invert the alpha channel
+uniform float opacity;					// Render opacity
 
-uniform sampler2D textures[4];		// Texture samplers (0: Color map, 1: Channel 1, 2: Channel 2, 3: Channel 3)
-uniform vec2 displayRanges[3];		// Display ranges for each channel
-uniform int noChannels;				// Number of active channels
-uniform float opacity;				// Render opacity
-
-in vec2 uv;							// Input texture coordinates
-out vec4 fragmentColor;				// Output fragment
+in vec2 uv;								// Input texture coordinates
+out vec4 fragmentColor;					// Output fragment
 
 // Perform channel tone mapping
 float toneMapChannel(float minPixelValue, float maxPixelValue, float pixelValue)
@@ -26,10 +26,10 @@ void main(void)
 		case 1:
 		{
 			// Grab channel(s)
-			float channel = toneMapChannel(displayRanges[0].x, displayRanges[0].y, texture(textures[1], uv).r);
+			float channel = toneMapChannel(displayRanges[0].x, displayRanges[0].y, texture(channelTextures, vec3(uv, 0)).r);
 			
 			// Color mapping
-			fragmentColor = texture(textures[0], vec2(channel, 0));
+			fragmentColor = texture(colorMapTexture, vec2(channel, 0));
 			
 			break;
 		}
@@ -37,11 +37,11 @@ void main(void)
 		case 2:
 		{
 			// Grab channel(s)
-			float channel1 = toneMapChannel(displayRanges[0].x, displayRanges[0].y, texture(textures[1], uv).r);
-			float channel2 = toneMapChannel(displayRanges[1].x, displayRanges[1].y, texture(textures[2], uv).r);
+			float channel1 = toneMapChannel(displayRanges[0].x, displayRanges[0].y, texture(channelTextures, vec3(uv, 0)).r);
+			float channel2 = toneMapChannel(displayRanges[1].x, displayRanges[1].y, texture(channelTextures, vec3(uv, 1)).r);
 			
 			// Color mapping
-			fragmentColor = texture(textures[0], vec2(channel1, channel2));
+			fragmentColor = texture(colorMapTexture, vec2(channel1, channel2));
 			
 			break;
 		}
@@ -49,14 +49,17 @@ void main(void)
 		case 3:
 		{
 			// Grab channel(s)
-			fragmentColor.r = toneMapChannel(displayRanges[0].x, displayRanges[0].y, texture(textures[1], uv).r);
-			fragmentColor.g = toneMapChannel(displayRanges[1].x, displayRanges[1].y, texture(textures[2], uv).r);
-			fragmentColor.b = toneMapChannel(displayRanges[2].x, displayRanges[2].y, texture(textures[3], uv).r);
+			fragmentColor.r = toneMapChannel(displayRanges[0].x, displayRanges[0].y, texture(channelTextures, vec3(uv, 0)).r);
+			fragmentColor.g = toneMapChannel(displayRanges[1].x, displayRanges[1].y, texture(channelTextures, vec3(uv, 1)).r);
+			fragmentColor.b = toneMapChannel(displayRanges[2].x, displayRanges[2].y, texture(channelTextures, vec3(uv, 2)).r);
 			
 			break;
 		}
 	}
 	
-	fragmentColor.a = opacity;
+	// Grab alpha channel
+	float alphaChannel = toneMapChannel(displayRanges[3].x, displayRanges[3].y, texture(channelTextures, vec3(uv, 3)).r);
+
+	fragmentColor.a = alphaChannel;
 }
 )"

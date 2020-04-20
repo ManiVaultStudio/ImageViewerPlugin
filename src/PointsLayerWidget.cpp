@@ -57,6 +57,10 @@ void PointsLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Channel3DimensionId)), index);
 	});
 
+	QObject::connect(_ui->alphaComboBox, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
+		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Channel4DimensionId)), index);
+	});
+
 	QObject::connect(_ui->solidColorCheckBox, &QCheckBox::stateChanged, [this](int state) {
 		switch (state)
 		{
@@ -226,8 +230,6 @@ void PointsLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 		if (column == ult(PointsLayer::Column::ColorMap)) {
 			const auto noChannels		= _layersModel->data(topLeft.siblingAtColumn(ult(PointsLayer::Column::NoChannels)), Qt::EditRole).toInt();
 			const auto colorMapFlags	= _layersModel->flags(topLeft.siblingAtColumn(ult(PointsLayer::Column::ColorMap)));
-
-			qDebug() << noChannels;
 
 			_ui->colormapLabel->setEnabled(colorMapFlags & Qt::ItemIsEditable);
 			_ui->colormapComboBox->setEnabled(colorMapFlags & Qt::ItemIsEditable);
