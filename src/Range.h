@@ -2,8 +2,6 @@
 
 #include "Common.h"
 
-#include <QVector2D>
-
 /**
  * Range class
  *
@@ -51,9 +49,6 @@ public:
 
 	/** Returns the length of the range */
 	float length() const;
-
-	/** Converts the range to a two-dimensional vector where the first item is the minimum and the second item the maximum */
-	QVector2D toVector2D() const;
 
 private:
 	float	_min;	/** Range minimum */

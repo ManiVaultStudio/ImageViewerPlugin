@@ -1,6 +1,7 @@
 #pragma once
 
 #include "LayerNode.h"
+#include "Channel.h"
 
 class Points;
 class Images;
@@ -31,31 +32,6 @@ public:
 
 		Start = ImageSize,
 		End = ColorMap
-	};
-
-	/**
-	 * Channel class
-	 *
-	 * @author Thomas Kroes
-	 */
-	class Channel
-	{
-	public:
-		/** Default constructor */
-		Channel(PointsLayer* pointsLayer = nullptr);
-
-		/** Returns the channel dimension identifier */
-		std::uint32_t dimensionId() const;
-
-		/**
-		 * Sets the channel dimension identifier
-		 * @param dimensionId Dimension identifier
-		 */
-		void setDimensionId(const std::uint32_t& dimensionId);
-
-	private:
-		PointsLayer*	_pointsLayer;	/** Pointer to paren points layer */
-		std::uint32_t	_dimensionId;	/** Dimension identifier */
 	};
 
 public:
@@ -150,12 +126,19 @@ public: // Getters/setters
 	void setDimensionNames(const QStringList& dimensionNames);
 
 	/**
+	 * Returns channel by identifier
+	 * @param id Channel identifier
+	 * @return Channel
+	 */
+	Channel* channel(const std::uint32_t& id);
+
+	/**
 	 * Returns a channel by identifier
 	 * @param channel Channel identifier
 	 * @param role Data role
 	 * @return Channel variant form
 	 */
-	QVariant channelDimensionId(const int& channel, const int& role = Qt::DisplayRole) const;
+	QVariant channelDimensionId(const std::uint32_t& id, const int& role = Qt::DisplayRole) const;
 
 	/**
 	 * Sets a channel dimension identifier
@@ -206,15 +189,15 @@ public: // Getters/setters
 private:
 
 	/** Computes the channels image */
-	void computeImage();
+	void computeChannel(const std::uint32_t& id);
 
 private:
 	Points*				_pointsDataset;			/** Points dataset to which the layer refers */
 	Images*				_imagesDataset;			/** Images dataset from which the points dataset originates */
 	std::uint32_t		_noPoints;				/** Number of points in the dataset */
-	std::uint32_t		_noDimensions;			/** First input channel */
-	QStringList			_dimensionNames;		/** Second input channel */
-	QVector<Channel>	_channels;				/** Third input channel */
+	std::uint32_t		_noDimensions;			/** Number of dimensions in the points dataset */
+	QStringList			_dimensionNames;		/** Dimension names in the points dataset */
+	QVector<Channel*>	_channels;				/** Channels */
 	std::uint32_t		_maxNoChannels;			/** Maximum number of channels (determined by the number of dimensions) */
 	std::uint32_t		_noChannels;			/** Occupied number of channels */
 	QImage				_colorMap;				/** Color map (1D/2D) */

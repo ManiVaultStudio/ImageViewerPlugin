@@ -4,6 +4,7 @@
 #include "Range.h"
 #include "Renderer.h"
 #include "Node.h"
+#include "PointsLayer.h"
 
 #include <QDebug>
 #include <QOpenGLContext>
@@ -17,15 +18,62 @@ const std::string fragmentShaderSource =
 	#include "PointsPropFragment.glsl"
 ;
 
-PointsProp::PointsProp(Node* node, const QString& name) :
-	Prop(node, name),
+const GLuint PointsProp::channels[] = {
+	static_cast<GLuint>(TextureId::ColorMap),
+	static_cast<GLuint>(TextureId::Channel1),
+	static_cast<GLuint>(TextureId::Channel2),
+	static_cast<GLuint>(TextureId::Channel3)
+};
+
+PointsProp::PointsProp(PointsLayer* pointsLayer, const QString& name) :
+	Prop(reinterpret_cast<Node*>(pointsLayer), name),
 	_noChannels(0),
 	_channels()
 {
 	addShape<QuadShape>("Quad");
 	addShaderProgram("Quad");
+
 	addTexture("ColorMap", QOpenGLTexture::Target2D);
-	addTexture("Channels", QOpenGLTexture::Target2D);
+	addTexture("Channel0", QOpenGLTexture::Target2D);
+	addTexture("Channel1", QOpenGLTexture::Target2D);
+	addTexture("Channel2", QOpenGLTexture::Target2D);
+
+	_channels << pointsLayer->channel(0) << pointsLayer->channel(1) << pointsLayer->channel(2);
+
+	for (auto channel : _channels)
+	{
+		QObject::connect(channel, &Channel::changed, [this](Channel* channel) {
+			renderer->bindOpenGLContext();
+			{
+				const auto imageSize	= channel->imageSize();
+				const auto textureName	= QString("Channel%1").arg(QString::number(channel->id()));
+
+				auto texture = textureByName(textureName);
+
+				if (!texture->isCreated())
+					texture->create();
+
+				if (imageSize != QSize(texture->width(), texture->height())) {
+					texture->destroy();
+					texture->create();
+					texture->setSize(imageSize.width(), imageSize.height());
+					texture->setFormat(QOpenGLTexture::R32F);
+					texture->allocateStorage(QOpenGLTexture::Red, QOpenGLTexture::Float32);
+					texture->setWrapMode(QOpenGLTexture::ClampToEdge);
+					texture->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
+				}
+				
+				texture->setData(QOpenGLTexture::PixelFormat::Red, QOpenGLTexture::PixelType::Float32, channel->elements().constData());
+				
+				const auto rectangle = QRectF(QPointF(0.f, 0.f), QSizeF(static_cast<float>(imageSize.width()), static_cast<float>(imageSize.height())));
+
+				this->shapeByName<QuadShape>("Quad")->setRectangle(rectangle);
+
+				updateModelMatrix();
+			}
+			renderer->releaseOpenGLContext();
+		});
+	}
 
 	initialize();
 }
@@ -72,12 +120,16 @@ void PointsProp::initialize()
 				throw std::exception("Unable to bind quad shader program");
 			}
 
-			textureByName("Channels")->setWrapMode(QOpenGLTexture::Repeat);
-			textureByName("Channels")->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
+			for (int channelId = 0; channelId < 3; ++channelId) {
+				const auto textureName = QString("Channel%1").arg(QString::number(channelId));
+
+				textureByName(textureName)->setWrapMode(QOpenGLTexture::Repeat);
+				textureByName(textureName)->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
+			}
 
 			_initialized = true;
 		}
-		Renderable::renderer->releaseOpenGLContext();
+		renderer->releaseOpenGLContext();
 	}
 	catch (std::exception& e)
 	{
@@ -104,19 +156,31 @@ void PointsProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 			textureByName("ColorMap")->bind();
 		}
 
-		if (textureByName("Channels")->isCreated()) {
+		if (textureByName("Channel0")->isCreated()) {
 			renderer->openGLContext()->functions()->glActiveTexture(GL_TEXTURE1);
-			textureByName("Channels")->bind();
+			textureByName("Channel0")->bind();
+		}
+
+		if (textureByName("Channel1")->isCreated()) {
+			renderer->openGLContext()->functions()->glActiveTexture(GL_TEXTURE2);
+			textureByName("Channel1")->bind();
+		}
+
+		if (textureByName("Channel2")->isCreated()) {
+			renderer->openGLContext()->functions()->glActiveTexture(GL_TEXTURE3);
+			textureByName("Channel2")->bind();
 		}
 			
 		if (shaderProgram->bind()) {
-			const GLuint channels[] = { 1, 2, 3 };
+			const QVector2D displayRanges[] = {
+				_channels.at(0)->displayRangeVector(),
+				_channels.at(1)->displayRangeVector(),
+				_channels.at(2)->displayRangeVector()
+			};
 
-			shaderProgram->setUniformValue("colorMap", 0);
-			shaderProgram->setUniformValue("channels", 1);
-			shaderProgram->setUniformValueArray("noChannels", channels, 3);
-
-			shaderProgram->setUniformValue("channelRange", _channels.displayRange(Qt::EditRole).value<Range>().toVector2D());
+			shaderProgram->setUniformValueArray("textures", channels, 4);
+//			shaderProgram->setUniformValue("noChannels", channels);
+			shaderProgram->setUniformValueArray("displayRanges", displayRanges, 3);
 			shaderProgram->setUniformValue("opacity", opacity);
 			shaderProgram->setUniformValue("transform", nodeMVP * modelMatrix());
 
@@ -128,8 +192,14 @@ void PointsProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 			throw std::exception("Unable to bind quad shader program");
 		}
 
-		if (textureByName("Channels")->isCreated())
-			textureByName("Channels")->release();
+		if (textureByName("Channel0")->isCreated())
+			textureByName("Channel0")->release();
+
+		if (textureByName("Channel1")->isCreated())
+			textureByName("Channel1")->release();
+
+		if (textureByName("Channel2")->isCreated())
+			textureByName("Channel2")->release();
 
 		if (textureByName("ColorMap")->isCreated())
 			textureByName("ColorMap")->release();
@@ -146,34 +216,6 @@ void PointsProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 QRectF PointsProp::boundingRectangle() const
 {
 	return shapeByName<QuadShape>("Quad")->rectangle();
-}
-
-void PointsProp::setChannelsImage(const QImage& image)
-{
-	//qDebug() << fullName() << "set image";
-
-	renderer->bindOpenGLContext();
-	{
-		_channels.setImage(image);
-
-		auto texture = textureByName("Channels");
-
-		texture->destroy();
-		texture->create();
-		texture->setSize(image.size().width(), image.size().height());
-		texture->setFormat(QOpenGLTexture::RGBA16_UNorm);
-		texture->setWrapMode(QOpenGLTexture::ClampToEdge);
-		texture->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
-		texture->allocateStorage();
-		texture->setData(QOpenGLTexture::PixelFormat::RGBA, QOpenGLTexture::PixelType::UInt16, image.bits());
-
-		const auto rectangle = QRectF(QPointF(0.f, 0.f), QSizeF(static_cast<float>(image.width()), static_cast<float>(image.height())));
-
-		shapeByName<QuadShape>("Quad")->setRectangle(rectangle);
-
-		updateModelMatrix();
-	}
-	Renderable::renderer->releaseOpenGLContext();
 }
 
 void PointsProp::setColorMap(const QImage& colorMap)

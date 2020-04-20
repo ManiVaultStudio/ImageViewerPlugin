@@ -1,12 +1,12 @@
 #pragma once
 
 #include "Prop.h"
-#include "WindowLevelImage.h"
+#include "Channel.h"
 
-class Node;
+class PointsLayer;
 
 /**
- * TODO
+ * Points prop class
  *
  * @author Thomas Kroes
  */
@@ -15,8 +15,18 @@ class PointsProp : public Prop
 	Q_OBJECT
 
 public:
+
+	/** Texture identifiers */
+	enum class TextureId {
+		ColorMap = 0,
+		Channel1,
+		Channel2,
+		Channel3
+	};
+
+public:
 	/** TODO */
-	PointsProp(Node* node, const QString& name);
+	PointsProp(PointsLayer* pointsLayer, const QString& name);
 
 	/** Destructor */
 	~PointsProp();
@@ -35,9 +45,6 @@ protected: // Inherited
 public: // Configuration
 
 	/** TODO */
-	void setChannelsImage(const QImage& image);
-
-	/** TODO */
 	void setColorMap(const QImage& colorMap);
 
 protected:
@@ -46,6 +53,8 @@ protected:
 	void updateModelMatrix();
 
 private:
-	std::int32_t		_noChannels;	/** Number of active channels */
-	WindowLevelImage	_channels;		/** Image */
+	std::int32_t		_noChannels;		/** Number of active channels */
+	QVector<Channel*>	_channels;			/** Channels */
+
+	static const GLuint channels[];
 };

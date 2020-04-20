@@ -2,26 +2,11 @@
 #include "ImageViewerPlugin.h"
 #include "PointsProp.h"
 
+
 #include "PointData.h"
 #include "ImageData/Images.h"
 
 #include <QDebug>
-
-PointsLayer::Channel::Channel(PointsLayer* pointsLayer /*= nullptr*/) :
-	_pointsLayer(pointsLayer),
-	_dimensionId(0)
-{
-}
-
-std::uint32_t PointsLayer::Channel::dimensionId() const
-{
-	return _dimensionId;
-}
-
-void PointsLayer::Channel::setDimensionId(const std::uint32_t& dimensionId)
-{
-	_dimensionId = dimensionId;
-}
 
 PointsLayer::PointsLayer(const QString& pointsDatasetName, const QString& id, const QString& name, const int& flags) :
 	LayerNode(pointsDatasetName, LayerNode::Type::Points, id, name, flags),
@@ -37,9 +22,9 @@ PointsLayer::PointsLayer(const QString& pointsDatasetName, const QString& id, co
 
 void PointsLayer::init()
 {
-	addProp<PointsProp>(this, "Points");
+	_channels << new Channel(this, 0, 0) << new Channel(this, 1, 1) << new Channel(this, 2, 2);
 
-	_channels << Channel(this) << Channel(this) << Channel(this);
+	addProp<PointsProp>(this, "Points");
 
 	_pointsDataset = &imageViewerPlugin->requestData<Points>(_name);
 	_imagesDataset = imageViewerPlugin->sourceImagesSetFromPointsSet(_datasetName);
@@ -287,9 +272,14 @@ void PointsLayer::setDimensionNames(const QStringList& dimensionNames)
 	_dimensionNames = dimensionNames;
 }
 
-QVariant PointsLayer::channelDimensionId(const int& channel, const int& role /*= Qt::DisplayRole*/) const
+Channel* PointsLayer::channel(const std::uint32_t& id)
 {
-	const auto dimensionIdString = QString::number(_channels[channel].dimensionId());
+	return _channels[id];
+}
+
+QVariant PointsLayer::channelDimensionId(const std::uint32_t& id, const int& role /*= Qt::DisplayRole*/) const
+{
+	const auto dimensionIdString = QString::number(_channels[id]->dimensionId());
 
 	switch (role)
 	{
@@ -297,7 +287,7 @@ QVariant PointsLayer::channelDimensionId(const int& channel, const int& role /*=
 			return dimensionIdString;
 
 		case Qt::EditRole:
-			return _channels[channel].dimensionId();
+			return _channels[id]->dimensionId();
 
 		case Qt::ToolTipRole:
 			return QString("Dimension identifier: %1").arg(dimensionIdString);
@@ -311,9 +301,9 @@ QVariant PointsLayer::channelDimensionId(const int& channel, const int& role /*=
 
 void PointsLayer::setChannelDimensionId(const int& channelId, const std::uint32_t& dimensionId)
 {
-	_channels[channelId].setDimensionId(dimensionId);
+	_channels[channelId]->setDimensionId(dimensionId);
 
-	computeImage();
+	computeChannel(channelId);
 }
 
 QVariant PointsLayer::maxNoChannels(const int& role /*= Qt::DisplayRole*/) const
@@ -352,7 +342,10 @@ void PointsLayer::setNoChannels(const std::uint32_t& noChannels)
 {
 	_noChannels = noChannels;
 
-	computeImage();
+	for (int channelId = 0; channelId < _noChannels; ++channelId)
+	{
+		computeChannel(channelId);
+	}
 }
 
 QVariant PointsLayer::colorMap(const int& role) const
@@ -384,17 +377,11 @@ void PointsLayer::setColorMap(const QImage& colorMap)
 	propByName<PointsProp>("Points")->setColorMap(_colorMap);
 }
 
-void PointsLayer::computeImage()
+void PointsLayer::computeChannel(const std::uint32_t& id)
 {
 	const auto size = imageSize(Qt::EditRole).toSize();
 
-	auto image = QImage(size, QImage::Format::Format_RGBA64);
-
-	auto imageData = std::vector<std::uint16_t>();
-
-	const auto noPixels = size.width() * size.height();
-
-	imageData.resize(noPixels * 4);
+	_channels[id]->setImageSize(size);
 
 	for (int x = 0; x < size.width(); x++)
 	{
@@ -402,15 +389,9 @@ void PointsLayer::computeImage()
 		{
 			const auto pixelIndex = y * size.width() + x;
 
-			//imageData[0 * noPixels + pixelIndex] = _pointsDataset->getData()[_channels[0].dimensionId() * noPixels + pixelIndex];
-			imageData[pixelIndex * 4] = _pointsDataset->getData()[pixelIndex * _pointsDataset->getNumDimensions() + _channels[0].dimensionId()];
-			
-			//if (_noChannels > 1)
-			//	imageData[0 * noPixels + pixelIndex] = _pointsDataset->getData()[_channels[1].dimensionId() * noPixels + pixelIndex];
+			(*_channels[id])[pixelIndex] = _pointsDataset->getData()[pixelIndex * _pointsDataset->getNumDimensions() + _channels[0]->dimensionId()];
 		}
 	}
 
-	memcpy(image.bits(), imageData.data(), imageData.size() * sizeof(std::uint16_t));
-
-	propByName<PointsProp>("Points")->setChannelsImage(image);
+	_channels[id]->setChanged();
 }

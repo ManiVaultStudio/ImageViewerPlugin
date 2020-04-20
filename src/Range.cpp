@@ -43,8 +43,3 @@ float Range::length() const
 {
 	return _max - _min;
 }
-
-QVector2D Range::toVector2D() const
-{
-	return QVector2D(_min, _max);
-}
