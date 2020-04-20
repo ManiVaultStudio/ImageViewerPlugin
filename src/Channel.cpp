@@ -4,6 +4,7 @@
 
 Channel::Channel(QObject* parent, const std::uint32_t& id, const std::uint32_t& dimensionId /*= -1*/) :
 	QObject(parent),
+	_imageSize(),
 	_id(id),
 	_dimensionId(dimensionId),
 	_elements(),
@@ -51,8 +52,6 @@ const std::int32_t& Channel::dimensionId() const
 void Channel::setDimensionId(const std::int32_t& dimensionId)
 {
 	_dimensionId = dimensionId;
-
-	setElements(Elements());
 }
 
 const Channel::Elements& Channel::elements() const
@@ -151,6 +150,11 @@ void Channel::computeDisplayRange()
 
 	_displayRange.setMin(std::clamp(_level - (_window / 2.0f), _range.min(), _range.max()));
 	_displayRange.setMax(std::clamp(_level + (_window / 2.0f), _range.min(), _range.max()));
+}
+
+bool Channel::isValid() const
+{
+	return _dimensionId >= 0;
 }
 
 void Channel::setChanged()

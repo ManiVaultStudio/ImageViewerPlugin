@@ -8,9 +8,10 @@ uniform vec2 displayRanges[3];		// Display ranges for each channel
 uniform int noChannels;				// Number of active channels
 uniform float opacity;				// Render opacity
 
-in vec2 uv;
-out vec4 fragmentColor;
+in vec2 uv;							// Input texture coordinates
+out vec4 fragmentColor;				// Output fragment
 
+// Perform channel tone mapping
 float toneMapChannel(float minPixelValue, float maxPixelValue, float pixelValue)
 {
 	float range		= maxPixelValue - minPixelValue;
@@ -21,10 +22,41 @@ float toneMapChannel(float minPixelValue, float maxPixelValue, float pixelValue)
 
 void main(void)
 {
-	float channel1 = toneMapChannel(displayRanges[0].x, displayRanges[0].y, texture(textures[1], uv).r);
+	switch (noChannels) {
+		case 1:
+		{
+			// Grab channel(s)
+			float channel = toneMapChannel(displayRanges[0].x, displayRanges[0].y, texture(textures[1], uv).r);
+			
+			// Color mapping
+			fragmentColor = texture(textures[0], vec2(channel, 0));
+			
+			break;
+		}
 
-	fragmentColor = texture(textures[0], vec2(channel1, 0));
-	//fragmentColor.r = channel1;
+		case 2:
+		{
+			// Grab channel(s)
+			float channel1 = toneMapChannel(displayRanges[0].x, displayRanges[0].y, texture(textures[1], uv).r);
+			float channel2 = toneMapChannel(displayRanges[1].x, displayRanges[1].y, texture(textures[2], uv).r);
+			
+			// Color mapping
+			fragmentColor = texture(textures[0], vec2(channel1, channel2));
+			
+			break;
+		}
+
+		case 3:
+		{
+			// Grab channel(s)
+			fragmentColor.r = toneMapChannel(displayRanges[0].x, displayRanges[0].y, texture(textures[1], uv).r);
+			fragmentColor.g = toneMapChannel(displayRanges[1].x, displayRanges[1].y, texture(textures[2], uv).r);
+			fragmentColor.b = toneMapChannel(displayRanges[2].x, displayRanges[2].y, texture(textures[3], uv).r);
+			
+			break;
+		}
+	}
+	
 	fragmentColor.a = opacity;
 }
 )"

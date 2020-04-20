@@ -45,7 +45,11 @@ PointsProp::PointsProp(PointsLayer* pointsLayer, const QString& name) :
 		QObject::connect(channel, &Channel::changed, [this](Channel* channel) {
 			renderer->bindOpenGLContext();
 			{
-				const auto imageSize	= channel->imageSize();
+				const auto imageSize = channel->imageSize();
+
+				if (!imageSize.isValid())
+					return;
+
 				const auto textureName	= QString("Channel%1").arg(QString::number(channel->id()));
 
 				auto texture = textureByName(textureName);
@@ -84,6 +88,8 @@ PointsProp::PointsProp(PointsLayer* pointsLayer, const QString& name) :
 
 			if (!texture->isCreated())
 				texture->create();
+
+			texture->setWrapMode(QOpenGLTexture::ClampToEdge);
 		}
 		renderer->releaseOpenGLContext();
 	});
@@ -132,17 +138,6 @@ void PointsProp::initialize()
 			else {
 				throw std::exception("Unable to bind quad shader program");
 			}
-
-			for (int channelId = 0; channelId < 3; ++channelId) {
-				const auto textureName = QString("Channel%1").arg(QString::number(channelId));
-
-				auto texture = textureByName(textureName);
-
-				texture->setWrapMode(QOpenGLTexture::Repeat);
-				texture->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
-			}
-
-			textureByName("ColorMap")->setWrapMode(QOpenGLTexture::ClampToEdge);
 
 			_initialized = true;
 		}
@@ -195,8 +190,10 @@ void PointsProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 				_channels.at(2)->displayRangeVector()
 			};
 
+			const auto noChannels = static_cast<PointsLayer*>(_node)->noChannels(Qt::EditRole).toInt();
+
 			shaderProgram->setUniformValueArray("textures", channels, 4);
-//			shaderProgram->setUniformValue("noChannels", channels);
+			shaderProgram->setUniformValue("noChannels", noChannels);
 			shaderProgram->setUniformValueArray("displayRanges", displayRanges, 3);
 			shaderProgram->setUniformValue("opacity", opacity);
 			shaderProgram->setUniformValue("transform", nodeMVP * modelMatrix());

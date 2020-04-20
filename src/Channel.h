@@ -120,6 +120,12 @@ public:
 		return _elements[i];
 	}
 
+	/**
+	 * Determines whether the channel is valid (dimension identifier >= 0)
+	 * @return Whether the channel is valid
+	 */
+	bool isValid() const;
+
 	/** Indicates that the elements have changed */
 	void setChanged();
 

@@ -1,7 +1,7 @@
 #include "PointsLayer.h"
 #include "ImageViewerPlugin.h"
 #include "PointsProp.h"
-
+#include "Renderer.h"
 
 #include "PointData.h"
 #include "ImageData/Images.h"
@@ -22,7 +22,7 @@ PointsLayer::PointsLayer(const QString& pointsDatasetName, const QString& id, co
 
 void PointsLayer::init()
 {
-	_channels << new Channel(this, 0, 0) << new Channel(this, 1, 1) << new Channel(this, 2, 2);
+	_channels << new Channel(this, 0) << new Channel(this, 1) << new Channel(this, 2);
 
 	addProp<PointsProp>(this, "Points");
 
@@ -35,6 +35,7 @@ void PointsLayer::init()
 	setMaxNoChannels(std::min(3u, _noDimensions));
 	setNoChannels(1);
 	setChannelDimensionId(0, 0);
+	setColorMap(imageViewerPlugin->colorMapModel().colorMap(0)->image());
 
 	auto dimensionNames = QStringList::fromVector(QVector<QString>::fromStdVector(_pointsDataset->getDimensionNames()));
 
@@ -379,6 +380,9 @@ void PointsLayer::setColorMap(const QImage& colorMap)
 
 void PointsLayer::computeChannel(const std::uint32_t& id)
 {
+	if (_channels[id]->dimensionId() < 0)
+		return;
+
 	const auto size = imageSize(Qt::EditRole).toSize();
 
 	_channels[id]->setImageSize(size);
@@ -389,7 +393,7 @@ void PointsLayer::computeChannel(const std::uint32_t& id)
 		{
 			const auto pixelIndex = y * size.width() + x;
 
-			(*_channels[id])[pixelIndex] = _pointsDataset->getData()[pixelIndex * _pointsDataset->getNumDimensions() + _channels[0]->dimensionId()];
+			(*_channels[id])[pixelIndex] = _pointsDataset->getData()[pixelIndex * _pointsDataset->getNumDimensions() + _channels[id]->dimensionId()];
 		}
 	}
 

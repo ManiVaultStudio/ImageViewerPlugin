@@ -42,6 +42,7 @@ void PointsLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 
 			case Qt::Checked:
 				_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::NoChannels)), 2);
+				_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Channel2)), _ui->channel2ComboBox->currentIndex());
 				break;
 		}
 		
@@ -56,6 +57,8 @@ void PointsLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 
 			case Qt::Checked:
 				_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::NoChannels)), 3);
+				_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Channel2)), _ui->channel2ComboBox->currentIndex());
+				_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Channel3)), _ui->channel3ComboBox->currentIndex());
 				break;
 		}
 
@@ -69,7 +72,7 @@ void PointsLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Channel2)), index);
 	});
 
-	QObject::connect(_ui->channel2ComboBox, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
+	QObject::connect(_ui->channel3ComboBox, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
 		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Channel3)), index);
 	});
 

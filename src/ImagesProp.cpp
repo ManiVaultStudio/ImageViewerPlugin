@@ -6,6 +6,8 @@
 #include "Node.h"
 
 #include <QDebug>
+#include <QOpenGLContext>
+#include <QOpenGLFunctions>
 
 const std::string vertexShaderSource =
 	#include "ImagesPropVertex.glsl"
@@ -97,6 +99,8 @@ void ImagesProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 		const auto shape			= shapeByName<QuadShape>("Quad");
 		const auto shaderProgram	= shaderProgramByName("Quad");
 		const auto texture			= textureByName("Quad");
+
+		renderer->openGLContext()->functions()->glActiveTexture(GL_TEXTURE0);
 
 		texture->bind();
 

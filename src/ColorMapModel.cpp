@@ -153,7 +153,7 @@ const ColorMap* ColorMapModel::colorMap(const int& row) const
 {
 	const auto colorMapIndex = index(row, 0);
 
-	if (colorMapIndex.isValid())
+	if (!colorMapIndex.isValid())
 		return nullptr;
 
 	return &_colorMaps.at(row);
