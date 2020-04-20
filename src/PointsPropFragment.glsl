@@ -60,6 +60,9 @@ void main(void)
 	// Grab alpha channel
 	float alphaChannel = toneMapChannel(displayRanges[3].x, displayRanges[3].y, texture(channelTextures, vec3(uv, 3)).r);
 
-	fragmentColor.a = alphaChannel;
+	if (invertAlpha)
+		alphaChannel = 1.0f - alphaChannel;
+
+	fragmentColor.a = opacity;
 }
 )"

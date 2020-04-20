@@ -35,14 +35,20 @@ void PointsLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 
 	QObject::connect(_ui->channel2CheckBox, &QCheckBox::stateChanged, [this](int state) {
 		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Channel2Enabled)), state == Qt::Checked);
+		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Channel2DimensionId)), _ui->channel2ComboBox->currentIndex());
 	});
 
 	QObject::connect(_ui->channel3CheckBox, &QCheckBox::stateChanged, [this](int state) {
 		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Channel3Enabled)), state == Qt::Checked);
+		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Channel3DimensionId)), _ui->channel3ComboBox->currentIndex());
 	});
 
 	QObject::connect(_ui->alphaCheckBox, &QCheckBox::stateChanged, [this](int state) {
 		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Channel4Enabled)), state == Qt::Checked);
+	});
+
+	QObject::connect(_ui->alphaInvertCheckBox, &QCheckBox::stateChanged, [this](int state) {
+		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Channel4Inverted)), state == Qt::Checked);
 	});
 
 	QObject::connect(_ui->channel1ComboBox, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {

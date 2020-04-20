@@ -188,11 +188,15 @@ void PointsProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 				_channels.at(3)->displayRangeVector()
 			};
 
-			const auto noChannels = static_cast<PointsLayer*>(_node)->noChannels(Qt::EditRole).toInt();
+			auto pointsLayer = static_cast<PointsLayer*>(_node);
+
+			const auto noChannels	= pointsLayer->noChannels(Qt::EditRole).toInt();
+			const auto invertAlpha	= pointsLayer->channel(3)->inverted();
 
 			shaderProgram->setUniformValue("colorMapTexture", 0);
 			shaderProgram->setUniformValue("channelTextures", 1);
 			shaderProgram->setUniformValue("noChannels", noChannels);
+			shaderProgram->setUniformValue("invertAlpha", invertAlpha);
 			shaderProgram->setUniformValueArray("displayRanges", displayRanges, 4);
 			shaderProgram->setUniformValue("opacity", opacity);
 			shaderProgram->setUniformValue("transform", nodeMVP * modelMatrix());

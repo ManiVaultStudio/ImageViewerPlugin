@@ -28,12 +28,11 @@ void PointsLayer::init()
 	_pointsDataset = &imageViewerPlugin->requestData<Points>(_name);
 	_imagesDataset = imageViewerPlugin->sourceImagesSetFromPointsSet(_datasetName);
 
-	//LayerNode::imageViewerPlugin->requestData(_imagesDatasetName);
 	setNoPoints(_pointsDataset->getNumPoints());
 	setNoDimensions(_pointsDataset->getNumDimensions());
 	setMaxNoChannels(std::min(3u, _noDimensions));
 	setChannelDimensionId(0, 0);
-	//setColorMap(imageViewerPlugin->colorMapModel().colorMap(0)->image());
+	setColorMap(imageViewerPlugin->colorMapModel().colorMap(0)->image());
 	setSolidColor(false);
 	setChannelEnabled(0, true);
 
