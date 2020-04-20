@@ -22,12 +22,15 @@ public:
 	/**  Columns */
 	enum class Column {
 		ImageSize = ult(LayerNode::Column::End) + 1,		// Image size
-		Channel1,											// First input channel dimension identifier
-		Channel2,											// Second input channel dimension identifier
-		Channel3,											// Third input channel dimension identifier
-		Channel1Enabled,									// First input channel dimension identifier
-		Channel2Enabled,									// Second input channel dimension identifier
-		Channel3Enabled,									// Third input channel dimension identifier
+		Channel1DimensionId,								// First input channel dimension identifier
+		Channel2DimensionId,								// Second input channel dimension identifier
+		Channel3DimensionId,								// Third input channel dimension identifier
+		Channel4DimensionId,								// Alpha input channel dimension identifier
+		Channel1Enabled,									// First input channel enabled
+		Channel2Enabled,									// Second input channel enabled
+		Channel3Enabled,									// Third input channel enabled
+		Channel4Enabled,									// Alpha input channel enabled
+		Channel4Inverted,									// Alpha invert
 		NoChannels,											// Occupied number of channels
 		MaxNoChannels,										// The maximum number of channels
 		DimensionNames,										// Dimension names

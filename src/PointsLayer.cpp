@@ -21,7 +21,7 @@ PointsLayer::PointsLayer(const QString& pointsDatasetName, const QString& id, co
 
 void PointsLayer::init()
 {
-	_channels << new Channel(this, 0) << new Channel(this, 1) << new Channel(this, 2);
+	_channels << new Channel(this, 0) << new Channel(this, 1) << new Channel(this, 2) << new Channel(this, 3);
 	
 	addProp<PointsProp>(this, "Points");
 
@@ -63,13 +63,13 @@ Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
 		case Column::ImageSize:
 			break;
 
-		case Column::Channel1:
+		case Column::Channel1DimensionId:
 		{
 			flags |= Qt::ItemIsEditable;
 			break;
 		}
 
-		case Column::Channel2:
+		case Column::Channel2DimensionId:
 		{
 			if (_channels[1]->enabled())
 				flags |= Qt::ItemIsEditable;
@@ -77,9 +77,17 @@ Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
 			break;
 		}
 
-		case Column::Channel3:
+		case Column::Channel3DimensionId:
 		{
 			if (_channels[2]->enabled())
+				flags |= Qt::ItemIsEditable;
+
+			break;
+		}
+
+		case Column::Channel4DimensionId:
+		{
+			if (_channels[3]->enabled())
 				flags |= Qt::ItemIsEditable;
 
 			break;
@@ -104,6 +112,12 @@ Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
 			break;
 		}
 
+		case Column::Channel4Enabled:
+		{
+			flags |= Qt::ItemIsEditable;
+			break;
+		}
+
 		case Column::MaxNoChannels:
 		case Column::NoChannels:
 		case Column::DimensionNames:
@@ -113,7 +127,7 @@ Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
 
 		case Column::ColorMap:
 		{
-			if (!_solidColor)
+			if (!_solidColor && noChannels(Qt::EditRole).toInt() < 3)
 				flags |= Qt::ItemIsEditable;
 
 			break;
@@ -143,14 +157,17 @@ QVariant PointsLayer::data(const QModelIndex& index, const int& role) const
 		case Column::ImageSize:
 			return imageSize(role);
 
-		case Column::Channel1:
+		case Column::Channel1DimensionId:
 			return channelDimensionId(0, role);
 
-		case Column::Channel2:
+		case Column::Channel2DimensionId:
 			return channelDimensionId(1, role);
 
-		case Column::Channel3:
+		case Column::Channel3DimensionId:
 			return channelDimensionId(2, role);
+
+		case Column::Channel4DimensionId:
+			return channelDimensionId(3, role);
 
 		case Column::Channel1Enabled:
 			return channelEnabled(0, role);
@@ -160,6 +177,9 @@ QVariant PointsLayer::data(const QModelIndex& index, const int& role) const
 
 		case Column::Channel3Enabled:
 			return channelEnabled(2, role);
+
+		case Column::Channel4Enabled:
+			return channelEnabled(3, role);
 
 		case Column::MaxNoChannels:
 			return maxNoChannels(role);
@@ -197,16 +217,20 @@ QModelIndexList PointsLayer::setData(const QModelIndex& index, const QVariant& v
 		case Column::ImageSize:
 			break;
 
-		case Column::Channel1:
+		case Column::Channel1DimensionId:
 			setChannelDimensionId(0, value.toInt());
 			break;
 
-		case Column::Channel2:
+		case Column::Channel2DimensionId:
 			setChannelDimensionId(1, value.toInt());
 			break;
 
-		case Column::Channel3:
+		case Column::Channel3DimensionId:
 			setChannelDimensionId(2, value.toInt());
+			break;
+
+		case Column::Channel4DimensionId:
+			setChannelDimensionId(3, value.toInt());
 			break;
 			
 		case Column::Channel1Enabled:
@@ -222,8 +246,8 @@ QModelIndexList PointsLayer::setData(const QModelIndex& index, const QVariant& v
 			if (enabled == false)
 				setChannelEnabled(2, enabled);
 
-			affectedIds << index.siblingAtColumn(ult(Column::Channel2));
-			affectedIds << index.siblingAtColumn(ult(Column::Channel3));
+			affectedIds << index.siblingAtColumn(ult(Column::Channel2DimensionId));
+			affectedIds << index.siblingAtColumn(ult(Column::Channel3DimensionId));
 			affectedIds << index.siblingAtColumn(ult(Column::Channel3Enabled));
 			affectedIds << index.siblingAtColumn(ult(Column::ColorMap));
 			break;
@@ -235,9 +259,17 @@ QModelIndexList PointsLayer::setData(const QModelIndex& index, const QVariant& v
 
 			setChannelEnabled(2, enabled);
 
-			affectedIds << index.siblingAtColumn(ult(Column::Channel2));
-			affectedIds << index.siblingAtColumn(ult(Column::Channel3));
+			affectedIds << index.siblingAtColumn(ult(Column::Channel2DimensionId));
+			affectedIds << index.siblingAtColumn(ult(Column::Channel3DimensionId));
 			affectedIds << index.siblingAtColumn(ult(Column::ColorMap));
+			break;
+		}
+
+		case Column::Channel4Enabled:
+		{
+			setChannelEnabled(3, value.toBool());
+
+			affectedIds << index.siblingAtColumn(ult(Column::Channel3DimensionId));
 			break;
 		}
 

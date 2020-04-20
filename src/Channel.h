@@ -40,6 +40,15 @@ public:
 	 */
 	void setEnabled(const bool& enabled);
 
+	/** Returns whether the channel is inverted */
+	bool inverted() const;
+
+	/**
+	 * Sets  whether the channel is inverted
+	 * @param enabled Whether the channel is inverted
+	 */
+	void setInverted(const bool& inverted);
+
 	/** Returns the channel image size */
 	QSize imageSize() const;
 
@@ -145,6 +154,7 @@ signals:
 
 private:
 	bool			_enabled;				/** Whether the channel is enabled */
+	bool			_inverted;				/** Whether the channel is inverted */
 	QSize			_imageSize;				/** Image size */
 	std::int32_t	_id;					/** Identifier */
 	std::int32_t	_dimensionId;			/** Dimension identifier */

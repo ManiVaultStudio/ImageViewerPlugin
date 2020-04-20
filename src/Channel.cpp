@@ -28,6 +28,16 @@ void Channel::setEnabled(const bool& enabled)
 	_enabled = enabled;
 }
 
+bool Channel::inverted() const
+{
+	return _inverted;
+}
+
+void Channel::setInverted(const bool& inverted)
+{
+	_inverted = inverted;
+}
+
 QSize Channel::imageSize() const
 {
 	return _imageSize;
