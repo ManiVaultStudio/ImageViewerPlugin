@@ -15,6 +15,8 @@ class Images;
  */
 class PointsLayer : public LayerNode
 {
+	Q_OBJECT
+
 public:
 
 	/**  Columns */
@@ -190,6 +192,14 @@ private:
 
 	/** Computes the channels image */
 	void computeChannel(const std::uint32_t& id);
+
+signals:
+
+	/**
+	 * Signals that the color map has changed
+	 * @param colorMap Color map
+	 */
+	void colorMapChanged(const QImage& colorMap);
 
 private:
 	Points*				_pointsDataset;			/** Points dataset to which the layer refers */

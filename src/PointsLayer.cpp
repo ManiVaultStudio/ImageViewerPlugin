@@ -374,7 +374,7 @@ void PointsLayer::setColorMap(const QImage& colorMap)
 {
 	_colorMap = colorMap;
 
-	propByName<PointsProp>("Points")->setColorMap(_colorMap);
+	emit colorMapChanged(_colorMap);
 }
 
 void PointsLayer::computeChannel(const std::uint32_t& id)

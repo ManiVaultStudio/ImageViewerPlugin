@@ -125,9 +125,9 @@ protected:
 	* Get texture by name
 	* @param name Name of the texture
 	*/
-	QSharedPointer<QOpenGLTexture> textureByName(const QString& name)
+	QSharedPointer<QOpenGLTexture>& textureByName(const QString& name)
 	{
-		return _textures.value(name);
+		return _textures[name];
 	}
 
 	/**

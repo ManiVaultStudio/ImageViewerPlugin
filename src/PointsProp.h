@@ -42,11 +42,6 @@ protected: // Inherited
 	/** Initializes the prop */
 	void initialize() override;
 
-public: // Configuration
-
-	/** TODO */
-	void setColorMap(const QImage& colorMap);
-
 protected:
 
 	/** TODO */

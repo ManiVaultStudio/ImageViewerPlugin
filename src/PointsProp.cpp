@@ -75,6 +75,19 @@ PointsProp::PointsProp(PointsLayer* pointsLayer, const QString& name) :
 		});
 	}
 
+	QObject::connect(pointsLayer, &PointsLayer::colorMapChanged, [this](const QImage& colorMap) {
+		renderer->bindOpenGLContext();
+		{
+			auto& texture = textureByName("ColorMap");
+			
+			texture.reset(new QOpenGLTexture(colorMap));
+
+			if (!texture->isCreated())
+				texture->create();
+		}
+		renderer->releaseOpenGLContext();
+	});
+
 	initialize();
 }
 
@@ -123,9 +136,13 @@ void PointsProp::initialize()
 			for (int channelId = 0; channelId < 3; ++channelId) {
 				const auto textureName = QString("Channel%1").arg(QString::number(channelId));
 
-				textureByName(textureName)->setWrapMode(QOpenGLTexture::Repeat);
-				textureByName(textureName)->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
+				auto texture = textureByName(textureName);
+
+				texture->setWrapMode(QOpenGLTexture::Repeat);
+				texture->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
 			}
+
+			textureByName("ColorMap")->setWrapMode(QOpenGLTexture::ClampToEdge);
 
 			_initialized = true;
 		}
@@ -216,20 +233,6 @@ void PointsProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 QRectF PointsProp::boundingRectangle() const
 {
 	return shapeByName<QuadShape>("Quad")->rectangle();
-}
-
-void PointsProp::setColorMap(const QImage& colorMap)
-{
-	auto texture = textureByName("ColorMap");
-
-	texture->destroy();
-	texture->create();
-	texture->setSize(colorMap.size().width(), colorMap.size().height());
-	texture->setFormat(QOpenGLTexture::RGBA8_UNorm);
-	texture->setWrapMode(QOpenGLTexture::ClampToEdge);
-	texture->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
-	texture->allocateStorage();
-	texture->setData(QOpenGLTexture::PixelFormat::RGBA, QOpenGLTexture::PixelType::UInt8, colorMap.bits());
 }
 
 void PointsProp::updateModelMatrix()

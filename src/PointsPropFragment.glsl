@@ -23,8 +23,8 @@ void main(void)
 {
 	float channel1 = toneMapChannel(displayRanges[0].x, displayRanges[0].y, texture(textures[1], uv).r);
 
-	//fragmentColor = texture(colorMap, vec2(channel1, 0));
-	fragmentColor.r = channel1;
+	fragmentColor = texture(textures[0], vec2(channel1, 0));
+	//fragmentColor.r = channel1;
 	fragmentColor.a = opacity;
 }
 )"
