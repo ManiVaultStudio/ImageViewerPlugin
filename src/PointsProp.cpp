@@ -82,6 +82,9 @@ PointsProp::PointsProp(PointsLayer* pointsLayer, const QString& name) :
 	QObject::connect(pointsLayer, &PointsLayer::colorMapChanged, [this](const QImage& colorMap) {
 		renderer->bindOpenGLContext();
 		{
+			if (colorMap.isNull())
+				return;
+
 			auto& texture = textureByName("ColorMap");
 			
 			texture.reset(new QOpenGLTexture(colorMap));

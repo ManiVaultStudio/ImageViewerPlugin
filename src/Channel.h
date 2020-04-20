@@ -31,6 +31,15 @@ public:
 	 */
 	Channel(QObject* parent, const std::uint32_t& id, const std::uint32_t& dimensionId = -1);
 
+	/** Returns whether the channel is enabled */
+	bool enabled() const;
+
+	/**
+	 * Sets  whether the channel is enabled
+	 * @param enabled Whether the channel is enabled
+	 */
+	void setEnabled(const bool& enabled);
+
 	/** Returns the channel image size */
 	QSize imageSize() const;
 
@@ -135,6 +144,7 @@ signals:
 	void changed(Channel*);
 
 private:
+	bool			_enabled;				/** Whether the channel is enabled */
 	QSize			_imageSize;				/** Image size */
 	std::int32_t	_id;					/** Identifier */
 	std::int32_t	_dimensionId;			/** Dimension identifier */

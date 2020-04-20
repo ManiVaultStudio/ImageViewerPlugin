@@ -4,6 +4,7 @@
 
 Channel::Channel(QObject* parent, const std::uint32_t& id, const std::uint32_t& dimensionId /*= -1*/) :
 	QObject(parent),
+	_enabled(false),
 	_imageSize(),
 	_id(id),
 	_dimensionId(dimensionId),
@@ -15,6 +16,16 @@ Channel::Channel(QObject* parent, const std::uint32_t& id, const std::uint32_t& 
 	_window(),
 	_level()
 {
+}
+
+bool Channel::enabled() const
+{
+	return _enabled;
+}
+
+void Channel::setEnabled(const bool& enabled)
+{
+	_enabled = enabled;
 }
 
 QSize Channel::imageSize() const

@@ -34,34 +34,11 @@ void PointsLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 	});
 
 	QObject::connect(_ui->channel2CheckBox, &QCheckBox::stateChanged, [this](int state) {
-		switch (state)
-		{
-			case Qt::Unchecked:
-				_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::NoChannels)), 1);
-				break;
-
-			case Qt::Checked:
-				_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::NoChannels)), 2);
-				_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Channel2)), _ui->channel2ComboBox->currentIndex());
-				break;
-		}
-		
+		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Channel2Enabled)), state == Qt::Checked);
 	});
 
 	QObject::connect(_ui->channel3CheckBox, &QCheckBox::stateChanged, [this](int state) {
-		switch (state)
-		{
-			case Qt::Unchecked:
-				_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::NoChannels)), 2);
-				break;
-
-			case Qt::Checked:
-				_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::NoChannels)), 3);
-				_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Channel2)), _ui->channel2ComboBox->currentIndex());
-				_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Channel3)), _ui->channel3ComboBox->currentIndex());
-				break;
-		}
-
+		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Channel3Enabled)), state == Qt::Checked);
 	});
 
 	QObject::connect(_ui->channel1ComboBox, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
@@ -74,6 +51,19 @@ void PointsLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 
 	QObject::connect(_ui->channel3ComboBox, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
 		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Channel3)), index);
+	});
+
+	QObject::connect(_ui->solidColorCheckBox, &QCheckBox::stateChanged, [this](int state) {
+		switch (state)
+		{
+			case Qt::Unchecked:
+				_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::SolidColor)), false);
+				break;
+
+			case Qt::Checked:
+				_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::SolidColor)), true);
+				break;
+		}
 	});
 
 	_ui->colormapComboBox->setModel(&_imageViewerPlugin->colorMapModel());
@@ -133,46 +123,59 @@ void PointsLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 			_ui->channel3ComboBox->blockSignals(false);
 		}
 
-		if (column == ult(PointsLayer::Column::NoChannels)) {
-			
-			const auto noChannels		= _layersModel->data(topLeft.siblingAtColumn(ult(PointsLayer::Column::NoChannels)), Qt::EditRole).toInt();
-			const auto maxNoChannels	= _layersModel->data(topLeft.siblingAtColumn(ult(PointsLayer::Column::MaxNoChannels)), Qt::EditRole).toInt();
-			const auto channel1Flags	= _layersModel->flags(topLeft.siblingAtColumn(ult(PointsLayer::Column::Channel1)));
-			const auto channel2Flags	= _layersModel->flags(topLeft.siblingAtColumn(ult(PointsLayer::Column::Channel2)));
-			const auto channel3Flags	= _layersModel->flags(topLeft.siblingAtColumn(ult(PointsLayer::Column::Channel3)));
+		if (column == ult(PointsLayer::Column::Channel1)) {
+			const auto channel1Flags = _layersModel->flags(topLeft.siblingAtColumn(ult(PointsLayer::Column::Channel1)));
 
 			_ui->channel1Label->setEnabled(channel1Flags & Qt::ItemIsEditable);
-			_ui->channel1CheckBox->blockSignals(true);
-			_ui->channel1CheckBox->setChecked(channel1Flags & Qt::ItemIsEditable);
-			_ui->channel1CheckBox->blockSignals(false);
 			_ui->channel1ComboBox->setEnabled(channel1Flags & Qt::ItemIsEditable);
+		}
+
+		if (column == ult(PointsLayer::Column::Channel2)) {
+			const auto channel2Flags = _layersModel->flags(topLeft.siblingAtColumn(ult(PointsLayer::Column::Channel2)));
 
 			_ui->channel2Label->setEnabled(channel2Flags & Qt::ItemIsEditable);
-			_ui->channel2CheckBox->setEnabled(maxNoChannels >= 2);
-			_ui->channel2CheckBox->blockSignals(true);
-			_ui->channel2CheckBox->setChecked(channel2Flags & Qt::ItemIsEditable);
-			_ui->channel2CheckBox->blockSignals(false);
 			_ui->channel2ComboBox->setEnabled(channel2Flags & Qt::ItemIsEditable);
+		}
+
+		if (column == ult(PointsLayer::Column::Channel3)) {
+			const auto channel3Flags = _layersModel->flags(topLeft.siblingAtColumn(ult(PointsLayer::Column::Channel3)));
 
 			_ui->channel3Label->setEnabled(channel3Flags & Qt::ItemIsEditable);
-			_ui->channel3CheckBox->setEnabled(maxNoChannels >= 3);
-			_ui->channel3CheckBox->blockSignals(true);
-			_ui->channel3CheckBox->setChecked(channel3Flags & Qt::ItemIsEditable);
-			_ui->channel3CheckBox->blockSignals(false);
 			_ui->channel3ComboBox->setEnabled(channel3Flags & Qt::ItemIsEditable);
+		}
 
-			_ui->colormapLabel->setEnabled(noChannels <= 2);
-			_ui->colormapComboBox->setEnabled(noChannels <= 2);
+		if (column == ult(PointsLayer::Column::Channel1Enabled)) {
+			const auto channel1Enabled		= _layersModel->data(topLeft.siblingAtColumn(ult(PointsLayer::Column::Channel1Enabled)), Qt::EditRole).toBool();
+			const auto channel1EnabledFlags	= _layersModel->flags(topLeft.siblingAtColumn(ult(PointsLayer::Column::Channel1Enabled)));
 
-			_ui->colormapLabel->setText("Colormap");
+			_ui->channel1CheckBox->setEnabled(channel1EnabledFlags & Qt::ItemIsEditable);
+			_ui->channel1CheckBox->blockSignals(true);
+			_ui->channel1CheckBox->setChecked(channel1Enabled);
+			_ui->channel1CheckBox->blockSignals(false);
+		}
 
-			if (noChannels == 1)
-				_ui->colormapLabel->setText("1D Colormap");
+		if (column == ult(PointsLayer::Column::Channel2Enabled)) {
+			const auto channel2Enabled		= _layersModel->data(topLeft.siblingAtColumn(ult(PointsLayer::Column::Channel2Enabled)), Qt::EditRole).toBool();
+			const auto channel2EnabledFlags	= _layersModel->flags(topLeft.siblingAtColumn(ult(PointsLayer::Column::Channel2Enabled)));
 
-			if (noChannels == 2)
-				_ui->colormapLabel->setText("2D Colormap");
+			_ui->channel2CheckBox->setEnabled(channel2EnabledFlags & Qt::ItemIsEditable);
+			_ui->channel2CheckBox->blockSignals(true);
+			_ui->channel2CheckBox->setChecked(channel2Enabled);
+			_ui->channel2CheckBox->blockSignals(false);
+		}
 
-			_ui->colormapComboBox->setType(static_cast<ColorMap::Type>(noChannels));
+		if (column == ult(PointsLayer::Column::Channel3Enabled)) {
+			const auto channel3Enabled		= _layersModel->data(topLeft.siblingAtColumn(ult(PointsLayer::Column::Channel3Enabled)), Qt::EditRole).toBool();
+			const auto channel3EnabledFlags	= _layersModel->flags(topLeft.siblingAtColumn(ult(PointsLayer::Column::Channel3Enabled)));
+
+			_ui->channel3CheckBox->setEnabled(channel3EnabledFlags & Qt::ItemIsEditable);
+			_ui->channel3CheckBox->blockSignals(true);
+			_ui->channel3CheckBox->setChecked(channel3Enabled);
+			_ui->channel3CheckBox->blockSignals(false);
+		}
+
+		if (column == ult(PointsLayer::Column::NoChannels)) {
+			const auto maxNoChannels	= _layersModel->data(topLeft.siblingAtColumn(ult(PointsLayer::Column::MaxNoChannels)), Qt::EditRole).toInt();
 		}
 
 		if (column == ult(PointsLayer::Column::NoPoints)) {
@@ -191,6 +194,26 @@ void PointsLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 			_ui->selectionSizeLineEdit->blockSignals(true);
 			_ui->selectionSizeLineEdit->setText(QString::number(_layersModel->data(topLeft.siblingAtColumn(ult(LayerNode::Column::SelectionSize)), Qt::EditRole).toInt()));
 			_ui->selectionSizeLineEdit->blockSignals(false);
+		}
+
+		if (column == ult(PointsLayer::Column::ColorMap)) {
+			const auto noChannels		= _layersModel->data(topLeft.siblingAtColumn(ult(PointsLayer::Column::NoChannels)), Qt::EditRole).toInt();
+			const auto colorMapFlags	= _layersModel->flags(topLeft.siblingAtColumn(ult(PointsLayer::Column::ColorMap)));
+
+			qDebug() << noChannels;
+
+			_ui->colormapLabel->setEnabled(colorMapFlags & Qt::ItemIsEditable);
+			_ui->colormapComboBox->setEnabled(colorMapFlags & Qt::ItemIsEditable);
+
+			_ui->colormapLabel->setText("Colormap");
+
+			if (noChannels == 1)
+				_ui->colormapLabel->setText("1D Colormap");
+
+			if (noChannels == 2)
+				_ui->colormapLabel->setText("2D Colormap");
+
+			_ui->colormapComboBox->setType(static_cast<ColorMap::Type>(noChannels));
 		}
 	}
 }

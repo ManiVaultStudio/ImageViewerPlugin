@@ -14,7 +14,6 @@ PointsLayer::PointsLayer(const QString& pointsDatasetName, const QString& id, co
 	_imagesDataset(nullptr),
 	_channels(),
 	_maxNoChannels(0),
-	_noChannels(1),
 	_colorMap()
 {
 	init();
@@ -23,7 +22,7 @@ PointsLayer::PointsLayer(const QString& pointsDatasetName, const QString& id, co
 void PointsLayer::init()
 {
 	_channels << new Channel(this, 0) << new Channel(this, 1) << new Channel(this, 2);
-
+	
 	addProp<PointsProp>(this, "Points");
 
 	_pointsDataset = &imageViewerPlugin->requestData<Points>(_name);
@@ -33,9 +32,10 @@ void PointsLayer::init()
 	setNoPoints(_pointsDataset->getNumPoints());
 	setNoDimensions(_pointsDataset->getNumDimensions());
 	setMaxNoChannels(std::min(3u, _noDimensions));
-	setNoChannels(1);
 	setChannelDimensionId(0, 0);
-	setColorMap(imageViewerPlugin->colorMapModel().colorMap(0)->image());
+	//setColorMap(imageViewerPlugin->colorMapModel().colorMap(0)->image());
+	setSolidColor(false);
+	setChannelEnabled(0, true);
 
 	auto dimensionNames = QStringList::fromVector(QVector<QString>::fromStdVector(_pointsDataset->getDimensionNames()));
 
@@ -64,12 +64,14 @@ Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
 			break;
 
 		case Column::Channel1:
+		{
 			flags |= Qt::ItemIsEditable;
 			break;
+		}
 
 		case Column::Channel2:
 		{
-			if (_maxNoChannels >= 2 && _noChannels >= 2)
+			if (_channels[1]->enabled())
 				flags |= Qt::ItemIsEditable;
 
 			break;
@@ -77,7 +79,26 @@ Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
 
 		case Column::Channel3:
 		{
-			if (_maxNoChannels >= 3 && _noChannels >= 3)
+			if (_channels[2]->enabled())
+				flags |= Qt::ItemIsEditable;
+
+			break;
+		}
+
+		case Column::Channel1Enabled:
+			break;
+
+		case Column::Channel2Enabled:
+		{
+			if (_channels[0]->enabled())
+				flags |= Qt::ItemIsEditable;
+
+			break;
+		}
+
+		case Column::Channel3Enabled:
+		{
+			if (_channels[1]->enabled())
 				flags |= Qt::ItemIsEditable;
 
 			break;
@@ -91,8 +112,20 @@ Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
 			break;
 
 		case Column::ColorMap:
-			flags |= Qt::ItemIsEditable;
+		{
+			if (!_solidColor)
+				flags |= Qt::ItemIsEditable;
+
 			break;
+		}
+			
+		case Column::SolidColor:
+		{
+			if (_solidColor)
+				flags |= Qt::ItemIsEditable;
+
+			break;
+		}
 
 		default:
 			break;
@@ -119,6 +152,15 @@ QVariant PointsLayer::data(const QModelIndex& index, const int& role) const
 		case Column::Channel3:
 			return channelDimensionId(2, role);
 
+		case Column::Channel1Enabled:
+			return channelEnabled(0, role);
+
+		case Column::Channel2Enabled:
+			return channelEnabled(1, role);
+
+		case Column::Channel3Enabled:
+			return channelEnabled(2, role);
+
 		case Column::MaxNoChannels:
 			return maxNoChannels(role);
 
@@ -136,6 +178,9 @@ QVariant PointsLayer::data(const QModelIndex& index, const int& role) const
 
 		case Column::ColorMap:
 			return colorMap(role);
+
+		case Column::SolidColor:
+			return solidColor(role);
 
 		default:
 			break;
@@ -163,13 +208,44 @@ QModelIndexList PointsLayer::setData(const QModelIndex& index, const QVariant& v
 		case Column::Channel3:
 			setChannelDimensionId(2, value.toInt());
 			break;
+			
+		case Column::Channel1Enabled:
+			setChannelEnabled(0, value.toBool());
+			break;
+
+		case Column::Channel2Enabled:
+		{
+			const auto enabled = value.toBool();
+
+			setChannelEnabled(1, enabled);
+
+			if (enabled == false)
+				setChannelEnabled(2, enabled);
+
+			affectedIds << index.siblingAtColumn(ult(Column::Channel2));
+			affectedIds << index.siblingAtColumn(ult(Column::Channel3));
+			affectedIds << index.siblingAtColumn(ult(Column::Channel3Enabled));
+			affectedIds << index.siblingAtColumn(ult(Column::ColorMap));
+			break;
+		}
+
+		case Column::Channel3Enabled:
+		{
+			const auto enabled = value.toBool();
+
+			setChannelEnabled(2, enabled);
+
+			affectedIds << index.siblingAtColumn(ult(Column::Channel2));
+			affectedIds << index.siblingAtColumn(ult(Column::Channel3));
+			affectedIds << index.siblingAtColumn(ult(Column::ColorMap));
+			break;
+		}
 
 		case Column::MaxNoChannels:
 			setMaxNoChannels(value.toInt());
 			break;
 
 		case Column::NoChannels:
-			setNoChannels(value.toInt());
 			break;
 
 		case Column::NoPoints:
@@ -178,6 +254,11 @@ QModelIndexList PointsLayer::setData(const QModelIndex& index, const QVariant& v
 
 		case Column::ColorMap:
 			setColorMap(value.value<QImage>());
+			break;
+
+		case Column::SolidColor:
+			setSolidColor(value.toBool());
+			affectedIds << index.siblingAtColumn(ult(Column::ColorMap));
 			break;
 
 		default:
@@ -278,6 +359,34 @@ Channel* PointsLayer::channel(const std::uint32_t& id)
 	return _channels[id];
 }
 
+QVariant PointsLayer::channelEnabled(const std::uint32_t& id, const int& role /*= Qt::DisplayRole*/) const
+{
+	const auto channelEnabled		= _channels[id]->enabled();
+	const auto channelEnabledString = channelEnabled ? "true" : "false";
+
+	switch (role)
+	{
+		case Qt::DisplayRole:
+			return channelEnabledString;
+
+		case Qt::EditRole:
+			return channelEnabled;
+
+		case Qt::ToolTipRole:
+			return QString("Enabled: %1").arg(channelEnabledString);
+
+		default:
+			break;
+	}
+
+	return QVariant();
+}
+
+void PointsLayer::setChannelEnabled(const int& id, const bool& enabled)
+{
+	_channels[id]->setEnabled(enabled);
+}
+
 QVariant PointsLayer::channelDimensionId(const std::uint32_t& id, const int& role /*= Qt::DisplayRole*/) const
 {
 	const auto dimensionIdString = QString::number(_channels[id]->dimensionId());
@@ -300,11 +409,11 @@ QVariant PointsLayer::channelDimensionId(const std::uint32_t& id, const int& rol
 	return QVariant();
 }
 
-void PointsLayer::setChannelDimensionId(const int& channelId, const std::uint32_t& dimensionId)
+void PointsLayer::setChannelDimensionId(const int& id, const std::uint32_t& dimensionId)
 {
-	_channels[channelId]->setDimensionId(dimensionId);
+	_channels[id]->setDimensionId(dimensionId);
 
-	computeChannel(channelId);
+	computeChannel(id);
 }
 
 QVariant PointsLayer::maxNoChannels(const int& role /*= Qt::DisplayRole*/) const
@@ -336,17 +445,13 @@ void PointsLayer::setMaxNoChannels(const std::uint32_t& maxNoChannels)
 
 QVariant PointsLayer::noChannels(const int& role /*= Qt::DisplayRole*/) const
 {
-	return _noChannels;
-}
+	QVector<int> channels = {
+		_channels[0]->enabled(),
+		_channels[1]->enabled(),
+		_channels[2]->enabled()
+	};
 
-void PointsLayer::setNoChannels(const std::uint32_t& noChannels)
-{
-	_noChannels = noChannels;
-
-	for (int channelId = 0; channelId < _noChannels; ++channelId)
-	{
-		computeChannel(channelId);
-	}
+	return std::accumulate(channels.begin(), channels.end(), 0);
 }
 
 QVariant PointsLayer::colorMap(const int& role) const
@@ -376,6 +481,33 @@ void PointsLayer::setColorMap(const QImage& colorMap)
 	_colorMap = colorMap;
 
 	emit colorMapChanged(_colorMap);
+}
+
+QVariant PointsLayer::solidColor(const int& role) const
+{
+	const auto solidColorString = _solidColor ? "true" : "false";
+
+	switch (role)
+	{
+		case Qt::DisplayRole:
+			return solidColorString;
+
+		case Qt::EditRole:
+			return _solidColor;
+
+		case Qt::ToolTipRole:
+			return QString("Solid color: %1").arg(solidColorString);
+
+		default:
+			break;
+	}
+
+	return QVariant();
+}
+
+void PointsLayer::setSolidColor(const bool& solidColor)
+{
+	_solidColor = solidColor;
 }
 
 void PointsLayer::computeChannel(const std::uint32_t& id)

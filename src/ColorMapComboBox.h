@@ -57,6 +57,9 @@ protected:
 		 * @param type Type of color map (e.g. 1D, 2D)
 		 */
 		void setType(const ColorMap::Type& type) {
+			if (type == _type)
+				return;
+
 			_type = type;
 			invalidateFilter();
 		}

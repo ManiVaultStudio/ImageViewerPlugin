@@ -22,18 +22,22 @@ public:
 	/**  Columns */
 	enum class Column {
 		ImageSize = ult(LayerNode::Column::End) + 1,		// Image size
-		Channel1,											// First input channel
-		Channel2,											// Second input channel
-		Channel3,											// Third input channel
+		Channel1,											// First input channel dimension identifier
+		Channel2,											// Second input channel dimension identifier
+		Channel3,											// Third input channel dimension identifier
+		Channel1Enabled,									// First input channel dimension identifier
+		Channel2Enabled,									// Second input channel dimension identifier
+		Channel3Enabled,									// Third input channel dimension identifier
 		NoChannels,											// Occupied number of channels
 		MaxNoChannels,										// The maximum number of channels
 		DimensionNames,										// Dimension names
 		NoPoints,											// Number of points in the dataset
 		NoDimensions,										// Number of dimensions in the dataset
 		ColorMap,											// Color map image
+		SolidColor,											// Solid color
 
 		Start = ImageSize,
-		End = ColorMap
+		End = SolidColor
 	};
 
 public:
@@ -135,8 +139,23 @@ public: // Getters/setters
 	Channel* channel(const std::uint32_t& id);
 
 	/**
+	 * Returns whether a channel is enabled
+	 * @param id Channel identifier
+	 * @param role Data role
+	 * @return Whether a channel is enabled in variant form
+	 */
+	QVariant channelEnabled(const std::uint32_t& id, const int& role = Qt::DisplayRole) const;
+
+	/**
+	 * Sets whether a channel is enabled
+	 * @param id Channel identifier
+	 * @param enabled Whether the channel is enabled
+	 */
+	void setChannelEnabled(const int& id, const bool& enabled);
+
+	/**
 	 * Returns a channel by identifier
-	 * @param channel Channel identifier
+	 * @param id Channel identifier
 	 * @param role Data role
 	 * @return Channel variant form
 	 */
@@ -144,10 +163,10 @@ public: // Getters/setters
 
 	/**
 	 * Sets a channel dimension identifier
-	 * @param channel Channel identifier
+	 * @param id Channel identifier
 	 * @param dimension Dimension identifier
 	 */
-	void setChannelDimensionId(const int& channelId, const std::uint32_t& dimensionId);
+	void setChannelDimensionId(const int& id, const std::uint32_t& dimensionId);
 
 	/**
 	 * Returns the maximum number of channels
@@ -170,12 +189,6 @@ public: // Getters/setters
 	QVariant noChannels(const int& role = Qt::DisplayRole) const;
 
 	/**
-	 * Sets the number of channels
-	 * @param noChannels Number of channels
-	 */
-	void setNoChannels(const std::uint32_t& noChannels);
-
-	/**
 	 * Returns the color map image
 	 * @param role Data role
 	 * @return Color map image in variant form
@@ -187,6 +200,19 @@ public: // Getters/setters
 	 * @param colorMap Color map image
 	 */
 	void setColorMap(const QImage& colorMap);
+
+	/**
+	 * Returns whether the solid color option is enabled
+	 * @param role Data role
+	 * @return Whether the solid color option is enabled in variant form
+	 */
+	QVariant solidColor(const int& role) const;
+
+	/**
+	 * Sets whether the solid color option is enabled
+	 * @param colorMap Color map image
+	 */
+	void setSolidColor(const bool& solidColor);
 
 private:
 
@@ -209,6 +235,6 @@ private:
 	QStringList			_dimensionNames;		/** Dimension names in the points dataset */
 	QVector<Channel*>	_channels;				/** Channels */
 	std::uint32_t		_maxNoChannels;			/** Maximum number of channels (determined by the number of dimensions) */
-	std::uint32_t		_noChannels;			/** Occupied number of channels */
 	QImage				_colorMap;				/** Color map (1D/2D) */
+	bool				_solidColor;			/** Solid color */
 };
