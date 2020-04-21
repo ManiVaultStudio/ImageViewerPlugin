@@ -56,60 +56,7 @@
       <string>Points</string>
      </property>
      <layout class="QGridLayout" name="gridLayout">
-      <item row="3" column="1">
-       <widget class="QComboBox" name="channel2ComboBox">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-          <horstretch>1</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-       </widget>
-      </item>
-      <item row="8" column="0">
-       <layout class="QHBoxLayout" name="colorHorizontalLayout">
-        <property name="spacing">
-         <number>6</number>
-        </property>
-        <property name="bottomMargin">
-         <number>0</number>
-        </property>
-        <item>
-         <widget class="QLabel" name="solidColorLabel">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="text">
-           <string>Solid color</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <spacer name="colorHorizontalSpacer">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>40</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="solidColorCheckBox">
-          <property name="text">
-           <string/>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item row="4" column="1">
+      <item row="5" column="1">
        <widget class="QComboBox" name="channel3ComboBox">
         <property name="enabled">
          <bool>false</bool>
@@ -122,13 +69,36 @@
         </property>
        </widget>
       </item>
-      <item row="7" column="0">
-       <widget class="QLabel" name="colormapLabel">
+      <item row="4" column="1">
+       <widget class="QComboBox" name="channel2ComboBox">
         <property name="enabled">
          <bool>false</bool>
         </property>
-        <property name="text">
-         <string>Colormap</string>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>1</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QComboBox" name="channel1ComboBox">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>1</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="1">
+       <widget class="ColorMapComboBox" name="colormapComboBox" native="true">
+        <property name="enabled">
+         <bool>false</bool>
         </property>
        </widget>
       </item>
@@ -175,30 +145,7 @@
         </item>
        </layout>
       </item>
-      <item row="8" column="1">
-       <widget class="ColorWidget" name="solidColorPushButton" native="true"/>
-      </item>
-      <item row="2" column="1">
-       <widget class="QComboBox" name="channel1ComboBox">
-        <property name="enabled">
-         <bool>true</bool>
-        </property>
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-          <horstretch>1</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-       </widget>
-      </item>
-      <item row="7" column="1">
-       <widget class="ColorMapComboBox" name="colormapComboBox" native="true">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="0">
+      <item row="5" column="0">
        <layout class="QHBoxLayout" name="channel3HorizontalLayout">
         <property name="spacing">
          <number>6</number>
@@ -235,7 +182,17 @@
         </item>
        </layout>
       </item>
-      <item row="3" column="0">
+      <item row="8" column="0">
+       <widget class="QLabel" name="colormapLabel">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>Colormap</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
        <layout class="QHBoxLayout" name="channel2HorizontalLayout">
         <property name="spacing">
          <number>6</number>
@@ -274,6 +231,13 @@
          </widget>
         </item>
        </layout>
+      </item>
+      <item row="9" column="1">
+       <widget class="QCheckBox" name="solidColorCheckBox">
+        <property name="text">
+         <string>Solid color</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
@@ -358,12 +322,6 @@
    <class>ColorMapComboBox</class>
    <extends>QWidget</extends>
    <header>colormapcombobox.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>ColorWidget</class>
-   <extends>QWidget</extends>
-   <header>colorwidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

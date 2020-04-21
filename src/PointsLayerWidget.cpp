@@ -200,20 +200,54 @@ void PointsLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 
 		if (column == ult(PointsLayer::Column::ColorMap)) {
 			const auto noChannels		= _layersModel->data(topLeft.siblingAtColumn(ult(PointsLayer::Column::NoChannels)), Qt::EditRole).toInt();
+			const auto solidColor		= _layersModel->data(topLeft.siblingAtColumn(ult(PointsLayer::Column::SolidColor)), Qt::EditRole).toBool();
 			const auto colorMapFlags	= _layersModel->flags(topLeft.siblingAtColumn(ult(PointsLayer::Column::ColorMap)));
 
 			_ui->colormapLabel->setEnabled(colorMapFlags & Qt::ItemIsEditable);
 			_ui->colormapComboBox->setEnabled(colorMapFlags & Qt::ItemIsEditable);
 
-			_ui->colormapLabel->setText("Colormap");
+			switch (noChannels)
+			{
+				case 1:
+				{
+					if (solidColor) {
+						_ui->colormapLabel->setText("Solid color map");
+						_ui->colormapComboBox->setType(ColorMap::Type::ZeroDimensional);
+					}
+					else {
+						_ui->colormapLabel->setText("1D color map");
+						_ui->colormapComboBox->setType(ColorMap::Type::OneDimensional);
+					}
 
-			if (noChannels == 1)
-				_ui->colormapLabel->setText("1D Colormap");
+					break;
+				}
 
-			if (noChannels == 2)
-				_ui->colormapLabel->setText("2D Colormap");
+				case 2:
+				{
+					_ui->colormapLabel->setText("2D Colormap");
+					_ui->colormapComboBox->setType(ColorMap::Type::TwoDimensional);
+					break;
+				}
 
-			_ui->colormapComboBox->setType(static_cast<ColorMap::Type>(noChannels));
+				case 3:
+				{
+					_ui->colormapLabel->setText("Colormap");
+					break;
+				}
+
+				default:
+					break;
+			}
+		}
+
+		if (column == ult(PointsLayer::Column::SolidColor)) {
+			const auto solidColor		= _layersModel->data(topLeft.siblingAtColumn(ult(PointsLayer::Column::SolidColor)), Qt::EditRole).toBool();
+			const auto solidColorFlags	= _layersModel->flags(topLeft.siblingAtColumn(ult(PointsLayer::Column::SolidColor)));
+
+			_ui->solidColorCheckBox->setEnabled(solidColorFlags & Qt::ItemIsEditable);
+			_ui->solidColorCheckBox->blockSignals(true);
+			_ui->solidColorCheckBox->setChecked(solidColor);
+			_ui->solidColorCheckBox->blockSignals(false);
 		}
 	}
 }

@@ -20,8 +20,9 @@ public:
 	* Defines the color map types
 	*/
 	enum class Type {
-		OneDimensional = 1,		/** One-dimensional color map */
-		TwoDimensional = 2		/** Two-dimensional color map */
+		ZeroDimensional,	/** Zero-dimensional color map (solid color) */
+		OneDimensional,		/** One-dimensional color map */
+		TwoDimensional		/** Two-dimensional color map */
 	};
 
 public:

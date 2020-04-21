@@ -25,12 +25,9 @@ public:
 		Channel1DimensionId,								// First input channel dimension identifier
 		Channel2DimensionId,								// Second input channel dimension identifier
 		Channel3DimensionId,								// Third input channel dimension identifier
-		Channel4DimensionId,								// Alpha input channel dimension identifier
 		Channel1Enabled,									// First input channel enabled
 		Channel2Enabled,									// Second input channel enabled
 		Channel3Enabled,									// Third input channel enabled
-		Channel4Enabled,									// Alpha input channel enabled
-		Channel4Inverted,									// Alpha invert
 		NoChannels,											// Occupied number of channels
 		MaxNoChannels,										// The maximum number of channels
 		DimensionNames,										// Dimension names

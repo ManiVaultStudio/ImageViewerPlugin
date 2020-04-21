@@ -36,9 +36,7 @@ PointsProp::PointsProp(PointsLayer* pointsLayer, const QString& name) :
 	addTexture("ColorMap", QOpenGLTexture::Target2D);
 	addTexture("Channels", QOpenGLTexture::Target2DArray);
 
-	
-
-	_channels << pointsLayer->channel(0) << pointsLayer->channel(1) << pointsLayer->channel(2) << pointsLayer->channel(3);
+	_channels << pointsLayer->channel(0) << pointsLayer->channel(1) << pointsLayer->channel(2);
 
 	for (auto channel : _channels)
 	{
@@ -63,7 +61,6 @@ PointsProp::PointsProp(PointsLayer* pointsLayer, const QString& name) :
 					texture->setSize(imageSize.width(), imageSize.height(), 1);
 					texture->setSize(imageSize.width(), imageSize.height(), 2);
 					texture->setSize(imageSize.width(), imageSize.height(), 3);
-					texture->setSize(imageSize.width(), imageSize.height(), 4);
 					texture->setFormat(QOpenGLTexture::R32F);
 					texture->allocateStorage(QOpenGLTexture::Red, QOpenGLTexture::Float32);
 					texture->setWrapMode(QOpenGLTexture::ClampToEdge);
@@ -184,20 +181,19 @@ void PointsProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 			const QVector2D displayRanges[] = {
 				_channels.at(0)->displayRangeVector(),
 				_channels.at(1)->displayRangeVector(),
-				_channels.at(2)->displayRangeVector(),
-				_channels.at(3)->displayRangeVector()
+				_channels.at(2)->displayRangeVector()
 			};
 
 			auto pointsLayer = static_cast<PointsLayer*>(_node);
 
 			const auto noChannels	= pointsLayer->noChannels(Qt::EditRole).toInt();
-			const auto invertAlpha	= pointsLayer->channel(3)->inverted();
+			const auto solidColor	= pointsLayer->solidColor(Qt::EditRole).toBool();
 
 			shaderProgram->setUniformValue("colorMapTexture", 0);
 			shaderProgram->setUniformValue("channelTextures", 1);
 			shaderProgram->setUniformValue("noChannels", noChannels);
-			shaderProgram->setUniformValue("invertAlpha", invertAlpha);
-			shaderProgram->setUniformValueArray("displayRanges", displayRanges, 4);
+			shaderProgram->setUniformValue("solidColor", solidColor);
+			shaderProgram->setUniformValueArray("displayRanges", displayRanges, 3);
 			shaderProgram->setUniformValue("opacity", opacity);
 			shaderProgram->setUniformValue("transform", nodeMVP * modelMatrix());
 

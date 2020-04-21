@@ -3,9 +3,9 @@ R"(
 
 uniform sampler2D colorMapTexture;		// Colormap texture sampler
 uniform sampler2DArray channelTextures;	// Texture samplers (0: Channel 1, 1: Channel 2, 2: Channel 3, 3: Alpha)
-uniform vec2 displayRanges[4];			// Display ranges for each channel
+uniform vec2 displayRanges[3];			// Display ranges for each channel
 uniform int noChannels;					// Number of active channels
-uniform bool invertAlpha;				// Invert the alpha channel
+uniform bool solidColor;				// Solid color (zero dimensional color map)
 uniform float opacity;					// Render opacity
 
 in vec2 uv;								// Input texture coordinates
@@ -57,12 +57,9 @@ void main(void)
 		}
 	}
 	
-	// Grab alpha channel
-	float alphaChannel = toneMapChannel(displayRanges[3].x, displayRanges[3].y, texture(channelTextures, vec3(uv, 3)).r);
-
-	if (invertAlpha)
-		alphaChannel = 1.0f - alphaChannel;
-
 	fragmentColor.a = opacity;
+	
+	if (solidColor)
+		fragmentColor.a *= toneMapChannel(displayRanges[0].x, displayRanges[0].y, texture(channelTextures, vec3(uv, 0)).r);
 }
 )"

@@ -1,5 +1,6 @@
 #include "LayersWidget.h"
 #include "ImageViewerPlugin.h"
+#include "ViewerWidget.h"
 #include "LayersModel.h"
 #include "SelectionLayer.h"
 #include "LayerNode.h"
@@ -127,6 +128,8 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 
 	QObject::connect(&layersSelectionModel(), &QItemSelectionModel::selectionChanged, [this, updateButtons](const QItemSelection &selected, const QItemSelection &deselected) {
 		updateButtons();
+
+		_imageViewerPlugin->imageViewerWidget()->update();
 	});
 }
 
