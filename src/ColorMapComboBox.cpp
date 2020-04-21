@@ -34,6 +34,7 @@ void ColorMapComboBox::setType(const ColorMap::Type& type)
 			setIconSize(QSize(60, 12));
 			break;
 
+		case ColorMap::Type::ZeroDimensional:
 		case ColorMap::Type::TwoDimensional:
 			setIconSize(QSize(12, 12));
 			break;

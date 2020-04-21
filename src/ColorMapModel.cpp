@@ -56,7 +56,7 @@ QVariant ColorMapModel::data(const QModelIndex& index, int role /* = Qt::Display
 					switch (colorMap.noDimensions())
 					{
 						case 0:
-							return icon(colorMap.image(), QSize(32, 32));
+							return icon(colorMap.image(), QSize(15, 15));
 
 						case 1:
 							return icon(colorMap.image(), QSize(60, 12));
@@ -148,14 +148,14 @@ void ColorMapModel::setupModelData()
 		_colorMaps.append(ColorMap(QFileInfo(resourcePath).baseName(), resourcePath, ColorMap::Type::TwoDimensional, QImage(resourcePath)));
 	}
 
-	const auto noHueSteps	= 18;
+	const auto noHueSteps	= 36;
 	const auto hueDelta		= 360.0f / noHueSteps;
 	
 	for (int h = 0; h < noHueSteps; ++h)
 	{
 		const auto color = QColor::fromHsl(h * hueDelta, 255, 125);
 
-		auto colorMapImage = QImage(16, 16, QImage::Format::Format_RGB888);
+		auto colorMapImage = QImage(32, 32, QImage::Format::Format_RGB888);
 		
 		colorMapImage.fill(color);
 
