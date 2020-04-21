@@ -43,14 +43,6 @@ void PointsLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Channel3DimensionId)), _ui->channel3ComboBox->currentIndex());
 	});
 
-	QObject::connect(_ui->alphaCheckBox, &QCheckBox::stateChanged, [this](int state) {
-		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Channel4Enabled)), state == Qt::Checked);
-	});
-
-	QObject::connect(_ui->alphaInvertCheckBox, &QCheckBox::stateChanged, [this](int state) {
-		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Channel4Inverted)), state == Qt::Checked);
-	});
-
 	QObject::connect(_ui->channel1ComboBox, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
 		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Channel1DimensionId)), index);
 	});
@@ -61,10 +53,6 @@ void PointsLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 
 	QObject::connect(_ui->channel3ComboBox, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
 		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Channel3DimensionId)), index);
-	});
-
-	QObject::connect(_ui->alphaComboBox, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
-		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Channel4DimensionId)), index);
 	});
 
 	QObject::connect(_ui->solidColorCheckBox, &QCheckBox::stateChanged, [this](int state) {
@@ -135,11 +123,6 @@ void PointsLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 			_ui->channel3ComboBox->setModel(dimensionNamesModel);
 			_ui->channel3ComboBox->setCurrentIndex(std::min(2, dimensionNames.count()));
 			_ui->channel3ComboBox->blockSignals(false);
-
-			_ui->alphaComboBox->blockSignals(true);
-			_ui->alphaComboBox->setModel(dimensionNamesModel);
-			_ui->alphaComboBox->setCurrentIndex(std::min(2, dimensionNames.count()));
-			_ui->alphaComboBox->blockSignals(false);
 		}
 
 		if (column == ult(PointsLayer::Column::Channel1DimensionId)) {
@@ -161,14 +144,6 @@ void PointsLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 
 			_ui->channel3Label->setEnabled(channel3Flags & Qt::ItemIsEditable);
 			_ui->channel3ComboBox->setEnabled(channel3Flags & Qt::ItemIsEditable);
-		}
-
-		if (column == ult(PointsLayer::Column::Channel3DimensionId)) {
-			const auto channel4Flags = _layersModel->flags(topLeft.siblingAtColumn(ult(PointsLayer::Column::Channel4DimensionId)));
-
-			_ui->alphaLabel->setEnabled(channel4Flags & Qt::ItemIsEditable);
-			_ui->alphaComboBox->setEnabled(channel4Flags & Qt::ItemIsEditable);
-			_ui->alphaInvertCheckBox->setEnabled(channel4Flags & Qt::ItemIsEditable);
 		}
 
 		if (column == ult(PointsLayer::Column::Channel1Enabled)) {
@@ -199,16 +174,6 @@ void PointsLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 			_ui->channel3CheckBox->blockSignals(true);
 			_ui->channel3CheckBox->setChecked(channel3Enabled);
 			_ui->channel3CheckBox->blockSignals(false);
-		}
-
-		if (column == ult(PointsLayer::Column::Channel4Enabled)) {
-			const auto channel4Enabled = _layersModel->data(topLeft.siblingAtColumn(ult(PointsLayer::Column::Channel4Enabled)), Qt::EditRole).toBool();
-			const auto channel4EnabledFlags = _layersModel->flags(topLeft.siblingAtColumn(ult(PointsLayer::Column::Channel4Enabled)));
-
-			_ui->alphaCheckBox->setEnabled(channel4EnabledFlags & Qt::ItemIsEditable);
-			_ui->alphaCheckBox->blockSignals(true);
-			_ui->alphaCheckBox->setChecked(channel4Enabled);
-			_ui->alphaCheckBox->blockSignals(false);
 		}
 
 		if (column == ult(PointsLayer::Column::NoChannels)) {

@@ -70,7 +70,7 @@ Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
 
 		case Column::Channel2DimensionId:
 		{
-			if (_channels[1]->enabled())
+			if (!_solidColor && _channels[1]->enabled())
 				flags |= Qt::ItemIsEditable;
 
 			break;
@@ -78,7 +78,7 @@ Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
 
 		case Column::Channel3DimensionId:
 		{
-			if (_channels[2]->enabled())
+			if (!_solidColor && _channels[2]->enabled())
 				flags |= Qt::ItemIsEditable;
 
 			break;
@@ -86,7 +86,7 @@ Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
 
 		case Column::Channel4DimensionId:
 		{
-			if (_channels[3]->enabled())
+			if (!_solidColor && _channels[3]->enabled())
 				flags |= Qt::ItemIsEditable;
 
 			break;
@@ -97,7 +97,7 @@ Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
 
 		case Column::Channel2Enabled:
 		{
-			if (_channels[0]->enabled())
+			if (!_solidColor && _channels[0]->enabled())
 				flags |= Qt::ItemIsEditable;
 
 			break;
@@ -105,7 +105,7 @@ Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
 
 		case Column::Channel3Enabled:
 		{
-			if (_channels[1]->enabled())
+			if (!_solidColor && _channels[1]->enabled())
 				flags |= Qt::ItemIsEditable;
 
 			break;
@@ -289,6 +289,13 @@ QModelIndexList PointsLayer::setData(const QModelIndex& index, const QVariant& v
 
 		case Column::SolidColor:
 			setSolidColor(value.toBool());
+
+			affectedIds << index.siblingAtColumn(ult(Column::Channel1DimensionId));
+			affectedIds << index.siblingAtColumn(ult(Column::Channel1Enabled));
+			affectedIds << index.siblingAtColumn(ult(Column::Channel2DimensionId));
+			affectedIds << index.siblingAtColumn(ult(Column::Channel2Enabled));
+			affectedIds << index.siblingAtColumn(ult(Column::Channel3DimensionId));
+			affectedIds << index.siblingAtColumn(ult(Column::Channel3Enabled));
 			affectedIds << index.siblingAtColumn(ult(Column::ColorMap));
 			break;
 
