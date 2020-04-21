@@ -188,11 +188,13 @@ void PointsProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 
 			const auto noChannels	= pointsLayer->noChannels(Qt::EditRole).toInt();
 			const auto solidColor	= pointsLayer->solidColor(Qt::EditRole).toBool();
+			const auto colorSpace	= pointsLayer->colorSpace(Qt::EditRole).toInt();
 
 			shaderProgram->setUniformValue("colorMapTexture", 0);
 			shaderProgram->setUniformValue("channelTextures", 1);
 			shaderProgram->setUniformValue("noChannels", noChannels);
 			shaderProgram->setUniformValue("solidColor", solidColor);
+			shaderProgram->setUniformValue("colorSpace", colorSpace);
 			shaderProgram->setUniformValueArray("displayRanges", displayRanges, 3);
 			shaderProgram->setUniformValue("opacity", opacity);
 			shaderProgram->setUniformValue("transform", nodeMVP * modelMatrix());
