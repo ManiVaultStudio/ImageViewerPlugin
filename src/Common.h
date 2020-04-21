@@ -170,3 +170,34 @@ inline QString abbreviatedStringList(const QStringList& stringList)
 
 	return QString("[]");
 }
+
+/**
+ * Color space
+ * Defines color spaces
+ */
+enum class ColorSpace
+{
+	RGB,	/** Red Green Blue */
+	HSL		/** Hue Saturation Lightness */
+};
+
+/**
+ * Returns the string-based name of the color space
+ * @param colorSpace Color space
+ */
+inline QString colorSpaceName(const ColorSpace& colorSpace)
+{
+	switch (colorSpace)
+	{
+		case ColorSpace::RGB:
+			return "RGB";
+
+		case ColorSpace::HSL:
+			return "HSL";
+
+		default:
+			break;
+	}
+
+	return "";
+}

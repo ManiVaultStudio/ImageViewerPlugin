@@ -22,6 +22,9 @@ public:
 	/**  Columns */
 	enum class Column {
 		ImageSize = ult(LayerNode::Column::End) + 1,		// Image size
+		Channel1Name,										// First input channel name
+		Channel2Name,										// Second input channel name
+		Channel3Name,										// Third input channel name
 		Channel1DimensionId,								// First input channel dimension identifier
 		Channel2DimensionId,								// Second input channel dimension identifier
 		Channel3DimensionId,								// Third input channel dimension identifier
@@ -33,6 +36,7 @@ public:
 		DimensionNames,										// Dimension names
 		NoPoints,											// Number of points in the dataset
 		NoDimensions,										// Number of dimensions in the dataset
+		ColorSpace,											// Color space (e.g. RGB, HSL and LAB)
 		ColorMap,											// Color map image
 		SolidColor,											// Solid color
 
@@ -154,10 +158,25 @@ public: // Getters/setters
 	void setChannelEnabled(const int& id, const bool& enabled);
 
 	/**
+	 * Returns channel name by identifier
+	 * @param id Channel identifier
+	 * @param role Data role
+	 * @return Channel name in variant form
+	 */
+	QVariant channelName(const std::uint32_t& id, const int& role = Qt::DisplayRole) const;
+
+	/**
+	 * Sets a channel dimension identifier
+	 * @param id Channel identifier
+	 * @param name Channel name
+	 */
+	void setChannelName(const int& id, const QString& name);
+
+	/**
 	 * Returns a channel by identifier
 	 * @param id Channel identifier
 	 * @param role Data role
-	 * @return Channel variant form
+	 * @return Channel identifier in variant form
 	 */
 	QVariant channelDimensionId(const std::uint32_t& id, const int& role = Qt::DisplayRole) const;
 
@@ -187,6 +206,19 @@ public: // Getters/setters
 	 * @return Number of channels in variant form
 	 */
 	QVariant noChannels(const int& role = Qt::DisplayRole) const;
+
+	/**
+	 * Returns the color space
+	 * @param role Data role
+	 * @return Color space in variant form
+	 */
+	QVariant colorSpace(const int& role) const;
+
+	/**
+	 * Sets the color space
+	 * @param colorSpace Color space
+	 */
+	void setColorSpace(const ColorSpace& colorSpace);
 
 	/**
 	 * Returns the color map image
@@ -219,7 +251,16 @@ private:
 	/** Computes the channels image */
 	void computeChannel(const std::uint32_t& id);
 
+	/** Updates the channel names */
+	void updateChannelNames();
+
 signals:
+
+	/**
+	 * Signals that the color space has changed
+	 * @param colorSpace Color space
+	 */
+	void colorSpaceChanged(const ColorSpace& colorSpace);
 
 	/**
 	 * Signals that the color map has changed
@@ -235,6 +276,7 @@ private:
 	QStringList			_dimensionNames;		/** Dimension names in the points dataset */
 	QVector<Channel*>	_channels;				/** Channels */
 	std::uint32_t		_maxNoChannels;			/** Maximum number of channels (determined by the number of dimensions) */
+	ColorSpace			_colorSpace;			/** Color space */
 	QImage				_colorMap;				/** Color map (1D/2D) */
 	bool				_solidColor;			/** Solid color */
 };

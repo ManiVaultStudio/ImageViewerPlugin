@@ -2,11 +2,12 @@
 
 #include <QDebug>
 
-Channel::Channel(QObject* parent, const std::uint32_t& id, const std::uint32_t& dimensionId /*= -1*/) :
+Channel::Channel(QObject* parent, const std::uint32_t& id, const QString& name, const std::uint32_t& dimensionId /*= -1*/) :
 	QObject(parent),
 	_enabled(false),
 	_imageSize(),
 	_id(id),
+	_name(name),
 	_dimensionId(dimensionId),
 	_elements(),
 	_range(),
@@ -63,6 +64,16 @@ void Channel::setImageSize(const QSize& imageSize)
 const std::int32_t& Channel::id() const
 {
 	return _id;
+}
+
+QString Channel::name() const
+{
+	return _name;
+}
+
+void Channel::setName(const QString& name)
+{
+	_name = name;
 }
 
 const std::int32_t& Channel::dimensionId() const

@@ -14,6 +14,7 @@ PointsLayer::PointsLayer(const QString& pointsDatasetName, const QString& id, co
 	_imagesDataset(nullptr),
 	_channels(),
 	_maxNoChannels(0),
+	_colorSpace(ColorSpace::RGB),
 	_colorMap()
 {
 	init();
@@ -21,7 +22,7 @@ PointsLayer::PointsLayer(const QString& pointsDatasetName, const QString& id, co
 
 void PointsLayer::init()
 {
-	_channels << new Channel(this, 0) << new Channel(this, 1) << new Channel(this, 2);
+	_channels << new Channel(this, 0, "Channel 1") << new Channel(this, 1, "Channel 2") << new Channel(this, 2, "Channel 3");
 	
 	addProp<PointsProp>(this, "Points");
 
@@ -62,12 +63,14 @@ Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
 		case Column::ImageSize:
 			break;
 
+		case Column::Channel1Name:
 		case Column::Channel1DimensionId:
 		{
 			flags |= Qt::ItemIsEditable;
 			break;
 		}
 
+		case Column::Channel2Name:
 		case Column::Channel2DimensionId:
 		{
 			if (!_solidColor && _channels[1]->enabled())
@@ -76,6 +79,7 @@ Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
 			break;
 		}
 
+		case Column::Channel3Name:
 		case Column::Channel3DimensionId:
 		{
 			if (!_solidColor && _channels[2]->enabled())
@@ -97,7 +101,7 @@ Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
 
 		case Column::Channel3Enabled:
 		{
-			if (!_solidColor && _channels[1]->enabled() && noDimensions() >= 3)
+			if (!_solidColor && _channels[1]->enabled() && _noDimensions >= 3)
 				flags |= Qt::ItemIsEditable;
 
 			break;
@@ -109,6 +113,14 @@ Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
 		case Column::NoPoints:
 		case Column::NoDimensions:
 			break;
+
+		case Column::ColorSpace:
+		{
+			if (noChannels(Qt::EditRole).toInt() == 3)
+				flags |= Qt::ItemIsEditable;
+
+			break;
+		}
 
 		case Column::ColorMap:
 		{
@@ -139,6 +151,15 @@ QVariant PointsLayer::data(const QModelIndex& index, const int& role) const
 	switch (static_cast<Column>(index.column())) {
 		case Column::ImageSize:
 			return imageSize(role);
+
+		case Column::Channel1Name:
+			return channelName(0, role);
+
+		case Column::Channel2Name:
+			return channelName(1, role);
+
+		case Column::Channel3Name:
+			return channelName(2, role);
 
 		case Column::Channel1DimensionId:
 			return channelDimensionId(0, role);
@@ -173,6 +194,9 @@ QVariant PointsLayer::data(const QModelIndex& index, const int& role) const
 		case Column::NoDimensions:
 			return noDimensions(role);
 
+		case Column::ColorSpace:
+			return colorSpace(role);
+
 		case Column::ColorMap:
 			return colorMap(role);
 
@@ -192,6 +216,18 @@ QModelIndexList PointsLayer::setData(const QModelIndex& index, const QVariant& v
 
 	switch (static_cast<Column>(index.column())) {
 		case Column::ImageSize:
+			break;
+
+		case Column::Channel1Name:
+			setChannelName(0, value.toString());
+			break;
+
+		case Column::Channel2Name:
+			setChannelName(1, value.toString());
+			break;
+
+		case Column::Channel3Name:
+			setChannelName(2, value.toString());
 			break;
 
 		case Column::Channel1DimensionId:
@@ -222,6 +258,7 @@ QModelIndexList PointsLayer::setData(const QModelIndex& index, const QVariant& v
 			affectedIds << index.siblingAtColumn(ult(Column::Channel2DimensionId));
 			affectedIds << index.siblingAtColumn(ult(Column::Channel3DimensionId));
 			affectedIds << index.siblingAtColumn(ult(Column::Channel3Enabled));
+			affectedIds << index.siblingAtColumn(ult(Column::ColorSpace));
 			affectedIds << index.siblingAtColumn(ult(Column::ColorMap));
 			break;
 		}
@@ -231,9 +268,14 @@ QModelIndexList PointsLayer::setData(const QModelIndex& index, const QVariant& v
 			const auto enabled = value.toBool();
 
 			setChannelEnabled(2, enabled);
+			updateChannelNames();
 
+			affectedIds << index.siblingAtColumn(ult(Column::Channel1Name));
+			affectedIds << index.siblingAtColumn(ult(Column::Channel2Name));
+			affectedIds << index.siblingAtColumn(ult(Column::Channel3Name));
 			affectedIds << index.siblingAtColumn(ult(Column::Channel2DimensionId));
 			affectedIds << index.siblingAtColumn(ult(Column::Channel3DimensionId));
+			affectedIds << index.siblingAtColumn(ult(Column::ColorSpace));
 			affectedIds << index.siblingAtColumn(ult(Column::ColorMap));
 			break;
 		}
@@ -249,19 +291,39 @@ QModelIndexList PointsLayer::setData(const QModelIndex& index, const QVariant& v
 		case Column::NoDimensions:
 			break;
 
+		case Column::ColorSpace:
+		{
+			const auto colorSpace = static_cast<ColorSpace>(value.toInt());
+
+			setColorSpace(colorSpace);
+			updateChannelNames();
+
+			affectedIds << index.siblingAtColumn(ult(Column::Channel1Name));
+			affectedIds << index.siblingAtColumn(ult(Column::Channel2Name));
+			affectedIds << index.siblingAtColumn(ult(Column::Channel3Name));
+			break;
+		}
+
 		case Column::ColorMap:
 			setColorMap(value.value<QImage>());
 			break;
 
 		case Column::SolidColor:
 			setSolidColor(value.toBool());
+			setChannelEnabled(1, false);
+			setChannelEnabled(2, false);
+			updateChannelNames();
 
+			affectedIds << index.siblingAtColumn(ult(Column::Channel1Name));
+			affectedIds << index.siblingAtColumn(ult(Column::Channel2Name));
+			affectedIds << index.siblingAtColumn(ult(Column::Channel3Name));
 			affectedIds << index.siblingAtColumn(ult(Column::Channel1DimensionId));
 			affectedIds << index.siblingAtColumn(ult(Column::Channel1Enabled));
 			affectedIds << index.siblingAtColumn(ult(Column::Channel2DimensionId));
 			affectedIds << index.siblingAtColumn(ult(Column::Channel2Enabled));
 			affectedIds << index.siblingAtColumn(ult(Column::Channel3DimensionId));
 			affectedIds << index.siblingAtColumn(ult(Column::Channel3Enabled));
+			affectedIds << index.siblingAtColumn(ult(Column::ColorSpace));
 			affectedIds << index.siblingAtColumn(ult(Column::ColorMap));
 			break;
 
@@ -391,6 +453,33 @@ void PointsLayer::setChannelEnabled(const int& id, const bool& enabled)
 	_channels[id]->setEnabled(enabled);
 }
 
+QVariant PointsLayer::channelName(const std::uint32_t& id, const int& role /*= Qt::DisplayRole*/) const
+{
+	const auto nameString = _channels[id]->name();
+
+	switch (role)
+	{
+		case Qt::DisplayRole:
+			return nameString;
+
+		case Qt::EditRole:
+			return nameString;
+
+		case Qt::ToolTipRole:
+			return QString("Name: %1").arg(nameString);
+
+		default:
+			break;
+	}
+
+	return QVariant();
+}
+
+void PointsLayer::setChannelName(const int& id, const QString& name)
+{
+	_channels[id]->setName(name);
+}
+
 QVariant PointsLayer::channelDimensionId(const std::uint32_t& id, const int& role /*= Qt::DisplayRole*/) const
 {
 	const auto dimensionIdString = QString::number(_channels[id]->dimensionId());
@@ -456,6 +545,35 @@ QVariant PointsLayer::noChannels(const int& role /*= Qt::DisplayRole*/) const
 	};
 
 	return std::accumulate(channels.begin(), channels.end(), 0);
+}
+
+QVariant PointsLayer::colorSpace(const int& role) const
+{
+	const auto colorSpaceString = colorSpaceName(_colorSpace);
+
+	switch (role)
+	{
+		case Qt::DisplayRole:
+			return colorSpaceString;
+
+		case Qt::EditRole:
+			return ult(_colorSpace);
+
+		case Qt::ToolTipRole:
+			return QString("Color space: %1").arg(colorSpaceString);
+
+		default:
+			break;
+	}
+
+	return QVariant();
+}
+
+void PointsLayer::setColorSpace(const ColorSpace& colorSpace)
+{
+	_colorSpace = colorSpace;
+
+	emit colorSpaceChanged(_colorSpace);
 }
 
 QVariant PointsLayer::colorMap(const int& role) const
@@ -534,4 +652,32 @@ void PointsLayer::computeChannel(const std::uint32_t& id)
 	}
 
 	_channels[id]->setChanged();
+}
+
+void PointsLayer::updateChannelNames()
+{
+	if (noChannels(Qt::EditRole).toInt() < 3) {
+		setChannelName(0, "Channel 1");
+		setChannelName(1, "Channel 2");
+		setChannelName(2, "Channel 3");
+	}
+	else {
+		switch (_colorSpace)
+		{
+			case ColorSpace::RGB:
+				setChannelName(0, "Red");
+				setChannelName(1, "Green");
+				setChannelName(2, "Blue");
+				break;
+
+			case ColorSpace::HSL:
+				setChannelName(0, "Hue");
+				setChannelName(1, "Saturation");
+				setChannelName(2, "Lightness");
+				break;
+
+			default:
+				break;
+		}
+	}
 }

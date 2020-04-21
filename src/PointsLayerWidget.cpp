@@ -68,6 +68,10 @@ void PointsLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 		}
 	});
 
+	QObject::connect(_ui->colorSpaceComboBox, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
+		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::ColorSpace)), index);
+	});
+
 	_ui->colormapComboBox->setModel(&_imageViewerPlugin->colorMapModel());
 	_ui->colormapComboBox->setType(ColorMap::Type::TwoDimensional);
 
@@ -123,6 +127,30 @@ void PointsLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 			_ui->channel3ComboBox->setModel(dimensionNamesModel);
 			_ui->channel3ComboBox->setCurrentIndex(std::min(2, dimensionNames.count()));
 			_ui->channel3ComboBox->blockSignals(false);
+		}
+
+		if (column == ult(PointsLayer::Column::Channel1Name)) {
+			const auto channel1Name			= _layersModel->data(topLeft.siblingAtColumn(ult(PointsLayer::Column::Channel1Name)), Qt::DisplayRole).toString();
+			const auto channel1NameFlags	= _layersModel->flags(topLeft.siblingAtColumn(ult(PointsLayer::Column::Channel1Name)));
+
+			_ui->channel1Label->setEnabled(channel1NameFlags & Qt::ItemIsEditable);
+			_ui->channel1Label->setText(channel1Name);
+		}
+
+		if (column == ult(PointsLayer::Column::Channel2Name)) {
+			const auto channel2Name = _layersModel->data(topLeft.siblingAtColumn(ult(PointsLayer::Column::Channel2Name)), Qt::DisplayRole).toString();
+			const auto channel2NameFlags = _layersModel->flags(topLeft.siblingAtColumn(ult(PointsLayer::Column::Channel2Name)));
+
+			_ui->channel2Label->setEnabled(channel2NameFlags & Qt::ItemIsEditable);
+			_ui->channel2Label->setText(channel2Name);
+		}
+
+		if (column == ult(PointsLayer::Column::Channel3Name)) {
+			const auto channel3Name = _layersModel->data(topLeft.siblingAtColumn(ult(PointsLayer::Column::Channel3Name)), Qt::DisplayRole).toString();
+			const auto channel3NameFlags = _layersModel->flags(topLeft.siblingAtColumn(ult(PointsLayer::Column::Channel3Name)));
+
+			_ui->channel3Label->setEnabled(channel3NameFlags & Qt::ItemIsEditable);
+			_ui->channel3Label->setText(channel3Name);
 		}
 
 		if (column == ult(PointsLayer::Column::Channel1DimensionId)) {
@@ -196,6 +224,18 @@ void PointsLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 			_ui->selectionSizeLineEdit->blockSignals(true);
 			_ui->selectionSizeLineEdit->setText(QString::number(_layersModel->data(topLeft.siblingAtColumn(ult(LayerNode::Column::SelectionSize)), Qt::EditRole).toInt()));
 			_ui->selectionSizeLineEdit->blockSignals(false);
+		}
+
+		if (column == ult(PointsLayer::Column::ColorSpace)) {
+			const auto colorSpace		= _layersModel->data(topLeft.siblingAtColumn(ult(PointsLayer::Column::ColorSpace)), Qt::DisplayRole).toString();
+			const auto colorSpaceFlags	= _layersModel->flags(topLeft.siblingAtColumn(ult(PointsLayer::Column::ColorSpace)));
+
+			_ui->colorSpaceLabel->setEnabled(colorSpaceFlags & Qt::ItemIsEditable);
+			_ui->colorSpaceComboBox->setEnabled(colorSpaceFlags & Qt::ItemIsEditable);
+
+			_ui->colorSpaceComboBox->blockSignals(true);
+			_ui->colorSpaceComboBox->setCurrentText(colorSpace);
+			_ui->colorSpaceComboBox->blockSignals(false);
 		}
 
 		if (column == ult(PointsLayer::Column::ColorMap)) {

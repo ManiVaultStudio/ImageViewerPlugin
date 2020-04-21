@@ -27,9 +27,10 @@ public:
 	 * (Default) constructor
 	 * @param parent Parent object
 	 * @param id Channel identifier
+	 * @param name Channel name
 	 * @param dimensionId Channel dimension identifier
 	 */
-	Channel(QObject* parent, const std::uint32_t& id, const std::uint32_t& dimensionId = -1);
+	Channel(QObject* parent, const std::uint32_t& id, const QString& name, const std::uint32_t& dimensionId = -1);
 
 	/** Returns whether the channel is enabled */
 	bool enabled() const;
@@ -60,6 +61,15 @@ public:
 
 	/** Returns the channel identifier */
 	const std::int32_t& id() const;
+
+	/** Returns the channel name */
+	QString name() const;
+
+	/**
+	 * Sets the channel name
+	 * @param name Channel name
+	 */
+	void setName(const QString& name);
 
 	/** Returns the channel dimension identifier */
 	const std::int32_t& dimensionId() const;
@@ -156,7 +166,8 @@ private:
 	bool			_enabled;				/** Whether the channel is enabled */
 	bool			_inverted;				/** Whether the channel is inverted */
 	QSize			_imageSize;				/** Image size */
-	std::int32_t	_id;					/** Identifier */
+	std::int32_t	_id;					/** Identifier (for internal use) */
+	QString			_name;					/** Name (for use in the GUI) */
 	std::int32_t	_dimensionId;			/** Dimension identifier */
 	Elements		_elements;				/** Elements */
 	Range			_range;					/** Elements range */
