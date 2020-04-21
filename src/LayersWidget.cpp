@@ -80,14 +80,12 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 
 	headerView->setSectionResizeMode(QHeaderView::ResizeToContents);
 
-	//for (int column = ult(LayerNode::Column::Start); column < ult(LayerNode::Column::End); column++)
-	//	headerView->hideSection(column);
+	for (int column = ult(LayerNode::Column::Start); column < ult(LayerNode::Column::End); column++)
+		headerView->hideSection(column);
 
 	headerView->showSection(ult(LayerNode::Column::Name));
-	//headerView->showSection(ult(Layer::Column::Enabled));
-	//headerView->showSection(ult(Layer::Column::Type));
 	headerView->showSection(ult(LayerNode::Column::Opacity));
-	//headerView->showSection(ult(Layer::Column::Enabled));
+	headerView->showSection(ult(LayerNode::Column::Scale));
 
 	headerView->setSectionResizeMode(ult(LayerNode::Column::Name), QHeaderView::Interactive);
 

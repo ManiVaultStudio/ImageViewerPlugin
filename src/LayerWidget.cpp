@@ -71,8 +71,7 @@ void LayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 		const auto selectedRows = _layersModel->selectionModel().selectedRows();
 
 		if (selectedRows.count() == 1) {
-			const auto range = _ui->scaleDoubleSpinBox->maximum() - _ui->scaleDoubleSpinBox->minimum();
-			_layersModel->setData(selectedRows.first().siblingAtColumn(ult(LayerNode::Column::Scale)), value / static_cast<float>(range));
+			_layersModel->setData(selectedRows.first().siblingAtColumn(ult(LayerNode::Column::Scale)), static_cast<float>(value) / 100.0f);
 		}
 	});
 

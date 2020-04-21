@@ -676,6 +676,12 @@ void PointsLayer::updateChannelNames()
 				setChannelName(2, "Lightness");
 				break;
 
+			case ColorSpace::LAB:
+				setChannelName(0, "L");
+				setChannelName(1, "A");
+				setChannelName(2, "B");
+				break;
+
 			default:
 				break;
 		}

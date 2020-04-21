@@ -89,6 +89,36 @@ vec3 hslToRgb(float hue, float saturation, float lightness)
     return rgbResult;
 }
 
+// Convert from LAB to RGB color space 
+vec3 labToRgb(vec3 lab)
+{
+	lab *= 255.0f;
+
+	float y = (lab.x + 16.0f) / 116.0f;
+	float x = lab.y / 500.0f + y;
+	float z = y - lab.z / 200.0f;
+	
+	vec3 rgb;
+
+	x = 0.95047f * ((x * x * x > 0.008856f) ? x * x * x : (x - 16.0f / 116.0f) / 7.787f);
+	y = 1.00000f * ((y * y * y > 0.008856f) ? y * y * y : (y - 16.0f / 116.0f) / 7.787f);
+	z = 1.08883f * ((z * z * z > 0.008856f) ? z * z * z : (z - 16.0f / 116.0f) / 7.787f);
+
+	rgb.r = x *  3.2406f + y * -1.5372f + z * -0.4986f;
+	rgb.g = x * -0.9689f + y *  1.8758f + z *  0.0415f;
+	rgb.b = x *  0.0557f + y * -0.2040f + z *  1.0570f;
+
+	rgb.r = (rgb.r > 0.0031308f) ? (1.055f * pow(rgb.r, 1.0f / 2.4f) - 0.055f) : 12.92f * rgb.r;
+	rgb.g = (rgb.g > 0.0031308f) ? (1.055f * pow(rgb.g, 1.0f / 2.4f) - 0.055f) : 12.92f * rgb.g;
+	rgb.b = (rgb.b > 0.0031308f) ? (1.055f * pow(rgb.b, 1.0f / 2.4f) - 0.055f) : 12.92f * rgb.b;
+
+	rgb.r = max(0.0f, min(1.0f, rgb.r));
+	rgb.g = max(0.0f, min(1.0f, rgb.g));
+	rgb.b = max(0.0f, min(1.0f, rgb.b));
+
+	return rgb;
+}
+
 void main(void)
 {
 	switch (noChannels) {
@@ -138,6 +168,12 @@ void main(void)
 					break;
 				}
 
+				case 2:
+				{
+					fragmentColor.rgb = labToRgb(channels);
+					break;
+				}
+				
 				default:
 					break;
 			}

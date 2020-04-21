@@ -148,6 +148,8 @@ bool LayersModel::insertLayer(int row, LayerNode* layer, const QModelIndex& pare
 	}
 	endInsertRows();
 
+	_selectionModel.setCurrentIndex(index(row, 0), QItemSelectionModel::SelectionFlag::Current | QItemSelectionModel::SelectionFlag::ClearAndSelect | QItemSelectionModel::SelectionFlag::Rows);
+
 	return true;
 }
 

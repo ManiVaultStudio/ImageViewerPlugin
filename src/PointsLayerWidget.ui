@@ -269,6 +269,11 @@
           <string>HSL</string>
          </property>
         </item>
+        <item>
+         <property name="text">
+          <string>LAB</string>
+         </property>
+        </item>
        </widget>
       </item>
       <item row="6" column="0">

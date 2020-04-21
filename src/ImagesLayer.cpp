@@ -116,8 +116,12 @@ Qt::ItemFlags ImagesLayer::flags(const QModelIndex& index) const
 			break;
 
 		case Column::Average:
-			flags |= Qt::ItemIsEditable;
+		{
+			if (imageDataType(Qt::EditRole).toInt() == ult(ImageData::Type::Sequence))
+				flags |= Qt::ItemIsEditable;
+
 			break;
+		}
 
 		default:
 			break;
