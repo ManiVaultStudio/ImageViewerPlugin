@@ -51,6 +51,10 @@ Qt::ItemFlags LayerNode::flags(const QModelIndex& index) const
 			flags |= Qt::ItemIsEditable;
 			break;
 
+		case Column::Scale:
+			flags |= Qt::ItemIsEditable;
+			break;
+
 		case Column::Flags:
 			break;
 
@@ -85,6 +89,9 @@ QVariant LayerNode::data(const QModelIndex& index, const int& role) const
 
 		case Column::Opacity:
 			return opacity(role);
+
+		case Column::Scale:
+			return scale(role);
 
 		case Column::Flags:
 			return Node::flags(role);
@@ -159,6 +166,10 @@ QModelIndexList LayerNode::setData(const QModelIndex& index, const QVariant& val
 
 				case Column::Opacity:
 					setOpacity(value.toFloat());
+					break;
+
+				case Column::Scale:
+					setScale(value.toFloat());
 					break;
 
 				case Column::Flags:

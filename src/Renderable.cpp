@@ -8,6 +8,7 @@ Renderer* Renderable::renderer = nullptr;
 Renderable::Renderable() :
 	_mouseEvents(),
 	_opacity(1.0f),
+	_scale(1.0f),
 	_modelMatrix(),
 	_props()
 {
@@ -17,7 +18,11 @@ Renderable::~Renderable() = default;
 
 QMatrix4x4 Renderable::modelMatrix() const
 {
-	return _modelMatrix;
+	auto scaleMatrix = QMatrix4x4();
+
+	scaleMatrix.scale(_scale);
+
+	return _modelMatrix * scaleMatrix;
 }
 
 void Renderable::setModelMatrix(const QMatrix4x4& modelMatrix)
@@ -63,4 +68,31 @@ QVariant Renderable::opacity(const int& role) const
 void Renderable::setOpacity(const float& opacity)
 {
 	_opacity = opacity;
+}
+
+QVariant Renderable::scale(const int& role) const
+{
+	const auto scaleString = QString("%1%").arg(QString::number(100.0f * _scale, 'f', 1));
+
+	switch (role)
+	{
+		case Qt::DisplayRole:
+			return scaleString;
+
+		case Qt::EditRole:
+			return _scale;
+
+		case Qt::ToolTipRole:
+			return QString("Scale: %1").arg(scaleString);
+
+		default:
+			break;
+	}
+
+	return QVariant();
+}
+
+void Renderable::setScale(const float& scale)
+{
+	_scale = scale;
 }

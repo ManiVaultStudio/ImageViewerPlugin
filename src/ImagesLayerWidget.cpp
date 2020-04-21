@@ -59,7 +59,6 @@ void ImagesLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 		const auto selectedRows = _layersModel->selectionModel().selectedRows();
 
 		if (selectedRows.count() == 1) {
-			_layersModel->setData(selectedRows.first().siblingAtColumn(ult(LayerNode::Column::Opacity)), 1.0f);
 			_layersModel->setData(selectedRows.first().siblingAtColumn(ult(ImagesLayer::Column::WindowNormalized)), 1.0f);
 			_layersModel->setData(selectedRows.first().siblingAtColumn(ult(ImagesLayer::Column::LevelNormalized)), 0.5f);
 		}

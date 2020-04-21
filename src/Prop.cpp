@@ -1,6 +1,7 @@
 #include "Prop.h"
 #include "Renderer.h"
 #include "Shape.h"
+#include "Node.h"
 
 #include <QOpenGLShaderProgram>
 #include <QOpenGLTexture>
@@ -110,7 +111,7 @@ QString Prop::fullName()
 
 QMatrix4x4 Prop::modelMatrix() const
 {
-	return _modelMatrix;
+	return _node->modelMatrix() * _modelMatrix;
 }
 
 void Prop::setModelMatrix(const QMatrix4x4& modelMatrix)

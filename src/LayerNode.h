@@ -32,6 +32,7 @@ public:
 		DataName,			// Name of the data (if any)
 		ID,					// Layer identifier (for internal use)
 		Opacity,			// Layer opacity
+		Scale,				// Layer scale
 		Flags,				// Configuration bit flags
 		Selection,			// Selection
 		SelectionSize,		// Size of the selection
@@ -60,6 +61,9 @@ public:
 
 			case Column::Opacity:
 				return "Opacity";
+
+			case Column::Scale:
+				return "Scale";
 
 			case Column::Flags:
 				return "Flags";

@@ -95,6 +95,14 @@ public: // Opacity
 	*/
 	void setOpacity(const float& opacity);
 
+	/** Returns the scale */
+	QVariant scale(const int& role) const;
+
+	/** Sets the scale
+	 * @param scale Scale
+	*/
+	void setScale(const float& scale);
+
 protected: // Prop management
 
 	/** TODO */
@@ -168,6 +176,7 @@ public:
 protected:
 	QVector<MouseEvent>			_mouseEvents;		/** Recorded mouse events */
 	float						_opacity;			/** Render opacity */
+	float						_scale;				/** Scale */
 	QMatrix4x4					_modelMatrix;		/** Model matrix */
 	QMap<QString, SharedProp>	_props;				/** Props map */
 };

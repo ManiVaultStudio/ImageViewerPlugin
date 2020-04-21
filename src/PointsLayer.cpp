@@ -97,7 +97,7 @@ Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
 
 		case Column::Channel3Enabled:
 		{
-			if (!_solidColor && _channels[1]->enabled())
+			if (!_solidColor && _channels[1]->enabled() && noDimensions() >= 3)
 				flags |= Qt::ItemIsEditable;
 
 			break;
