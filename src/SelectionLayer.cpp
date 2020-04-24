@@ -22,7 +22,7 @@ void SelectionLayer::init()
 {
 	addProp<SelectionProp>(this, "Selection");
 
-	_pointsDataset	= &imageViewerPlugin->requestData<Points>(_name);
+	_pointsDataset	= &imageViewerPlugin->requestData<Points>(_datasetName);
 	_imagesDataset	= imageViewerPlugin->sourceImagesSetFromPointsSet(_datasetName);
 	_dataName		= hdps::DataSet::getSourceData(*_pointsDataset).getDataName();
 

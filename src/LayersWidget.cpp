@@ -159,52 +159,36 @@ void LayersWidget::dragEnterEvent(QDragEnterEvent* dragEnterEvent)
 
 void LayersWidget::dropEvent(QDropEvent* dropEvent)
 {
-	const auto items			= dropEvent->mimeData()->text().split("\n");
-	const auto datasetName		= items.at(0);
-	const auto datasetType		= items.at(1);
-	const auto selectionName	= QString("%1_selection").arg(datasetName);
-	//const auto createSelectionLayer		= layersModel().findLayerById(selectionName) == nullptr;
-	const auto layerFlags		= ult(LayerNode::Flag::Enabled) | ult(LayerNode::Flag::Renamable);
-
-	const auto rootIndex = layersModel().index(0, 0);
+	const auto items					= dropEvent->mimeData()->text().split("\n");
+	const auto datasetName				= items.at(0);
+	const auto datasetType				= items.at(1);
+	const auto selectionName			= QString("%1_selection").arg(datasetName);
+	const auto selectionLayerIndices	= layersModel().match(layersModel().index(0, ult(LayerNode::Column::ID)), Qt::DisplayRole, selectionName, -1, Qt::MatchExactly);
+	const auto createSelectionLayer		= selectionLayerIndices.isEmpty();
+	const auto layerFlags				= ult(LayerNode::Flag::Enabled) | ult(LayerNode::Flag::Renamable);
 
 	if (datasetType == "Points") {
-		const auto points = _imageViewerPlugin->requestData<Points>(datasetName);
-
-		auto sourcePoints = hdps::DataSet::getSourceData(points);
-
-		/*
-		auto groupLayer = new GroupLayer(datasetName, datasetName, layerFlags);
-
-		groupLayer->insertChild(0, new PointsLayer(datasetName, datasetName, datasetName, layerFlags));
-		groupLayer->insertChild(0, new SelectionLayer(datasetName, datasetName, datasetName, layerFlags));
-
-		layersModel().insertLayer(0, groupLayer);
-		*/
-
-		//const auto sourceDatasetName = sourcePoints;
-
-		layersModel().insertLayer(0, new PointsLayer(datasetName, datasetName, datasetName, layerFlags));
-		layersModel().insertLayer(0, new SelectionLayer(datasetName, datasetName, datasetName, layerFlags));
+		if (createSelectionLayer) {
+			layersModel().insertLayer(0, new PointsLayer(datasetName, datasetName, datasetName, layerFlags));
+			layersModel().insertLayer(0, new SelectionLayer(datasetName, selectionName, selectionName, layerFlags));
+			layersModel().selectRow(1);
+		}
+		else {
+			const auto row = selectionLayerIndices.first().row() + 1;
+			layersModel().insertLayer(row, new PointsLayer(datasetName, datasetName, datasetName, layerFlags));
+			layersModel().selectRow(row);
+		}
 	}
 
 	if (datasetType == "Images") {
 		const auto imagesName		= datasetName;
 		const auto selectionName	= QString("%1_selection").arg(datasetName);
 
-		//auto dataset = datasetsModel()->addDataset(datasetName, Dataset::Type::Images);
-
 		layersModel().insertLayer(0, new ImagesLayer(datasetName, imagesName, imagesName, layerFlags));
-
-		/*
-		if (createSelectionLayer)
-			layersModel().addLayer(new SelectionLayer(dataset, selectionName, selectionName, layerFlags));
-		*/
+		layersModel().selectRow(0);
 	}
 
 	if (datasetType == "Clusters") {
-
-		//auto dataset = datasetsModel()->addDataset(datasetName, Dataset::Type::Clusters);
 	}
 
 	dropEvent->acceptProposedAction();

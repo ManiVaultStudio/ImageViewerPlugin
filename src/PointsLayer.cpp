@@ -26,7 +26,7 @@ void PointsLayer::init()
 	
 	addProp<PointsProp>(this, "Points");
 
-	_pointsDataset = &imageViewerPlugin->requestData<Points>(_name);
+	_pointsDataset = &imageViewerPlugin->requestData<Points>(_datasetName);
 	_imagesDataset = imageViewerPlugin->sourceImagesSetFromPointsSet(_datasetName);
 
 	setNoPoints(_pointsDataset->getNumPoints());

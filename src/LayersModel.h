@@ -175,6 +175,12 @@ public: // Miscellaneous
 	 */
 	void selectionChanged(const QString& name, const Indices& indices);
 
+	/**
+	 * Select a single row
+	 * @param row Row identifier
+	 */
+	void selectRow(const std::int32_t& row);
+
 	/** Returns the selection model */
 	QItemSelectionModel& selectionModel() { return _selectionModel; }
 

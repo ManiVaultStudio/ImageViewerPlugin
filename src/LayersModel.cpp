@@ -148,8 +148,6 @@ bool LayersModel::insertLayer(int row, LayerNode* layer, const QModelIndex& pare
 	}
 	endInsertRows();
 
-	_selectionModel.setCurrentIndex(index(row, 0), QItemSelectionModel::SelectionFlag::Current | QItemSelectionModel::SelectionFlag::ClearAndSelect | QItemSelectionModel::SelectionFlag::Rows);
-
 	return true;
 }
 
@@ -238,6 +236,11 @@ void LayersModel::selectionChanged(const QString& name, const Indices& indices)
 	}
 
 	//_datasetsModel.setData(hits.first().siblingAtColumn(ult(DatasetsModel::Column::Selection)), QVariant::fromValue(Indices::fromStdVector(dataset.indices())));
+}
+
+void LayersModel::selectRow(const std::int32_t& row)
+{
+	_selectionModel.setCurrentIndex(index(row, 0), QItemSelectionModel::SelectionFlag::Current | QItemSelectionModel::SelectionFlag::ClearAndSelect | QItemSelectionModel::SelectionFlag::Rows);
 }
 
 int LayersModel::rowCount(const QModelIndex& parent /*= QModelIndex()*/) const
