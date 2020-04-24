@@ -76,6 +76,7 @@ public: // Getters/setters
 	 */
 	void setImage(const QImage& image);
 
+	void computeImage();
 signals:
 
 	/**
