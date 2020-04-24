@@ -23,6 +23,7 @@ SelectionProp::SelectionProp(SelectionLayer* selectionLayer, const QString& name
 	addShape<QuadShape>("Quad");
 	addShaderProgram("Quad");
 	addTexture("Quad", QOpenGLTexture::Target2D);
+	addTexture("ColorMap", QOpenGLTexture::Target2D);
 
 	QObject::connect(selectionLayer, &SelectionLayer::imageChanged, [this](const QImage& selectionImage) {
 		renderer->bindOpenGLContext();
@@ -31,6 +32,24 @@ SelectionProp::SelectionProp(SelectionLayer* selectionLayer, const QString& name
 				return;
 
 			setImage(selectionImage);
+		}
+		renderer->releaseOpenGLContext();
+	});
+
+	QObject::connect(selectionLayer, &SelectionLayer::colorMapChanged, [this](const QImage& colorMap) {
+		renderer->bindOpenGLContext();
+		{
+			if (colorMap.isNull())
+				return;
+
+			auto& texture = textureByName("ColorMap");
+
+			texture.reset(new QOpenGLTexture(colorMap));
+
+			if (!texture->isCreated())
+				texture->create();
+
+			texture->setWrapMode(QOpenGLTexture::ClampToEdge);
 		}
 		renderer->releaseOpenGLContext();
 	});
@@ -108,14 +127,22 @@ void SelectionProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 
 		const auto shape			= shapeByName<QuadShape>("Quad");
 		const auto shaderProgram	= shaderProgramByName("Quad");
-		const auto texture			= textureByName("Quad");
+		const auto quadTexture		= textureByName("Quad");
+		const auto colorMapTexture	= textureByName("ColorMap");
 
-		renderer->openGLContext()->functions()->glActiveTexture(GL_TEXTURE0);
+		if (quadTexture->isCreated()) {
+			renderer->openGLContext()->functions()->glActiveTexture(GL_TEXTURE0);
+			quadTexture->bind();
+		}
 
-		texture->bind();
+		if (colorMapTexture->isCreated()) {
+			renderer->openGLContext()->functions()->glActiveTexture(GL_TEXTURE1);
+			colorMapTexture->bind();
+		}
 
 		if (shaderProgram->bind()) {
 			shaderProgram->setUniformValue("imageTexture", 0);
+			shaderProgram->setUniformValue("colorMapTexture", 1);
 			shaderProgram->setUniformValue("opacity", opacity);
 			shaderProgram->setUniformValue("transform", nodeMVP * modelMatrix());
 
@@ -127,7 +154,11 @@ void SelectionProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 			throw std::exception("Unable to bind quad shader program");
 		}
 
-		texture->release();
+		if (quadTexture->isCreated())
+			quadTexture->release();
+
+		if (colorMapTexture->isCreated())
+			colorMapTexture->release();
 	}
 	catch (std::exception& e)
 	{

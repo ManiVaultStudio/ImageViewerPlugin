@@ -84,6 +84,7 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 		headerView->hideSection(column);
 
 	headerView->showSection(ult(LayerNode::Column::Name));
+	headerView->showSection(ult(LayerNode::Column::Type));
 	headerView->showSection(ult(LayerNode::Column::Opacity));
 	headerView->showSection(ult(LayerNode::Column::Scale));
 

@@ -687,7 +687,7 @@ QVariant ImagesLayer::currentImageFilePath(const int& role) const
 
 void ImagesLayer::setCurrentImageId(const std::uint32_t& currentImageId)
 {
-	switch (static_cast<ImageData::Type>(type(Qt::EditRole).toInt()))
+	switch (static_cast<ImageData::Type>(imageDataType(Qt::EditRole).toInt()))
 	{
 		case ImageData::Type::Sequence:
 		{

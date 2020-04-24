@@ -258,13 +258,13 @@ QVariant LayerNode::type(const int& role) const
 					return u8"\uf03e";
 
 				case Type::Selection:
-					return u8"\uf065";
+					return u8"\uf245";
 
 				case Type::Clusters:
 					return u8"\uf141";
 
 				case Type::Points:
-					return u8"\uf03e";
+					return u8"\uf58d";
 
 				default:
 					break;

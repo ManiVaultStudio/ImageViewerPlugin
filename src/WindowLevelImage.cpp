@@ -38,8 +38,8 @@ QVariant WindowLevelImage::image(const int& role) const
 void WindowLevelImage::setImage(const QImage& image)
 {
 	_image				= image;
-	_windowNormalized	= 1.0f;
-	_levelNormalized	= 0.5f;
+	//_windowNormalized	= 1.0f;
+	//_levelNormalized	= 0.5f;
 
 	computeImageRange();
 	computeDisplayRange();

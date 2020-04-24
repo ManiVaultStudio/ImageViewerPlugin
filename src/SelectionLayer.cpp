@@ -12,7 +12,8 @@ SelectionLayer::SelectionLayer(const QString& datasetName, const QString& id, co
 	_pointsDataset(nullptr),
 	_imagesDataset(nullptr),
 	_image(),
-	_imageData()
+	_imageData(),
+	_colorMap()
 {
 	init();
 }
@@ -21,11 +22,11 @@ void SelectionLayer::init()
 {
 	addProp<SelectionProp>(this, "Selection");
 
-	_pointsDataset = &imageViewerPlugin->requestData<Points>(_name);
-	_imagesDataset = imageViewerPlugin->sourceImagesSetFromPointsSet(_datasetName);
+	_pointsDataset	= &imageViewerPlugin->requestData<Points>(_name);
+	_imagesDataset	= imageViewerPlugin->sourceImagesSetFromPointsSet(_datasetName);
+	_dataName		= hdps::DataSet::getSourceData(*_pointsDataset).getDataName();
 
-	//_dataName = _pointsDataset->getDataName();
-	_dataName = hdps::DataSet::getSourceData(*_pointsDataset).getDataName();
+	//setColorMap(imageViewerPlugin->colorMapModel().colorMap(0)->image());
 
 	computeImage();
 }
@@ -34,12 +35,15 @@ Qt::ItemFlags SelectionLayer::flags(const QModelIndex& index) const
 {
 	auto flags = LayerNode::flags(index);
 
-	/*
 	switch (static_cast<Column>(index.column())) {
+		case Column::ColorMap:
+			flags |= Qt::ItemIsEditable;
+			break;
+
 		default:
 			break;
 	}
-	*/
+
 
 	return flags;
 }
@@ -49,12 +53,13 @@ QVariant SelectionLayer::data(const QModelIndex& index, const int& role) const
 	if (index.column() < ult(Column::Start))
 		return LayerNode::data(index, role);
 
-	/*
 	switch (static_cast<Column>(index.column())) {
+		case Column::ColorMap:
+			return colorMap(role);
+
 		default:
 			break;
 	}
-	*/
 
 	return QVariant();
 }
@@ -68,11 +73,44 @@ QModelIndexList SelectionLayer::setData(const QModelIndex& index, const QVariant
 	}
 
 	switch (static_cast<Column>(index.column())) {
+		case Column::ColorMap:
+			setColorMap(value.value<QImage>());
+			break;
+
 		default:
 			break;
 	}
 
 	return affectedIds;
+}
+
+QVariant SelectionLayer::colorMap(const int& role) const
+{
+	const auto colorMapString = "Image";
+
+	switch (role)
+	{
+		case Qt::DisplayRole:
+			return colorMapString;
+
+		case Qt::EditRole:
+			return _colorMap;
+
+		case Qt::ToolTipRole:
+			return QString("%1").arg(colorMapString);
+
+		default:
+			break;
+	}
+
+	return QVariant();
+}
+
+void SelectionLayer::setColorMap(const QImage& colorMap)
+{
+	_colorMap = colorMap;
+
+	emit colorMapChanged(_colorMap);
 }
 
 void SelectionLayer::computeImage()

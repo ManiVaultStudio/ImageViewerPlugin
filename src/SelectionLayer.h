@@ -20,8 +20,10 @@ public:
 
 	/**  Columns */
 	enum class Column {
-		Start = ult(LayerNode::Column::End) + 1,
-		End = Start
+		ColorMap = ult(LayerNode::Column::End) + 1,		// Color map image
+
+		Start = ColorMap,
+		End = ColorMap
 	};
 
 public:
@@ -69,6 +71,21 @@ public: // Inherited MVC
 
 public: // Getters/setters
 
+	/**
+	 * Returns the color map image
+	 * @param role Data role
+	 * @return Color map image in variant form
+	 */
+	QVariant colorMap(const int& role) const;
+
+	/**
+	 * Sets the color map image
+	 * @param colorMap Color map image
+	 */
+	void setColorMap(const QImage& colorMap);
+
+private: // Miscellaneous
+
 	/** Computes the selection image */
 	void computeImage();
 
@@ -80,9 +97,16 @@ signals:
 	 */
 	void imageChanged(const QImage& image);
 
+	/**
+	 * Signals that the color map has changed
+	 * @param colorMap Color map
+	 */
+	void colorMapChanged(const QImage& colorMap);
+
 private:
 	Points*					_pointsDataset;			/** Points dataset to which the layer refers */
 	Images*					_imagesDataset;			/** Images dataset from which the points dataset originates */
 	QImage					_image;					/** Selection image */
 	QVector<std::uint8_t>	_imageData;				/** Image data buffer */
+	QImage					_colorMap;				/** Color map */
 };

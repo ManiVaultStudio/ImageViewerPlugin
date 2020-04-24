@@ -8,7 +8,6 @@ uniform int noChannels;					// Number of active channels
 uniform bool solidColor;				// Solid color (zero dimensional color map)
 uniform int colorSpace;					// Color space (0: RGB, 1: HSL)
 uniform float opacity;					// Render opacity
-
 in vec2 uv;								// Input texture coordinates
 out vec4 fragmentColor;					// Output fragment
 

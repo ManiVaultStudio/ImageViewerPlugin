@@ -29,6 +29,13 @@ void SelectionLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 		else
 			updateData(selected.indexes().first(), selected.indexes().last());
 	});
+
+	_ui->colorColorMapComboBox->setModel(&_imageViewerPlugin->colorMapModel());
+	_ui->colorColorMapComboBox->setType(ColorMap::Type::ZeroDimensional);
+
+	QObject::connect(_ui->colorColorMapComboBox, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
+		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(SelectionLayer::Column::ColorMap)), _ui->colorColorMapComboBox->currentImage());
+	});
 }
 
 void SelectionLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>& roles /*= QVector<int>()*/)
