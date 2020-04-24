@@ -11,6 +11,8 @@
  */
 class SelectionLayer : public LayerNode
 {
+	Q_OBJECT
+
 public:
 
 	/**  Columns */
@@ -58,4 +60,30 @@ public: // Inherited MVC
 	 * @return Model indices that are affected by the operation
 	 */
 	QModelIndexList setData(const QModelIndex& index, const QVariant& value, const int& role) override;
+
+public: // Getters/setters
+
+	/**
+	 * Returns the selection image
+	 * @param role Data role
+	 * @return Selection image in variant form
+	 */
+	QVariant image(const int& role) const;
+
+	/**
+	 * Sets the selection image
+	 * @param image Selection image
+	 */
+	void setImage(const QImage& image);
+
+signals:
+
+	/**
+	 * Signals that the selection image changed
+	 * @param image Selection image
+	 */
+	void imageChanged(const QImage& image);
+
+private:
+	QImage		_image;				/** Selection image */
 };

@@ -172,13 +172,16 @@ void LayersWidget::dropEvent(QDropEvent* dropEvent)
 
 		auto sourcePoints = hdps::DataSet::getSourceData(points);
 
-		//_imageViewerPlugin->core()->getDataManager()
-		layersModel().insertLayer(0, new PointsLayer(datasetName, datasetName, datasetName, layerFlags));
-		
 		/*
-		if (createSelectionLayer)
-			layersModel().addLayer(new SelectionLayer(dataset, selectionName, selectionName, layerFlags));
+		auto groupLayer = new GroupLayer(datasetName, datasetName, layerFlags);
+
+		groupLayer->insertChild(0, new PointsLayer(datasetName, datasetName, datasetName, layerFlags));
+		groupLayer->insertChild(0, new SelectionLayer(datasetName, datasetName, datasetName, layerFlags));
+
+		layersModel().insertLayer(0, groupLayer);
 		*/
+
+		layersModel().insertLayer(0, new PointsLayer(datasetName, datasetName, datasetName, layerFlags));
 	}
 
 	if (datasetType == "Images") {
