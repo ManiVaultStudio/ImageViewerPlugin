@@ -336,7 +336,25 @@ QModelIndexList PointsLayer::setData(const QModelIndex& index, const QVariant& v
 
 QVariant PointsLayer::imageSize(const int& role /*= Qt::DisplayRole*/) const
 {
-	return _imagesDataset->imageSize();
+	const auto size				= _imagesDataset->imageSize();
+	const auto imageSizeString	= QString("%1 x %2").arg(QString::number(size.width()), QString::number(size.height()));
+
+	switch (role)
+	{
+		case Qt::DisplayRole:
+			return imageSizeString;
+
+		case Qt::EditRole:
+			return size;
+
+		case Qt::ToolTipRole:
+			return QString("Image size: %1").arg(imageSizeString);
+
+		default:
+			break;
+	}
+
+	return QVariant();
 }
 
 QVariant PointsLayer::noPoints(const int& role /*= Qt::DisplayRole*/) const

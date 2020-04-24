@@ -2,10 +2,13 @@
 
 #include "LayerNode.h"
 
+class Points;
+class Images;
+
 /**
- * Clusters layer class
+ * Selection layer class
  *
- * Layer for cluster data
+ * TODO
  *
  * @author Thomas Kroes
  */
@@ -31,6 +34,9 @@ public:
 	 * @param flags Configuration bit flags
 	 */
 	SelectionLayer(const QString& datasetName, const QString& id, const QString& name, const int& flags);
+
+	/** Initializes the layer */
+	void init();
 
 public: // Inherited MVC
 
@@ -63,28 +69,20 @@ public: // Inherited MVC
 
 public: // Getters/setters
 
-	/**
-	 * Returns the selection image
-	 * @param role Data role
-	 * @return Selection image in variant form
-	 */
-	QVariant image(const int& role) const;
-
-	/**
-	 * Sets the selection image
-	 * @param image Selection image
-	 */
-	void setImage(const QImage& image);
-
+	/** Computes the selection image */
 	void computeImage();
+
 signals:
 
 	/**
-	 * Signals that the selection image changed
-	 * @param image Selection image
+	 * Signals that the image changed
+	 * @param image Image
 	 */
 	void imageChanged(const QImage& image);
 
 private:
-	QImage		_image;				/** Selection image */
+	Points*					_pointsDataset;			/** Points dataset to which the layer refers */
+	Images*					_imagesDataset;			/** Images dataset from which the points dataset originates */
+	QImage					_image;					/** Selection image */
+	QVector<std::uint8_t>	_imageData;				/** Image data buffer */
 };

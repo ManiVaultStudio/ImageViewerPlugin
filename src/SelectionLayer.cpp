@@ -1,14 +1,33 @@
 #include "SelectionLayer.h"
 #include "ImageViewerPlugin.h"
+#include "SelectionProp.h"
 
 #include "PointData.h"
+#include "ImageData/Images.h"
 
 #include <QDebug>
 
 SelectionLayer::SelectionLayer(const QString& datasetName, const QString& id, const QString& name, const int& flags) :
 	LayerNode(datasetName, LayerNode::Type::Selection, id, name, flags),
-	_image()
+	_pointsDataset(nullptr),
+	_imagesDataset(nullptr),
+	_image(),
+	_imageData()
 {
+	init();
+}
+
+void SelectionLayer::init()
+{
+	addProp<SelectionProp>(this, "Selection");
+
+	_pointsDataset = &imageViewerPlugin->requestData<Points>(_name);
+	_imagesDataset = imageViewerPlugin->sourceImagesSetFromPointsSet(_datasetName);
+
+	//_dataName = _pointsDataset->getDataName();
+	_dataName = hdps::DataSet::getSourceData(*_pointsDataset).getDataName();
+
+	computeImage();
 }
 
 Qt::ItemFlags SelectionLayer::flags(const QModelIndex& index) const
@@ -45,8 +64,7 @@ QModelIndexList SelectionLayer::setData(const QModelIndex& index, const QVariant
 	QModelIndexList affectedIds = LayerNode::setData(index, value, role);
 
 	if (static_cast<LayerNode::Column>(index.column()) == LayerNode::Column::Selection) {
-		
-		
+		computeImage();
 	}
 
 	switch (static_cast<Column>(index.column())) {
@@ -57,74 +75,41 @@ QModelIndexList SelectionLayer::setData(const QModelIndex& index, const QVariant
 	return affectedIds;
 }
 
-QVariant SelectionLayer::image(const int& role) const
-{
-	const auto imageString = "SelectionImage";
-
-	switch (role)
-	{
-		case Qt::DisplayRole:
-			return imageString;
-
-		case Qt::EditRole:
-			return _image;
-
-		case Qt::ToolTipRole:
-			return QString("%1").arg(imageString);
-
-		default:
-			break;
-	}
-
-	return QVariant();
-}
-
-void SelectionLayer::setImage(const QImage& image)
-{
-	_image= image;
-
-	emit imageChanged(_image);
-}
-
 void SelectionLayer::computeImage()
 {
-	/*
-	auto points = dynamic_cast<Points*>(LayerNode::imageViewerPlugin->requestData<Points>(_datasetName));
+	auto points = dynamic_cast<Points*>(&LayerNode::imageViewerPlugin->requestData<Points>(_datasetName));
 
-	auto& selection = dynamic_cast<Points&>(_core->requestSelection(_imageData->points()->getDataName()));
+	if (points == nullptr)
+		return;
 
-	const auto noElements = _imageData->noImages() * _imageData->noComponents();
-	const auto width = imageSize().width();
-	const auto height = imageSize().height();
+	const auto imageSize	= _imagesDataset->imageSize();
+	const auto width		= imageSize.width();
+	const auto height		= imageSize.height();
+	const auto noPixels		= width * height;
+	const auto noChannels	= 4;
+	const auto noElements	= noPixels * noChannels;
 
-	auto imageData = std::vector<std::uint8_t>();
-
-	imageData.resize(noPixels() * 4);
-
-	
-
-	const auto imageDataWidth = _imageData->imageSize().width();
-
-	for (const auto& selectionId : selection.indices)
-	{
-		const auto x = selectionId % imageDataWidth;
-		const auto y = static_cast<std::uint32_t>(floorf(static_cast<float>(selectionId) / static_cast<float>(imageDataWidth)));
-
-		if (_roi.contains(x, y)) {
-			const auto pixelId = ((y - _roi.top()) * width) + (x - _roi.left());
-			const auto pixelOffset = pixelId * 4;
-
-			imageData[pixelOffset + 0] = 255;
-			imageData[pixelOffset + 1] = 255;
-			imageData[pixelOffset + 2] = 255;
-			imageData[pixelOffset + 3] = 255;
-		}
+	if (noElements !=_imageData.count()) {
+		_imageData.resize(noElements);
 	}
 
-	auto image = QImage(width, height, QImage::Format::Format_RGB32);
+	_imageData.fill(0, noElements);
 
-	memcpy(image.bits(), imageData.data(), imageData.size() * sizeof(std::uint8_t));
+	for (const auto& selectionId : _selection)
+	{
+		const auto x		= selectionId % width;
+		const auto y		= static_cast<std::uint32_t>(floorf(static_cast<float>(selectionId) / static_cast<float>(width)));
+		const auto pixelId	= (y * width) + x;
+		const auto offset	= pixelId * noChannels;
 
-	return image;
-	*/
+		for (int c = 0; c < noChannels; c++)
+			_imageData[offset + c] = 255;
+	}
+
+	if (_image.isNull() || imageSize != _image.size())
+		_image = QImage(width, height, QImage::Format_RGBA8888);
+
+	memcpy(_image.bits(), _imageData.data(), _imageData.size() * sizeof(std::uint8_t));
+
+	emit imageChanged(_image);
 }

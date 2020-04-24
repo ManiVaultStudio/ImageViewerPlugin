@@ -181,7 +181,10 @@ void LayersWidget::dropEvent(QDropEvent* dropEvent)
 		layersModel().insertLayer(0, groupLayer);
 		*/
 
+		//const auto sourceDatasetName = sourcePoints;
+
 		layersModel().insertLayer(0, new PointsLayer(datasetName, datasetName, datasetName, layerFlags));
+		layersModel().insertLayer(0, new SelectionLayer(datasetName, datasetName, datasetName, layerFlags));
 	}
 
 	if (datasetType == "Images") {
