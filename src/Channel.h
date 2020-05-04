@@ -36,7 +36,7 @@ public:
 	bool enabled() const;
 
 	/**
-	 * Sets  whether the channel is enabled
+	 * Sets whether the channel is enabled
 	 * @param enabled Whether the channel is enabled
 	 */
 	void setEnabled(const bool& enabled);
