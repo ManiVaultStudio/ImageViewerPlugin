@@ -34,4 +34,12 @@ public: // Inherited MVC
 
 	/** TODO */
 	QModelIndexList setData(const QModelIndex& index, const QVariant& value, const int& role) override;
+
+protected:
+
+	/**
+	* Returns the image size
+	* @return Image size in variant form
+	*/
+	QSize imageSize() const override;
 };

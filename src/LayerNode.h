@@ -31,6 +31,9 @@ public:
 		DatasetName,		// Name of the dataset (if any)
 		DataName,			// Name of the data (if any)
 		ID,					// Layer identifier (for internal use)
+		ImageSize,			// Size of the image(s)
+		Width,				// Width of the image(s)
+		Height,				// Height of the image(s)
 		Opacity,			// Layer opacity
 		Scale,				// Layer scale
 		Flags,				// Configuration bit flags
@@ -125,6 +128,12 @@ public:
 	/** Destructor */
 	virtual ~LayerNode();
 
+	/**
+	 * Adjust the layer scaling to fit into the supplied image size
+	 * @param imageSize Size of the image to scale into
+	 */
+	void matchScaling(const QSize& targetImageSize);
+
 public: // MVC
 	
 	/** Returns the number of columns */
@@ -184,6 +193,27 @@ public: // Getters/setters
 	void setType(const LayerNode::Type& type);
 
 	/**
+	 * Returns the image size
+	 * @param role Data role
+	 * @return Image size in variant form
+	 */
+	QVariant imageSize(const int& role) const;
+
+	/**
+	 * Returns the width of the images in the dataset
+	 * @param role The data role
+	 * @return Image width in variant form
+	 */
+	QVariant width(const int& role) const;
+
+	/**
+	 * Returns the height of the images in the dataset
+	 * @param role The data role
+	 * @return Image height in variant form
+	 */
+	QVariant height(const int& role) const;
+
+	/**
 	 * Returns the data point selection
 	 * @param role The data role
 	 * @return Data point selection in variant form
@@ -202,6 +232,14 @@ public: // Getters/setters
 	 * @return Data point selection size in variant form
 	 */
 	QVariant selectionSize(const int& role = Qt::DisplayRole) const;
+
+protected:
+	
+	/**
+	 * Returns the image size
+	 * @return Image size
+	 */
+	virtual QSize imageSize() const = 0;
 
 public:
 

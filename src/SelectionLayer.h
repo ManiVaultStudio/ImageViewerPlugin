@@ -84,6 +84,14 @@ public: // Getters/setters
 	 */
 	void setOverlayColor(const QColor& overlayColor);
 
+protected:
+
+	/**
+	* Returns the image size
+	* @return Image size in variant form
+	*/
+	QSize imageSize() const override;
+
 private: // Miscellaneous
 
 	/** Computes the selection image */

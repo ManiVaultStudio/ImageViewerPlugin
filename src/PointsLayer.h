@@ -21,8 +21,7 @@ public:
 
 	/**  Columns */
 	enum class Column {
-		ImageSize = ult(LayerNode::Column::End) + 1,		// Image size
-		Channel1Name,										// First input channel name
+		Channel1Name = ult(LayerNode::Column::End) + 1,		// First input channel name
 		Channel2Name,										// Second input channel name
 		Channel3Name,										// Third input channel name
 		Channel1DimensionId,								// First input channel dimension identifier
@@ -41,7 +40,7 @@ public:
 		UseConstantColor,									// Whether to use constant colors for shading
 		ConstantColor,										// Const color
 
-		Start = ImageSize,
+		Start = Channel1Name,
 		End = ConstantColor
 	};
 
@@ -58,6 +57,12 @@ public:
 
 	/** Initializes the layer */
 	void init();
+
+	/**
+	 * Adjust the layer scaling to fit into the supplied image size
+	 * @param imageSize Size of the image to scale into
+	 */
+	void matchScaling(const QSize& targetImageSize);
 
 public: // Inherited MVC
 
@@ -89,13 +94,6 @@ public: // Inherited MVC
 	QModelIndexList setData(const QModelIndex& index, const QVariant& value, const int& role) override;
 
 public: // Getters/setters
-
-	/**
-	 * Returns the image size
-	 * @param role Data role
-	 * @return Image size in variant form
-	 */
-	QVariant imageSize(const int& role = Qt::DisplayRole) const;
 
 	/**
 	 * Returns the number of points in the dataset
@@ -259,6 +257,14 @@ public: // Getters/setters
 	 * @param constantColor Constant color
 	 */
 	void setConstantColor(const QColor& constantColor);
+
+protected:
+
+	/**
+	* Returns the image size
+	* @return Image size in variant form
+	*/
+	QSize imageSize() const override;
 
 private:
 

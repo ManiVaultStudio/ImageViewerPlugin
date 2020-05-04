@@ -114,8 +114,8 @@ void ImagesLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 
 		_ui->groupBox->setEnabled(enabled);
 		
-		if (column == ult(ImagesLayer::Column::ImageSize)) {
-			const auto imageSize = _layersModel->data(topLeft.siblingAtColumn(ult(ImagesLayer::Column::ImageSize)), Qt::EditRole).toSize();
+		if (column == ult(LayerNode::Column::ImageSize)) {
+			const auto imageSize = _layersModel->data(topLeft.siblingAtColumn(ult(LayerNode::Column::ImageSize)), Qt::EditRole).toSize();
 
 			_ui->imageSizeLineEdit->blockSignals(true);
 			_ui->imageSizeLineEdit->setText(QString("[%1, %2]").arg(QString::number(imageSize.width()), QString::number(imageSize.height())));

@@ -70,8 +70,10 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 	QObject::connect(_ui->layerRemovePushButton, &QPushButton::clicked, [this]() {
 		const auto selectedRows = layersSelectionModel().selectedRows();
 
-		if (selectedRows.size() == 1)
+		if (selectedRows.size() == 1) {
 			layersModel().removeLayer(selectedRows.first());
+			layersModel().selectRow(0);
+		}
 	});
 
 	_ui->layersGroupBox->setEnabled(true);
@@ -167,14 +169,41 @@ void LayersWidget::dropEvent(QDropEvent* dropEvent)
 	const auto createSelectionLayer		= selectionLayerIndices.isEmpty();
 	const auto layerFlags				= ult(LayerNode::Flag::Enabled) | ult(LayerNode::Flag::Renamable);
 
+	auto largestImageSize = QSize();
+
+	for (auto imageLayerIndex : layersModel().match(layersModel().index(0, ult(LayerNode::Column::Type)), Qt::EditRole, ult(LayerNode::Type::Images), -1, Qt::MatchExactly | Qt::MatchRecursive)) {
+		const auto imageSize = layersModel().data(imageLayerIndex.siblingAtColumn(ult(LayerNode::Column::ImageSize)), Qt::EditRole).toSize();
+
+		if (imageSize.width() > largestImageSize.width() && imageSize.height() > largestImageSize.height())
+			largestImageSize = imageSize;
+	}
+
+	for (auto imageLayerIndex : layersModel().match(layersModel().index(0, ult(LayerNode::Column::Type)), Qt::EditRole, ult(LayerNode::Type::Points), -1, Qt::MatchExactly | Qt::MatchRecursive)) {
+		const auto imageSize = layersModel().data(imageLayerIndex.siblingAtColumn(ult(LayerNode::Column::ImageSize)), Qt::EditRole).toSize();
+
+		if (imageSize.width() > largestImageSize.width() && imageSize.height() > largestImageSize.height())
+			largestImageSize = imageSize;
+	}
+
 	if (datasetType == "Points") {
+		auto pointsLayer = new PointsLayer(datasetName, datasetName, datasetName, layerFlags);
+
+		if (largestImageSize.isValid())
+			pointsLayer->matchScaling(largestImageSize);
+
 		if (createSelectionLayer) {
-			layersModel().insertLayer(0, new PointsLayer(datasetName, datasetName, datasetName, layerFlags));
-			layersModel().insertLayer(0, new SelectionLayer(datasetName, selectionName, selectionName, layerFlags));
+			auto selectionLayer = new SelectionLayer(datasetName, selectionName, selectionName, layerFlags);
+
+			if (largestImageSize.isValid())
+				selectionLayer->matchScaling(largestImageSize);
+
+			layersModel().insertLayer(0, pointsLayer);
+			layersModel().insertLayer(0, selectionLayer);
 			layersModel().selectRow(1);
 		}
 		else {
 			const auto row = selectionLayerIndices.first().row() + 1;
+
 			layersModel().insertLayer(row, new PointsLayer(datasetName, datasetName, datasetName, layerFlags));
 			layersModel().selectRow(row);
 		}
@@ -184,7 +213,12 @@ void LayersWidget::dropEvent(QDropEvent* dropEvent)
 		const auto imagesName		= datasetName;
 		const auto selectionName	= QString("%1_selection").arg(datasetName);
 
-		layersModel().insertLayer(0, new ImagesLayer(datasetName, imagesName, imagesName, layerFlags));
+		auto imagesLayer = new ImagesLayer(datasetName, imagesName, imagesName, layerFlags);
+
+		if (largestImageSize.isValid())
+			imagesLayer->matchScaling(largestImageSize);
+
+		layersModel().insertLayer(0, imagesLayer);
 		layersModel().selectRow(0);
 	}
 

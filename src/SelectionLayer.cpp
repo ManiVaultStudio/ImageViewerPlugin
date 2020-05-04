@@ -82,6 +82,11 @@ QModelIndexList SelectionLayer::setData(const QModelIndex& index, const QVariant
 	return affectedIds;
 }
 
+QSize SelectionLayer::imageSize() const
+{
+	return _imagesDataset->imageSize();
+}
+
 QVariant SelectionLayer::overlayColor(const int& role) const
 {
 	const auto overlayColorString = QString("rgb(%1, %2, %3)").arg(QString::number(_overlayColor.red()), QString::number(_overlayColor.green()), QString::number(_overlayColor.blue()));

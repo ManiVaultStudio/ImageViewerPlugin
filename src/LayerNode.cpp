@@ -20,6 +20,17 @@ LayerNode::LayerNode(const QString& datasetName, const Type& type, const QString
 
 LayerNode::~LayerNode() = default;
 
+void LayerNode::matchScaling(const QSize& targetImageSize)
+{
+	const auto layerImageSize	= imageSize();
+	const auto widthScaling		= static_cast<float>(targetImageSize.width()) / layerImageSize.width();
+	const auto heightScaling	= static_cast<float>(targetImageSize.height()) / layerImageSize.height();
+
+	const auto scale = std::min(widthScaling, heightScaling);
+
+	setScale(scale);
+}
+
 Qt::ItemFlags LayerNode::flags(const QModelIndex& index) const
 {
 	int flags = Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled;
@@ -39,12 +50,11 @@ Qt::ItemFlags LayerNode::flags(const QModelIndex& index) const
 
 		case Column::DatasetName:
 		case Column::DataName:
-			break;
-
 		case Column::Type:
-			break;
-
 		case Column::ID:
+		case Column::ImageSize:
+		case Column::Width:
+		case Column::Height:
 			break;
 
 		case Column::Opacity:
@@ -86,6 +96,15 @@ QVariant LayerNode::data(const QModelIndex& index, const int& role) const
 
 		case Column::ID:
 			return id(role);
+
+		case Column::ImageSize:
+			return imageSize(role);
+
+		case Column::Width:
+			return width(role);
+
+		case Column::Height:
+			return height(role);
 
 		case Column::Opacity:
 			return opacity(role);
@@ -162,6 +181,11 @@ QModelIndexList LayerNode::setData(const QModelIndex& index, const QVariant& val
 
 				case Column::ID:
 					setId(value.toString());
+					break;
+
+				case Column::ImageSize:
+				case Column::Width:
+				case Column::Height:
 					break;
 
 				case Column::Opacity:
@@ -283,6 +307,75 @@ QVariant LayerNode::type(const int& role) const
 void LayerNode::setType(const Type& type)
 {
 	_type = type;
+}
+
+QVariant LayerNode::imageSize(const int& role /*= Qt::DisplayRole*/) const
+{
+	const auto imageSize		= this->imageSize();
+	const auto imageSizeString	= QString("%1x%2").arg(QString::number(imageSize.width()), QString::number(imageSize.height()));
+
+	switch (role)
+	{
+		case Qt::DisplayRole:
+			return imageSizeString;
+
+		case Qt::EditRole:
+			return imageSize;
+
+		case Qt::ToolTipRole:
+			return QString("Image size: %1").arg(imageSizeString);
+
+		default:
+			break;
+	}
+
+	return QVariant();
+}
+
+QVariant LayerNode::width(const int& role) const
+{
+	const auto imageSize	= this->imageSize(Qt::EditRole).toSize();
+	const auto widthString	= QString::number(imageSize.width());
+
+	switch (role)
+	{
+		case Qt::DisplayRole:
+			return widthString;
+
+		case Qt::EditRole:
+			return imageSize.width();
+
+		case Qt::ToolTipRole:
+			return QString("Image width: %1 pixels").arg(widthString);
+
+		default:
+			break;
+	}
+
+	return QVariant();
+}
+
+QVariant LayerNode::height(const int& role) const
+{
+	const auto imageSize	= this->imageSize(Qt::EditRole).toSize();
+	const auto heightString = QString::number(imageSize.height());
+
+	switch (role)
+	{
+		case Qt::DisplayRole:
+			return heightString;
+
+		case Qt::EditRole:
+			return imageSize.height();
+
+		case Qt::ToolTipRole:
+			return QString("Image height: %1 pixels").arg(heightString);
+
+		default:
+			break;
+	}
+
+	return QVariant();
 }
 
 QVariant LayerNode::selection(const int& role /*= Qt::DisplayRole*/) const

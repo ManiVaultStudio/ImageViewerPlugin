@@ -19,22 +19,19 @@ public:
 
 	/**  Columns */
 	enum class Column {
-		NoImages = ult(LayerNode::Column::End) + 1,				// Number of images in the dataset
-		Width,													// Width of the image(s)
-		Height,													// Height of the image(s)
-		WindowNormalized,										// Normalized window
-		LevelNormalized,										// Normalized level
-		ImageSize,												// Size of the image(s)
-		NoPoints,												// Number of points in the dataset
-		NoDimensions,											// Number of dimensions in the dataset
-		ImageNames,												// Image name(s)
-		FilteredImageNames,										// Filtered image name(s) (depends on the selection)
-		ImageIDs,												// Image identifiers
-		ImageFilePaths,											// Absolute image file paths
-		CurrentImageId,											// Current image identifier
-		CurrentImageName,										// Current image name
-		CurrentImageFilePath,									// Current image file path
-		Average,												// Whether to average the images
+		NoImages = ult(LayerNode::Column::End) + 1,		// Number of images in the dataset
+		WindowNormalized,								// Normalized window
+		LevelNormalized,								// Normalized level
+		NoPoints,										// Number of points in the dataset
+		NoDimensions,									// Number of dimensions in the dataset
+		ImageNames,										// Image name(s)
+		FilteredImageNames,								// Filtered image name(s) (depends on the selection)
+		ImageIDs,										// Image identifiers
+		ImageFilePaths,									// Absolute image file paths
+		CurrentImageId,									// Current image identifier
+		CurrentImageName,								// Current image name
+		CurrentImageFilePath,							// Current image file path
+		Average,										// Whether to average the images
 
 		Start = NoImages,
 		End = Average
@@ -104,31 +101,11 @@ public: // Getters/setters
 	QVariant noImages(const int& role) const;
 
 	/**
-	 * Returns the width of the images in the dataset
-	 * @param role The data role
-	 * @return Image width in variant form
-	 */
-	QVariant width(const int& role) const;
-
-	/**
-	 * Returns the height of the images in the dataset
-	 * @param role The data role
-	 * @return Image height in variant form
-	 */
-	QVariant height(const int& role) const;
-
-	/**
 	 * Returns the size of the images in the dataset
 	 * @param role The data role
 	 * @return Image size in variant form
 	 */
 	QVariant imageSize(const int& role) const;
-
-	/**
-	 * Sets the image size
-	 * @param size Image size
-	 */
-	void setImageSize(const QSize& size);
 
 	/**
 	 * Returns the number of data points in the dataset
@@ -248,6 +225,14 @@ public: // Getters/setters
 	 */
 	void setAverage(const bool& average);
 
+protected:
+
+	/**
+	* Returns the image size
+	* @return Image size in variant form
+	*/
+	QSize imageSize() const override;
+
 private:
 
 	/** Computes the (averaged) image */
@@ -256,7 +241,6 @@ private:
 private:
 	Images*				_images;				/** Pointer to the images plugin instance */
 	ImageData::Type		_imageDataType;			/** Image data type (e.g. sequence or stack) */
-	QSize				_size;					/** Image size */
 	std::uint32_t		_noPoints;				/** Number of points in the referenced points dataset */
 	std::uint32_t		_noDimensions;			/** Number of dimensions in the referenced points dataset */
 	QStringList			_imageNames;			/** Image names */

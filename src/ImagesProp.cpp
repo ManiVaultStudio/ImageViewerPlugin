@@ -134,7 +134,11 @@ void ImagesProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 
 QRectF ImagesProp::boundingRectangle() const
 {
-	return shapeByName<QuadShape>("Quad")->rectangle();
+	auto rectangle = shapeByName<QuadShape>("Quad")->rectangle();
+
+	rectangle.setSize(_node->scale(Qt::EditRole).toFloat() * rectangle.size());
+
+	return rectangle;
 }
 
 WindowLevelImage& ImagesProp::image()

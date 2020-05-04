@@ -58,14 +58,22 @@ void PointsLayer::init()
 		setSelection(Indices::fromStdVector(selection->indices));
 }
 
+void PointsLayer::matchScaling(const QSize& targetImageSize)
+{
+	const auto layerImageSize	= QSizeF(imageSize());
+	const auto widthScaling		= static_cast<float>(targetImageSize.width()) / layerImageSize.width();
+	const auto heightScaling	= static_cast<float>(targetImageSize.height()) / layerImageSize.height();
+
+	const auto scale = std::min(widthScaling, heightScaling);
+
+	setScale(scale);
+}
+
 Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
 {
 	auto flags = LayerNode::flags(index);
 
 	switch (static_cast<Column>(index.column())) {
-		case Column::ImageSize:
-			break;
-
 		case Column::Channel1Name:
 		case Column::Channel1DimensionId:
 		{
@@ -158,9 +166,6 @@ QVariant PointsLayer::data(const QModelIndex& index, const int& role) const
 		return LayerNode::data(index, role);
 
 	switch (static_cast<Column>(index.column())) {
-		case Column::ImageSize:
-			return imageSize(role);
-
 		case Column::Channel1Name:
 			return channelName(0, role);
 
@@ -227,9 +232,6 @@ QModelIndexList PointsLayer::setData(const QModelIndex& index, const QVariant& v
 	QModelIndexList affectedIds = LayerNode::setData(index, value, role);
 
 	switch (static_cast<Column>(index.column())) {
-		case Column::ImageSize:
-			break;
-
 		case Column::Channel1Name:
 			setChannelName(0, value.toString());
 			break;
@@ -362,27 +364,9 @@ QModelIndexList PointsLayer::setData(const QModelIndex& index, const QVariant& v
 	return affectedIds;
 }
 
-QVariant PointsLayer::imageSize(const int& role /*= Qt::DisplayRole*/) const
+QSize PointsLayer::imageSize() const
 {
-	const auto size				= _imagesDataset->imageSize();
-	const auto imageSizeString	= QString("%1 x %2").arg(QString::number(size.width()), QString::number(size.height()));
-
-	switch (role)
-	{
-		case Qt::DisplayRole:
-			return imageSizeString;
-
-		case Qt::EditRole:
-			return size;
-
-		case Qt::ToolTipRole:
-			return QString("Image size: %1").arg(imageSizeString);
-
-		default:
-			break;
-	}
-
-	return QVariant();
+	return _imagesDataset->imageSize();
 }
 
 QVariant PointsLayer::noPoints(const int& role /*= Qt::DisplayRole*/) const
@@ -710,7 +694,7 @@ void PointsLayer::computeChannel(const std::uint32_t& id)
 	if (_channels[id]->dimensionId() < 0)
 		return;
 
-	const auto size = imageSize(Qt::EditRole).toSize();
+	const auto size = imageSize();
 
 	_channels[id]->setImageSize(size);
 

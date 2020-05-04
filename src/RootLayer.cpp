@@ -56,3 +56,8 @@ QModelIndexList RootLayer::setData(const QModelIndex& index, const QVariant& val
 
 	return affectedIds;
 }
+
+QSize RootLayer::imageSize() const
+{
+	return QSize();
+}

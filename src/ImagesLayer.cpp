@@ -11,7 +11,6 @@ ImagesLayer::ImagesLayer(const QString& imagesDatasetName, const QString& id, co
 	LayerNode(imagesDatasetName, ImagesLayer::Type::Images, id, name, flags),
 	_images(nullptr),
 	_imageDataType(ImageData::Type::Undefined),
-	_size(),
 	_noPoints(0),
 	_noDimensions(0),
 	_imageNames(),
@@ -34,7 +33,6 @@ void ImagesLayer::init()
 	_dataName = hdps::DataSet::getSourceData(*(images.points())).getDataName();
 
 	setImageDataType(_images->type());
-	setImageSize(_images->imageSize());
 	setNoPoints(_images->points()->getNumPoints());
 	setNoDimensions(_images->points()->getNumDimensions());
 
@@ -91,8 +89,6 @@ Qt::ItemFlags ImagesLayer::flags(const QModelIndex& index) const
 
 	switch (static_cast<Column>(index.column())) {
 		case Column::NoImages:
-		case Column::Width:
-		case Column::Height:
 			break;
 		
 		case Column::WindowNormalized:
@@ -100,7 +96,6 @@ Qt::ItemFlags ImagesLayer::flags(const QModelIndex& index) const
 			flags |= Qt::ItemIsEditable;
 			break;
 
-		case Column::ImageSize:
 		case Column::NoPoints:
 		case Column::NoDimensions:
 		case Column::ImageNames:
@@ -139,20 +134,11 @@ QVariant ImagesLayer::data(const QModelIndex& index, const int& role) const
 		case Column::NoImages:
 			return noImages(role);
 
-		case Column::Width:
-			return width(role);
-
-		case Column::Height:
-			return height(role);
-
 		case Column::WindowNormalized:
 			return propByName<ImagesProp>("Images")->image().windowNormalized(role);
 
 		case Column::LevelNormalized:
 			return propByName<ImagesProp>("Images")->image().levelNormalized(role);
-
-		case Column::ImageSize:
-			return imageSize(role);
 
 		case Column::NoPoints:
 			return noPoints(role);
@@ -206,8 +192,6 @@ QModelIndexList ImagesLayer::setData(const QModelIndex& index, const QVariant& v
 
 	switch (static_cast<Column>(index.column())) {
 		case Column::NoImages:
-		case Column::Width:
-		case Column::Height:
 			break;
 
 		case Column::WindowNormalized:
@@ -218,7 +202,6 @@ QModelIndexList ImagesLayer::setData(const QModelIndex& index, const QVariant& v
 			propByName<ImagesProp>("Images")->image().setLevelNormalized(value.toFloat());
 			break;
 
-		case Column::ImageSize:
 		case Column::NoPoints:
 		case Column::NoDimensions:
 		case Column::ImageNames:
@@ -300,73 +283,9 @@ QVariant ImagesLayer::noImages(const int& role) const
 	return QVariant();
 }
 
-QVariant ImagesLayer::width(const int& role) const
+QSize ImagesLayer::imageSize() const
 {
-	const auto widthString = QString::number(_size.width());
-
-	switch (role)
-	{
-		case Qt::DisplayRole:
-			return widthString;
-
-		case Qt::EditRole:
-			return _size.width();
-
-		case Qt::ToolTipRole:
-			return QString("Image width: %1 pixels").arg(widthString);
-
-		default:
-			break;
-	}
-
-	return QVariant();
-}
-
-QVariant ImagesLayer::height(const int& role) const
-{
-	const auto heightString = QString::number(_size.height());
-
-	switch (role)
-	{
-		case Qt::DisplayRole:
-			return heightString;
-
-		case Qt::EditRole:
-			return _size.height();
-
-		case Qt::ToolTipRole:
-			return QString("Image height: %1 pixels").arg(heightString);
-
-		default:
-			break;
-	}
-
-	return QVariant();
-}
-
-QVariant ImagesLayer::imageSize(const int& role) const
-{
-	switch (role)
-	{
-		case Qt::DisplayRole:
-			return QString("%1x%2").arg(QString::number(_size.width()), QString::number(_size.height()));
-
-		case Qt::EditRole:
-			return _size;
-
-		case Qt::ToolTipRole:
-			return QString("Image size: %1x%2").arg(QString::number(_size.width()), QString::number(_size.height()));
-
-		default:
-			break;
-	}
-
-	return QVariant();
-}
-
-void ImagesLayer::setImageSize(const QSize& size)
-{
-	_size = size;
+	return _images->imageSize();
 }
 
 QVariant ImagesLayer::noPoints(const int& role) const
