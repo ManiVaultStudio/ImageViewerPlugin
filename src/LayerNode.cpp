@@ -312,7 +312,7 @@ void LayerNode::setType(const Type& type)
 QVariant LayerNode::imageSize(const int& role /*= Qt::DisplayRole*/) const
 {
 	const auto imageSize		= this->imageSize();
-	const auto imageSizeString	= QString("%1x%2").arg(QString::number(imageSize.width()), QString::number(imageSize.height()));
+	const auto imageSizeString	= QString::number(imageSize.width()) + " x" + QString::number(imageSize.height());
 
 	switch (role)
 	{

@@ -81,6 +81,7 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 	auto headerView = _ui->layersTreeView->header();
 
 	headerView->setSectionResizeMode(QHeaderView::ResizeToContents);
+	headerView->hide();
 
 	for (int column = ult(LayerNode::Column::Start); column < ult(LayerNode::Column::End); column++)
 		headerView->hideSection(column);
@@ -88,7 +89,8 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 	headerView->showSection(ult(LayerNode::Column::Name));
 	headerView->showSection(ult(LayerNode::Column::Type));
 	headerView->showSection(ult(LayerNode::Column::Opacity));
-	headerView->showSection(ult(LayerNode::Column::ImageSize));
+	headerView->showSection(ult(LayerNode::Column::ImageWidth));
+	headerView->showSection(ult(LayerNode::Column::ImageHeight));
 	headerView->showSection(ult(LayerNode::Column::Scale));
 
 	headerView->setSectionResizeMode(ult(LayerNode::Column::Name), QHeaderView::Interactive);
@@ -124,8 +126,16 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 		_ui->layerRemovePushButton->setEnabled(noSelectedRows == 1);
 	};
 	
-	QObject::connect(&layersModel(), &QAbstractListModel::rowsMoved, [this, updateButtons](const QModelIndex& parent, int start, int end, const QModelIndex& destination, int row) {
+	QObject::connect(&layersModel(), &QAbstractItemModel::rowsMoved, [this, updateButtons](const QModelIndex& parent, int start, int end, const QModelIndex& destination, int row) {
 		updateButtons();
+	});
+
+	QObject::connect(&layersModel(), &QAbstractItemModel::rowsInserted, [this, updateButtons](const QModelIndex &parent, int first, int last) {
+		_ui->layersTreeView->header()->setVisible(layersModel().rowCount() > 0);
+	});
+
+	QObject::connect(&layersModel(), &QAbstractItemModel::rowsRemoved, [this, updateButtons](const QModelIndex &parent, int first, int last) {
+		_ui->layersTreeView->header()->setVisible(layersModel().rowCount() > 0);
 	});
 
 	QObject::connect(&layersSelectionModel(), &QItemSelectionModel::selectionChanged, [this, updateButtons](const QItemSelection &selected, const QItemSelection &deselected) {
@@ -133,6 +143,8 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 
 		_imageViewerPlugin->imageViewerWidget()->update();
 	});
+
+	
 }
 
 LayersWidget::~LayersWidget() = default;

@@ -62,6 +62,15 @@ public:
 			case Column::ID:
 				return "ID";
 
+			case Column::ImageSize:
+				return "Image Size";
+
+			case Column::ImageWidth:
+				return "Width";
+
+			case Column::ImageHeight:
+				return "Height";
+
 			case Column::Opacity:
 				return "Opacity";
 
