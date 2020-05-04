@@ -332,6 +332,11 @@ QVariant LayerNode::imageSize(const int& role /*= Qt::DisplayRole*/) const
 	return QVariant();
 }
 
+int LayerNode::noPixels() const
+{
+	return imageSize().width() * imageSize().height();
+}
+
 QVariant LayerNode::imageWidth(const int& role) const
 {
 	const auto imageSize	= this->imageSize(Qt::EditRole).toSize();

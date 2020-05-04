@@ -34,8 +34,33 @@ void SelectionLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 		}
 	});
 
+	QObject::connect(_ui->selectAllPushButton, &QPushButton::clicked, [this]() {
+		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(SelectionLayer::Column::SelectAll)), QVariant());
+	});
+
+	QObject::connect(_ui->selectNonePushButton, &QPushButton::clicked, [this]() {
+		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(SelectionLayer::Column::SelectNone)), QVariant());
+	});
+
+	QObject::connect(_ui->invertSelectionPushButton, &QPushButton::clicked, [this]() {
+		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(SelectionLayer::Column::InvertSelection)), QVariant());
+	});
+
 	QObject::connect(_ui->colorPickerPushButton, &ColorPickerPushButton::currentColorChanged, [this](const QColor& currentColor) {
 		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(SelectionLayer::Column::OverlayColor)), currentColor);
+	});
+
+	QObject::connect(_ui->autoZoomToSelectionCheckBox, &QCheckBox::stateChanged, [this](int state) {
+		switch (state)
+		{
+			case Qt::Unchecked:
+				_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(SelectionLayer::Column::AutoZoomToSelection)), false);
+				break;
+
+			case Qt::Checked:
+				_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(SelectionLayer::Column::AutoZoomToSelection)), true);
+				break;
+		}
 	});
 }
 
@@ -58,12 +83,48 @@ void SelectionLayerWidget::updateData(const QModelIndex& topLeft, const QModelIn
 
 		const auto mightEdit = validSelection && enabled;
 		
-		_ui->groupBox->setEnabled(enabled);
+		_ui->pixelSelectionGroupBox->setEnabled(enabled);
+		_ui->displayGroupBox->setEnabled(enabled);
 		
 		const auto overlayColorFlags = _layersModel->flags(topLeft.row(), ult(SelectionLayer::Column::OverlayColor));
 
 		//_ui->colorLabel->setEnabled(mightEdit && overlayColorFlags & Qt::ItemIsEditable);
 		//_ui->colorPickerPushButton->setEnabled(mightEdit && overlayColorFlags & Qt::ItemIsEditable);
+
+		if (column == ult(SelectionLayer::Column::SelectAll)) {
+			const auto selectAllFlags = _layersModel->flags(topLeft.row(), ult(SelectionLayer::Column::SelectAll));
+
+			_ui->selectAllPushButton->setEnabled(selectAllFlags & Qt::ItemIsEditable);
+		}
+
+		if (column == ult(SelectionLayer::Column::SelectNone)) {
+			const auto selectNoneFlags = _layersModel->flags(topLeft.row(), ult(SelectionLayer::Column::SelectNone));
+
+			_ui->selectNonePushButton->setEnabled(selectNoneFlags & Qt::ItemIsEditable);
+		}
+
+		if (column == ult(SelectionLayer::Column::InvertSelection)) {
+			const auto invertSelectionFlags = _layersModel->flags(topLeft.row(), ult(SelectionLayer::Column::InvertSelection));
+
+			_ui->invertSelectionPushButton->setEnabled(invertSelectionFlags & Qt::ItemIsEditable);
+		}
+
+		if (column == ult(SelectionLayer::Column::AutoZoomToSelection)) {
+			const auto autoZoomToSelection		= _layersModel->data(topLeft.row(), ult(SelectionLayer::Column::AutoZoomToSelection), Qt::EditRole).toBool();
+			const auto autoZoomToSelectionFlags	= _layersModel->flags(topLeft.row(), ult(SelectionLayer::Column::AutoZoomToSelection));
+
+			_ui->autoZoomToSelectionCheckBox->setEnabled(autoZoomToSelectionFlags & Qt::ItemIsEditable);
+
+			_ui->autoZoomToSelectionCheckBox->blockSignals(true);
+			_ui->autoZoomToSelectionCheckBox->setChecked(autoZoomToSelection);
+			_ui->autoZoomToSelectionCheckBox->blockSignals(false);
+		}
+
+		if (column == ult(SelectionLayer::Column::ZoomToSelection)) {
+			const auto zoomToSelectionFlags = _layersModel->flags(topLeft.row(), ult(SelectionLayer::Column::ZoomToSelection));
+
+			_ui->zoomToSelectionPushButton->setEnabled(zoomToSelectionFlags & Qt::ItemIsEditable);
+		}
 
 		if (column == ult(SelectionLayer::Column::OverlayColor)) {
 			const auto overlayColor = _layersModel->data(topLeft.row(), ult(SelectionLayer::Column::OverlayColor), Qt::EditRole).value<QColor>();

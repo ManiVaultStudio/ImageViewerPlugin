@@ -5,6 +5,8 @@
 #include "PointData.h"
 #include "ImageData/Images.h"
 
+#include <set>
+
 #include <QDebug>
 
 SelectionLayer::SelectionLayer(const QString& datasetName, const QString& id, const QString& name, const int& flags) :
@@ -13,7 +15,8 @@ SelectionLayer::SelectionLayer(const QString& datasetName, const QString& id, co
 	_imagesDataset(nullptr),
 	_image(),
 	_imageData(),
-	_overlayColor(Qt::green)
+	_overlayColor(Qt::green),
+	_autoZoomToSelection(false)
 {
 	init();
 }
@@ -34,6 +37,42 @@ Qt::ItemFlags SelectionLayer::flags(const QModelIndex& index) const
 	auto flags = LayerNode::flags(index);
 
 	switch (static_cast<Column>(index.column())) {
+		case Column::SelectAll:
+		{
+			if (_selection.count() < noPixels())
+				flags |= Qt::ItemIsEditable;
+
+			break;
+		}
+
+		case Column::SelectNone:
+		{
+			if (_selection.count() > 0)
+				flags |= Qt::ItemIsEditable;
+
+			break;
+		}
+
+		case Column::InvertSelection:
+		{
+			if (_selection.count() > 0 && _selection.count() < noPixels())
+				flags |= Qt::ItemIsEditable;
+
+			break;
+		}
+
+		case Column::AutoZoomToSelection:
+			flags |= Qt::ItemIsEditable;
+			break;
+
+		case Column::ZoomToSelection:
+		{
+			if (!_autoZoomToSelection && _selection.count() > 0)
+				flags |= Qt::ItemIsEditable;
+
+			break;
+		}
+
 		case Column::OverlayColor:
 			flags |= Qt::ItemIsEditable;
 			break;
@@ -55,6 +94,9 @@ QVariant SelectionLayer::data(const QModelIndex& index, const int& role) const
 		case Column::OverlayColor:
 			return overlayColor(role);
 
+		case Column::AutoZoomToSelection:
+			return autoZoomToSelection(role);
+
 		default:
 			break;
 	}
@@ -68,12 +110,37 @@ QModelIndexList SelectionLayer::setData(const QModelIndex& index, const QVariant
 
 	if (static_cast<LayerNode::Column>(index.column()) == LayerNode::Column::Selection) {
 		computeImage();
+
+		affectedIds << index.siblingAtColumn(ult(Column::SelectAll));
+		affectedIds << index.siblingAtColumn(ult(Column::SelectNone));
+		affectedIds << index.siblingAtColumn(ult(Column::InvertSelection));
+		affectedIds << index.siblingAtColumn(ult(Column::ZoomToSelection));
 	}
 
 	switch (static_cast<Column>(index.column())) {
+		case Column::SelectAll:
+			selectAll();
+			break;
+
+		case Column::SelectNone:
+			selectNone();
+			break;
+
+		case Column::InvertSelection:
+			invertSelection();
+			break;
+
 		case Column::OverlayColor:
 			setOverlayColor(value.value<QColor>());
 			break;
+
+		case Column::AutoZoomToSelection:
+		{
+			setAutoZoomToSelection(value.toBool());
+
+			affectedIds << index.siblingAtColumn(ult(Column::ZoomToSelection));
+			break;
+		}
 
 		default:
 			break;
@@ -114,6 +181,33 @@ void SelectionLayer::setOverlayColor(const QColor& overlayColor)
 	_overlayColor = overlayColor;
 }
 
+QVariant SelectionLayer::autoZoomToSelection(const int& role) const
+{
+	const auto autoZoomToSelectionString = _autoZoomToSelection ? "true" : "false";
+
+	switch (role)
+	{
+		case Qt::DisplayRole:
+			return autoZoomToSelectionString;
+
+		case Qt::EditRole:
+			return _autoZoomToSelection;
+
+		case Qt::ToolTipRole:
+			return QString("Auto zoom to selection: %1").arg(autoZoomToSelectionString);
+
+		default:
+			break;
+	}
+
+	return QVariant();
+}
+
+void SelectionLayer::setAutoZoomToSelection(const bool& autoZoomToSelection)
+{
+	_autoZoomToSelection = autoZoomToSelection;
+}
+
 void SelectionLayer::computeImage()
 {
 	auto points = dynamic_cast<Points*>(&LayerNode::imageViewerPlugin->requestData<Points>(_datasetName));
@@ -151,4 +245,35 @@ void SelectionLayer::computeImage()
 	memcpy(_image.bits(), _imageData.data(), _imageData.size() * sizeof(std::uint8_t));
 
 	emit imageChanged(_image);
+}
+
+void SelectionLayer::selectAll()
+{
+	std::vector<std::uint32_t> indices(noPixels());
+	std::iota(std::begin(indices), std::end(indices), 0);
+
+	_imagesDataset->setIndices(indices);
+}
+
+void SelectionLayer::selectNone()
+{
+	_imagesDataset->setIndices(std::vector<std::uint32_t>());
+}
+
+void SelectionLayer::invertSelection()
+{
+	std::set<std::uint32_t> selectionSet(_selection.begin(), _selection.end());
+
+	std::vector<std::uint32_t> indices;
+	
+	indices.reserve(noPixels());
+
+	for (int index = 0; index < noPixels(); index++) {
+		if (selectionSet.find(index) == selectionSet.end())
+			indices.push_back(index);
+	}
+
+	qDebug() << indices.size();
+
+	_imagesDataset->setIndices(indices);
 }

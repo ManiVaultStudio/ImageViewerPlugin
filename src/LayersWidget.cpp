@@ -143,8 +143,6 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 
 		_imageViewerPlugin->imageViewerWidget()->update();
 	});
-
-	
 }
 
 LayersWidget::~LayersWidget() = default;
@@ -217,14 +215,14 @@ void LayersWidget::dropEvent(QDropEvent* dropEvent)
 		else {
 			const auto row = selectionLayerIndices.first().row() + 1;
 
-			layersModel().insertLayer(row, new PointsLayer(datasetName, datasetName, datasetName, layerFlags));
+			layersModel().insertLayer(row, pointsLayer);
 			layersModel().selectRow(row);
 		}
 	}
 
 	if (datasetType == "Images") {
-		const auto imagesName		= datasetName;
-		const auto selectionName	= QString("%1_selection").arg(datasetName);
+		const auto imagesName = datasetName;
+		const auto selectionName = QString("%1_selection").arg(datasetName);
 
 		auto imagesLayer = new ImagesLayer(datasetName, imagesName, imagesName, layerFlags);
 

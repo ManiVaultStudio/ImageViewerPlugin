@@ -20,9 +20,15 @@ public:
 
 	/**  Columns */
 	enum class Column {
-		OverlayColor = ult(LayerNode::Column::End) + 1,		// Selection overlay color
+		PixelSelectionType = ult(LayerNode::Column::End) + 1,		// Type of pixel selection e.g. rectangle, brush
+		SelectAll,													// Select all pixels
+		SelectNone,													// Select no pixels
+		InvertSelection,											// Invert the pixel selection
+		AutoZoomToSelection,										// Zoom automatically to the pixel selection
+		ZoomToSelection,											// Zoom to the pixel selection
+		OverlayColor = ult(LayerNode::Column::End) + 1,				// Selection overlay color
 
-		Start = OverlayColor,
+		Start = PixelSelectionType,
 		End = OverlayColor
 	};
 
@@ -84,6 +90,19 @@ public: // Getters/setters
 	 */
 	void setOverlayColor(const QColor& overlayColor);
 
+	/**
+	 * Returns whether auto zoom is enabled
+	 * @param role Data role
+	 * @return whether auto zoom is enabled in variant form
+	 */
+	QVariant autoZoomToSelection(const int& role) const;
+
+	/**
+	 * Sets whether auto zoom is enabled
+	 * @param autoZoomToSelection Whether auto zoom is enabled
+	 */
+	void setAutoZoomToSelection(const bool& autoZoomToSelection);
+
 protected:
 
 	/**
@@ -97,6 +116,15 @@ private: // Miscellaneous
 	/** Computes the selection image */
 	void computeImage();
 
+	/** Selects all pixels */
+	void selectAll();
+
+	/** De-selects all pixels */
+	void selectNone();
+
+	/** Inverts the pixel selection */
+	void invertSelection();
+
 signals:
 
 	/**
@@ -106,9 +134,10 @@ signals:
 	void imageChanged(const QImage& image);
 
 private:
-	Points*					_pointsDataset;			/** Points dataset to which the layer refers */
-	Images*					_imagesDataset;			/** Images dataset from which the points dataset originates */
-	QImage					_image;					/** Selection image */
-	QVector<std::uint8_t>	_imageData;				/** Image data buffer */
-	QColor					_overlayColor;			/** Selection overlay color */
+	Points*					_pointsDataset;				/** Points dataset to which the layer refers */
+	Images*					_imagesDataset;				/** Images dataset from which the points dataset originates */
+	QImage					_image;						/** Selection image */
+	QVector<std::uint8_t>	_imageData;					/** Image data buffer */
+	QColor					_overlayColor;				/** Selection overlay color */
+	bool					_autoZoomToSelection;		/** Automatically zoom to selection */
 };

@@ -250,6 +250,12 @@ protected:
 	 */
 	virtual QSize imageSize() const = 0;
 
+	/**
+	 * Returns the number of pixels in the image
+	 * @return Number of pixels
+	 */
+	int noPixels() const;
+
 public:
 
 	/** Pointer to the image viewer plugin for interfacing with datasets */

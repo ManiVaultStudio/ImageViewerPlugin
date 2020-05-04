@@ -1,5 +1,4 @@
 #include "SettingsWidget.h"
-#include "SelectionWidget.h"
 #include "LayersWidget.h"
 
 #include <QVBoxLayout>
@@ -14,6 +13,7 @@ SettingsWidget::SettingsWidget(ImageViewerPlugin* imageViewerPlugin) :
 	layout->addStretch(1);
 
 	setLayout(layout);
+	setFixedWidth(300);
 }
 
 SettingsWidget::~SettingsWidget() = default;
