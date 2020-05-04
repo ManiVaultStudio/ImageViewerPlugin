@@ -13,11 +13,9 @@ SelectionLayer::SelectionLayer(const QString& datasetName, const QString& id, co
 	_imagesDataset(nullptr),
 	_image(),
 	_imageData(),
-	_colorMap(1, 1, QImage::Format::Format_RGB32)
+	_overlayColor(Qt::green)
 {
 	init();
-
-	_colorMap.fill(Qt::green);
 }
 
 void SelectionLayer::init()
@@ -28,8 +26,6 @@ void SelectionLayer::init()
 	_imagesDataset	= imageViewerPlugin->sourceImagesSetFromPointsSet(_datasetName);
 	_dataName		= hdps::DataSet::getSourceData(*_pointsDataset).getDataName();
 
-	setColorMap(_colorMap);
-
 	computeImage();
 }
 
@@ -38,7 +34,7 @@ Qt::ItemFlags SelectionLayer::flags(const QModelIndex& index) const
 	auto flags = LayerNode::flags(index);
 
 	switch (static_cast<Column>(index.column())) {
-		case Column::ColorMap:
+		case Column::OverlayColor:
 			flags |= Qt::ItemIsEditable;
 			break;
 
@@ -56,8 +52,8 @@ QVariant SelectionLayer::data(const QModelIndex& index, const int& role) const
 		return LayerNode::data(index, role);
 
 	switch (static_cast<Column>(index.column())) {
-		case Column::ColorMap:
-			return colorMap(role);
+		case Column::OverlayColor:
+			return overlayColor(role);
 
 		default:
 			break;
@@ -75,8 +71,8 @@ QModelIndexList SelectionLayer::setData(const QModelIndex& index, const QVariant
 	}
 
 	switch (static_cast<Column>(index.column())) {
-		case Column::ColorMap:
-			setColorMap(value.value<QImage>());
+		case Column::OverlayColor:
+			setOverlayColor(value.value<QColor>());
 			break;
 
 		default:
@@ -86,20 +82,20 @@ QModelIndexList SelectionLayer::setData(const QModelIndex& index, const QVariant
 	return affectedIds;
 }
 
-QVariant SelectionLayer::colorMap(const int& role) const
+QVariant SelectionLayer::overlayColor(const int& role) const
 {
-	const auto colorMapString = "Image";
+	const auto overlayColorString = QString("rgb(%1, %2, %3)").arg(QString::number(_overlayColor.red()), QString::number(_overlayColor.green()), QString::number(_overlayColor.blue()));
 
 	switch (role)
 	{
 		case Qt::DisplayRole:
-			return colorMapString;
+			return overlayColorString;
 
 		case Qt::EditRole:
-			return _colorMap;
+			return _overlayColor;
 
 		case Qt::ToolTipRole:
-			return QString("%1").arg(colorMapString);
+			return QString("Overlay color: %1").arg(overlayColorString);
 
 		default:
 			break;
@@ -108,11 +104,9 @@ QVariant SelectionLayer::colorMap(const int& role) const
 	return QVariant();
 }
 
-void SelectionLayer::setColorMap(const QImage& colorMap)
+void SelectionLayer::setOverlayColor(const QColor& overlayColor)
 {
-	_colorMap = colorMap;
-
-	emit colorMapChanged(_colorMap);
+	_overlayColor = overlayColor;
 }
 
 void SelectionLayer::computeImage()

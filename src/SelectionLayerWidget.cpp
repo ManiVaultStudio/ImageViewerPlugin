@@ -35,11 +35,7 @@ void SelectionLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 	});
 
 	QObject::connect(_ui->colorPickerPushButton, &ColorPickerPushButton::currentColorChanged, [this](const QColor& currentColor) {
-		auto colorMap = QImage(1, 1, QImage::Format::Format_RGB32);
-
-		colorMap.fill(currentColor);
-		
-		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(SelectionLayer::Column::ColorMap)), colorMap);
+		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(SelectionLayer::Column::OverlayColor)), currentColor);
 	});
 }
 
@@ -64,16 +60,16 @@ void SelectionLayerWidget::updateData(const QModelIndex& topLeft, const QModelIn
 		
 		_ui->groupBox->setEnabled(enabled);
 		
-		const auto colorMapFlags = _layersModel->flags(topLeft.row(), ult(SelectionLayer::Column::ColorMap));
+		const auto overlayColorFlags = _layersModel->flags(topLeft.row(), ult(SelectionLayer::Column::OverlayColor));
 
-		_ui->colorLabel->setEnabled(mightEdit && colorMapFlags & Qt::ItemIsEditable);
-		_ui->colorPickerPushButton->setEnabled(mightEdit && colorMapFlags & Qt::ItemIsEditable);
+		//_ui->colorLabel->setEnabled(mightEdit && overlayColorFlags & Qt::ItemIsEditable);
+		//_ui->colorPickerPushButton->setEnabled(mightEdit && overlayColorFlags & Qt::ItemIsEditable);
 
-		if (column == ult(SelectionLayer::Column::ColorMap)) {
-			const auto colorMap = _layersModel->data(topLeft.row(), ult(SelectionLayer::Column::ColorMap), Qt::EditRole).value<QImage>();
+		if (column == ult(SelectionLayer::Column::OverlayColor)) {
+			const auto overlayColor = _layersModel->data(topLeft.row(), ult(SelectionLayer::Column::OverlayColor), Qt::EditRole).value<QColor>();
 
 			_ui->colorPickerPushButton->blockSignals(true);
-			_ui->colorPickerPushButton->setCurrentColor(colorMap.pixelColor(0, 0));
+			_ui->colorPickerPushButton->setCurrentColor(overlayColor);
 			_ui->colorPickerPushButton->blockSignals(false);
 		}
 	}

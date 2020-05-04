@@ -20,10 +20,10 @@ public:
 
 	/**  Columns */
 	enum class Column {
-		ColorMap = ult(LayerNode::Column::End) + 1,		// Color map image
+		OverlayColor = ult(LayerNode::Column::End) + 1,		// Selection overlay color
 
-		Start = ColorMap,
-		End = ColorMap
+		Start = OverlayColor,
+		End = OverlayColor
 	};
 
 public:
@@ -72,17 +72,17 @@ public: // Inherited MVC
 public: // Getters/setters
 
 	/**
-	 * Returns the color map image
+	 * Returns the selection overlay color
 	 * @param role Data role
-	 * @return Color map image in variant form
+	 * @return Overlay color in variant form
 	 */
-	QVariant colorMap(const int& role) const;
+	QVariant overlayColor(const int& role) const;
 
 	/**
-	 * Sets the color map image
-	 * @param colorMap Color map image
+	 * Sets the selection overlay color
+	 * @param overlayColor Overlay color
 	 */
-	void setColorMap(const QImage& colorMap);
+	void setOverlayColor(const QColor& overlayColor);
 
 private: // Miscellaneous
 
@@ -97,16 +97,10 @@ signals:
 	 */
 	void imageChanged(const QImage& image);
 
-	/**
-	 * Signals that the color map has changed
-	 * @param colorMap Color map
-	 */
-	void colorMapChanged(const QImage& colorMap);
-
 private:
 	Points*					_pointsDataset;			/** Points dataset to which the layer refers */
 	Images*					_imagesDataset;			/** Images dataset from which the points dataset originates */
 	QImage					_image;					/** Selection image */
 	QVector<std::uint8_t>	_imageData;				/** Image data buffer */
-	QImage					_colorMap;				/** Color map */
+	QColor					_overlayColor;			/** Selection overlay color */
 };

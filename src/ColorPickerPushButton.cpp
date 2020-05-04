@@ -11,7 +11,7 @@ ColorPickerPushButton::ColorPickerPushButton(QWidget* parent) :
 	_colorDialog(new QColorDialog(parent))
 {
 	setIconSize(_iconSize);
-	this->setStyleSheet("text-align:left; margin: -1px; padding: 4px;"); // padding-left: 4px; padding-top: 3px;
+	this->setStyleSheet("text-align:left; margin: -1px; padding-left: 5px; padding-top: 4px; padding-bottom: 4px;");
 
 	QObject::connect(this, &QPushButton::clicked, [this]() {
 		QObject::connect(_colorDialog, &QColorDialog::currentColorChanged, [this](const QColor& color) {
