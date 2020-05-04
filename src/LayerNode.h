@@ -32,8 +32,8 @@ public:
 		DataName,			// Name of the data (if any)
 		ID,					// Layer identifier (for internal use)
 		ImageSize,			// Size of the image(s)
-		Width,				// Width of the image(s)
-		Height,				// Height of the image(s)
+		ImageWidth,			// Width of the image(s)
+		ImageHeight,		// Height of the image(s)
 		Opacity,			// Layer opacity
 		Scale,				// Layer scale
 		Flags,				// Configuration bit flags
@@ -204,14 +204,14 @@ public: // Getters/setters
 	 * @param role The data role
 	 * @return Image width in variant form
 	 */
-	QVariant width(const int& role) const;
+	QVariant imageWidth(const int& role) const;
 
 	/**
 	 * Returns the height of the images in the dataset
 	 * @param role The data role
 	 * @return Image height in variant form
 	 */
-	QVariant height(const int& role) const;
+	QVariant imageHeight(const int& role) const;
 
 	/**
 	 * Returns the data point selection

@@ -53,8 +53,8 @@ Qt::ItemFlags LayerNode::flags(const QModelIndex& index) const
 		case Column::Type:
 		case Column::ID:
 		case Column::ImageSize:
-		case Column::Width:
-		case Column::Height:
+		case Column::ImageWidth:
+		case Column::ImageHeight:
 			break;
 
 		case Column::Opacity:
@@ -100,11 +100,11 @@ QVariant LayerNode::data(const QModelIndex& index, const int& role) const
 		case Column::ImageSize:
 			return imageSize(role);
 
-		case Column::Width:
-			return width(role);
+		case Column::ImageWidth:
+			return imageWidth(role);
 
-		case Column::Height:
-			return height(role);
+		case Column::ImageHeight:
+			return imageHeight(role);
 
 		case Column::Opacity:
 			return opacity(role);
@@ -184,8 +184,8 @@ QModelIndexList LayerNode::setData(const QModelIndex& index, const QVariant& val
 					break;
 
 				case Column::ImageSize:
-				case Column::Width:
-				case Column::Height:
+				case Column::ImageWidth:
+				case Column::ImageHeight:
 					break;
 
 				case Column::Opacity:
@@ -332,7 +332,7 @@ QVariant LayerNode::imageSize(const int& role /*= Qt::DisplayRole*/) const
 	return QVariant();
 }
 
-QVariant LayerNode::width(const int& role) const
+QVariant LayerNode::imageWidth(const int& role) const
 {
 	const auto imageSize	= this->imageSize(Qt::EditRole).toSize();
 	const auto widthString	= QString::number(imageSize.width());
@@ -355,7 +355,7 @@ QVariant LayerNode::width(const int& role) const
 	return QVariant();
 }
 
-QVariant LayerNode::height(const int& role) const
+QVariant LayerNode::imageHeight(const int& role) const
 {
 	const auto imageSize	= this->imageSize(Qt::EditRole).toSize();
 	const auto heightString = QString::number(imageSize.height());

@@ -88,6 +88,7 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 	headerView->showSection(ult(LayerNode::Column::Name));
 	headerView->showSection(ult(LayerNode::Column::Type));
 	headerView->showSection(ult(LayerNode::Column::Opacity));
+	headerView->showSection(ult(LayerNode::Column::ImageSize));
 	headerView->showSection(ult(LayerNode::Column::Scale));
 
 	headerView->setSectionResizeMode(ult(LayerNode::Column::Name), QHeaderView::Interactive);
