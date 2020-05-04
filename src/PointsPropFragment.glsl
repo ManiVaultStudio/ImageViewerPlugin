@@ -5,7 +5,8 @@ uniform sampler2D colorMapTexture;		// Colormap texture sampler
 uniform sampler2DArray channelTextures;	// Texture samplers (0: Channel 1, 1: Channel 2, 2: Channel 3, 3: Alpha)
 uniform vec2 displayRanges[3];			// Display ranges for each channel
 uniform int noChannels;					// Number of active channels
-uniform bool solidColor;				// Solid color (zero dimensional color map)
+uniform bool useConstantColor;			// Whether the pixel color is constant and the alpha is modulated by the intensity of the selected channel
+uniform vec4 constantColor;				// Constant color
 uniform int colorSpace;					// Color space (0: RGB, 1: HSL)
 uniform float opacity;					// Render opacity
 in vec2 uv;								// Input texture coordinates
@@ -181,9 +182,11 @@ void main(void)
 		}
 	}
 	
-	fragmentColor.a = opacity;
-	
-	if (solidColor)
-		fragmentColor.a *= toneMapChannel(displayRanges[0].x, displayRanges[0].y, texture(channelTextures, vec3(uv, 0)).r);
+	if (useConstantColor) {
+		fragmentColor = constantColor;
+		fragmentColor.a = opacity * toneMapChannel(displayRanges[0].x, displayRanges[0].y, texture(channelTextures, vec3(uv, 0)).r);
+	} else {
+		fragmentColor.a = opacity;
+	}
 }
 )"

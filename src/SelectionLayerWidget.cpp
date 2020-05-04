@@ -2,10 +2,12 @@
 #include "LayersModel.h"
 #include "SelectionLayer.h"
 #include "ImageViewerPlugin.h"
+#include "ColorPickerPushButton.h"
 
 #include "ui_SelectionLayerWidget.h"
 
 #include <QDebug>
+#include <QImage>
 
 SelectionLayerWidget::SelectionLayerWidget(QWidget* parent) :
 	_ui{ std::make_unique<Ui::SelectionLayerWidget>() },
@@ -26,15 +28,18 @@ void SelectionLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 
 		if (selectedRows.isEmpty())
 			updateData(QModelIndex(), QModelIndex());
-		else
-			updateData(selected.indexes().first(), selected.indexes().last());
+		else {
+			const auto first = selected.indexes().first();
+			updateData(first.siblingAtColumn(ult(SelectionLayer::Column::Start)), first.siblingAtColumn(ult(SelectionLayer::Column::End)));
+		}
 	});
 
-	_ui->colorColorMapComboBox->setModel(&_imageViewerPlugin->colorMapModel());
-	_ui->colorColorMapComboBox->setType(ColorMap::Type::ZeroDimensional);
+	QObject::connect(_ui->colorPickerPushButton, &ColorPickerPushButton::currentColorChanged, [this](const QColor& currentColor) {
+		auto colorMap = QImage(1, 1, QImage::Format::Format_RGB32);
 
-	QObject::connect(_ui->colorColorMapComboBox, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
-		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(SelectionLayer::Column::ColorMap)), _ui->colorColorMapComboBox->currentImage());
+		colorMap.fill(currentColor);
+		
+		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(SelectionLayer::Column::ColorMap)), colorMap);
 	});
 }
 
@@ -56,27 +61,20 @@ void SelectionLayerWidget::updateData(const QModelIndex& topLeft, const QModelIn
 		}
 
 		const auto mightEdit = validSelection && enabled;
-
-		/*
+		
 		_ui->groupBox->setEnabled(enabled);
 		
-		const auto opacityFlags = _layersModel->flags(topLeft.row(), ult(Layer::Column::Opacity));
+		const auto colorMapFlags = _layersModel->flags(topLeft.row(), ult(SelectionLayer::Column::ColorMap));
 
-		_ui->layerOpacityLabel->setEnabled(mightEdit && opacityFlags & Qt::ItemIsEditable);
-		_ui->layerOpacityDoubleSpinBox->setEnabled(mightEdit && opacityFlags & Qt::ItemIsEditable);
-		_ui->layerOpacityHorizontalSlider->setEnabled(mightEdit && opacityFlags & Qt::ItemIsEditable);
+		_ui->colorLabel->setEnabled(mightEdit && colorMapFlags & Qt::ItemIsEditable);
+		_ui->colorPickerPushButton->setEnabled(mightEdit && colorMapFlags & Qt::ItemIsEditable);
 
-		if (column == ult(Layer::Column::Opacity)) {
-			const auto opacity = validSelection ? _layersModel->data(topLeft.row(), ult(Layer::Column::Opacity), Qt::EditRole).toFloat() : 1.0f;
+		if (column == ult(SelectionLayer::Column::ColorMap)) {
+			const auto colorMap = _layersModel->data(topLeft.row(), ult(SelectionLayer::Column::ColorMap), Qt::EditRole).value<QImage>();
 
-			_ui->layerOpacityDoubleSpinBox->blockSignals(true);
-			_ui->layerOpacityDoubleSpinBox->setValue(100.0f * opacity);
-			_ui->layerOpacityDoubleSpinBox->blockSignals(false);
-
-			_ui->layerOpacityHorizontalSlider->blockSignals(true);
-			_ui->layerOpacityHorizontalSlider->setValue(100.0f * opacity);
-			_ui->layerOpacityHorizontalSlider->blockSignals(false);
+			_ui->colorPickerPushButton->blockSignals(true);
+			_ui->colorPickerPushButton->setCurrentColor(colorMap.pixelColor(0, 0));
+			_ui->colorPickerPushButton->blockSignals(false);
 		}
-		*/
 	}
 }

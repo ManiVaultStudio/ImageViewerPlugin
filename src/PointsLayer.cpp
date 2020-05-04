@@ -7,6 +7,7 @@
 #include "ImageData/Images.h"
 
 #include <QDebug>
+#include <QImage>
 
 PointsLayer::PointsLayer(const QString& pointsDatasetName, const QString& id, const QString& name, const int& flags) :
 	LayerNode(pointsDatasetName, LayerNode::Type::Points, id, name, flags),
@@ -15,7 +16,9 @@ PointsLayer::PointsLayer(const QString& pointsDatasetName, const QString& id, co
 	_channels(),
 	_maxNoChannels(0),
 	_colorSpace(ColorSpace::RGB),
-	_colorMap()
+	_colorMap(),
+	_useConstantColor(false),
+	_constantColor(Qt::green)
 {
 	init();
 }
@@ -34,7 +37,7 @@ void PointsLayer::init()
 	setMaxNoChannels(std::min(3u, _noDimensions));
 	setChannelDimensionId(0, 0);
 	setColorMap(imageViewerPlugin->colorMapModel().colorMap(0)->image());
-	setSolidColor(false);
+	setUseConstantColor(false);
 	setChannelEnabled(0, true);
 
 	auto dimensionNames = QStringList::fromVector(QVector<QString>::fromStdVector(_pointsDataset->getDimensionNames()));
@@ -73,7 +76,7 @@ Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
 		case Column::Channel2Name:
 		case Column::Channel2DimensionId:
 		{
-			if (!_solidColor && _channels[1]->enabled())
+			if (!_useConstantColor && _channels[1]->enabled())
 				flags |= Qt::ItemIsEditable;
 
 			break;
@@ -82,7 +85,7 @@ Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
 		case Column::Channel3Name:
 		case Column::Channel3DimensionId:
 		{
-			if (!_solidColor && _channels[2]->enabled())
+			if (!_useConstantColor && _channels[2]->enabled())
 				flags |= Qt::ItemIsEditable;
 
 			break;
@@ -93,7 +96,7 @@ Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
 
 		case Column::Channel2Enabled:
 		{
-			if (!_solidColor && _channels[0]->enabled())
+			if (!_useConstantColor && _channels[0]->enabled())
 				flags |= Qt::ItemIsEditable;
 
 			break;
@@ -101,7 +104,7 @@ Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
 
 		case Column::Channel3Enabled:
 		{
-			if (!_solidColor && _channels[1]->enabled() && _noDimensions >= 3)
+			if (!_useConstantColor && _channels[1]->enabled() && _noDimensions >= 3)
 				flags |= Qt::ItemIsEditable;
 
 			break;
@@ -130,7 +133,13 @@ Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
 			break;
 		}
 			
-		case Column::SolidColor:
+		case Column::UseConstantColor:
+		{
+			flags |= Qt::ItemIsEditable;
+			break;
+		}
+
+		case Column::ConstantColor:
 		{
 			flags |= Qt::ItemIsEditable;
 			break;
@@ -200,8 +209,11 @@ QVariant PointsLayer::data(const QModelIndex& index, const int& role) const
 		case Column::ColorMap:
 			return colorMap(role);
 
-		case Column::SolidColor:
-			return solidColor(role);
+		case Column::UseConstantColor:
+			return useConstantColor(role);
+
+		case Column::ConstantColor:
+			return constantColor(role);
 
 		default:
 			break;
@@ -308,8 +320,9 @@ QModelIndexList PointsLayer::setData(const QModelIndex& index, const QVariant& v
 			setColorMap(value.value<QImage>());
 			break;
 
-		case Column::SolidColor:
-			setSolidColor(value.toBool());
+		case Column::UseConstantColor:
+		{
+			setUseConstantColor(value.toBool());
 			setChannelEnabled(1, false);
 			setChannelEnabled(2, false);
 			updateChannelNames();
@@ -325,7 +338,22 @@ QModelIndexList PointsLayer::setData(const QModelIndex& index, const QVariant& v
 			affectedIds << index.siblingAtColumn(ult(Column::Channel3Enabled));
 			affectedIds << index.siblingAtColumn(ult(Column::ColorSpace));
 			affectedIds << index.siblingAtColumn(ult(Column::ColorMap));
+
+			if (_useConstantColor) {
+				setConstantColor(_constantColor);
+			}
+
 			break;
+		}
+
+		case Column::ConstantColor:
+		{
+			setConstantColor(value.value<QColor>());
+			
+			affectedIds << index.siblingAtColumn(ult(Column::ColorMap));
+
+			break;
+		}
 
 		default:
 			break;
@@ -619,24 +647,24 @@ QVariant PointsLayer::colorMap(const int& role) const
 void PointsLayer::setColorMap(const QImage& colorMap)
 {
 	_colorMap = colorMap;
-
+	
 	emit colorMapChanged(_colorMap);
 }
 
-QVariant PointsLayer::solidColor(const int& role) const
+QVariant PointsLayer::useConstantColor(const int& role) const
 {
-	const auto solidColorString = _solidColor ? "true" : "false";
+	const auto useConstantColorString = _useConstantColor ? "true" : "false";
 
 	switch (role)
 	{
 		case Qt::DisplayRole:
-			return solidColorString;
+			return useConstantColorString;
 
 		case Qt::EditRole:
-			return _solidColor;
+			return _useConstantColor;
 
 		case Qt::ToolTipRole:
-			return QString("Solid color: %1").arg(solidColorString);
+			return QString("Use constant color: %1").arg(useConstantColorString);
 
 		default:
 			break;
@@ -645,9 +673,36 @@ QVariant PointsLayer::solidColor(const int& role) const
 	return QVariant();
 }
 
-void PointsLayer::setSolidColor(const bool& solidColor)
+void PointsLayer::setUseConstantColor(const bool& useConstantColor)
 {
-	_solidColor = solidColor;
+	_useConstantColor = useConstantColor;
+}
+
+QVariant PointsLayer::constantColor(const int& role) const
+{
+	const auto constantColorString = QString("rgb(%1, %2, %3)").arg(QString::number(_constantColor.red()), QString::number(_constantColor.green()), QString::number(_constantColor.blue()));
+
+	switch (role)
+	{
+		case Qt::DisplayRole:
+			return constantColorString;
+
+		case Qt::EditRole:
+			return _constantColor;
+
+		case Qt::ToolTipRole:
+			return QString("Constant color: %1").arg(constantColorString);
+
+		default:
+			break;
+	}
+
+	return QVariant();
+}
+
+void PointsLayer::setConstantColor(const QColor& constantColor)
+{
+	_constantColor = constantColor;
 }
 
 void PointsLayer::computeChannel(const std::uint32_t& id)

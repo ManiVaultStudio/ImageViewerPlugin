@@ -68,7 +68,11 @@ protected:
 		ColorMap::Type		_type;		/** Type of color map (e.g. 1D, 2D) */
 	};
 public:
-	/** Constructor */
+	/**
+	 * Constructor
+	 * @param parent Pointer to parent widget
+	 * @param type Type of color map
+	 */
 	ColorMapComboBox(QWidget* parent, const ColorMap::Type& type = ColorMap::Type::OneDimensional);
 
 	/**

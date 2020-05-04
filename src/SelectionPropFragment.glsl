@@ -10,9 +10,9 @@ out vec4 fragmentColor;					// Output fragment
 void main(void)
 {
 	if (texture(imageTexture, uv).r > 0) {
-		//vec4 color = texture(colorMapTexture, vec2(0, 0));
-		vec3 color = vec3(0, 1, 0);
-		fragmentColor= vec4(color, opacity);
+		vec4 color = texture(colorMapTexture, vec2(0, 0));
+		
+		fragmentColor= vec4(color.rgb, opacity);
 	}
 }
 )"

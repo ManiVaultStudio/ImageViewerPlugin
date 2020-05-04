@@ -13,9 +13,11 @@ SelectionLayer::SelectionLayer(const QString& datasetName, const QString& id, co
 	_imagesDataset(nullptr),
 	_image(),
 	_imageData(),
-	_colorMap()
+	_colorMap(1, 1, QImage::Format::Format_RGB32)
 {
 	init();
+
+	_colorMap.fill(Qt::green);
 }
 
 void SelectionLayer::init()
@@ -26,7 +28,7 @@ void SelectionLayer::init()
 	_imagesDataset	= imageViewerPlugin->sourceImagesSetFromPointsSet(_datasetName);
 	_dataName		= hdps::DataSet::getSourceData(*_pointsDataset).getDataName();
 
-	//setColorMap(imageViewerPlugin->colorMapModel().colorMap(0)->image());
+	setColorMap(_colorMap);
 
 	computeImage();
 }

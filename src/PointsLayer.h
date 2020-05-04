@@ -38,10 +38,11 @@ public:
 		NoDimensions,										// Number of dimensions in the dataset
 		ColorSpace,											// Color space (e.g. RGB, HSL and LAB)
 		ColorMap,											// Color map image
-		SolidColor,											// Solid color
+		UseConstantColor,									// Whether to use constant colors for shading
+		ConstantColor,										// Const color
 
 		Start = ImageSize,
-		End = SolidColor
+		End = ConstantColor
 	};
 
 public:
@@ -234,17 +235,30 @@ public: // Getters/setters
 	void setColorMap(const QImage& colorMap);
 
 	/**
-	 * Returns whether the solid color option is enabled
+	 * Returns whether to shade using constant color
 	 * @param role Data role
-	 * @return Whether the solid color option is enabled in variant form
+	 * @return Whether to shade using constant color in variant form
 	 */
-	QVariant solidColor(const int& role) const;
+	QVariant useConstantColor(const int& role) const;
 
 	/**
-	 * Sets whether the solid color option is enabled
-	 * @param colorMap Color map image
+	 * Sets whether to shade using constant color
+	 * @param useConstantColor Constant color on/off
 	 */
-	void setSolidColor(const bool& solidColor);
+	void setUseConstantColor(const bool& useConstantColor);
+
+	/**
+	 * Returns the constant color
+	 * @param role Data role
+	 * @return Constant color in variant form
+	 */
+	QVariant constantColor(const int& role) const;
+
+	/**
+	 * Sets the constant color
+	 * @param constantColor Constant color
+	 */
+	void setConstantColor(const QColor& constantColor);
 
 private:
 
@@ -278,5 +292,6 @@ private:
 	std::uint32_t		_maxNoChannels;			/** Maximum number of channels (determined by the number of dimensions) */
 	ColorSpace			_colorSpace;			/** Color space */
 	QImage				_colorMap;				/** Color map (1D/2D) */
-	bool				_solidColor;			/** Solid color */
+	bool				_useConstantColor;		/** Pixel color is constant and the alpha is modulated by the intensity of the selected channel */
+	QColor				_constantColor;			/** Constant color */
 };

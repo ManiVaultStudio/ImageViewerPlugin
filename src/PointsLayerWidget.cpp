@@ -55,15 +55,15 @@ void PointsLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Channel3DimensionId)), index);
 	});
 
-	QObject::connect(_ui->solidColorCheckBox, &QCheckBox::stateChanged, [this](int state) {
+	QObject::connect(_ui->constantColorCheckBox, &QCheckBox::stateChanged, [this](int state) {
 		switch (state)
 		{
 			case Qt::Unchecked:
-				_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::SolidColor)), false);
+				_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::UseConstantColor)), false);
 				break;
 
 			case Qt::Checked:
-				_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::SolidColor)), true);
+				_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::UseConstantColor)), true);
 				break;
 		}
 	});
@@ -77,6 +77,10 @@ void PointsLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 
 	QObject::connect(_ui->colormapComboBox, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
 		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::ColorMap)), _ui->colormapComboBox->currentImage());
+	});
+
+	QObject::connect(_ui->colorPickerPushButton, &ColorPickerPushButton::currentColorChanged, [this](const QColor& currentColor) {
+		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::ConstantColor)), currentColor);
 	});
 }
 
@@ -240,7 +244,7 @@ void PointsLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 
 		if (column == ult(PointsLayer::Column::ColorMap)) {
 			const auto noChannels		= _layersModel->data(topLeft.siblingAtColumn(ult(PointsLayer::Column::NoChannels)), Qt::EditRole).toInt();
-			const auto solidColor		= _layersModel->data(topLeft.siblingAtColumn(ult(PointsLayer::Column::SolidColor)), Qt::EditRole).toBool();
+			const auto solidColor		= _layersModel->data(topLeft.siblingAtColumn(ult(PointsLayer::Column::UseConstantColor)), Qt::EditRole).toBool();
 			const auto colorMapFlags	= _layersModel->flags(topLeft.siblingAtColumn(ult(PointsLayer::Column::ColorMap)));
 
 			_ui->colormapLabel->setEnabled(colorMapFlags & Qt::ItemIsEditable);
@@ -251,8 +255,8 @@ void PointsLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 				case 1:
 				{
 					if (solidColor) {
-						_ui->colormapLabel->setText("Solid color map");
-						_ui->colormapComboBox->setType(ColorMap::Type::ZeroDimensional);
+						_ui->colormapLabel->setText("Constant color");
+						//_ui->colormapComboBox->setType(ColorMap::Type::ZeroDimensional);
 					}
 					else {
 						_ui->colormapLabel->setText("1D color map");
@@ -280,14 +284,25 @@ void PointsLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 			}
 		}
 
-		if (column == ult(PointsLayer::Column::SolidColor)) {
-			const auto solidColor		= _layersModel->data(topLeft.siblingAtColumn(ult(PointsLayer::Column::SolidColor)), Qt::EditRole).toBool();
-			const auto solidColorFlags	= _layersModel->flags(topLeft.siblingAtColumn(ult(PointsLayer::Column::SolidColor)));
+		if (column == ult(PointsLayer::Column::UseConstantColor)) {
+			const auto useConstantColor			= _layersModel->data(topLeft.siblingAtColumn(ult(PointsLayer::Column::UseConstantColor)), Qt::EditRole).toBool();
+			const auto useConstantColorFlags	= _layersModel->flags(topLeft.siblingAtColumn(ult(PointsLayer::Column::UseConstantColor)));
 
-			_ui->solidColorCheckBox->setEnabled(solidColorFlags & Qt::ItemIsEditable);
-			_ui->solidColorCheckBox->blockSignals(true);
-			_ui->solidColorCheckBox->setChecked(solidColor);
-			_ui->solidColorCheckBox->blockSignals(false);
+			_ui->constantColorCheckBox->setEnabled(useConstantColorFlags & Qt::ItemIsEditable);
+			_ui->constantColorCheckBox->blockSignals(true);
+			_ui->constantColorCheckBox->setChecked(useConstantColor);
+			_ui->constantColorCheckBox->blockSignals(false);
+
+			_ui->colorStackedWidget->setCurrentIndex(useConstantColor ? 1 : 0);
+		}
+
+		if (column == ult(PointsLayer::Column::ConstantColor)) {
+			const auto constantColor		= _layersModel->data(topLeft.siblingAtColumn(ult(PointsLayer::Column::ConstantColor)), Qt::EditRole).value<QColor>();
+			const auto constantColorFlags	= _layersModel->flags(topLeft.siblingAtColumn(ult(PointsLayer::Column::ConstantColor)));
+
+			_ui->colorPickerPushButton->blockSignals(true);
+			_ui->colorPickerPushButton->setCurrentColor(constantColor);
+			_ui->colorPickerPushButton->blockSignals(false);
 		}
 	}
 }
