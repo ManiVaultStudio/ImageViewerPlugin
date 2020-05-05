@@ -34,12 +34,30 @@ void SelectionLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 		}
 	});
 
+	QObject::connect(_ui->pixelSelectionTypeComboBox, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
+		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(SelectionLayer::Column::PixelSelectionType)), index);
+	});
+
 	QObject::connect(_ui->pixelSelectionModifierAddPushButton, &QPushButton::clicked, [this]() {
 		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(SelectionLayer::Column::PixelSelectionModifier)), ult(SelectionModifier::Add));
 	});
 
 	QObject::connect(_ui->pixelSelectionModifierRemovePushButton, &QPushButton::clicked, [this]() {
 		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(SelectionLayer::Column::PixelSelectionModifier)), ult(SelectionModifier::Remove));
+	});
+
+	QObject::connect(_ui->brushRadiusDoubleSpinBox, qOverload<double>(&QDoubleSpinBox::valueChanged), [this](double value) {
+		const auto selectedRows = _layersModel->selectionModel().selectedRows();
+
+		if (selectedRows.count() == 1)
+			_layersModel->setData(selectedRows.first().siblingAtColumn(ult(SelectionLayer::Column::BrushRadius)), value);
+	});
+
+	QObject::connect(_ui->brushRadiusHorizontalSlider, &QSlider::valueChanged, [this](int value) {
+		const auto selectedRows = _layersModel->selectionModel().selectedRows();
+
+		if (selectedRows.count() == 1)
+			_layersModel->setData(selectedRows.first().siblingAtColumn(ult(SelectionLayer::Column::BrushRadius)), value);
 	});
 
 	QObject::connect(_ui->selectAllPushButton, &QPushButton::clicked, [this]() {
@@ -121,6 +139,23 @@ void SelectionLayerWidget::updateData(const QModelIndex& topLeft, const QModelIn
 			_ui->pixelSelectionModifierRemovePushButton->blockSignals(true);
 			_ui->pixelSelectionModifierRemovePushButton->setChecked(pixelSelectionModifier == ult(SelectionModifier::Remove));
 			_ui->pixelSelectionModifierRemovePushButton->blockSignals(false);
+		}
+
+		if (column == ult(SelectionLayer::Column::BrushRadius)) {
+			const auto brushRadius		= _layersModel->data(topLeft.row(), ult(SelectionLayer::Column::BrushRadius), Qt::EditRole).toFloat();
+			const auto brushRadiusFlags	= _layersModel->flags(topLeft.row(), ult(SelectionLayer::Column::BrushRadius));
+
+			_ui->brushRadiusLabel->setEnabled(brushRadiusFlags & Qt::ItemIsEditable);
+			_ui->brushRadiusDoubleSpinBox->setEnabled(brushRadiusFlags & Qt::ItemIsEditable);
+			_ui->brushRadiusHorizontalSlider->setEnabled(brushRadiusFlags & Qt::ItemIsEditable);
+
+			_ui->brushRadiusDoubleSpinBox->blockSignals(true);
+			_ui->brushRadiusDoubleSpinBox->setValue(brushRadius);
+			_ui->brushRadiusDoubleSpinBox->blockSignals(false);
+
+			_ui->brushRadiusHorizontalSlider->blockSignals(true);
+			_ui->brushRadiusHorizontalSlider->setValue(brushRadius);
+			_ui->brushRadiusHorizontalSlider->blockSignals(false);
 		}
 
 		if (column == ult(SelectionLayer::Column::SelectAll)) {

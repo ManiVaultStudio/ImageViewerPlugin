@@ -23,6 +23,7 @@ public:
 	enum class Column {
 		PixelSelectionType = ult(LayerNode::Column::End) + 1,		// Type of pixel selection
 		PixelSelectionModifier,										// Pixel selection modifier
+		BrushRadius,												// Brush radius
 		SelectAll,													// Select all pixels
 		SelectNone,													// Select no pixels
 		InvertSelection,											// Invert the pixel selection
@@ -119,6 +120,19 @@ public: // Getters/setters
 	void setPixelSelectionModifier(const SelectionModifier& pixelSelectionModifier);
 
 	/**
+	 * Returns the brush radius
+	 * @param role Data role
+	 * @return Brush radius in variant form
+	 */
+	QVariant brushRadius(const int& role) const;
+
+	/**
+	 * Sets the brush radius
+	 * @param brushRadius Brush radius
+	 */
+	void setBrushRadius(const float& brushRadius);
+
+	/**
 	 * Returns whether auto zoom is enabled
 	 * @param role Data role
 	 * @return whether auto zoom is enabled in variant form
@@ -209,6 +223,7 @@ private:
 	QVector<std::uint8_t>	_imageData;					/** Image data buffer */
 	SelectionType			_pixelSelectionType;		/** Pixel selection type (e.g. rectangle, brush) */
 	SelectionModifier		_pixelSelectionModifier;	/** Pixel selection modifier (e.g. replace, add) */
+	float					_brushRadius;				/** Brush radius */
 	QColor					_overlayColor;				/** Selection overlay color */
 	bool					_autoZoomToSelection;		/** Automatically zoom to selection */
 };

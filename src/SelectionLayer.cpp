@@ -15,6 +15,8 @@ SelectionLayer::SelectionLayer(const QString& datasetName, const QString& id, co
 	_image(),
 	_imageData(),
 	_pixelSelectionType(SelectionType::Rectangle),
+	_pixelSelectionModifier(SelectionModifier::Replace),
+	_brushRadius(1.0f),
 	_overlayColor(Qt::green),
 	_autoZoomToSelection(false)
 {
@@ -38,12 +40,24 @@ Qt::ItemFlags SelectionLayer::flags(const QModelIndex& index) const
 
 	switch (static_cast<Column>(index.column())) {
 		case Column::PixelSelectionType:
+		{
 			flags |= Qt::ItemIsEditable;
 			break;
+		}
 
 		case Column::PixelSelectionModifier:
+		{
 			flags |= Qt::ItemIsEditable;
 			break;
+		}
+
+		case Column::BrushRadius:
+		{
+			if (_pixelSelectionType == SelectionType::Brush)
+				flags |= Qt::ItemIsEditable;
+
+			break;
+		}
 
 		case Column::SelectAll:
 		{
@@ -82,8 +96,10 @@ Qt::ItemFlags SelectionLayer::flags(const QModelIndex& index) const
 		}
 
 		case Column::OverlayColor:
+		{
 			flags |= Qt::ItemIsEditable;
 			break;
+		}
 
 		default:
 			break;
@@ -101,11 +117,12 @@ QVariant SelectionLayer::data(const QModelIndex& index, const int& role) const
 	switch (static_cast<Column>(index.column())) {
 		case Column::PixelSelectionType:
 			return pixelSelectionType(role);
-			break;
 
 		case Column::PixelSelectionModifier:
 			return pixelSelectionModifier(role);
-			break;
+
+		case Column::BrushRadius:
+			return brushRadius(role);
 
 		case Column::OverlayColor:
 			return overlayColor(role);
@@ -135,28 +152,48 @@ QModelIndexList SelectionLayer::setData(const QModelIndex& index, const QVariant
 
 	switch (static_cast<Column>(index.column())) {
 		case Column::PixelSelectionType:
+		{
 			setPixelSelectionType(static_cast<SelectionType>(value.toInt()));
+
+			affectedIds << index.siblingAtColumn(ult(Column::BrushRadius));
 			break;
+		}
 
 		case Column::PixelSelectionModifier:
+		{
 			setPixelSelectionModifier(static_cast<SelectionModifier>(value.toInt()));
 			break;
+		}
+
+		case Column::BrushRadius:
+		{
+			setBrushRadius(value.toFloat());
+			break;
+		}
 
 		case Column::SelectAll:
+		{
 			selectAll();
 			break;
+		}
 
 		case Column::SelectNone:
+		{
 			selectNone();
 			break;
+		}
 
 		case Column::InvertSelection:
+		{
 			invertSelection();
 			break;
+		}
 
 		case Column::OverlayColor:
+		{
 			setOverlayColor(value.value<QColor>());
 			break;
+		}
 
 		case Column::AutoZoomToSelection:
 		{
@@ -187,6 +224,39 @@ void SelectionLayer::mouseMoveEvent(QMouseEvent* mouseEvent)
 
 void SelectionLayer::mouseWheelEvent(QWheelEvent* wheelEvent, const QModelIndex& index)
 {
+	switch (_pixelSelectionType)
+	{
+		case SelectionType::None:
+			break;
+
+		case SelectionType::Rectangle:
+			break;
+
+		case SelectionType::Brush:
+		{
+			if (wheelEvent->delta() < 0) {
+				setBrushRadius(_brushRadius - 5.0f);
+			}
+			else {
+				setBrushRadius(_brushRadius + 5.0f);
+			}
+
+			const auto brushRadiusIndex = index.siblingAtColumn(ult(SelectionLayer::Column::BrushRadius));
+
+			emit LayerNode::imageViewerPlugin->layersModel().dataChanged(brushRadiusIndex, brushRadiusIndex);
+
+			break;
+		}
+
+		case SelectionType::Lasso:
+			break;
+
+		case SelectionType::Polygon:
+			break;
+
+		default:
+			break;
+	}
 }
 
 void SelectionLayer::keyPressEvent(QKeyEvent* keyEvent, const QModelIndex& index)
@@ -202,28 +272,24 @@ void SelectionLayer::keyPressEvent(QKeyEvent* keyEvent, const QModelIndex& index
 			case Qt::Key::Key_R:
 			{
 				setPixelSelectionType(SelectionType::Rectangle);
-				emit LayerNode::imageViewerPlugin->layersModel().dataChanged(index.siblingAtColumn(ult(SelectionLayer::Column::PixelSelectionType)), index.siblingAtColumn(ult(SelectionLayer::Column::PixelSelectionType)));
 				break;
 			}
 
 			case Qt::Key::Key_B:
 			{
 				setPixelSelectionType(SelectionType::Brush);
-				emit LayerNode::imageViewerPlugin->layersModel().dataChanged(index.siblingAtColumn(ult(SelectionLayer::Column::PixelSelectionType)), index.siblingAtColumn(ult(SelectionLayer::Column::PixelSelectionType)));
 				break;
 			}
 
 			case Qt::Key::Key_L:
 			{
 				setPixelSelectionType(SelectionType::Lasso);
-				emit LayerNode::imageViewerPlugin->layersModel().dataChanged(index.siblingAtColumn(ult(SelectionLayer::Column::PixelSelectionType)), index.siblingAtColumn(ult(SelectionLayer::Column::PixelSelectionType)));
 				break;
 			}
 
 			case Qt::Key::Key_P:
 			{
 				setPixelSelectionType(SelectionType::Polygon);
-				emit LayerNode::imageViewerPlugin->layersModel().dataChanged(index.siblingAtColumn(ult(SelectionLayer::Column::PixelSelectionType)), index.siblingAtColumn(ult(SelectionLayer::Column::PixelSelectionType)));
 				break;
 			}
 
@@ -275,6 +341,22 @@ void SelectionLayer::keyPressEvent(QKeyEvent* keyEvent, const QModelIndex& index
 
 			default:
 				break;
+		}
+	}
+
+	switch (keyEvent->key())
+	{
+		case Qt::Key::Key_R:
+		case Qt::Key::Key_B:
+		case Qt::Key::Key_L:
+		case Qt::Key::Key_P:
+		{
+			const auto pixelSelectionTypeIndex	= index.siblingAtColumn(ult(SelectionLayer::Column::PixelSelectionType));
+			const auto brushRadiusIndex			= index.siblingAtColumn(ult(SelectionLayer::Column::BrushRadius));
+
+			emit LayerNode::imageViewerPlugin->layersModel().dataChanged(pixelSelectionTypeIndex, pixelSelectionTypeIndex);
+			emit LayerNode::imageViewerPlugin->layersModel().dataChanged(brushRadiusIndex, brushRadiusIndex);
+			break;
 		}
 	}
 }
@@ -387,6 +469,33 @@ QVariant SelectionLayer::pixelSelectionModifier(const int& role) const
 void SelectionLayer::setPixelSelectionModifier(const SelectionModifier& pixelSelectionModifier)
 {
 	_pixelSelectionModifier = pixelSelectionModifier;
+}
+
+QVariant SelectionLayer::brushRadius(const int& role) const
+{
+	const auto brushRadiusString = QString::number(_brushRadius, 'f', 1);
+
+	switch (role)
+	{
+		case Qt::DisplayRole:
+			return brushRadiusString;
+
+		case Qt::EditRole:
+			return _brushRadius;
+
+		case Qt::ToolTipRole:
+			return QString("Brush radius: %1").arg(brushRadiusString);
+
+		default:
+			break;
+	}
+
+	return QVariant();
+}
+
+void SelectionLayer::setBrushRadius(const float& brushRadius)
+{
+	_brushRadius = std::max(0.1f, brushRadius);
 }
 
 QVariant SelectionLayer::autoZoomToSelection(const int& role) const

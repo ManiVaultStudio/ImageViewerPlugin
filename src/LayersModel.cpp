@@ -254,14 +254,12 @@ void LayersModel::mouseMoveEvent(QMouseEvent* mouseEvent)
 
 void LayersModel::mouseWheelEvent(QWheelEvent* wheelEvent)
 {
-	/*
-	auto selectedLayer = this->selectedLayer();
+	const auto selectedRows = _selectionModel.selectedRows();
 
-	if (!selectedLayer)
+	if (selectedRows.isEmpty())
 		return;
 
-	selectedLayer->mouseWheelEvent(wheelEvent, TODO);
-	*/
+	selectedLayer()->mouseWheelEvent(wheelEvent, selectedRows.first());
 }
 
 void LayersModel::keyPressEvent(QKeyEvent* keyEvent)
