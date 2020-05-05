@@ -103,6 +103,70 @@ hdps::DataTypes ImageViewerPlugin::supportedDataTypes() const
 	return supportedTypes;
 }
 
+void ImageViewerPlugin::keyPressEvent(QKeyEvent* keyEvent)
+{
+	layersModel().keyPressEvent(keyEvent);
+
+	ViewPlugin::keyPressEvent(keyEvent);
+}
+
+void ImageViewerPlugin::keyReleaseEvent(QKeyEvent* keyEvent)
+{
+	layersModel().keyReleaseEvent(keyEvent);
+
+	ViewPlugin::keyReleaseEvent(keyEvent);
+}
+
+void ImageViewerPlugin::mousePressEvent(QMouseEvent* mouseEvent)
+{
+	layersModel().mousePressEvent(mouseEvent);
+
+	/*
+	switch (mouseEvent->button())
+	{
+		case Qt::LeftButton:
+		{
+			if (_renderer->interactionMode() != InteractionMode::Navigation && allowsPixelSelection()) {
+				_renderer->setInteractionMode(InteractionMode::Selection);
+			}
+
+			break;
+		}
+
+		default:
+			break;
+	}
+
+	_renderer->mousePressEvent(mouseEvent);
+	*/
+	ViewPlugin::mousePressEvent(mouseEvent);
+}
+
+void ImageViewerPlugin::mouseReleaseEvent(QMouseEvent* mouseEvent)
+{
+	/*
+	if (mouseEvent->button() == Qt::RightButton && _renderer->allowsContextMenu()) {
+		contextMenu()->exec(mapToGlobal(mouseEvent->pos()));
+	}
+	*/
+
+	layersModel().mouseReleaseEvent(mouseEvent);
+
+	ViewPlugin::mouseReleaseEvent(mouseEvent);
+}
+
+void ImageViewerPlugin::mouseMoveEvent(QMouseEvent* mouseEvent)
+{
+	layersModel().mouseMoveEvent(mouseEvent);
+
+	ViewPlugin::mouseMoveEvent(mouseEvent);
+}
+
+void ImageViewerPlugin::wheelEvent(QWheelEvent* wheelEvent)
+{
+	layersModel().mouseWheelEvent(wheelEvent);
+}
+
 ImageViewerPlugin* ImageViewerPluginFactory::produce()
 {
 	return new ImageViewerPlugin();

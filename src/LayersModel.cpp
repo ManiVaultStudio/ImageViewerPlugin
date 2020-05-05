@@ -222,6 +222,68 @@ bool LayersModel::moveLayer(const QModelIndex& sourceParent, const int& sourceRo
 	return true;
 }
 
+void LayersModel::mousePressEvent(QMouseEvent* mouseEvent)
+{
+	auto selectedLayer = this->selectedLayer();
+
+	if (!selectedLayer)
+		return;
+
+	selectedLayer->mousePressEvent(mouseEvent);
+}
+
+void LayersModel::mouseReleaseEvent(QMouseEvent* mouseEvent)
+{
+	auto selectedLayer = this->selectedLayer();
+
+	if (!selectedLayer)
+		return;
+
+	selectedLayer->mouseReleaseEvent(mouseEvent);
+}
+
+void LayersModel::mouseMoveEvent(QMouseEvent* mouseEvent)
+{
+	auto selectedLayer = this->selectedLayer();
+
+	if (!selectedLayer)
+		return;
+
+	selectedLayer->mouseMoveEvent(mouseEvent);
+}
+
+void LayersModel::mouseWheelEvent(QWheelEvent* wheelEvent)
+{
+	/*
+	auto selectedLayer = this->selectedLayer();
+
+	if (!selectedLayer)
+		return;
+
+	selectedLayer->mouseWheelEvent(wheelEvent, TODO);
+	*/
+}
+
+void LayersModel::keyPressEvent(QKeyEvent* keyEvent)
+{
+	const auto selectedRows = _selectionModel.selectedRows();
+
+	if (selectedRows.isEmpty())
+		return;
+
+	selectedLayer()->keyPressEvent(keyEvent, selectedRows.first());
+}
+
+void LayersModel::keyReleaseEvent(QKeyEvent* keyEvent)
+{
+	const auto selectedRows = _selectionModel.selectedRows();
+
+	if (selectedRows.isEmpty())
+		return;
+
+	selectedLayer()->keyReleaseEvent(keyEvent, selectedRows.first());
+}
+
 void LayersModel::initialize()
 {
 	_root = new RootLayer();
@@ -241,6 +303,16 @@ void LayersModel::selectionChanged(const QString& name, const Indices& indices)
 void LayersModel::selectRow(const std::int32_t& row)
 {
 	_selectionModel.setCurrentIndex(index(row, 0), QItemSelectionModel::SelectionFlag::Current | QItemSelectionModel::SelectionFlag::ClearAndSelect | QItemSelectionModel::SelectionFlag::Rows);
+}
+
+LayerNode* LayersModel::selectedLayer()
+{
+	const auto selectedRows = _selectionModel.selectedRows();
+
+	if (selectedRows.isEmpty())
+		return nullptr;
+
+	return getLayer(selectedRows.first());
 }
 
 int LayersModel::rowCount(const QModelIndex& parent /*= QModelIndex()*/) const

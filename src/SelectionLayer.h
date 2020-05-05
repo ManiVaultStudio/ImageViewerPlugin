@@ -2,8 +2,9 @@
 
 #include "LayerNode.h"
 
+#include "ImageData/Images.h"
+
 class Points;
-class Images;
 
 /**
  * Selection layer class
@@ -20,13 +21,14 @@ public:
 
 	/**  Columns */
 	enum class Column {
-		PixelSelectionType = ult(LayerNode::Column::End) + 1,		// Type of pixel selection e.g. rectangle, brush
+		PixelSelectionType = ult(LayerNode::Column::End) + 1,		// Type of pixel selection
+		PixelSelectionModifier,										// Pixel selection modifier
 		SelectAll,													// Select all pixels
 		SelectNone,													// Select no pixels
 		InvertSelection,											// Invert the pixel selection
 		AutoZoomToSelection,										// Zoom automatically to the pixel selection
 		ZoomToSelection,											// Zoom to the pixel selection
-		OverlayColor = ult(LayerNode::Column::End) + 1,				// Selection overlay color
+		OverlayColor,												// Selection overlay color
 
 		Start = PixelSelectionType,
 		End = OverlayColor
@@ -91,6 +93,32 @@ public: // Getters/setters
 	void setOverlayColor(const QColor& overlayColor);
 
 	/**
+	 * Returns the pixel selection type
+	 * @param role Data role
+	 * @return Pixel selection type in variant form
+	 */
+	QVariant pixelSelectionType(const int& role) const;
+
+	/**
+	 * Sets the pixel selection type
+	 * @param pixelSelectionType Pixel selection type
+	 */
+	void setPixelSelectionType(const SelectionType& pixelSelectionType);
+
+	/**
+	 * Returns the pixel selection modifier
+	 * @param role Data role
+	 * @return Pixel selection modifier in variant form
+	 */
+	QVariant pixelSelectionModifier(const int& role) const;
+
+	/**
+	 * Sets the pixel selection modifier
+	 * @param pixelSelectionModifier Pixel selection modifier
+	 */
+	void setPixelSelectionModifier(const SelectionModifier& pixelSelectionModifier);
+
+	/**
 	 * Returns whether auto zoom is enabled
 	 * @param role Data role
 	 * @return whether auto zoom is enabled in variant form
@@ -102,6 +130,44 @@ public: // Getters/setters
 	 * @param autoZoomToSelection Whether auto zoom is enabled
 	 */
 	void setAutoZoomToSelection(const bool& autoZoomToSelection);
+
+public: // Mouse and keyboard event handlers
+
+	/**
+	 * Invoked when a mouse button is pressed
+	 * @param mouseEvent Mouse event
+	 */
+	void mousePressEvent(QMouseEvent* mouseEvent) override;
+
+	/**
+	 * Invoked when a mouse button is released
+	 * @param mouseEvent Mouse event
+	 */
+	void mouseReleaseEvent(QMouseEvent* mouseEvent) override;
+
+	/**
+	 * Invoked when the mouse pointer is moved
+	 * @param mouseEvent Mouse event
+	 */
+	void mouseMoveEvent(QMouseEvent* mouseEvent) override;
+
+	/**
+	 * Invoked when the mouse wheel is rotated
+	 * @param wheelEvent Mouse wheel event
+	 */
+	void mouseWheelEvent(QWheelEvent* wheelEvent, const QModelIndex& index) override;
+
+	/**
+	 * Invoked when a key is pressed
+	 * @param keyEvent Key event
+	 */
+	void keyPressEvent(QKeyEvent* keyEvent, const QModelIndex& index) override;
+
+	/**
+	 * Invoked when a key is released
+	 * @param keyEvent Key event
+	 */
+	void keyReleaseEvent(QKeyEvent* keyEvent, const QModelIndex& index) override;
 
 protected:
 
@@ -125,6 +191,9 @@ private: // Miscellaneous
 	/** Inverts the pixel selection */
 	void invertSelection();
 
+	/** Zoom to selected pixels */
+	void zoomToSelection();
+
 signals:
 
 	/**
@@ -138,6 +207,8 @@ private:
 	Images*					_imagesDataset;				/** Images dataset from which the points dataset originates */
 	QImage					_image;						/** Selection image */
 	QVector<std::uint8_t>	_imageData;					/** Image data buffer */
+	SelectionType			_pixelSelectionType;		/** Pixel selection type (e.g. rectangle, brush) */
+	SelectionModifier		_pixelSelectionModifier;	/** Pixel selection modifier (e.g. replace, add) */
 	QColor					_overlayColor;				/** Selection overlay color */
 	bool					_autoZoomToSelection;		/** Automatically zoom to selection */
 };

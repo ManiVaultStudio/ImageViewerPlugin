@@ -164,6 +164,44 @@ public: // Data access
 		return Qt::MoveAction | Qt::CopyAction;
 	}
 
+public: // Mouse and keyboard event handlers
+
+	/**
+	 * Invoked when a mouse button is pressed
+	 * @param mouseEvent Mouse event
+	 */
+	void mousePressEvent(QMouseEvent* mouseEvent);
+
+	/**
+	 * Invoked when a mouse button is released
+	 * @param mouseEvent Mouse event
+	 */
+	void mouseReleaseEvent(QMouseEvent* mouseEvent);
+
+	/**
+	 * Invoked when the mouse pointer is moved
+	 * @param mouseEvent Mouse event
+	 */
+	void mouseMoveEvent(QMouseEvent* mouseEvent);
+
+	/**
+	 * Invoked when the mouse wheel is rotated
+	 * @param wheelEvent Mouse wheel event
+	 */
+	void mouseWheelEvent(QWheelEvent* wheelEvent);
+
+	/**
+	 * Invoked when a key is pressed
+	 * @param keyEvent Key event
+	 */
+	void keyPressEvent(QKeyEvent* keyEvent);
+
+	/**
+	 * Invoked when a key is released
+	 * @param keyEvent Key event
+	 */
+	void keyReleaseEvent(QKeyEvent* keyEvent);
+
 public: // Miscellaneous
 
 	/** Performs a one-time startup initialization */
@@ -180,6 +218,9 @@ public: // Miscellaneous
 	 * @param row Row identifier
 	 */
 	void selectRow(const std::int32_t& row);
+
+	/** Returns the selected layer (if any) */
+	LayerNode* selectedLayer();
 
 	/** Returns the selection model */
 	QItemSelectionModel& selectionModel() { return _selectionModel; }

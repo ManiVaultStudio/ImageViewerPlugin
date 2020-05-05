@@ -26,22 +26,24 @@ public:
 
 	/**  Columns */
 	enum class Column {
-		Name,				// Name of the layer
-		Type,				// Type of layer
-		DatasetName,		// Name of the dataset (if any)
-		DataName,			// Name of the data (if any)
-		ID,					// Layer identifier (for internal use)
-		ImageSize,			// Size of the image(s)
-		ImageWidth,			// Width of the image(s)
-		ImageHeight,		// Height of the image(s)
-		Opacity,			// Layer opacity
-		Scale,				// Layer scale
-		Flags,				// Configuration bit flags
-		Selection,			// Selection
-		SelectionSize,		// Size of the selection
+		Name,					// Name of the layer
+		Type,					// Type of layer
+		DatasetName,			// Name of the dataset (if any)
+		DataName,				// Name of the data (if any)
+		ID,						// Layer identifier (for internal use)
+		ImageSize,				// Size of the image(s)
+		ImageWidth,				// Width of the image(s)
+		ImageHeight,			// Height of the image(s)
+		Opacity,				// Layer opacity
+		Scale,					// Layer scale
+		Flags,					// Configuration bit flags
+		Selection,				// Selection
+		SelectionSize,			// Size of the selection
+		MouseButtonsPressed,	// List of pressed mouse buttons
+		PressedKeys,			// List of pressed keys
 
 		Start = Name,
-		End = SelectionSize
+		End = PressedKeys
 	};
 
 	/** Get string representation of layer column enumeration */
@@ -241,6 +243,47 @@ public: // Getters/setters
 	 * @return Data point selection size in variant form
 	 */
 	QVariant selectionSize(const int& role = Qt::DisplayRole) const;
+
+public: // Mouse and keyboard event handlers
+
+	/**
+	 * Invoked when a mouse button is pressed
+	 * @param mouseEvent Mouse event
+	 */
+	virtual void mousePressEvent(QMouseEvent* mouseEvent) = 0;
+
+	/**
+	 * Invoked when a mouse button is released
+	 * @param mouseEvent Mouse event
+	 */
+	virtual void mouseReleaseEvent(QMouseEvent* mouseEvent) = 0;
+
+	/**
+	 * Invoked when the mouse pointer is moved
+	 * @param mouseEvent Mouse event
+	 */
+	virtual void mouseMoveEvent(QMouseEvent* mouseEvent) = 0;
+
+	/**
+	 * Invoked when the mouse wheel is rotated
+	 * @param wheelEvent Mouse wheel event
+	 * @param index Model index of the layer
+	 */
+	virtual void mouseWheelEvent(QWheelEvent* wheelEvent, const QModelIndex& index) = 0;
+
+	/**
+	 * Invoked when a key is pressed
+	 * @param keyEvent Key event
+	 * @param index Model index of the layer
+	 */
+	virtual void keyPressEvent(QKeyEvent* keyEvent, const QModelIndex& index) = 0;
+
+	/**
+	 * Invoked when a key is released
+	 * @param keyEvent Key event
+	 * @param index Model index of the layer
+	 */
+	virtual void keyReleaseEvent(QKeyEvent* keyEvent, const QModelIndex& index) = 0;
 
 protected:
 	

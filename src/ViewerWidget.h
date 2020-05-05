@@ -48,43 +48,6 @@ private:
 	void paintGL() override;
 
 private:
-	/**
-	 * Invoked when a key is pressed
-	 * @param keyEvent Key event
-	 */
-	void keyPressEvent(QKeyEvent* keyEvent) override;
-
-	/**
-	 * Invoked when a key is released
-	 * @param keyEvent Key event
-	 */
-	void keyReleaseEvent(QKeyEvent* keyEvent) override;
-
-	/**
-	 * Invoked when the mouse button is pressed
-	 * @param mouseEvent Mouse event
-	 */
-	void mousePressEvent(QMouseEvent* mouseEvent) override;
-
-	/**
-	 * Invoked when the mouse pointer is moved
-	 * @param mouseEvent Mouse event
-	 */
-	void mouseMoveEvent(QMouseEvent* mouseEvent) override;
-
-	/**
-	 * Invoked when the mouse button is released
-	 * @param mouseEvent Mouse event
-	 */
-	void mouseReleaseEvent(QMouseEvent* mouseEvent) override;
-
-	/**
-	 * Invoked when the mouse wheel is rotated
-	 * @param wheelEvent Mouse wheel event
-	 */
-	void wheelEvent(QWheelEvent* wheelEvent) override;
-
-private:
 
 	/** Returns the context menu */
 	QMenu* contextMenu();

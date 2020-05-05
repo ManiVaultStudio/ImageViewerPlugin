@@ -172,8 +172,6 @@ void Renderer::keyPressEvent(QKeyEvent* keyEvent)
 				break;
 		}
 	}
-
-	
 }
 
 void Renderer::keyReleaseEvent(QKeyEvent* keyEvent)

@@ -54,28 +54,6 @@ ViewerWidget::ViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	surfaceFormat.setSamples(16);
 
 	setFormat(surfaceFormat);
-
-	/*
-	QObject::connect(layersModel(), &DatasetsModel::dataChanged, this, [this](const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int> &roles ) {
-		_renderer->render();
-	});
-
-	QObject::connect(&layersModel()->selectionModel(), &QItemSelectionModel::currentRowChanged, [this](const QModelIndex& current, const QModelIndex& previous) {
-		if (previous.isValid()) {
-			const auto name = layersModel()->data(previous.row(), DatasetsModel::Columns::Name, Qt::EditRole).toString();
-
-			_renderer->removeActor(name);
-		}
-
-		if (current.isValid()) {
-			const auto name = layersModel()->data(current.row(), DatasetsModel::Columns::Name, Qt::EditRole).toString();
-			const auto size = layersModel()->data(current.row(), DatasetsModel::Columns::Size, Qt::EditRole).toSize();
-			
-			_renderer->addActor<ImageDatasetActor>(_renderer, name, layersModel());
-			_renderer->zoomToRectangle(QRectF(QPointF(), size));
-		}
-	});
-	*/
 }
 
 ViewerWidget::~ViewerWidget()
@@ -127,66 +105,6 @@ void ViewerWidget::paintGL()
 	for (const QOpenGLDebugMessage& message : _openglDebugLogger->loggedMessages())
 		qDebug() << message;
 #endif
-}
-
-void ViewerWidget::keyPressEvent(QKeyEvent* keyEvent)
-{
-	_renderer->keyPressEvent(keyEvent);
-
-	QOpenGLWidget::keyPressEvent(keyEvent);
-}
-
-void ViewerWidget::keyReleaseEvent(QKeyEvent* keyEvent)
-{
-	_renderer->keyReleaseEvent(keyEvent);
-
-	QOpenGLWidget::keyReleaseEvent(keyEvent);
-}
-
-void ViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
-{
-	/*
-	switch (mouseEvent->button())
-	{
-		case Qt::LeftButton:
-		{
-			if (_renderer->interactionMode() != InteractionMode::Navigation && _imageViewerPlugin->allowsPixelSelection()) {
-				_renderer->setInteractionMode(InteractionMode::Selection);
-			}
-
-			break;
-		}
-
-		default:
-			break;
-	}
-
-	_renderer->mousePressEvent(mouseEvent);
-	*/
-	QOpenGLWidget::mousePressEvent(mouseEvent);
-}
-
-void ViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent)
-{
-	if (mouseEvent->button() == Qt::RightButton && _renderer->allowsContextMenu()) {
-		contextMenu()->exec(mapToGlobal(mouseEvent->pos()));
-	}
-
-	_renderer->mouseReleaseEvent(mouseEvent);
-
-	QOpenGLWidget::mouseReleaseEvent(mouseEvent);
-}
-
-void ViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent)
-{
-	_renderer->mouseMoveEvent(mouseEvent);
-
-	QOpenGLWidget::mouseMoveEvent(mouseEvent);
-}
-
-void ViewerWidget::wheelEvent(QWheelEvent* wheelEvent)
-{
-	_renderer->mouseWheelEvent(wheelEvent);
 }
 
 void ViewerWidget::publishSelection()

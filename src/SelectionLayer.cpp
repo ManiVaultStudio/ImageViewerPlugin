@@ -3,7 +3,6 @@
 #include "SelectionProp.h"
 
 #include "PointData.h"
-#include "ImageData/Images.h"
 
 #include <set>
 
@@ -15,6 +14,7 @@ SelectionLayer::SelectionLayer(const QString& datasetName, const QString& id, co
 	_imagesDataset(nullptr),
 	_image(),
 	_imageData(),
+	_pixelSelectionType(SelectionType::Rectangle),
 	_overlayColor(Qt::green),
 	_autoZoomToSelection(false)
 {
@@ -37,6 +37,14 @@ Qt::ItemFlags SelectionLayer::flags(const QModelIndex& index) const
 	auto flags = LayerNode::flags(index);
 
 	switch (static_cast<Column>(index.column())) {
+		case Column::PixelSelectionType:
+			flags |= Qt::ItemIsEditable;
+			break;
+
+		case Column::PixelSelectionModifier:
+			flags |= Qt::ItemIsEditable;
+			break;
+
 		case Column::SelectAll:
 		{
 			if (_selection.count() < noPixels())
@@ -91,6 +99,14 @@ QVariant SelectionLayer::data(const QModelIndex& index, const int& role) const
 		return LayerNode::data(index, role);
 
 	switch (static_cast<Column>(index.column())) {
+		case Column::PixelSelectionType:
+			return pixelSelectionType(role);
+			break;
+
+		case Column::PixelSelectionModifier:
+			return pixelSelectionModifier(role);
+			break;
+
 		case Column::OverlayColor:
 			return overlayColor(role);
 
@@ -118,6 +134,14 @@ QModelIndexList SelectionLayer::setData(const QModelIndex& index, const QVariant
 	}
 
 	switch (static_cast<Column>(index.column())) {
+		case Column::PixelSelectionType:
+			setPixelSelectionType(static_cast<SelectionType>(value.toInt()));
+			break;
+
+		case Column::PixelSelectionModifier:
+			setPixelSelectionModifier(static_cast<SelectionModifier>(value.toInt()));
+			break;
+
 		case Column::SelectAll:
 			selectAll();
 			break;
@@ -147,6 +171,136 @@ QModelIndexList SelectionLayer::setData(const QModelIndex& index, const QVariant
 	}
 
 	return affectedIds;
+}
+
+void SelectionLayer::mousePressEvent(QMouseEvent* mouseEvent)
+{
+}
+
+void SelectionLayer::mouseReleaseEvent(QMouseEvent* mouseEvent)
+{
+}
+
+void SelectionLayer::mouseMoveEvent(QMouseEvent* mouseEvent)
+{
+}
+
+void SelectionLayer::mouseWheelEvent(QWheelEvent* wheelEvent, const QModelIndex& index)
+{
+}
+
+void SelectionLayer::keyPressEvent(QKeyEvent* keyEvent, const QModelIndex& index)
+{
+	if (keyEvent->isAutoRepeat())
+	{
+		keyEvent->ignore();
+	}
+	else
+	{
+		switch (keyEvent->key())
+		{
+			case Qt::Key::Key_R:
+			{
+				setPixelSelectionType(SelectionType::Rectangle);
+				emit LayerNode::imageViewerPlugin->layersModel().dataChanged(index.siblingAtColumn(ult(SelectionLayer::Column::PixelSelectionType)), index.siblingAtColumn(ult(SelectionLayer::Column::PixelSelectionType)));
+				break;
+			}
+
+			case Qt::Key::Key_B:
+			{
+				setPixelSelectionType(SelectionType::Brush);
+				emit LayerNode::imageViewerPlugin->layersModel().dataChanged(index.siblingAtColumn(ult(SelectionLayer::Column::PixelSelectionType)), index.siblingAtColumn(ult(SelectionLayer::Column::PixelSelectionType)));
+				break;
+			}
+
+			case Qt::Key::Key_L:
+			{
+				setPixelSelectionType(SelectionType::Lasso);
+				emit LayerNode::imageViewerPlugin->layersModel().dataChanged(index.siblingAtColumn(ult(SelectionLayer::Column::PixelSelectionType)), index.siblingAtColumn(ult(SelectionLayer::Column::PixelSelectionType)));
+				break;
+			}
+
+			case Qt::Key::Key_P:
+			{
+				setPixelSelectionType(SelectionType::Polygon);
+				emit LayerNode::imageViewerPlugin->layersModel().dataChanged(index.siblingAtColumn(ult(SelectionLayer::Column::PixelSelectionType)), index.siblingAtColumn(ult(SelectionLayer::Column::PixelSelectionType)));
+				break;
+			}
+
+			case Qt::Key::Key_A:
+			{
+				selectAll();
+				break;
+			}
+
+			case Qt::Key::Key_D:
+			{
+				selectNone();
+				break;
+			}
+
+			case Qt::Key::Key_I:
+			{
+				invertSelection();
+				break;
+			}
+
+			case Qt::Key::Key_Z:
+			{
+				zoomToSelection();
+				break;
+			}
+
+			case Qt::Key::Key_Shift:
+			{
+				setPixelSelectionModifier(SelectionModifier::Add);
+				emit LayerNode::imageViewerPlugin->layersModel().dataChanged(index.siblingAtColumn(ult(SelectionLayer::Column::PixelSelectionModifier)), index.siblingAtColumn(ult(SelectionLayer::Column::PixelSelectionModifier)));
+				break;
+			}
+
+			case Qt::Key::Key_Control:
+			{
+				setPixelSelectionModifier(SelectionModifier::Remove);
+				emit LayerNode::imageViewerPlugin->layersModel().dataChanged(index.siblingAtColumn(ult(SelectionLayer::Column::PixelSelectionModifier)), index.siblingAtColumn(ult(SelectionLayer::Column::PixelSelectionModifier)));
+				break;
+			}
+
+			case Qt::Key::Key_Escape:
+				// TODO: _pixelSelection.abortSelection();
+				break;
+
+			case Qt::Key::Key_Space:
+				//setInteractionMode(InteractionMode::Navigation);
+				break;
+
+			default:
+				break;
+		}
+	}
+}
+
+void SelectionLayer::keyReleaseEvent(QKeyEvent* keyEvent, const QModelIndex& index)
+{
+	if (keyEvent->isAutoRepeat())
+	{
+		keyEvent->ignore();
+	}
+	else
+	{
+		switch (keyEvent->key())
+		{
+			case Qt::Key::Key_Shift:
+			case Qt::Key::Key_Control:
+			{
+				setPixelSelectionModifier(SelectionModifier::Replace);
+				emit LayerNode::imageViewerPlugin->layersModel().dataChanged(index.siblingAtColumn(ult(SelectionLayer::Column::PixelSelectionModifier)), index.siblingAtColumn(ult(SelectionLayer::Column::PixelSelectionModifier)));
+				break;
+			}
+
+			default:
+				break;
+		}
+	}
 }
 
 QSize SelectionLayer::imageSize() const
@@ -179,6 +333,60 @@ QVariant SelectionLayer::overlayColor(const int& role) const
 void SelectionLayer::setOverlayColor(const QColor& overlayColor)
 {
 	_overlayColor = overlayColor;
+}
+
+QVariant SelectionLayer::pixelSelectionType(const int& role) const
+{
+	const auto pixelSelectionTypeString = selectionTypeName(_pixelSelectionType);
+
+	switch (role)
+	{
+		case Qt::DisplayRole:
+			return pixelSelectionTypeString;
+
+		case Qt::EditRole:
+			return ult(_pixelSelectionType);
+
+		case Qt::ToolTipRole:
+			return QString("Pixel selection type: %1").arg(pixelSelectionTypeString);
+
+		default:
+			break;
+	}
+
+	return QVariant();
+}
+
+void SelectionLayer::setPixelSelectionType(const SelectionType& pixelSelectionType)
+{
+	_pixelSelectionType = static_cast<SelectionType>(pixelSelectionType);
+}
+
+QVariant SelectionLayer::pixelSelectionModifier(const int& role) const
+{
+	const auto pixelSelectionModifierString = selectionModifierName(_pixelSelectionModifier);
+
+	switch (role)
+	{
+		case Qt::DisplayRole:
+			return pixelSelectionModifierString;
+
+		case Qt::EditRole:
+			return ult(_pixelSelectionModifier);
+
+		case Qt::ToolTipRole:
+			return QString("Pixel selection modifier: %1").arg(pixelSelectionModifierString);
+
+		default:
+			break;
+	}
+
+	return QVariant();
+}
+
+void SelectionLayer::setPixelSelectionModifier(const SelectionModifier& pixelSelectionModifier)
+{
+	_pixelSelectionModifier = pixelSelectionModifier;
 }
 
 QVariant SelectionLayer::autoZoomToSelection(const int& role) const
@@ -276,4 +484,8 @@ void SelectionLayer::invertSelection()
 	qDebug() << indices.size();
 
 	_imagesDataset->setIndices(indices);
+}
+
+void SelectionLayer::zoomToSelection()
+{
 }

@@ -56,7 +56,7 @@ inline QString interactionModeTypeName(const InteractionMode& interactionMode)
  */
 enum class SelectionType
 {
-	None,			/** Not set */
+	None = -1,		/** Not set */
 	Rectangle,		/** A rectangle is drawn to select pixels */
 	Brush,			/** A brush is used the paint selection */
 	Lasso,			/** A lasso tool is used to enclose pixels */

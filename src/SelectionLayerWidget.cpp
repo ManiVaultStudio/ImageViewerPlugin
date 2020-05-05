@@ -34,6 +34,14 @@ void SelectionLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 		}
 	});
 
+	QObject::connect(_ui->pixelSelectionModifierAddPushButton, &QPushButton::clicked, [this]() {
+		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(SelectionLayer::Column::PixelSelectionModifier)), ult(SelectionModifier::Add));
+	});
+
+	QObject::connect(_ui->pixelSelectionModifierRemovePushButton, &QPushButton::clicked, [this]() {
+		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(SelectionLayer::Column::PixelSelectionModifier)), ult(SelectionModifier::Remove));
+	});
+
 	QObject::connect(_ui->selectAllPushButton, &QPushButton::clicked, [this]() {
 		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(SelectionLayer::Column::SelectAll)), QVariant());
 	});
@@ -90,6 +98,30 @@ void SelectionLayerWidget::updateData(const QModelIndex& topLeft, const QModelIn
 
 		//_ui->colorLabel->setEnabled(mightEdit && overlayColorFlags & Qt::ItemIsEditable);
 		//_ui->colorPickerPushButton->setEnabled(mightEdit && overlayColorFlags & Qt::ItemIsEditable);
+
+		if (column == ult(SelectionLayer::Column::PixelSelectionType)) {
+			const auto pixelSelectionType		= _layersModel->data(topLeft.row(), ult(SelectionLayer::Column::PixelSelectionType), Qt::EditRole).toInt();
+			const auto pixelSelectionTypeFlags	= _layersModel->flags(topLeft.row(), ult(SelectionLayer::Column::PixelSelectionType));
+
+			_ui->pixelSelectionTypeComboBox->setEnabled(pixelSelectionTypeFlags & Qt::ItemIsEditable);
+
+			_ui->pixelSelectionTypeComboBox->blockSignals(true);
+			_ui->pixelSelectionTypeComboBox->setCurrentIndex(pixelSelectionType);
+			_ui->pixelSelectionTypeComboBox->blockSignals(false);
+		}
+
+		if (column == ult(SelectionLayer::Column::PixelSelectionModifier)) {
+			const auto pixelSelectionModifier		= _layersModel->data(topLeft.row(), ult(SelectionLayer::Column::PixelSelectionModifier), Qt::EditRole).toInt();
+			const auto pixelSelectionModifierFlags	= _layersModel->flags(topLeft.row(), ult(SelectionLayer::Column::PixelSelectionModifier));
+
+			_ui->pixelSelectionModifierAddPushButton->blockSignals(true);
+			_ui->pixelSelectionModifierAddPushButton->setChecked(pixelSelectionModifier == ult(SelectionModifier::Add));
+			_ui->pixelSelectionModifierAddPushButton->blockSignals(false);
+
+			_ui->pixelSelectionModifierRemovePushButton->blockSignals(true);
+			_ui->pixelSelectionModifierRemovePushButton->setChecked(pixelSelectionModifier == ult(SelectionModifier::Remove));
+			_ui->pixelSelectionModifierRemovePushButton->blockSignals(false);
+		}
 
 		if (column == ult(SelectionLayer::Column::SelectAll)) {
 			const auto selectAllFlags = _layersModel->flags(topLeft.row(), ult(SelectionLayer::Column::SelectAll));
