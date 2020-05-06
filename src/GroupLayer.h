@@ -2,6 +2,8 @@
 
 #include "LayerNode.h"
 
+class QPaintEvent;
+
 /**
  * Group layer class
  *
@@ -64,35 +66,42 @@ public: // Mouse and keyboard event handlers
 	 * Invoked when a mouse button is pressed
 	 * @param mouseEvent Mouse event
 	 */
-	void mousePressEvent(QMouseEvent* mouseEvent) override;;
+	void mousePressEvent(QMouseEvent* mouseEvent) override;
 
 	/**
 	 * Invoked when a mouse button is released
 	 * @param mouseEvent Mouse event
 	 */
-	void mouseReleaseEvent(QMouseEvent* mouseEvent) override;;
+	void mouseReleaseEvent(QMouseEvent* mouseEvent) override;
 
 	/**
 	 * Invoked when the mouse pointer is moved
 	 * @param mouseEvent Mouse event
 	 */
-	void mouseMoveEvent(QMouseEvent* mouseEvent) override;;
+	void mouseMoveEvent(QMouseEvent* mouseEvent) override;
 
 	/**
 	 * Invoked when the mouse wheel is rotated
 	 * @param wheelEvent Mouse wheel event
 	 */
-	void mouseWheelEvent(QWheelEvent* wheelEvent, const QModelIndex& index) override;;
+	void mouseWheelEvent(QWheelEvent* wheelEvent, const QModelIndex& index) override;
 
 	/**
 	 * Invoked when a key is pressed
 	 * @param keyEvent Key event
 	 */
-	void keyPressEvent(QKeyEvent* keyEvent, const QModelIndex& index) override;;
+	void keyPressEvent(QKeyEvent* keyEvent, const QModelIndex& index) override;
 
 	/**
 	 * Invoked when a key is released
 	 * @param keyEvent Key event
 	 */
-	void keyReleaseEvent(QKeyEvent* keyEvent, const QModelIndex& index) override;;
+	void keyReleaseEvent(QKeyEvent* keyEvent, const QModelIndex& index) override;
+
+	/**
+	 * Handles paint events
+	 * Initiated by calls to the update function
+	 * @param paintEvent Pointer to the paint event
+	 */
+	void paintEvent(QPaintEvent* paintEvent) override;
 };

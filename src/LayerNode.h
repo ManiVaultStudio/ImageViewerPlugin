@@ -9,6 +9,8 @@
 #include <QModelIndex>
 #include <QMatrix4x4>
 
+class QPaintEvent;
+
 class ImageViewerPlugin;
 class Dataset;
 class Prop;
@@ -244,7 +246,7 @@ public: // Getters/setters
 	 */
 	QVariant selectionSize(const int& role = Qt::DisplayRole) const;
 
-public: // Mouse and keyboard event handlers
+public: // Mouse (wheel), keyboard and paint events
 
 	/**
 	 * Invoked when a mouse button is pressed
@@ -284,6 +286,13 @@ public: // Mouse and keyboard event handlers
 	 * @param index Model index of the layer
 	 */
 	virtual void keyReleaseEvent(QKeyEvent* keyEvent, const QModelIndex& index) = 0;
+
+	/**
+	 * Handles paint events
+	 * Initiated by calls to the update function
+	 * @param paintEvent Pointer to the paint event
+	 */
+	virtual void paintEvent(QPaintEvent* paintEvent) = 0;
 
 protected:
 	

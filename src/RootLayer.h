@@ -2,7 +2,15 @@
 
 #include "LayerNode.h"
 
-/** TODO */
+class QPaintEvent;
+
+/**
+ * Root layer class
+ *
+ * All layer hierarchies consist of a root layer
+ *
+ * @author Thomas Kroes
+ */
 class RootLayer : public LayerNode
 {
 public:
@@ -72,6 +80,13 @@ public: // Mouse and keyboard event handlers
 	* @param keyEvent Key event
 	*/
 	void keyReleaseEvent(QKeyEvent* keyEvent, const QModelIndex& index) override;
+
+	/**
+	 * Handles paint events
+	 * Initiated by calls to the update function
+	 * @param paintEvent Pointer to the paint event
+	 */
+	void paintEvent(QPaintEvent* paintEvent) override;
 
 protected:
 

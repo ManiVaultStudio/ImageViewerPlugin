@@ -81,6 +81,11 @@ void RootLayer::keyReleaseEvent(QKeyEvent* keyEvent, const QModelIndex& index)
 {
 }
 
+void RootLayer::paintEvent(QPaintEvent* paintEvent)
+{
+
+}
+
 QSize RootLayer::imageSize() const
 {
 	return QSize();

@@ -682,6 +682,10 @@ void ImagesLayer::keyReleaseEvent(QKeyEvent* keyEvent, const QModelIndex& index)
 {
 }
 
+void ImagesLayer::paintEvent(QPaintEvent* paintEvent)
+{
+}
+
 void ImagesLayer::computeImage()
 {
 	const auto imageIds = this->imageIds(Qt::EditRole).value<Indices>();

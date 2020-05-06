@@ -107,6 +107,11 @@ void ViewerWidget::paintGL()
 #endif
 }
 
+void ViewerWidget::paintEvent(QPaintEvent* paintEvent)
+{
+	QOpenGLWidget::paintEvent(paintEvent);
+}
+
 void ViewerWidget::publishSelection()
 {	
 	qDebug() << "Publish selection";

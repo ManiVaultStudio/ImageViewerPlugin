@@ -713,6 +713,11 @@ void PointsLayer::keyReleaseEvent(QKeyEvent* keyEvent, const QModelIndex& index)
 {
 }
 
+void PointsLayer::paintEvent(QPaintEvent* paintEvent)
+{
+
+}
+
 void PointsLayer::computeChannel(const std::uint32_t& id)
 {
 	if (_channels[id]->dimensionId() < 0)

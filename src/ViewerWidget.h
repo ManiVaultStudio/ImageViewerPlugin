@@ -47,6 +47,15 @@ private:
 	/** Paints the OpenGL content */
 	void paintGL() override;
 
+protected:
+
+	/**
+	 * Handles paint events
+	 * Initiated by calls to the update function
+	 * @param paintEvent Pointer to the paint event
+	 */
+	void paintEvent(QPaintEvent* paintEvent);
+
 private:
 
 	/** Returns the context menu */

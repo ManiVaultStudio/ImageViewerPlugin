@@ -7,6 +7,7 @@
 #include <set>
 
 #include <QDebug>
+#include <QPainter>
 
 SelectionLayer::SelectionLayer(const QString& datasetName, const QString& id, const QString& name, const int& flags) :
 	LayerNode(datasetName, LayerNode::Type::Selection, id, name, flags),
@@ -383,6 +384,11 @@ void SelectionLayer::keyReleaseEvent(QKeyEvent* keyEvent, const QModelIndex& ind
 				break;
 		}
 	}
+}
+
+void SelectionLayer::paintEvent(QPaintEvent* paintEvent)
+{
+
 }
 
 QSize SelectionLayer::imageSize() const

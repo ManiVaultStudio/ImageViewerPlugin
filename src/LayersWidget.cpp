@@ -141,7 +141,7 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 	QObject::connect(&layersSelectionModel(), &QItemSelectionModel::selectionChanged, [this, updateButtons](const QItemSelection &selected, const QItemSelection &deselected) {
 		updateButtons();
 
-		_imageViewerPlugin->imageViewerWidget()->update();
+		_imageViewerPlugin->viewerWidget()->update();
 	});
 }
 

@@ -20,7 +20,7 @@ Q_PLUGIN_METADATA(IID "nl.tudelft.ImageViewerPlugin")
 
 ImageViewerPlugin::ImageViewerPlugin() : 
 	ViewPlugin("Image Viewer"),
-	_imageViewerWidget(),
+	_viewerWidget(),
 	_settingsWidget(),
 	_layersModel(this),
 	_colorMapModel(this, ColorMap::Type::OneDimensional),
@@ -31,7 +31,7 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	LayerNode::imageViewerPlugin = this;
 
 	// TODO
-	_imageViewerWidget	= new ViewerWidget(this);
+	_viewerWidget	= new ViewerWidget(this);
 	_settingsWidget		= new SettingsWidget(this);
 }
 
@@ -44,10 +44,10 @@ void ImageViewerPlugin::init()
 	
 	setMainLayout(layout);
 
-	addWidget(_imageViewerWidget);
+	addWidget(_viewerWidget);
 	addWidget(_settingsWidget);
 
-	layout->setStretchFactor(_imageViewerWidget, 1);
+	layout->setStretchFactor(_viewerWidget, 1);
 
 	_layersModel.initialize();
 }

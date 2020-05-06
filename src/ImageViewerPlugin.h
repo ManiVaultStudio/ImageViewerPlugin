@@ -98,7 +98,7 @@ private: // Mouse/keyboard events
 public: //
 
 	/** Returns the image viewer widget */
-	ViewerWidget* imageViewerWidget() { return _imageViewerWidget; }
+	ViewerWidget* viewerWidget() { return _viewerWidget; }
 
 	/** Returns the settings widget */
 	SettingsWidget* settingsWidget() { return _settingsWidget; }
@@ -115,7 +115,7 @@ public: //
 	Images* sourceImagesSetFromPointsSet(const QString& pointSetName);
 
 private:
-	ViewerWidget*			_imageViewerWidget;		/** TODO */
+	ViewerWidget*			_viewerWidget;			/** TODO */
 	SettingsWidget*			_settingsWidget;		/** TODO */
 	LayersModel				_layersModel;			/** TODO */
 	ColorMapModel			_colorMapModel;			/** TODO */

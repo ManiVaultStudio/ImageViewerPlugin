@@ -4,7 +4,7 @@
 
 #include "ImageData/Images.h"
 
-class Images;
+class QPaintEvent;
 
 /**
  * Images layer class
@@ -262,6 +262,13 @@ public: // Mouse and keyboard event handlers
 	 * @param keyEvent Key event
 	 */
 	void keyReleaseEvent(QKeyEvent* keyEvent, const QModelIndex& index) override;
+
+	/**
+	 * Handles paint events
+	 * Initiated by calls to the update function
+	 * @param paintEvent Pointer to the paint event
+	 */
+	void paintEvent(QPaintEvent* paintEvent) override;
 
 protected:
 

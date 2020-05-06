@@ -95,3 +95,8 @@ void ClustersLayer::keyPressEvent(QKeyEvent* keyEvent, const QModelIndex& index)
 void ClustersLayer::keyReleaseEvent(QKeyEvent* keyEvent, const QModelIndex& index)
 {
 }
+
+void ClustersLayer::paintEvent(QPaintEvent* paintEvent)
+{
+
+}

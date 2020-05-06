@@ -73,3 +73,8 @@ void GroupLayer::keyPressEvent(QKeyEvent* keyEvent, const QModelIndex& index)
 void GroupLayer::keyReleaseEvent(QKeyEvent* keyEvent, const QModelIndex& index)
 {
 }
+
+void GroupLayer::paintEvent(QPaintEvent* paintEvent)
+{
+
+}
