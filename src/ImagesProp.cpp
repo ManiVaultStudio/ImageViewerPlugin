@@ -104,7 +104,8 @@ void ImagesProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 
 		texture->bind();
 
-		if (shaderProgram->bind()) {
+		
+		if (shaderProgram->bind() && shaderProgram->isLinked()) {
 			const auto displayRange = _windowLevelImage.displayRange(Qt::EditRole).value<Range>();
 			
 			shaderProgram->setUniformValue("imageTexture", 0);
@@ -120,7 +121,7 @@ void ImagesProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 		else {
 			throw std::exception("Unable to bind quad shader program");
 		}
-
+		
 		texture->release();
 	}
 	catch (std::exception& e)

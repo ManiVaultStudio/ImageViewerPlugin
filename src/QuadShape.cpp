@@ -88,8 +88,6 @@ void QuadShape::createQuad()
 	}
 
 	_vbo.bind();
-	{
-		_vbo.allocate(_vertexData.constData(), _vertexData.count() * sizeof(GLfloat));
-		_vbo.release();
-	}
+	_vbo.allocate(_vertexData.constData(), _vertexData.count() * sizeof(GLfloat));
+	_vbo.release();
 }

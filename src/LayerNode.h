@@ -7,7 +7,7 @@
 #include <QObject>
 #include <QImage>
 #include <QModelIndex>
-#include <QMatrix4x4>
+#include <QVector>
 
 class QPaintEvent;
 
@@ -41,7 +41,8 @@ public:
 		Flags,					// Configuration bit flags
 		Selection,				// Selection
 		SelectionSize,			// Size of the selection
-		MouseButtonsPressed,	// List of pressed mouse buttons
+		MousePosition,			// Current mouse position
+		MouseButtons,			// Pressed mouse buttons
 		PressedKeys,			// List of pressed keys
 
 		Start = Name,
@@ -147,6 +148,12 @@ public:
 	 */
 	void matchScaling(const QSize& targetImageSize);
 
+	/**
+	 * Paints the layer
+	 * @param painter Pointer to painter
+	 */
+	virtual void paint(QPainter* painter) = 0;
+
 public: // MVC
 	
 	/** Returns the number of columns */
@@ -246,53 +253,72 @@ public: // Getters/setters
 	 */
 	QVariant selectionSize(const int& role = Qt::DisplayRole) const;
 
-public: // Mouse (wheel), keyboard and paint events
+	/**
+	 * Returns the mouse position
+	 * @param role The data role
+	 * @return Mouse position in variant form
+	 */
+	QVariant mousePosition(const int& role = Qt::DisplayRole) const;
+
+	/**
+	 * Sets the mouse position
+	 * @param mousePosition Mouse position
+	 */
+	void setMousePosition(const QPoint& mousePosition);
+
+	/**
+	 * Returns the mouse buttons
+	 * @param role The data role
+	 * @return Mouse buttons in variant form
+	 */
+	QVariant mouseButtons(const int& role = Qt::DisplayRole) const;
+
+	/**
+	 * Sets the mouse buttons
+	 * @param mouseButtons Mouse buttons
+	 */
+	void setMouseButtons(const Qt::MouseButtons& mouseButtons);
+
+public: // Mouse (wheel) and keyboard events
 
 	/**
 	 * Invoked when a mouse button is pressed
 	 * @param mouseEvent Mouse event
 	 */
-	virtual void mousePressEvent(QMouseEvent* mouseEvent) = 0;
+	virtual void mousePressEvent(QMouseEvent* mouseEvent);
 
 	/**
 	 * Invoked when a mouse button is released
 	 * @param mouseEvent Mouse event
 	 */
-	virtual void mouseReleaseEvent(QMouseEvent* mouseEvent) = 0;
+	virtual void mouseReleaseEvent(QMouseEvent* mouseEvent);
 
 	/**
 	 * Invoked when the mouse pointer is moved
 	 * @param mouseEvent Mouse event
 	 */
-	virtual void mouseMoveEvent(QMouseEvent* mouseEvent) = 0;
+	virtual void mouseMoveEvent(QMouseEvent* mouseEvent);
 
 	/**
 	 * Invoked when the mouse wheel is rotated
 	 * @param wheelEvent Mouse wheel event
 	 * @param index Model index of the layer
 	 */
-	virtual void mouseWheelEvent(QWheelEvent* wheelEvent, const QModelIndex& index) = 0;
+	virtual void mouseWheelEvent(QWheelEvent* wheelEvent, const QModelIndex& index);
 
 	/**
 	 * Invoked when a key is pressed
 	 * @param keyEvent Key event
 	 * @param index Model index of the layer
 	 */
-	virtual void keyPressEvent(QKeyEvent* keyEvent, const QModelIndex& index) = 0;
+	virtual void keyPressEvent(QKeyEvent* keyEvent, const QModelIndex& index);
 
 	/**
 	 * Invoked when a key is released
 	 * @param keyEvent Key event
 	 * @param index Model index of the layer
 	 */
-	virtual void keyReleaseEvent(QKeyEvent* keyEvent, const QModelIndex& index) = 0;
-
-	/**
-	 * Handles paint events
-	 * Initiated by calls to the update function
-	 * @param paintEvent Pointer to the paint event
-	 */
-	virtual void paintEvent(QPaintEvent* paintEvent) = 0;
+	virtual void keyReleaseEvent(QKeyEvent* keyEvent, const QModelIndex& index);
 
 protected:
 	
@@ -318,4 +344,6 @@ protected:
 	QString				_dataName;			/** Name of the raw data to which the layer refers */
 	LayerNode::Type		_type;				/** Type of layer */
 	Indices				_selection;			/** Data point selection */
+	QPoint				_mousePosition;		/** Recorded event mouse events */
+	Qt::MouseButtons	_mouseButtons;		/** State of the left, middle and right mouse buttons */
 };

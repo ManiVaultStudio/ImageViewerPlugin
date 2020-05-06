@@ -83,6 +83,10 @@ void ImagesLayer::init()
 	setCurrentImageId(0);
 }
 
+void ImagesLayer::paint(QPainter* painter)
+{
+}
+
 Qt::ItemFlags ImagesLayer::flags(const QModelIndex& index) const
 {
 	auto flags = LayerNode::flags(index);
@@ -679,10 +683,6 @@ void ImagesLayer::keyPressEvent(QKeyEvent* keyEvent, const QModelIndex& index)
 }
 
 void ImagesLayer::keyReleaseEvent(QKeyEvent* keyEvent, const QModelIndex& index)
-{
-}
-
-void ImagesLayer::paintEvent(QPaintEvent* paintEvent)
 {
 }
 

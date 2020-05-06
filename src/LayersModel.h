@@ -32,6 +32,13 @@ public:
 	/** Destructor */
 	~LayersModel();
 
+	/**
+	* Handles paint events
+	* Initiated by calls to the update function
+	* @param paintEvent Pointer to the paint event
+	*/
+	void paint(QPainter* painter);
+
 public: // Data access
 
 	/**

@@ -9,6 +9,10 @@ ClustersLayer::ClustersLayer(const QString& clusterDatasetName, const QString& i
 {
 }
 
+void ClustersLayer::paint(QPainter* painter)
+{
+}
+
 Qt::ItemFlags ClustersLayer::flags(const QModelIndex& index) const
 {
 	auto flags = LayerNode::flags(index);
@@ -94,9 +98,4 @@ void ClustersLayer::keyPressEvent(QKeyEvent* keyEvent, const QModelIndex& index)
 
 void ClustersLayer::keyReleaseEvent(QKeyEvent* keyEvent, const QModelIndex& index)
 {
-}
-
-void ClustersLayer::paintEvent(QPaintEvent* paintEvent)
-{
-
 }

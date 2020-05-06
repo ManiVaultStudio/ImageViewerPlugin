@@ -1,6 +1,7 @@
 #include "SelectionLayer.h"
 #include "ImageViewerPlugin.h"
 #include "SelectionProp.h"
+#include "Renderer.h"
 
 #include "PointData.h"
 
@@ -33,6 +34,41 @@ void SelectionLayer::init()
 	_dataName		= hdps::DataSet::getSourceData(*_pointsDataset).getDataName();
 
 	computeImage();
+}
+
+void SelectionLayer::paint(QPainter* painter)
+{
+	switch (_pixelSelectionType)
+	{
+		case SelectionType::None:
+			break;
+
+		case SelectionType::Rectangle:
+			break;
+
+		case SelectionType::Brush:
+		{
+			const auto brushCenter = _mousePosition;
+
+			painter->setPen(QColor(255, 174, 66));
+			painter->setBrush(Qt::NoBrush);
+
+			painter->drawLine(brushCenter - QPoint(crossHairSize, 0), brushCenter + QPoint(crossHairSize, 0));
+			painter->drawLine(brushCenter - QPoint(0, crossHairSize), brushCenter + QPoint(0, crossHairSize));
+			painter->drawEllipse(QPointF(brushCenter), _brushRadius, _brushRadius);
+			
+			break;
+		}
+
+		case SelectionType::Lasso:
+			break;
+
+		case SelectionType::Polygon:
+			break;
+
+		default:
+			break;
+	}
 }
 
 Qt::ItemFlags SelectionLayer::flags(const QModelIndex& index) const
@@ -213,18 +249,47 @@ QModelIndexList SelectionLayer::setData(const QModelIndex& index, const QVariant
 
 void SelectionLayer::mousePressEvent(QMouseEvent* mouseEvent)
 {
+	LayerNode::mousePressEvent(mouseEvent);
 }
 
 void SelectionLayer::mouseReleaseEvent(QMouseEvent* mouseEvent)
 {
+	LayerNode::mouseReleaseEvent(mouseEvent);
 }
 
 void SelectionLayer::mouseMoveEvent(QMouseEvent* mouseEvent)
 {
+	//mouseEvent->buttons()
+	//LayerNode::mouseMoveEvent(mouseEvent);
+
+	switch (_pixelSelectionType)
+	{
+		case SelectionType::None:
+			break;
+
+		case SelectionType::Rectangle:
+			break;
+
+		case SelectionType::Brush:
+			break;
+
+		case SelectionType::Lasso:
+			break;
+
+		case SelectionType::Polygon:
+			break;
+
+		default:
+			break;
+	}
+
+	Renderable::renderer->render();
 }
 
 void SelectionLayer::mouseWheelEvent(QWheelEvent* wheelEvent, const QModelIndex& index)
 {
+	//LayerNode::mouseWheelEvent(wheelEvent);
+
 	switch (_pixelSelectionType)
 	{
 		case SelectionType::None:
@@ -245,6 +310,8 @@ void SelectionLayer::mouseWheelEvent(QWheelEvent* wheelEvent, const QModelIndex&
 			const auto brushRadiusIndex = index.siblingAtColumn(ult(SelectionLayer::Column::BrushRadius));
 
 			emit LayerNode::imageViewerPlugin->layersModel().dataChanged(brushRadiusIndex, brushRadiusIndex);
+
+			Renderable::renderer->render();
 
 			break;
 		}
@@ -384,11 +451,6 @@ void SelectionLayer::keyReleaseEvent(QKeyEvent* keyEvent, const QModelIndex& ind
 				break;
 		}
 	}
-}
-
-void SelectionLayer::paintEvent(QPaintEvent* paintEvent)
-{
-
 }
 
 QSize SelectionLayer::imageSize() const

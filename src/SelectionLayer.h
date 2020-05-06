@@ -51,6 +51,12 @@ public:
 	/** Initializes the layer */
 	void init();
 
+	/**
+	 * Paints the layer
+	 * @param painter Pointer to painter
+	 */
+	void paint(QPainter* painter) override;
+
 public: // Inherited MVC
 
 	/** Returns the number of columns */
@@ -185,13 +191,6 @@ public: // Mouse and keyboard event handlers
 	 */
 	void keyReleaseEvent(QKeyEvent* keyEvent, const QModelIndex& index) override;
 
-	/**
-	 * Handles paint events
-	 * Initiated by calls to the update function
-	 * @param paintEvent Pointer to the paint event
-	 */
-	void paintEvent(QPaintEvent* paintEvent) override;
-
 protected:
 
 	/**
@@ -235,4 +234,6 @@ private:
 	float					_brushRadius;				/** Brush radius */
 	QColor					_overlayColor;				/** Selection overlay color */
 	bool					_autoZoomToSelection;		/** Automatically zoom to selection */
+
+	static const int crossHairSize = 5;
 };

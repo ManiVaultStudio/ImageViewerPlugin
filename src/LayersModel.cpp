@@ -43,6 +43,14 @@ LayersModel::~LayersModel()
 	delete _root;
 }
 
+void LayersModel::paint(QPainter* painter)
+{
+	if (selectedLayer() == nullptr)
+		return;
+
+	selectedLayer()->paint(painter);
+}
+
 int LayersModel::columnCount(const QModelIndex& parent /*= QModelIndex()*/) const
 {
 	Q_UNUSED(parent);
@@ -244,12 +252,23 @@ void LayersModel::mouseReleaseEvent(QMouseEvent* mouseEvent)
 
 void LayersModel::mouseMoveEvent(QMouseEvent* mouseEvent)
 {
+	const auto selectedRows = _selectionModel.selectedRows();
+
+	if (selectedRows.isEmpty())
+		return;
+
+	auto selected = selectedRows.first();
+
+	setData(selected.siblingAtColumn(ult(LayerNode::Column::MousePosition)), mouseEvent->pos());
+
+	/*
 	auto selectedLayer = this->selectedLayer();
 
 	if (!selectedLayer)
 		return;
 
 	selectedLayer->mouseMoveEvent(mouseEvent);
+	*/
 }
 
 void LayersModel::mouseWheelEvent(QWheelEvent* wheelEvent)

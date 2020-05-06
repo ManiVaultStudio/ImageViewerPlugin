@@ -31,6 +31,12 @@ public:
 	 */
 	GroupLayer(const QString& id, const QString& name, const int& flags);
 
+	/**
+	 * Paints the layer
+	 * @param painter Pointer to painter
+	 */
+	void paint(QPainter* painter) override;
+
 public: // Inherited MVC
 
 	/** Returns the number of columns */
@@ -97,11 +103,4 @@ public: // Mouse and keyboard event handlers
 	 * @param keyEvent Key event
 	 */
 	void keyReleaseEvent(QKeyEvent* keyEvent, const QModelIndex& index) override;
-
-	/**
-	 * Handles paint events
-	 * Initiated by calls to the update function
-	 * @param paintEvent Pointer to the paint event
-	 */
-	void paintEvent(QPaintEvent* paintEvent) override;
 };

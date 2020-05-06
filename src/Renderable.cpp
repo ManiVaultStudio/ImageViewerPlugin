@@ -6,7 +6,7 @@
 Renderer* Renderable::renderer = nullptr;
 
 Renderable::Renderable() :
-	_mouseEvents(),
+	_mousePosition(),
 	_opacity(1.0f),
 	_scale(1.0f),
 	_modelMatrix(),

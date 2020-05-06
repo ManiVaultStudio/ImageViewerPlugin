@@ -7,6 +7,10 @@ GroupLayer::GroupLayer(const QString& id, const QString& name, const int& flags)
 {
 }
 
+void GroupLayer::paint(QPainter* painter)
+{
+}
+
 Qt::ItemFlags GroupLayer::flags(const QModelIndex& index) const
 {
 	auto flags = LayerNode::flags(index);
@@ -72,9 +76,4 @@ void GroupLayer::keyPressEvent(QKeyEvent* keyEvent, const QModelIndex& index)
 
 void GroupLayer::keyReleaseEvent(QKeyEvent* keyEvent, const QModelIndex& index)
 {
-}
-
-void GroupLayer::paintEvent(QPaintEvent* paintEvent)
-{
-
 }

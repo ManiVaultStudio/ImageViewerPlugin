@@ -174,7 +174,7 @@ public:
 	static Renderer* renderer;
 
 protected:
-	QVector<MouseEvent>			_mouseEvents;		/** Recorded mouse events */
+	QVector<MouseEvent>			_mousePosition;		/** Recorded mouse events */
 	float						_opacity;			/** Render opacity */
 	float						_scale;				/** Scale */
 	QMatrix4x4					_modelMatrix;		/** Model matrix */

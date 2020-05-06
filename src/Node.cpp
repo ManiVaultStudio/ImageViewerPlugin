@@ -391,10 +391,10 @@ void Node::addMouseEvent(QMouseEvent* mouseEvent)
 	const auto screenPoint = QVector2D(mouseEvent->pos());
 	const auto worldPosition = renderer->screenPointToWorldPosition(modelViewMatrix(), screenPoint);
 
-	_mouseEvents.append(MouseEvent(screenPoint, worldPosition));
+	_mousePosition.append(MouseEvent(screenPoint, worldPosition));
 }
 
 QVector<Node::MouseEvent> Node::mouseEvents()
 {
-	return _mouseEvents;
+	return _mousePosition;
 }

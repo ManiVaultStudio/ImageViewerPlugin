@@ -5,6 +5,7 @@
 #include <QMenu>
 #include <QDebug>
 #include <QOpenGLWidget>
+#include <QMouseEvent>
 #include <QVector2D>
 #include <QVector3D>
 #include <QVector4D>

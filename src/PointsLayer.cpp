@@ -69,6 +69,10 @@ void PointsLayer::matchScaling(const QSize& targetImageSize)
 	setScale(scale);
 }
 
+void PointsLayer::paint(QPainter* painter)
+{
+}
+
 Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
 {
 	auto flags = LayerNode::flags(index);
@@ -711,11 +715,6 @@ void PointsLayer::keyPressEvent(QKeyEvent* keyEvent, const QModelIndex& index)
 
 void PointsLayer::keyReleaseEvent(QKeyEvent* keyEvent, const QModelIndex& index)
 {
-}
-
-void PointsLayer::paintEvent(QPaintEvent* paintEvent)
-{
-
 }
 
 void PointsLayer::computeChannel(const std::uint32_t& id)

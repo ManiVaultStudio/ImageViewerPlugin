@@ -13,6 +13,7 @@
 #include <QMenu>
 #include <QGuiApplication>
 #include <QOpenGLDebugLogger>
+#include <QPainter>
 
 ViewerWidget::ViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	QOpenGLWidget(imageViewerPlugin),
@@ -54,6 +55,12 @@ ViewerWidget::ViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	surfaceFormat.setSamples(16);
 
 	setFormat(surfaceFormat);
+
+	_backgroundGradient.setCoordinateMode(QGradient::ObjectBoundingMode);
+	_backgroundGradient.setCenter(0.5, 0.50);
+	_backgroundGradient.setFocalPoint(0.5, 0.5);
+	_backgroundGradient.setColorAt(0.0, QColor(100, 100, 100));
+	_backgroundGradient.setColorAt(0.7, QColor(30, 30, 30));
 }
 
 ViewerWidget::~ViewerWidget()
@@ -61,61 +68,10 @@ ViewerWidget::~ViewerWidget()
 	_renderer->destroy();
 }
 
-void ViewerWidget::initializeGL()
-{
-	qDebug() << "Initializing OpenGL";
-
-	initializeOpenGLFunctions();
-
-	makeCurrent();
-	
-	//glDisable(GL_DEPTH_TEST);
-	//glEnable(GL_CULL_FACE);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	//glCullFace(GL_BACK);
-
-	//glDisable(GL_DEPTH_TEST);
-
-	//glDepthMask(GL_FALSE);
-
-	//glEnable(GL_MULTISAMPLE);
-
-#ifdef _DEBUG
-	_openglDebugLogger->initialize();
-#endif
-
-	_renderer->zoomToRectangle(QRectF(-40, -40, 80, 80));
-
-	doneCurrent();
-}
-
-void ViewerWidget::paintGL()
-{
-	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	auto root = _imageViewerPlugin->layersModel().getLayer(QModelIndex());
-
-	if (root)
-		root->render(_renderer->projectionMatrix() * _renderer->viewMatrix());
-
-#ifdef _DEBUG
-	for (const QOpenGLDebugMessage& message : _openglDebugLogger->loggedMessages())
-		qDebug() << message;
-#endif
-}
-
-void ViewerWidget::paintEvent(QPaintEvent* paintEvent)
-{
-	QOpenGLWidget::paintEvent(paintEvent);
-}
-
 void ViewerWidget::publishSelection()
-{	
+{
 	qDebug() << "Publish selection";
-	
+
 	/*
 	const auto image = _renderer->selectionBufferQuad()->selectionBufferImage();
 
@@ -137,6 +93,126 @@ void ViewerWidget::publishSelection()
 	*/
 
 	update();
+}
+
+void ViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
+{
+	QOpenGLWidget::mousePressEvent(mouseEvent);
+
+	_imageViewerPlugin->layersModel().mousePressEvent(mouseEvent);
+
+	/*
+	switch (mouseEvent->button())
+	{
+		case Qt::LeftButton:
+		{
+			if (_renderer->interactionMode() != InteractionMode::Navigation && allowsPixelSelection()) {
+				_renderer->setInteractionMode(InteractionMode::Selection);
+			}
+
+			break;
+		}
+
+		default:
+			break;
+	}
+
+	_renderer->mousePressEvent(mouseEvent);
+	*/
+	
+}
+
+void ViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent)
+{
+	QOpenGLWidget::mouseReleaseEvent(mouseEvent);
+
+	_imageViewerPlugin->layersModel().mouseReleaseEvent(mouseEvent);
+
+	/*
+	if (mouseEvent->button() == Qt::RightButton && _renderer->allowsContextMenu()) {
+		contextMenu()->exec(mapToGlobal(mouseEvent->pos()));
+	}
+	*/
+}
+
+void ViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent)
+{
+	QOpenGLWidget::mouseMoveEvent(mouseEvent);
+
+	_imageViewerPlugin->layersModel().mouseMoveEvent(mouseEvent);
+}
+
+void ViewerWidget::wheelEvent(QWheelEvent* wheelEvent)
+{
+	QOpenGLWidget::wheelEvent(wheelEvent);
+
+	_imageViewerPlugin->layersModel().mouseWheelEvent(wheelEvent);
+}
+
+void ViewerWidget::initializeGL()
+{
+	qDebug() << "Initializing OpenGL";
+
+	initializeOpenGLFunctions();
+
+	makeCurrent();
+	
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+#ifdef _DEBUG
+	_openglDebugLogger->initialize();
+#endif
+
+	_renderer->zoomToRectangle(QRectF(-40, -40, 80, 80));
+
+	doneCurrent();
+}
+
+void ViewerWidget::paintGL()
+{
+	auto& layersModel = _imageViewerPlugin->layersModel();
+
+	QPainter painter;
+
+	painter.begin(this);
+	
+	painter.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
+
+	drawBackground(&painter);
+
+	painter.beginNativePainting();
+
+	auto root = layersModel.getLayer(QModelIndex());
+
+	if (root)
+		root->render(_renderer->projectionMatrix() * _renderer->viewMatrix());
+
+	painter.endNativePainting();
+
+	layersModel.paint(&painter);
+
+	painter.end();
+	
+#ifdef _DEBUG
+	for (const QOpenGLDebugMessage& message : _openglDebugLogger->loggedMessages())
+		switch (message.severity())
+		{
+			case QOpenGLDebugMessage::HighSeverity:
+				break;
+
+			default:
+				qDebug() << message; 
+		}
+		
+#endif
+}
+
+void ViewerWidget::drawBackground(QPainter* painter)
+{
+	painter->setPen(Qt::NoPen);
+	painter->setBrush(_backgroundGradient);
+	painter->drawRect(rect());
 }
 
 QMenu* ViewerWidget::contextMenu()
