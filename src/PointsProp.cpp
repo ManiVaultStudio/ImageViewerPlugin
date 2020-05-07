@@ -74,7 +74,6 @@ PointsProp::PointsProp(PointsLayer* pointsLayer, const QString& name) :
 				this->shapeByName<QuadShape>("Quad")->setRectangle(rectangle);
 
 				updateModelMatrix();
-				/**/
 			}
 			renderer->releaseOpenGLContext();
 		});

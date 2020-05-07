@@ -25,15 +25,13 @@ set(PLUGIN
 	src/Common.h
 	src/ImageViewerPlugin.h
 	src/ImageViewerPlugin.cpp
-	src/Selection.h
-	src/Selection.cpp
 )
 
 file(GLOB MODEL src/*Model.* src/*Layer.* src/*Dataset.* src/*Layer.* src/*Item.* src/Range.* src/*ProxyModel.* src/*Node.* src/WindowLevelImage.* src/*Renderable*.* src/Channel*.*)
 file(GLOB RENDERING src/*Renderer.* src/*Actor.* src/*Prop.* src/*Shape.*)
 file(GLOB WIDGETS src/*Widget.* src/*Color*.*)
 file(GLOB UIS src/*.ui)
-file(GLOB SHADERS src/*.glsl )
+file(GLOB SHADERS src/*.glsl)
 file(GLOB JSON src/*.json)
 file(GLOB QRC src/*.qrc)
 
