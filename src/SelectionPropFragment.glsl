@@ -9,8 +9,9 @@ out vec4 fragmentColor;					// Output fragment
 
 void main(void)
 {
-	if (texture(imageTexture, uv).r > 0) {
+	if (texture(imageTexture, uv).r > 0)
 		fragmentColor= vec4(overlayColor.rgb, opacity);
-	}
+	else 
+		fragmentColor= vec4(0);
 }
 )"

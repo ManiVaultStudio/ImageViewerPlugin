@@ -135,7 +135,6 @@ void SelectionLayer::paint(QPainter* painter)
 		case SelectionType::Lasso:
 		{
 			if (_mousePositions.size() >= 2) {
-
 				painter->setPen(perimeterForegroundPen);
 				painter->drawPolyline(_mousePositions.constData(), _mousePositions.count());
 
@@ -145,10 +144,10 @@ void SelectionLayer::paint(QPainter* painter)
 				painter->setPen(perimeterBackgroundPen);
 				painter->drawPolyline(controlPoints.constData(), controlPoints.count());
 
-				const auto size = 8.0f;
-				const auto textCenter = _mousePositions.first() + QPoint(size, size);
+				const auto size			= 8.0f;
+				const auto textCenter	= _mousePositions.first() - QPoint(size, size);
 
-				textRectangle = QRectF(textCenter + QPointF(size, size), textCenter + QPointF(size, size));
+				textRectangle = QRectF(textCenter - QPointF(size, size), textCenter + QPointF(size, size));
 			}
 
 			break;
@@ -174,9 +173,9 @@ void SelectionLayer::paint(QPainter* painter)
 				controlPoints << _mousePositions;
 
 				const auto size			= 8.0f;
-				const auto textCenter	= _mousePositions.first() + QPoint(size, size);
+				const auto textCenter	= _mousePositions.first() - QPoint(size, size);
 
-				textRectangle = QRectF(textCenter + QPointF(size, size), textCenter + QPointF(size, size));
+				textRectangle = QRectF(textCenter - QPointF(size, size), textCenter + QPointF(size, size));
 			}
 
 			break;
@@ -188,6 +187,8 @@ void SelectionLayer::paint(QPainter* painter)
 
 	painter->setPen(controlPointsPen);
 	painter->drawPoints(controlPoints);
+
+	//painter->setBrush(toolColorForeground);
 
 	switch (_pixelSelectionType)
 	{

@@ -157,9 +157,6 @@ void ViewerWidget::initializeGL()
 
 	makeCurrent();
 	
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
 #ifdef _DEBUG
 	_openglDebugLogger->initialize();
 #endif
@@ -182,6 +179,9 @@ void ViewerWidget::paintGL()
 	drawBackground(&painter);
 
 	painter.beginNativePainting();
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	auto root = layersModel.getLayer(QModelIndex());
 
