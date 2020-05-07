@@ -238,5 +238,9 @@ private:
 	QColor					_overlayColor;				/** Selection overlay color */
 	bool					_autoZoomToSelection;		/** Automatically zoom to selection */
 
-	static const int crossHairSize = 3;
+public:
+	static const float minBrushRadius;					/** Minimum brush radius */
+	static const float maxBrushRadius;					/** Maximum brush radius */
+	static const float crossHairSize;					/** Size of the crosshair */
+	static const float controlPointSize;				/** Size of control points */
 };

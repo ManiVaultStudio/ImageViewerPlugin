@@ -46,6 +46,20 @@ void SelectionLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(SelectionLayer::Column::PixelSelectionModifier)), ult(SelectionModifier::Remove));
 	});
 
+	QFont font = QFont("Font Awesome 5 Free Solid", 9);
+
+	_ui->pixelSelectionModifierAddPushButton->setFont(font);
+	_ui->pixelSelectionModifierRemovePushButton->setFont(font);
+
+	_ui->pixelSelectionModifierAddPushButton->setText(u8"\uf067");
+	_ui->pixelSelectionModifierRemovePushButton->setText(u8"\uf068");
+
+	_ui->brushRadiusDoubleSpinBox->setMinimum(static_cast<double>(SelectionLayer::minBrushRadius));
+	_ui->brushRadiusDoubleSpinBox->setMaximum(static_cast<double>(SelectionLayer::maxBrushRadius));
+
+	_ui->brushRadiusHorizontalSlider->setMinimum(static_cast<int>(SelectionLayer::minBrushRadius));
+	_ui->brushRadiusHorizontalSlider->setMaximum(static_cast<int>(SelectionLayer::maxBrushRadius));
+
 	QObject::connect(_ui->brushRadiusDoubleSpinBox, qOverload<double>(&QDoubleSpinBox::valueChanged), [this](double value) {
 		const auto selectedRows = _layersModel->selectionModel().selectedRows();
 
