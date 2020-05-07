@@ -72,11 +72,11 @@ void PointsLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::ColorSpace)), index);
 	});
 
-	_ui->colormapComboBox->setModel(&_imageViewerPlugin->colorMapModel());
-	_ui->colormapComboBox->setType(ColorMap::Type::TwoDimensional);
+	_ui->colorMapComboBox->setModel(&_imageViewerPlugin->colorMapModel());
+	_ui->colorMapComboBox->setType(ColorMap::Type::TwoDimensional);
 
-	QObject::connect(_ui->colormapComboBox, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
-		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::ColorMap)), _ui->colormapComboBox->currentImage());
+	QObject::connect(_ui->colorMapComboBox, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
+		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::ColorMap)), _ui->colorMapComboBox->currentImage());
 	});
 
 	QObject::connect(_ui->colorPickerPushButton, &ColorPickerPushButton::currentColorChanged, [this](const QColor& currentColor) {
@@ -248,7 +248,7 @@ void PointsLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 			const auto colorMapFlags	= _layersModel->flags(topLeft.siblingAtColumn(ult(PointsLayer::Column::ColorMap)));
 
 			_ui->colormapLabel->setEnabled(colorMapFlags & Qt::ItemIsEditable);
-			_ui->colormapComboBox->setEnabled(colorMapFlags & Qt::ItemIsEditable);
+			_ui->colorMapComboBox->setEnabled(colorMapFlags & Qt::ItemIsEditable);
 
 			switch (noChannels)
 			{
@@ -256,11 +256,11 @@ void PointsLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 				{
 					if (solidColor) {
 						_ui->colormapLabel->setText("Constant color");
-						//_ui->colormapComboBox->setType(ColorMap::Type::ZeroDimensional);
+						//_ui->colorMapComboBox->setType(ColorMap::Type::ZeroDimensional);
 					}
 					else {
 						_ui->colormapLabel->setText("1D color map");
-						_ui->colormapComboBox->setType(ColorMap::Type::OneDimensional);
+						_ui->colorMapComboBox->setType(ColorMap::Type::OneDimensional);
 					}
 
 					break;
@@ -269,7 +269,7 @@ void PointsLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 				case 2:
 				{
 					_ui->colormapLabel->setText("2D Colormap");
-					_ui->colormapComboBox->setType(ColorMap::Type::TwoDimensional);
+					_ui->colorMapComboBox->setType(ColorMap::Type::TwoDimensional);
 					break;
 				}
 
