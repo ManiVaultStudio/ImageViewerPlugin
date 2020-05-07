@@ -16,8 +16,9 @@ LayerNode::LayerNode(const QString& datasetName, const Type& type, const QString
 	_dataName(),
 	_type(type),
 	_selection(),
-	_mousePosition(),
-	_mouseButtons()
+	_mousePositions(),
+	_mouseButtons(),
+	_keys()
 {
 }
 
@@ -73,8 +74,6 @@ Qt::ItemFlags LayerNode::flags(const QModelIndex& index) const
 
 		case Column::Selection:
 		case Column::SelectionSize:
-		case Column::MousePosition:
-		case Column::MouseButtons:
 			break;
 
 		default:
@@ -125,12 +124,6 @@ QVariant LayerNode::data(const QModelIndex& index, const int& role) const
 
 		case Column::SelectionSize:
 			return selectionSize(role);
-
-		case Column::MousePosition:
-			return mousePosition(role);
-
-		case Column::MouseButtons:
-			return mouseButtons(role);
 
 		default:
 			break;
@@ -217,14 +210,6 @@ QModelIndexList LayerNode::setData(const QModelIndex& index, const QVariant& val
 					break;
 
 				case Column::SelectionSize:
-					break;
-
-				case Column::MousePosition:
-					setMousePosition(value.toPoint());
-					break;
-
-				case Column::MouseButtons:
-					setMouseButtons(QFlag(value.toInt()));
 					break;
 
 				default:
@@ -460,21 +445,21 @@ QVariant LayerNode::selectionSize(const int& role /*= Qt::DisplayRole*/) const
 	return QVariant();
 }
 
-QVariant LayerNode::mousePosition(const int& role /*= Qt::DisplayRole*/) const
+QVariant LayerNode::keys(const int& role /*= Qt::DisplayRole*/) const
 {
-	const auto mousePositionString = QString("(%1, %2)").arg(QString::number(_mousePosition.x()), QString::number(_mousePosition.y()));
+	const auto keysString = "";
 
 	switch (role)
 	{
 		case Qt::DisplayRole:
-			return mousePositionString;
+			return keysString;
 
 		case Qt::EditRole:
-			return _mousePosition;
+			return _keys;
 
 		case Qt::ToolTipRole:
 		{
-			return QString("Mouse position: %1").arg(mousePositionString);
+			return QString("Keys: %1").arg(keysString);
 		}
 
 		default:
@@ -484,76 +469,9 @@ QVariant LayerNode::mousePosition(const int& role /*= Qt::DisplayRole*/) const
 	return QVariant();
 }
 
-void LayerNode::setMousePosition(const QPoint& mousePosition)
+void LayerNode::setKeys(const int& keys)
 {
-	_mousePosition = mousePosition;
-}
-
-QVariant LayerNode::mouseButtons(const int& role /*= Qt::DisplayRole*/) const
-{
-	QStringList buttons;
-
-	if (_mouseButtons & Qt::LeftButton)
-		buttons << "Left";
-
-	if (_mouseButtons & Qt::MiddleButton)
-		buttons << "Middle";
-
-	if (_mouseButtons & Qt::RightButton)
-		buttons << "Right";
-
-	const auto mouseButtonsString = QString("(%1)").arg(buttons.join(", "));
-
-	switch (role)
-	{
-		case Qt::DisplayRole:
-			return mouseButtonsString;
-
-		case Qt::EditRole:
-			return _mouseButtons;
-
-		case Qt::ToolTipRole:
-		{
-			return QString("Mouse buttons: %1").arg(mouseButtonsString);
-		}
-
-		default:
-			break;
-	}
-
-	return QVariant();
-}
-
-void LayerNode::setMouseButtons(const Qt::MouseButtons& mouseButtons)
-{
-	_mouseButtons = mouseButtons;
-}
-
-void LayerNode::mousePressEvent(QMouseEvent* mouseEvent)
-{
-	_mouseButtons |= mouseEvent->button();
-}
-
-void LayerNode::mouseReleaseEvent(QMouseEvent* mouseEvent)
-{
-	_mouseButtons &= ~mouseEvent->button();
-}
-
-void LayerNode::mouseMoveEvent(QMouseEvent* mouseEvent)
-{
-	_mousePosition = mouseEvent->pos();
-}
-
-void LayerNode::mouseWheelEvent(QWheelEvent* wheelEvent, const QModelIndex& index)
-{
-}
-
-void LayerNode::keyPressEvent(QKeyEvent* keyEvent, const QModelIndex& index)
-{
-}
-
-void LayerNode::keyReleaseEvent(QKeyEvent* keyEvent, const QModelIndex& index)
-{
+	_keys = keys;
 }
 
 int LayerNode::noPixels() const

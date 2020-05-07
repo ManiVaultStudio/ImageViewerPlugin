@@ -173,53 +173,6 @@ public: // Getters/setters
 	/** Returns the aggregated check state of the children of the node */
 	Qt::CheckState aggregatedCheckState() const;
 
-protected: // Key/mouse handlers
-
-	/** Node will register mouse press events */
-	void registerMousePressEvents();
-
-	/** Node will register mouse release events */
-	void registerMouseReleaseEvents();
-
-	/** Node will register mouse move press events */
-	void registerMouseMoveEvents();
-
-	/** Node will register mouse wheel events */
-	void registerMouseWheelEvents();
-
-	/** Node will register key press events */
-	void registerKeyPressEvents();
-
-	/** Node will register key release events */
-	void registerKeyReleaseEvents();
-
-	/** Invoked when a mouse button is pressed */
-	virtual void onMousePressEvent(QMouseEvent* mouseEvent);
-
-	/** Invoked when a mouse button is released */
-	virtual void onMouseReleaseEvent(QMouseEvent* mouseEvent);
-
-	/** Invoked when the mouse pointer is moved */
-	virtual void onMouseMoveEvent(QMouseEvent* mouseEvent);
-
-	/** Invoked when the mouse wheel is rotated */
-	virtual void onMouseWheelEvent(QWheelEvent* wheelEvent);
-
-	/** Invoked when a key is pressed */
-	virtual void onKeyPressEvent(QKeyEvent* keyEvent);
-
-	/** Invoked when a key is released */
-	virtual void onKeyReleaseEvent(QKeyEvent* keyEvent);
-
-	/**
-	* Records a mouse event
-	* @param mouseEvent Mouse event
-	*/
-	void addMouseEvent(QMouseEvent* mouseEvent);
-
-	/** Returns the recorded mouse events */
-	QVector<MouseEvent> mouseEvents();
-
 protected:
 	QString				_id;			/** Identifier (internal use) */
 	QString				_name;			/** Name (GUI) */

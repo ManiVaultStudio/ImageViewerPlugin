@@ -662,30 +662,6 @@ void ImagesLayer::setAverage(const bool& average)
 	computeImage();
 }
 
-void ImagesLayer::mousePressEvent(QMouseEvent* mouseEvent)
-{
-}
-
-void ImagesLayer::mouseReleaseEvent(QMouseEvent* mouseEvent)
-{
-}
-
-void ImagesLayer::mouseMoveEvent(QMouseEvent* mouseEvent)
-{
-}
-
-void ImagesLayer::mouseWheelEvent(QWheelEvent* wheelEvent, const QModelIndex& index)
-{
-}
-
-void ImagesLayer::keyPressEvent(QKeyEvent* keyEvent, const QModelIndex& index)
-{
-}
-
-void ImagesLayer::keyReleaseEvent(QKeyEvent* keyEvent, const QModelIndex& index)
-{
-}
-
 void ImagesLayer::computeImage()
 {
 	const auto imageIds = this->imageIds(Qt::EditRole).value<Indices>();

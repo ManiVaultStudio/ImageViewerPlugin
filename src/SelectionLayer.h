@@ -86,6 +86,47 @@ public: // Inherited MVC
 	 */
 	QModelIndexList setData(const QModelIndex& index, const QVariant& value, const int& role) override;
 
+public: // Mouse (wheel) and keyboard events
+
+	/**
+	 * Invoked when a mouse button is pressed
+	 * @param mouseEvent Mouse event
+	 */
+	void mousePressEvent(QMouseEvent* mouseEvent, const QModelIndex& index);
+
+	/**
+	 * Invoked when a mouse button is released
+	 * @param mouseEvent Mouse event
+	 */
+	void mouseReleaseEvent(QMouseEvent* mouseEvent, const QModelIndex& index);
+
+	/**
+	 * Invoked when the mouse pointer is moved
+	 * @param mouseEvent Mouse event
+	 */
+	void mouseMoveEvent(QMouseEvent* mouseEvent, const QModelIndex& index);
+
+	/**
+	 * Invoked when the mouse wheel is rotated
+	 * @param wheelEvent Mouse wheel event
+	 * @param index Model index of the layer
+	 */
+	void mouseWheelEvent(QWheelEvent* wheelEvent, const QModelIndex& index);
+
+	/**
+	 * Invoked when a key is pressed
+	 * @param keyEvent Key event
+	 * @param index Model index of the layer
+	 */
+	void keyPressEvent(QKeyEvent* keyEvent, const QModelIndex& index);
+
+	/**
+	 * Invoked when a key is released
+	 * @param keyEvent Key event
+	 * @param index Model index of the layer
+	 */
+	void keyReleaseEvent(QKeyEvent* keyEvent, const QModelIndex& index);
+
 public: // Getters/setters
 
 	/**
@@ -153,44 +194,6 @@ public: // Getters/setters
 	 */
 	void setAutoZoomToSelection(const bool& autoZoomToSelection);
 
-public: // Mouse and keyboard event handlers
-
-	/**
-	 * Invoked when a mouse button is pressed
-	 * @param mouseEvent Mouse event
-	 */
-	void mousePressEvent(QMouseEvent* mouseEvent) override;
-
-	/**
-	 * Invoked when a mouse button is released
-	 * @param mouseEvent Mouse event
-	 */
-	void mouseReleaseEvent(QMouseEvent* mouseEvent) override;
-
-	/**
-	 * Invoked when the mouse pointer is moved
-	 * @param mouseEvent Mouse event
-	 */
-	void mouseMoveEvent(QMouseEvent* mouseEvent) override;
-
-	/**
-	 * Invoked when the mouse wheel is rotated
-	 * @param wheelEvent Mouse wheel event
-	 */
-	void mouseWheelEvent(QWheelEvent* wheelEvent, const QModelIndex& index) override;
-
-	/**
-	 * Invoked when a key is pressed
-	 * @param keyEvent Key event
-	 */
-	void keyPressEvent(QKeyEvent* keyEvent, const QModelIndex& index) override;
-
-	/**
-	 * Invoked when a key is released
-	 * @param keyEvent Key event
-	 */
-	void keyReleaseEvent(QKeyEvent* keyEvent, const QModelIndex& index) override;
-
 protected:
 
 	/**
@@ -235,5 +238,5 @@ private:
 	QColor					_overlayColor;				/** Selection overlay color */
 	bool					_autoZoomToSelection;		/** Automatically zoom to selection */
 
-	static const int crossHairSize = 5;
+	static const int crossHairSize = 3;
 };

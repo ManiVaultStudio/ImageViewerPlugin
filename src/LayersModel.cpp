@@ -232,22 +232,22 @@ bool LayersModel::moveLayer(const QModelIndex& sourceParent, const int& sourceRo
 
 void LayersModel::mousePressEvent(QMouseEvent* mouseEvent)
 {
-	auto selectedLayer = this->selectedLayer();
+	const auto selectedRows = _selectionModel.selectedRows();
 
-	if (!selectedLayer)
+	if (selectedRows.isEmpty())
 		return;
 
-	selectedLayer->mousePressEvent(mouseEvent);
+	selectedLayer()->mousePressEvent(mouseEvent, selectedRows.first());
 }
 
 void LayersModel::mouseReleaseEvent(QMouseEvent* mouseEvent)
 {
-	auto selectedLayer = this->selectedLayer();
+	const auto selectedRows = _selectionModel.selectedRows();
 
-	if (!selectedLayer)
+	if (selectedRows.isEmpty())
 		return;
 
-	selectedLayer->mouseReleaseEvent(mouseEvent);
+	selectedLayer()->mouseReleaseEvent(mouseEvent, selectedRows.first());
 }
 
 void LayersModel::mouseMoveEvent(QMouseEvent* mouseEvent)
@@ -257,18 +257,7 @@ void LayersModel::mouseMoveEvent(QMouseEvent* mouseEvent)
 	if (selectedRows.isEmpty())
 		return;
 
-	auto selected = selectedRows.first();
-
-	setData(selected.siblingAtColumn(ult(LayerNode::Column::MousePosition)), mouseEvent->pos());
-
-	/*
-	auto selectedLayer = this->selectedLayer();
-
-	if (!selectedLayer)
-		return;
-
-	selectedLayer->mouseMoveEvent(mouseEvent);
-	*/
+	selectedLayer()->mouseMoveEvent(mouseEvent, selectedRows.first());
 }
 
 void LayersModel::mouseWheelEvent(QWheelEvent* wheelEvent)

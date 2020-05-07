@@ -53,27 +53,3 @@ QModelIndexList GroupLayer::setData(const QModelIndex& index, const QVariant& va
 
 	return affectedIds;
 }
-
-void GroupLayer::mousePressEvent(QMouseEvent* mouseEvent)
-{
-}
-
-void GroupLayer::mouseReleaseEvent(QMouseEvent* mouseEvent)
-{
-}
-
-void GroupLayer::mouseMoveEvent(QMouseEvent* mouseEvent)
-{
-}
-
-void GroupLayer::mouseWheelEvent(QWheelEvent* wheelEvent, const QModelIndex& index)
-{
-}
-
-void GroupLayer::keyPressEvent(QKeyEvent* keyEvent, const QModelIndex& index)
-{
-}
-
-void GroupLayer::keyReleaseEvent(QKeyEvent* keyEvent, const QModelIndex& index)
-{
-}

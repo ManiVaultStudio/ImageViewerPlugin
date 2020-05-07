@@ -61,30 +61,6 @@ QModelIndexList RootLayer::setData(const QModelIndex& index, const QVariant& val
 	return affectedIds;
 }
 
-void RootLayer::mousePressEvent(QMouseEvent* mouseEvent)
-{
-}
-
-void RootLayer::mouseReleaseEvent(QMouseEvent* mouseEvent)
-{
-}
-
-void RootLayer::mouseMoveEvent(QMouseEvent* mouseEvent)
-{
-}
-
-void RootLayer::mouseWheelEvent(QWheelEvent* wheelEvent, const QModelIndex& index)
-{
-}
-
-void RootLayer::keyPressEvent(QKeyEvent* keyEvent, const QModelIndex& index)
-{
-}
-
-void RootLayer::keyReleaseEvent(QKeyEvent* keyEvent, const QModelIndex& index)
-{
-}
-
 QSize RootLayer::imageSize() const
 {
 	return QSize();

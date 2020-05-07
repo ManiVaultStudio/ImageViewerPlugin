@@ -7,6 +7,12 @@
 
 #include <set>
 
+#include <cmath>
+
+#ifndef M_PI
+	#define M_PI (3.14159265358979323846)
+#endif
+
 #include <QDebug>
 #include <QPainter>
 
@@ -18,7 +24,7 @@ SelectionLayer::SelectionLayer(const QString& datasetName, const QString& id, co
 	_imageData(),
 	_pixelSelectionType(SelectionType::Rectangle),
 	_pixelSelectionModifier(SelectionModifier::Replace),
-	_brushRadius(1.0f),
+	_brushRadius(10.0f),
 	_overlayColor(Qt::green),
 	_autoZoomToSelection(false)
 {
@@ -48,15 +54,48 @@ void SelectionLayer::paint(QPainter* painter)
 
 		case SelectionType::Brush:
 		{
-			const auto brushCenter = _mousePosition;
+			const auto brushCenter = _mousePositions.last();
 
-			painter->setPen(QColor(255, 174, 66));
+			painter->setPen(Qt::NoPen);
+			painter->setBrush(QColor(255, 174, 66, 150));
+
+			painter->drawEllipse(QPointF(brushCenter), crossHairSize, crossHairSize);
+			
+			painter->setPen(QColor(255, 174, 66, _mouseButtons & Qt::LeftButton ? 255 : 150));
 			painter->setBrush(Qt::NoBrush);
 
-			painter->drawLine(brushCenter - QPoint(crossHairSize, 0), brushCenter + QPoint(crossHairSize, 0));
-			painter->drawLine(brushCenter - QPoint(0, crossHairSize), brushCenter + QPoint(0, crossHairSize));
 			painter->drawEllipse(QPointF(brushCenter), _brushRadius, _brushRadius);
 			
+			painter->setPen(QColor(255, 174, 66));
+			painter->setFont(QFont("Font Awesome 5 Free Solid", 9));
+
+			const auto textAngle		= 0.75f * M_PI;
+			const auto size				= 12.0f;
+			const auto textCenter		= brushCenter + (_brushRadius + size) * QPointF(sin(textAngle), cos(textAngle));
+			const auto textRectangle	= QRectF(textCenter - QPointF(size, size), textCenter + QPointF(size, size));
+
+			switch (_pixelSelectionModifier)
+			{
+				case SelectionModifier::Replace:
+					break;
+
+				case SelectionModifier::Add:
+					painter->drawText(textRectangle, u8"\uf055", QTextOption(Qt::AlignCenter));
+					break;
+
+				case SelectionModifier::Remove:
+					painter->drawText(textRectangle, u8"\uf056", QTextOption(Qt::AlignCenter));
+					break;
+
+				case SelectionModifier::All:
+					break;
+				case SelectionModifier::None:
+					break;
+				case SelectionModifier::Invert:
+					break;
+				default:
+					break;
+			}
 			break;
 		}
 
@@ -243,24 +282,50 @@ QModelIndexList SelectionLayer::setData(const QModelIndex& index, const QVariant
 		default:
 			break;
 	}
-
+	
 	return affectedIds;
 }
 
-void SelectionLayer::mousePressEvent(QMouseEvent* mouseEvent)
+void SelectionLayer::mousePressEvent(QMouseEvent* mouseEvent, const QModelIndex& index)
 {
-	LayerNode::mousePressEvent(mouseEvent);
+	LayerNode::mousePressEvent(mouseEvent, index);
+
+	QModelIndexList affectedIds;
+
+	_mouseButtons = mouseEvent->buttons();
+
+	switch (_pixelSelectionType)
+	{
+		case SelectionType::None:
+		case SelectionType::Rectangle:
+		case SelectionType::Lasso:
+		case SelectionType::Polygon:
+		{
+			_mousePositions.clear();
+			_mousePositions << mouseEvent->pos();
+			break;
+		}
+
+		case SelectionType::Brush:
+			break;
+
+		default:
+			break;
+	}
+
+	for (auto index : affectedIds)
+		emit LayerNode::imageViewerPlugin->layersModel().dataChanged(index, index);
+
+	Renderable::renderer->render();
 }
 
-void SelectionLayer::mouseReleaseEvent(QMouseEvent* mouseEvent)
+void SelectionLayer::mouseReleaseEvent(QMouseEvent* mouseEvent, const QModelIndex& index)
 {
-	LayerNode::mouseReleaseEvent(mouseEvent);
-}
+	LayerNode::mousePressEvent(mouseEvent, index);
 
-void SelectionLayer::mouseMoveEvent(QMouseEvent* mouseEvent)
-{
-	//mouseEvent->buttons()
-	//LayerNode::mouseMoveEvent(mouseEvent);
+	QModelIndexList affectedIds;
+
+	_mouseButtons = mouseEvent->buttons();
 
 	switch (_pixelSelectionType)
 	{
@@ -268,148 +333,158 @@ void SelectionLayer::mouseMoveEvent(QMouseEvent* mouseEvent)
 			break;
 
 		case SelectionType::Rectangle:
-			break;
-
-		case SelectionType::Brush:
+			_mousePositions << mouseEvent->pos();
 			break;
 
 		case SelectionType::Lasso:
-			break;
-
 		case SelectionType::Polygon:
+		case SelectionType::Brush:
 			break;
 
 		default:
 			break;
 	}
+
+	for (auto index : affectedIds)
+		emit LayerNode::imageViewerPlugin->layersModel().dataChanged(index, index);
+
+	Renderable::renderer->render();
+}
+
+void SelectionLayer::mouseMoveEvent(QMouseEvent* mouseEvent, const QModelIndex& index)
+{
+	LayerNode::mousePressEvent(mouseEvent, index);
+
+	QModelIndexList affectedIds;
+
+	switch (_pixelSelectionType)
+	{
+		case SelectionType::None:
+		case SelectionType::Rectangle:
+		case SelectionType::Lasso:
+		case SelectionType::Polygon:
+			break;
+
+		case SelectionType::Brush:
+		{
+			if (_mousePositions.isEmpty())
+				_mousePositions << mouseEvent->pos();
+			else
+				_mousePositions.last() = mouseEvent->pos();
+
+			break;
+		}
+
+		default:
+			break;
+	}
+
+	for (auto index : affectedIds)
+		emit LayerNode::imageViewerPlugin->layersModel().dataChanged(index, index);
 
 	Renderable::renderer->render();
 }
 
 void SelectionLayer::mouseWheelEvent(QWheelEvent* wheelEvent, const QModelIndex& index)
 {
-	//LayerNode::mouseWheelEvent(wheelEvent);
+	LayerNode::mouseWheelEvent(wheelEvent, index);
+
+	QModelIndexList affectedIds;
 
 	switch (_pixelSelectionType)
 	{
 		case SelectionType::None:
-			break;
-
 		case SelectionType::Rectangle:
+		case SelectionType::Lasso:
+		case SelectionType::Polygon:
 			break;
 
 		case SelectionType::Brush:
 		{
-			if (wheelEvent->delta() < 0) {
+			if (wheelEvent->delta() < 0)
 				setBrushRadius(_brushRadius - 5.0f);
-			}
-			else {
+			else
 				setBrushRadius(_brushRadius + 5.0f);
-			}
-
-			const auto brushRadiusIndex = index.siblingAtColumn(ult(SelectionLayer::Column::BrushRadius));
-
-			emit LayerNode::imageViewerPlugin->layersModel().dataChanged(brushRadiusIndex, brushRadiusIndex);
-
-			Renderable::renderer->render();
 
 			break;
 		}
-
-		case SelectionType::Lasso:
-			break;
-
-		case SelectionType::Polygon:
-			break;
 
 		default:
 			break;
 	}
+
+	affectedIds << index.siblingAtColumn(ult(Column::BrushRadius));
+
+	for (auto index : affectedIds)
+		emit LayerNode::imageViewerPlugin->layersModel().dataChanged(index, index);
+
+	Renderable::renderer->render();
 }
 
 void SelectionLayer::keyPressEvent(QKeyEvent* keyEvent, const QModelIndex& index)
 {
-	if (keyEvent->isAutoRepeat())
+	LayerNode::keyPressEvent(keyEvent, index);
+
+	QModelIndexList affectedIds;
+
+	_keys |= keyEvent->key();
+
+	switch (keyEvent->key())
 	{
-		keyEvent->ignore();
-	}
-	else
-	{
-		switch (keyEvent->key())
+		case Qt::Key::Key_R:
+			setPixelSelectionType(SelectionType::Rectangle);
+			break;
+
+		case Qt::Key::Key_B:
+			setPixelSelectionType(SelectionType::Brush);
+			break;
+
+		case Qt::Key::Key_L:
+			setPixelSelectionType(SelectionType::Lasso);
+			break;
+
+		case Qt::Key::Key_P:
+			setPixelSelectionType(SelectionType::Polygon);
+			break;
+
+		case Qt::Key::Key_A:
 		{
-			case Qt::Key::Key_R:
-			{
-				setPixelSelectionType(SelectionType::Rectangle);
-				break;
-			}
-
-			case Qt::Key::Key_B:
-			{
-				setPixelSelectionType(SelectionType::Brush);
-				break;
-			}
-
-			case Qt::Key::Key_L:
-			{
-				setPixelSelectionType(SelectionType::Lasso);
-				break;
-			}
-
-			case Qt::Key::Key_P:
-			{
-				setPixelSelectionType(SelectionType::Polygon);
-				break;
-			}
-
-			case Qt::Key::Key_A:
-			{
-				selectAll();
-				break;
-			}
-
-			case Qt::Key::Key_D:
-			{
-				selectNone();
-				break;
-			}
-
-			case Qt::Key::Key_I:
-			{
-				invertSelection();
-				break;
-			}
-
-			case Qt::Key::Key_Z:
-			{
-				zoomToSelection();
-				break;
-			}
-
-			case Qt::Key::Key_Shift:
-			{
-				setPixelSelectionModifier(SelectionModifier::Add);
-				emit LayerNode::imageViewerPlugin->layersModel().dataChanged(index.siblingAtColumn(ult(SelectionLayer::Column::PixelSelectionModifier)), index.siblingAtColumn(ult(SelectionLayer::Column::PixelSelectionModifier)));
-				break;
-			}
-
-			case Qt::Key::Key_Control:
-			{
-				setPixelSelectionModifier(SelectionModifier::Remove);
-				emit LayerNode::imageViewerPlugin->layersModel().dataChanged(index.siblingAtColumn(ult(SelectionLayer::Column::PixelSelectionModifier)), index.siblingAtColumn(ult(SelectionLayer::Column::PixelSelectionModifier)));
-				break;
-			}
-
-			case Qt::Key::Key_Escape:
-				// TODO: _pixelSelection.abortSelection();
-				break;
-
-			case Qt::Key::Key_Space:
-				//setInteractionMode(InteractionMode::Navigation);
-				break;
-
-			default:
-				break;
+			selectAll();
+			break;
 		}
+
+		case Qt::Key::Key_D:
+		{
+			selectNone();
+			break;
+		}
+
+		case Qt::Key::Key_I:
+		{
+			invertSelection();
+			break;
+		}
+
+		case Qt::Key::Key_Z:
+		{
+			zoomToSelection();
+			break;
+		}
+
+		case Qt::Key::Key_Shift:
+		{
+			setPixelSelectionModifier(SelectionModifier::Add);
+			break;
+		}
+
+		case Qt::Key::Key_Control:
+		{
+			setPixelSelectionModifier(SelectionModifier::Remove);
+			break;
+		}
+
+		default:
+			break;
 	}
 
 	switch (keyEvent->key())
@@ -418,39 +493,67 @@ void SelectionLayer::keyPressEvent(QKeyEvent* keyEvent, const QModelIndex& index
 		case Qt::Key::Key_B:
 		case Qt::Key::Key_L:
 		case Qt::Key::Key_P:
-		{
-			const auto pixelSelectionTypeIndex	= index.siblingAtColumn(ult(SelectionLayer::Column::PixelSelectionType));
-			const auto brushRadiusIndex			= index.siblingAtColumn(ult(SelectionLayer::Column::BrushRadius));
-
-			emit LayerNode::imageViewerPlugin->layersModel().dataChanged(pixelSelectionTypeIndex, pixelSelectionTypeIndex);
-			emit LayerNode::imageViewerPlugin->layersModel().dataChanged(brushRadiusIndex, brushRadiusIndex);
+			affectedIds << index.siblingAtColumn(ult(Column::PixelSelectionType));
+			affectedIds << index.siblingAtColumn(ult(Column::BrushRadius));
 			break;
-		}
+
+		case Qt::Key::Key_A:
+		case Qt::Key::Key_D:
+		case Qt::Key::Key_I:
+			affectedIds << index.siblingAtColumn(ult(LayerNode::Column::Selection));
+			break;
+
+		case Qt::Key::Key_Shift:
+		case Qt::Key::Key_Control:
+			affectedIds << index.siblingAtColumn(ult(Column::PixelSelectionModifier));
+			break;
+
+		default:
+			break;
 	}
+
+	for (auto index : affectedIds)
+		emit LayerNode::imageViewerPlugin->layersModel().dataChanged(index, index);
+
+	Renderable::renderer->render();
 }
 
 void SelectionLayer::keyReleaseEvent(QKeyEvent* keyEvent, const QModelIndex& index)
 {
-	if (keyEvent->isAutoRepeat())
-	{
-		keyEvent->ignore();
-	}
-	else
-	{
-		switch (keyEvent->key())
-		{
-			case Qt::Key::Key_Shift:
-			case Qt::Key::Key_Control:
-			{
-				setPixelSelectionModifier(SelectionModifier::Replace);
-				emit LayerNode::imageViewerPlugin->layersModel().dataChanged(index.siblingAtColumn(ult(SelectionLayer::Column::PixelSelectionModifier)), index.siblingAtColumn(ult(SelectionLayer::Column::PixelSelectionModifier)));
-				break;
-			}
+	LayerNode::keyReleaseEvent(keyEvent, index);
 
-			default:
-				break;
+	QModelIndexList affectedIds;
+
+	_keys &= ~keyEvent->key();
+
+	switch (keyEvent->key())
+	{
+		case Qt::Key::Key_R:
+		case Qt::Key::Key_B:
+		case Qt::Key::Key_L:
+		case Qt::Key::Key_P:
+		case Qt::Key::Key_A:
+		case Qt::Key::Key_D:
+		case Qt::Key::Key_I:
+		case Qt::Key::Key_Z:
+			break;
+
+		case Qt::Key::Key_Shift:
+		case Qt::Key::Key_Control:
+		{
+			setPixelSelectionModifier(SelectionModifier::Replace);
+			affectedIds << index.siblingAtColumn(ult(Column::PixelSelectionModifier));
+			break;
 		}
+
+		default:
+			break;
 	}
+
+	for (auto index : affectedIds)
+		emit LayerNode::imageViewerPlugin->layersModel().dataChanged(index, index);
+
+	Renderable::renderer->render();
 }
 
 QSize SelectionLayer::imageSize() const

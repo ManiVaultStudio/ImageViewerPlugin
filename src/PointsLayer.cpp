@@ -693,30 +693,6 @@ void PointsLayer::setConstantColor(const QColor& constantColor)
 	_constantColor = constantColor;
 }
 
-void PointsLayer::mousePressEvent(QMouseEvent* mouseEvent)
-{
-}
-
-void PointsLayer::mouseReleaseEvent(QMouseEvent* mouseEvent)
-{
-}
-
-void PointsLayer::mouseMoveEvent(QMouseEvent* mouseEvent)
-{
-}
-
-void PointsLayer::mouseWheelEvent(QWheelEvent* wheelEvent, const QModelIndex& index)
-{
-}
-
-void PointsLayer::keyPressEvent(QKeyEvent* keyEvent, const QModelIndex& index)
-{
-}
-
-void PointsLayer::keyReleaseEvent(QKeyEvent* keyEvent, const QModelIndex& index)
-{
-}
-
 void PointsLayer::computeChannel(const std::uint32_t& id)
 {
 	if (_channels[id]->dimensionId() < 0)

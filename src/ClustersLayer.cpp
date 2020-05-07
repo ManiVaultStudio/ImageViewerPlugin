@@ -75,27 +75,3 @@ QVariant ClustersLayer::clustersDatasetName(const int& role /*= Qt::DisplayRole*
 
 	return QVariant();
 }
-
-void ClustersLayer::mousePressEvent(QMouseEvent* mouseEvent)
-{
-}
-
-void ClustersLayer::mouseReleaseEvent(QMouseEvent* mouseEvent)
-{
-}
-
-void ClustersLayer::mouseMoveEvent(QMouseEvent* mouseEvent)
-{
-}
-
-void ClustersLayer::mouseWheelEvent(QWheelEvent* wheelEvent, const QModelIndex& index)
-{
-}
-
-void ClustersLayer::keyPressEvent(QKeyEvent* keyEvent, const QModelIndex& index)
-{
-}
-
-void ClustersLayer::keyReleaseEvent(QKeyEvent* keyEvent, const QModelIndex& index)
-{
-}
