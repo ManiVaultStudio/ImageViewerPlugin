@@ -16,10 +16,13 @@
 #include <QDebug>
 #include <QPainter>
 
-const float SelectionLayer::minBrushRadius = 1.0f;
-const float SelectionLayer::maxBrushRadius = 1000.0f;
-const float SelectionLayer::crossHairSize = 4.0f;
-const float SelectionLayer::controlPointSize = 2.0f;
+const QColor SelectionLayer::toolColorForeground	= QColor(255, 174, 66, 200);
+const QColor SelectionLayer::toolColorBackground	= QColor(255, 174, 66, 150);
+const float SelectionLayer::minBrushRadius			= 1.0f;
+const float SelectionLayer::maxBrushRadius			= 1000.0f;
+const float SelectionLayer::defaultBrushRadius		= 50.0f;
+const float SelectionLayer::controlPointSize		= 6.0f;
+const float SelectionLayer::perimeterLineWidth		= 1.5f;
 
 SelectionLayer::SelectionLayer(const QString& datasetName, const QString& id, const QString& name, const int& flags) :
 	LayerNode(datasetName, LayerNode::Type::Selection, id, name, flags),
@@ -29,7 +32,7 @@ SelectionLayer::SelectionLayer(const QString& datasetName, const QString& id, co
 	_imageData(),
 	_pixelSelectionType(SelectionType::Rectangle),
 	_pixelSelectionModifier(SelectionModifier::Replace),
-	_brushRadius(10.0f),
+	_brushRadius(defaultBrushRadius),
 	_overlayColor(Qt::green),
 	_autoZoomToSelection(false)
 {
@@ -49,7 +52,29 @@ void SelectionLayer::init()
 
 void SelectionLayer::paint(QPainter* painter)
 {
-	auto iconFont = QFont("Font Awesome 5 Free Solid", 9);
+	painter->setFont(QFont("Font Awesome 5 Free Solid", 9));
+
+	auto textRectangle = QRectF();
+
+	auto perimeterForegroundPen = QPen();
+
+	perimeterForegroundPen.setColor(toolColorForeground);
+	perimeterForegroundPen.setWidthF(perimeterLineWidth);
+	perimeterForegroundPen.setStyle(Qt::SolidLine);
+
+	auto perimeterBackgroundPen = QPen();
+
+	perimeterBackgroundPen.setColor(toolColorBackground);
+	perimeterBackgroundPen.setWidthF(perimeterLineWidth);
+	perimeterBackgroundPen.setStyle(Qt::DotLine);
+
+	auto controlPointsPen = QPen();
+
+	controlPointsPen.setColor(toolColorForeground);
+	controlPointsPen.setWidthF(controlPointSize);
+	controlPointsPen.setCapStyle(Qt::RoundCap);
+
+	QVector<QPoint> controlPoints;
 
 	switch (_pixelSelectionType)
 	{
@@ -59,12 +84,7 @@ void SelectionLayer::paint(QPainter* painter)
 		case SelectionType::Rectangle:
 		{
 			if (_mousePositions.size() == 2) {
-				auto perimeterPen = QPen();
-
-				perimeterPen.setColor(QColor(255, 174, 66));
-				perimeterPen.setWidthF(1.5f);
-
-				painter->setPen(perimeterPen);
+				painter->setPen(perimeterForegroundPen);
 				painter->setBrush(Qt::NoBrush);
 
 				const auto topLeft		= QPointF(std::min(_mousePositions.first().x(), _mousePositions.last().x()), std::min(_mousePositions.first().y(), _mousePositions.last().y()));
@@ -73,41 +93,13 @@ void SelectionLayer::paint(QPainter* painter)
 
 				painter->drawRect(rectangle);
 
-				painter->setPen(Qt::NoPen);
-				painter->setBrush(QColor(255, 174, 66));
-
-				painter->drawEllipse(QPointF(_mousePositions.first()), controlPointSize, controlPointSize);
-				painter->drawEllipse(QPointF(_mousePositions.last()), controlPointSize, controlPointSize);
-
-				painter->setPen(QColor(255, 174, 66));
-				painter->setFont(iconFont);
-
-				const auto size				= 8.0f;
-				const auto textCenter		= rectangle.topRight() + QPoint(size, -size);
-				const auto textRectangle	= QRectF(textCenter - QPointF(size, size), textCenter + QPointF(size, size));
-
-				switch (_pixelSelectionModifier)
-				{
-					case SelectionModifier::Replace:
-						break;
-
-					case SelectionModifier::Add:
-						painter->drawText(textRectangle, u8"\uf055", QTextOption(Qt::AlignCenter));
-						break;
-
-					case SelectionModifier::Remove:
-						painter->drawText(textRectangle, u8"\uf056", QTextOption(Qt::AlignCenter));
-						break;
-
-					case SelectionModifier::All:
-						break;
-					case SelectionModifier::None:
-						break;
-					case SelectionModifier::Invert:
-						break;
-					default:
-						break;
-				}
+				controlPoints << _mousePositions.first();
+				controlPoints << _mousePositions.last();
+				
+				const auto size			= 8.0f;
+				const auto textCenter	= rectangle.topRight() + QPoint(size, -size);
+				
+				textRectangle = QRectF(textCenter - QPointF(size, size), textCenter + QPointF(size, size));
 			}
 
 			break;
@@ -115,48 +107,119 @@ void SelectionLayer::paint(QPainter* painter)
 
 		case SelectionType::Brush:
 		{
-			const auto brushCenter = _mousePositions.last();
+			if (_mousePositions.size() == 1) {
+				const auto brushCenter = _mousePositions.last();
 
-			painter->setPen(Qt::NoPen);
-			painter->setBrush(QColor(255, 174, 66));
+				painter->setPen(Qt::NoPen);
+				painter->setBrush(toolColorForeground);
 
-			painter->drawEllipse(QPointF(brushCenter), crossHairSize, crossHairSize);
-			
-			auto perimeterPen = QPen();
+				painter->drawPoint(brushCenter);
 
-			perimeterPen.setColor(_mouseButtons & Qt::LeftButton ? QColor(255, 174, 66) : QColor(255, 174, 66, 150));
-			perimeterPen.setWidthF(1.5f);
+				painter->setPen(_mouseButtons & Qt::LeftButton ? perimeterForegroundPen : perimeterBackgroundPen);
+				painter->setBrush(Qt::NoBrush);
 
-			painter->setPen(perimeterPen);
-			painter->setBrush(Qt::NoBrush);
+				painter->drawEllipse(QPointF(brushCenter), _brushRadius, _brushRadius);
 
-			painter->drawEllipse(QPointF(brushCenter), _brushRadius, _brushRadius);
-			
-			painter->setPen(QColor(255, 174, 66));
-			painter->setFont(iconFont);
+				controlPoints << _mousePositions.first();
 
-			const auto textAngle		= 0.75f * M_PI;
-			const auto size				= 12.0f;
-			const auto textCenter		= brushCenter + (_brushRadius + size) * QPointF(sin(textAngle), cos(textAngle));
-			const auto textRectangle	= QRectF(textCenter - QPointF(size, size), textCenter + QPointF(size, size));
+				const auto textAngle		= 0.75f * M_PI;
+				const auto size				= 12.0f;
+				const auto textCenter		= brushCenter + (_brushRadius + size) * QPointF(sin(textAngle), cos(textAngle));
+				
+				textRectangle = QRectF(textCenter - QPointF(size, size), textCenter + QPointF(size, size));
+			}
 
+			break;
+		}
+
+		case SelectionType::Lasso:
+		{
+			if (_mousePositions.size() >= 2) {
+
+				painter->setPen(perimeterForegroundPen);
+				painter->drawPolyline(_mousePositions.constData(), _mousePositions.count());
+
+				controlPoints << _mousePositions.first();
+				controlPoints << _mousePositions.last();
+
+				painter->setPen(perimeterBackgroundPen);
+				painter->drawPolyline(controlPoints.constData(), controlPoints.count());
+
+				const auto size = 8.0f;
+				const auto textCenter = _mousePositions.first() + QPoint(size, size);
+
+				textRectangle = QRectF(textCenter + QPointF(size, size), textCenter + QPointF(size, size));
+			}
+
+			break;
+		}
+
+		case SelectionType::Polygon:
+		{
+			if (_mousePositions.size() >= 2) {
+
+				painter->setPen(QPen(QBrush(toolColorForeground), perimeterLineWidth));
+
+				painter->drawPolyline(_mousePositions.constData(), _mousePositions.count());
+
+				QVector<QPoint> connectingPoints;
+
+				connectingPoints << _mousePositions.first();
+				connectingPoints << _mousePositions.last();
+
+				painter->setPen(QPen(QBrush(toolColorBackground), perimeterLineWidth, Qt::DashLine));
+
+				painter->drawPolyline(connectingPoints.constData(), connectingPoints.count());
+
+				controlPoints << _mousePositions;
+
+				const auto size			= 8.0f;
+				const auto textCenter	= _mousePositions.first() + QPoint(size, size);
+
+				textRectangle = QRectF(textCenter + QPointF(size, size), textCenter + QPointF(size, size));
+			}
+
+			break;
+		}
+
+		default:
+			break;
+	}
+
+	painter->setPen(controlPointsPen);
+	painter->drawPoints(controlPoints);
+
+	switch (_pixelSelectionType)
+	{
+		case SelectionType::None:
+			break;
+
+		case SelectionType::Rectangle:
+		case SelectionType::Brush:
+		case SelectionType::Lasso:
+		case SelectionType::Polygon:
+		{
 			switch (_pixelSelectionModifier)
 			{
 				case SelectionModifier::Replace:
 					break;
 
 				case SelectionModifier::Add:
+				{
+					painter->setPen(toolColorForeground);
 					painter->drawText(textRectangle, u8"\uf055", QTextOption(Qt::AlignCenter));
 					break;
+				}
 
 				case SelectionModifier::Remove:
+				{
+					painter->setPen(toolColorForeground);
 					painter->drawText(textRectangle, u8"\uf056", QTextOption(Qt::AlignCenter));
 					break;
+				}
 
 				case SelectionModifier::All:
-					break;
 				case SelectionModifier::None:
-					break;
 				case SelectionModifier::Invert:
 					break;
 				default:
@@ -165,12 +228,6 @@ void SelectionLayer::paint(QPainter* painter)
 
 			break;
 		}
-
-		case SelectionType::Lasso:
-			break;
-
-		case SelectionType::Polygon:
-			break;
 
 		default:
 			break;
@@ -368,15 +425,31 @@ void SelectionLayer::mousePressEvent(QMouseEvent* mouseEvent, const QModelIndex&
 		{
 			_mousePositions.clear();
 			_mousePositions << mouseEvent->pos();
-
 			break;
 		}
 
 		case SelectionType::Lasso:
-		case SelectionType::Polygon:
 		{
 			_mousePositions.clear();
 			_mousePositions << mouseEvent->pos();
+			break;
+		}
+
+		case SelectionType::Polygon:
+		{
+			switch (mouseEvent->button())
+			{
+				case Qt::LeftButton:
+					_mousePositions << mouseEvent->pos();
+					break;
+
+				case Qt::RightButton:
+					_mousePositions.clear();
+					break;
+
+				default:
+					break;
+			}
 
 			break;
 		}
@@ -412,9 +485,19 @@ void SelectionLayer::mouseReleaseEvent(QMouseEvent* mouseEvent, const QModelInde
 			break;
 
 		case SelectionType::Lasso:
-		case SelectionType::Polygon:
-		case SelectionType::Brush:
+		{
+			_mousePositions.clear();
 			break;
+		}
+
+		case SelectionType::Polygon:
+			break;
+
+		case SelectionType::Brush:
+		{
+			_mousePositions.clear();
+			break;
+		}
 
 		default:
 			break;
@@ -450,8 +533,22 @@ void SelectionLayer::mouseMoveEvent(QMouseEvent* mouseEvent, const QModelIndex& 
 		}
 
 		case SelectionType::Lasso:
-		case SelectionType::Polygon:
+		{
+			if (mouseEvent->buttons() & Qt::LeftButton)
+				_mousePositions << mouseEvent->pos();
+
 			break;
+		}
+
+		case SelectionType::Polygon:
+		{
+			if (_mousePositions.isEmpty())
+				_mousePositions << mouseEvent->pos();
+			else
+				_mousePositions.last() = mouseEvent->pos();
+
+			break;
+		}
 
 		case SelectionType::Brush:
 		{
@@ -568,6 +665,29 @@ void SelectionLayer::keyPressEvent(QKeyEvent* keyEvent, const QModelIndex& index
 		case Qt::Key::Key_Control:
 		{
 			setPixelSelectionModifier(SelectionModifier::Remove);
+			break;
+		}
+
+		case Qt::Key::Key_Escape:
+		{
+			switch (_pixelSelectionType)
+			{
+				case SelectionType::None:
+				case SelectionType::Rectangle:
+					break;
+
+				case SelectionType::Lasso:
+				case SelectionType::Polygon:
+					_mousePositions.clear();
+					break;
+
+				case SelectionType::Brush:
+					break;
+
+				default:
+					break;
+			}
+
 			break;
 		}
 
@@ -701,6 +821,8 @@ QVariant SelectionLayer::pixelSelectionType(const int& role) const
 void SelectionLayer::setPixelSelectionType(const SelectionType& pixelSelectionType)
 {
 	_pixelSelectionType = static_cast<SelectionType>(pixelSelectionType);
+	
+	_mousePositions.clear();
 }
 
 QVariant SelectionLayer::pixelSelectionModifier(const int& role) const

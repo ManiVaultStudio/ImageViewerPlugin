@@ -239,8 +239,11 @@ private:
 	bool					_autoZoomToSelection;		/** Automatically zoom to selection */
 
 public:
+	static const QColor toolColorForeground;			/** Foreground tool color for brushes and pens */
+	static const QColor toolColorBackground;			/** Background tool color for brushes and pens */
 	static const float minBrushRadius;					/** Minimum brush radius */
 	static const float maxBrushRadius;					/** Maximum brush radius */
-	static const float crossHairSize;					/** Size of the crosshair */
+	static const float defaultBrushRadius;				/** Default brush radius */
 	static const float controlPointSize;				/** Size of control points */
+	static const float perimeterLineWidth;				/** Line width of the pixel selection tool perimeter */
 };
