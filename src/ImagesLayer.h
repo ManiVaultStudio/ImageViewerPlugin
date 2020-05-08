@@ -1,6 +1,7 @@
 #pragma once
 
 #include "LayerNode.h"
+#include "Channel.h"
 
 #include "ImageData/Images.h"
 
@@ -105,13 +106,6 @@ public: // Getters/setters
 	 * @return Number of images in variant form
 	 */
 	QVariant noImages(const int& role) const;
-
-	/**
-	 * Returns the size of the images in the dataset
-	 * @param role The data role
-	 * @return Image size in variant form
-	 */
-	QVariant imageSize(const int& role) const;
 
 	/**
 	 * Returns the number of data points in the dataset
@@ -231,6 +225,13 @@ public: // Getters/setters
 	 */
 	void setAverage(const bool& average);
 
+	/**
+	 * Returns channel by identifier
+	 * @param id Channel identifier
+	 * @return Channel
+	 */
+	Channel* channel(const std::uint32_t& id);
+
 protected:
 
 	/**
@@ -241,8 +242,11 @@ protected:
 
 private:
 
-	/** Computes the (averaged) image */
-	void computeImage();
+	/**
+	 * Computes image channel
+	 * @param id Identifier
+	 */
+	void computeChannel(const std::uint32_t& id);
 
 private:
 	Images*				_images;				/** Pointer to the images plugin instance */
@@ -254,4 +258,5 @@ private:
 	QString				_pointsName;			/** Name of the referenced points dataset */
 	std::int32_t		_currentImageId;		/** Current image identifier */
 	bool				_average;				/** Whether to average images */
+	QVector<Channel*>	_channels;				/** Channels */
 };

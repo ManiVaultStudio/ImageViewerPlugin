@@ -43,7 +43,6 @@ PointsProp::PointsProp(PointsLayer* pointsLayer, const QString& name) :
 		QObject::connect(channel, &Channel::changed, [this](Channel* channel) {
 			renderer->bindOpenGLContext();
 			{
-				
 				const auto imageSize = channel->imageSize();
 
 				if (!imageSize.isValid())
@@ -57,7 +56,7 @@ PointsProp::PointsProp(PointsLayer* pointsLayer, const QString& name) :
 				if (imageSize != QSize(texture->width(), texture->height())) {
 					texture->destroy();
 					texture->create();
-					texture->setLayers(4);
+					texture->setLayers(3);
 					texture->setSize(imageSize.width(), imageSize.height(), 1);
 					texture->setSize(imageSize.width(), imageSize.height(), 2);
 					texture->setSize(imageSize.width(), imageSize.height(), 3);

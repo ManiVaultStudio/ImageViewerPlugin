@@ -1,9 +1,9 @@
 #pragma once
 
 #include "Prop.h"
-#include "WindowLevelImage.h"
+#include "Channel.h"
 
-class Node;
+class ImagesLayer;
 
 /**
  * Image prop class
@@ -15,7 +15,7 @@ class ImagesProp : public Prop
 
 public:
 	/** TODO */
-	ImagesProp(Node* node, const QString& name);
+	ImagesProp(ImagesLayer* imagesLayer, const QString& name);
 
 	/** Destructor */
 	~ImagesProp();
@@ -31,22 +31,11 @@ protected: // Inherited
 	/** Initializes the prop */
 	void initialize() override;
 
-public: // Configuration
-
-	/** TODO */
-	WindowLevelImage& image();
-
-	/** TODO */
-	const WindowLevelImage& image() const;
-
-	/** TODO */
-	void setImage(const QImage& image);
-
 protected:
 
 	/** TODO */
 	void updateModelMatrix();
 
 private:
-	WindowLevelImage	_windowLevelImage;				/** Image */
+	QVector<Channel*>		_channels;			/** Channels */
 };

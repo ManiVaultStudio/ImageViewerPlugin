@@ -4,6 +4,7 @@
 #include "Range.h"
 #include "Renderer.h"
 #include "Node.h"
+#include "ImagesLayer.h"
 
 #include <QDebug>
 #include <QOpenGLContext>
@@ -17,13 +18,55 @@ const std::string fragmentShaderSource =
 	#include "ImagesPropFragment.glsl"
 ;
 
-ImagesProp::ImagesProp(Node* node, const QString& name) :
-	Prop(node, name),
-	_windowLevelImage()
+ImagesProp::ImagesProp(ImagesLayer* imagesLayer, const QString& name) :
+	Prop(reinterpret_cast<Node*>(imagesLayer), name),
+	_channels()
 {
 	addShape<QuadShape>("Quad");
 	addShaderProgram("Quad");
-	addTexture("Quad", QOpenGLTexture::Target2D);
+	addTexture("Channels", QOpenGLTexture::Target2DArray);
+
+	_channels << imagesLayer->channel(0) << imagesLayer->channel(1) << imagesLayer->channel(2);
+
+	for (auto channel : _channels)
+	{
+		QObject::connect(channel, &Channel::changed, [this](Channel* channel) {
+			renderer->bindOpenGLContext();
+			{
+				const auto imageSize = channel->imageSize();
+
+				if (!imageSize.isValid())
+					return;
+
+				auto texture = textureByName("Channels");
+
+				if (!texture->isCreated())
+					texture->create();
+
+				if (imageSize != QSize(texture->width(), texture->height())) {
+					texture->destroy();
+					texture->create();
+					texture->setLayers(3);
+					texture->setSize(imageSize.width(), imageSize.height(), 1);
+					texture->setSize(imageSize.width(), imageSize.height(), 2);
+					texture->setSize(imageSize.width(), imageSize.height(), 3);
+					texture->setFormat(QOpenGLTexture::R32F);
+					texture->allocateStorage(QOpenGLTexture::Red, QOpenGLTexture::Float32);
+					texture->setWrapMode(QOpenGLTexture::ClampToEdge);
+					texture->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
+				}
+
+				texture->setData(0, channel->id(), QOpenGLTexture::PixelFormat::Red, QOpenGLTexture::PixelType::Float32, channel->elements().constData());
+
+				const auto rectangle = QRectF(QPointF(0.f, 0.f), QSizeF(static_cast<float>(imageSize.width()), static_cast<float>(imageSize.height())));
+
+				this->shapeByName<QuadShape>("Quad")->setRectangle(rectangle);
+
+				updateModelMatrix();
+			}
+			renderer->releaseOpenGLContext();
+		});
+	}
 
 	initialize();
 }
@@ -70,14 +113,9 @@ void ImagesProp::initialize()
 				throw std::exception("Unable to bind quad shader program");
 			}
 
-			const auto texture = textureByName("Quad");
-
-			texture->setWrapMode(QOpenGLTexture::Repeat);
-			texture->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
-
 			_initialized = true;
 		}
-		Renderable::renderer->releaseOpenGLContext();
+		renderer->releaseOpenGLContext();
 	}
 	catch (std::exception& e)
 	{
@@ -95,7 +133,8 @@ void ImagesProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 			return;
 
 		Prop::render(nodeMVP, opacity);
-
+		
+		/*
 		const auto shape			= shapeByName<QuadShape>("Quad");
 		const auto shaderProgram	= shaderProgramByName("Quad");
 		const auto texture			= textureByName("Quad");
@@ -103,7 +142,6 @@ void ImagesProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 		renderer->openGLContext()->functions()->glActiveTexture(GL_TEXTURE0);
 
 		texture->bind();
-
 		
 		if (shaderProgram->bind() && shaderProgram->isLinked()) {
 			const auto displayRange = _windowLevelImage.displayRange(Qt::EditRole).value<Range>();
@@ -123,6 +161,7 @@ void ImagesProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 		}
 		
 		texture->release();
+		*/
 	}
 	catch (std::exception& e)
 	{
@@ -140,44 +179,6 @@ QRectF ImagesProp::boundingRectangle() const
 	rectangle.setSize(_node->scale(Qt::EditRole).toFloat() * rectangle.size());
 
 	return rectangle;
-}
-
-WindowLevelImage& ImagesProp::image()
-{
-	return _windowLevelImage;
-}
-
-const WindowLevelImage& ImagesProp::image() const
-{
-	return _windowLevelImage;
-}
-
-void ImagesProp::setImage(const QImage& image)
-{
-	//qDebug() << fullName() << "set image";
-
-	renderer->bindOpenGLContext();
-	{
-		_windowLevelImage.setImage(image);
-
-		auto texture = textureByName("Quad");
-
-		texture->destroy();
-		texture->create();
-		texture->setSize(image.size().width(), image.size().height());
-		texture->setFormat(QOpenGLTexture::RGBA16_UNorm);
-		texture->setWrapMode(QOpenGLTexture::ClampToEdge);
-		texture->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
-		texture->allocateStorage();
-		texture->setData(QOpenGLTexture::PixelFormat::RGBA, QOpenGLTexture::PixelType::UInt16, image.bits());
-
-		const auto rectangle = QRectF(QPointF(0.f, 0.f), QSizeF(static_cast<float>(image.width()), static_cast<float>(image.height())));
-
-		shapeByName<QuadShape>("Quad")->setRectangle(rectangle);
-
-		updateModelMatrix();
-	}
-	Renderable::renderer->releaseOpenGLContext();
 }
 
 void ImagesProp::updateModelMatrix()

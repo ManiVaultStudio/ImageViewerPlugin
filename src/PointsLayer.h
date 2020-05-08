@@ -276,7 +276,10 @@ protected:
 
 private:
 
-	/** Computes the channels image */
+	/**
+	 * Computes image channel
+	 * @param id Identifier
+	 */
 	void computeChannel(const std::uint32_t& id);
 
 	/** Updates the channel names */

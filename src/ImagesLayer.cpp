@@ -17,13 +17,16 @@ ImagesLayer::ImagesLayer(const QString& imagesDatasetName, const QString& id, co
 	_imageFilePaths(),
 	_pointsName(),
 	_currentImageId(0),
-	_average()
+	_average(),
+	_channels()
 {
 	init();
 }
 
 void ImagesLayer::init()
 {
+	_channels << new Channel(this, 0, "Channel 1") << new Channel(this, 1, "Channel 2") << new Channel(this, 2, "Channel 3");
+
 	addProp<ImagesProp>(this, "Images");
 
 	_images = &imageViewerPlugin->requestData<Images>(_datasetName);
@@ -139,10 +142,10 @@ QVariant ImagesLayer::data(const QModelIndex& index, const int& role) const
 			return noImages(role);
 
 		case Column::WindowNormalized:
-			return propByName<ImagesProp>("Images")->image().windowNormalized(role);
+			return _channels[0]->windowNormalized();
 
 		case Column::LevelNormalized:
-			return propByName<ImagesProp>("Images")->image().levelNormalized(role);
+			return _channels[0]->levelNormalized();
 
 		case Column::NoPoints:
 			return noPoints(role);
@@ -186,7 +189,8 @@ QModelIndexList ImagesLayer::setData(const QModelIndex& index, const QVariant& v
 	QModelIndexList affectedIds = LayerNode::setData(index, value, role);
 
 	if (index.column() == ult(LayerNode::Column::Selection)) {
-		computeImage();
+		computeChannel(0);
+
 		setCurrentImageId(0);
 
 		affectedIds << index.siblingAtColumn(ult(Column::CurrentImageId));
@@ -199,11 +203,11 @@ QModelIndexList ImagesLayer::setData(const QModelIndex& index, const QVariant& v
 			break;
 
 		case Column::WindowNormalized:
-			propByName<ImagesProp>("Images")->image().setWindowNormalized(value.toFloat());
+			_channels[0]->setWindowNormalized(value.toFloat());
 			break;
 
 		case Column::LevelNormalized:
-			propByName<ImagesProp>("Images")->image().setLevelNormalized(value.toFloat());
+			_channels[0]->setLevelNormalized(value.toFloat());
 			break;
 
 		case Column::NoPoints:
@@ -630,7 +634,9 @@ void ImagesLayer::setCurrentImageId(const std::uint32_t& currentImageId)
 			break;
 	}
 
-	computeImage();
+	_channels[0]->setDimensionId(_currentImageId);
+
+	computeChannel(0);
 }
 
 QVariant ImagesLayer::average(const int& role) const
@@ -659,11 +665,37 @@ void ImagesLayer::setAverage(const bool& average)
 {
 	_average = average;
 
-	computeImage();
+	computeChannel(0);
 }
 
-void ImagesLayer::computeImage()
+Channel* ImagesLayer::channel(const std::uint32_t& id)
 {
+	return _channels[id];
+}
+
+void ImagesLayer::computeChannel(const std::uint32_t& id)
+{
+	const auto size = imageSize();
+
+	auto channel = _channels[id];
+
+	channel->setImageSize(size);
+
+	auto& data = _images->points()->getData();
+
+	for (int x = 0; x < size.width(); x++)
+	{
+		for (int y = 0; y < size.height(); y++)
+		{
+			const auto pixelIndex = y * size.width() + x;
+
+			(*channel)[pixelIndex] = data[pixelIndex * _noDimensions + channel->dimensionId()];
+		}
+	}
+
+	channel->setChanged();
+
+	/*
 	const auto imageIds = this->imageIds(Qt::EditRole).value<Indices>();
 
 	switch (static_cast<ImageData::Type>(imageDataType(Qt::EditRole).toInt()))
@@ -679,4 +711,5 @@ void ImagesLayer::computeImage()
 		default:
 			break;
 	}
+	*/
 }
