@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Layer.h"
+#include "Channel.h"
 
 #include "ImageData/Images.h"
 
@@ -15,7 +16,7 @@ class Points;
  *
  * @author Thomas Kroes
  */
-class SelectionLayer : public Layer
+class SelectionLayer : public Layer, public Channels<std::uint8_t>
 {
 	Q_OBJECT
 

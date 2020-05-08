@@ -1,30 +1,27 @@
 R"(
 #version 330
 
-#extension GL_ARB_gpu_shader_fp64 : enable
+uniform sampler2DArray channelTextures;		// Texture samplers (0: Channel 1, 1: Channel 2, 2: Channel 3, 3: Alpha)
+uniform vec2 displayRanges[3];				// Display ranges for each channel
+uniform float opacity;						// Layer opacity
+in vec2 uv;									// Input texture coordinates
+out vec4 fragmentColor;						// Output fragment
 
-uniform sampler2D imageTexture;
-uniform float minPixelValue;
-uniform float maxPixelValue;
-uniform float opacity;
-
-in vec2 uv;
-out vec4 fragmentColor;
-
-float toneMapChannel(double minPixelValue, double maxPixelValue, double pixelValue)
+// Perform channel tone mapping
+float toneMapChannel(float minPixelValue, float maxPixelValue, float pixelValue)
 {
-	double range	= maxPixelValue - minPixelValue;
-	double fraction	= (pixelValue * 65535.0) - minPixelValue;
+	float range		= maxPixelValue - minPixelValue;
+	float fraction	= pixelValue - minPixelValue;
 
-	return float(clamp(fraction / range, 0.0, 1.0));
+	return clamp(fraction / range, 0.0, 1.0);
 }
 
 void main(void)
 {
-	fragmentColor = texture(imageTexture, uv);
+	float intensity = texture(channelTextures, vec3(uv, 0)).r;
 
 	for (int c = 0; c < 3; c++) {
-		fragmentColor[c] = toneMapChannel(minPixelValue, maxPixelValue, fragmentColor[c]);
+		fragmentColor[c] = toneMapChannel(displayRanges[0].x, displayRanges[0].y, intensity);
 	}
 
 	fragmentColor.a = opacity;

@@ -24,6 +24,7 @@ SelectionProp::SelectionProp(SelectionLayer* selectionLayer, const QString& name
 	addShaderProgram("Quad");
 	addTexture("Quad", QOpenGLTexture::Target2D);
 
+	/*
 	QObject::connect(selectionLayer, &SelectionLayer::imageChanged, [this](const QImage& selectionImage) {
 		renderer->bindOpenGLContext();
 		{
@@ -34,6 +35,7 @@ SelectionProp::SelectionProp(SelectionLayer* selectionLayer, const QString& name
 		}
 		renderer->releaseOpenGLContext();
 	});
+	*/
 
 	initialize();
 }

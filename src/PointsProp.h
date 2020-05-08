@@ -50,7 +50,6 @@ protected:
 
 private:
 	std::int32_t		_noChannels;		/** Number of active channels */
-	QVector<Channel*>	_channels;			/** Channels */
 
 	static const GLuint channels[];
 };

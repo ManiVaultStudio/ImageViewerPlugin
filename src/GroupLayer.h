@@ -1,8 +1,9 @@
 #pragma once
 
 #include "Layer.h"
+#include "Channel.h"
 
-class QPaintEvent;
+class QPainter;
 
 /**
  * Group layer class
@@ -11,7 +12,7 @@ class QPaintEvent;
  *
  * @author Thomas Kroes
  */
-class GroupLayer : public Layer
+class GroupLayer : public Layer, public Channels<std::uint8_t>
 {
 public:
 	

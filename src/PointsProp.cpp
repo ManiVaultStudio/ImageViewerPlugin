@@ -27,8 +27,7 @@ const GLuint PointsProp::channels[] = {
 
 PointsProp::PointsProp(PointsLayer* pointsLayer, const QString& name) :
 	Prop(reinterpret_cast<Node*>(pointsLayer), name),
-	_noChannels(0),
-	_channels()
+	_noChannels(0)
 {
 	addShape<QuadShape>("Quad");
 	addShaderProgram("Quad");
@@ -36,48 +35,45 @@ PointsProp::PointsProp(PointsLayer* pointsLayer, const QString& name) :
 	addTexture("ColorMap", QOpenGLTexture::Target2D);
 	addTexture("Channels", QOpenGLTexture::Target2DArray);
 
-	_channels << pointsLayer->channel(0) << pointsLayer->channel(1) << pointsLayer->channel(2);
+	QObject::connect(pointsLayer, &PointsLayer::channelChanged, [this, pointsLayer](const std::uint32_t& channelId) {
+		renderer->bindOpenGLContext();
+		{
+			auto channel = pointsLayer->channel(channelId);
 
-	for (auto channel : _channels)
-	{
-		QObject::connect(channel, &Channel::changed, [this](Channel* channel) {
-			renderer->bindOpenGLContext();
-			{
-				const auto imageSize = channel->imageSize();
+			const auto imageSize = channel->imageSize();
 
-				if (!imageSize.isValid())
-					return;
+			if (!imageSize.isValid())
+				return;
 
-				auto texture = textureByName("Channels");
+			auto texture = textureByName("Channels");
 
-				if (!texture->isCreated())
-					texture->create();
+			if (!texture->isCreated())
+				texture->create();
 
-				if (imageSize != QSize(texture->width(), texture->height())) {
-					texture->destroy();
-					texture->create();
-					texture->setLayers(3);
-					texture->setSize(imageSize.width(), imageSize.height(), 1);
-					texture->setSize(imageSize.width(), imageSize.height(), 2);
-					texture->setSize(imageSize.width(), imageSize.height(), 3);
-					texture->setFormat(QOpenGLTexture::R32F);
-					texture->allocateStorage(QOpenGLTexture::Red, QOpenGLTexture::Float32);
-					texture->setWrapMode(QOpenGLTexture::ClampToEdge);
-					texture->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
-				}
-				
-				texture->setData(0, channel->id(), QOpenGLTexture::PixelFormat::Red, QOpenGLTexture::PixelType::Float32, channel->elements().constData());
-				
-				const auto rectangle = QRectF(QPointF(0.f, 0.f), QSizeF(static_cast<float>(imageSize.width()), static_cast<float>(imageSize.height())));
-
-				this->shapeByName<QuadShape>("Quad")->setRectangle(rectangle);
-
-				updateModelMatrix();
+			if (imageSize != QSize(texture->width(), texture->height())) {
+				texture->destroy();
+				texture->create();
+				texture->setLayers(3);
+				texture->setSize(imageSize.width(), imageSize.height(), 1);
+				texture->setSize(imageSize.width(), imageSize.height(), 2);
+				texture->setSize(imageSize.width(), imageSize.height(), 3);
+				texture->setFormat(QOpenGLTexture::R32F);
+				texture->allocateStorage(QOpenGLTexture::Red, QOpenGLTexture::Float32);
+				texture->setWrapMode(QOpenGLTexture::ClampToEdge);
+				texture->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
 			}
-			renderer->releaseOpenGLContext();
-		});
-	}
 
+			texture->setData(0, channel->id(), QOpenGLTexture::PixelFormat::Red, QOpenGLTexture::PixelType::Float32, channel->elements().data());
+
+			const auto rectangle = QRectF(QPointF(0.f, 0.f), QSizeF(static_cast<float>(imageSize.width()), static_cast<float>(imageSize.height())));
+
+			this->shapeByName<QuadShape>("Quad")->setRectangle(rectangle);
+
+			updateModelMatrix();
+		}
+		renderer->releaseOpenGLContext();
+	});
+	
 	QObject::connect(pointsLayer, &PointsLayer::colorMapChanged, [this](const QImage& colorMap) {
 		renderer->bindOpenGLContext();
 		{
@@ -175,14 +171,14 @@ void PointsProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 			textureByName("Channels")->bind();
 		}
 
+		auto pointsLayer = static_cast<PointsLayer*>(_node);
+		
 		if (shaderProgram->bind()) {
 			const QVector2D displayRanges[] = {
-				_channels.at(0)->displayRangeVector(),
-				_channels.at(1)->displayRangeVector(),
-				_channels.at(2)->displayRangeVector()
+				pointsLayer->channel(0)->displayRangeVector(),
+				pointsLayer->channel(1)->displayRangeVector(),
+				pointsLayer->channel(2)->displayRangeVector()
 			};
-
-			auto pointsLayer = static_cast<PointsLayer*>(_node);
 
 			const auto noChannels		= pointsLayer->noChannels(Qt::EditRole).toInt();
 			const auto useConstantColor	= pointsLayer->useConstantColor(Qt::EditRole).toBool();

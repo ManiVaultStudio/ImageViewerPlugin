@@ -4,6 +4,7 @@
 
 ClustersLayer::ClustersLayer(const QString& clusterDatasetName, const QString& id, const QString& name, const int& flags) :
 	Layer(clusterDatasetName, Layer::Type::Clusters, id, name, flags),
+	Channels<std::uint16_t>(1),
 	_clustersDatasetName(clusterDatasetName),
 	_clustersDataset(nullptr)
 {

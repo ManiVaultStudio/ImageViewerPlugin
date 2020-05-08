@@ -24,6 +24,8 @@ class Prop;
  */
 class Layer : public Node
 {
+	Q_OBJECT
+
 public:
 
 	/**  Columns */
@@ -323,10 +325,18 @@ public:
 	/** Pointer to the image viewer plugin for interfacing with datasets */
 	static ImageViewerPlugin* imageViewerPlugin;
 
+signals:
+	
+	/**
+	 * Signals that a channel has changed
+	 * @param channelId Identifier of the channel
+	 */
+	void channelChanged(const std::uint32_t& channelId);
+
 protected:
 	QString				_datasetName;		/** Name of the dataset to which the layer refers */
 	QString				_dataName;			/** Name of the raw data to which the layer refers */
-	Layer::Type		_type;				/** Type of layer */
+	Layer::Type			_type;				/** Type of layer */
 	Indices				_selection;			/** Data point selection */
 	QVector<QPoint>		_mousePositions;	/** Recorded mouse positions */
 	int					_mouseButtons;		/** State of the left, middle and right mouse buttons */

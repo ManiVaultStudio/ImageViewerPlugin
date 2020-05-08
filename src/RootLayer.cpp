@@ -5,7 +5,8 @@
 #include <QOpenGLWidget>
 
 RootLayer::RootLayer() :
-	Layer("", Layer::Type::Group, "root", "Root", ult(Flag::Enabled))
+	Layer("", Layer::Type::Group, "root", "Root", ult(Flag::Enabled)),
+	Channels<std::uint8_t>(0)
 {
 }
 

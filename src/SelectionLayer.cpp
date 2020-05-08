@@ -26,6 +26,7 @@ const float SelectionLayer::perimeterLineWidth		= 1.5f;
 
 SelectionLayer::SelectionLayer(const QString& datasetName, const QString& id, const QString& name, const int& flags) :
 	Layer(datasetName, Layer::Type::Selection, id, name, flags),
+	Channels<std::uint8_t>(1),
 	_pointsDataset(nullptr),
 	_imagesDataset(nullptr),
 	_image(),

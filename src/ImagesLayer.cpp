@@ -9,24 +9,20 @@
 
 ImagesLayer::ImagesLayer(const QString& imagesDatasetName, const QString& id, const QString& name, const int& flags) :
 	Layer(imagesDatasetName, ImagesLayer::Type::Images, id, name, flags),
+	Channels<float>(3),
 	_images(nullptr),
 	_imageDataType(ImageData::Type::Undefined),
-	_noPoints(0),
-	_noDimensions(0),
 	_imageNames(),
 	_imageFilePaths(),
 	_pointsName(),
 	_currentImageId(0),
-	_average(),
-	_channels()
+	_average()
 {
 	init();
 }
 
 void ImagesLayer::init()
 {
-	_channels << new Channel(this, 0, "Channel 1") << new Channel(this, 1, "Channel 2") << new Channel(this, 2, "Channel 3");
-
 	addProp<ImagesProp>(this, "Images");
 
 	_images = &imageViewerPlugin->requestData<Images>(_datasetName);
@@ -138,10 +134,10 @@ QVariant ImagesLayer::data(const QModelIndex& index, const int& role) const
 			return noImages(role);
 
 		case Column::WindowNormalized:
-			return _channels[0]->windowNormalized();
+			return channel(0)->windowNormalized();
 
 		case Column::LevelNormalized:
-			return _channels[0]->levelNormalized();
+			return channel(0)->levelNormalized();
 
 		case Column::ImageNames:
 			return imageNames(role);
@@ -193,11 +189,11 @@ QModelIndexList ImagesLayer::setData(const QModelIndex& index, const QVariant& v
 			break;
 
 		case Column::WindowNormalized:
-			_channels[0]->setWindowNormalized(value.toFloat());
+			channel(0)->setWindowNormalized(value.toFloat());
 			break;
 
 		case Column::LevelNormalized:
-			_channels[0]->setLevelNormalized(value.toFloat());
+			channel(0)->setLevelNormalized(value.toFloat());
 			break;
 
 		case Column::ImageNames:
@@ -572,7 +568,7 @@ void ImagesLayer::setCurrentImageId(const std::uint32_t& currentImageId)
 			break;
 	}
 
-	_channels[0]->setDimensionId(_currentImageId);
+	channel(0)->setDimensionId(_currentImageId);
 
 	computeChannel(0);
 }
@@ -606,48 +602,17 @@ void ImagesLayer::setAverage(const bool& average)
 	computeChannel(0);
 }
 
-Channel* ImagesLayer::channel(const std::uint32_t& id)
-{
-	return _channels[id];
-}
-
 void ImagesLayer::computeChannel(const std::uint32_t& id)
 {
-	const auto size = imageSize();
+	auto computeChannel = channel(id);
 
-	auto channel = _channels[id];
+	computeChannel->setImageSize(imageSize());
+	
+	const int32_t dimensionIndices[] = { computeChannel->dimensionId() };
 
-	channel->setImageSize(size);
+	_images->points()->populateDataForDimensions(*computeChannel, dimensionIndices);
 
-	auto& data = _images->points()->getData();
+	computeChannel->setChanged();
 
-	for (int x = 0; x < size.width(); x++)
-	{
-		for (int y = 0; y < size.height(); y++)
-		{
-			const auto pixelIndex = y * size.width() + x;
-
-			(*channel)[pixelIndex] = data[pixelIndex * _noDimensions + channel->dimensionId()];
-		}
-	}
-
-	channel->setChanged();
-
-	/*
-	const auto imageIds = this->imageIds(Qt::EditRole).value<Indices>();
-
-	switch (static_cast<ImageData::Type>(imageDataType(Qt::EditRole).toInt()))
-	{
-		case ImageData::Type::Sequence:
-			propByName<ImagesProp>("Images")->setImage(_images->sequenceImage(imageIds.toStdVector()));
-			break;
-
-		case ImageData::Type::Stack:
-			propByName<ImagesProp>("Images")->setImage(_images->stackImage(imageIds.first()));
-			break;
-
-		default:
-			break;
-	}
-	*/
+	emit channelChanged(id);
 }

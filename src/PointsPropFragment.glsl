@@ -8,7 +8,7 @@ uniform int noChannels;					// Number of active channels
 uniform bool useConstantColor;			// Whether the pixel color is constant and the alpha is modulated by the intensity of the selected channel
 uniform vec4 constantColor;				// Constant color
 uniform int colorSpace;					// Color space (0: RGB, 1: HSL)
-uniform float opacity;					// Render opacity
+uniform float opacity;					// Layer opacity
 in vec2 uv;								// Input texture coordinates
 out vec4 fragmentColor;					// Output fragment
 

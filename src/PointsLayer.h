@@ -15,7 +15,7 @@ class Images;
  *
  * @author Thomas Kroes
  */
-class PointsLayer : public Layer
+class PointsLayer : public Layer, public virtual Channels<float>
 {
 	Q_OBJECT
 
@@ -23,7 +23,7 @@ public:
 
 	/**  Columns */
 	enum class Column {
-		Channel1Name = ult(Layer::Column::End) + 1,		// First input channel name
+		Channel1Name = ult(Layer::Column::End) + 1,			// First input channel name
 		Channel2Name,										// Second input channel name
 		Channel3Name,										// Third input channel name
 		Channel1DimensionId,								// First input channel dimension identifier
@@ -141,13 +141,6 @@ public: // Getters/setters
 	 * @param dimensionNames Dimension names
 	 */
 	void setDimensionNames(const QStringList& dimensionNames);
-
-	/**
-	 * Returns channel by identifier
-	 * @param id Channel identifier
-	 * @return Channel
-	 */
-	Channel* channel(const std::uint32_t& id);
 
 	/**
 	 * Returns whether a channel is enabled
@@ -305,7 +298,6 @@ private:
 	std::uint32_t		_noPoints;				/** Number of points in the dataset */
 	std::uint32_t		_noDimensions;			/** Number of dimensions in the points dataset */
 	QStringList			_dimensionNames;		/** Dimension names in the points dataset */
-	QVector<Channel*>	_channels;				/** Channels */
 	std::uint32_t		_maxNoChannels;			/** Maximum number of channels (determined by the number of dimensions) */
 	ColorSpace			_colorSpace;			/** Color space */
 	QImage				_colorMap;				/** Color map (1D/2D) */

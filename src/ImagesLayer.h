@@ -5,7 +5,7 @@
 
 #include "ImageData/Images.h"
 
-class QPaintEvent;
+class QPainter;
 
 /**
  * Images layer class
@@ -14,7 +14,7 @@ class QPaintEvent;
  *
  * @author Thomas Kroes
  */
-class ImagesLayer : public Layer
+class ImagesLayer : public Layer, public Channels<float>
 {
 public:
 
@@ -197,13 +197,6 @@ public: // Getters/setters
 	 */
 	void setAverage(const bool& average);
 
-	/**
-	 * Returns channel by identifier
-	 * @param id Channel identifier
-	 * @return Channel
-	 */
-	Channel* channel(const std::uint32_t& id);
-
 protected:
 
 	/**
@@ -223,12 +216,9 @@ private:
 private:
 	Images*				_images;				/** Pointer to the images plugin instance */
 	ImageData::Type		_imageDataType;			/** Image data type (e.g. sequence or stack) */
-	std::uint32_t		_noPoints;				/** Number of points in the referenced points dataset */
-	std::uint32_t		_noDimensions;			/** Number of dimensions in the referenced points dataset */
 	QStringList			_imageNames;			/** Image names */
 	QStringList			_imageFilePaths;		/** Image file paths */
 	QString				_pointsName;			/** Name of the referenced points dataset */
 	std::int32_t		_currentImageId;		/** Current image identifier */
 	bool				_average;				/** Whether to average images */
-	QVector<Channel*>	_channels;				/** Channels */
 };

@@ -1,8 +1,9 @@
 #pragma once
 
 #include "Layer.h"
+#include "Channel.h"
 
-class QPaintEvent;
+class QPainter;
 
 class Clusters;
 
@@ -13,7 +14,7 @@ class Clusters;
  *
  * @author Thomas Kroes
  */
-class ClustersLayer : public Layer
+class ClustersLayer : public Layer, public Channels<std::uint16_t>
 {
 public:
 

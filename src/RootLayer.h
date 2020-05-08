@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Layer.h"
+#include "Channel.h"
 
 class QPainter;
 
@@ -11,7 +12,7 @@ class QPainter;
  *
  * @author Thomas Kroes
  */
-class RootLayer : public Layer
+class RootLayer : public Layer, public Channels<std::uint8_t>
 {
 public:
 	

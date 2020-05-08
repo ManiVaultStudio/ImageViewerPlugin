@@ -35,7 +35,4 @@ protected:
 
 	/** TODO */
 	void updateModelMatrix();
-
-private:
-	QVector<Channel*>		_channels;			/** Channels */
 };

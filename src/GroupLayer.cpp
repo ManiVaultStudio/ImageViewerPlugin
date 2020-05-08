@@ -3,7 +3,8 @@
 #include <QDebug>
 
 GroupLayer::GroupLayer(const QString& id, const QString& name, const int& flags) :
-	Layer("", Layer::Type::Group, id, name, flags)
+	Layer("", Layer::Type::Group, id, name, flags),
+	Channels<std::uint8_t>()
 {
 }
 
