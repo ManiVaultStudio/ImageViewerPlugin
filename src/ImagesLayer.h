@@ -1,6 +1,6 @@
 #pragma once
 
-#include "LayerNode.h"
+#include "Layer.h"
 #include "Channel.h"
 
 #include "ImageData/Images.h"
@@ -14,17 +14,15 @@ class QPaintEvent;
  *
  * @author Thomas Kroes
  */
-class ImagesLayer : public LayerNode
+class ImagesLayer : public Layer
 {
 public:
 
 	/**  Columns */
 	enum class Column {
-		NoImages = ult(LayerNode::Column::End) + 1,		// Number of images in the dataset
+		NoImages = ult(Layer::Column::End) + 1,		// Number of images in the dataset
 		WindowNormalized,								// Normalized window
 		LevelNormalized,								// Normalized level
-		NoPoints,										// Number of points in the dataset
-		NoDimensions,									// Number of dimensions in the dataset
 		ImageNames,										// Image name(s)
 		FilteredImageNames,								// Filtered image name(s) (depends on the selection)
 		ImageIDs,										// Image identifiers
@@ -106,32 +104,6 @@ public: // Getters/setters
 	 * @return Number of images in variant form
 	 */
 	QVariant noImages(const int& role) const;
-
-	/**
-	 * Returns the number of data points in the dataset
-	 * @param role The data role
-	 * @return Number of data points in variant form
-	 */
-	QVariant noPoints(const int& role) const;
-
-	/**
-	 * Sets the number of points in the dataset
-	 * @param noPoints Number of points in the dataset
-	 */
-	void setNoPoints(const std::uint32_t& noPoints);
-
-	/**
-	 * Returns the number of dimensions in the dataset
-	 * @param role The data role
-	 * @return Number of dimensions in variant form
-	 */
-	QVariant noDimensions(const int& role) const;
-
-	/**
-	 * Sets the number of dimensions in the dataset
-	 * @param noDimensions Number of dimensions in the dataset
-	 */
-	void setNoDimensions(const std::uint32_t& noDimensions);
 
 	/**
 	 * Returns the image names in the dataset

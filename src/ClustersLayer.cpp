@@ -3,7 +3,7 @@
 #include <QDebug>
 
 ClustersLayer::ClustersLayer(const QString& clusterDatasetName, const QString& id, const QString& name, const int& flags) :
-	LayerNode(clusterDatasetName, LayerNode::Type::Clusters, id, name, flags),
+	Layer(clusterDatasetName, Layer::Type::Clusters, id, name, flags),
 	_clustersDatasetName(clusterDatasetName),
 	_clustersDataset(nullptr)
 {
@@ -15,7 +15,7 @@ void ClustersLayer::paint(QPainter* painter)
 
 Qt::ItemFlags ClustersLayer::flags(const QModelIndex& index) const
 {
-	auto flags = LayerNode::flags(index);
+	auto flags = Layer::flags(index);
 
 	/*
 	switch (static_cast<Column>(index.column())) {
@@ -30,7 +30,7 @@ Qt::ItemFlags ClustersLayer::flags(const QModelIndex& index) const
 QVariant ClustersLayer::data(const QModelIndex& index, const int& role) const
 {
 	if (index.column() < ult(Column::Start))
-		return LayerNode::data(index, role);
+		return Layer::data(index, role);
 
 	/*
 	switch (static_cast<Column>(index.column())) {
@@ -44,7 +44,7 @@ QVariant ClustersLayer::data(const QModelIndex& index, const int& role) const
 
 QModelIndexList ClustersLayer::setData(const QModelIndex& index, const QVariant& value, const int& role)
 {
-	QModelIndexList affectedIds = LayerNode::setData(index, value, role);
+	QModelIndexList affectedIds = Layer::setData(index, value, role);
 
 	/*
 	switch (static_cast<Column>(index.column())) {

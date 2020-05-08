@@ -2,7 +2,7 @@
 #include "ViewerWidget.h"
 #include "SettingsWidget.h"
 #include "LayersModel.h"
-#include "LayerNode.h"
+#include "Layer.h"
 #include "Renderer.h"
 
 #include "PointData.h"
@@ -28,7 +28,7 @@ ImageViewerPlugin::ImageViewerPlugin() :
 {
 	qRegisterMetaType<QVector<int> >("QVector<int>");
 
-	LayerNode::imageViewerPlugin = this;
+	Layer::imageViewerPlugin = this;
 
 	// TODO
 	_viewerWidget	= new ViewerWidget(this);
@@ -88,11 +88,11 @@ void ImageViewerPlugin::dataRemoved(const QString dataset)
 
 void ImageViewerPlugin::selectionChanged(const QString dataset)
 {
-	const auto hits = _layersModel.match(_layersModel.index(0, ult(LayerNode::Column::DataName)), Qt::DisplayRole, dataset, -1, Qt::MatchExactly);
+	const auto hits = _layersModel.match(_layersModel.index(0, ult(Layer::Column::DataName)), Qt::DisplayRole, dataset, -1, Qt::MatchExactly);
 
 	for (auto hit : hits) {
 		auto selection = dynamic_cast<Points&>(_core->requestSelection(dataset));
-		_layersModel.setData(hit.siblingAtColumn(ult(LayerNode::Column::Selection)), QVariant::fromValue(Indices::fromStdVector(selection.indices)));
+		_layersModel.setData(hit.siblingAtColumn(ult(Layer::Column::Selection)), QVariant::fromValue(Indices::fromStdVector(selection.indices)));
 	}
 }
 

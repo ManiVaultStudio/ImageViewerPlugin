@@ -1,4 +1,4 @@
-#include "LayerNode.h"
+#include "Layer.h"
 #include "ImageViewerPlugin.h"
 #include "Renderer.h"
 
@@ -8,9 +8,9 @@
 #include <QFont>
 #include <QDebug>
 
-ImageViewerPlugin* LayerNode::imageViewerPlugin = nullptr;
+ImageViewerPlugin* Layer::imageViewerPlugin = nullptr;
 
-LayerNode::LayerNode(const QString& datasetName, const Type& type, const QString& id, const QString& name, const int& flags) :
+Layer::Layer(const QString& datasetName, const Type& type, const QString& id, const QString& name, const int& flags) :
 	Node(id, name, flags),
 	_datasetName(datasetName),
 	_dataName(),
@@ -22,9 +22,9 @@ LayerNode::LayerNode(const QString& datasetName, const Type& type, const QString
 {
 }
 
-LayerNode::~LayerNode() = default;
+Layer::~Layer() = default;
 
-void LayerNode::matchScaling(const QSize& targetImageSize)
+void Layer::matchScaling(const QSize& targetImageSize)
 {
 	const auto layerImageSize	= imageSize();
 	const auto widthScaling		= static_cast<float>(targetImageSize.width()) / layerImageSize.width();
@@ -35,7 +35,7 @@ void LayerNode::matchScaling(const QSize& targetImageSize)
 	setScale(scale);
 }
 
-Qt::ItemFlags LayerNode::flags(const QModelIndex& index) const
+Qt::ItemFlags Layer::flags(const QModelIndex& index) const
 {
 	int flags = Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled;
 
@@ -46,7 +46,7 @@ Qt::ItemFlags LayerNode::flags(const QModelIndex& index) const
 		{
 			flags |= Qt::ItemIsUserCheckable;
 
-			if (flag(LayerNode::Flag::Renamable, Qt::EditRole).toBool())
+			if (flag(Layer::Flag::Renamable, Qt::EditRole).toBool())
 				flags |= Qt::ItemIsEditable;
 
 			break;
@@ -83,7 +83,7 @@ Qt::ItemFlags LayerNode::flags(const QModelIndex& index) const
 	return flags;
 }
 
-QVariant LayerNode::data(const QModelIndex& index, const int& role) const
+QVariant Layer::data(const QModelIndex& index, const int& role) const
 {
 	switch (static_cast<Column>(index.column())) {
 		case Column::Name:
@@ -132,7 +132,7 @@ QVariant LayerNode::data(const QModelIndex& index, const int& role) const
 	return QVariant();
 }
 
-QModelIndexList LayerNode::setData(const QModelIndex& index, const QVariant& value, const int& role)
+QModelIndexList Layer::setData(const QModelIndex& index, const QVariant& value, const int& role)
 {
 	QModelIndexList affectedIndices{index};
 
@@ -145,7 +145,7 @@ QModelIndexList LayerNode::setData(const QModelIndex& index, const QVariant& val
 			switch (column) {
 				case Column::Name:
 				{
-					setFlag(LayerNode::Flag::Enabled, value.toBool());
+					setFlag(Layer::Flag::Enabled, value.toBool());
 
 					for (int column = ult(Column::Type); column <= ult(Column::End); ++column) {
 						affectedIndices << index.siblingAtColumn(column);
@@ -228,7 +228,7 @@ QModelIndexList LayerNode::setData(const QModelIndex& index, const QVariant& val
 	return affectedIndices;
 }
 
-QVariant LayerNode::datasetName(const int& role) const
+QVariant Layer::datasetName(const int& role) const
 {
 	switch (role)
 	{
@@ -246,7 +246,7 @@ QVariant LayerNode::datasetName(const int& role) const
 	return QVariant();
 }
 
-QVariant LayerNode::dataName(const int& role) const
+QVariant Layer::dataName(const int& role) const
 {
 	switch (role)
 	{
@@ -264,9 +264,9 @@ QVariant LayerNode::dataName(const int& role) const
 	return QVariant();
 }
 
-QVariant LayerNode::type(const int& role) const
+QVariant Layer::type(const int& role) const
 {
-	const auto typeName = LayerNode::typeName(_type);
+	const auto typeName = Layer::typeName(_type);
 
 	switch (role)
 	{
@@ -308,12 +308,12 @@ QVariant LayerNode::type(const int& role) const
 	return QVariant();
 }
 
-void LayerNode::setType(const Type& type)
+void Layer::setType(const Type& type)
 {
 	_type = type;
 }
 
-QVariant LayerNode::imageSize(const int& role /*= Qt::DisplayRole*/) const
+QVariant Layer::imageSize(const int& role /*= Qt::DisplayRole*/) const
 {
 	const auto imageSize		= this->imageSize();
 	const auto imageSizeString	= QString::number(imageSize.width()) + " x" + QString::number(imageSize.height());
@@ -336,7 +336,7 @@ QVariant LayerNode::imageSize(const int& role /*= Qt::DisplayRole*/) const
 	return QVariant();
 }
 
-QVariant LayerNode::imageWidth(const int& role) const
+QVariant Layer::imageWidth(const int& role) const
 {
 	const auto imageSize	= this->imageSize(Qt::EditRole).toSize();
 	const auto widthString	= QString::number(imageSize.width());
@@ -359,7 +359,7 @@ QVariant LayerNode::imageWidth(const int& role) const
 	return QVariant();
 }
 
-QVariant LayerNode::imageHeight(const int& role) const
+QVariant Layer::imageHeight(const int& role) const
 {
 	const auto imageSize	= this->imageSize(Qt::EditRole).toSize();
 	const auto heightString = QString::number(imageSize.height());
@@ -382,7 +382,7 @@ QVariant LayerNode::imageHeight(const int& role) const
 	return QVariant();
 }
 
-QVariant LayerNode::selection(const int& role /*= Qt::DisplayRole*/) const
+QVariant Layer::selection(const int& role /*= Qt::DisplayRole*/) const
 {
 	auto selection = QStringList();
 
@@ -416,12 +416,12 @@ QVariant LayerNode::selection(const int& role /*= Qt::DisplayRole*/) const
 	return QVariant();
 }
 
-void LayerNode::setSelection(const Indices& selection)
+void Layer::setSelection(const Indices& selection)
 {
 	_selection = selection;
 }
 
-QVariant LayerNode::selectionSize(const int& role /*= Qt::DisplayRole*/) const
+QVariant Layer::selectionSize(const int& role /*= Qt::DisplayRole*/) const
 {
 	const auto selectionSizeString = QString::number(_selection.size());
 
@@ -445,7 +445,7 @@ QVariant LayerNode::selectionSize(const int& role /*= Qt::DisplayRole*/) const
 	return QVariant();
 }
 
-QVariant LayerNode::keys(const int& role /*= Qt::DisplayRole*/) const
+QVariant Layer::keys(const int& role /*= Qt::DisplayRole*/) const
 {
 	const auto keysString = "";
 
@@ -469,12 +469,12 @@ QVariant LayerNode::keys(const int& role /*= Qt::DisplayRole*/) const
 	return QVariant();
 }
 
-void LayerNode::setKeys(const int& keys)
+void Layer::setKeys(const int& keys)
 {
 	_keys = keys;
 }
 
-int LayerNode::noPixels() const
+int Layer::noPixels() const
 {
 	return imageSize().width() * imageSize().height();
 }

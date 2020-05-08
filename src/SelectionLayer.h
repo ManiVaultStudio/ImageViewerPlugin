@@ -1,10 +1,10 @@
 #pragma once
 
-#include "LayerNode.h"
+#include "Layer.h"
 
 #include "ImageData/Images.h"
 
-class QPaintEvent;
+class QPainter;
 
 class Points;
 
@@ -15,7 +15,7 @@ class Points;
  *
  * @author Thomas Kroes
  */
-class SelectionLayer : public LayerNode
+class SelectionLayer : public Layer
 {
 	Q_OBJECT
 
@@ -23,7 +23,7 @@ public:
 
 	/**  Columns */
 	enum class Column {
-		PixelSelectionType = ult(LayerNode::Column::End) + 1,		// Type of pixel selection
+		PixelSelectionType = ult(Layer::Column::End) + 1,		// Type of pixel selection
 		PixelSelectionModifier,										// Pixel selection modifier
 		BrushRadius,												// Brush radius
 		SelectAll,													// Select all pixels

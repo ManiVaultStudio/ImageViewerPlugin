@@ -97,7 +97,7 @@ void ImagesLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 	if (selectedRows.first().row() != topLeft.row())
 		return;
 
-	const auto enabled = _layersModel->data(topLeft.siblingAtColumn(ult(LayerNode::Column::Name)), Qt::CheckStateRole).toInt() == Qt::Checked;
+	const auto enabled = _layersModel->data(topLeft.siblingAtColumn(ult(Layer::Column::Name)), Qt::CheckStateRole).toInt() == Qt::Checked;
 
 	for (int column = topLeft.column(); column <= bottomRight.column(); column++) {
 		const auto index = topLeft.siblingAtColumn(column);
@@ -107,15 +107,15 @@ void ImagesLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 
 		if (index.isValid() && noSelectedRows == 1) {
 			validSelection = true;
-			flags = _layersModel->data(topLeft.siblingAtColumn(ult(LayerNode::Column::Flags)), Qt::EditRole).toInt();
+			flags = _layersModel->data(topLeft.siblingAtColumn(ult(Layer::Column::Flags)), Qt::EditRole).toInt();
 		}
 		
 		const auto mightEdit = validSelection && enabled;
 
 		_ui->groupBox->setEnabled(enabled);
 		
-		if (column == ult(LayerNode::Column::ImageSize)) {
-			const auto imageSize = _layersModel->data(topLeft.siblingAtColumn(ult(LayerNode::Column::ImageSize)), Qt::EditRole).toSize();
+		if (column == ult(Layer::Column::ImageSize)) {
+			const auto imageSize = _layersModel->data(topLeft.siblingAtColumn(ult(Layer::Column::ImageSize)), Qt::EditRole).toSize();
 
 			_ui->imageSizeLineEdit->blockSignals(true);
 			_ui->imageSizeLineEdit->setText(QString("[%1, %2]").arg(QString::number(imageSize.width()), QString::number(imageSize.height())));
@@ -165,6 +165,7 @@ void ImagesLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 			_ui->resetWindowLevelPushButton->setEnabled(window != 1.0f || level != 0.5f);
 		}
 
+		/*
 		if (column == ult(ImagesLayer::Column::NoPoints)) {
 			_ui->noPointsLineEdit->blockSignals(true);
 			_ui->noPointsLineEdit->setText(QString::number(_layersModel->data(topLeft.siblingAtColumn(ult(ImagesLayer::Column::NoPoints)), Qt::EditRole).toInt()));
@@ -176,10 +177,11 @@ void ImagesLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 			_ui->noDimensionsLineEdit->setText(QString::number(_layersModel->data(topLeft.siblingAtColumn(ult(ImagesLayer::Column::NoDimensions)), Qt::EditRole).toInt()));
 			_ui->noDimensionsLineEdit->blockSignals(false);
 		}
+		*/
 
-		if (column == ult(LayerNode::Column::SelectionSize)) {
+		if (column == ult(Layer::Column::SelectionSize)) {
 			_ui->selectionSizeLineEdit ->blockSignals(true);
-			_ui->selectionSizeLineEdit->setText(QString::number(_layersModel->data(topLeft.siblingAtColumn(ult(LayerNode::Column::SelectionSize)), Qt::EditRole).toInt()));
+			_ui->selectionSizeLineEdit->setText(QString::number(_layersModel->data(topLeft.siblingAtColumn(ult(Layer::Column::SelectionSize)), Qt::EditRole).toInt()));
 			_ui->selectionSizeLineEdit->blockSignals(false);
 		}
 

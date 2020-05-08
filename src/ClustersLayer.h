@@ -1,6 +1,6 @@
 #pragma once
 
-#include "LayerNode.h"
+#include "Layer.h"
 
 class QPaintEvent;
 
@@ -13,13 +13,13 @@ class Clusters;
  *
  * @author Thomas Kroes
  */
-class ClustersLayer : public LayerNode
+class ClustersLayer : public Layer
 {
 public:
 
 	/**  Columns */
 	enum class Column {
-		Start = ult(LayerNode::Column::End) + 1,
+		Start = ult(Layer::Column::End) + 1,
 		End = Start
 	};
 

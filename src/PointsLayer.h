@@ -1,9 +1,9 @@
 #pragma once
 
-#include "LayerNode.h"
+#include "Layer.h"
 #include "Channel.h"
 
-class QPaintEvent;
+class QPainter;
 
 class Points;
 class Images;
@@ -15,7 +15,7 @@ class Images;
  *
  * @author Thomas Kroes
  */
-class PointsLayer : public LayerNode
+class PointsLayer : public Layer
 {
 	Q_OBJECT
 
@@ -23,7 +23,7 @@ public:
 
 	/**  Columns */
 	enum class Column {
-		Channel1Name = ult(LayerNode::Column::End) + 1,		// First input channel name
+		Channel1Name = ult(Layer::Column::End) + 1,		// First input channel name
 		Channel2Name,										// Second input channel name
 		Channel3Name,										// Third input channel name
 		Channel1DimensionId,								// First input channel dimension identifier

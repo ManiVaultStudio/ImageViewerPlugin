@@ -7,7 +7,7 @@
 
 class ImageViewerPlugin;
 class Dataset;
-class LayerNode;
+class Layer;
 class RootLayer;
 
 /**
@@ -138,7 +138,7 @@ public: // Data access
 	 * @param parent Parent model index
 	 * @return Whether the layer was successfully inserted
 	 */
-	bool insertLayer(int row, LayerNode* layer, const QModelIndex& parent = QModelIndex());
+	bool insertLayer(int row, Layer* layer, const QModelIndex& parent = QModelIndex());
 
 	/**
 	 * Removes a layer at the specified model index
@@ -227,7 +227,7 @@ public: // Miscellaneous
 	void selectRow(const std::int32_t& row);
 
 	/** Returns the selected layer (if any) */
-	LayerNode* selectedLayer();
+	Layer* selectedLayer();
 
 	/** Returns the selection model */
 	QItemSelectionModel& selectionModel() { return _selectionModel; }
@@ -261,7 +261,7 @@ public:
 	 * @param index Model index of the layer to obtain
 	 * @return Layer node
 	 */
-	LayerNode* getLayer(const QModelIndex& index) const;
+	Layer* getLayer(const QModelIndex& index) const;
 
 private:
 	QItemSelectionModel		_selectionModel;	/** Selection model */

@@ -22,7 +22,7 @@ class Prop;
  *
  * @author Thomas Kroes
  */
-class LayerNode : public Node
+class Layer : public Node
 {
 public:
 
@@ -134,10 +134,10 @@ public:
 	 * @param name Layer name
 	 * @param flags Configuration bit flags
 	 */
-	LayerNode(const QString& datasetName, const Type& type, const QString& id, const QString& name, const int& flags);
+	Layer(const QString& datasetName, const Type& type, const QString& id, const QString& name, const int& flags);
 
 	/** Destructor */
-	virtual ~LayerNode();
+	virtual ~Layer();
 
 	/**
 	 * Adjust the layer scaling to fit into the supplied image size
@@ -248,7 +248,7 @@ public: // Getters/setters
 	 * Sets the layer type
 	 * @param type Layer type
 	 */
-	void setType(const LayerNode::Type& type);
+	void setType(const Layer::Type& type);
 
 	/**
 	 * Returns the image size
@@ -326,7 +326,7 @@ public:
 protected:
 	QString				_datasetName;		/** Name of the dataset to which the layer refers */
 	QString				_dataName;			/** Name of the raw data to which the layer refers */
-	LayerNode::Type		_type;				/** Type of layer */
+	Layer::Type		_type;				/** Type of layer */
 	Indices				_selection;			/** Data point selection */
 	QVector<QPoint>		_mousePositions;	/** Recorded mouse positions */
 	int					_mouseButtons;		/** State of the left, middle and right mouse buttons */

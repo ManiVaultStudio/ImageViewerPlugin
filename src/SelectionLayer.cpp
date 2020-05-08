@@ -25,7 +25,7 @@ const float SelectionLayer::controlPointSize		= 6.0f;
 const float SelectionLayer::perimeterLineWidth		= 1.5f;
 
 SelectionLayer::SelectionLayer(const QString& datasetName, const QString& id, const QString& name, const int& flags) :
-	LayerNode(datasetName, LayerNode::Type::Selection, id, name, flags),
+	Layer(datasetName, Layer::Type::Selection, id, name, flags),
 	_pointsDataset(nullptr),
 	_imagesDataset(nullptr),
 	_image(),
@@ -237,7 +237,7 @@ void SelectionLayer::paint(QPainter* painter)
 
 Qt::ItemFlags SelectionLayer::flags(const QModelIndex& index) const
 {
-	auto flags = LayerNode::flags(index);
+	auto flags = Layer::flags(index);
 
 	switch (static_cast<Column>(index.column())) {
 		case Column::PixelSelectionType:
@@ -313,7 +313,7 @@ Qt::ItemFlags SelectionLayer::flags(const QModelIndex& index) const
 QVariant SelectionLayer::data(const QModelIndex& index, const int& role) const
 {
 	if (index.column() < ult(Column::Start))
-		return LayerNode::data(index, role);
+		return Layer::data(index, role);
 
 	switch (static_cast<Column>(index.column())) {
 		case Column::PixelSelectionType:
@@ -340,9 +340,9 @@ QVariant SelectionLayer::data(const QModelIndex& index, const int& role) const
 
 QModelIndexList SelectionLayer::setData(const QModelIndex& index, const QVariant& value, const int& role)
 {
-	QModelIndexList affectedIds = LayerNode::setData(index, value, role);
+	QModelIndexList affectedIds = Layer::setData(index, value, role);
 
-	if (static_cast<LayerNode::Column>(index.column()) == LayerNode::Column::Selection) {
+	if (static_cast<Layer::Column>(index.column()) == Layer::Column::Selection) {
 		computeImage();
 
 		affectedIds << index.siblingAtColumn(ult(Column::SelectAll));
@@ -413,7 +413,7 @@ QModelIndexList SelectionLayer::setData(const QModelIndex& index, const QVariant
 
 void SelectionLayer::mousePressEvent(QMouseEvent* mouseEvent, const QModelIndex& index)
 {
-	LayerNode::mousePressEvent(mouseEvent, index);
+	Layer::mousePressEvent(mouseEvent, index);
 
 	QModelIndexList affectedIds;
 
@@ -463,14 +463,14 @@ void SelectionLayer::mousePressEvent(QMouseEvent* mouseEvent, const QModelIndex&
 	}
 
 	for (auto index : affectedIds)
-		emit LayerNode::imageViewerPlugin->layersModel().dataChanged(index, index);
+		emit Layer::imageViewerPlugin->layersModel().dataChanged(index, index);
 
 	Renderable::renderer->render();
 }
 
 void SelectionLayer::mouseReleaseEvent(QMouseEvent* mouseEvent, const QModelIndex& index)
 {
-	LayerNode::mousePressEvent(mouseEvent, index);
+	Layer::mousePressEvent(mouseEvent, index);
 
 	QModelIndexList affectedIds;
 
@@ -505,14 +505,14 @@ void SelectionLayer::mouseReleaseEvent(QMouseEvent* mouseEvent, const QModelInde
 	}
 
 	for (auto index : affectedIds)
-		emit LayerNode::imageViewerPlugin->layersModel().dataChanged(index, index);
+		emit Layer::imageViewerPlugin->layersModel().dataChanged(index, index);
 
 	Renderable::renderer->render();
 }
 
 void SelectionLayer::mouseMoveEvent(QMouseEvent* mouseEvent, const QModelIndex& index)
 {
-	LayerNode::mousePressEvent(mouseEvent, index);
+	Layer::mousePressEvent(mouseEvent, index);
 
 	QModelIndexList affectedIds;
 
@@ -566,14 +566,14 @@ void SelectionLayer::mouseMoveEvent(QMouseEvent* mouseEvent, const QModelIndex& 
 	}
 
 	for (auto index : affectedIds)
-		emit LayerNode::imageViewerPlugin->layersModel().dataChanged(index, index);
+		emit Layer::imageViewerPlugin->layersModel().dataChanged(index, index);
 
 	Renderable::renderer->render();
 }
 
 void SelectionLayer::mouseWheelEvent(QWheelEvent* wheelEvent, const QModelIndex& index)
 {
-	LayerNode::mouseWheelEvent(wheelEvent, index);
+	Layer::mouseWheelEvent(wheelEvent, index);
 
 	QModelIndexList affectedIds;
 
@@ -602,14 +602,14 @@ void SelectionLayer::mouseWheelEvent(QWheelEvent* wheelEvent, const QModelIndex&
 	affectedIds << index.siblingAtColumn(ult(Column::BrushRadius));
 
 	for (auto index : affectedIds)
-		emit LayerNode::imageViewerPlugin->layersModel().dataChanged(index, index);
+		emit Layer::imageViewerPlugin->layersModel().dataChanged(index, index);
 
 	Renderable::renderer->render();
 }
 
 void SelectionLayer::keyPressEvent(QKeyEvent* keyEvent, const QModelIndex& index)
 {
-	LayerNode::keyPressEvent(keyEvent, index);
+	Layer::keyPressEvent(keyEvent, index);
 
 	QModelIndexList affectedIds;
 
@@ -709,7 +709,7 @@ void SelectionLayer::keyPressEvent(QKeyEvent* keyEvent, const QModelIndex& index
 		case Qt::Key::Key_A:
 		case Qt::Key::Key_D:
 		case Qt::Key::Key_I:
-			affectedIds << index.siblingAtColumn(ult(LayerNode::Column::Selection));
+			affectedIds << index.siblingAtColumn(ult(Layer::Column::Selection));
 			break;
 
 		case Qt::Key::Key_Shift:
@@ -722,14 +722,14 @@ void SelectionLayer::keyPressEvent(QKeyEvent* keyEvent, const QModelIndex& index
 	}
 
 	for (auto index : affectedIds)
-		emit LayerNode::imageViewerPlugin->layersModel().dataChanged(index, index);
+		emit Layer::imageViewerPlugin->layersModel().dataChanged(index, index);
 
 	Renderable::renderer->render();
 }
 
 void SelectionLayer::keyReleaseEvent(QKeyEvent* keyEvent, const QModelIndex& index)
 {
-	LayerNode::keyReleaseEvent(keyEvent, index);
+	Layer::keyReleaseEvent(keyEvent, index);
 
 	QModelIndexList affectedIds;
 
@@ -760,7 +760,7 @@ void SelectionLayer::keyReleaseEvent(QKeyEvent* keyEvent, const QModelIndex& ind
 	}
 
 	for (auto index : affectedIds)
-		emit LayerNode::imageViewerPlugin->layersModel().dataChanged(index, index);
+		emit Layer::imageViewerPlugin->layersModel().dataChanged(index, index);
 
 	Renderable::renderer->render();
 }
@@ -909,7 +909,7 @@ void SelectionLayer::setAutoZoomToSelection(const bool& autoZoomToSelection)
 
 void SelectionLayer::computeImage()
 {
-	auto points = dynamic_cast<Points*>(&LayerNode::imageViewerPlugin->requestData<Points>(_datasetName));
+	auto points = dynamic_cast<Points*>(&Layer::imageViewerPlugin->requestData<Points>(_datasetName));
 
 	if (points == nullptr)
 		return;

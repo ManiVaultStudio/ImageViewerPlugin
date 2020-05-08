@@ -95,7 +95,7 @@ void PointsLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 	if (selectedRows.first().row() != topLeft.row())
 		return;
 
-	const auto enabled = _layersModel->data(topLeft.siblingAtColumn(ult(LayerNode::Column::Name)), Qt::CheckStateRole).toInt() == Qt::Checked;
+	const auto enabled = _layersModel->data(topLeft.siblingAtColumn(ult(Layer::Column::Name)), Qt::CheckStateRole).toInt() == Qt::Checked;
 
 	for (int column = topLeft.column(); column <= bottomRight.column(); column++) {
 		const auto index = topLeft.siblingAtColumn(column);
@@ -105,7 +105,7 @@ void PointsLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 
 		if (index.isValid() && noSelectedRows == 1) {
 			validSelection = true;
-			flags = _layersModel->data(topLeft.siblingAtColumn(ult(LayerNode::Column::Flags)), Qt::EditRole).toInt();
+			flags = _layersModel->data(topLeft.siblingAtColumn(ult(Layer::Column::Flags)), Qt::EditRole).toInt();
 		}
 
 		const auto mightEdit = validSelection && enabled;
@@ -224,9 +224,9 @@ void PointsLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 			_ui->noDimensionsLineEdit->blockSignals(false);
 		}
 
-		if (column == ult(LayerNode::Column::SelectionSize)) {
+		if (column == ult(Layer::Column::SelectionSize)) {
 			_ui->selectionSizeLineEdit->blockSignals(true);
-			_ui->selectionSizeLineEdit->setText(QString::number(_layersModel->data(topLeft.siblingAtColumn(ult(LayerNode::Column::SelectionSize)), Qt::EditRole).toInt()));
+			_ui->selectionSizeLineEdit->setText(QString::number(_layersModel->data(topLeft.siblingAtColumn(ult(Layer::Column::SelectionSize)), Qt::EditRole).toInt()));
 			_ui->selectionSizeLineEdit->blockSignals(false);
 		}
 

@@ -3,7 +3,7 @@
 #include <QDebug>
 
 GroupLayer::GroupLayer(const QString& id, const QString& name, const int& flags) :
-	LayerNode("", LayerNode::Type::Group, id, name, flags)
+	Layer("", Layer::Type::Group, id, name, flags)
 {
 }
 
@@ -13,7 +13,7 @@ void GroupLayer::paint(QPainter* painter)
 
 Qt::ItemFlags GroupLayer::flags(const QModelIndex& index) const
 {
-	auto flags = LayerNode::flags(index);
+	auto flags = Layer::flags(index);
 
 	/*
 	switch (static_cast<Column>(index.column())) {
@@ -28,7 +28,7 @@ Qt::ItemFlags GroupLayer::flags(const QModelIndex& index) const
 QVariant GroupLayer::data(const QModelIndex& index, const int& role) const
 {
 	if (index.column() < ult(Column::Start))
-		return LayerNode::data(index, role);
+		return Layer::data(index, role);
 
 	/*
 	switch (static_cast<Column>(index.column())) {
@@ -42,7 +42,7 @@ QVariant GroupLayer::data(const QModelIndex& index, const int& role) const
 
 QModelIndexList GroupLayer::setData(const QModelIndex& index, const QVariant& value, const int& role)
 {
-	QModelIndexList affectedIds = LayerNode::setData(index, value, role);
+	QModelIndexList affectedIds = Layer::setData(index, value, role);
 
 	/*
 	switch (static_cast<Column>(index.column())) {

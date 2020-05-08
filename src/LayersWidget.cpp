@@ -3,7 +3,7 @@
 #include "ViewerWidget.h"
 #include "LayersModel.h"
 #include "SelectionLayer.h"
-#include "LayerNode.h"
+#include "Layer.h"
 #include "GroupLayer.h"
 #include "PointsLayer.h"
 #include "ImagesLayer.h"
@@ -83,17 +83,17 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 	headerView->setSectionResizeMode(QHeaderView::ResizeToContents);
 	headerView->hide();
 
-	for (int column = ult(LayerNode::Column::Start); column < ult(LayerNode::Column::End); column++)
+	for (int column = ult(Layer::Column::Start); column < ult(Layer::Column::End); column++)
 		headerView->hideSection(column);
 
-	headerView->showSection(ult(LayerNode::Column::Name));
-	headerView->showSection(ult(LayerNode::Column::Type));
-	headerView->showSection(ult(LayerNode::Column::Opacity));
-	headerView->showSection(ult(LayerNode::Column::ImageWidth));
-	headerView->showSection(ult(LayerNode::Column::ImageHeight));
-	headerView->showSection(ult(LayerNode::Column::Scale));
+	headerView->showSection(ult(Layer::Column::Name));
+	headerView->showSection(ult(Layer::Column::Type));
+	headerView->showSection(ult(Layer::Column::Opacity));
+	headerView->showSection(ult(Layer::Column::ImageWidth));
+	headerView->showSection(ult(Layer::Column::ImageHeight));
+	headerView->showSection(ult(Layer::Column::Scale));
 
-	headerView->setSectionResizeMode(ult(LayerNode::Column::Name), QHeaderView::Interactive);
+	headerView->setSectionResizeMode(ult(Layer::Column::Name), QHeaderView::Interactive);
 
 	auto updateButtons = [this]() {
 		const auto selectedRows = layersSelectionModel().selectedRows();
@@ -110,7 +110,7 @@ LayersWidget::LayersWidget(ImageViewerPlugin* imageViewerPlugin) :
 		if (noSelectedRows == 1) {
 			const auto firstRow		= selectedRows.first();
 			const auto row			= firstRow.row();
-			const auto name			= firstRow.siblingAtColumn(ult(LayerNode::Column::Name)).data(Qt::EditRole).toString();
+			const auto name			= firstRow.siblingAtColumn(ult(Layer::Column::Name)).data(Qt::EditRole).toString();
 			
 			const auto mayMoveUp = layersModel().mayMoveLayer(firstRow, -1);
 
@@ -176,21 +176,21 @@ void LayersWidget::dropEvent(QDropEvent* dropEvent)
 	const auto datasetName				= items.at(0);
 	const auto datasetType				= items.at(1);
 	const auto selectionName			= QString("%1_selection").arg(datasetName);
-	const auto selectionLayerIndices	= layersModel().match(layersModel().index(0, ult(LayerNode::Column::ID)), Qt::DisplayRole, selectionName, -1, Qt::MatchExactly);
+	const auto selectionLayerIndices	= layersModel().match(layersModel().index(0, ult(Layer::Column::ID)), Qt::DisplayRole, selectionName, -1, Qt::MatchExactly);
 	const auto createSelectionLayer		= selectionLayerIndices.isEmpty();
-	const auto layerFlags				= ult(LayerNode::Flag::Enabled) | ult(LayerNode::Flag::Renamable);
+	const auto layerFlags				= ult(Layer::Flag::Enabled) | ult(Layer::Flag::Renamable);
 
 	auto largestImageSize = QSize();
 
-	for (auto imageLayerIndex : layersModel().match(layersModel().index(0, ult(LayerNode::Column::Type)), Qt::EditRole, ult(LayerNode::Type::Images), -1, Qt::MatchExactly | Qt::MatchRecursive)) {
-		const auto imageSize = layersModel().data(imageLayerIndex.siblingAtColumn(ult(LayerNode::Column::ImageSize)), Qt::EditRole).toSize();
+	for (auto imageLayerIndex : layersModel().match(layersModel().index(0, ult(Layer::Column::Type)), Qt::EditRole, ult(Layer::Type::Images), -1, Qt::MatchExactly | Qt::MatchRecursive)) {
+		const auto imageSize = layersModel().data(imageLayerIndex.siblingAtColumn(ult(Layer::Column::ImageSize)), Qt::EditRole).toSize();
 
 		if (imageSize.width() > largestImageSize.width() && imageSize.height() > largestImageSize.height())
 			largestImageSize = imageSize;
 	}
 
-	for (auto imageLayerIndex : layersModel().match(layersModel().index(0, ult(LayerNode::Column::Type)), Qt::EditRole, ult(LayerNode::Type::Points), -1, Qt::MatchExactly | Qt::MatchRecursive)) {
-		const auto imageSize = layersModel().data(imageLayerIndex.siblingAtColumn(ult(LayerNode::Column::ImageSize)), Qt::EditRole).toSize();
+	for (auto imageLayerIndex : layersModel().match(layersModel().index(0, ult(Layer::Column::Type)), Qt::EditRole, ult(Layer::Type::Points), -1, Qt::MatchExactly | Qt::MatchRecursive)) {
+		const auto imageSize = layersModel().data(imageLayerIndex.siblingAtColumn(ult(Layer::Column::ImageSize)), Qt::EditRole).toSize();
 
 		if (imageSize.width() > largestImageSize.width() && imageSize.height() > largestImageSize.height())
 			largestImageSize = imageSize;

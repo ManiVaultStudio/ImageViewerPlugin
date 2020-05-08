@@ -1,6 +1,6 @@
 #pragma once
 
-#include "LayerNode.h"
+#include "Layer.h"
 
 class QPaintEvent;
 
@@ -11,13 +11,13 @@ class QPaintEvent;
  *
  * @author Thomas Kroes
  */
-class GroupLayer : public LayerNode
+class GroupLayer : public Layer
 {
 public:
 	
 	/**  Columns */
 	enum class Column {
-		Start = ult(LayerNode::Column::End) + 1,
+		Start = ult(Layer::Column::End) + 1,
 		End = Start
 	};
 

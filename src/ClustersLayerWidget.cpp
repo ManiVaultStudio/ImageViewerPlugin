@@ -36,7 +36,7 @@ void ClustersLayerWidget::updateData(const QModelIndex& topLeft, const QModelInd
 {
 	const auto selectedRows		= _layersModel->selectionModel().selectedRows();
 	const auto noSelectedRows	= selectedRows.size();
-	const auto enabled			= _layersModel->data(topLeft.siblingAtColumn(ult(LayerNode::Column::Name)), Qt::CheckStateRole).toBool();
+	const auto enabled			= _layersModel->data(topLeft.siblingAtColumn(ult(Layer::Column::Name)), Qt::CheckStateRole).toBool();
 
 	for (int column = topLeft.column(); column <= bottomRight.column(); column++) {
 		const auto index = _layersModel->index(topLeft.row(), column);
@@ -46,7 +46,7 @@ void ClustersLayerWidget::updateData(const QModelIndex& topLeft, const QModelInd
 
 		if (index.isValid() && noSelectedRows == 1) {
 			validSelection = true;
-			flags = _layersModel->data(topLeft.row(), ult(LayerNode::Column::Flags), Qt::EditRole).toInt();
+			flags = _layersModel->data(topLeft.row(), ult(Layer::Column::Flags), Qt::EditRole).toInt();
 		}
 
 		const auto mightEdit = validSelection && enabled;

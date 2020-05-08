@@ -1,6 +1,6 @@
 #include "LayersModel.h"
 #include "ImageViewerPlugin.h"
-#include "LayerNode.h"
+#include "Layer.h"
 #include "RootLayer.h"
 #include "GroupLayer.h"
 #include "PointsLayer.h"
@@ -55,7 +55,7 @@ int LayersModel::columnCount(const QModelIndex& parent /*= QModelIndex()*/) cons
 {
 	Q_UNUSED(parent);
 
-	return ult(LayerNode::Column::End) + 1;
+	return ult(Layer::Column::End) + 1;
 }
 
 QVariant LayersModel::data(const QModelIndex &index, int role) const
@@ -101,10 +101,10 @@ Qt::ItemFlags LayersModel::flags(const int& row, const int& column) const
 	return flags(index(row, column));
 }
 
-LayerNode* LayersModel::getLayer(const QModelIndex& index) const
+Layer* LayersModel::getLayer(const QModelIndex& index) const
 {
 	if (index.isValid()) {
-		auto layer = static_cast<LayerNode*>(index.internalPointer());
+		auto layer = static_cast<Layer*>(index.internalPointer());
 		
 		if (layer)
 			return layer;
@@ -119,7 +119,7 @@ QVariant LayersModel::headerData(int section, Qt::Orientation orientation, int r
 		return QVariant();
 
 	if (orientation == Qt::Horizontal) {
-		return LayerNode::columnName(static_cast<LayerNode::Column>(section));
+		return Layer::columnName(static_cast<Layer::Column>(section));
 	}
 
 	return QVariant();
@@ -143,7 +143,7 @@ QModelIndex LayersModel::index(int row, int column, const QModelIndex &parent) c
 	return QModelIndex();
 }
 
-bool LayersModel::insertLayer(int row, LayerNode* layer, const QModelIndex& parent /*= QModelIndex()*/)
+bool LayersModel::insertLayer(int row, Layer* layer, const QModelIndex& parent /*= QModelIndex()*/)
 {
 	auto parentLayer = getLayer(parent);
 
@@ -297,10 +297,10 @@ void LayersModel::initialize()
 
 void LayersModel::selectionChanged(const QString& name, const Indices& indices)
 {
-	const auto hits = match(index(0, ult(LayerNode::Column::DatasetName)), Qt::DisplayRole, name, -1, Qt::MatchExactly);
+	const auto hits = match(index(0, ult(Layer::Column::DatasetName)), Qt::DisplayRole, name, -1, Qt::MatchExactly);
 
 	for (auto hit : hits) {
-		qDebug() << data(hit.siblingAtColumn(ult(LayerNode::Column::Name)), Qt::DisplayRole);
+		qDebug() << data(hit.siblingAtColumn(ult(Layer::Column::Name)), Qt::DisplayRole);
 	}
 
 	//_datasetsModel.setData(hits.first().siblingAtColumn(ult(DatasetsModel::Column::Selection)), QVariant::fromValue(Indices::fromStdVector(dataset.indices())));
@@ -311,7 +311,7 @@ void LayersModel::selectRow(const std::int32_t& row)
 	_selectionModel.setCurrentIndex(index(row, 0), QItemSelectionModel::SelectionFlag::Current | QItemSelectionModel::SelectionFlag::ClearAndSelect | QItemSelectionModel::SelectionFlag::Rows);
 }
 
-LayerNode* LayersModel::selectedLayer()
+Layer* LayersModel::selectedLayer()
 {
 	const auto selectedRows = _selectionModel.selectedRows();
 

@@ -8,7 +8,7 @@
 #include <QFileInfo>
 
 ImagesLayer::ImagesLayer(const QString& imagesDatasetName, const QString& id, const QString& name, const int& flags) :
-	LayerNode(imagesDatasetName, ImagesLayer::Type::Images, id, name, flags),
+	Layer(imagesDatasetName, ImagesLayer::Type::Images, id, name, flags),
 	_images(nullptr),
 	_imageDataType(ImageData::Type::Undefined),
 	_noPoints(0),
@@ -36,8 +36,6 @@ void ImagesLayer::init()
 	_dataName = hdps::DataSet::getSourceData(*(images.points())).getDataName();
 
 	setImageDataType(_images->type());
-	setNoPoints(_images->points()->getNumPoints());
-	setNoDimensions(_images->points()->getNumDimensions());
 
 	auto imageFilePaths = QStringList();
 
@@ -92,7 +90,7 @@ void ImagesLayer::paint(QPainter* painter)
 
 Qt::ItemFlags ImagesLayer::flags(const QModelIndex& index) const
 {
-	auto flags = LayerNode::flags(index);
+	auto flags = Layer::flags(index);
 
 	switch (static_cast<Column>(index.column())) {
 		case Column::NoImages:
@@ -103,8 +101,6 @@ Qt::ItemFlags ImagesLayer::flags(const QModelIndex& index) const
 			flags |= Qt::ItemIsEditable;
 			break;
 
-		case Column::NoPoints:
-		case Column::NoDimensions:
 		case Column::ImageNames:
 		case Column::FilteredImageNames:
 		case Column::ImageIDs:
@@ -135,7 +131,7 @@ Qt::ItemFlags ImagesLayer::flags(const QModelIndex& index) const
 QVariant ImagesLayer::data(const QModelIndex& index, const int& role) const
 {
 	if (index.column() < ult(Column::Start))
-		return LayerNode::data(index, role);
+		return Layer::data(index, role);
 
 	switch (static_cast<Column>(index.column())) {
 		case Column::NoImages:
@@ -146,12 +142,6 @@ QVariant ImagesLayer::data(const QModelIndex& index, const int& role) const
 
 		case Column::LevelNormalized:
 			return _channels[0]->levelNormalized();
-
-		case Column::NoPoints:
-			return noPoints(role);
-
-		case Column::NoDimensions:
-			return noDimensions(role);
 
 		case Column::ImageNames:
 			return imageNames(role);
@@ -186,9 +176,9 @@ QVariant ImagesLayer::data(const QModelIndex& index, const int& role) const
 
 QModelIndexList ImagesLayer::setData(const QModelIndex& index, const QVariant& value, const int& role)
 {
-	QModelIndexList affectedIds = LayerNode::setData(index, value, role);
+	QModelIndexList affectedIds = Layer::setData(index, value, role);
 
-	if (index.column() == ult(LayerNode::Column::Selection)) {
+	if (index.column() == ult(Layer::Column::Selection)) {
 		computeChannel(0);
 
 		setCurrentImageId(0);
@@ -210,8 +200,6 @@ QModelIndexList ImagesLayer::setData(const QModelIndex& index, const QVariant& v
 			_channels[0]->setLevelNormalized(value.toFloat());
 			break;
 
-		case Column::NoPoints:
-		case Column::NoDimensions:
 		case Column::ImageNames:
 		case Column::FilteredImageNames:
 		case Column::ImageIDs:
@@ -294,56 +282,6 @@ QVariant ImagesLayer::noImages(const int& role) const
 QSize ImagesLayer::imageSize() const
 {
 	return _images->imageSize();
-}
-
-QVariant ImagesLayer::noPoints(const int& role) const
-{
-	switch (role)
-	{
-		case Qt::DisplayRole:
-			return QString::number(_noPoints);
-
-		case Qt::EditRole:
-			return _noPoints;
-
-		case Qt::ToolTipRole:
-			return QString("Number of data points: %1").arg(QString::number(_noPoints));
-
-		default:
-			break;
-	}
-
-	return QVariant();
-}
-
-void ImagesLayer::setNoPoints(const std::uint32_t& noPoints)
-{
-	_noPoints = noPoints;
-}
-
-QVariant ImagesLayer::noDimensions(const int& role) const
-{
-	switch (role)
-	{
-		case Qt::DisplayRole:
-			return QString::number(_noDimensions);
-
-		case Qt::EditRole:
-			return _noDimensions;
-
-		case Qt::ToolTipRole:
-			return QString("Number of data dimensions: %1").arg(QString::number(_noDimensions));
-
-		default:
-			break;
-	}
-
-	return QVariant();
-}
-
-void ImagesLayer::setNoDimensions(const std::uint32_t& noDimensions)
-{
-	_noDimensions = noDimensions;
 }
 
 QVariant ImagesLayer::imageNames(const int& role) const

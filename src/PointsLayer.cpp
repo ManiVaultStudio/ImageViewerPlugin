@@ -10,7 +10,7 @@
 #include <QImage>
 
 PointsLayer::PointsLayer(const QString& pointsDatasetName, const QString& id, const QString& name, const int& flags) :
-	LayerNode(pointsDatasetName, LayerNode::Type::Points, id, name, flags),
+	Layer(pointsDatasetName, Layer::Type::Points, id, name, flags),
 	_pointsDataset(nullptr),
 	_imagesDataset(nullptr),
 	_channels(),
@@ -75,7 +75,7 @@ void PointsLayer::paint(QPainter* painter)
 
 Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
 {
-	auto flags = LayerNode::flags(index);
+	auto flags = Layer::flags(index);
 
 	switch (static_cast<Column>(index.column())) {
 		case Column::Channel1Name:
@@ -167,7 +167,7 @@ Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
 QVariant PointsLayer::data(const QModelIndex& index, const int& role) const
 {
 	if (index.column() < ult(Column::Start))
-		return LayerNode::data(index, role);
+		return Layer::data(index, role);
 
 	switch (static_cast<Column>(index.column())) {
 		case Column::Channel1Name:
@@ -233,7 +233,7 @@ QVariant PointsLayer::data(const QModelIndex& index, const int& role) const
 
 QModelIndexList PointsLayer::setData(const QModelIndex& index, const QVariant& value, const int& role)
 {
-	QModelIndexList affectedIds = LayerNode::setData(index, value, role);
+	QModelIndexList affectedIds = Layer::setData(index, value, role);
 
 	switch (static_cast<Column>(index.column())) {
 		case Column::Channel1Name:
