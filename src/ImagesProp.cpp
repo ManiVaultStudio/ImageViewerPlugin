@@ -11,11 +11,11 @@
 #include <QOpenGLFunctions>
 
 const std::string vertexShaderSource =
-	#include "ImagesPropVertex.glsl"
+	#include "ImagesVertex.glsl"
 ;
 
 const std::string fragmentShaderSource =
-	#include "ImagesPropFragment.glsl"
+	#include "ImagesFragment.glsl"
 ;
 
 ImagesProp::ImagesProp(ImagesLayer* imagesLayer, const QString& name) :

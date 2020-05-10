@@ -20,7 +20,7 @@
 
 const QColor SelectionLayer::toolColorForeground	= QColor(255, 174, 66, 200);
 const QColor SelectionLayer::toolColorBackground	= QColor(255, 174, 66, 150);
-const QColor SelectionLayer::fillColor				= QColor(255, 174, 66, 30);
+const QColor SelectionLayer::fillColor				= QColor(255, 174, 66, 60);
 const float SelectionLayer::minBrushRadius			= 1.0f;
 const float SelectionLayer::maxBrushRadius			= 1000.0f;
 const float SelectionLayer::defaultBrushRadius		= 50.0f;
@@ -46,8 +46,8 @@ SelectionLayer::SelectionLayer(const QString& datasetName, const QString& id, co
 
 void SelectionLayer::init()
 {
-	addProp<SelectionProp>(this, "Selection");
 	addProp<SelectionToolProp>(this, "SelectionTool");
+	addProp<SelectionProp>(this, "Selection");
 
 	_pointsDataset	= &imageViewerPlugin->requestData<Points>(_datasetName);
 	_imagesDataset	= imageViewerPlugin->sourceImagesSetFromPointsSet(_datasetName);
@@ -107,8 +107,10 @@ void SelectionLayer::paint(QPainter* painter)
 				const auto bottomRight	= QPointF(std::max(_mousePositions.first().x(), _mousePositions.last().x()), std::max(_mousePositions.first().y(), _mousePositions.last().y()));
 				const auto rectangle	= QRectF(topLeft, bottomRight);
 
+				/*
 				painter->setBrush(fillBrush);
 				painter->drawRect(rectangle);
+				*/
 
 				painter->setPen(perimeterForegroundPen);
 				painter->setBrush(Qt::NoBrush);
@@ -137,7 +139,10 @@ void SelectionLayer::paint(QPainter* painter)
 				painter->drawPoint(brushCenter);
 
 				painter->setPen(_mouseButtons & Qt::LeftButton ? perimeterForegroundPen : perimeterBackgroundPen);
+
+				/*
 				painter->setBrush(fillBrush);
+				*/
 
 				painter->drawEllipse(QPointF(brushCenter), _brushRadius, _brushRadius);
 
@@ -160,8 +165,10 @@ void SelectionLayer::paint(QPainter* painter)
 		case SelectionType::Lasso:
 		{
 			if (_mousePositions.size() >= 2) {
+				/*
 				painter->setBrush(fillBrush);
 				painter->drawPolygon(_mousePositions.constData(), _mousePositions.count());
+				*/
 
 				painter->setPen(perimeterForegroundPen);
 				painter->drawPolyline(_mousePositions.constData(), _mousePositions.count());
@@ -187,8 +194,10 @@ void SelectionLayer::paint(QPainter* painter)
 		case SelectionType::Polygon:
 		{
 			if (_mousePositions.size() >= 2) {
+				/*
 				painter->setBrush(fillBrush);
 				painter->drawPolygon(_mousePositions.constData(), _mousePositions.count());
+				*/
 
 				painter->setPen(QPen(QBrush(toolColorForeground), perimeterLineWidth));
 				painter->drawPolyline(_mousePositions.constData(), _mousePositions.count());
