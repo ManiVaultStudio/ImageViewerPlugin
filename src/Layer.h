@@ -306,6 +306,9 @@ public: // Getters/setters
 	 */
 	void setKeys(const int& keys);
 
+	/** Returns the recorded mouse event positions */
+	QVector<QPoint> mousePositions() const;
+
 protected:
 	
 	/**

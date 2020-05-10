@@ -106,7 +106,7 @@ void Renderer::mouseWheelEvent(QWheelEvent* wheelEvent)
 	{
 		case InteractionMode::Navigation:
 		{
-			const auto zoomCenter = QVector2D(wheelEvent->posF());
+			const auto zoomCenter = wheelEvent->pos();
 
 			if (wheelEvent->delta() < 0) {
 				zoomAround(zoomCenter, 1.0f - _zoomSensitivity);
@@ -197,7 +197,7 @@ void Renderer::keyReleaseEvent(QKeyEvent* keyEvent)
 	}
 }
 
-QVector3D Renderer::screenPointToWorldPosition(const QMatrix4x4& modelViewMatrix, const QVector2D& screenPoint) const
+QVector3D Renderer::screenPointToWorldPosition(const QMatrix4x4& modelViewMatrix, const QPoint& screenPoint) const
 {
 	return QVector3D(screenPoint.x(), parentWidgetSize().height()- screenPoint.y(), 0).unproject(modelViewMatrix, projectionMatrix(), QRect(0, 0, parentWidgetSize().width(), parentWidgetSize().height()));
 }
@@ -290,18 +290,18 @@ void Renderer::zoomBy(const float& factor)
 	_zoom *= factor;
 }
 
-void Renderer::zoomAround(const QVector2D& screenPoint, const float& factor)
+void Renderer::zoomAround(const QPoint& screenPoint, const float& factor)
 {
 	zoomBy(factor);
 
 	qDebug() << "Zoom around" << screenPoint << "by" << factor;
 
-	const auto pWorld			= screenPointToWorldPosition(viewMatrix(), screenPoint);
-	const auto pAnchor			= pWorld.toVector2D();
-	const auto pPanOld			= _pan;
-	const auto vPanOld			= pPanOld - pAnchor;
-	const auto vPanNew			= factor * vPanOld;
-	const auto vPanDelta		= vPanNew - vPanOld;
+	const auto pWorld		= screenPointToWorldPosition(viewMatrix(), screenPoint);
+	const auto pAnchor		= pWorld.toVector2D();
+	const auto pPanOld		= _pan;
+	const auto vPanOld		= pPanOld - pAnchor;
+	const auto vPanNew		= factor * vPanOld;
+	const auto vPanDelta	= vPanNew - vPanOld;
 
 	pan(-vPanDelta);
 }

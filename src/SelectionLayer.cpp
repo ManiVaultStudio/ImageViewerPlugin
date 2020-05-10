@@ -39,8 +39,7 @@ SelectionLayer::SelectionLayer(const QString& datasetName, const QString& id, co
 	_selectionModifier(SelectionModifier::Replace),
 	_brushRadius(defaultBrushRadius),
 	_overlayColor(Qt::green),
-	_autoZoomToSelection(false),
-	_fbo()
+	_autoZoomToSelection(false)
 {
 	init();
 }
@@ -48,7 +47,7 @@ SelectionLayer::SelectionLayer(const QString& datasetName, const QString& id, co
 void SelectionLayer::init()
 {
 	addProp<SelectionProp>(this, "Selection");
-	//addProp<SelectionToolProp>(this, "SelectionTool");
+	addProp<SelectionToolProp>(this, "SelectionTool");
 
 	_pointsDataset	= &imageViewerPlugin->requestData<Points>(_datasetName);
 	_imagesDataset	= imageViewerPlugin->sourceImagesSetFromPointsSet(_datasetName);
@@ -397,10 +396,6 @@ QModelIndexList SelectionLayer::setData(const QModelIndex& index, const QVariant
 		affectedIds << index.siblingAtColumn(ult(Column::ZoomToSelection));
 	}
 
-	if (static_cast<Layer::Column>(index.column()) == Layer::Column::ImageSize) {
-		_fbo.reset(new QOpenGLFramebufferObject(imageSize().width(), imageSize().height()));
-	}
-
 	switch (static_cast<Column>(index.column())) {
 		case Column::PixelSelectionType:
 		{
@@ -566,6 +561,8 @@ void SelectionLayer::mouseMoveEvent(QMouseEvent* mouseEvent, const QModelIndex& 
 
 	QModelIndexList affectedIds;
 
+	auto shouldComputePixelSelection = false;
+
 	switch (_selectionType)
 	{
 		case SelectionType::None:
@@ -578,6 +575,8 @@ void SelectionLayer::mouseMoveEvent(QMouseEvent* mouseEvent, const QModelIndex& 
 					_mousePositions << mouseEvent->pos();
 				else
 					_mousePositions.last() = mouseEvent->pos();
+
+				shouldComputePixelSelection = true;
 			}
 
 			break;
@@ -588,6 +587,8 @@ void SelectionLayer::mouseMoveEvent(QMouseEvent* mouseEvent, const QModelIndex& 
 			if (mouseEvent->buttons() & Qt::LeftButton)
 				_mousePositions << mouseEvent->pos();
 
+			shouldComputePixelSelection = true;
+
 			break;
 		}
 
@@ -597,6 +598,8 @@ void SelectionLayer::mouseMoveEvent(QMouseEvent* mouseEvent, const QModelIndex& 
 				_mousePositions << mouseEvent->pos();
 			else
 				_mousePositions.last() = mouseEvent->pos();
+			
+			shouldComputePixelSelection = true;
 
 			break;
 		}
@@ -608,12 +611,17 @@ void SelectionLayer::mouseMoveEvent(QMouseEvent* mouseEvent, const QModelIndex& 
 			else
 				_mousePositions.last() = mouseEvent->pos();
 
+			shouldComputePixelSelection = true;
+
 			break;
 		}
 
 		default:
 			break;
 	}
+
+	if (shouldComputePixelSelection)
+		propByName<SelectionToolProp>("SelectionTool")->computePixelSelection();
 
 	for (auto index : affectedIds)
 		emit Layer::imageViewerPlugin->layersModel().dataChanged(index, index);

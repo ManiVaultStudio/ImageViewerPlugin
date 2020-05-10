@@ -42,7 +42,7 @@ SelectionProp::SelectionProp(SelectionLayer* selectionLayer, const QString& name
 
 				const auto rectangle = QRectF(QPointF(0.f, 0.f), QSizeF(static_cast<float>(selectionImage.width()), static_cast<float>(selectionImage.height())));
 
-				shapeByName<QuadShape>("Quad")->setRectangle(rectangle);
+				this->shapeByName<QuadShape>("Quad")->setRectangle(rectangle);
 
 				updateModelMatrix();
 			}

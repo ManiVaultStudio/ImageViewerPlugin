@@ -199,10 +199,11 @@ void ViewerWidget::paintGL()
 		switch (message.severity())
 		{
 			case QOpenGLDebugMessage::HighSeverity:
+				qDebug() << message;
 				break;
 
 			default:
-				qDebug() << message; 
+				break;
 		}
 		
 #endif

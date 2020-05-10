@@ -5,9 +5,6 @@
 
 #include "ImageData/Images.h"
 
-#include <QScopedPointer>
-#include <QOpenGLFramebufferObject>
-
 class QPainter;
 
 class Points;
@@ -241,7 +238,6 @@ private:
 	float										_brushRadius;				/** Brush radius */
 	QColor										_overlayColor;				/** Selection overlay color */
 	bool										_autoZoomToSelection;		/** Automatically zoom to selection */
-	QScopedPointer<QOpenGLFramebufferObject>	_fbo;						/** Off-screen selection Frame Buffer Object */
 
 public:
 	static const QColor toolColorForeground;			/** Foreground tool color for brushes and pens */

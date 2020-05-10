@@ -90,7 +90,7 @@ public:
 	 * @param screenPoint Point in screen coordinates [0..width, 0..height]
 	 * @return Position in world coordinates
 	 */
-	QVector3D screenPointToWorldPosition(const QMatrix4x4& modelViewMatrix, const QVector2D& screenPoint) const;
+	QVector3D screenPointToWorldPosition(const QMatrix4x4& modelViewMatrix, const QPoint& screenPoint) const;
 
 	/** Convert position in world coordinates to point in normalized screen coordinates
 	 * @param position Position in world coordinates
@@ -142,7 +142,7 @@ public:
 	 * @param screenPoint Point in screen coordinates
 	 * @param factor Factor to zoom by
 	 */
-	void zoomAround(const QVector2D& screenPoint, const float& factor);
+	void zoomAround(const QPoint& screenPoint, const float& factor);
 
 	/**
 	 * Zoom to rectangle

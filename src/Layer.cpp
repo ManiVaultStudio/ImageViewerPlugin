@@ -474,6 +474,11 @@ void Layer::setKeys(const int& keys)
 	_keys = keys;
 }
 
+QVector<QPoint> Layer::mousePositions() const
+{
+	return _mousePositions;
+}
+
 int Layer::noPixels() const
 {
 	return imageSize().width() * imageSize().height();
