@@ -5,22 +5,22 @@
 class SelectionLayer;
 
 /**
- * Selection prop class
+ * Selection tool prop class
  *
- * TODO
+ * TODO: Write description
  *
  * @author Thomas Kroes
  */
-class SelectionProp : public Prop
+class SelectionToolProp : public Prop
 {
 	Q_OBJECT
 
 public:
 	/** TODO */
-	SelectionProp(SelectionLayer* selectionLayer, const QString& name);
+	SelectionToolProp(SelectionLayer* selectionLayer, const QString& name);
 
 	/** Destructor */
-	~SelectionProp();
+	~SelectionToolProp();
 
 	/** Renders the prop */
 	void render(const QMatrix4x4& nodeMVP, const float& opacity) override;

@@ -1,6 +1,7 @@
 #include "SelectionLayer.h"
 #include "ImageViewerPlugin.h"
 #include "SelectionProp.h"
+#include "SelectionToolProp.h"
 #include "Renderer.h"
 
 #include "PointData.h"
@@ -15,14 +16,17 @@
 
 #include <QDebug>
 #include <QPainter>
+#include <QTextDocument>
 
 const QColor SelectionLayer::toolColorForeground	= QColor(255, 174, 66, 200);
 const QColor SelectionLayer::toolColorBackground	= QColor(255, 174, 66, 150);
+const QColor SelectionLayer::fillColor				= QColor(255, 174, 66, 30);
 const float SelectionLayer::minBrushRadius			= 1.0f;
 const float SelectionLayer::maxBrushRadius			= 1000.0f;
 const float SelectionLayer::defaultBrushRadius		= 50.0f;
 const float SelectionLayer::controlPointSize		= 6.0f;
 const float SelectionLayer::perimeterLineWidth		= 1.5f;
+const QPoint SelectionLayer::textPosition			= QPoint(25, 25);
 
 SelectionLayer::SelectionLayer(const QString& datasetName, const QString& id, const QString& name, const int& flags) :
 	Layer(datasetName, Layer::Type::Selection, id, name, flags),
@@ -31,11 +35,12 @@ SelectionLayer::SelectionLayer(const QString& datasetName, const QString& id, co
 	_imagesDataset(nullptr),
 	_image(),
 	_imageData(),
-	_pixelSelectionType(SelectionType::Rectangle),
-	_pixelSelectionModifier(SelectionModifier::Replace),
+	_selectionType(SelectionType::Rectangle),
+	_selectionModifier(SelectionModifier::Replace),
 	_brushRadius(defaultBrushRadius),
 	_overlayColor(Qt::green),
-	_autoZoomToSelection(false)
+	_autoZoomToSelection(false),
+	_fbo()
 {
 	init();
 }
@@ -43,6 +48,7 @@ SelectionLayer::SelectionLayer(const QString& datasetName, const QString& id, co
 void SelectionLayer::init()
 {
 	addProp<SelectionProp>(this, "Selection");
+	//addProp<SelectionToolProp>(this, "SelectionTool");
 
 	_pointsDataset	= &imageViewerPlugin->requestData<Points>(_datasetName);
 	_imagesDataset	= imageViewerPlugin->sourceImagesSetFromPointsSet(_datasetName);
@@ -75,9 +81,22 @@ void SelectionLayer::paint(QPainter* painter)
 	controlPointsPen.setWidthF(controlPointSize);
 	controlPointsPen.setCapStyle(Qt::RoundCap);
 
+	auto fillBrush = QBrush(fillColor);
+
 	QVector<QPoint> controlPoints;
 
-	switch (_pixelSelectionType)
+	QString helpTextHtml;
+
+	QTextDocument td;
+	
+	helpTextHtml += "<table style='color: rgb(255, 174, 66);'>";
+
+	const auto modifierString = QString("(%1 pixels)").arg(selectionModifierName(_selectionModifier));
+
+	helpTextHtml += QString("<tr><td colspan=3 style='font-weight: bold;'>%1 selection %2</td></tr>").arg(selectionTypeName(_selectionType), modifierString);
+	helpTextHtml += QString("<tr><td width=100></td><td></td><td></td></tr>");
+
+	switch (_selectionType)
 	{
 		case SelectionType::None:
 			break;
@@ -85,13 +104,15 @@ void SelectionLayer::paint(QPainter* painter)
 		case SelectionType::Rectangle:
 		{
 			if (_mousePositions.size() == 2) {
-				painter->setPen(perimeterForegroundPen);
-				painter->setBrush(Qt::NoBrush);
-
 				const auto topLeft		= QPointF(std::min(_mousePositions.first().x(), _mousePositions.last().x()), std::min(_mousePositions.first().y(), _mousePositions.last().y()));
 				const auto bottomRight	= QPointF(std::max(_mousePositions.first().x(), _mousePositions.last().x()), std::max(_mousePositions.first().y(), _mousePositions.last().y()));
 				const auto rectangle	= QRectF(topLeft, bottomRight);
 
+				painter->setBrush(fillBrush);
+				painter->drawRect(rectangle);
+
+				painter->setPen(perimeterForegroundPen);
+				painter->setBrush(Qt::NoBrush);
 				painter->drawRect(rectangle);
 
 				controlPoints << _mousePositions.first();
@@ -117,7 +138,7 @@ void SelectionLayer::paint(QPainter* painter)
 				painter->drawPoint(brushCenter);
 
 				painter->setPen(_mouseButtons & Qt::LeftButton ? perimeterForegroundPen : perimeterBackgroundPen);
-				painter->setBrush(Qt::NoBrush);
+				painter->setBrush(fillBrush);
 
 				painter->drawEllipse(QPointF(brushCenter), _brushRadius, _brushRadius);
 
@@ -130,12 +151,19 @@ void SelectionLayer::paint(QPainter* painter)
 				textRectangle = QRectF(textCenter - QPointF(size, size), textCenter + QPointF(size, size));
 			}
 
+			helpTextHtml += "<tr><td>Left mouse button</td><td>:</td><td>Activate brush</td></tr>";
+			helpTextHtml += "<tr><td>Mouse wheel up</td><td>:</td><td>Increase brush radius</td></tr>";
+			helpTextHtml += "<tr><td>Mouse wheel down</td><td>:</td><td>Decrease brush radius</td></tr>";
+
 			break;
 		}
 
 		case SelectionType::Lasso:
 		{
 			if (_mousePositions.size() >= 2) {
+				painter->setBrush(fillBrush);
+				painter->drawPolygon(_mousePositions.constData(), _mousePositions.count());
+
 				painter->setPen(perimeterForegroundPen);
 				painter->drawPolyline(_mousePositions.constData(), _mousePositions.count());
 
@@ -151,15 +179,19 @@ void SelectionLayer::paint(QPainter* painter)
 				textRectangle = QRectF(textCenter - QPointF(size, size), textCenter + QPointF(size, size));
 			}
 
+			helpTextHtml += QString("<tr><td>Mouse down</td><td>:</td><td>Draw selection perimeter</td></tr>");
+			helpTextHtml += QString("<tr><td>Mouse up</td><td>:</td><td>Finish selection</td></tr>");
+
 			break;
 		}
 
 		case SelectionType::Polygon:
 		{
 			if (_mousePositions.size() >= 2) {
+				painter->setBrush(fillBrush);
+				painter->drawPolygon(_mousePositions.constData(), _mousePositions.count());
 
 				painter->setPen(QPen(QBrush(toolColorForeground), perimeterLineWidth));
-
 				painter->drawPolyline(_mousePositions.constData(), _mousePositions.count());
 
 				QVector<QPoint> connectingPoints;
@@ -179,6 +211,9 @@ void SelectionLayer::paint(QPainter* painter)
 				textRectangle = QRectF(textCenter - QPointF(size, size), textCenter + QPointF(size, size));
 			}
 
+			helpTextHtml += QString("<tr><td>Left mouse button</td><td>:</td><td>Add polygon control point</td></tr>");
+			helpTextHtml += QString("<tr><td>Right mouse button</td><td>:</td><td>Finish selection</td></tr>");
+
 			break;
 		}
 
@@ -186,12 +221,22 @@ void SelectionLayer::paint(QPainter* painter)
 			break;
 	}
 
+	//helpTextHtml += QString("<tr><td></td></tr>");
+	helpTextHtml += QString("<tr><td>Shift key</td><td>:</td><td>Add pixels to selection</td></tr>");
+	helpTextHtml += QString("<tr><td>Control key</td><td>:</td><td>Remove pixels from selection</td></tr>");
+
+	helpTextHtml += "</table>";
+
+	td.setHtml(helpTextHtml);
+
+	td.drawContents(painter);
+
 	painter->setPen(controlPointsPen);
 	painter->drawPoints(controlPoints);
 
 	//painter->setBrush(toolColorForeground);
 
-	switch (_pixelSelectionType)
+	switch (_selectionType)
 	{
 		case SelectionType::None:
 			break;
@@ -201,7 +246,7 @@ void SelectionLayer::paint(QPainter* painter)
 		case SelectionType::Lasso:
 		case SelectionType::Polygon:
 		{
-			switch (_pixelSelectionModifier)
+			switch (_selectionModifier)
 			{
 				case SelectionModifier::Replace:
 					break;
@@ -255,7 +300,7 @@ Qt::ItemFlags SelectionLayer::flags(const QModelIndex& index) const
 
 		case Column::BrushRadius:
 		{
-			if (_pixelSelectionType == SelectionType::Brush)
+			if (_selectionType == SelectionType::Brush)
 				flags |= Qt::ItemIsEditable;
 
 			break;
@@ -318,10 +363,10 @@ QVariant SelectionLayer::data(const QModelIndex& index, const int& role) const
 
 	switch (static_cast<Column>(index.column())) {
 		case Column::PixelSelectionType:
-			return pixelSelectionType(role);
+			return selectionType(role);
 
 		case Column::PixelSelectionModifier:
-			return pixelSelectionModifier(role);
+			return selectionModifier(role);
 
 		case Column::BrushRadius:
 			return brushRadius(role);
@@ -352,10 +397,14 @@ QModelIndexList SelectionLayer::setData(const QModelIndex& index, const QVariant
 		affectedIds << index.siblingAtColumn(ult(Column::ZoomToSelection));
 	}
 
+	if (static_cast<Layer::Column>(index.column()) == Layer::Column::ImageSize) {
+		_fbo.reset(new QOpenGLFramebufferObject(imageSize().width(), imageSize().height()));
+	}
+
 	switch (static_cast<Column>(index.column())) {
 		case Column::PixelSelectionType:
 		{
-			setPixelSelectionType(static_cast<SelectionType>(value.toInt()));
+			pixelSelectionType(static_cast<SelectionType>(value.toInt()));
 
 			affectedIds << index.siblingAtColumn(ult(Column::BrushRadius));
 			break;
@@ -363,7 +412,7 @@ QModelIndexList SelectionLayer::setData(const QModelIndex& index, const QVariant
 
 		case Column::PixelSelectionModifier:
 		{
-			setPixelSelectionModifier(static_cast<SelectionModifier>(value.toInt()));
+			pixelSelectionModifier(static_cast<SelectionModifier>(value.toInt()));
 			break;
 		}
 
@@ -420,7 +469,7 @@ void SelectionLayer::mousePressEvent(QMouseEvent* mouseEvent, const QModelIndex&
 
 	_mouseButtons = mouseEvent->buttons();
 
-	switch (_pixelSelectionType)
+	switch (_selectionType)
 	{
 		case SelectionType::None:
 		case SelectionType::Rectangle:
@@ -477,7 +526,7 @@ void SelectionLayer::mouseReleaseEvent(QMouseEvent* mouseEvent, const QModelInde
 
 	_mouseButtons = mouseEvent->buttons();
 
-	switch (_pixelSelectionType)
+	switch (_selectionType)
 	{
 		case SelectionType::None:
 			break;
@@ -517,7 +566,7 @@ void SelectionLayer::mouseMoveEvent(QMouseEvent* mouseEvent, const QModelIndex& 
 
 	QModelIndexList affectedIds;
 
-	switch (_pixelSelectionType)
+	switch (_selectionType)
 	{
 		case SelectionType::None:
 			break;
@@ -578,7 +627,7 @@ void SelectionLayer::mouseWheelEvent(QWheelEvent* wheelEvent, const QModelIndex&
 
 	QModelIndexList affectedIds;
 
-	switch (_pixelSelectionType)
+	switch (_selectionType)
 	{
 		case SelectionType::None:
 		case SelectionType::Rectangle:
@@ -619,19 +668,19 @@ void SelectionLayer::keyPressEvent(QKeyEvent* keyEvent, const QModelIndex& index
 	switch (keyEvent->key())
 	{
 		case Qt::Key::Key_R:
-			setPixelSelectionType(SelectionType::Rectangle);
+			pixelSelectionType(SelectionType::Rectangle);
 			break;
 
 		case Qt::Key::Key_B:
-			setPixelSelectionType(SelectionType::Brush);
+			pixelSelectionType(SelectionType::Brush);
 			break;
 
 		case Qt::Key::Key_L:
-			setPixelSelectionType(SelectionType::Lasso);
+			pixelSelectionType(SelectionType::Lasso);
 			break;
 
 		case Qt::Key::Key_P:
-			setPixelSelectionType(SelectionType::Polygon);
+			pixelSelectionType(SelectionType::Polygon);
 			break;
 
 		case Qt::Key::Key_A:
@@ -660,19 +709,19 @@ void SelectionLayer::keyPressEvent(QKeyEvent* keyEvent, const QModelIndex& index
 
 		case Qt::Key::Key_Shift:
 		{
-			setPixelSelectionModifier(SelectionModifier::Add);
+			pixelSelectionModifier(SelectionModifier::Add);
 			break;
 		}
 
 		case Qt::Key::Key_Control:
 		{
-			setPixelSelectionModifier(SelectionModifier::Remove);
+			pixelSelectionModifier(SelectionModifier::Remove);
 			break;
 		}
 
 		case Qt::Key::Key_Escape:
 		{
-			switch (_pixelSelectionType)
+			switch (_selectionType)
 			{
 				case SelectionType::None:
 				case SelectionType::Rectangle:
@@ -751,7 +800,7 @@ void SelectionLayer::keyReleaseEvent(QKeyEvent* keyEvent, const QModelIndex& ind
 		case Qt::Key::Key_Shift:
 		case Qt::Key::Key_Control:
 		{
-			setPixelSelectionModifier(SelectionModifier::Replace);
+			pixelSelectionModifier(SelectionModifier::Replace);
 			affectedIds << index.siblingAtColumn(ult(Column::PixelSelectionModifier));
 			break;
 		}
@@ -798,9 +847,9 @@ void SelectionLayer::setOverlayColor(const QColor& overlayColor)
 	_overlayColor = overlayColor;
 }
 
-QVariant SelectionLayer::pixelSelectionType(const int& role) const
+QVariant SelectionLayer::selectionType(const int& role) const
 {
-	const auto pixelSelectionTypeString = selectionTypeName(_pixelSelectionType);
+	const auto pixelSelectionTypeString = selectionTypeName(_selectionType);
 
 	switch (role)
 	{
@@ -808,7 +857,7 @@ QVariant SelectionLayer::pixelSelectionType(const int& role) const
 			return pixelSelectionTypeString;
 
 		case Qt::EditRole:
-			return ult(_pixelSelectionType);
+			return ult(_selectionType);
 
 		case Qt::ToolTipRole:
 			return QString("Pixel selection type: %1").arg(pixelSelectionTypeString);
@@ -820,16 +869,16 @@ QVariant SelectionLayer::pixelSelectionType(const int& role) const
 	return QVariant();
 }
 
-void SelectionLayer::setPixelSelectionType(const SelectionType& pixelSelectionType)
+void SelectionLayer::pixelSelectionType(const SelectionType& pixelSelectionType)
 {
-	_pixelSelectionType = static_cast<SelectionType>(pixelSelectionType);
+	_selectionType = static_cast<SelectionType>(pixelSelectionType);
 	
 	_mousePositions.clear();
 }
 
-QVariant SelectionLayer::pixelSelectionModifier(const int& role) const
+QVariant SelectionLayer::selectionModifier(const int& role) const
 {
-	const auto pixelSelectionModifierString = selectionModifierName(_pixelSelectionModifier);
+	const auto pixelSelectionModifierString = selectionModifierName(_selectionModifier);
 
 	switch (role)
 	{
@@ -837,7 +886,7 @@ QVariant SelectionLayer::pixelSelectionModifier(const int& role) const
 			return pixelSelectionModifierString;
 
 		case Qt::EditRole:
-			return ult(_pixelSelectionModifier);
+			return ult(_selectionModifier);
 
 		case Qt::ToolTipRole:
 			return QString("Pixel selection modifier: %1").arg(pixelSelectionModifierString);
@@ -849,9 +898,9 @@ QVariant SelectionLayer::pixelSelectionModifier(const int& role) const
 	return QVariant();
 }
 
-void SelectionLayer::setPixelSelectionModifier(const SelectionModifier& pixelSelectionModifier)
+void SelectionLayer::pixelSelectionModifier(const SelectionModifier& pixelSelectionModifier)
 {
-	_pixelSelectionModifier = pixelSelectionModifier;
+	_selectionModifier = pixelSelectionModifier;
 }
 
 QVariant SelectionLayer::brushRadius(const int& role) const

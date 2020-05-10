@@ -1,4 +1,4 @@
-#include "SelectionProp.h"
+#include "SelectionToolProp.h"
 #include "QuadShape.h"
 #include "LayersModel.h"
 #include "Range.h"
@@ -10,53 +10,39 @@
 #include <QOpenGLFunctions>
 
 const std::string vertexShaderSource =
-	#include "SelectionPropVertex.glsl"
+	#include "SelectionToolVertex.glsl"
 ;
 
 const std::string fragmentShaderSource =
-	#include "SelectionPropFragment.glsl"
+	#include "SelectionToolFragment.glsl"
 ;
 
-SelectionProp::SelectionProp(SelectionLayer* selectionLayer, const QString& name) :
+SelectionToolProp::SelectionToolProp(SelectionLayer* selectionLayer, const QString& name) :
 	Prop(reinterpret_cast<Node*>(selectionLayer), name)
 {
 	addShape<QuadShape>("Quad");
 	addShaderProgram("Quad");
 	addTexture("Quad", QOpenGLTexture::Target2D);
 
-	
+	/*
 	QObject::connect(selectionLayer, &SelectionLayer::imageChanged, [this](const QImage& selectionImage) {
 		renderer->bindOpenGLContext();
 		{
 			if (selectionImage.isNull())
 				return;
 
-			renderer->bindOpenGLContext();
-			{
-				textureByName("Quad").reset(new QOpenGLTexture(selectionImage));
-
-				auto texture = textureByName("Quad");
-
-				texture->setWrapMode(QOpenGLTexture::ClampToEdge);
-				texture->setMinMagFilters(QOpenGLTexture::Nearest, QOpenGLTexture::Nearest);
-
-				const auto rectangle = QRectF(QPointF(0.f, 0.f), QSizeF(static_cast<float>(selectionImage.width()), static_cast<float>(selectionImage.height())));
-
-				shapeByName<QuadShape>("Quad")->setRectangle(rectangle);
-
-				updateModelMatrix();
-			}
-			Renderable::renderer->releaseOpenGLContext();
+			setImage(selectionImage);
 		}
 		renderer->releaseOpenGLContext();
 	});
+	*/
 
 	initialize();
 }
 
-SelectionProp::~SelectionProp() = default;
+SelectionToolProp::~SelectionToolProp() = default;
 
-void SelectionProp::initialize()
+void SelectionToolProp::initialize()
 {
 	try
 	{
@@ -114,7 +100,7 @@ void SelectionProp::initialize()
 	}
 }
 
-void SelectionProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
+void SelectionToolProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 {
 	try {
 		if (!canRender())
@@ -161,12 +147,12 @@ void SelectionProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 	}
 }
 
-QRectF SelectionProp::boundingRectangle() const
+QRectF SelectionToolProp::boundingRectangle() const
 {
 	return shapeByName<QuadShape>("Quad")->rectangle();
 }
 
-void SelectionProp::updateModelMatrix()
+void SelectionToolProp::updateModelMatrix()
 {
 	QMatrix4x4 modelMatrix;
 

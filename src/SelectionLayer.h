@@ -5,6 +5,9 @@
 
 #include "ImageData/Images.h"
 
+#include <QScopedPointer>
+#include <QOpenGLFramebufferObject>
+
 class QPainter;
 
 class Points;
@@ -148,26 +151,26 @@ public: // Getters/setters
 	 * @param role Data role
 	 * @return Pixel selection type in variant form
 	 */
-	QVariant pixelSelectionType(const int& role) const;
+	QVariant selectionType(const int& role) const;
 
 	/**
 	 * Sets the pixel selection type
 	 * @param pixelSelectionType Pixel selection type
 	 */
-	void setPixelSelectionType(const SelectionType& pixelSelectionType);
+	void pixelSelectionType(const SelectionType& pixelSelectionType);
 
 	/**
 	 * Returns the pixel selection modifier
 	 * @param role Data role
 	 * @return Pixel selection modifier in variant form
 	 */
-	QVariant pixelSelectionModifier(const int& role) const;
+	QVariant selectionModifier(const int& role) const;
 
 	/**
 	 * Sets the pixel selection modifier
 	 * @param pixelSelectionModifier Pixel selection modifier
 	 */
-	void setPixelSelectionModifier(const SelectionModifier& pixelSelectionModifier);
+	void pixelSelectionModifier(const SelectionModifier& pixelSelectionModifier);
 
 	/**
 	 * Returns the brush radius
@@ -229,22 +232,25 @@ signals:
 	void imageChanged(const QImage& image);
 
 private:
-	Points*					_pointsDataset;				/** Points dataset to which the layer refers */
-	Images*					_imagesDataset;				/** Images dataset from which the points dataset originates */
-	QImage					_image;						/** Selection image */
-	QVector<std::uint8_t>	_imageData;					/** Image data buffer */
-	SelectionType			_pixelSelectionType;		/** Pixel selection type (e.g. rectangle, brush) */
-	SelectionModifier		_pixelSelectionModifier;	/** Pixel selection modifier (e.g. replace, add) */
-	float					_brushRadius;				/** Brush radius */
-	QColor					_overlayColor;				/** Selection overlay color */
-	bool					_autoZoomToSelection;		/** Automatically zoom to selection */
+	Points*										_pointsDataset;				/** Points dataset to which the layer refers */
+	Images*										_imagesDataset;				/** Images dataset from which the points dataset originates */
+	QImage										_image;						/** Selection image */
+	QVector<std::uint8_t>						_imageData;					/** Image data buffer */
+	SelectionType								_selectionType;				/** Pixel selection type (e.g. rectangle, brush) */
+	SelectionModifier							_selectionModifier;			/** Pixel selection modifier (e.g. replace, add) */
+	float										_brushRadius;				/** Brush radius */
+	QColor										_overlayColor;				/** Selection overlay color */
+	bool										_autoZoomToSelection;		/** Automatically zoom to selection */
+	QScopedPointer<QOpenGLFramebufferObject>	_fbo;						/** Off-screen selection Frame Buffer Object */
 
 public:
 	static const QColor toolColorForeground;			/** Foreground tool color for brushes and pens */
 	static const QColor toolColorBackground;			/** Background tool color for brushes and pens */
+	static const QColor fillColor;						/** Fill color */
 	static const float minBrushRadius;					/** Minimum brush radius */
 	static const float maxBrushRadius;					/** Maximum brush radius */
 	static const float defaultBrushRadius;				/** Default brush radius */
 	static const float controlPointSize;				/** Size of control points */
 	static const float perimeterLineWidth;				/** Line width of the pixel selection tool perimeter */
+	static const QPoint textPosition;					/** Position of explanatory text */
 };
