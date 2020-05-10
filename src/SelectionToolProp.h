@@ -28,11 +28,17 @@ public:
 	/** Renders the prop */
 	void render(const QMatrix4x4& nodeMVP, const float& opacity) override;
 
-	/** Computes the pixel selection (based on the tool) and stores the result in an off-screen frame buffer object */
-	void computePixelSelection();
+	/** Computes the pixel selection (based on the tool) and stores the result in an off-screen pixel selection buffer */
+	void compute();
+
+	/** Resets the off-screen pixel selection buffer */
+	void reset();
 
 	/** Computes the enveloping bounding rectangle of the prop */
 	QRectF boundingRectangle() const;
+
+	/** Returns the pixel selection in image format */
+	QImage selectionImage();
 
 protected: // Inherited
 

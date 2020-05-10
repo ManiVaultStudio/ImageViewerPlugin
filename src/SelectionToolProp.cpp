@@ -131,7 +131,7 @@ void SelectionToolProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 	}
 }
 
-void SelectionToolProp::computePixelSelection()
+void SelectionToolProp::compute()
 {
 	if (_fbo.isNull())
 		return;
@@ -275,9 +275,45 @@ void SelectionToolProp::computePixelSelection()
 	}
 }
 
+void SelectionToolProp::reset()
+{
+	try {
+		renderer->bindOpenGLContext();
+		if (_fbo->bind()) {
+			glViewport(0, 0, _fbo->width(), _fbo->height());
+			glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+			glClear(GL_COLOR_BUFFER_BIT);
+			glFlush();
+
+			_fbo->release();
+		}
+		else
+		{
+			throw std::exception("Unable to bind frame buffer object");
+		}
+	}
+	catch (std::exception& e)
+	{
+		qDebug() << _name << "reset failed:" << e.what();
+	}
+	catch (...) {
+		qDebug() << _name << "reset failed due to unhandled exception";
+	}
+}
+
 QRectF SelectionToolProp::boundingRectangle() const
 {
 	return shapeByName<QuadShape>("Quad")->rectangle();
+}
+
+QImage SelectionToolProp::selectionImage()
+{
+	if (_fbo.isNull())
+		return QImage();
+
+	renderer->bindOpenGLContext();
+
+	return _fbo->toImage();
 }
 
 void SelectionToolProp::updateModelMatrix()

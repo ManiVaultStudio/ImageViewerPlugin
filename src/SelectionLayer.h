@@ -220,6 +220,9 @@ private: // Miscellaneous
 	/** Zoom to selected pixels */
 	void zoomToSelection();
 
+	/** Takes the pixels that were selected by the selection tools and publishes it to HDPS */
+	void publishSelection();
+
 signals:
 
 	/**

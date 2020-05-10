@@ -145,7 +145,7 @@ void SelectionLayer::paint(QPainter* painter)
 				painter->setBrush(Qt::NoBrush);
 				painter->drawEllipse(QPointF(brushCenter), _brushRadius, _brushRadius);
 
-				controlPoints << _mousePositions.first();
+				controlPoints << _mousePositions.last();
 
 				const auto textAngle		= 0.75f * M_PI;
 				const auto size				= 12.0f;
@@ -494,12 +494,17 @@ void SelectionLayer::mousePressEvent(QMouseEvent* mouseEvent, const QModelIndex&
 			switch (mouseEvent->button())
 			{
 				case Qt::LeftButton:
+				{
 					_mousePositions << mouseEvent->pos();
 					break;
+				}
 
 				case Qt::RightButton:
+				{
 					_mousePositions.clear();
+					publishSelection();
 					break;
+				}
 
 				default:
 					break;
@@ -539,12 +544,22 @@ void SelectionLayer::mouseReleaseEvent(QMouseEvent* mouseEvent, const QModelInde
 			break;
 
 		case SelectionType::Rectangle:
-			_mousePositions << mouseEvent->pos();
+		{
+			if (mouseEvent->button() == Qt::LeftButton) {
+				publishSelection();
+				_mousePositions.clear();
+			}
+
 			break;
+		}
 
 		case SelectionType::Lasso:
 		{
-			_mousePositions.clear();
+			if (mouseEvent->button() == Qt::LeftButton) {
+				publishSelection();
+				_mousePositions.clear();
+			}
+
 			break;
 		}
 
@@ -553,7 +568,9 @@ void SelectionLayer::mouseReleaseEvent(QMouseEvent* mouseEvent, const QModelInde
 
 		case SelectionType::Brush:
 		{
+			publishSelection();
 			_mousePositions.clear();
+
 			break;
 		}
 
@@ -637,7 +654,7 @@ void SelectionLayer::mouseMoveEvent(QMouseEvent* mouseEvent, const QModelIndex& 
 	}
 
 	if (shouldComputePixelSelection)
-		propByName<SelectionToolProp>("SelectionTool")->computePixelSelection();
+		propByName<SelectionToolProp>("SelectionTool")->compute();
 
 	for (auto index : affectedIds)
 		emit Layer::imageViewerPlugin->layersModel().dataChanged(index, index);
@@ -1053,4 +1070,76 @@ void SelectionLayer::invertSelection()
 
 void SelectionLayer::zoomToSelection()
 {
+}
+
+void SelectionLayer::publishSelection()
+{
+	const auto selectionImage = propByName<SelectionToolProp>("SelectionTool")->selectionImage();
+	
+	auto& indices = dynamic_cast<Points&>(imageViewerPlugin->core()->requestSelection(_pointsDataset->getDataName())).indices;
+
+	switch (_selectionModifier)
+	{
+		case SelectionModifier::Replace:
+		{
+			indices.clear();
+
+			for (std::int32_t y = 0; y < selectionImage.height(); y++) {
+				for (std::int32_t x = 0; x < selectionImage.width(); x++) {
+					if (selectionImage.pixelColor(x, y).red() > 0) {
+						const auto index = (selectionImage.height() - y - 1) * imageSize().width() + x;
+						indices.push_back(index);
+					}
+				}
+			}
+
+			break;
+		}
+			
+		case SelectionModifier::Add:
+		{
+			auto selectionSet = std::set<std::uint32_t>(indices.begin(), indices.end());
+
+			for (std::int32_t y = 0; y < selectionImage.height(); y++) {
+				for (std::int32_t x = 0; x < selectionImage.width(); x++) {
+					if (selectionImage.pixelColor(x, y).red() > 0) {
+						const auto index = (selectionImage.height() - y - 1) * imageSize().width() + x;
+						selectionSet.insert(index);
+					}
+				}
+			}
+
+			indices = std::vector<std::uint32_t>(selectionSet.begin(), selectionSet.end());
+			break;
+		}
+
+		case SelectionModifier::Remove:
+		{
+			auto selectionSet = std::set<std::uint32_t>(indices.begin(), indices.end());
+
+			for (std::int32_t y = 0; y < selectionImage.height(); y++) {
+				for (std::int32_t x = 0; x < selectionImage.width(); x++) {
+					if (selectionImage.pixelColor(x, y).red() > 0) {
+						const auto index = (selectionImage.height() - y - 1) * imageSize().width() + x;
+						selectionSet.erase(index);
+					}
+				}
+			}
+
+			indices = std::vector<std::uint32_t>(selectionSet.begin(), selectionSet.end());
+			break;
+		}
+		
+		case SelectionModifier::All:
+		case SelectionModifier::None:
+		case SelectionModifier::Invert:
+			break;
+
+		default:
+			break;
+	}
+	
+	imageViewerPlugin->core()->notifySelectionChanged(_pointsDataset->getDataName());
+
+	propByName<SelectionToolProp>("SelectionTool")->reset();
 }
