@@ -150,8 +150,8 @@ void SelectionToolProp::computePixelSelection()
 
 				auto shape = shapeByName<QuadShape>("Quad");
 
-				auto selectionLayer					= static_cast<SelectionLayer*>(_node);
-				auto selectionLayerModelViewMatrix	= selectionLayer->modelViewMatrix();
+				auto selectionLayer		= static_cast<SelectionLayer*>(_node);
+				auto modelViewMatrix	= selectionLayer->modelViewMatrix() * modelMatrix();
 
 				const auto shaderProgram = shaderProgramByName("SelectionToolOffScreen");
 				
@@ -179,11 +179,11 @@ void SelectionToolProp::computePixelSelection()
 								if (noMouseEvents < 2)
 									break;
 
-								const auto rectangleTopLeft			= renderer->screenPointToWorldPosition(selectionLayerModelViewMatrix, mouseEvents.first());
-								const auto rectangleBottomRight		= renderer->screenPointToWorldPosition(selectionLayerModelViewMatrix, mouseEvents.last());
+								const auto rectangleTopLeft			= renderer->screenPointToWorldPosition(modelViewMatrix, mouseEvents.first());
+								const auto rectangleBottomRight		= renderer->screenPointToWorldPosition(modelViewMatrix, mouseEvents.last());
 								const auto rectangleTopLeftUV		= QVector2D(rectangleTopLeft.x() / fboSize.width(), rectangleTopLeft.y() / fboSize.height());
 								const auto rectangleBottomRightUV	= QVector2D(rectangleBottomRight.x() / fboSize.width(), rectangleBottomRight.y() / fboSize.height());
-								const auto rectangle				= QRectF(QPointF(0.5f + rectangleTopLeftUV.x(), 0.5f + rectangleTopLeftUV.y()), QPointF(0.5f + rectangleBottomRightUV.x(), 0.5f + rectangleBottomRightUV.y())).normalized();
+								const auto rectangle				= QRectF(QPointF(rectangleTopLeftUV.x(), rectangleTopLeftUV.y()), QPointF(rectangleBottomRightUV.x(), rectangleBottomRightUV.y())).normalized();
 								
 								shaderProgram->setUniformValue("rectangleTopLeft", rectangle.topLeft());
 								shaderProgram->setUniformValue("rectangleBottomRight", rectangle.bottomRight());
@@ -192,40 +192,36 @@ void SelectionToolProp::computePixelSelection()
 								break;
 							}
 
-							/*
 							case SelectionType::Brush:
 							{
 								if (noMouseEvents <= 0)
 									break;
 
-								const auto pBrushA = renderer()->screenPointToWorldPosition(modelViewMatrix(), QVector2D(0.0f, 0.0f));
-								const auto pBrushB = renderer()->screenPointToWorldPosition(modelViewMatrix(), QVector2D(selectionPickerActor->brushRadius(), 0.0f));
-								const auto brushRadiusWorld = (pBrushB - pBrushA).length();
+								const auto brushCenter		= renderer->screenPointToWorldPosition(modelViewMatrix, QPoint(0.0f, 0.0f));
+								const auto brushPerimeter	= renderer->screenPointToWorldPosition(modelViewMatrix, QPoint(selectionLayer->brushRadius(Qt::EditRole).toFloat(), 0.0f));
+								const auto brushRadiusWorld	= (brushPerimeter - brushCenter).length();
 
-								offscreenBufferShaderProgram->setUniformValue("brushRadius", brushRadiusWorld);
+								shaderProgram->setUniformValue("brushRadius", brushRadiusWorld);
 
 								if (noMouseEvents == 1) {
-									const auto pMouseLast = mouseEvents.last().screenPoint();
-									const auto pBrush = renderer()->screenPointToWorldPosition(modelViewMatrix(), pMouseLast).toVector2D();
+									const auto brushCenter = renderer->screenPointToWorldPosition(modelViewMatrix, mouseEvents.last()).toVector2D();
 
-									offscreenBufferShaderProgram->setUniformValue("previousBrushCenter", pBrush);
-									offscreenBufferShaderProgram->setUniformValue("currentBrushCenter", pBrush);
+									shaderProgram->setUniformValue("previousBrushCenter", brushCenter);
+									shaderProgram->setUniformValue("currentBrushCenter", brushCenter);
 								}
 
 								if (noMouseEvents > 1) {
-									const auto pMousePrevious = mouseEvents[noMouseEvents - 2].screenPoint();
-									const auto pMouseCurrent = mouseEvents.last().screenPoint();
-									const auto pBrushPrevious = renderer()->screenPointToWorldPosition(modelViewMatrix(), pMousePrevious).toVector2D();
-									const auto pBrushCurrent = renderer()->screenPointToWorldPosition(modelViewMatrix(), pMouseCurrent).toVector2D();
+									const auto previousBrushCenter	= renderer->screenPointToWorldPosition(modelViewMatrix, mouseEvents[noMouseEvents - 2]).toVector2D();
+									const auto currentBrushCenter	= renderer->screenPointToWorldPosition(modelViewMatrix, mouseEvents.last()).toVector2D();
 
-									offscreenBufferShaderProgram->setUniformValue("previousBrushCenter", pBrushPrevious);
-									offscreenBufferShaderProgram->setUniformValue("currentBrushCenter", pBrushCurrent);
+									shaderProgram->setUniformValue("previousBrushCenter", previousBrushCenter);
+									shaderProgram->setUniformValue("currentBrushCenter", currentBrushCenter);
 								}
 
 								glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 								break;
 							}
-
+							
 							case SelectionType::Lasso:
 							case SelectionType::Polygon:
 							{
@@ -236,17 +232,15 @@ void SelectionToolProp::computePixelSelection()
 
 								points.reserve(static_cast<std::int32_t>(noMouseEvents));
 
-								for (const auto& mouseEvent : mouseEvents) {
-									points.push_back(renderer()->screenPointToWorldPosition(modelViewMatrix(), mouseEvent.screenPoint()).toVector2D());
-								}
+								for (const auto& mouseEvent : mouseEvents)
+									points.push_back(renderer->screenPointToWorldPosition(modelViewMatrix, mouseEvent).toVector2D());
 
-								offscreenBufferShaderProgram->setUniformValueArray("points", &points[0], static_cast<std::int32_t>(points.size()));
-								offscreenBufferShaderProgram->setUniformValue("noPoints", static_cast<int>(points.size()));
+								shaderProgram->setUniformValueArray("points", &points[0], static_cast<std::int32_t>(points.size()));
+								shaderProgram->setUniformValue("noPoints", static_cast<int>(points.size()));
 
 								glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 								break;
 							}
-							*/
 
 							default:
 								break;

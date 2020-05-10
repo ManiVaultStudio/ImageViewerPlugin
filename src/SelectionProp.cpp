@@ -10,11 +10,11 @@
 #include <QOpenGLFunctions>
 
 const std::string vertexShaderSource =
-	#include "SelectionPropVertex.glsl"
+	#include "SelectionVertex.glsl"
 ;
 
 const std::string fragmentShaderSource =
-	#include "SelectionPropFragment.glsl"
+	#include "SelectionFragment.glsl"
 ;
 
 SelectionProp::SelectionProp(SelectionLayer* selectionLayer, const QString& name) :
@@ -24,7 +24,6 @@ SelectionProp::SelectionProp(SelectionLayer* selectionLayer, const QString& name
 	addShaderProgram("Quad");
 	addTexture("Quad", QOpenGLTexture::Target2D);
 
-	
 	QObject::connect(selectionLayer, &SelectionLayer::imageChanged, [this](const QImage& selectionImage) {
 		renderer->bindOpenGLContext();
 		{

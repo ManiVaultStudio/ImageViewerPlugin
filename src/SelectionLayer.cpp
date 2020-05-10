@@ -20,7 +20,7 @@
 
 const QColor SelectionLayer::toolColorForeground	= QColor(255, 174, 66, 200);
 const QColor SelectionLayer::toolColorBackground	= QColor(255, 174, 66, 150);
-const QColor SelectionLayer::fillColor				= QColor(255, 174, 66, 60);
+const QColor SelectionLayer::fillColor				= QColor(255, 174, 66, 100);
 const float SelectionLayer::minBrushRadius			= 1.0f;
 const float SelectionLayer::maxBrushRadius			= 1000.0f;
 const float SelectionLayer::defaultBrushRadius		= 50.0f;
@@ -130,7 +130,7 @@ void SelectionLayer::paint(QPainter* painter)
 
 		case SelectionType::Brush:
 		{
-			if (_mousePositions.size() == 1) {
+			if (_mousePositions.size() >= 1) {
 				const auto brushCenter = _mousePositions.last();
 
 				painter->setPen(Qt::NoPen);
@@ -140,10 +140,9 @@ void SelectionLayer::paint(QPainter* painter)
 
 				painter->setPen(_mouseButtons & Qt::LeftButton ? perimeterForegroundPen : perimeterBackgroundPen);
 
-				/*
-				painter->setBrush(fillBrush);
-				*/
+				//painter->setBrush(fillBrush);
 
+				painter->setBrush(Qt::NoBrush);
 				painter->drawEllipse(QPointF(brushCenter), _brushRadius, _brushRadius);
 
 				controlPoints << _mousePositions.first();
@@ -510,7 +509,11 @@ void SelectionLayer::mousePressEvent(QMouseEvent* mouseEvent, const QModelIndex&
 		}
 
 		case SelectionType::Brush:
+		{
+			_mousePositions.clear();
+			_mousePositions << mouseEvent->pos();
 			break;
+		}
 
 		default:
 			break;
@@ -615,12 +618,16 @@ void SelectionLayer::mouseMoveEvent(QMouseEvent* mouseEvent, const QModelIndex& 
 
 		case SelectionType::Brush:
 		{
-			if (_mousePositions.isEmpty())
+			if (mouseEvent->buttons() & Qt::LeftButton) {
 				_mousePositions << mouseEvent->pos();
-			else
-				_mousePositions.last() = mouseEvent->pos();
+				shouldComputePixelSelection = true;
+			}
+			else {
+				if (_mousePositions.isEmpty())
+					_mousePositions << mouseEvent->pos();
 
-			shouldComputePixelSelection = true;
+				_mousePositions.last() = mouseEvent->pos();
+			}
 
 			break;
 		}

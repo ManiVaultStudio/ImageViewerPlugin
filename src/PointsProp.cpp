@@ -11,11 +11,11 @@
 #include <QOpenGLFunctions>
 
 const std::string vertexShaderSource =
-	#include "PointsPropVertex.glsl"
+	#include "PointsVertex.glsl"
 ;
 
 const std::string fragmentShaderSource =
-	#include "PointsPropFragment.glsl"
+	#include "PointsFragment.glsl"
 ;
 
 const GLuint PointsProp::channels[] = {
