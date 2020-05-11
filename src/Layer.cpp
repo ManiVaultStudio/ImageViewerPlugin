@@ -497,7 +497,8 @@ int Layer::noPixels() const
 Layer::Hints Layer::hints() const
 {
 	return Hints({
-		Hint("Space + Scroll up/down", "Zoom view"),
+		Hint("Space + Scroll up", "Zoom in"),
+		Hint("Space + Scroll down", "Zoom out"),
 		Hint("Space + Move mouse", "Pan view")
 	});
 }
@@ -524,13 +525,16 @@ void Layer::drawHints(QPainter* painter)
 
 	const auto color = QString("rgba(%1, %2, %3, %4)").arg(QString::number(hintsColor.red()), QString::number(hintsColor.green()), QString::number(hintsColor.blue()), QString::number(hintsColor.alpha()));
 
-	hintsHtml += QString("<table style='color: %1;'>").arg(color);
+	hintsHtml += QString("<div style='height: 100%'><table style='color: %1;'>").arg(color);
 
 	for (auto hint : hints()) {
-		hintsHtml += QString("<tr><td>%1</td><td>: %2</td></tr>").arg(hint.title(), hint.description());
+		if (hint.title().isEmpty())
+			hintsHtml += "<tr><td></td><td></td></tr>";
+		else
+			hintsHtml += QString("<tr style='font-weight: %1'><td width=120>%2</td><td>: %3</td></tr>").arg(hint.isActive() ? "bold" : "normal", hint.title(), hint.description());
 	}
 
-	hintsHtml += "</table>";
+	hintsHtml += "</table></div>?";
 
 	hintsDocument.setTextWidth(painter->viewport().width());
 	hintsDocument.setDocumentMargin(textMargins);

@@ -856,6 +856,79 @@ QSize SelectionLayer::imageSize() const
 	return _imagesDataset->imageSize();
 }
 
+Layer::Hints SelectionLayer::hints() const
+{
+	auto result = Layer::hints();
+
+	result << Hints({
+		Hint(),
+		Hint("R", "Rectangle selection tool", _selectionType == SelectionType::Rectangle),
+		Hint("B", "Brush selection tool", _selectionType == SelectionType::Brush),
+		Hint("P", "Polygon selection tool", _selectionType == SelectionType::Polygon),
+		Hint("L", "Lasso selection tool", _selectionType == SelectionType::Lasso),
+		Hint(),
+		Hint("A", "Select all pixels"),
+		Hint("D", "Deselect all pixels"),
+		Hint("I", "Invert selection"),
+		Hint(),
+		Hint("Shift", "Add pixels to selection", _selectionModifier == SelectionModifier::Add),
+		Hint("Ctrl", "Remove pixels from selection", _selectionModifier == SelectionModifier::Remove),
+		Hint(),
+	});
+
+	switch (_selectionType)
+	{
+		case SelectionType::None:
+			break;
+
+		case SelectionType::Rectangle:
+		{
+			result << Hints({
+				Hint("LMB down", "Start rectangle selection"),
+				Hint("LMB up", "Finish selection")
+				});
+			
+			break;
+		}
+
+		case SelectionType::Brush:
+		{
+			result << Hints({
+				Hint("LMB down", "Paint using the brush"),
+				Hint("Scroll up", "Increase brush radius"),
+				Hint("Scroll down", "Decrease brush radius")
+				});
+
+			break;
+		}
+
+		case SelectionType::Lasso:
+		{
+			result << Hints({
+				Hint("LMB down", "Draw selection perimeter"),
+				Hint("LMB up", "Finish selection")
+				});
+
+			break;
+		}
+
+		case SelectionType::Polygon:
+		{
+			result << Hints({
+				Hint("LMB", "Add polygon control point"),
+				Hint("RMB", "Finish selection")
+				});
+
+			break;
+		}
+
+		default:
+			break;
+	}
+
+	return result;
+}
+
 QVariant SelectionLayer::overlayColor(const int& role) const
 {
 	const auto overlayColorString = QString("rgb(%1, %2, %3)").arg(QString::number(_overlayColor.red()), QString::number(_overlayColor.green()), QString::number(_overlayColor.blue()));

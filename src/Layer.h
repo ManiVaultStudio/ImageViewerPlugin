@@ -35,9 +35,10 @@ public:
 	*/
 	class Hint {
 	public:
-		Hint(const QString& title = "", const QString& description = "") :
+		Hint(const QString& title = "", const QString& description = "", const bool& active = false) :
 			_title(title),
-			_description(description)
+			_description(description),
+			_active(active)
 		{
 		}
 
@@ -51,9 +52,15 @@ public:
 			return _description;
 		}
 
+		/** Returns the whether the hint is active */
+		bool isActive() const {
+			return _active;
+		}
+
 	private:
 		QString	_title;				/** Title of the hint */
 		QString	_description;		/** The hint description */
+		bool	_active;			/** Whether the hint is active */
 	};
 
 	using Hints = QVector<Hint>;

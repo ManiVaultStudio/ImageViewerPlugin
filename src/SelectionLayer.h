@@ -203,6 +203,9 @@ protected:
 	*/
 	QSize imageSize() const override;
 
+	/** Returns hints that pertain to the layer */
+	Hints hints() const override;
+
 private: // Miscellaneous
 
 	/** Computes the selection image */
