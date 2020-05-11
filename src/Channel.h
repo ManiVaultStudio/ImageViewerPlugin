@@ -20,6 +20,9 @@ template<typename ChannelType>
 class Channel
 {
 public:
+	using Elements = QVector<ChannelType>;
+
+public:
 	/**
 	 * (Default) constructor
 	 * @param id Channel identifier
@@ -91,7 +94,7 @@ public:
 		if (_elements.size() == noPixels)
 			return;
 
-		auto elements = std::vector<ChannelType>();
+		auto elements = Elements();
 
 		elements.resize(noPixels);
 		//elements.fill(0, noPixels);
@@ -136,7 +139,7 @@ public:
 	}
 
 	/** Returns the channel elements */
-	const std::vector<ChannelType>& elements() const
+	const Elements& elements() const
 	{
 		return _elements;
 	}
@@ -145,7 +148,7 @@ public:
 	 * Sets the channel elements
 	 * @param elements Elements
 	 */
-	void setElements(const std::vector<ChannelType>& elements)
+	void setElements(const Elements& elements)
 	{
 		_elements = elements;
 		_windowNormalized = 1.0f;
@@ -288,20 +291,31 @@ public:
 		computeDisplayRange();
 	}
 
+	/**
+	 * Fill all elements with the supplied value
+	 * @param value Value to fill
+	 */
+	void fill(const ChannelType& value)
+	{
+		_elements.fill(value);
+
+		setChanged();
+	}
+
 private:
-	bool						_enabled;				/** Whether the channel is enabled */
-	bool						_inverted;				/** Whether the channel is inverted */
-	QSize						_imageSize;				/** Image size */
-	std::int32_t				_id;					/** Identifier (for internal use) */
-	QString						_name;					/** Name (for use in the GUI) */
-	std::int32_t				_dimensionId;			/** Dimension identifier */
-	std::vector<ChannelType>	_elements;				/** Elements */
-	Range						_range;					/** Elements range */
-	Range						_displayRange;			/** Elements display range (based on window/level) */
-	float						_windowNormalized;		/** Normalized window */
-	float						_levelNormalized;		/** Normalized level */
-	float						_window;				/** Window */
-	float						_level;					/** Level */
+	bool			_enabled;				/** Whether the channel is enabled */
+	bool			_inverted;				/** Whether the channel is inverted */
+	QSize			_imageSize;				/** Image size */
+	std::int32_t	_id;					/** Identifier (for internal use) */
+	QString			_name;					/** Name (for use in the GUI) */
+	std::int32_t	_dimensionId;			/** Dimension identifier */
+	Elements		_elements;				/** Elements */
+	Range			_range;					/** Elements range */
+	Range			_displayRange;			/** Elements display range (based on window/level) */
+	float			_windowNormalized;		/** Normalized window */
+	float			_levelNormalized;		/** Normalized level */
+	float			_window;				/** Window */
+	float			_level;					/** Level */
 };
 
 /**

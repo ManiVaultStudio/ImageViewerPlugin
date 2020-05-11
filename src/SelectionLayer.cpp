@@ -283,6 +283,17 @@ void SelectionLayer::paint(QPainter* painter)
 	}
 }
 
+void SelectionLayer::createSubsetFromSelection()
+{
+	auto core = imageViewerPlugin->core();
+
+	const auto dataName = _pointsDataset->getDataName();
+
+	const hdps::DataSet& selection = core->requestSelection(dataName);
+
+	core->createSubsetFromSelection(selection, dataName, QString("%1_subset").arg(_pointsDataset->getName()));
+}
+
 Qt::ItemFlags SelectionLayer::flags(const QModelIndex& index) const
 {
 	auto flags = Layer::flags(index);

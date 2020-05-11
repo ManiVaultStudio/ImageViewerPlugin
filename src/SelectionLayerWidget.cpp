@@ -90,17 +90,8 @@ void SelectionLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(SelectionLayer::Column::OverlayColor)), currentColor);
 	});
 
-	QObject::connect(_ui->autoZoomToSelectionCheckBox, &QCheckBox::stateChanged, [this](int state) {
-		switch (state)
-		{
-			case Qt::Unchecked:
-				_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(SelectionLayer::Column::AutoZoomToSelection)), false);
-				break;
-
-			case Qt::Checked:
-				_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(SelectionLayer::Column::AutoZoomToSelection)), true);
-				break;
-		}
+	QObject::connect(_ui->createSubsetPushButton, &QPushButton::clicked, [this](const QColor& currentColor) {
+		static_cast<SelectionLayer*>(_layersModel->selectedLayer())->createSubsetFromSelection();
 	});
 }
 
@@ -188,23 +179,6 @@ void SelectionLayerWidget::updateData(const QModelIndex& topLeft, const QModelIn
 			const auto invertSelectionFlags = _layersModel->flags(topLeft.row(), ult(SelectionLayer::Column::InvertSelection));
 
 			_ui->invertSelectionPushButton->setEnabled(invertSelectionFlags & Qt::ItemIsEditable);
-		}
-
-		if (column == ult(SelectionLayer::Column::AutoZoomToSelection)) {
-			const auto autoZoomToSelection		= _layersModel->data(topLeft.row(), ult(SelectionLayer::Column::AutoZoomToSelection), Qt::EditRole).toBool();
-			const auto autoZoomToSelectionFlags	= _layersModel->flags(topLeft.row(), ult(SelectionLayer::Column::AutoZoomToSelection));
-
-			_ui->autoZoomToSelectionCheckBox->setEnabled(autoZoomToSelectionFlags & Qt::ItemIsEditable);
-
-			_ui->autoZoomToSelectionCheckBox->blockSignals(true);
-			_ui->autoZoomToSelectionCheckBox->setChecked(autoZoomToSelection);
-			_ui->autoZoomToSelectionCheckBox->blockSignals(false);
-		}
-
-		if (column == ult(SelectionLayer::Column::ZoomToSelection)) {
-			const auto zoomToSelectionFlags = _layersModel->flags(topLeft.row(), ult(SelectionLayer::Column::ZoomToSelection));
-
-			_ui->zoomToSelectionPushButton->setEnabled(zoomToSelectionFlags & Qt::ItemIsEditable);
 		}
 
 		if (column == ult(SelectionLayer::Column::OverlayColor)) {

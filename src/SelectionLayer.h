@@ -58,6 +58,9 @@ public:
 	 */
 	void paint(QPainter* painter) override;
 
+	/** Creates a subset from the current selection */
+	void createSubsetFromSelection();
+
 public: // Inherited MVC
 
 	/** Returns the number of columns */
@@ -235,24 +238,24 @@ signals:
 	void imageChanged(const QImage& image);
 
 private:
-	Points*										_pointsDataset;				/** Points dataset to which the layer refers */
-	Images*										_imagesDataset;				/** Images dataset from which the points dataset originates */
-	QImage										_image;						/** Selection image */
-	QVector<std::uint8_t>						_imageData;					/** Image data buffer */
-	SelectionType								_selectionType;				/** Pixel selection type (e.g. rectangle, brush) */
-	SelectionModifier							_selectionModifier;			/** Pixel selection modifier (e.g. replace, add) */
-	float										_brushRadius;				/** Brush radius */
-	QColor										_overlayColor;				/** Selection overlay color */
-	bool										_autoZoomToSelection;		/** Automatically zoom to selection */
+	Points*					_pointsDataset;				/** Points dataset to which the layer refers */
+	Images*					_imagesDataset;				/** Images dataset from which the points dataset originates */
+	QImage					_image;						/** Selection image */
+	QVector<std::uint8_t>	_imageData;					/** Image data buffer */
+	SelectionType			_selectionType;				/** Pixel selection type (e.g. rectangle, brush) */
+	SelectionModifier		_selectionModifier;			/** Pixel selection modifier (e.g. replace, add) */
+	float					_brushRadius;				/** Brush radius */
+	QColor					_overlayColor;				/** Selection overlay color */
+	bool					_autoZoomToSelection;		/** Automatically zoom to selection */
 
 public:
-	static const QColor toolColorForeground;			/** Foreground tool color for brushes and pens */
-	static const QColor toolColorBackground;			/** Background tool color for brushes and pens */
-	static const QColor fillColor;						/** Fill color */
-	static const float minBrushRadius;					/** Minimum brush radius */
-	static const float maxBrushRadius;					/** Maximum brush radius */
-	static const float defaultBrushRadius;				/** Default brush radius */
-	static const float controlPointSize;				/** Size of control points */
-	static const float perimeterLineWidth;				/** Line width of the pixel selection tool perimeter */
-	static const QPoint textPosition;					/** Position of explanatory text */
+	static const QColor toolColorForeground;	/** Foreground tool color for brushes and pens */
+	static const QColor toolColorBackground;	/** Background tool color for brushes and pens */
+	static const QColor fillColor;				/** Fill color */
+	static const float minBrushRadius;			/** Minimum brush radius */
+	static const float maxBrushRadius;			/** Maximum brush radius */
+	static const float defaultBrushRadius;		/** Default brush radius */
+	static const float controlPointSize;		/** Size of control points */
+	static const float perimeterLineWidth;		/** Line width of the pixel selection tool perimeter */
+	static const QPoint textPosition;			/** Position of explanatory text */
 };

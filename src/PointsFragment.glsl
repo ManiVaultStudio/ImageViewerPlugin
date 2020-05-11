@@ -1,16 +1,20 @@
 R"(
 #version 330
 
-uniform sampler2D colorMapTexture;		// Colormap texture sampler
-uniform sampler2DArray channelTextures;	// Texture samplers (0: Channel 1, 1: Channel 2, 2: Channel 3, 3: Alpha)
-uniform vec2 displayRanges[3];			// Display ranges for each channel
-uniform int noChannels;					// Number of active channels
-uniform bool useConstantColor;			// Whether the pixel color is constant and the alpha is modulated by the intensity of the selected channel
-uniform vec4 constantColor;				// Constant color
-uniform int colorSpace;					// Color space (0: RGB, 1: HSL)
-uniform float opacity;					// Layer opacity
-in vec2 uv;								// Input texture coordinates
-out vec4 fragmentColor;					// Output fragment
+uniform sampler2D colorMapTexture;			// Colormap texture sampler
+uniform sampler2DArray channelTextures;		// Texture samplers
+											// 0: Channel 1
+											// 1: Channel 2
+											// 2: Channel 3
+											// 3: Mask
+uniform vec2 displayRanges[3];				// Display ranges for each channel
+uniform int noChannels;						// Number of active channels
+uniform bool useConstantColor;				// Whether the pixel color is constant and the alpha is modulated by the intensity of the selected channel
+uniform vec4 constantColor;					// Constant color
+uniform int colorSpace;						// Color space (0: RGB, 1: HSL)
+uniform float opacity;						// Layer opacity
+in vec2 uv;									// Input texture coordinates
+out vec4 fragmentColor;						// Output fragment
 
 // Perform channel tone mapping
 float toneMapChannel(float minPixelValue, float maxPixelValue, float pixelValue)
@@ -188,5 +192,8 @@ void main(void)
 	} else {
 		fragmentColor.a = opacity;
 	}
+
+	// Apply mask
+	fragmentColor.a *= texture(channelTextures, vec3(uv, 3)).r;
 }
 )"

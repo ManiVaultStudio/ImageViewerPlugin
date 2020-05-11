@@ -11,7 +11,7 @@
 
 PointsLayer::PointsLayer(const QString& pointsDatasetName, const QString& id, const QString& name, const int& flags) :
 	Layer(pointsDatasetName, Layer::Type::Points, id, name, flags),
-	Channels<float>(3),
+	Channels<float>(4),
 	_pointsDataset(nullptr),
 	_imagesDataset(nullptr),
 	_maxNoChannels(0),
@@ -54,6 +54,23 @@ void PointsLayer::init()
 
 	if (selection)
 		setSelection(Indices::fromStdVector(selection->indices));
+
+	auto maskChannel = channel(3);
+
+	maskChannel->setImageSize(imageSize());
+
+	if (_pointsDataset->isFull()) {
+		maskChannel->fill(1.0f);
+	}
+	else {
+		maskChannel->fill(0.0f);
+
+		for (auto index : _pointsDataset->indices) {
+			(*maskChannel)[index] = 1.0f;
+		}
+	}
+
+	emit channelChanged(3);
 }
 
 void PointsLayer::matchScaling(const QSize& targetImageSize)
@@ -694,18 +711,29 @@ void PointsLayer::setConstantColor(const QColor& constantColor)
 
 void PointsLayer::computeChannel(const std::uint32_t& id)
 {
-	auto computeChannel = channel(id);
+	auto channel = this->channel(id);
 
-	if (computeChannel->dimensionId() < 0)
+	if (channel->dimensionId() < 0)
 		return;
 
-	computeChannel->setImageSize(imageSize());
+	channel->setImageSize(imageSize());
 
-	const int32_t dimensionIndices[] = { computeChannel->dimensionId() };
+	const int32_t dimensionIndices[] = { channel->dimensionId() };
 
-	_pointsDataset->populateDataForDimensions(*computeChannel, dimensionIndices);
+	if (_pointsDataset->isFull() && !_pointsDataset->isDerivedData()) {
+		_pointsDataset->populateDataForDimensions(*channel, dimensionIndices);
+	}
+	else {
+		channel->fill(0.0f);
 
-	computeChannel->setChanged();
+		auto& data = _pointsDataset->getData();
+
+		for (auto index : _pointsDataset->indices) {
+			(*channel)[index] = data[index * _noDimensions + channel->dimensionId()];
+		}
+	}
+
+	channel->setChanged();
 
 	emit channelChanged(id);
 }

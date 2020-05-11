@@ -53,10 +53,11 @@ PointsProp::PointsProp(PointsLayer* pointsLayer, const QString& name) :
 			if (imageSize != QSize(texture->width(), texture->height())) {
 				texture->destroy();
 				texture->create();
-				texture->setLayers(3);
+				texture->setLayers(4);
 				texture->setSize(imageSize.width(), imageSize.height(), 1);
 				texture->setSize(imageSize.width(), imageSize.height(), 2);
 				texture->setSize(imageSize.width(), imageSize.height(), 3);
+				texture->setSize(imageSize.width(), imageSize.height(), 4);
 				texture->setFormat(QOpenGLTexture::R32F);
 				texture->allocateStorage(QOpenGLTexture::Red, QOpenGLTexture::Float32);
 				texture->setWrapMode(QOpenGLTexture::ClampToEdge);
