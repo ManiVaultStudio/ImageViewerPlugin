@@ -79,6 +79,11 @@ public: // Getters/setters
 	 */
 	QVariant clustersDatasetName(const int& role = Qt::DisplayRole) const;
 
+protected:
+	
+	/** Returns hints that pertain to the layer */
+	Hints hints() const override;
+
 private:
 	QString			_clustersDatasetName;		/** Name of the clusters dataset to which the layer refers */
 	Clusters*		_clustersDataset;			/** Clusters dataset to which the layer refers */

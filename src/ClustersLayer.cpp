@@ -76,3 +76,8 @@ QVariant ClustersLayer::clustersDatasetName(const int& role /*= Qt::DisplayRole*
 
 	return QVariant();
 }
+
+Layer::Hints ClustersLayer::hints() const
+{
+	return Layer::hints();
+}

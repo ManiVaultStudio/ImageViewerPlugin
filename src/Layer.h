@@ -28,6 +28,36 @@ class Layer : public Node
 
 public:
 
+	/**
+	 * Hint class
+	 * 
+	 * @author Thomas Kroes
+	*/
+	class Hint {
+	public:
+		Hint(const QString& title = "", const QString& description = "") :
+			_title(title),
+			_description(description)
+		{
+		}
+
+		/** Returns the hint title */
+		QString title() const {
+			return _title;
+		}
+
+		/** Returns the hint description */
+		QString description() const {
+			return _description;
+		}
+
+	private:
+		QString	_title;				/** Title of the hint */
+		QString	_description;		/** The hint description */
+	};
+
+	using Hints = QVector<Hint>;
+
 	/**  Columns */
 	enum class Column {
 		Name,					// Name of the layer
@@ -151,7 +181,7 @@ public:
 	 * Paints the layer
 	 * @param painter Pointer to painter
 	 */
-	virtual void paint(QPainter* painter) = 0;
+	virtual void paint(QPainter* painter);
 
 public: // MVC
 	
@@ -323,10 +353,20 @@ protected:
 	 */
 	int noPixels() const;
 
-public:
+	/** Returns hints that pertain to the layer */
+	virtual Hints hints() const;
 
-	/** Pointer to the image viewer plugin for interfacing with datasets */
-	static ImageViewerPlugin* imageViewerPlugin;
+	/**
+	 * Draws the layer title
+	 * @param painter Pointer to painter
+	 */
+	void drawTitle(QPainter* painter);
+
+	/**
+	 * Draws the layer hints
+	 * @param painter Pointer to painter
+	 */
+	void drawHints(QPainter* painter);
 
 signals:
 	
@@ -344,4 +384,9 @@ protected:
 	QVector<QPoint>		_mousePositions;	/** Recorded mouse positions */
 	int					_mouseButtons;		/** State of the left, middle and right mouse buttons */
 	int					_keys;				/** Pressed keyboard buttons */
+
+public:
+	static ImageViewerPlugin* imageViewerPlugin;		/** Pointer to the image viewer plugin for interfacing with datasets */
+	static const QColor hintsColor;						/** Color for hints */
+	static const qreal textMargins;							/** Text margins */
 };

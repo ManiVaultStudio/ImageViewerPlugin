@@ -58,6 +58,8 @@ void SelectionLayer::init()
 
 void SelectionLayer::paint(QPainter* painter)
 {
+	Layer::paint(painter);
+
 	painter->setFont(QFont("Font Awesome 5 Free Solid", 9));
 
 	auto textRectangle = QRectF();
@@ -85,15 +87,6 @@ void SelectionLayer::paint(QPainter* painter)
 	QVector<QPoint> controlPoints;
 
 	QString helpTextHtml;
-
-	QTextDocument td;
-	
-	helpTextHtml += "<table style='color: rgb(255, 174, 66);'>";
-
-	const auto modifierString = QString("(%1 pixels)").arg(selectionModifierName(_selectionModifier));
-
-	helpTextHtml += QString("<tr><td colspan=3 style='font-weight: bold;'>%1 selection %2</td></tr>").arg(selectionTypeName(_selectionType), modifierString);
-	helpTextHtml += QString("<tr><td width=100></td><td></td><td></td></tr>");
 
 	switch (_selectionType)
 	{
@@ -154,9 +147,11 @@ void SelectionLayer::paint(QPainter* painter)
 				textRectangle = QRectF(textCenter - QPointF(size, size), textCenter + QPointF(size, size));
 			}
 
+			/*
 			helpTextHtml += "<tr><td>Left mouse button</td><td>:</td><td>Activate brush</td></tr>";
 			helpTextHtml += "<tr><td>Mouse wheel up</td><td>:</td><td>Increase brush radius</td></tr>";
 			helpTextHtml += "<tr><td>Mouse wheel down</td><td>:</td><td>Decrease brush radius</td></tr>";
+			*/
 
 			break;
 		}
@@ -184,8 +179,10 @@ void SelectionLayer::paint(QPainter* painter)
 				textRectangle = QRectF(textCenter - QPointF(size, size), textCenter + QPointF(size, size));
 			}
 
+			/*
 			helpTextHtml += QString("<tr><td>Mouse down</td><td>:</td><td>Draw selection perimeter</td></tr>");
 			helpTextHtml += QString("<tr><td>Mouse up</td><td>:</td><td>Finish selection</td></tr>");
+			*/
 
 			break;
 		}
@@ -218,8 +215,10 @@ void SelectionLayer::paint(QPainter* painter)
 				textRectangle = QRectF(textCenter - QPointF(size, size), textCenter + QPointF(size, size));
 			}
 
+			/*
 			helpTextHtml += QString("<tr><td>Left mouse button</td><td>:</td><td>Add polygon control point</td></tr>");
 			helpTextHtml += QString("<tr><td>Right mouse button</td><td>:</td><td>Finish selection</td></tr>");
+			*/
 
 			break;
 		}
@@ -229,14 +228,10 @@ void SelectionLayer::paint(QPainter* painter)
 	}
 
 	//helpTextHtml += QString("<tr><td></td></tr>");
+	/*
 	helpTextHtml += QString("<tr><td>Shift key</td><td>:</td><td>Add pixels to selection</td></tr>");
 	helpTextHtml += QString("<tr><td>Control key</td><td>:</td><td>Remove pixels from selection</td></tr>");
-
-	helpTextHtml += "</table>";
-
-	td.setHtml(helpTextHtml);
-
-	td.drawContents(painter);
+	*/
 
 	painter->setPen(controlPointsPen);
 	painter->drawPoints(controlPoints);

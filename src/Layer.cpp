@@ -7,8 +7,12 @@
 
 #include <QFont>
 #include <QDebug>
+#include <QPainter>
+#include <QTextDocument>
 
-ImageViewerPlugin* Layer::imageViewerPlugin = nullptr;
+ImageViewerPlugin* Layer::imageViewerPlugin	= nullptr;
+const QColor Layer::hintsColor				= QColor(255, 174, 66, 200);
+const qreal Layer::textMargins				= 10.0;
 
 Layer::Layer(const QString& datasetName, const Type& type, const QString& id, const QString& name, const int& flags) :
 	Node(id, name, flags),
@@ -33,6 +37,12 @@ void Layer::matchScaling(const QSize& targetImageSize)
 	const auto scale = std::min(widthScaling, heightScaling);
 
 	setScale(scale);
+}
+
+void Layer::paint(QPainter* painter)
+{
+	drawTitle(painter);
+	drawHints(painter);
 }
 
 Qt::ItemFlags Layer::flags(const QModelIndex& index) const
@@ -482,4 +492,48 @@ QVector<QPoint> Layer::mousePositions() const
 int Layer::noPixels() const
 {
 	return imageSize().width() * imageSize().height();
+}
+
+Layer::Hints Layer::hints() const
+{
+	return Hints({
+		Hint("Space + Scroll up/down", "Zoom view"),
+		Hint("Space + Move mouse", "Pan view")
+	});
+}
+
+void Layer::drawTitle(QPainter* painter)
+{
+	QTextDocument titleDocument;
+
+	const auto color = QString("rgba(%1, %2, %3, %4)").arg(QString::number(hintsColor.red()), QString::number(hintsColor.green()), QString::number(hintsColor.blue()), QString::number(hintsColor.alpha()));
+
+	QString titleHtml = QString("<div style='width: 100%; text-align: center; color: %1; font-weight: bold;'>%2<div>").arg(color, _name);
+	
+	titleDocument.setTextWidth(painter->viewport().width());
+	titleDocument.setDocumentMargin(textMargins);
+	titleDocument.setHtml(titleHtml);
+	titleDocument.drawContents(painter, painter->viewport());
+}
+
+void Layer::drawHints(QPainter* painter)
+{
+	QTextDocument hintsDocument;
+
+	QString hintsHtml;
+
+	const auto color = QString("rgba(%1, %2, %3, %4)").arg(QString::number(hintsColor.red()), QString::number(hintsColor.green()), QString::number(hintsColor.blue()), QString::number(hintsColor.alpha()));
+
+	hintsHtml += QString("<table style='color: %1;'>").arg(color);
+
+	for (auto hint : hints()) {
+		hintsHtml += QString("<tr><td>%1</td><td>: %2</td></tr>").arg(hint.title(), hint.description());
+	}
+
+	hintsHtml += "</table>";
+
+	hintsDocument.setTextWidth(painter->viewport().width());
+	hintsDocument.setDocumentMargin(textMargins);
+	hintsDocument.setHtml(hintsHtml);
+	hintsDocument.drawContents(painter);
 }

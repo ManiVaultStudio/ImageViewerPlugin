@@ -82,6 +82,7 @@ void ImagesLayer::init()
 
 void ImagesLayer::paint(QPainter* painter)
 {
+	Layer::paint(painter);
 }
 
 Qt::ItemFlags ImagesLayer::flags(const QModelIndex& index) const
@@ -278,6 +279,11 @@ QVariant ImagesLayer::noImages(const int& role) const
 QSize ImagesLayer::imageSize() const
 {
 	return _images->imageSize();
+}
+
+Layer::Hints ImagesLayer::hints() const
+{
+	return Layer::hints() << Hint("Scroll up", "Next image") << Hint("Scroll down", "Previous image");
 }
 
 QVariant ImagesLayer::imageNames(const int& role) const

@@ -66,3 +66,8 @@ QSize RootLayer::imageSize() const
 {
 	return QSize();
 }
+
+Layer::Hints RootLayer::hints() const
+{
+	return Layer::hints();
+}

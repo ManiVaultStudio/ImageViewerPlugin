@@ -69,6 +69,7 @@ void PointsLayer::matchScaling(const QSize& targetImageSize)
 
 void PointsLayer::paint(QPainter* painter)
 {
+	Layer::paint(painter);
 }
 
 Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
@@ -369,6 +370,11 @@ QModelIndexList PointsLayer::setData(const QModelIndex& index, const QVariant& v
 QSize PointsLayer::imageSize() const
 {
 	return _imagesDataset->imageSize();
+}
+
+Layer::Hints PointsLayer::hints() const
+{
+	return Layer::hints();
 }
 
 QVariant PointsLayer::noPoints(const int& role /*= Qt::DisplayRole*/) const

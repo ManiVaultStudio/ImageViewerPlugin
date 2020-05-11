@@ -66,4 +66,9 @@ public: // Inherited MVC
 	 * @return Model indices that are affected by the operation
 	 */
 	QModelIndexList setData(const QModelIndex& index, const QVariant& value, const int& role) override;
+
+protected:
+
+	/** Returns hints that pertain to the layer */
+	Hints hints() const override;
 };
