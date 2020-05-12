@@ -33,33 +33,46 @@ SelectionToolProp::SelectionToolProp(SelectionLayer* selectionLayer, const QStri
 
 	addShaderProgram("SelectionTool");
 	addShaderProgram("SelectionToolOffScreen");
-
-	QObject::connect(selectionLayer, &SelectionLayer::imageChanged, [this](const QImage& image) {
-		renderer->bindOpenGLContext();
+	
+	QObject::connect(selectionLayer, &SelectionLayer::channelChanged, [this, selectionLayer](const std::uint32_t& channelId) {
+		try
 		{
-			if (image.isNull())
+			renderer->bindOpenGLContext();
+
+			if (channelId != 0)
 				return;
 
-			const auto imageSize = image.size();
-			
+			auto channel = selectionLayer->channel(channelId);
+
+			const auto imageSize = channel->imageSize();
+
+			if (!imageSize.isValid())
+				return;
+
 			auto createFbo = false;
 
 			if (_fbo.isNull())
 				createFbo = true;
 
-			if (!_fbo.isNull() && image.size() != QSize(_fbo->width(), _fbo->height()))
+			if (!_fbo.isNull() && imageSize != QSize(_fbo->width(), _fbo->height()))
 				createFbo = true;
 
 			if (createFbo)
 				_fbo.reset(new QOpenGLFramebufferObject(imageSize.width(), imageSize.height()));
 
-			const auto rectangle = QRectF(QPointF(0.f, 0.f), QSizeF(static_cast<float>(image.width()), static_cast<float>(image.height())));
+			const auto rectangle = QRectF(QPointF(0.f, 0.f), QSizeF(imageSize));
 
 			this->shapeByName<QuadShape>("Quad")->setRectangle(rectangle);
 
 			updateModelMatrix();
 		}
-		renderer->releaseOpenGLContext();
+		catch (std::exception& e)
+		{
+			qDebug() << _name << "frame buffer object update failed:" << e.what();
+		}
+		catch (...) {
+			qDebug() << _name << "frame buffer object update failed due to unhandled exception";
+		}
 	});
 
 	initialize();
@@ -72,15 +85,13 @@ void SelectionToolProp::initialize()
 	try
 	{
 		renderer->bindOpenGLContext();
-		{
-			Prop::initialize();
 
-			loadSelectionToolShaderProgram();
-			loadSelectionToolOffScreenShaderProgram();
+		Prop::initialize();
 
-			_initialized = true;
-		}
-		Renderable::renderer->releaseOpenGLContext();
+		loadSelectionToolShaderProgram();
+		loadSelectionToolOffScreenShaderProgram();
+
+		_initialized = true;
 	}
 	catch (std::exception& e)
 	{
@@ -140,131 +151,124 @@ void SelectionToolProp::compute()
 
 	try {
 		renderer->bindOpenGLContext();
-		{
-			if (_fbo->bind()) {
-				glViewport(0, 0, _fbo->width(), _fbo->height());
 
-				QMatrix4x4 transform;
+		if (!_fbo->bind())
+			throw std::exception("Unable to bind frame buffer object");
 
-				transform.ortho(0.0f, _fbo->width(), 0.0f, _fbo->height(), -1.0f, +1.0f);
+		glViewport(0, 0, _fbo->width(), _fbo->height());
 
-				auto shape = shapeByName<QuadShape>("Quad");
+		QMatrix4x4 transform;
 
-				auto selectionLayer		= static_cast<SelectionLayer*>(_node);
-				auto modelViewMatrix	= selectionLayer->modelViewMatrix() * modelMatrix();
+		transform.ortho(0.0f, _fbo->width(), 0.0f, _fbo->height(), -1.0f, +1.0f);
 
-				const auto shaderProgram = shaderProgramByName("SelectionToolOffScreen");
-				
-				shape->vao().bind();
+		auto shape = shapeByName<QuadShape>("Quad");
+
+		auto selectionLayer = static_cast<SelectionLayer*>(_node);
+		auto modelViewMatrix = selectionLayer->modelViewMatrix() * modelMatrix();
+
+		const auto shaderProgram = shaderProgramByName("SelectionToolOffScreen");
+
+		shape->vao().bind();
+		
+		if (shaderProgram->bind()) {
+			glBindTexture(GL_TEXTURE_2D, _fbo->texture());
+
+			const auto selectionType = selectionLayer->selectionType(Qt::EditRole).toInt();
+
+			shaderProgram->setUniformValue("pixelSelectionTexture", 0);
+			shaderProgram->setUniformValue("transform", transform);
+			shaderProgram->setUniformValue("selectionType", selectionType);
+
+			const auto fboSize = QSizeF(static_cast<float>(_fbo->size().width()), static_cast<float>(_fbo->size().height()));
+			const auto mouseEvents = selectionLayer->mousePositions();
+			const auto noMouseEvents = mouseEvents.size();
+
+			shaderProgram->setUniformValue("imageSize", fboSize.width(), fboSize.height());
+
+			switch (static_cast<SelectionType>(selectionType))
+			{
+				case SelectionType::Rectangle:
 				{
-					if (shaderProgram->bind()) {
-						glBindTexture(GL_TEXTURE_2D, _fbo->texture());
+					if (noMouseEvents < 2)
+						break;
 
-						const auto selectionType = selectionLayer->selectionType(Qt::EditRole).toInt();
+					const auto rectangleTopLeft = renderer->screenPointToWorldPosition(modelViewMatrix, mouseEvents.first());
+					const auto rectangleBottomRight = renderer->screenPointToWorldPosition(modelViewMatrix, mouseEvents.last());
+					const auto rectangleTopLeftUV = QVector2D(rectangleTopLeft.x() / fboSize.width(), rectangleTopLeft.y() / fboSize.height());
+					const auto rectangleBottomRightUV = QVector2D(rectangleBottomRight.x() / fboSize.width(), rectangleBottomRight.y() / fboSize.height());
+					const auto rectangle = QRectF(QPointF(rectangleTopLeftUV.x(), rectangleTopLeftUV.y()), QPointF(rectangleBottomRightUV.x(), rectangleBottomRightUV.y())).normalized();
 
-						shaderProgram->setUniformValue("pixelSelectionTexture", 0);
-						shaderProgram->setUniformValue("transform", transform);
-						shaderProgram->setUniformValue("selectionType", selectionType);
-						
-						const auto fboSize			= QSizeF(static_cast<float>(_fbo->size().width()), static_cast<float>(_fbo->size().height()));
-						const auto mouseEvents		= selectionLayer->mousePositions();
-						const auto noMouseEvents	= mouseEvents.size();
+					shaderProgram->setUniformValue("rectangleTopLeft", rectangle.topLeft());
+					shaderProgram->setUniformValue("rectangleBottomRight", rectangle.bottomRight());
 
-						shaderProgram->setUniformValue("imageSize", fboSize.width(), fboSize.height());
-						
-						switch (static_cast<SelectionType>(selectionType))
-						{
-							case SelectionType::Rectangle:
-							{
-								if (noMouseEvents < 2)
-									break;
-
-								const auto rectangleTopLeft			= renderer->screenPointToWorldPosition(modelViewMatrix, mouseEvents.first());
-								const auto rectangleBottomRight		= renderer->screenPointToWorldPosition(modelViewMatrix, mouseEvents.last());
-								const auto rectangleTopLeftUV		= QVector2D(rectangleTopLeft.x() / fboSize.width(), rectangleTopLeft.y() / fboSize.height());
-								const auto rectangleBottomRightUV	= QVector2D(rectangleBottomRight.x() / fboSize.width(), rectangleBottomRight.y() / fboSize.height());
-								const auto rectangle				= QRectF(QPointF(rectangleTopLeftUV.x(), rectangleTopLeftUV.y()), QPointF(rectangleBottomRightUV.x(), rectangleBottomRightUV.y())).normalized();
-								
-								shaderProgram->setUniformValue("rectangleTopLeft", rectangle.topLeft());
-								shaderProgram->setUniformValue("rectangleBottomRight", rectangle.bottomRight());
-
-								glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-								break;
-							}
-
-							case SelectionType::Brush:
-							{
-								if (noMouseEvents <= 0)
-									break;
-
-								const auto brushCenter		= renderer->screenPointToWorldPosition(modelViewMatrix, QPoint(0.0f, 0.0f));
-								const auto brushPerimeter	= renderer->screenPointToWorldPosition(modelViewMatrix, QPoint(selectionLayer->brushRadius(Qt::EditRole).toFloat(), 0.0f));
-								const auto brushRadiusWorld	= (brushPerimeter - brushCenter).length();
-
-								shaderProgram->setUniformValue("brushRadius", brushRadiusWorld);
-
-								if (noMouseEvents == 1) {
-									const auto brushCenter = renderer->screenPointToWorldPosition(modelViewMatrix, mouseEvents.last()).toVector2D();
-
-									shaderProgram->setUniformValue("previousBrushCenter", brushCenter);
-									shaderProgram->setUniformValue("currentBrushCenter", brushCenter);
-								}
-
-								if (noMouseEvents > 1) {
-									const auto previousBrushCenter	= renderer->screenPointToWorldPosition(modelViewMatrix, mouseEvents[noMouseEvents - 2]).toVector2D();
-									const auto currentBrushCenter	= renderer->screenPointToWorldPosition(modelViewMatrix, mouseEvents.last()).toVector2D();
-
-									shaderProgram->setUniformValue("previousBrushCenter", previousBrushCenter);
-									shaderProgram->setUniformValue("currentBrushCenter", currentBrushCenter);
-								}
-
-								glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-								break;
-							}
-							
-							case SelectionType::Lasso:
-							case SelectionType::Polygon:
-							{
-								if (noMouseEvents < 2)
-									break;
-
-								QList<QVector2D> points;
-
-								points.reserve(static_cast<std::int32_t>(noMouseEvents));
-
-								for (const auto& mouseEvent : mouseEvents)
-									points.push_back(renderer->screenPointToWorldPosition(modelViewMatrix, mouseEvent).toVector2D());
-
-								shaderProgram->setUniformValueArray("points", &points[0], static_cast<std::int32_t>(points.size()));
-								shaderProgram->setUniformValue("noPoints", static_cast<int>(points.size()));
-
-								glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-								break;
-							}
-
-							default:
-								break;
-						}
-						
-						shaderProgram->release();
-					}
-					else
-					{
-						throw std::exception("Unable to bind off screen shader program");
-					}
+					glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+					break;
 				}
 
-				shape->vao().release();
+				case SelectionType::Brush:
+				{
+					if (noMouseEvents <= 0)
+						break;
 
-				_fbo->release();
-				
+					const auto brushCenter = renderer->screenPointToWorldPosition(modelViewMatrix, QPoint(0.0f, 0.0f));
+					const auto brushPerimeter = renderer->screenPointToWorldPosition(modelViewMatrix, QPoint(selectionLayer->brushRadius(Qt::EditRole).toFloat(), 0.0f));
+					const auto brushRadiusWorld = (brushPerimeter - brushCenter).length();
+
+					shaderProgram->setUniformValue("brushRadius", brushRadiusWorld);
+
+					if (noMouseEvents == 1) {
+						const auto brushCenter = renderer->screenPointToWorldPosition(modelViewMatrix, mouseEvents.last()).toVector2D();
+
+						shaderProgram->setUniformValue("previousBrushCenter", brushCenter);
+						shaderProgram->setUniformValue("currentBrushCenter", brushCenter);
+					}
+
+					if (noMouseEvents > 1) {
+						const auto previousBrushCenter = renderer->screenPointToWorldPosition(modelViewMatrix, mouseEvents[noMouseEvents - 2]).toVector2D();
+						const auto currentBrushCenter = renderer->screenPointToWorldPosition(modelViewMatrix, mouseEvents.last()).toVector2D();
+
+						shaderProgram->setUniformValue("previousBrushCenter", previousBrushCenter);
+						shaderProgram->setUniformValue("currentBrushCenter", currentBrushCenter);
+					}
+
+					glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+					break;
+				}
+
+				case SelectionType::Lasso:
+				case SelectionType::Polygon:
+				{
+					if (noMouseEvents < 2)
+						break;
+
+					QList<QVector2D> points;
+
+					points.reserve(static_cast<std::int32_t>(noMouseEvents));
+
+					for (const auto& mouseEvent : mouseEvents)
+						points.push_back(renderer->screenPointToWorldPosition(modelViewMatrix, mouseEvent).toVector2D());
+
+					shaderProgram->setUniformValueArray("points", &points[0], static_cast<std::int32_t>(points.size()));
+					shaderProgram->setUniformValue("noPoints", static_cast<int>(points.size()));
+
+					glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+					break;
+				}
+
+				default:
+					break;
 			}
-			else
-			{
-				throw std::exception("Unable to bind frame buffer object");
-			}
+
+			shaderProgram->release();
 		}
-		renderer->releaseOpenGLContext();
+		else
+		{
+			throw std::exception("Unable to bind off screen shader program");
+		}
+
+		shape->vao().release();
+
+		_fbo->release();
 	}
 	catch (std::exception& e)
 	{

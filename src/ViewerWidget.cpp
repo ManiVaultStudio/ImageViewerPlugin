@@ -14,6 +14,7 @@
 #include <QGuiApplication>
 #include <QOpenGLDebugLogger>
 #include <QPainter>
+#include <QMessageBox>
 
 ViewerWidget::ViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	QOpenGLWidget(imageViewerPlugin),
@@ -168,32 +169,41 @@ void ViewerWidget::initializeGL()
 
 void ViewerWidget::paintGL()
 {
-	auto& layersModel = _imageViewerPlugin->layersModel();
+	try {
+		auto& layersModel = _imageViewerPlugin->layersModel();
 
-	QPainter painter;
+		QPainter painter;
 
-	painter.begin(this);
-	
-	painter.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
+		painter.begin(this);
 
-	drawBackground(&painter);
+		painter.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
 
-	painter.beginNativePainting();
+		drawBackground(&painter);
 
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		painter.beginNativePainting();
 
-	auto root = layersModel.getLayer(QModelIndex());
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	if (root)
-		root->render(_renderer->projectionMatrix() * _renderer->viewMatrix());
+		auto root = layersModel.getLayer(QModelIndex());
 
-	painter.endNativePainting();
+		if (root)
+			root->render(_renderer->projectionMatrix() * _renderer->viewMatrix());
 
-	layersModel.paint(&painter);
+		painter.endNativePainting();
 
-	painter.end();
-	
+		layersModel.paint(&painter);
+
+		painter.end();
+	}
+	catch (std::exception& e)
+	{
+		QMessageBox(QMessageBox::Critical, "Rendering failed", e.what());
+	}
+	catch (...) {
+		QMessageBox(QMessageBox::Critical, "Rendering failed", "An unhandled exception occurred");
+	}
+
 #ifdef _DEBUG
 	for (const QOpenGLDebugMessage& message : _openglDebugLogger->loggedMessages())
 		switch (message.severity())

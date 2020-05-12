@@ -20,19 +20,26 @@ class SelectionLayer : public Layer, public Channels<std::uint8_t>
 {
 	Q_OBJECT
 
-public:
+public: // Enumerations
+
+	/**  Channel indices */
+	enum class ChannelIndex {
+		Selection,		/** Selection channel */
+
+		Count = Selection + 1
+	};
 
 	/**  Columns */
 	enum class Column {
 		PixelSelectionType = ult(Layer::Column::End) + 1,		// Type of pixel selection
-		PixelSelectionModifier,										// Pixel selection modifier
-		BrushRadius,												// Brush radius
-		SelectAll,													// Select all pixels
-		SelectNone,													// Select no pixels
-		InvertSelection,											// Invert the pixel selection
-		AutoZoomToSelection,										// Zoom automatically to the pixel selection
-		ZoomToSelection,											// Zoom to the pixel selection
-		OverlayColor,												// Selection overlay color
+		PixelSelectionModifier,									// Pixel selection modifier
+		BrushRadius,											// Brush radius
+		SelectAll,												// Select all pixels
+		SelectNone,												// Select no pixels
+		InvertSelection,										// Invert the pixel selection
+		AutoZoomToSelection,									// Zoom automatically to the pixel selection
+		ZoomToSelection,										// Zoom to the pixel selection
+		OverlayColor,											// Selection overlay color
 
 		Start = PixelSelectionType,
 		End = OverlayColor
@@ -60,6 +67,12 @@ public:
 
 	/** Creates a subset from the current selection */
 	void createSubsetFromSelection();
+
+	/**
+	* Returns the image size
+	* @return Image size in variant form
+	*/
+	QSize imageSize() const override;
 
 public: // Inherited MVC
 
@@ -200,19 +213,13 @@ public: // Getters/setters
 
 protected:
 
-	/**
-	* Returns the image size
-	* @return Image size in variant form
-	*/
-	QSize imageSize() const override;
-
 	/** Returns hints that pertain to the layer */
 	Hints hints() const override;
 
 private: // Miscellaneous
 
 	/** Computes the selection image */
-	void computeImage();
+	void computeChannel(const ChannelIndex& channelType);
 
 	/** Selects all pixels */
 	void selectAll();
@@ -229,24 +236,16 @@ private: // Miscellaneous
 	/** Takes the pixels that were selected by the selection tools and publishes it to HDPS */
 	void publishSelection();
 
-signals:
-
-	/**
-	 * Signals that the image changed
-	 * @param image Image
-	 */
-	void imageChanged(const QImage& image);
-
 private:
-	Points*					_pointsDataset;				/** Points dataset to which the layer refers */
-	Images*					_imagesDataset;				/** Images dataset from which the points dataset originates */
-	QImage					_image;						/** Selection image */
-	QVector<std::uint8_t>	_imageData;					/** Image data buffer */
-	SelectionType			_selectionType;				/** Pixel selection type (e.g. rectangle, brush) */
-	SelectionModifier		_selectionModifier;			/** Pixel selection modifier (e.g. replace, add) */
-	float					_brushRadius;				/** Brush radius */
-	QColor					_overlayColor;				/** Selection overlay color */
-	bool					_autoZoomToSelection;		/** Automatically zoom to selection */
+	Points*						_pointsDataset;				/** Points dataset to which the layer refers */
+	Images*						_imagesDataset;				/** Images dataset from which the points dataset originates */
+	QImage						_image;						/** Selection image */
+	std::vector<std::int32_t>	_indices;					/** Indices */
+	SelectionType				_selectionType;				/** Pixel selection type (e.g. rectangle, brush) */
+	SelectionModifier			_selectionModifier;			/** Pixel selection modifier (e.g. replace, add) */
+	float						_brushRadius;				/** Brush radius */
+	QColor						_overlayColor;				/** Selection overlay color */
+	bool						_autoZoomToSelection;		/** Automatically zoom to selection */
 
 public:
 	static const QColor toolColorForeground;	/** Foreground tool color for brushes and pens */

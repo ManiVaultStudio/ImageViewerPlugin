@@ -2,11 +2,7 @@ R"(
 #version 330
 
 uniform sampler2D colorMapTexture;			// Colormap texture sampler
-uniform sampler2DArray channelTextures;		// Texture samplers
-											// 0: Channel 1
-											// 1: Channel 2
-											// 2: Channel 3
-											// 3: Mask
+uniform sampler2DArray channelTextures;		// Texture samplers (0: Channel 1, 1: Channel 2, 2: Channel 3, 3: Mask)
 uniform vec2 displayRanges[3];				// Display ranges for each channel
 uniform int noChannels;						// Number of active channels
 uniform bool useConstantColor;				// Whether the pixel color is constant and the alpha is modulated by the intensity of the selected channel

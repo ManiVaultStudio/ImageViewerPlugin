@@ -20,7 +20,7 @@ template<typename ChannelType>
 class Channel
 {
 public:
-	using Elements = QVector<ChannelType>;
+	using Elements = std::vector<ChannelType>;
 
 public:
 	/**
@@ -297,7 +297,7 @@ public:
 	 */
 	void fill(const ChannelType& value)
 	{
-		_elements.fill(value);
+		std::fill(_elements.begin(), _elements.end(), value);
 
 		setChanged();
 	}

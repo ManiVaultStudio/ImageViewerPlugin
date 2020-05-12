@@ -34,7 +34,7 @@ SelectionLayer::SelectionLayer(const QString& datasetName, const QString& id, co
 	_pointsDataset(nullptr),
 	_imagesDataset(nullptr),
 	_image(),
-	_imageData(),
+	_indices(),
 	_selectionType(SelectionType::Rectangle),
 	_selectionModifier(SelectionModifier::Replace),
 	_brushRadius(defaultBrushRadius),
@@ -53,7 +53,21 @@ void SelectionLayer::init()
 	_imagesDataset	= imageViewerPlugin->sourceImagesSetFromPointsSet(_datasetName);
 	_dataName		= hdps::DataSet::getSourceData(*_pointsDataset).getDataName();
 
-	computeImage();
+	_indices.resize(noPixels());
+
+	if (_pointsDataset->isFull()) {
+		_indices.resize(noPixels());
+		std::iota(std::begin(_indices), std::end(_indices), 0);
+	}
+	else {
+		std::fill(_indices.begin(), _indices.end(), -1);
+
+		for (auto index : _pointsDataset->indices) {
+			_indices[index] = index;
+		}
+	}
+
+	computeChannel(ChannelIndex::Selection);
 }
 
 void SelectionLayer::paint(QPainter* painter)
@@ -100,11 +114,6 @@ void SelectionLayer::paint(QPainter* painter)
 				const auto bottomRight	= QPointF(std::max(_mousePositions.first().x(), _mousePositions.last().x()), std::max(_mousePositions.first().y(), _mousePositions.last().y()));
 				const auto rectangle	= QRectF(topLeft, bottomRight);
 
-				/*
-				painter->setBrush(fillBrush);
-				painter->drawRect(rectangle);
-				*/
-
 				painter->setPen(perimeterForegroundPen);
 				painter->setBrush(Qt::NoBrush);
 				painter->drawRect(rectangle);
@@ -133,8 +142,6 @@ void SelectionLayer::paint(QPainter* painter)
 
 				painter->setPen(_mouseButtons & Qt::LeftButton ? perimeterForegroundPen : perimeterBackgroundPen);
 
-				//painter->setBrush(fillBrush);
-
 				painter->setBrush(Qt::NoBrush);
 				painter->drawEllipse(QPointF(brushCenter), _brushRadius, _brushRadius);
 
@@ -147,23 +154,12 @@ void SelectionLayer::paint(QPainter* painter)
 				textRectangle = QRectF(textCenter - QPointF(size, size), textCenter + QPointF(size, size));
 			}
 
-			/*
-			helpTextHtml += "<tr><td>Left mouse button</td><td>:</td><td>Activate brush</td></tr>";
-			helpTextHtml += "<tr><td>Mouse wheel up</td><td>:</td><td>Increase brush radius</td></tr>";
-			helpTextHtml += "<tr><td>Mouse wheel down</td><td>:</td><td>Decrease brush radius</td></tr>";
-			*/
-
 			break;
 		}
 
 		case SelectionType::Lasso:
 		{
 			if (_mousePositions.size() >= 2) {
-				/*
-				painter->setBrush(fillBrush);
-				painter->drawPolygon(_mousePositions.constData(), _mousePositions.count());
-				*/
-
 				painter->setPen(perimeterForegroundPen);
 				painter->drawPolyline(_mousePositions.constData(), _mousePositions.count());
 
@@ -179,22 +175,12 @@ void SelectionLayer::paint(QPainter* painter)
 				textRectangle = QRectF(textCenter - QPointF(size, size), textCenter + QPointF(size, size));
 			}
 
-			/*
-			helpTextHtml += QString("<tr><td>Mouse down</td><td>:</td><td>Draw selection perimeter</td></tr>");
-			helpTextHtml += QString("<tr><td>Mouse up</td><td>:</td><td>Finish selection</td></tr>");
-			*/
-
 			break;
 		}
 
 		case SelectionType::Polygon:
 		{
 			if (_mousePositions.size() >= 2) {
-				/*
-				painter->setBrush(fillBrush);
-				painter->drawPolygon(_mousePositions.constData(), _mousePositions.count());
-				*/
-
 				painter->setPen(QPen(QBrush(toolColorForeground), perimeterLineWidth));
 				painter->drawPolyline(_mousePositions.constData(), _mousePositions.count());
 
@@ -215,11 +201,6 @@ void SelectionLayer::paint(QPainter* painter)
 				textRectangle = QRectF(textCenter - QPointF(size, size), textCenter + QPointF(size, size));
 			}
 
-			/*
-			helpTextHtml += QString("<tr><td>Left mouse button</td><td>:</td><td>Add polygon control point</td></tr>");
-			helpTextHtml += QString("<tr><td>Right mouse button</td><td>:</td><td>Finish selection</td></tr>");
-			*/
-
 			break;
 		}
 
@@ -227,16 +208,8 @@ void SelectionLayer::paint(QPainter* painter)
 			break;
 	}
 
-	//helpTextHtml += QString("<tr><td></td></tr>");
-	/*
-	helpTextHtml += QString("<tr><td>Shift key</td><td>:</td><td>Add pixels to selection</td></tr>");
-	helpTextHtml += QString("<tr><td>Control key</td><td>:</td><td>Remove pixels from selection</td></tr>");
-	*/
-
 	painter->setPen(controlPointsPen);
 	painter->drawPoints(controlPoints);
-
-	//painter->setBrush(toolColorForeground);
 
 	switch (_selectionType)
 	{
@@ -292,6 +265,11 @@ void SelectionLayer::createSubsetFromSelection()
 	const hdps::DataSet& selection = core->requestSelection(dataName);
 
 	core->createSubsetFromSelection(selection, dataName, QString("%1_subset").arg(_pointsDataset->getName()));
+}
+
+QSize SelectionLayer::imageSize() const
+{
+	return _imagesDataset->imageSize();
 }
 
 Qt::ItemFlags SelectionLayer::flags(const QModelIndex& index) const
@@ -402,7 +380,7 @@ QModelIndexList SelectionLayer::setData(const QModelIndex& index, const QVariant
 	QModelIndexList affectedIds = Layer::setData(index, value, role);
 
 	if (static_cast<Layer::Column>(index.column()) == Layer::Column::Selection) {
-		computeImage();
+		computeChannel(ChannelIndex::Selection);
 
 		affectedIds << index.siblingAtColumn(ult(Column::SelectAll));
 		affectedIds << index.siblingAtColumn(ult(Column::SelectNone));
@@ -862,11 +840,6 @@ void SelectionLayer::keyReleaseEvent(QKeyEvent* keyEvent, const QModelIndex& ind
 	Renderable::renderer->render();
 }
 
-QSize SelectionLayer::imageSize() const
-{
-	return _imagesDataset->imageSize();
-}
-
 Layer::Hints SelectionLayer::hints() const
 {
 	auto result = Layer::hints();
@@ -1077,43 +1050,37 @@ void SelectionLayer::setAutoZoomToSelection(const bool& autoZoomToSelection)
 	_autoZoomToSelection = autoZoomToSelection;
 }
 
-void SelectionLayer::computeImage()
+void SelectionLayer::computeChannel(const ChannelIndex& channelType)
 {
-	auto points = dynamic_cast<Points*>(&Layer::imageViewerPlugin->requestData<Points>(_datasetName));
-
-	if (points == nullptr)
-		return;
-
-	const auto imageSize	= _imagesDataset->imageSize();
-	const auto width		= imageSize.width();
-	const auto height		= imageSize.height();
-	const auto noPixels		= width * height;
-	const auto noChannels	= 4;
-	const auto noElements	= noPixels * noChannels;
-
-	if (noElements !=_imageData.count()) {
-		_imageData.resize(noElements);
-	}
-
-	_imageData.fill(0, noElements);
-
-	for (const auto& selectionId : _selection)
+	switch (channelType)
 	{
-		const auto x		= selectionId % width;
-		const auto y		= static_cast<std::uint32_t>(floorf(static_cast<float>(selectionId) / static_cast<float>(width)));
-		const auto pixelId	= (y * width) + x;
-		const auto offset	= pixelId * noChannels;
+		case ChannelIndex::Selection:
+		{
+			auto& selection = dynamic_cast<Points&>(imageViewerPlugin->core()->requestSelection(_pointsDataset->getDataName()));
 
-		for (int c = 0; c < noChannels; c++)
-			_imageData[offset + c] = 255;
+			auto& selectionChannel = (*channel(ult(ChannelIndex::Selection)));
+
+			selectionChannel.setImageSize(imageSize());
+			selectionChannel.fill(100);
+
+			/*
+			qDebug() << "-------------------" << selection.indices;
+
+			for (auto selectionIndex : selection.indices) {
+				selectionChannel[selectionIndex] = 255u;
+			}
+			*/
+
+			selectionChannel.setChanged();
+
+			emit channelChanged(ult(ChannelIndex::Selection));
+
+			break;
+		}
+
+		default:
+			break;
 	}
-
-	if (_image.isNull() || imageSize != _image.size())
-		_image = QImage(width, height, QImage::Format_RGBA8888);
-
-	memcpy(_image.bits(), _imageData.data(), _imageData.size() * sizeof(std::uint8_t));
-
-	emit imageChanged(_image);
 }
 
 void SelectionLayer::selectAll()
@@ -1142,8 +1109,6 @@ void SelectionLayer::invertSelection()
 			indices.push_back(index);
 	}
 
-	qDebug() << indices.size();
-
 	_imagesDataset->setIndices(indices);
 }
 
@@ -1157,6 +1122,8 @@ void SelectionLayer::publishSelection()
 	
 	auto& indices = dynamic_cast<Points&>(imageViewerPlugin->core()->requestSelection(_pointsDataset->getDataName())).indices;
 
+	auto indicesChannel = channel(ult(ChannelIndex::Selection));
+
 	switch (_selectionModifier)
 	{
 		case SelectionModifier::Replace:
@@ -1167,7 +1134,7 @@ void SelectionLayer::publishSelection()
 				for (std::int32_t x = 0; x < selectionImage.width(); x++) {
 					if (selectionImage.pixelColor(x, y).red() > 0) {
 						const auto index = (selectionImage.height() - y - 1) * imageSize().width() + x;
-						indices.push_back(index);
+						indices.push_back((*indicesChannel)[index]);
 					}
 				}
 			}
@@ -1183,7 +1150,7 @@ void SelectionLayer::publishSelection()
 				for (std::int32_t x = 0; x < selectionImage.width(); x++) {
 					if (selectionImage.pixelColor(x, y).red() > 0) {
 						const auto index = (selectionImage.height() - y - 1) * imageSize().width() + x;
-						selectionSet.insert(index);
+						selectionSet.insert((*indicesChannel)[index]);
 					}
 				}
 			}
@@ -1200,7 +1167,7 @@ void SelectionLayer::publishSelection()
 				for (std::int32_t x = 0; x < selectionImage.width(); x++) {
 					if (selectionImage.pixelColor(x, y).red() > 0) {
 						const auto index = (selectionImage.height() - y - 1) * imageSize().width() + x;
-						selectionSet.erase(index);
+						selectionSet.erase((*indicesChannel)[index]);
 					}
 				}
 			}
