@@ -1114,24 +1114,28 @@ void SelectionLayer::zoomToSelection()
 
 void SelectionLayer::publishSelection()
 {
-	const auto selectionImage = propByName<SelectionToolProp>("SelectionTool")->selectionImage();
+	const auto selectionImage = propByName<SelectionToolProp>("SelectionTool")->selectionImage().mirrored(false, true);
 	
 	auto& indices = dynamic_cast<Points&>(imageViewerPlugin->core()->requestSelection(_pointsDataset->getDataName())).indices;
+
+	const auto noComponents		= 4;
+	const auto width		= static_cast<float>(imageSize().width());
+	
+	auto index = 0;
 
 	switch (_selectionModifier)
 	{
 		case SelectionModifier::Replace:
 		{
 			indices.clear();
+			indices.reserve(noPixels());
 
-			for (std::int32_t y = 0; y < selectionImage.height(); y++) {
-				for (std::int32_t x = 0; x < selectionImage.width(); x++) {
-					if (selectionImage.pixelColor(x, y).red() > 0) {
-						const auto index = (selectionImage.height() - y - 1) * imageSize().width() + x;
+			for (std::int32_t p = 0; p < noPixels(); ++p) {
+				if (selectionImage.bits()[p * noComponents] > 0) {
+					index = _indices[p];
 
-						if (_indices[index] >= 0)
-							indices.push_back(_indices[index]);
-					}
+					if (index >= 0)
+						indices.push_back(index);
 				}
 			}
 
@@ -1142,14 +1146,12 @@ void SelectionLayer::publishSelection()
 		{
 			auto selectionSet = std::set<std::uint32_t>(indices.begin(), indices.end());
 
-			for (std::int32_t y = 0; y < selectionImage.height(); y++) {
-				for (std::int32_t x = 0; x < selectionImage.width(); x++) {
-					if (selectionImage.pixelColor(x, y).red() > 0) {
-						const auto index = (selectionImage.height() - y - 1) * imageSize().width() + x;
+			for (std::int32_t p = 0; p < noPixels(); ++p) {
+				if (selectionImage.bits()[p * noComponents] > 0) {
+					index = _indices[p];
 
-						if (_indices[index] >= 0)
-							selectionSet.insert(_indices[index]);
-					}
+					if (index >= 0)
+						selectionSet.insert(index);
 				}
 			}
 
@@ -1161,14 +1163,12 @@ void SelectionLayer::publishSelection()
 		{
 			auto selectionSet = std::set<std::uint32_t>(indices.begin(), indices.end());
 
-			for (std::int32_t y = 0; y < selectionImage.height(); y++) {
-				for (std::int32_t x = 0; x < selectionImage.width(); x++) {
-					if (selectionImage.pixelColor(x, y).red() > 0) {
-						const auto index = (selectionImage.height() - y - 1) * imageSize().width() + x;
+			for (std::int32_t p = 0; p < noPixels(); ++p) {
+				if (selectionImage.bits()[p * noComponents] > 0) {
+					index = _indices[p];
 
-						if (_indices[index] >= 0)
-							selectionSet.erase(_indices[index]);
-					}
+					if (index >= 0)
+						selectionSet.erase(index);
 				}
 			}
 
