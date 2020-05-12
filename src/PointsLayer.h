@@ -21,6 +21,16 @@ class PointsLayer : public Layer, public virtual Channels<float>
 
 public:
 
+	/** Channel indices */
+	enum class ChannelIndex {
+		Channel1,		/** Channel 1 */
+		Channel2,		/** Channel 2 */
+		Channel3,		/** Channel 3 */
+		Mask,			/** Mask channel */
+
+		Count = Mask + 1
+	};
+
 	/**  Columns */
 	enum class Column {
 		Channel1Name = ult(Layer::Column::End) + 1,			// First input channel name
@@ -148,14 +158,14 @@ public: // Getters/setters
 	 * @param role Data role
 	 * @return Whether a channel is enabled in variant form
 	 */
-	QVariant channelEnabled(const std::uint32_t& id, const int& role = Qt::DisplayRole) const;
+	QVariant channelEnabled(const ChannelIndex& channelIndex, const int& role = Qt::DisplayRole) const;
 
 	/**
 	 * Sets whether a channel is enabled
 	 * @param id Channel identifier
 	 * @param enabled Whether the channel is enabled
 	 */
-	void setChannelEnabled(const int& id, const bool& enabled);
+	void setChannelEnabled(const ChannelIndex& channelIndex, const bool& enabled);
 
 	/**
 	 * Returns channel name by identifier
@@ -163,7 +173,7 @@ public: // Getters/setters
 	 * @param role Data role
 	 * @return Channel name in variant form
 	 */
-	QVariant channelName(const std::uint32_t& id, const int& role = Qt::DisplayRole) const;
+	QVariant channelName(const ChannelIndex& channelIndex, const int& role = Qt::DisplayRole) const;
 
 	/**
 	 * Sets a channel dimension identifier
@@ -178,14 +188,14 @@ public: // Getters/setters
 	 * @param role Data role
 	 * @return Channel identifier in variant form
 	 */
-	QVariant channelDimensionId(const std::uint32_t& id, const int& role = Qt::DisplayRole) const;
+	QVariant channelDimensionId(const ChannelIndex& channelIndex, const int& role = Qt::DisplayRole) const;
 
 	/**
 	 * Sets a channel dimension identifier
 	 * @param id Channel identifier
 	 * @param dimension Dimension identifier
 	 */
-	void setChannelDimensionId(const int& id, const std::uint32_t& dimensionId);
+	void setChannelDimensionId(const ChannelIndex& channelIndex, const std::uint32_t& dimensionId);
 
 	/**
 	 * Returns the maximum number of channels
@@ -276,7 +286,7 @@ private:
 	 * Computes a specific channel
 	 * @param channelIndex Channel identifier
 	 */
-	void computeChannel(const std::uint32_t& id);
+	void computeChannel(const ChannelIndex& channelIndex);
 
 	/** Updates the channel names */
 	void updateChannelNames();

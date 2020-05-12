@@ -84,44 +84,42 @@ void ImagesProp::initialize()
 	try
 	{
 		renderer->bindOpenGLContext();
-		{
-			Prop::initialize();
+		
+		Prop::initialize();
 
-			const auto shaderProgram = shaderProgramByName("Quad");
+		const auto shaderProgram = shaderProgramByName("Quad");
 
-			if (!shaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSource.c_str()))
-				throw std::exception("Unable to compile quad vertex shader");
+		if (!shaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSource.c_str()))
+			throw std::exception("Unable to compile quad vertex shader");
 
-			if (!shaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSource.c_str()))
-				throw std::exception("Unable to compile quad fragment shader");
+		if (!shaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSource.c_str()))
+			throw std::exception("Unable to compile quad fragment shader");
 
-			if (!shaderProgram->link())
-				throw std::exception("Unable to link quad shader program");
+		if (!shaderProgram->link())
+			throw std::exception("Unable to link quad shader program");
 
-			const auto stride = 5 * sizeof(GLfloat);
+		const auto stride = 5 * sizeof(GLfloat);
 
-			auto shape = shapeByName<QuadShape>("Quad");
+		auto shape = shapeByName<QuadShape>("Quad");
 
-			if (shaderProgram->bind()) {
-				shape->vao().bind();
-				shape->vbo().bind();
+		if (shaderProgram->bind()) {
+			shape->vao().bind();
+			shape->vbo().bind();
 
-				shaderProgram->enableAttributeArray(QuadShape::_vertexAttribute);
-				shaderProgram->enableAttributeArray(QuadShape::_textureAttribute);
-				shaderProgram->setAttributeBuffer(QuadShape::_vertexAttribute, GL_FLOAT, 0, 3, stride);
-				shaderProgram->setAttributeBuffer(QuadShape::_textureAttribute, GL_FLOAT, 3 * sizeof(GLfloat), 2, stride);
-				shaderProgram->release();
+			shaderProgram->enableAttributeArray(QuadShape::_vertexAttribute);
+			shaderProgram->enableAttributeArray(QuadShape::_textureAttribute);
+			shaderProgram->setAttributeBuffer(QuadShape::_vertexAttribute, GL_FLOAT, 0, 3, stride);
+			shaderProgram->setAttributeBuffer(QuadShape::_textureAttribute, GL_FLOAT, 3 * sizeof(GLfloat), 2, stride);
+			shaderProgram->release();
 
-				shape->vao().release();
-				shape->vbo().release();
-			}
-			else {
-				throw std::exception("Unable to bind quad shader program");
-			}
-
-			_initialized = true;
+			shape->vao().release();
+			shape->vbo().release();
 		}
-		renderer->releaseOpenGLContext();
+		else {
+			throw std::exception("Unable to bind quad shader program");
+		}
+
+		_initialized = true;
 	}
 	catch (std::exception& e)
 	{
@@ -143,46 +141,32 @@ void ImagesProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 		const auto shape = shapeByName<QuadShape>("Quad");
 		const auto shaderProgram = shaderProgramByName("Quad");
 
-		/*
-		if (textureByName("ColorMap")->isCreated()) {
-			renderer->openGLContext()->functions()->glActiveTexture(GL_TEXTURE0);
-			textureByName("ColorMap")->bind();
-		}
-		*/
+		if (!textureByName("Channels")->isCreated())
+			throw std::exception("Channels texture is not created");
 
-		if (textureByName("Channels")->isCreated()) {
-			renderer->openGLContext()->functions()->glActiveTexture(GL_TEXTURE1);
-			textureByName("Channels")->bind();
-		}
+		renderer->openGLContext()->functions()->glActiveTexture(GL_TEXTURE1);
+		
+		textureByName("Channels")->bind();
 
 		auto imagesLayer = static_cast<ImagesLayer*>(_node);
 
-		if (shaderProgram->bind()) {
-			const QVector2D displayRanges[] = {
-				imagesLayer->channel(0)->displayRangeVector()
-			};
-
-			//shaderProgram->setUniformValue("colorMapTexture", 0);
-			shaderProgram->setUniformValue("channelTextures", 1);
-			shaderProgram->setUniformValueArray("displayRanges", displayRanges, 1);
-			shaderProgram->setUniformValue("opacity", opacity);
-			shaderProgram->setUniformValue("transform", nodeMVP * modelMatrix());
-
-			shape->render();
-
-			shaderProgram->release();
-		}
-		else {
+		if (!shaderProgram->bind())
 			throw std::exception("Unable to bind quad shader program");
-		}
 
-		if (textureByName("Channels")->isCreated())
-			textureByName("Channels")->release();
+		const QVector2D displayRanges[] = {
+			imagesLayer->channel(0)->displayRangeVector()
+		};
 
-		/*
-		if (textureByName("ColorMap")->isCreated())
-			textureByName("ColorMap")->release();
-		*/
+		shaderProgram->setUniformValue("channelTextures", 1);
+		shaderProgram->setUniformValueArray("displayRanges", displayRanges, 1);
+		shaderProgram->setUniformValue("opacity", opacity);
+		shaderProgram->setUniformValue("transform", nodeMVP * modelMatrix());
+
+		shape->render();
+
+		shaderProgram->release();
+
+		textureByName("Channels")->release();
 	}
 	catch (std::exception& e)
 	{
