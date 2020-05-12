@@ -1118,8 +1118,6 @@ void SelectionLayer::publishSelection()
 	
 	auto& indices = dynamic_cast<Points&>(imageViewerPlugin->core()->requestSelection(_pointsDataset->getDataName())).indices;
 
-	auto indicesChannel = channel(ult(ChannelIndex::Selection));
-
 	switch (_selectionModifier)
 	{
 		case SelectionModifier::Replace:
@@ -1130,7 +1128,9 @@ void SelectionLayer::publishSelection()
 				for (std::int32_t x = 0; x < selectionImage.width(); x++) {
 					if (selectionImage.pixelColor(x, y).red() > 0) {
 						const auto index = (selectionImage.height() - y - 1) * imageSize().width() + x;
-						indices.push_back((*indicesChannel)[index]);
+
+						if (_indices[index] >= 0)
+							indices.push_back(_indices[index]);
 					}
 				}
 			}
@@ -1146,7 +1146,9 @@ void SelectionLayer::publishSelection()
 				for (std::int32_t x = 0; x < selectionImage.width(); x++) {
 					if (selectionImage.pixelColor(x, y).red() > 0) {
 						const auto index = (selectionImage.height() - y - 1) * imageSize().width() + x;
-						selectionSet.insert((*indicesChannel)[index]);
+
+						if (_indices[index] >= 0)
+							selectionSet.insert(_indices[index]);
 					}
 				}
 			}
@@ -1163,7 +1165,9 @@ void SelectionLayer::publishSelection()
 				for (std::int32_t x = 0; x < selectionImage.width(); x++) {
 					if (selectionImage.pixelColor(x, y).red() > 0) {
 						const auto index = (selectionImage.height() - y - 1) * imageSize().width() + x;
-						selectionSet.erase((*indicesChannel)[index]);
+
+						if (_indices[index] >= 0)
+							selectionSet.erase(_indices[index]);
 					}
 				}
 			}
