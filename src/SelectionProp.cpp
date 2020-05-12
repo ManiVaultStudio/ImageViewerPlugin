@@ -48,21 +48,16 @@ SelectionProp::SelectionProp(SelectionLayer* selectionLayer, const QString& name
 				texture->setLayers(ult(SelectionLayer::ChannelIndex::Count));
 				texture->setSize(imageSize.width(), imageSize.height(), 1);
 				texture->setFormat(QOpenGLTexture::R8_UNorm);
+				texture->setWrapMode(QOpenGLTexture::ClampToEdge);
+				texture->setMinMagFilters(QOpenGLTexture::Nearest, QOpenGLTexture::Nearest);
 				texture->allocateStorage();
 			}
 
-			std::vector<std::uint8_t> data;
-
-			data.resize(imageSize.width() * imageSize.height());
-
-			std::fill(data.begin(), data.end(), std::uint8_t(100));
-
 			QOpenGLPixelTransferOptions options;
 
-			options.setRowLength(imageSize.width());
 			options.setAlignment(1);
 
-			texture->setData(0, channel->id(), QOpenGLTexture::PixelFormat::Red, QOpenGLTexture::PixelType::UInt8, data.data(), &options);// channel->elements().data());
+			texture->setData(0, channel->id(), QOpenGLTexture::PixelFormat::Red, QOpenGLTexture::PixelType::UInt8, channel->elements().data(), &options);// channel->elements().data());
 
 			const auto rectangle = QRectF(QPointF(0.f, 0.f), QSizeF(imageSize));
 

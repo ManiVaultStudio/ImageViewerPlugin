@@ -1061,15 +1061,11 @@ void SelectionLayer::computeChannel(const ChannelIndex& channelType)
 			auto& selectionChannel = (*channel(ult(ChannelIndex::Selection)));
 
 			selectionChannel.setImageSize(imageSize());
-			selectionChannel.fill(100);
-
-			/*
-			qDebug() << "-------------------" << selection.indices;
+			selectionChannel.fill(0);
 
 			for (auto selectionIndex : selection.indices) {
-				selectionChannel[selectionIndex] = 255u;
+				selectionChannel[selectionIndex] = 255;
 			}
-			*/
 
 			selectionChannel.setChanged();
 
