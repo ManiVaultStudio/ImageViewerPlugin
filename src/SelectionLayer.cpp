@@ -30,7 +30,7 @@ const QPoint SelectionLayer::textPosition			= QPoint(25, 25);
 
 SelectionLayer::SelectionLayer(const QString& datasetName, const QString& id, const QString& name, const int& flags) :
 	Layer(datasetName, Layer::Type::Selection, id, name, flags),
-	Channels<std::uint8_t>(1),
+	Channels<std::uint8_t>(ult(ChannelIndex::Count)),
 	_pointsDataset(nullptr),
 	_imagesDataset(nullptr),
 	_image(),
@@ -1050,9 +1050,9 @@ void SelectionLayer::setAutoZoomToSelection(const bool& autoZoomToSelection)
 	_autoZoomToSelection = autoZoomToSelection;
 }
 
-void SelectionLayer::computeChannel(const ChannelIndex& channelType)
+void SelectionLayer::computeChannel(const ChannelIndex& channelIndex)
 {
-	switch (channelType)
+	switch (channelIndex)
 	{
 		case ChannelIndex::Selection:
 		{

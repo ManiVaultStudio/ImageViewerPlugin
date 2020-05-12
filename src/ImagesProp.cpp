@@ -26,8 +26,10 @@ ImagesProp::ImagesProp(ImagesLayer* imagesLayer, const QString& name) :
 	addTexture("Channels", QOpenGLTexture::Target2DArray);
 
 	QObject::connect(imagesLayer, &ImagesLayer::channelChanged, [this, imagesLayer](const std::uint32_t& channelId) {
-		renderer->bindOpenGLContext();
+		try
 		{
+			renderer->bindOpenGLContext();
+
 			if (channelId == 0) {
 				auto channel = imagesLayer->channel(channelId);
 
@@ -44,7 +46,7 @@ ImagesProp::ImagesProp(ImagesLayer* imagesLayer, const QString& name) :
 				if (imageSize != QSize(texture->width(), texture->height())) {
 					texture->destroy();
 					texture->create();
-					texture->setLayers(3);
+					texture->setLayers(1);
 					texture->setSize(imageSize.width(), imageSize.height(), 1);
 					texture->setSize(imageSize.width(), imageSize.height(), 2);
 					texture->setSize(imageSize.width(), imageSize.height(), 3);
@@ -62,9 +64,14 @@ ImagesProp::ImagesProp(ImagesLayer* imagesLayer, const QString& name) :
 
 				updateModelMatrix();
 			}
-			
 		}
-		renderer->releaseOpenGLContext();
+		catch (std::exception& e)
+		{
+			qDebug() << _name << "channel texture update failed:" << e.what();
+		}
+		catch (...) {
+			qDebug() << _name << "channel texture update failed due to unhandled exception";
+		}
 	});
 
 	initialize();
@@ -152,14 +159,12 @@ void ImagesProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 
 		if (shaderProgram->bind()) {
 			const QVector2D displayRanges[] = {
-				imagesLayer->channel(0)->displayRangeVector(),
-				imagesLayer->channel(1)->displayRangeVector(),
-				imagesLayer->channel(2)->displayRangeVector()
+				imagesLayer->channel(0)->displayRangeVector()
 			};
 
 			//shaderProgram->setUniformValue("colorMapTexture", 0);
 			shaderProgram->setUniformValue("channelTextures", 1);
-			shaderProgram->setUniformValueArray("displayRanges", displayRanges, 3);
+			shaderProgram->setUniformValueArray("displayRanges", displayRanges, 1);
 			shaderProgram->setUniformValue("opacity", opacity);
 			shaderProgram->setUniformValue("transform", nodeMVP * modelMatrix());
 

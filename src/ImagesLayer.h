@@ -16,7 +16,14 @@ class QPainter;
  */
 class ImagesLayer : public Layer, public Channels<float>
 {
-public:
+public: // Enumerations
+
+	/** Channel indices */
+	enum class ChannelIndex {
+		Intensity,		/** Intensity channel */
+
+		Count = Intensity + 1
+	};
 
 	/**  Columns */
 	enum class Column {
@@ -35,6 +42,8 @@ public:
 		Start = NoImages,
 		End = Average
 	};
+
+public:
 
 	/**
 	 * Constructor
@@ -211,10 +220,10 @@ protected:
 private:
 
 	/**
-	 * Computes image channel
-	 * @param id Identifier
+	 * Computes a specific channel
+	 * @param channelIndex Channel identifier
 	 */
-	void computeChannel(const std::uint32_t& id);
+	void computeChannel(const ChannelIndex& channelIndex);
 
 private:
 	Images*				_images;				/** Pointer to the images plugin instance */

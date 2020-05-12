@@ -9,7 +9,7 @@
 
 ImagesLayer::ImagesLayer(const QString& imagesDatasetName, const QString& id, const QString& name, const int& flags) :
 	Layer(imagesDatasetName, ImagesLayer::Type::Images, id, name, flags),
-	Channels<float>(3),
+	Channels<float>(ult(ChannelIndex::Count)),
 	_images(nullptr),
 	_imageDataType(ImageData::Type::Undefined),
 	_imageNames(),
@@ -176,7 +176,7 @@ QModelIndexList ImagesLayer::setData(const QModelIndex& index, const QVariant& v
 	QModelIndexList affectedIds = Layer::setData(index, value, role);
 
 	if (index.column() == ult(Layer::Column::Selection)) {
-		computeChannel(0);
+		computeChannel(ChannelIndex::Intensity);
 
 		setCurrentImageId(0);
 
@@ -576,7 +576,7 @@ void ImagesLayer::setCurrentImageId(const std::uint32_t& currentImageId)
 
 	channel(0)->setDimensionId(_currentImageId);
 
-	computeChannel(0);
+	computeChannel(ChannelIndex::Intensity);
 }
 
 QVariant ImagesLayer::average(const int& role) const
@@ -605,20 +605,31 @@ void ImagesLayer::setAverage(const bool& average)
 {
 	_average = average;
 
-	computeChannel(0);
+	computeChannel(ChannelIndex::Intensity);
 }
 
-void ImagesLayer::computeChannel(const std::uint32_t& id)
+void ImagesLayer::computeChannel(const ChannelIndex& channelIndex)
 {
-	auto computeChannel = channel(id);
+	switch (channelIndex)
+	{
+		case ChannelIndex::Intensity:
+		{
+			auto intensityChannel = channel(ult(channelIndex));
 
-	computeChannel->setImageSize(imageSize());
+			intensityChannel->setImageSize(imageSize());
+
+			const int32_t dimensionIndices[] = { intensityChannel->dimensionId() };
+
+			_images->points()->populateDataForDimensions(*intensityChannel, dimensionIndices);
+
+			intensityChannel->setChanged();
+
+			emit channelChanged(ult(channelIndex));
+			break;
+		}
+
+		default:
+			break;
+	}
 	
-	const int32_t dimensionIndices[] = { computeChannel->dimensionId() };
-
-	_images->points()->populateDataForDimensions(*computeChannel, dimensionIndices);
-
-	computeChannel->setChanged();
-
-	emit channelChanged(id);
 }

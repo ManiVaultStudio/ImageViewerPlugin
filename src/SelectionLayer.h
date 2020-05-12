@@ -22,7 +22,7 @@ class SelectionLayer : public Layer, public Channels<std::uint8_t>
 
 public: // Enumerations
 
-	/**  Channel indices */
+	/** Channel indices */
 	enum class ChannelIndex {
 		Selection,		/** Selection channel */
 
@@ -218,8 +218,11 @@ protected:
 
 private: // Miscellaneous
 
-	/** Computes the selection image */
-	void computeChannel(const ChannelIndex& channelType);
+	/**
+	 * Computes a specific channel
+	 * @param channelIndex Channel identifier
+	 */
+	void computeChannel(const ChannelIndex& channelIndex);
 
 	/** Selects all pixels */
 	void selectAll();
