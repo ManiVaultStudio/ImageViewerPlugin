@@ -208,12 +208,12 @@ QVector2D Renderer::worldPositionToNormalizedScreenPoint(const QVector3D& positi
 	return (clipSpacePos.toVector3D() / clipSpacePos.w()).toVector2D();
 }
 
-QVector2D Renderer::worldPositionToScreenPoint(const QVector3D& position) const
+QPoint Renderer::worldPositionToScreenPoint(const QVector3D& position) const
 {
 	const auto normalizedScreenPoint	= worldPositionToNormalizedScreenPoint(position);
 	const auto viewSize					= QVector2D(parentWidgetSize().width(), parentWidgetSize().height());
 
-	return viewSize * ((QVector2D(1.0f, 1.0f) + normalizedScreenPoint) / 2.0f);
+	return (viewSize * ((QVector2D(1.0f, 1.0f) + normalizedScreenPoint) / 2.0f)).toPoint();
 }
 
 QVector2D Renderer::screenPointToNormalizedScreenPoint(const QVector2D& screenPoint) const

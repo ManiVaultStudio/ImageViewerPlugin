@@ -181,6 +181,12 @@ void SelectionLayerWidget::updateData(const QModelIndex& topLeft, const QModelIn
 			_ui->invertSelectionPushButton->setEnabled(invertSelectionFlags & Qt::ItemIsEditable);
 		}
 
+		if (column == ult(SelectionLayer::Column::CreateSubset)) {
+			const auto createSubsetFlags = _layersModel->flags(topLeft.row(), ult(SelectionLayer::Column::CreateSubset));
+
+			_ui->createSubsetPushButton->setEnabled(createSubsetFlags & Qt::ItemIsEditable);
+		}
+
 		if (column == ult(SelectionLayer::Column::OverlayColor)) {
 			const auto overlayColor = _layersModel->data(topLeft.row(), ult(SelectionLayer::Column::OverlayColor), Qt::EditRole).value<QColor>();
 

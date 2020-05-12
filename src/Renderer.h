@@ -102,7 +102,7 @@ public:
 	 * @param position Position in world coordinates
 	 * @return Point in screen coordinates [0..width, 0..height]
 	 */
-	QVector2D worldPositionToScreenPoint(const QVector3D& position) const;
+	QPoint worldPositionToScreenPoint(const QVector3D& position) const;
 
 	/** Convert point in screen coordinates to point in normalized screen coordinates
 	 * @param screenPoint Point in screen coordinates [0..width, 0..height]

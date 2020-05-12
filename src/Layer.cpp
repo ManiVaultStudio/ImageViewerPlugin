@@ -509,7 +509,7 @@ void Layer::drawTitle(QPainter* painter)
 
 	const auto color = QString("rgba(%1, %2, %3, %4)").arg(QString::number(hintsColor.red()), QString::number(hintsColor.green()), QString::number(hintsColor.blue()), QString::number(hintsColor.alpha()));
 
-	QString titleHtml = QString("<div style='width: 100%; text-align: center; color: %1; font-weight: bold;'>%2<div>").arg(color, _name);
+	QString titleHtml = QString("<div style='width: 100%; text-align: center; color: %1; font-weight: bold;'>%2 (%3x%4)<div>").arg(color, _name, QString::number(imageSize().width()), QString::number(imageSize().height()));
 	
 	titleDocument.setTextWidth(painter->viewport().width());
 	titleDocument.setDocumentMargin(textMargins);

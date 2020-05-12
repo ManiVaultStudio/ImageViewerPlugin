@@ -38,7 +38,7 @@ SelectionLayer::SelectionLayer(const QString& datasetName, const QString& id, co
 	_selectionType(SelectionType::Rectangle),
 	_selectionModifier(SelectionModifier::Replace),
 	_brushRadius(defaultBrushRadius),
-	_overlayColor(Qt::green),
+	_overlayColor(Qt::red),
 	_autoZoomToSelection(false)
 {
 	init();
@@ -99,8 +99,6 @@ void SelectionLayer::paint(QPainter* painter)
 	auto fillBrush = QBrush(fillColor);
 
 	QVector<QPoint> controlPoints;
-
-	QString helpTextHtml;
 
 	switch (_selectionType)
 	{
@@ -211,6 +209,18 @@ void SelectionLayer::paint(QPainter* painter)
 	painter->setPen(controlPointsPen);
 	painter->drawPoints(controlPoints);
 
+	if (!_selectionBounds.isNull()) {
+		auto selectionBoundsPen = QPen();
+
+		selectionBoundsPen.setColor(toolColorForeground);
+		selectionBoundsPen.setWidthF(1.5f);
+		selectionBoundsPen.setStyle(Qt::DotLine);
+
+		painter->setPen(selectionBoundsPen);
+		painter->setBrush(Qt::NoBrush);
+		painter->drawRect(_selectionBounds);
+	}
+
 	switch (_selectionType)
 	{
 		case SelectionType::None:
@@ -265,6 +275,8 @@ void SelectionLayer::createSubsetFromSelection()
 	const hdps::DataSet& selection = core->requestSelection(dataName);
 
 	core->createSubsetFromSelection(selection, dataName, QString("%1_subset").arg(_pointsDataset->getName()));
+
+	selectNone();
 }
 
 QSize SelectionLayer::imageSize() const
@@ -326,6 +338,7 @@ Qt::ItemFlags SelectionLayer::flags(const QModelIndex& index) const
 			break;
 
 		case Column::ZoomToSelection:
+		case Column::CreateSubset:
 		{
 			if (!_autoZoomToSelection && _selection.count() > 0)
 				flags |= Qt::ItemIsEditable;
@@ -362,11 +375,20 @@ QVariant SelectionLayer::data(const QModelIndex& index, const int& role) const
 		case Column::BrushRadius:
 			return brushRadius(role);
 
-		case Column::OverlayColor:
-			return overlayColor(role);
+		case Column::SelectAll:
+		case Column::SelectNone:
+		case Column::InvertSelection:
+			break;
 
 		case Column::AutoZoomToSelection:
 			return autoZoomToSelection(role);
+
+		case Column::ZoomToSelection:
+		case Column::CreateSubset:
+			break;
+
+		case Column::OverlayColor:
+			return overlayColor(role);
 
 		default:
 			break;
@@ -381,11 +403,13 @@ QModelIndexList SelectionLayer::setData(const QModelIndex& index, const QVariant
 
 	if (static_cast<Layer::Column>(index.column()) == Layer::Column::Selection) {
 		computeChannel(ChannelIndex::Selection);
+		computeSelectionBounds();
 
 		affectedIds << index.siblingAtColumn(ult(Column::SelectAll));
 		affectedIds << index.siblingAtColumn(ult(Column::SelectNone));
 		affectedIds << index.siblingAtColumn(ult(Column::InvertSelection));
 		affectedIds << index.siblingAtColumn(ult(Column::ZoomToSelection));
+		affectedIds << index.siblingAtColumn(ult(Column::CreateSubset));
 	}
 
 	switch (static_cast<Column>(index.column())) {
@@ -441,6 +465,10 @@ QModelIndexList SelectionLayer::setData(const QModelIndex& index, const QVariant
 			break;
 		}
 
+		case Column::ZoomToSelection:
+		case Column::CreateSubset:
+			break;
+
 		default:
 			break;
 	}
@@ -485,8 +513,7 @@ void SelectionLayer::mousePressEvent(QMouseEvent* mouseEvent, const QModelIndex&
 
 				case Qt::RightButton:
 				{
-					_mousePositions.clear();
-					publishSelection();
+					_mousePositions << mouseEvent->pos();
 					break;
 				}
 
@@ -548,7 +575,15 @@ void SelectionLayer::mouseReleaseEvent(QMouseEvent* mouseEvent, const QModelInde
 		}
 
 		case SelectionType::Polygon:
+		{
+			if (mouseEvent->button() == Qt::RightButton) {
+				_mousePositions.removeLast();
+				publishSelection();
+				_mousePositions.clear();
+			}
+
 			break;
+		}
 
 		case SelectionType::Brush:
 		{
@@ -1081,10 +1116,13 @@ void SelectionLayer::computeChannel(const ChannelIndex& channelIndex)
 
 void SelectionLayer::selectAll()
 {
-	std::vector<std::uint32_t> indices(noPixels());
-	std::iota(std::begin(indices), std::end(indices), 0);
+	auto& selection = dynamic_cast<Points&>(imageViewerPlugin->core()->requestSelection(_pointsDataset->getDataName()));
 
-	_imagesDataset->setIndices(indices);
+	selection.indices.resize(noPixels());
+
+	std::iota(std::begin(selection.indices), std::end(selection.indices), 0);
+
+	imageViewerPlugin->core()->notifySelectionChanged(_pointsDataset->getDataName());
 }
 
 void SelectionLayer::selectNone()
@@ -1188,4 +1226,42 @@ void SelectionLayer::publishSelection()
 	imageViewerPlugin->core()->notifySelectionChanged(_pointsDataset->getDataName());
 
 	propByName<SelectionToolProp>("SelectionTool")->reset();
+}
+
+void SelectionLayer::computeSelectionBounds()
+{
+	auto& selection = dynamic_cast<Points&>(imageViewerPlugin->core()->requestSelection(_pointsDataset->getDataName()));
+
+	if (selection.indices.empty()) {
+		_selectionBounds = QRect();
+		return;
+	}
+
+	auto& selectionChannel = (*channel(ult(ChannelIndex::Selection)));
+
+	const auto width = static_cast<float>(imageSize().width());
+	const auto height = static_cast<float>(imageSize().height());
+
+	std::vector<uint32_t> xCoordinates;
+	std::vector<uint32_t> yCoordinates;
+
+	xCoordinates.reserve(selection.indices.size());
+	yCoordinates.reserve(selection.indices.size());
+
+	for (auto selectionIndex : selection.indices) {
+		const int y = height - static_cast<std::int32_t>(floorf(selectionIndex / width));
+		const int x = width - (selectionIndex % imageSize().width());
+
+		xCoordinates.push_back(x);
+		yCoordinates.push_back(y);
+	}
+
+	QVector3D topLeft(*std::min_element(xCoordinates.begin(), xCoordinates.end()), *std::min_element(yCoordinates.begin(), yCoordinates.end()), 0.0f);
+	QVector3D bottomRight(*std::max_element(xCoordinates.begin(), xCoordinates.end()), *std::max_element(yCoordinates.begin(), yCoordinates.end()), 0.0f);
+
+	topLeft -= QVector3D(1.0f, 1.0f, 0.0f);
+
+	auto m = propByName<SelectionProp>("Selection")->modelMatrix();
+
+	_selectionBounds = QRect(renderer->worldPositionToScreenPoint(m * topLeft), renderer->worldPositionToScreenPoint(m * bottomRight));
 }

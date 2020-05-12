@@ -39,6 +39,7 @@ public: // Enumerations
 		InvertSelection,										// Invert the pixel selection
 		AutoZoomToSelection,									// Zoom automatically to the pixel selection
 		ZoomToSelection,										// Zoom to the pixel selection
+		CreateSubset,											// Create subset from selection
 		OverlayColor,											// Selection overlay color
 
 		Start = PixelSelectionType,
@@ -239,6 +240,9 @@ private: // Miscellaneous
 	/** Takes the pixels that were selected by the selection tools and publishes it to HDPS */
 	void publishSelection();
 
+	/** Computes the selection bounding rectangle */
+	void computeSelectionBounds();
+
 private:
 	Points*						_pointsDataset;				/** Points dataset to which the layer refers */
 	Images*						_imagesDataset;				/** Images dataset from which the points dataset originates */
@@ -249,6 +253,7 @@ private:
 	float						_brushRadius;				/** Brush radius */
 	QColor						_overlayColor;				/** Selection overlay color */
 	bool						_autoZoomToSelection;		/** Automatically zoom to selection */
+	QRect						_selectionBounds;			/** Pixel selection bounding rectangle */
 
 public:
 	static const QColor toolColorForeground;	/** Foreground tool color for brushes and pens */
