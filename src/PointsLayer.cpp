@@ -11,7 +11,7 @@
 
 PointsLayer::PointsLayer(const QString& pointsDatasetName, const QString& id, const QString& name, const int& flags) :
 	Layer(pointsDatasetName, Layer::Type::Points, id, name, flags),
-	Channels<float>(4),
+	Channels<float>(ult(ChannelIndex::Count)),
 	_pointsDataset(nullptr),
 	_imagesDataset(nullptr),
 	_maxNoChannels(0),
