@@ -55,22 +55,7 @@ void PointsLayer::init()
 	if (selection)
 		setSelection(Indices::fromStdVector(selection->indices));
 
-	auto maskChannel = channel(3);
-
-	maskChannel->setImageSize(imageSize());
-
-	if (_pointsDataset->isFull()) {
-		maskChannel->fill(1.0f);
-	}
-	else {
-		maskChannel->fill(0.0f);
-
-		for (auto index : _pointsDataset->indices) {
-			(*maskChannel)[index] = 1.0f;
-		}
-	}
-
-	emit channelChanged(3);
+	computeChannel(ChannelIndex::Mask);
 }
 
 void PointsLayer::matchScaling(const QSize& targetImageSize)
@@ -711,31 +696,92 @@ void PointsLayer::setConstantColor(const QColor& constantColor)
 
 void PointsLayer::computeChannel(const ChannelIndex& channelIndex)
 {
-	auto channel = this->channel(ult(channelIndex));
+	switch (channelIndex)
+	{
+		case ChannelIndex::Channel1:
+		case ChannelIndex::Channel2:
+		case ChannelIndex::Channel3:
+		{
+			auto channel = this->channel(ult(channelIndex));
 
-	if (channel->dimensionId() < 0)
-		return;
+			if (channel->dimensionId() < 0)
+				return;
 
-	channel->setImageSize(imageSize());
+			channel->setImageSize(imageSize());
 
-	const int32_t dimensionIndices[] = { channel->dimensionId() };
+			if (_pointsDataset->isDerivedData()) {
+				auto& sourceData = _pointsDataset->getSourceData<Points>(*_pointsDataset);
 
-	if (_pointsDataset->isFull() && !_pointsDataset->isDerivedData()) {
-		_pointsDataset->populateDataForDimensions(*channel, dimensionIndices);
-	}
-	else {
-		channel->fill(0.0f);
+				if (sourceData.isFull()) {
+					for (int i = 0; i < _pointsDataset->getNumPoints(); i++) {
+						(*channel)[i] = _pointsDataset->getData()[i * _noDimensions + channel->dimensionId()];
+					}
+				}
+				else {
+					for (int i = 0; i < sourceData.indices.size(); i++) {
+						(*channel)[sourceData.indices[i]] = _pointsDataset->getData()[i * _noDimensions + channel->dimensionId()];
+					}
+				}
+			}
+			else {
+				if (_pointsDataset->isFull()) {
+					for (int i = 0; i < noPixels(); i++) {
+						(*channel)[i] = _pointsDataset->getData()[i * _noDimensions + channel->dimensionId()];
+					}
+				}
+				else {
+					for (const auto& index : _pointsDataset->indices) {
+						(*channel)[index] = _pointsDataset->getData()[index * _noDimensions + channel->dimensionId()];
+					}
+				}
+			}
 
-		auto& data = _pointsDataset->getData();
+			channel->setChanged();
 
-		for (auto index : _pointsDataset->indices) {
-			(*channel)[index] = data[index * _noDimensions + channel->dimensionId()];
+			emit channelChanged(ult(channelIndex));
+
+			break;
 		}
+
+		case ChannelIndex::Mask:
+		{
+			auto maskChannel = channel(ult(ChannelIndex::Mask));
+
+			maskChannel->setImageSize(imageSize());
+
+			if (_pointsDataset->isDerivedData()) {
+				auto& sourceData = _pointsDataset->getSourceData<Points>(*_pointsDataset);
+
+				if (sourceData.isFull()) {
+					maskChannel->fill(1.0f);
+				}
+				else {
+					for (auto index : sourceData.indices) {
+						(*maskChannel)[index] = 1.0f;
+					}
+				}
+			}
+			else {
+				if (_pointsDataset->isFull()) {
+					maskChannel->fill(1.0f);
+				}
+				else {
+					for (auto index : _pointsDataset->indices) {
+						(*maskChannel)[index] = 1.0f;
+					}
+				}
+			}
+
+			maskChannel->setChanged();
+
+			emit channelChanged(ult(channelIndex));
+
+			break;
+		}
+
+		default:
+			break;
 	}
-
-	channel->setChanged();
-
-	emit channelChanged(ult(channelIndex));
 }
 
 void PointsLayer::updateChannelNames()

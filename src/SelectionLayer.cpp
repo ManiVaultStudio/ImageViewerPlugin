@@ -1154,11 +1154,11 @@ void SelectionLayer::publishSelection()
 {
 	const auto selectionImage = propByName<SelectionToolProp>("SelectionTool")->selectionImage().mirrored(false, true);
 	
-	auto& indices = dynamic_cast<Points&>(imageViewerPlugin->core()->requestSelection(_pointsDataset->getDataName())).indices;
-	auto& sourceIndices = _pointsDataset->getSourceData<Points>(*_pointsDataset).indices;
+	auto& selectionIndices	= dynamic_cast<Points&>(imageViewerPlugin->core()->requestSelection(_pointsDataset->getDataName())).indices;
+	auto& sourceIndices		= _pointsDataset->getSourceData<Points>(*_pointsDataset).indices;
 
 	const auto noComponents		= 4;
-	const auto width		= static_cast<float>(imageSize().width());
+	const auto width			= static_cast<float>(imageSize().width());
 	
 	auto index = 0;
 
@@ -1173,15 +1173,15 @@ void SelectionLayer::publishSelection()
 	{
 		case SelectionModifier::Replace:
 		{
-			indices.clear();
-			indices.reserve(noPixels());
+			selectionIndices.clear();
+			selectionIndices.reserve(noPixels());
 
 			for (std::int32_t p = 0; p < noPixels(); ++p) {
 				if (selectionImage.bits()[p * noComponents] > 0) {
 					index = sourceIndex(p);
 
 					if (index >= 0)
-						indices.push_back(index);
+						selectionIndices.push_back(index);
 				}
 			}
 
@@ -1190,7 +1190,7 @@ void SelectionLayer::publishSelection()
 			
 		case SelectionModifier::Add:
 		{
-			auto selectionSet = std::set<std::uint32_t>(indices.begin(), indices.end());
+			auto selectionSet = std::set<std::uint32_t>(selectionIndices.begin(), selectionIndices.end());
 
 			for (std::int32_t p = 0; p < noPixels(); ++p) {
 				if (selectionImage.bits()[p * noComponents] > 0) {
@@ -1201,13 +1201,13 @@ void SelectionLayer::publishSelection()
 				}
 			}
 
-			indices = std::vector<std::uint32_t>(selectionSet.begin(), selectionSet.end());
+			selectionIndices = std::vector<std::uint32_t>(selectionSet.begin(), selectionSet.end());
 			break;
 		}
 
 		case SelectionModifier::Remove:
 		{
-			auto selectionSet = std::set<std::uint32_t>(indices.begin(), indices.end());
+			auto selectionSet = std::set<std::uint32_t>(selectionIndices.begin(), selectionIndices.end());
 
 			for (std::int32_t p = 0; p < noPixels(); ++p) {
 				if (selectionImage.bits()[p * noComponents] > 0) {
@@ -1218,7 +1218,7 @@ void SelectionLayer::publishSelection()
 				}
 			}
 
-			indices = std::vector<std::uint32_t>(selectionSet.begin(), selectionSet.end());
+			selectionIndices = std::vector<std::uint32_t>(selectionSet.begin(), selectionSet.end());
 			break;
 		}
 		
