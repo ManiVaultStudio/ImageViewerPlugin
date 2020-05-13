@@ -1155,11 +1155,19 @@ void SelectionLayer::publishSelection()
 	const auto selectionImage = propByName<SelectionToolProp>("SelectionTool")->selectionImage().mirrored(false, true);
 	
 	auto& indices = dynamic_cast<Points&>(imageViewerPlugin->core()->requestSelection(_pointsDataset->getDataName())).indices;
+	auto& sourceIndices = _pointsDataset->getSourceData<Points>(*_pointsDataset).indices;
 
 	const auto noComponents		= 4;
 	const auto width		= static_cast<float>(imageSize().width());
 	
 	auto index = 0;
+
+	auto sourceIndex = [this, sourceIndices](const int& pixelId) {
+		if (_pointsDataset->isDerivedData())
+			return sourceIndices[_indices[pixelId]];
+		else
+			return _indices[pixelId];
+	};
 
 	switch (_selectionModifier)
 	{
@@ -1170,7 +1178,7 @@ void SelectionLayer::publishSelection()
 
 			for (std::int32_t p = 0; p < noPixels(); ++p) {
 				if (selectionImage.bits()[p * noComponents] > 0) {
-					index = _indices[p];
+					index = sourceIndex(p);
 
 					if (index >= 0)
 						indices.push_back(index);
@@ -1186,7 +1194,10 @@ void SelectionLayer::publishSelection()
 
 			for (std::int32_t p = 0; p < noPixels(); ++p) {
 				if (selectionImage.bits()[p * noComponents] > 0) {
-					index = _indices[p];
+					if (_pointsDataset->isDerivedData())
+						index = sourceIndices[_indices[p]];
+					else
+						index = _indices[p];
 
 					if (index >= 0)
 						selectionSet.insert(index);
