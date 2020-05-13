@@ -1194,10 +1194,7 @@ void SelectionLayer::publishSelection()
 
 			for (std::int32_t p = 0; p < noPixels(); ++p) {
 				if (selectionImage.bits()[p * noComponents] > 0) {
-					if (_pointsDataset->isDerivedData())
-						index = sourceIndices[_indices[p]];
-					else
-						index = _indices[p];
+					index = sourceIndex(p);
 
 					if (index >= 0)
 						selectionSet.insert(index);
@@ -1214,7 +1211,7 @@ void SelectionLayer::publishSelection()
 
 			for (std::int32_t p = 0; p < noPixels(); ++p) {
 				if (selectionImage.bits()[p * noComponents] > 0) {
-					index = _indices[p];
+					index = sourceIndex(p);
 
 					if (index >= 0)
 						selectionSet.erase(index);
