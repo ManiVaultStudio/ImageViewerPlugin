@@ -90,8 +90,12 @@ void SelectionLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(SelectionLayer::Column::OverlayColor)), currentColor);
 	});
 
-	QObject::connect(_ui->createSubsetPushButton, &QPushButton::clicked, [this](const QColor& currentColor) {
-		static_cast<SelectionLayer*>(_layersModel->selectedLayer())->createSubsetFromSelection();
+	QObject::connect(_ui->subsetFromSelectedPixelsPushButton, &QPushButton::clicked, [this](const QColor& currentColor) {
+		static_cast<SelectionLayer*>(_layersModel->selectedLayer())->subsetFromSelectedPixels();
+	});
+
+	QObject::connect(_ui->subsetFromSelectionBoundsPushButton, &QPushButton::clicked, [this](const QColor& currentColor) {
+		static_cast<SelectionLayer*>(_layersModel->selectedLayer())->subsetFromSelectionBounds();
 	});
 }
 
@@ -184,7 +188,8 @@ void SelectionLayerWidget::updateData(const QModelIndex& topLeft, const QModelIn
 		if (column == ult(SelectionLayer::Column::CreateSubset)) {
 			const auto createSubsetFlags = _layersModel->flags(topLeft.row(), ult(SelectionLayer::Column::CreateSubset));
 
-			_ui->createSubsetPushButton->setEnabled(createSubsetFlags & Qt::ItemIsEditable);
+			_ui->subsetFromSelectedPixelsPushButton->setEnabled(createSubsetFlags & Qt::ItemIsEditable);
+			_ui->subsetFromSelectionBoundsPushButton->setEnabled(createSubsetFlags & Qt::ItemIsEditable);
 		}
 
 		if (column == ult(SelectionLayer::Column::OverlayColor)) {

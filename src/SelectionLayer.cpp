@@ -39,7 +39,9 @@ SelectionLayer::SelectionLayer(const QString& datasetName, const QString& id, co
 	_selectionModifier(SelectionModifier::Replace),
 	_brushRadius(defaultBrushRadius),
 	_overlayColor(Qt::red),
-	_autoZoomToSelection(false)
+	_autoZoomToSelection(false),
+	_pixelBounds(),
+	_selectionBounds()
 {
 	init();
 }
@@ -66,6 +68,8 @@ void SelectionLayer::init()
 			_indices[index] = index;
 		}
 	}
+
+	//auto& sourceIndices = _pointsDataset->getSourceData<Points>(*_pointsDataset).indices;
 
 	computeChannel(ChannelIndex::Selection);
 }
@@ -266,7 +270,7 @@ void SelectionLayer::paint(QPainter* painter)
 	}
 }
 
-void SelectionLayer::createSubsetFromSelection()
+void SelectionLayer::subsetFromSelectedPixels()
 {
 	auto core = imageViewerPlugin->core();
 
@@ -277,6 +281,21 @@ void SelectionLayer::createSubsetFromSelection()
 	core->createSubsetFromSelection(selection, dataName, QString("%1_subset").arg(_pointsDataset->getName()));
 
 	selectNone();
+}
+
+void SelectionLayer::subsetFromSelectionBounds()
+{
+	/*
+	auto core = imageViewerPlugin->core();
+
+	const auto dataName = _pointsDataset->getDataName();
+
+	const hdps::DataSet& selection = core->requestSelection(dataName);
+
+	core->createSubsetFromSelection(selection, dataName, QString("%1_subset").arg(_pointsDataset->getName()));
+
+	selectNone();
+	*/
 }
 
 QSize SelectionLayer::imageSize() const
@@ -1164,7 +1183,7 @@ void SelectionLayer::publishSelection()
 
 	auto sourceIndex = [this, sourceIndices](const int& pixelId) {
 		if (_pointsDataset->isDerivedData())
-			return sourceIndices[_indices[pixelId]];
+			return _indices[pixelId];
 		else
 			return _indices[pixelId];
 	};

@@ -39,7 +39,7 @@ public: // Enumerations
 		InvertSelection,										// Invert the pixel selection
 		AutoZoomToSelection,									// Zoom automatically to the pixel selection
 		ZoomToSelection,										// Zoom to the pixel selection
-		CreateSubset,											// Create subset from selection
+		CreateSubset,											// Create subset
 		OverlayColor,											// Selection overlay color
 
 		Start = PixelSelectionType,
@@ -66,8 +66,11 @@ public:
 	 */
 	void paint(QPainter* painter) override;
 
-	/** Creates a subset from the current selection */
-	void createSubsetFromSelection();
+	/** Creates a subset from the selected pixels */
+	void subsetFromSelectedPixels();
+
+	/** Creates a subset from the selection bounds */
+	void subsetFromSelectionBounds();
 
 	/**
 	* Returns the image size
@@ -253,6 +256,7 @@ private:
 	float						_brushRadius;				/** Brush radius */
 	QColor						_overlayColor;				/** Selection overlay color */
 	bool						_autoZoomToSelection;		/** Automatically zoom to selection */
+	QRect						_pixelBounds;				/** Visible pixels bounding rectangle */
 	QRect						_selectionBounds;			/** Pixel selection bounding rectangle */
 
 public:

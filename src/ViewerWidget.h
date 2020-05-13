@@ -33,11 +33,6 @@ public:
 	/** Destructor */
 	~ViewerWidget() override;
 
-public: // Selections
-
-	/** Publish selection to HDPS */
-	void publishSelection();
-
 private: // Mouse events
 
 	/**

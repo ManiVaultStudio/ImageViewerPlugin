@@ -205,7 +205,7 @@ void LayersWidget::dropEvent(QDropEvent* dropEvent)
 		if (createSelectionLayer) {
 			auto selectionLayer = new SelectionLayer(datasetName, selectionName, selectionName, layerFlags);
 
-			selectionLayer->setOpacity(0.75f);
+			selectionLayer->setOpacity(0.5f);
 
 			if (largestImageSize.isValid())
 				selectionLayer->matchScaling(largestImageSize);

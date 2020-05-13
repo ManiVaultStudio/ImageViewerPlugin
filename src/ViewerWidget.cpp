@@ -69,58 +69,13 @@ ViewerWidget::~ViewerWidget()
 	_renderer->destroy();
 }
 
-void ViewerWidget::publishSelection()
-{
-	qDebug() << "Publish selection";
-
-	/*
-	const auto image = _renderer->selectionBufferQuad()->selectionBufferImage();
-
-	auto pixelCoordinates = std::vector<std::pair<std::uint32_t, std::uint32_t>>();
-
-	pixelCoordinates.reserve(image->width() * image->height());
-
-	for (std::int32_t y = 0; y < image->height(); y++) {
-		for (std::int32_t x = 0; x < image->width(); x++) {
-			if (image->pixelColor(x, y).red() > 0) {
-				pixelCoordinates.push_back(std::make_pair(x, y));
-			}
-		}
-	}
-
-	_imageViewerPlugin->selectPixels(pixelCoordinates, _renderer->selectionModifier());
-
-	_renderer->selectionBufferQuad()->reset();
-	*/
-
-	update();
-}
-
 void ViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
 {
 	QOpenGLWidget::mousePressEvent(mouseEvent);
 
 	_imageViewerPlugin->layersModel().mousePressEvent(mouseEvent);
 
-	/*
-	switch (mouseEvent->button())
-	{
-		case Qt::LeftButton:
-		{
-			if (_renderer->interactionMode() != InteractionMode::Navigation && allowsPixelSelection()) {
-				_renderer->setInteractionMode(InteractionMode::Selection);
-			}
-
-			break;
-		}
-
-		default:
-			break;
-	}
-
 	_renderer->mousePressEvent(mouseEvent);
-	*/
-	
 }
 
 void ViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent)
