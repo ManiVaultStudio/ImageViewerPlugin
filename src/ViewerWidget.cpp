@@ -74,8 +74,6 @@ ViewerWidget::~ViewerWidget()
 
 bool ViewerWidget::eventFilter(QObject* target, QEvent* event)
 {
-	_imageViewerPlugin->layersModel().dispatchEventToSelectedLayer(event);
-
 	switch (event->type())
 	{
 		case QEvent::KeyPress:
