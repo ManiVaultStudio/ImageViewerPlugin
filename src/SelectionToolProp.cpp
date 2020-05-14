@@ -173,7 +173,7 @@ void SelectionToolProp::compute()
 		if (shaderProgram->bind()) {
 			glBindTexture(GL_TEXTURE_2D, _fbo->texture());
 
-			const auto selectionType = selectionLayer->selectionType(Qt::EditRole).toInt();
+			const auto selectionType = selectionLayer->pixelSelectionType(Qt::EditRole).toInt();
 
 			shaderProgram->setUniformValue("pixelSelectionTexture", 0);
 			shaderProgram->setUniformValue("transform", transform);

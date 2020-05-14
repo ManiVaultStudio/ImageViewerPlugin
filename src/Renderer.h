@@ -46,44 +46,16 @@ public:
 	/** Resizes the renderer */
 	void resize(QSize renderSize) override {};
 
-	/** Returns mouse events that were recorded during interaction */
-	QVector<QSharedPointer<QMouseEvent>> mouseEvents() const;
+	/** TODO */
+	bool interacting() const;
 
 	/**
-	 * Invoked when the mouse button is pressed
-	 * @param mouseEvent Mouse event
+	 * Handles events passed through from widgets
+	 * @param event Event
 	 */
-	void mousePressEvent(QMouseEvent* mouseEvent);
+	void handleEvent(QEvent* event);
 
-	/**
-	 * Invoked when the mouse button is released
-	 * @param mouseEvent Mouse event
-	 */
-	void mouseReleaseEvent(QMouseEvent* mouseEvent);
-
-	/**
-	 * Invoked when the mouse pointer is moved
-	 * @param mouseEvent Mouse event
-	 */
-	void mouseMoveEvent(QMouseEvent* mouseEvent);
-
-	/**
-	 * Invoked when the mouse wheel is rotated
-	 * @param wheelEvent Mouse wheel event
-	 */
-	void mouseWheelEvent(QWheelEvent* wheelEvent);
-
-	/**
-	 * Invoked when a key is pressed
-	 * @param keyEvent Key event
-	 */
-	void keyPressEvent(QKeyEvent* keyEvent);
-
-	/**
-	 * Invoked when a key is released
-	 * @param keyEvent Key event
-	 */
-	void keyReleaseEvent(QKeyEvent* keyEvent);
+public:
 
 	/** Convert point in screen coordinates to point in world coordinates
 	 * @param modelViewMatrix Model-view matrix
@@ -165,17 +137,6 @@ public:
 	/** Whether the display of a context menu is allowed */
 	bool allowsContextMenu();
 
-	/** Adds a named color
-	 * @param name Name of the color
-	 * @param color The color
-	 */
-	void addNamedColor(const QString& name, const QColor& color);
-
-	/** Returns a color by name
-	 * @param name Name of the color
-	 */
-	QColor colorByName(const QString& name, const std::int32_t& alpha = -1) const;
-
 public: // Parent widget queries
 
 	/** Returns the parent widget */
@@ -189,68 +150,18 @@ public: // Parent widget queries
 
 public:
 
-	/** Returns the interaction mode */
-	InteractionMode interactionMode() const;
-
-	/**
-	 * Set interaction mode
-	 * @param interactionMode Interaction mode
-	 */
-	void setInteractionMode(const InteractionMode& interactionMode);
-
 	/** Binds the OpenGL context */
 	void bindOpenGLContext();
 
 	/** Releases the OpenGL context */
 	void releaseOpenGLContext();
 
-signals:
-
-	/** Signals that the renderer just became dirty */
-	void becameDirty();
-
-	/**
-	 * Signals the mouse button is pressed
-	 * @param mouseEvent Mouse event
-	 */
-	void mousePress(QMouseEvent* mouseEvent);
-
-	/**
-	 * Signals the mouse button is released
-	 * @param mouseEvent Mouse event
-	 */
-	void mouseRelease(QMouseEvent* mouseEvent);
-
-	/**
-	 * Invoked when the mouse pointer is moved
-	 * @param mouseEvent Mouse event
-	 */
-	void mouseMove(QMouseEvent* mouseEvent);
-
-	/**
-	 * Signals the mouse wheel is rotated
-	 * @param wheelEvent Mouse wheel event
-	 */
-	void mouseWheel(QWheelEvent* wheelEvent);
-
-	/**
-	 * Signals a key is pressed
-	 * @param keyEvent Key event
-	 */
-	void keyPress(QKeyEvent* keyEvent);
-
-	/**
-	 * Signals a key is released
-	 * @param keyEvent Key event
-	 */
-	void keyRelease(QKeyEvent* keyEvent);
-
 protected:
-	InteractionMode							_interactionMode;		/** Type of interaction e.g. navigation, selection and window/level */
-	QVector<QSharedPointer<QMouseEvent>>	_mouseEvents;			/** Recorded mouse events during interaction */
-	QVector2D								_pan;					/** Move view horizontally/vertically */
-	float									_zoom;					/** Zoom view in/out */
-	float									_zoomSensitivity;		/** Zoom sensitivity */
-	int										_margin;				/** Margin between image and viewer widget boundaries */
-	QMap<QString, QColor>					_colorMap;				/** Color map */
+	QVector<QPoint>		_mousePositions;		/** Recorded mouse positions */
+	int					_mouseButtons;			/** State of the left, middle and right mouse buttons */
+	int					_keys;					/** Pressed key bit flags */
+	QVector2D			_pan;					/** Move view horizontally/vertically */
+	float				_zoom;					/** Zoom view in/out */
+	float				_zoomSensitivity;		/** Zoom sensitivity */
+	int					_margin;				/** Margin between image and viewer widget boundaries */
 };

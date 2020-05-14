@@ -57,19 +57,12 @@ public: // Inherited from ViewPlugin
 	/** Returns a pointer to the core interface */
 	hdps::CoreInterface* core() { return _core; }
 
-private: // Keyboard events
-
 	/**
-	 * Invoked when a key is pressed
-	 * @param keyEvent Key event
+	 * Event filter
+	 *@param target Target object
+	 *@param event Event that occurred
 	 */
-	void keyPressEvent(QKeyEvent* keyEvent) override;
-
-	/**
-	 * Invoked when a key is released
-	 * @param keyEvent Key event
-	 */
-	void keyReleaseEvent(QKeyEvent* keyEvent) override;
+	bool eventFilter(QObject* target, QEvent* event);
 
 public: //
 

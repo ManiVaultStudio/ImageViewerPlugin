@@ -26,13 +26,10 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	_colorMapModel(this, ColorMap::Type::OneDimensional),
 	_imagesDatasets()
 {
-	qRegisterMetaType<QVector<int> >("QVector<int>");
-
 	Layer::imageViewerPlugin = this;
-
-	// TODO
+	
 	_viewerWidget	= new ViewerWidget(this);
-	_settingsWidget		= new SettingsWidget(this);
+	_settingsWidget	= new SettingsWidget(this);
 }
 
 void ImageViewerPlugin::init()
@@ -103,18 +100,37 @@ hdps::DataTypes ImageViewerPlugin::supportedDataTypes() const
 	return supportedTypes;
 }
 
-void ImageViewerPlugin::keyPressEvent(QKeyEvent* keyEvent)
+bool ImageViewerPlugin::eventFilter(QObject* target, QEvent* event)
 {
-	layersModel().keyPressEvent(keyEvent);
+	switch (event->type())
+	{
+		case QEvent::KeyPress:
+		{
+			auto keyEvent = static_cast<QKeyEvent*>(event);
 
-	ViewPlugin::keyPressEvent(keyEvent);
-}
+			if (!keyEvent->isAutoRepeat() && keyEvent->key() == Qt::Key_Space) {
+				_layersModel.dispatchEventToSelectedLayer(event);
+			}
 
-void ImageViewerPlugin::keyReleaseEvent(QKeyEvent* keyEvent)
-{
-	layersModel().keyReleaseEvent(keyEvent);
+			break;
+		}
 
-	ViewPlugin::keyReleaseEvent(keyEvent);
+		case QEvent::KeyRelease:
+		{
+			auto keyEvent = static_cast<QKeyEvent*>(event);
+
+			if (!keyEvent->isAutoRepeat() && keyEvent->key() == Qt::Key_Space) {
+				_layersModel.dispatchEventToSelectedLayer(event);
+			}
+
+			break;
+		}
+
+		default:
+			break;
+	}
+
+	return QWidget::eventFilter(target, event);
 }
 
 ImageViewerPlugin* ImageViewerPluginFactory::produce()

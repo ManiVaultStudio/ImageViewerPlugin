@@ -190,6 +190,13 @@ public:
 	 */
 	virtual void paint(QPainter* painter);
 
+	/**
+	 * Handles a widget event
+	 * @param event Event
+	 * @param index Model index
+	 */
+	virtual void handleEvent(QEvent* event, const QModelIndex& index) {};
+
 public: // MVC
 	
 	/** Returns the number of columns */
@@ -218,47 +225,6 @@ public: // MVC
 	 * @return Model indices that are affected by the operation
 	 */
 	virtual QModelIndexList setData(const QModelIndex& index, const QVariant& value, const int& role);
-
-public: // Mouse (wheel) and keyboard events
-
-	/**
-	 * Invoked when a mouse button is pressed
-	 * @param mouseEvent Mouse event
-	 */
-	virtual void mousePressEvent(QMouseEvent* mouseEvent, const QModelIndex& index) {};
-
-	/**
-		* Invoked when a mouse button is released
-		* @param mouseEvent Mouse event
-		*/
-	virtual void mouseReleaseEvent(QMouseEvent* mouseEvent, const QModelIndex& index) {};
-
-	/**
-		* Invoked when the mouse pointer is moved
-		* @param mouseEvent Mouse event
-		*/
-	virtual void mouseMoveEvent(QMouseEvent* mouseEvent, const QModelIndex& index) {};
-
-	/**
-		* Invoked when the mouse wheel is rotated
-		* @param wheelEvent Mouse wheel event
-		* @param index Model index of the layer
-		*/
-	virtual void mouseWheelEvent(QWheelEvent* wheelEvent, const QModelIndex& index) {};
-
-	/**
-		* Invoked when a key is pressed
-		* @param keyEvent Key event
-		* @param index Model index of the layer
-		*/
-	virtual void keyPressEvent(QKeyEvent* keyEvent, const QModelIndex& index) {};
-
-	/**
-		* Invoked when a key is released
-		* @param keyEvent Key event
-		* @param index Model index of the layer
-		*/
-	virtual void keyReleaseEvent(QKeyEvent* keyEvent, const QModelIndex& index) {};
 
 public: // Getters/setters
 

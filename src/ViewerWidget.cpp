@@ -21,7 +21,8 @@ ViewerWidget::ViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	QOpenGLFunctions(),
 	_imageViewerPlugin(imageViewerPlugin),
 	_renderer(new Renderer(this)),
-	_openglDebugLogger(std::make_unique<QOpenGLDebugLogger>())
+	_openglDebugLogger(std::make_unique<QOpenGLDebugLogger>()),
+	_keys()
 {
 	Layer::imageViewerPlugin = _imageViewerPlugin;
 	Renderable::renderer = _renderer;
@@ -62,6 +63,8 @@ ViewerWidget::ViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_backgroundGradient.setFocalPoint(0.5, 0.5);
 	_backgroundGradient.setColorAt(0.0, QColor(100, 100, 100));
 	_backgroundGradient.setColorAt(0.7, QColor(30, 30, 30));
+
+	this->installEventFilter(this);
 }
 
 ViewerWidget::~ViewerWidget()
@@ -69,40 +72,50 @@ ViewerWidget::~ViewerWidget()
 	_renderer->destroy();
 }
 
-void ViewerWidget::mousePressEvent(QMouseEvent* mouseEvent)
+bool ViewerWidget::eventFilter(QObject* target, QEvent* event)
 {
-	QOpenGLWidget::mousePressEvent(mouseEvent);
+	_imageViewerPlugin->layersModel().dispatchEventToSelectedLayer(event);
 
-	_imageViewerPlugin->layersModel().mousePressEvent(mouseEvent);
+	switch (event->type())
+	{
+		case QEvent::KeyPress:
+		{
+			auto keyEvent = static_cast<QKeyEvent*>(event);
 
-	_renderer->mousePressEvent(mouseEvent);
-}
+			if (!keyEvent->isAutoRepeat()) {
+				if (keyEvent->key() == Qt::Key_Space) {
+					_keys |= Qt::Key_Space;
+					setCursor(Qt::ClosedHandCursor);
+				}
+			}
 
-void ViewerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent)
-{
-	QOpenGLWidget::mouseReleaseEvent(mouseEvent);
+			break;
+		}
 
-	_imageViewerPlugin->layersModel().mouseReleaseEvent(mouseEvent);
+		case QEvent::KeyRelease:
+		{
+			auto keyEvent = static_cast<QKeyEvent*>(event);
 
-	/*
-	if (mouseEvent->button() == Qt::RightButton && _renderer->allowsContextMenu()) {
-		contextMenu()->exec(mapToGlobal(mouseEvent->pos()));
+			if (!keyEvent->isAutoRepeat()) {
+				if (keyEvent->key() == Qt::Key_Space) {
+					_keys &= ~Qt::Key_Space;
+					setCursor(Qt::ArrowCursor);
+				}
+			}
+
+			break;
+		}
+
+		default:
+			break;
 	}
-	*/
-}
 
-void ViewerWidget::mouseMoveEvent(QMouseEvent* mouseEvent)
-{
-	QOpenGLWidget::mouseMoveEvent(mouseEvent);
+	if (_keys & Qt::Key_Space)
+		_renderer->handleEvent(event);
+	else
+		_imageViewerPlugin->layersModel().dispatchEventToSelectedLayer(event);
 
-	_imageViewerPlugin->layersModel().mouseMoveEvent(mouseEvent);
-}
-
-void ViewerWidget::wheelEvent(QWheelEvent* wheelEvent)
-{
-	QOpenGLWidget::wheelEvent(wheelEvent);
-
-	_imageViewerPlugin->layersModel().mouseWheelEvent(wheelEvent);
+	return QWidget::eventFilter(target, event);
 }
 
 void ViewerWidget::initializeGL()

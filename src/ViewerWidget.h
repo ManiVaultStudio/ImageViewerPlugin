@@ -33,31 +33,12 @@ public:
 	/** Destructor */
 	~ViewerWidget() override;
 
-private: // Mouse events
-
 	/**
-	 * Invoked when the mouse button is pressed
-	 * @param mouseEvent Mouse event
+	 * Event filter
+	 *@param target Target object
+	 *@param event Event that occurred
 	 */
-	void mousePressEvent(QMouseEvent* mouseEvent) override;
-
-	/**
-	 * Invoked when the mouse button is released
-	 * @param mouseEvent Mouse event
-	 */
-	void mouseReleaseEvent(QMouseEvent* mouseEvent) override;
-
-	/**
-	 * Invoked when the mouse pointer is moved
-	 * @param mouseEvent Mouse event
-	 */
-	void mouseMoveEvent(QMouseEvent* mouseEvent) override;
-
-	/**
-	 * Invoked when the mouse wheel is rotated
-	 * @param wheelEvent Mouse wheel event
-	 */
-	void wheelEvent(QWheelEvent* wheelEvent) override;
+	bool eventFilter(QObject* target, QEvent* event) override;
 
 private:
 
@@ -83,4 +64,5 @@ private:
 	Renderer*								_renderer;					/** TODO */
 	std::unique_ptr<QOpenGLDebugLogger>		_openglDebugLogger;			/** TODO */
 	QRadialGradient							_backgroundGradient;		/** Viewport gradient background */
+	int										_keys;						/** TODO */
 };

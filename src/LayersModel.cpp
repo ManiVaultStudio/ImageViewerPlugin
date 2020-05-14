@@ -51,6 +51,16 @@ void LayersModel::paint(QPainter* painter)
 	selectedLayer()->paint(painter);
 }
 
+void LayersModel::dispatchEventToSelectedLayer(QEvent* event)
+{
+	const auto selectedRows = _selectionModel.selectedRows();
+
+	if (selectedRows.isEmpty())
+		return;
+
+	selectedLayer()->handleEvent(event, selectedRows.first());
+}
+
 int LayersModel::columnCount(const QModelIndex& parent /*= QModelIndex()*/) const
 {
 	Q_UNUSED(parent);
@@ -228,66 +238,6 @@ bool LayersModel::moveLayer(const QModelIndex& sourceParent, const int& sourceRo
 	}
 
 	return true;
-}
-
-void LayersModel::mousePressEvent(QMouseEvent* mouseEvent)
-{
-	const auto selectedRows = _selectionModel.selectedRows();
-
-	if (selectedRows.isEmpty())
-		return;
-
-	selectedLayer()->mousePressEvent(mouseEvent, selectedRows.first());
-}
-
-void LayersModel::mouseReleaseEvent(QMouseEvent* mouseEvent)
-{
-	const auto selectedRows = _selectionModel.selectedRows();
-
-	if (selectedRows.isEmpty())
-		return;
-
-	selectedLayer()->mouseReleaseEvent(mouseEvent, selectedRows.first());
-}
-
-void LayersModel::mouseMoveEvent(QMouseEvent* mouseEvent)
-{
-	const auto selectedRows = _selectionModel.selectedRows();
-
-	if (selectedRows.isEmpty())
-		return;
-
-	selectedLayer()->mouseMoveEvent(mouseEvent, selectedRows.first());
-}
-
-void LayersModel::mouseWheelEvent(QWheelEvent* wheelEvent)
-{
-	const auto selectedRows = _selectionModel.selectedRows();
-
-	if (selectedRows.isEmpty())
-		return;
-
-	selectedLayer()->mouseWheelEvent(wheelEvent, selectedRows.first());
-}
-
-void LayersModel::keyPressEvent(QKeyEvent* keyEvent)
-{
-	const auto selectedRows = _selectionModel.selectedRows();
-
-	if (selectedRows.isEmpty())
-		return;
-
-	selectedLayer()->keyPressEvent(keyEvent, selectedRows.first());
-}
-
-void LayersModel::keyReleaseEvent(QKeyEvent* keyEvent)
-{
-	const auto selectedRows = _selectionModel.selectedRows();
-
-	if (selectedRows.isEmpty())
-		return;
-
-	selectedLayer()->keyReleaseEvent(keyEvent, selectedRows.first());
 }
 
 void LayersModel::initialize()

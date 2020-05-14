@@ -66,6 +66,13 @@ public:
 	 */
 	void paint(QPainter* painter) override;
 
+	/**
+	 * Handles a widget event
+	 * @param event Event
+	 * @param index Model index
+	 */
+	void handleEvent(QEvent* event, const QModelIndex& index) override;
+
 	/** Creates a subset from the selected pixels */
 	void subsetFromSelectedPixels();
 
@@ -107,47 +114,6 @@ public: // Inherited MVC
 	 */
 	QModelIndexList setData(const QModelIndex& index, const QVariant& value, const int& role) override;
 
-public: // Mouse (wheel) and keyboard events
-
-	/**
-	 * Invoked when a mouse button is pressed
-	 * @param mouseEvent Mouse event
-	 */
-	void mousePressEvent(QMouseEvent* mouseEvent, const QModelIndex& index);
-
-	/**
-	 * Invoked when a mouse button is released
-	 * @param mouseEvent Mouse event
-	 */
-	void mouseReleaseEvent(QMouseEvent* mouseEvent, const QModelIndex& index);
-
-	/**
-	 * Invoked when the mouse pointer is moved
-	 * @param mouseEvent Mouse event
-	 */
-	void mouseMoveEvent(QMouseEvent* mouseEvent, const QModelIndex& index);
-
-	/**
-	 * Invoked when the mouse wheel is rotated
-	 * @param wheelEvent Mouse wheel event
-	 * @param index Model index of the layer
-	 */
-	void mouseWheelEvent(QWheelEvent* wheelEvent, const QModelIndex& index);
-
-	/**
-	 * Invoked when a key is pressed
-	 * @param keyEvent Key event
-	 * @param index Model index of the layer
-	 */
-	void keyPressEvent(QKeyEvent* keyEvent, const QModelIndex& index);
-
-	/**
-	 * Invoked when a key is released
-	 * @param keyEvent Key event
-	 * @param index Model index of the layer
-	 */
-	void keyReleaseEvent(QKeyEvent* keyEvent, const QModelIndex& index);
-
 public: // Getters/setters
 
 	/**
@@ -168,13 +134,13 @@ public: // Getters/setters
 	 * @param role Data role
 	 * @return Pixel selection type in variant form
 	 */
-	QVariant selectionType(const int& role) const;
+	QVariant pixelSelectionType(const int& role) const;
 
 	/**
 	 * Sets the pixel selection type
 	 * @param pixelSelectionType Pixel selection type
 	 */
-	void pixelSelectionType(const SelectionType& pixelSelectionType);
+	void setPixelSelectionType(const SelectionType& pixelSelectionType);
 
 	/**
 	 * Returns the pixel selection modifier

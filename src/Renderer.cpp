@@ -14,15 +14,14 @@
 Renderer::Renderer(QOpenGLWidget* parent) :
 	QObject(parent),
 	hdps::Renderer(),
-	_interactionMode(InteractionMode::Selection),
-	_mouseEvents(),
+	_mousePositions(),
+	_mouseButtons(),
+	_keys(),
 	_pan(),
 	_zoom(1.f),
 	_zoomSensitivity(0.1f),
 	_margin(25)
 {
-	addNamedColor("InterimSelectionOverlayColor", QColor(239, 130, 13, 50));
-	addNamedColor("SelectionOutline", QColor(239, 130, 13, 255));
 }
 
 void Renderer::init()
@@ -34,13 +33,18 @@ void Renderer::render()
 	static_cast<QOpenGLWidget*>(parent())->update();
 }
 
-QVector<QSharedPointer<QMouseEvent>> Renderer::mouseEvents() const
+bool Renderer::interacting() const
 {
-	return _mouseEvents;
+	return _keys & Qt::Key_Space;
 }
 
-void Renderer::mousePressEvent(QMouseEvent* mouseEvent)
+void Renderer::handleEvent(QEvent* event)
 {
+	/*
+	_mouseButtons = mouseEvent->buttons();
+
+	_mousePositions << mouseEvent->pos();
+
 	//qDebug() << "Mouse press event";
 
 	if (mouseEvent->buttons() & Qt::RightButton) {
@@ -50,25 +54,20 @@ void Renderer::mousePressEvent(QMouseEvent* mouseEvent)
 
 	_mouseEvents.clear();
 	_mouseEvents.push_back(QSharedPointer<QMouseEvent>::create(*mouseEvent));
-}
+	*/
 
-void Renderer::mouseReleaseEvent(QMouseEvent* mouseEvent)
-{
-	//qDebug() << "Mouse release event";
+	/*
+	_mousePositions.clear();
+	*/
 
-	_mouseEvents.clear();
-}
-
-void Renderer::mouseMoveEvent(QMouseEvent* mouseEvent)
-{
-	//qDebug() << "Mouse move event";
-
-	
+	/*
 	if (mouseEvent->buttons() & Qt::RightButton) {
 		if (_interactionMode != InteractionMode::Navigation && mouseEvent->pos() != _mouseEvents.first()->pos())
 			setInteractionMode(InteractionMode::WindowLevel);
 	}
-	
+	*/
+
+	/*
 	switch (mouseEvent->buttons())
 	{
 		case Qt::LeftButton:
@@ -77,31 +76,29 @@ void Renderer::mouseMoveEvent(QMouseEvent* mouseEvent)
 			{
 				case InteractionMode::Navigation:
 				{
-					const auto noMouseEvents = _mouseEvents.size();
+					const auto noMouseEvents = _mousePositions.size();
 
 					if (noMouseEvents >= 2) {
-						const auto pPrevious	= QVector2D(_mouseEvents[noMouseEvents - 2]->pos());
-						const auto pCurrent		= QVector2D(_mouseEvents[noMouseEvents - 1]->pos());
+						const auto pPrevious	= QVector2D(_mousePositions[noMouseEvents - 2]);
+						const auto pCurrent		= QVector2D(_mousePositions[noMouseEvents - 1]);
 						const auto vDelta		= (pCurrent - pPrevious) / _zoom;
 
 						pan(vDelta);
 
 						static_cast<QOpenGLWidget*>(parent())->update();
 					}
-					
+
 					break;
 				}
 			}
 		}
 	}
+	*/
 
-	_mouseEvents.push_back(QSharedPointer<QMouseEvent>::create(*mouseEvent));
-}
-
-void Renderer::mouseWheelEvent(QWheelEvent* wheelEvent)
-{
+	/*
 	//qDebug() << "Mouse wheel event";
 
+	/*
 	switch (_interactionMode)
 	{
 		case InteractionMode::Navigation:
@@ -123,78 +120,13 @@ void Renderer::mouseWheelEvent(QWheelEvent* wheelEvent)
 		default:
 			break;
 	}
-}
+	if (mouseEvent->buttons() & Qt::LeftButton && _keys & Qt::Key_Space && !_mousePositions.isEmpty()) {
+		qDebug() << "mouseMoveEvent";
+		_mousePositions << mouseEvent->pos();
 
-void Renderer::keyPressEvent(QKeyEvent* keyEvent)
-{
-	//qDebug() << "Key press event" << keyEvent;
-
-	if (keyEvent->isAutoRepeat())
-	{
-		keyEvent->ignore();
+		renderer->pan(QVector2D(mouseEvent->pos() - _mousePositions.last()));
 	}
-	else
-	{
-		switch (keyEvent->key())
-		{
-			case Qt::Key::Key_R:
-				// TODO: _pixelSelection.setSelectionType(SelectionType::Rectangle);
-				break;
-
-			case Qt::Key::Key_B:
-				// TODO: _pixelSelection.setSelectionType(SelectionType::Brush);
-				break;
-
-			case Qt::Key::Key_L:
-				// TODO: _pixelSelection.setSelectionType(SelectionType::Lasso);
-				break;
-
-			case Qt::Key::Key_P:
-				// TODO: _pixelSelection.setSelectionType(SelectionType::Polygon);
-				break;
-
-			case Qt::Key::Key_Shift:
-				// TODO: _pixelSelection.setSelectionModifier(SelectionModifier::Add);
-				break;
-
-			case Qt::Key::Key_Control:
-				// TODO: _pixelSelection.setSelectionModifier(SelectionModifier::Remove);
-				break;
-
-			case Qt::Key::Key_Escape:
-				// TODO: _pixelSelection.abortSelection();
-				break;
-
-			case Qt::Key::Key_Space:
-				setInteractionMode(InteractionMode::Navigation);
-				break;
-
-			default:
-				break;
-		}
-	}
-}
-
-void Renderer::keyReleaseEvent(QKeyEvent* keyEvent)
-{
-	//qDebug() << "Key release event" << keyEvent;
-
-	if (keyEvent->isAutoRepeat())
-	{
-		keyEvent->ignore();
-	}
-	else
-	{
-		switch (keyEvent->key())
-		{
-			case Qt::Key::Key_Space:
-				setInteractionMode(InteractionMode::Selection);
-				break;
-
-			default:
-				break;
-		}
-	}
+	*/
 }
 
 QVector3D Renderer::screenPointToWorldPosition(const QMatrix4x4& modelViewMatrix, const QPoint& screenPoint) const
@@ -320,8 +252,6 @@ void Renderer::zoomToRectangle(const QRectF& rectangle)
 	const auto factorY	= (parentWidgetSize().height() - 2 * _margin) / static_cast<float>(rectangle.height());
 	
 	zoomBy(factorX < factorY ? factorX : factorY);
-	
-	emit becameDirty();
 }
 
 void Renderer::zoomToSelection()
@@ -346,38 +276,6 @@ void Renderer::resetView()
 	_pan.setY(0);
 
 	_zoom = 1.f;
-}
-
-InteractionMode Renderer::interactionMode() const
-{
-	return _interactionMode;
-}
-
-void Renderer::setInteractionMode(const InteractionMode& interactionMode)
-{
-	if (interactionMode == _interactionMode)
-		return;
-
-	qDebug() << "Set interaction mode to" << interactionModeTypeName(interactionMode);
-
-	switch (interactionMode)
-	{
-		case InteractionMode::Navigation:
-			parentWidget()->setCursor(Qt::OpenHandCursor);
-			break;
-
-		case InteractionMode::Selection:
-		case InteractionMode::None:
-		{
-			parentWidget()->setCursor(Qt::ArrowCursor);
-			break;
-		}
-
-		default:
-			break;
-	}
-	
-	_interactionMode = interactionMode;
 }
 
 void Renderer::bindOpenGLContext()
@@ -458,25 +356,6 @@ bool Renderer::allowsContextMenu()
 	*/
 
 	return false;
-}
-
-void Renderer::addNamedColor(const QString& name, const QColor& color)
-{
-	_colorMap.insert(name, color);
-}
-
-QColor Renderer::colorByName(const QString& name, const std::int32_t& alpha /*= -1*/) const
-{
-	if (!_colorMap.contains(name)) {
-		return QColor(255, 255, 255, alpha);
-	}
-
-	auto color = _colorMap.value(name);
-
-	if (alpha >= 0)
-		color.setAlpha(alpha);
-
-	return color;
 }
 
 QOpenGLWidget* Renderer::parentWidget() const
