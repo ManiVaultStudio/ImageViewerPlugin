@@ -78,6 +78,18 @@ void SelectionLayer::paint(QPainter* painter)
 {
 	Layer::paint(painter);
 
+	if (!_selectionBounds.isNull()) {
+		auto selectionBoundsPen = QPen();
+
+		selectionBoundsPen.setColor(toolColorForeground);
+		selectionBoundsPen.setWidthF(1.5f);
+		selectionBoundsPen.setStyle(Qt::DotLine);
+
+		painter->setPen(selectionBoundsPen);
+		painter->setBrush(Qt::NoBrush);
+		painter->drawRect(_selectionBounds);
+	}
+
 	if (renderer->interactionMode() != InteractionMode::LayerEditing)
 		return;
 
@@ -215,18 +227,6 @@ void SelectionLayer::paint(QPainter* painter)
 
 	painter->setPen(controlPointsPen);
 	painter->drawPoints(controlPoints);
-
-	if (!_selectionBounds.isNull()) {
-		auto selectionBoundsPen = QPen();
-
-		selectionBoundsPen.setColor(toolColorForeground);
-		selectionBoundsPen.setWidthF(1.5f);
-		selectionBoundsPen.setStyle(Qt::DotLine);
-
-		painter->setPen(selectionBoundsPen);
-		painter->setBrush(Qt::NoBrush);
-		painter->drawRect(_selectionBounds);
-	}
 
 	switch (_selectionType)
 	{

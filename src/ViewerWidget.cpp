@@ -83,6 +83,7 @@ bool ViewerWidget::eventFilter(QObject* target, QEvent* event)
 			if (!keyEvent->isAutoRepeat()) {
 				if (keyEvent->key() == Qt::Key_Space) {
 					_keys |= Qt::Key_Space;
+					_renderer->setInteractionMode(InteractionMode::Navigation);
 					setCursor(Qt::ClosedHandCursor);
 				}
 			}
@@ -97,6 +98,7 @@ bool ViewerWidget::eventFilter(QObject* target, QEvent* event)
 			if (!keyEvent->isAutoRepeat()) {
 				if (keyEvent->key() == Qt::Key_Space) {
 					_keys &= ~Qt::Key_Space;
+					_renderer->setInteractionMode(InteractionMode::LayerEditing);
 					setCursor(Qt::ArrowCursor);
 				}
 			}

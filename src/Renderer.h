@@ -46,14 +46,22 @@ public:
 	/** Resizes the renderer */
 	void resize(QSize renderSize) override {};
 
-	/** TODO */
-	InteractionMode interactionMode() const;
-
 	/**
 	 * Handles events passed through from widgets
 	 * @param event Event
 	 */
 	void handleEvent(QEvent* event);
+
+public: // Getters/setters
+
+	/** Returns the current interaction mode */
+	InteractionMode interactionMode() const;
+
+	/**
+	 * Sets the current interaction mode
+	 * @param interactionMode The interaction mode
+	 */
+	void setInteractionMode(const InteractionMode& interactionMode);
 
 public:
 
