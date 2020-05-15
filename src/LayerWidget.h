@@ -26,6 +26,6 @@ public:
 
 private:
 	ImageViewerPlugin*					_imageViewerPlugin;		/** TODO */
-	std::unique_ptr<Ui::LayerWidget>	_ui;				/** TODO */
-	LayersModel*						_layersModel;		/** TODO */
+	std::unique_ptr<Ui::LayerWidget>	_ui;					/** TODO */
+	LayersModel*						_layersModel;			/** TODO */
 };

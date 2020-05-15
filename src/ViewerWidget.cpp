@@ -130,7 +130,7 @@ void ViewerWidget::initializeGL()
 	_openglDebugLogger->initialize();
 #endif
 
-	_renderer->zoomToRectangle(QRectF(-40, -40, 80, 80));
+	//_renderer->zoomToRectangle(QRectF(-40, -40, 80, 80));
 
 	doneCurrent();
 }
@@ -185,6 +185,14 @@ void ViewerWidget::paintGL()
 		}
 		
 #endif
+}
+
+void ViewerWidget::resizeGL(int w, int h)
+{
+	auto root = _imageViewerPlugin->layersModel().getLayer(QModelIndex());
+
+	if (root != nullptr)
+		_renderer->zoomToRectangle(root->boundingRectangle());
 }
 
 void ViewerWidget::drawBackground(QPainter* painter)

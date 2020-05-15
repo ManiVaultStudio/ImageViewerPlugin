@@ -78,6 +78,7 @@ void SelectionLayer::paint(QPainter* painter)
 {
 	Layer::paint(painter);
 
+	/*
 	if (!_selectionBounds.isNull()) {
 		auto selectionBoundsPen = QPen();
 
@@ -89,8 +90,9 @@ void SelectionLayer::paint(QPainter* painter)
 		painter->setBrush(Qt::NoBrush);
 		painter->drawRect(_selectionBounds);
 	}
+	*/
 
-	if (renderer->interactionMode() != InteractionMode::LayerEditing)
+	if (!isFlagSet(Node::Flag::Enabled) || renderer->interactionMode() != InteractionMode::LayerEditing)
 		return;
 
 	painter->setFont(QFont("Font Awesome 5 Free Solid", 9));

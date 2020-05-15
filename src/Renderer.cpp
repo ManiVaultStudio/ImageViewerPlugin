@@ -95,69 +95,6 @@ void Renderer::handleEvent(QEvent* event)
 			break;
 		}
 	}
-
-	/*
-	_mouseButtons = mouseEvent->buttons();
-
-	_mousePositions << mouseEvent->pos();
-
-	//qDebug() << "Mouse press event";
-
-	if (mouseEvent->buttons() & Qt::RightButton) {
-		if (_interactionMode != InteractionMode::Navigation)
-			setInteractionMode(InteractionMode::WindowLevel);
-	}
-
-	_mouseEvents.clear();
-	_mouseEvents.push_back(QSharedPointer<QMouseEvent>::create(*mouseEvent));
-	*/
-
-	/*
-	_mousePositions.clear();
-	*/
-
-	/*
-	if (mouseEvent->buttons() & Qt::RightButton) {
-		if (_interactionMode != InteractionMode::Navigation && mouseEvent->pos() != _mouseEvents.first()->pos())
-			setInteractionMode(InteractionMode::WindowLevel);
-	}
-	*/
-
-	/*
-	switch (mouseEvent->buttons())
-	{
-		case Qt::LeftButton:
-		{
-			switch (_interactionMode)
-			{
-				case InteractionMode::Navigation:
-				{
-					const auto noMouseEvents = _mousePositions.size();
-
-					if (noMouseEvents >= 2) {
-						const auto pPrevious	= QVector2D(_mousePositions[noMouseEvents - 2]);
-						const auto pCurrent		= QVector2D(_mousePositions[noMouseEvents - 1]);
-						const auto vDelta		= (pCurrent - pPrevious) / _zoom;
-
-						pan(vDelta);
-
-						static_cast<QOpenGLWidget*>(parent())->update();
-					}
-
-					break;
-				}
-			}
-		}
-	}
-	*/
-
-	/*
-	//qDebug() << "Mouse wheel event";
-
-	/*
-	
-	
-	*/
 }
 
 InteractionMode Renderer::interactionMode() const

@@ -40,14 +40,21 @@ public:
 	 */
 	bool eventFilter(QObject* target, QEvent* event) override;
 
-private:
+protected: // OpenGL functions
 
 	/** Initializes OpenGL */
 	void initializeGL() override;
 
 	/** Paints the OpenGL content */
 	void paintGL() override;
-	
+
+	/**
+	 * Invoked when the OpenGL viewport changes size
+	 * @param w Width of the viewport
+	 * @param h Height of the viewport
+	 */
+	void resizeGL(int w, int h) override;
+
 	/**
 	 * Draws a gradient background
 	 * @param painter Pointer to painter

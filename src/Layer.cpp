@@ -45,6 +45,11 @@ void Layer::paint(QPainter* painter)
 	drawHints(painter);
 }
 
+void Layer::zoomExtents()
+{
+	renderer->zoomToRectangle(boundingRectangle());
+}
+
 Qt::ItemFlags Layer::flags(const QModelIndex& index) const
 {
 	int flags = Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled;

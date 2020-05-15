@@ -197,6 +197,9 @@ public:
 	 */
 	virtual void handleEvent(QEvent* event, const QModelIndex& index) {};
 
+	/** Zooms to the extents of the layer */
+	void zoomExtents();
+
 public: // MVC
 	
 	/** Returns the number of columns */

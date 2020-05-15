@@ -93,6 +93,14 @@ void LayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 		}
 	});
 
+	QObject::connect(_ui->zoomExtentsPushButton, &QPushButton::clicked, [this]() {
+		const auto selectedRows = _layersModel->selectionModel().selectedRows();
+
+		if (selectedRows.count() == 1) {
+			_layersModel->getLayer(selectedRows.first())->zoomExtents();
+		}
+	});
+
 	QObject::connect(_layersModel, &LayersModel::dataChanged, this, &LayerWidget::updateData);
 
 	QObject::connect(&_layersModel->selectionModel(), &QItemSelectionModel::selectionChanged, [this](const QItemSelection& selected, const QItemSelection& deselected) {

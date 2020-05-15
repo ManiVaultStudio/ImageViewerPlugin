@@ -94,6 +94,8 @@ void SelectionLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 		static_cast<SelectionLayer*>(_layersModel->selectedLayer())->subsetFromSelectedPixels();
 	});
 
+	_ui->subsetFromSelectionBoundsPushButton->hide();
+
 	QObject::connect(_ui->subsetFromSelectionBoundsPushButton, &QPushButton::clicked, [this](const QColor& currentColor) {
 		static_cast<SelectionLayer*>(_layersModel->selectedLayer())->subsetFromSelectionBounds();
 	});
