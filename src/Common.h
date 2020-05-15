@@ -17,10 +17,9 @@ class QOpenGLShaderProgram;
  */
 enum class InteractionMode
 {
-	None,			/** No interaction takes place */
-	Navigation,		/** The image view position and zoom are manipulated */
-	Selection,		/** Image pixels are selected */
-	WindowLevel		/** The image display window and/or level are manipulated */
+	None,				/** No interaction takes place */
+	Navigation,			/** The image view position and zoom are manipulated */
+	LayerEditing		/** Layer editing interaction */
 };
 
 /**
@@ -37,11 +36,8 @@ inline QString interactionModeTypeName(const InteractionMode& interactionMode)
 		case InteractionMode::Navigation:
 			return "Navigation";
 
-		case InteractionMode::Selection:
-			return "Selection";
-
-		case InteractionMode::WindowLevel:
-			return "WindowLevel";
+		case InteractionMode::LayerEditing:
+			return "Layer editing";
 
 		default:
 			break;

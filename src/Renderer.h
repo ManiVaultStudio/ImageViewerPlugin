@@ -47,7 +47,7 @@ public:
 	void resize(QSize renderSize) override {};
 
 	/** TODO */
-	bool interacting() const;
+	InteractionMode interactionMode() const;
 
 	/**
 	 * Handles events passed through from widgets
@@ -159,9 +159,9 @@ public:
 protected:
 	QVector<QPoint>		_mousePositions;		/** Recorded mouse positions */
 	int					_mouseButtons;			/** State of the left, middle and right mouse buttons */
-	int					_keys;					/** Pressed key bit flags */
 	QVector2D			_pan;					/** Move view horizontally/vertically */
 	float				_zoom;					/** Zoom view in/out */
 	float				_zoomSensitivity;		/** Zoom sensitivity */
 	int					_margin;				/** Margin between image and viewer widget boundaries */
+	InteractionMode		_interactionMode;		/** Interaction mode e.g. navigation and layer editing */
 };

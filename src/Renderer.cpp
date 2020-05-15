@@ -16,11 +16,11 @@ Renderer::Renderer(QOpenGLWidget* parent) :
 	hdps::Renderer(),
 	_mousePositions(),
 	_mouseButtons(),
-	_keys(),
 	_pan(),
 	_zoom(1.f),
 	_zoomSensitivity(0.1f),
-	_margin(25)
+	_margin(25),
+	_interactionMode(InteractionMode::LayerEditing)
 {
 }
 
@@ -33,9 +33,9 @@ void Renderer::render()
 	static_cast<QOpenGLWidget*>(parent())->update();
 }
 
-bool Renderer::interacting() const
+InteractionMode Renderer::interactionMode() const
 {
-	return _keys & Qt::Key_Space;
+	return _interactionMode;
 }
 
 void Renderer::handleEvent(QEvent* event)

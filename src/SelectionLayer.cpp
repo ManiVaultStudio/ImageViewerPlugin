@@ -78,7 +78,7 @@ void SelectionLayer::paint(QPainter* painter)
 {
 	Layer::paint(painter);
 
-	if (renderer->interacting())
+	if (renderer->interactionMode() != InteractionMode::LayerEditing)
 		return;
 
 	painter->setFont(QFont("Font Awesome 5 Free Solid", 9));
@@ -275,6 +275,9 @@ void SelectionLayer::paint(QPainter* painter)
 
 void SelectionLayer::handleEvent(QEvent* event, const QModelIndex& index)
 {
+	if (renderer->interactionMode() != InteractionMode::LayerEditing)
+		return;
+
 	QModelIndexList affectedIds;
 
 	switch (event->type())
