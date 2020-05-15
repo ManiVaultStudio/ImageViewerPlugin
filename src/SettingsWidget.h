@@ -7,6 +7,10 @@
 class ImageViewerPlugin;
 class DatasetsModel;
 
+namespace Ui {
+	class SettingsWidget;
+}
+
 /** TODO */
 class SettingsWidget : public QWidget
 {
@@ -17,4 +21,8 @@ public: // Construction/destruction
 
 	/** Destructor */
 	~SettingsWidget();
+
+private:
+	ImageViewerPlugin*						_imageViewerPlugin;		/** TODO */
+	std::unique_ptr<Ui::SettingsWidget>		_ui;					/** TODO */
 };

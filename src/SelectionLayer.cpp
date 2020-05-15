@@ -20,7 +20,7 @@
 
 const QColor SelectionLayer::toolColorForeground	= QColor(255, 174, 66, 200);
 const QColor SelectionLayer::toolColorBackground	= QColor(255, 174, 66, 150);
-const QColor SelectionLayer::fillColor				= QColor(255, 174, 66, 100);
+const QColor SelectionLayer::fillColor				= QColor(255, 174, 66, 120);
 const float SelectionLayer::minBrushRadius			= 1.0f;
 const float SelectionLayer::maxBrushRadius			= 1000.0f;
 const float SelectionLayer::defaultBrushRadius		= 50.0f;
@@ -58,8 +58,24 @@ void SelectionLayer::init()
 	_indices.resize(noPixels());
 
 	if (_pointsDataset->isFull()) {
-		_indices.resize(noPixels());
-		std::iota(std::begin(_indices), std::end(_indices), 0);
+		if (_pointsDataset->isDerivedData()) {
+			std::fill(_indices.begin(), _indices.end(), -1);
+
+			auto sourceIndices = _pointsDataset->getSourceData<Points>(*_pointsDataset).indices;
+
+			
+			for (int i = 0; i < sourceIndices.size(); ++i) {
+				_indices[sourceIndices[i]] = sourceIndices[i];
+			}
+			/*
+			for (auto index : _pointsDataset->indices) {
+				_indices[sourceIndices[index]] = index;
+			}*/
+		}
+		else {
+			_indices.resize(noPixels());
+			std::iota(std::begin(_indices), std::end(_indices), 0);
+		}
 	}
 	else {
 		std::fill(_indices.begin(), _indices.end(), -1);
@@ -68,8 +84,6 @@ void SelectionLayer::init()
 			_indices[index] = index;
 		}
 	}
-
-	//auto& sourceIndices = _pointsDataset->getSourceData<Points>(*_pointsDataset).indices;
 
 	computeChannel(ChannelIndex::Selection);
 }
@@ -1128,32 +1142,49 @@ void SelectionLayer::selectAll()
 {
 	auto& selection = dynamic_cast<Points&>(imageViewerPlugin->core()->requestSelection(_pointsDataset->getDataName()));
 
-	selection.indices.resize(noPixels());
+	selection.indices.clear();
+	selection.indices.reserve(noPixels());
 
-	std::iota(std::begin(selection.indices), std::end(selection.indices), 0);
+	for (const auto& index : _indices) {
+		if (index > 0)
+			selection.indices.push_back(index);
+	}
 
-	imageViewerPlugin->core()->notifySelectionChanged(_pointsDataset->getDataName());
+	if (_pointsDataset->isDerivedData())
+		imageViewerPlugin->core()->notifySelectionChanged(_pointsDataset->getSourceData<Points>(*_pointsDataset).getDataName());
+	else
+		imageViewerPlugin->core()->notifySelectionChanged(_pointsDataset->getDataName());
 }
 
 void SelectionLayer::selectNone()
 {
-	_imagesDataset->setIndices(std::vector<std::uint32_t>());
+	auto& selection = dynamic_cast<Points&>(imageViewerPlugin->core()->requestSelection(_pointsDataset->getDataName()));
+
+	selection.indices.clear();
+
+	if (_pointsDataset->isDerivedData())
+		imageViewerPlugin->core()->notifySelectionChanged(_pointsDataset->getSourceData<Points>(*_pointsDataset).getDataName());
+	else
+		imageViewerPlugin->core()->notifySelectionChanged(_pointsDataset->getDataName());
 }
 
 void SelectionLayer::invertSelection()
 {
-	std::set<std::uint32_t> selectionSet(_selection.begin(), _selection.end());
+	auto& selection = dynamic_cast<Points&>(imageViewerPlugin->core()->requestSelection(_pointsDataset->getDataName()));
 
-	std::vector<std::uint32_t> indices;
-	
-	indices.reserve(noPixels());
+	std::set<std::uint32_t> selectionSet(selection.indices.begin(), selection.indices.end());
 
-	for (int index = 0; index < noPixels(); index++) {
-		if (selectionSet.find(index) == selectionSet.end())
-			indices.push_back(index);
+	selection.indices.resize(noPixels() - selectionSet.size());
+
+	for (int i = 0; i < noPixels(); i++) {
+		if (_indices[i] >= 0 && selectionSet.find(i) == selectionSet.end())
+			selection.indices.push_back(i);
 	}
 
-	_imagesDataset->setIndices(indices);
+	if (_pointsDataset->isDerivedData())
+		imageViewerPlugin->core()->notifySelectionChanged(_pointsDataset->getSourceData<Points>(*_pointsDataset).getDataName());
+	else
+		imageViewerPlugin->core()->notifySelectionChanged(_pointsDataset->getDataName());
 }
 
 void SelectionLayer::zoomToSelection()
@@ -1241,7 +1272,10 @@ void SelectionLayer::publishSelection()
 			break;
 	}
 	
-	imageViewerPlugin->core()->notifySelectionChanged(_pointsDataset->getDataName());
+	if (_pointsDataset->isDerivedData())
+		imageViewerPlugin->core()->notifySelectionChanged(_pointsDataset->getSourceData<Points>(*_pointsDataset).getDataName());
+	else
+		imageViewerPlugin->core()->notifySelectionChanged(_pointsDataset->getDataName());
 
 	propByName<SelectionToolProp>("SelectionTool")->reset();
 }

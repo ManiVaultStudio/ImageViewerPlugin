@@ -502,6 +502,9 @@ int Layer::noPixels() const
 Layer::Hints Layer::hints() const
 {
 	return Hints({
+		Hint(),
+		Hint(),
+		Hint(),
 		Hint("Space + Scroll up", "Zoom in"),
 		Hint("Space + Scroll down", "Zoom out"),
 		Hint("Space + Move mouse", "Pan view")
@@ -512,7 +515,7 @@ void Layer::drawTitle(QPainter* painter)
 {
 	QTextDocument titleDocument;
 
-	const auto color = QString("rgba(%1, %2, %3, %4)").arg(QString::number(hintsColor.red()), QString::number(hintsColor.green()), QString::number(hintsColor.blue()), QString::number(hintsColor.alpha()));
+	const auto color = QString("rgba(%1, %2, %3, %4)").arg(QString::number(hintsColor.red()), QString::number(hintsColor.green()), QString::number(hintsColor.blue()), QString::number(isFlagSet(Flag::Enabled) ? hintsColor.alpha() : 80));
 
 	QString titleHtml = QString("<div style='width: 100%; text-align: center; color: %1; font-weight: bold;'>%2 (%3x%4)<div>").arg(color, _name, QString::number(imageSize().width()), QString::number(imageSize().height()));
 	
@@ -528,7 +531,7 @@ void Layer::drawHints(QPainter* painter)
 
 	QString hintsHtml;
 
-	const auto color = QString("rgba(%1, %2, %3, %4)").arg(QString::number(hintsColor.red()), QString::number(hintsColor.green()), QString::number(hintsColor.blue()), QString::number(hintsColor.alpha()));
+	const auto color = QString("rgba(%1, %2, %3, %4)").arg(QString::number(hintsColor.red()), QString::number(hintsColor.green()), QString::number(hintsColor.blue()), QString::number(isFlagSet(Flag::Enabled) ? hintsColor.alpha() : 80));
 
 	hintsHtml += QString("<div style='height: 100%'><table style='color: %1;'>").arg(color);
 

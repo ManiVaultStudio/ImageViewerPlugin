@@ -1,18 +1,21 @@
 #include "SettingsWidget.h"
 #include "LayersWidget.h"
 
+#include "ui_SettingsWidget.h"
+
 #include <QVBoxLayout>
 #include <QDebug>
 
 SettingsWidget::SettingsWidget(ImageViewerPlugin* imageViewerPlugin) :
-	QWidget()
+	QWidget(),
+	_imageViewerPlugin(imageViewerPlugin),
+	_ui{ std::make_unique<Ui::SettingsWidget>() }
 {
-	auto layout = new QVBoxLayout();
+	_ui->setupUi(this);
+	
+	_ui->layersWidget->initialize(_imageViewerPlugin);
+	_ui->showHintsCheckBox->hide();
 
-	layout->addWidget(new LayersWidget(imageViewerPlugin));
-	layout->addStretch(1);
-
-	setLayout(layout);
 	setFixedWidth(300);
 }
 

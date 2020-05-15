@@ -14,6 +14,8 @@ ImagesLayerWidget::ImagesLayerWidget(QWidget* parent) :
 	_layersModel(nullptr)
 {
 	_ui->setupUi(this);
+
+	_ui->datasetInfoGroupBox->hide();
 }
 
 void ImagesLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)

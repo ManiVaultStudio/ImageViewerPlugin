@@ -20,10 +20,13 @@ class LayersWidget : public QWidget
 public: // Construction/destruction
 
 	/** TODO */
-	LayersWidget(ImageViewerPlugin* imageViewerPlugin);
+	LayersWidget(QWidget* parent);
 
 	/** Destructor */
 	~LayersWidget();
+
+	/** TODO */
+	void initialize(ImageViewerPlugin* imageViewerPlugin);
 
 private: // Drag and drop
 

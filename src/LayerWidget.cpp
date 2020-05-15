@@ -13,12 +13,14 @@
 #include <set>
 
 LayerWidget::LayerWidget(QWidget* parent) :
+	QWidget(parent),
 	_ui{ std::make_unique<Ui::LayerWidget>() },
 	_layersModel(nullptr)
 {
 	_ui->setupUi(this);
 
 	_ui->generalGroupBox->setVisible(false);
+	_ui->navigationGroupBox->setVisible(false);
 }
 
 void LayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
@@ -135,6 +137,7 @@ void LayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex& bott
 
 	_ui->generalGroupBox->setVisible(noSelectedRows == 1);
 	_ui->generalGroupBox->setEnabled(noSelectedRows == 1);
+	_ui->navigationGroupBox->setVisible(noSelectedRows == 1);
 
 	for (int column = topLeft.column(); column <= bottomRight.column(); column++) {
 		const auto index	= topLeft.siblingAtColumn(column);

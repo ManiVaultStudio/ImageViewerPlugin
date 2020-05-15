@@ -9,10 +9,13 @@
 #include <QStringListModel>
 
 PointsLayerWidget::PointsLayerWidget(QWidget* parent) :
+	QWidget(parent),
 	_ui{ std::make_unique<Ui::PointsLayerWidget>() },
 	_layersModel(nullptr)
 {
 	_ui->setupUi(this);
+
+	_ui->datasetInfoGroupBox->hide();
 }
 
 void PointsLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)

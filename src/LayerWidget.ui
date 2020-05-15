@@ -356,12 +356,12 @@
     </spacer>
    </item>
    <item row="1" column="0">
-    <widget class="QGroupBox" name="groupBox">
+    <widget class="QGroupBox" name="navigationGroupBox">
      <property name="toolTip">
-      <string>Zoom options</string>
+      <string>Navigation options</string>
      </property>
      <property name="title">
-      <string>Zoom</string>
+      <string>Navigation</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_2">
       <item row="0" column="0">
@@ -370,7 +370,7 @@
          <string>Zoom to the extents of layer</string>
         </property>
         <property name="text">
-         <string>Extents</string>
+         <string>Zoom extents</string>
         </property>
        </widget>
       </item>
@@ -383,7 +383,7 @@
          <string>Zoom to the visible portion of the layer</string>
         </property>
         <property name="text">
-         <string>Visible</string>
+         <string>Zoom visible</string>
         </property>
        </widget>
       </item>
