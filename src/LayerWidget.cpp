@@ -19,7 +19,7 @@ LayerWidget::LayerWidget(QWidget* parent) :
 {
 	_ui->setupUi(this);
 
-	_ui->generalGroupBox->setVisible(false);
+	_ui->commonGroupBox->setVisible(false);
 	_ui->navigationGroupBox->setVisible(false);
 }
 
@@ -135,8 +135,8 @@ void LayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex& bott
 
 	const auto enabled = _layersModel->data(topLeft.siblingAtColumn(ult(Layer::Column::Name)), Qt::CheckStateRole).toInt() == Qt::Checked;
 
-	_ui->generalGroupBox->setVisible(noSelectedRows == 1);
-	_ui->generalGroupBox->setEnabled(noSelectedRows == 1);
+	_ui->commonGroupBox->setVisible(noSelectedRows == 1);
+	_ui->commonGroupBox->setEnabled(noSelectedRows == 1);
 	_ui->navigationGroupBox->setVisible(noSelectedRows == 1);
 
 	for (int column = topLeft.column(); column <= bottomRight.column(); column++) {
