@@ -8,13 +8,15 @@ class PointsLayer;
 /**
  * Points prop class
  *
+ * This prop renders a points layer onto the screen using OpenGL
+ *
  * @author Thomas Kroes
  */
 class PointsProp : public Prop
 {
 	Q_OBJECT
 
-public:
+public: // Enumerations
 
 	/** Texture identifiers */
 	enum class TextureId {
@@ -25,17 +27,28 @@ public:
 		Channel4
 	};
 
-public:
-	/** TODO */
+public: // Construction/destruction
+
+	/**
+	 * Constructor
+	 * @param pointsLayer Pointer to the associated points layer
+	 * @param name Name of the prop
+	 */
 	PointsProp(PointsLayer* pointsLayer, const QString& name);
 
 	/** Destructor */
 	~PointsProp();
 
-	/** Renders the prop */
+public: // Rendering
+
+	/**
+	 * Renders the prop
+	 * @param nodeMVP Node model view projection matrix
+	 * @param opacity Render opacity [0-1]
+	 */
 	void render(const QMatrix4x4& nodeMVP, const float& opacity) override;
 
-	/** Computes the enveloping bounding rectangle of the prop */
+	/** Returns the enveloping bounding rectangle of the prop */
 	QRectF boundingRectangle() const;
 
 protected: // Inherited
@@ -43,9 +56,9 @@ protected: // Inherited
 	/** Initializes the prop */
 	void initialize() override;
 
-protected:
+protected: // Miscellaneous
 
-	/** TODO */
+	/** Updates the internal model matrix */
 	void updateModelMatrix();
 
 private:

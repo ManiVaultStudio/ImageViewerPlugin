@@ -15,6 +15,7 @@ class Renderer;
 class Shape : public QObject
 {
 public:
+
 	/** Constructor
 	 * @param prop Parent prop
 	 * @param name Name of the shape
@@ -25,6 +26,7 @@ public:
 	~Shape();
 
 public:
+
 	/** Initializes the shape */
 	virtual void initialize();
 

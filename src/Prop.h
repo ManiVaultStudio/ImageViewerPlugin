@@ -14,13 +14,16 @@ class Shape;
 
 /**
  * Prop class
+ *
+ * Abstract base class for props
+ * Props are used to draw nodes (layers) on the screen using OpenGL
+ *
  * @author Thomas Kroes
  */
 class Prop : public QObject
 {
-	Q_OBJECT
+public: // Construction/destruction
 
-public:
 	/** Constructor
 	 * @param node Node
 	 * @param name Name of the prop
@@ -29,6 +32,8 @@ public:
 
 	/** Destructor */
 	virtual ~Prop();
+
+public:
 
 	/** Returns whether the prop is initialized */
 	bool isInitialized() const;
@@ -69,10 +74,14 @@ public:
 	 */
 	void setModelMatrix(const QMatrix4x4& modelMatrix);
 
-	/** Renders the prop */
+	/**
+	 * Renders the prop
+	 * @param nodeMVP Node model view projection matrix
+	 * @param opacity Render opacity [0-1]
+	 */
 	virtual void render(const QMatrix4x4& nodeMVP, const float& opacity);
 
-	/** Computes the enveloping bounding rectangle of the port */
+	/** Returns the enveloping bounding rectangle of the prop */
 	virtual QRectF boundingRectangle() const = 0;
 
 protected:
@@ -160,11 +169,6 @@ protected:
 		_textures.insert(name, QSharedPointer<QOpenGLTexture>::create(target));
 	}
 
-signals:
-
-	/** TODO */
-	void becameDirty(Prop* prop);
-
 public:
 	static Renderer* renderer;
 
@@ -180,5 +184,3 @@ private:
 	QMap<QString, QSharedPointer<QOpenGLTexture>>			_textures;				/** OpenGL textures */
 	QMap<QString, QSharedPointer<Shape>>					_shapes;				/** Shapes */
 };
-
-using SharedProp = QSharedPointer<Prop>;

@@ -110,14 +110,14 @@ protected: // Prop management
 	void addProp(Args... args)
 	{
 		try {
-			auto sharedProp = QSharedPointer<T>::create(args...);
-			auto prop = dynamic_cast<Prop*>(sharedProp.get());
-			auto propName = prop->name();
+			auto newProp	= new T(args...);
+			auto prop		= dynamic_cast<Prop*>(newProp);
+			auto propName	= prop->name();
 
 			if (_props.contains(propName))
 				throw std::exception(QString("%1 already exists").arg(propName).toLatin1());
 
-			_props.insert(propName, sharedProp);
+			_props.insert(propName, newProp);
 		}
 		catch (const std::exception& e)
 		{
@@ -148,7 +148,7 @@ protected: // Prop management
 			if (!_props.contains(name))
 				throw std::exception(QString("no prop named %1").arg(name).toLatin1());
 
-			return dynamic_cast<T*>(_props[name].get());
+			return dynamic_cast<T*>(_props[name]);
 		}
 		catch (const std::exception& e)
 		{
@@ -165,7 +165,7 @@ protected: // Prop management
 	}
 	
 	/** TODO */
-	const QMap<QString, SharedProp> props() const
+	const QMap<QString, Prop*> props() const
 	{
 		return _props;
 	}
@@ -174,8 +174,8 @@ public:
 	static Renderer* renderer;
 
 protected:
-	float						_opacity;			/** Render opacity */
-	float						_scale;				/** Scale */
-	QMatrix4x4					_modelMatrix;		/** Model matrix */
-	QMap<QString, SharedProp>	_props;				/** Props map */
+	float					_opacity;			/** Render opacity */
+	float					_scale;				/** Scale */
+	QMatrix4x4				_modelMatrix;		/** Model matrix */
+	QMap<QString, Prop*>	_props;				/** Props map */
 };

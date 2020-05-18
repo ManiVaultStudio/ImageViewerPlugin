@@ -19,6 +19,7 @@ class SelectionToolProp : public Prop
 	Q_OBJECT
 
 public:
+
 	/** TODO */
 	SelectionToolProp(SelectionLayer* selectionLayer, const QString& name);
 
