@@ -22,9 +22,9 @@ public:
 		End = Start
 	};
 
-public:
+public: // Construction
 
-	/** TODO */
+	/** Default constructor */
 	RootLayer();
 
 	/** TODO */
