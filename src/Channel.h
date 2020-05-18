@@ -12,7 +12,7 @@
 /**
 * Channel class
 *
-* TODO
+* Templated image channel class with window/level functionality
 *
 * @author Thomas Kroes
 */
@@ -97,7 +97,6 @@ public:
 		auto elements = Elements();
 
 		elements.resize(noPixels);
-		//elements.fill(0, noPixels);
 
 		setElements(elements);
 	}
@@ -321,7 +320,7 @@ private:
 /**
 * Channels class
 *
-* TODO
+* Container class for channels
 *
 * @author Thomas Kroes
 */
@@ -330,17 +329,29 @@ class Channels
 {
 	//using SharedChannel = std::shared_ptr<Channel<ChannelType>>;
 
-public:
+public: // Construction
+
+	/**
+	 * Constructor
+	 * @param noChannels Number of channels to allocate
+	 */
 	Channels(const std::uint32_t& noChannels = 0)
 	{
 		for (std::uint32_t channelId = 0; channelId < noChannels; channelId++)
 			_channels.push_back(std::make_shared<Channel<ChannelType>>(channelId, QString("Channel %1").arg(channelId)));
 	}
 
+public: // Miscellaneous
+
+	/**
+	 * Get channel by identifier
+	 * @param channelId
+	 */
 	Channel<ChannelType>* channel(const std::uint32_t& channelId) const {
 		return _channels.at(channelId).get();
 	}
 
+	/** Return the number of channels */
 	std::uint32_t noChannels() const {
 		return _channels.size();
 	}

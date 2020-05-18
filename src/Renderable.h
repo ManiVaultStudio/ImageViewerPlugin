@@ -14,58 +14,28 @@ class QWheelEvent;
 class QKeyEvent;
 
 /**
- * Render node class
+ * Renderable class
  *
- * Contains props for rendering in OpenGL
+ * Base class for renderable nodes
  *
  * @author Thomas Kroes
  */
 class Renderable
 {
-public:
+public: // Construction/destruction
 
-	/**
-	 * Mouse point class
-	 * @author Thomas Kroes
-	 */
-	class MouseEvent
-	{
-	public:
-		/** Default constructor */
-		MouseEvent() {};
-
-		/**
-		 * Constructor
-		 * @param screenPoint Point in screen coordinates [0..width, 0..height]
-		 * @param worldPosition Position in world space
-		 */
-		MouseEvent(const QVector2D& screenPoint, const QVector3D& worldPosition = QVector3D()) :
-			_screenPoint(screenPoint),
-			_worldPosition(worldPosition)
-		{
-		}
-
-		QVector2D screenPoint() const {
-			return _screenPoint;
-		}
-
-		QVector3D worldPosition() const {
-			return _worldPosition;
-		}
-
-	private:
-		QVector2D		_screenPoint;		/** Point in screen coordinates */
-		QVector3D		_worldPosition;		/** World position */
-	};
-
-public:
 	/** Default constructor */
 	Renderable();
 
 	/** Destructor */
 	~Renderable();
 
-	/** Renders the node */
+public: // Rendering
+
+	/**
+	 * Renders the prop
+	 * @param parentMVP Parent model view projection matrix
+	 */
 	virtual void render(const QMatrix4x4& parentMVP) = 0;
 
 public: // Matrix functions
@@ -79,10 +49,10 @@ public: // Matrix functions
 	 */
 	void setModelMatrix(const QMatrix4x4& modelMatrix);
 
-	/** Returns the model-view matrix (viewMatrix * actorModelMatrix) */
+	/** Returns the model-view matrix */
 	QMatrix4x4 modelViewMatrix() const;
 
-	/** Returns the model-view-projection matrix (projectionMatrix * viewMatrix * actorModelMatrix) */
+	/** Returns the model-view-projection matrix */
 	QMatrix4x4 modelViewProjectionMatrix() const;
 
 public: // Opacity
@@ -105,7 +75,11 @@ public: // Opacity
 
 protected: // Prop management
 
-	/** TODO */
+	/**
+	 * Adds a prop
+	 * @param T Prop type
+	 * @param Args Prop constructor arguments
+	 */
 	template<typename T, typename ...Args>
 	void addProp(Args... args)
 	{
@@ -125,7 +99,10 @@ protected: // Prop management
 		}
 	}
 
-	/** TODO */
+	/**
+	 * Remove a prop by name
+	 * @param name Prop name
+	 */
 	void removeProp(const QString& name)
 	{
 		try {
@@ -140,7 +117,10 @@ protected: // Prop management
 		}
 	}
 
-	/** TODO */
+	/**
+	 * Retrieve a prop by name
+	 * @param name Prop name
+	 */
 	template<typename T>
 	const T* propByName(const QString& name) const
 	{
@@ -156,7 +136,10 @@ protected: // Prop management
 		}
 	}
 
-	/** TODO */
+	/**
+	 * Retrieve a prop by name
+	 * @param name Prop name
+	 */
 	template<typename T>
 	T* propByName(const QString& name)
 	{
@@ -164,14 +147,14 @@ protected: // Prop management
 		return const_cast<T*>(constThis->propByName<T>(name));
 	}
 	
-	/** TODO */
+	/** Returns all props */
 	const QMap<QString, Prop*> props() const
 	{
 		return _props;
 	}
 
 public:
-	static Renderer* renderer;
+	static Renderer* renderer;					/** Static renderer instance */
 
 protected:
 	float					_opacity;			/** Render opacity */
