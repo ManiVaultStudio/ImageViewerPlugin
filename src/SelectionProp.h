@@ -7,7 +7,7 @@ class SelectionLayer;
 /**
  * Selection prop class
  *
- * TODO
+ * This prop renders a selection layer onto the screen using OpenGL
  *
  * @author Thomas Kroes
  */
@@ -15,17 +15,28 @@ class SelectionProp : public Prop
 {
 	Q_OBJECT
 
-public:
-	/** TODO */
+public: // Construction/destruction
+
+	/**
+	 * Constructor
+	 * @param selectionLayer Pointer to the associated selection layer
+	 * @param name Name of the prop
+	 */
 	SelectionProp(SelectionLayer* selectionLayer, const QString& name);
 
 	/** Destructor */
 	~SelectionProp();
 
-	/** Renders the prop */
+public: // Rendering
+
+	/**
+	 * Renders the prop
+	 * @param nodeMVP Node model view projection matrix
+	 * @param opacity Render opacity [0-1]
+	 */
 	void render(const QMatrix4x4& nodeMVP, const float& opacity) override;
 
-	/** Computes the enveloping bounding rectangle of the prop */
+	/** Returns the bounding rectangle of the prop */
 	QRectF boundingRectangle() const;
 
 protected: // Inherited
@@ -35,8 +46,6 @@ protected: // Inherited
 
 protected:
 
-	/** TODO */
+	/** Updates the internal model matrix */
 	void updateModelMatrix();
-
-private:
 };

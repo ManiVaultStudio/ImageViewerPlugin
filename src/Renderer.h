@@ -19,35 +19,40 @@ class QMenu;
 class QOpenGLWidget;
 
 /**
- * Selection renderer class
+ * Renderer class
+ *
+ * Class for rendering image layers on the screen using the layers model and OpenGL
+ *
  * @author Thomas Kroes
  */
 class Renderer : public QObject, public hdps::Renderer
 {
 	Q_OBJECT
 
-public:
+public: // Construction
+
 	/**
 	 * Constructor
-	 * @param parentWidget Parent image viewer widget
+	 * @param parentWidget Parent OpenGL image viewer widget
 	 */
 	Renderer(QOpenGLWidget* parent);
 
-public:
+public: // 
+
 	/** Initialize the renderer */
 	void init() override;
 
-	/** TODO */
+	/** Renders the layers */
 	void render();
 	
-	/** TODO */
+	/** Destroys the renderer */
 	void destroy() {};
 
 	/** Resizes the renderer */
 	void resize(QSize renderSize) override {};
 
 	/**
-	 * Handles events passed through from widgets
+	 * Handles events passed on from widgets
 	 * @param event Event
 	 */
 	void handleEvent(QEvent* event);
@@ -63,7 +68,7 @@ public: // Getters/setters
 	 */
 	void setInteractionMode(const InteractionMode& interactionMode);
 
-public:
+public: // Coorindate conversions
 
 	/** Convert point in screen coordinates to point in world coordinates
 	 * @param modelViewMatrix Model-view matrix
@@ -102,6 +107,8 @@ public:
 	/** Returns the projection matrix */
 	QMatrix4x4 projectionMatrix() const;
 
+public: // Navigation
+
 	/**
 	 * Move the view horizontally/vertically
 	 * @param delta Amount to move
@@ -136,6 +143,8 @@ public:
 	/** Reset the view */
 	void resetView();
 
+public: // Context menus
+
 	/** Returns the view menu */
 	QMenu* viewMenu();
 
@@ -145,18 +154,16 @@ public:
 	/** Whether the display of a context menu is allowed */
 	bool allowsContextMenu();
 
-public: // Parent widget queries
+public: // Miscellaneous
 
 	/** Returns the parent widget */
 	QOpenGLWidget* parentWidget() const;
 
-	/** Returns the parent widget */
-	QOpenGLContext* openGLContext() const;
-
 	/** Returns the parent widget size */
 	QSize parentWidgetSize() const;
 
-public:
+	/** Returns the parent widget */
+	QOpenGLContext* openGLContext() const;
 
 	/** Binds the OpenGL context */
 	void bindOpenGLContext();

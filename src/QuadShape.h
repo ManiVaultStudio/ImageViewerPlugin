@@ -7,15 +7,20 @@
 
 /**
  * Quad shape class
+ *
+ * Draws a textured quad on the screen using OpenGL
+ *
  * @author Thomas Kroes
  */
 class QuadShape : public Shape
 {
 	Q_OBJECT
 
-public:
-	/** Constructor
-	 * @param prop Parent prop
+public: // Construction
+
+	/**
+	 * Constructor
+	 * @param prop Pointer to associated prop
 	 * @param name Name of the shape
 	 */
 	QuadShape(Prop* prop, const QString& name);
@@ -31,7 +36,8 @@ public: // Inherited
 	/** Renders the shape */
 	void render() override;
 
-public:
+public: // Miscellaneous
+
 	/** Returns the quad rectangle */
 	QRectF rectangle() const;
 
@@ -44,7 +50,8 @@ public:
 	/** Returns the quad size */
 	QSizeF imageSize() const;
 
-private:
+private: // Internal function(s)
+
 	/**
 	 * Creates the OpenGL quad buffers
 	 * @param rectangle Quad rectangle

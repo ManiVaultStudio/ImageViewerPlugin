@@ -25,7 +25,7 @@ class Prop : public QObject
 public: // Construction/destruction
 
 	/** Constructor
-	 * @param node Node
+	 * @param node Pointer to the associated node
 	 * @param name Name of the prop
 	 */
 	Prop(Node* node, const QString& name);
@@ -81,7 +81,7 @@ public:
 	 */
 	virtual void render(const QMatrix4x4& nodeMVP, const float& opacity);
 
-	/** Returns the enveloping bounding rectangle of the prop */
+	/** Returns the bounding rectangle of the prop */
 	virtual QRectF boundingRectangle() const = 0;
 
 protected:
@@ -100,6 +100,20 @@ protected:
 
 	/** Update textures */
 	virtual void updateTextures() {};
+
+protected: // Shape management
+
+	/**
+	* Add shape by name
+	* @param name Name of the shape
+	*/
+	template<typename T>
+	void addShape(const QString& name)
+	{
+		auto shape = QSharedPointer<T>::create(this, name);
+
+		_shapes.insert(name, shape);
+	}
 
 	/**
 	* Get shape by name
@@ -121,56 +135,36 @@ protected:
 		return dynamic_cast<T*>(_shapes[name].get());
 	}
 
-	/**
-	* Get shader program by name
-	* @param name Name of the shader program
-	*/
-	QSharedPointer<QOpenGLShaderProgram> shaderProgramByName(const QString& name)
-	{
-		return _shaderPrograms.value(name);
-	}
-
-	/**
-	* Get texture by name
-	* @param name Name of the texture
-	*/
-	QSharedPointer<QOpenGLTexture>& textureByName(const QString& name)
-	{
-		return _textures[name];
-	}
-
-	/**
-	* Add shape by name
-	* @param name Name of the shape
-	*/
-	template<typename T>
-	void addShape(const QString& name)
-	{
-		auto shape = QSharedPointer<T>::create(this, name);
-
-		_shapes.insert(name, shape);
-	}
+protected: // Shader program management
 
 	/**
 	* Add shader program by name
 	* @param name Name of the shader program
 	*/
-	void addShaderProgram(const QString& name)
-	{
-		_shaderPrograms.insert(name, QSharedPointer<QOpenGLShaderProgram>::create());
-	}
+	void addShaderProgram(const QString& name);
+
+	/**
+	* Get shader program by name
+	* @param name Name of the shader program
+	*/
+	QSharedPointer<QOpenGLShaderProgram> shaderProgramByName(const QString& name);
+
+protected: // Texture management
 
 	/**
 	* Add texture by name
 	* @param name Name of the texture
 	*/
-	void addTexture(const QString& name, const QOpenGLTexture::Target& target)
-	{
-		_textures.insert(name, QSharedPointer<QOpenGLTexture>::create(target));
-	}
+	void addTexture(const QString& name, const QOpenGLTexture::Target& target);
+
+	/**
+	* Get texture by name
+	* @param name Name of the texture
+	*/
+	QSharedPointer<QOpenGLTexture>& textureByName(const QString& name);
 
 public:
-	static Renderer* renderer;
+	static Renderer* renderer;														/** Static renderer instance */
 
 protected:
 	Node*													_node;					/** Pointer to parent (if any) */

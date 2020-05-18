@@ -52,6 +52,26 @@ bool Prop::canRender() const
 	return isInitialized() && isVisible();
 }
 
+void Prop::addShaderProgram(const QString& name)
+{
+	_shaderPrograms.insert(name, QSharedPointer<QOpenGLShaderProgram>::create());
+}
+
+QT_NAMESPACE::QSharedPointer<QT_NAMESPACE::QOpenGLShaderProgram> Prop::shaderProgramByName(const QString& name)
+{
+	return _shaderPrograms.value(name);
+}
+
+void Prop::addTexture(const QString& name, const QOpenGLTexture::Target& target)
+{
+	_textures.insert(name, QSharedPointer<QOpenGLTexture>::create(target));
+}
+
+QT_NAMESPACE::QSharedPointer<QT_NAMESPACE::QOpenGLTexture>& Prop::textureByName(const QString& name)
+{
+	return _textures[name];
+}
+
 void Prop::render(const QMatrix4x4& nodeMVP, const float& opacity)
 {
 	//qDebug() << "Render" << fullName();

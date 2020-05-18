@@ -10,6 +10,9 @@ class Renderer;
 
 /**
  * Shape class
+ *
+ * Abstract base class for rendering shapes onto the screen using OpenGL
+ *
  * @author Thomas Kroes
  */
 class Shape : public QObject
@@ -48,13 +51,16 @@ public:
 	 */
 	void setName(const QString& name);
 
-	/** Returns the actor */
+	/** Returns the prop to which the shape is attached */
 	Prop* prop();
 
 	/** Returns the full shape name (actor_name::prop_name::shape_name */
 	QString fullName();
 
+	/** Returns the vertex array object */
 	QOpenGLVertexArrayObject& vao() { return _vao; }
+
+	/** Returns the vertex buffer object */
 	QOpenGLBuffer& vbo() { return _vbo; }
 
 protected:
