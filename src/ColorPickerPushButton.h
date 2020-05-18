@@ -7,7 +7,7 @@ class QColorDialog;
 /**
  * Color picker push button class
  *
- * TODO
+ * A push button widget class for picking, storing and display a color
  *
  * @author Thomas Kroes
  */

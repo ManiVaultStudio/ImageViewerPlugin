@@ -67,7 +67,9 @@ protected:
 	private:
 		ColorMap::Type		_type;		/** Type of color map (e.g. 1D, 2D) */
 	};
-public:
+
+public: // Construction/destruction
+
 	/**
 	 * Constructor
 	 * @param parent Pointer to parent widget

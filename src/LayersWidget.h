@@ -14,40 +14,60 @@ class ImageViewerPlugin;
 class DatasetsModel;
 class LayersModel;
 
-/** TODO */
+/**
+ * Layers widget class
+ *
+ * This widget class provides the user interface for editing layers
+ *
+ * @author Thomas Kroes
+ */
 class LayersWidget : public QWidget
 {
 public: // Construction/destruction
 
-	/** TODO */
+	/**
+	 * Constructor
+	 * @param parent Parent widget
+	 */
 	LayersWidget(QWidget* parent);
 
 	/** Destructor */
 	~LayersWidget();
 
-	/** TODO */
+public: // Initialization
+
+	/**
+	 * Initializes the widget
+	 * @param imageViewerPlugin Pointer to the image viewer plugin
+	 */
 	void initialize(ImageViewerPlugin* imageViewerPlugin);
 
 private: // Drag and drop
 
-	/** TODO */
+	/**
+	 * Invoked when an item is dragged into the widget
+	 * @param dragEnterEvent Drag enter event
+	 */
 	void dragEnterEvent(QDragEnterEvent* dragEnterEvent);
 
-	/** TODO */
+	/**
+	 * Invoked when an item is dropped onto the widget
+	 * @param dropEvent Drop event
+	 */
 	void dropEvent(QDropEvent* dropEvent);
 
 private: // Miscellaneous
 
-	/** TODO */
+	/** Returns the datasets model */
 	DatasetsModel* datasetsModel();
 
-	/** TODO */
+	/** Returns the layers model */
 	LayersModel& layersModel();
 
-	/** TODO */
+	/** Returns the layers selection model */
 	QItemSelectionModel& layersSelectionModel();
 
 private:
-	ImageViewerPlugin*					_imageViewerPlugin;		/** TODO */
-	std::unique_ptr<Ui::LayersWidget>	_ui;					/** TODO */
+	ImageViewerPlugin*					_imageViewerPlugin;		/** Pointer to the image viewer plugin */
+	std::unique_ptr<Ui::LayersWidget>	_ui;					/** User interface as produced by Qt designer */
 };

@@ -11,18 +11,27 @@ namespace Ui {
 	class SettingsWidget;
 }
 
-/** TODO */
+/**
+ * Settings widget class
+ *
+ * This widget class provides the user interface for editing settings
+ *
+ * @author Thomas Kroes
+ */
 class SettingsWidget : public QWidget
 {
 public: // Construction/destruction
 
-	/** TODO */
+	/**
+	 * Constructor
+	 * @param imageViewerPlugin Pointer to the image viewer plugin
+	 */
 	SettingsWidget(ImageViewerPlugin* imageViewerPlugin);
 
 	/** Destructor */
 	~SettingsWidget();
 
 private:
-	ImageViewerPlugin*						_imageViewerPlugin;		/** TODO */
-	std::unique_ptr<Ui::SettingsWidget>		_ui;					/** TODO */
+	ImageViewerPlugin*						_imageViewerPlugin;		/** Pointer to the image viewer plugin */
+	std::unique_ptr<Ui::SettingsWidget>		_ui;					/** User interface as produced by Qt designer */
 };

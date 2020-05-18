@@ -18,23 +18,30 @@ class ImageViewerPlugin;
 class LayersModel;
 
 /**
- * Image viewer widget class
- * This widget displays high-dimensional image data
+ * Viewer widget class
+ * 
+ * This is an OpenGL widget class that renders images from a layer based system
+ * 
  * @author Thomas Kroes
  */
 class ViewerWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
 	Q_OBJECT
 
-public:
-	/** Default constructor */
+public: // Construction/destruction
+	/**
+	 * Constructor
+	 * @param imageViewerPlugin Pointer to the image viewer plugin
+	 */
 	ViewerWidget(ImageViewerPlugin* imageViewerPlugin);
 
 	/** Destructor */
 	~ViewerWidget() override;
 
+public: // Events
+
 	/**
-	 * Event filter
+	 * Widget event capture
 	 *@param target Target object
 	 *@param event Event that occurred
 	 */
@@ -42,7 +49,7 @@ public:
 
 protected: // OpenGL functions
 
-	/** Initializes OpenGL */
+	/** Initializes the OpenGL window */
 	void initializeGL() override;
 
 	/** Paints the OpenGL content */
@@ -67,9 +74,9 @@ private:
 	QMenu* contextMenu();
 
 private:
-	ImageViewerPlugin*						_imageViewerPlugin;			/** TODO */
-	Renderer*								_renderer;					/** TODO */
-	std::unique_ptr<QOpenGLDebugLogger>		_openglDebugLogger;			/** TODO */
+	ImageViewerPlugin*						_imageViewerPlugin;			/** Pointer to the image viewer plugin */
+	Renderer*								_renderer;					/** Pointer to the renderer which is attached to the viewer widget */
+	std::unique_ptr<QOpenGLDebugLogger>		_openglDebugLogger;			/** OpenGL logger instance for debugging (only enabled in debug mode for performance reasons) */
 	QRadialGradient							_backgroundGradient;		/** Viewport gradient background */
-	int										_keys;						/** TODO */
+	int										_keys;						/** Currently pressed keyboard keys */
 };

@@ -5,15 +5,15 @@
 #include <QImage>
 
 /**
-* Color map class
-*
-* Primarily a container for color map related parameters (e.g. name, resource path)
-* This model can contain 1D and 2D color maps (perhaps in the future also 3D)
-*
-* @author Thomas Kroes
-*/
+ * Color map class
+ *
+ * Primarily a container for color map related parameters (e.g. name, resource path)
+ * This model can contain 1D and 2D color maps (perhaps in the future also 3D)
+ *
+ * @author Thomas Kroes
+ */
 class ColorMap {
-public:
+public: // Enumerations
 
 	/**
 	* Color map type
