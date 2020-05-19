@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1.0)
+cmake_minimum_required(VERSION 3.12.0)
 
 set(PROJECT "ImageViewerPlugin")
 
@@ -20,6 +20,7 @@ endif(MSVC)
 
 find_package(OpenGL REQUIRED)
 find_package(Qt5 COMPONENTS Widgets WebEngineWidgets REQUIRED)
+find_package(OpenMP)
 
 set(PLUGIN
 	src/Common.h
@@ -61,6 +62,11 @@ endif()
 target_link_libraries(${PROJECT} ${OPENGL_LIBRARIES})
 target_link_libraries(${PROJECT} Qt5::Widgets)
 target_link_libraries(${PROJECT} Qt5::WebEngineWidgets)
+
+if(OpenMP_CXX_FOUND)
+	target_link_libraries(${PROJECT} OpenMP::OpenMP_CXX)
+endif()
+
 target_link_libraries(${PROJECT} "$ENV{HDPS_INSTALL_DIR}/$<CONFIGURATION>/lib/${CMAKE_SHARED_LIBRARY_PREFIX}HDPS_Public${LIB_SUFFIX}")
 target_link_libraries(${PROJECT} "$ENV{HDPS_INSTALL_DIR}/$<CONFIGURATION>/lib/${CMAKE_SHARED_LIBRARY_PREFIX}PointData${LIB_SUFFIX}")
 target_link_libraries(${PROJECT} "$ENV{HDPS_INSTALL_DIR}/$<CONFIGURATION>/lib/${CMAKE_SHARED_LIBRARY_PREFIX}ImageData${LIB_SUFFIX}")
