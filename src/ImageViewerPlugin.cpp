@@ -13,6 +13,8 @@
 #include <QItemSelectionModel>
 #include <QFileInfo>
 #include <QDebug>
+#include <QEvent>
+#include <QKeyEvent>
 
 using namespace hdps;
 
