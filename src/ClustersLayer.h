@@ -24,7 +24,7 @@ public:
 		End = Start
 	};
 
-public:
+public: // Construction
 
 	/**
 	 * Constructor
@@ -34,6 +34,8 @@ public:
 	 * @param flags Configuration bit flags
 	 */
 	ClustersLayer(const QString& clusterDatasetName, const QString& id, const QString& name, const int& flags);
+
+public: // 2D painting
 
 	/**
 	 * Paints the layer
@@ -79,7 +81,7 @@ public: // Getters/setters
 	 */
 	QVariant clustersDatasetName(const int& role = Qt::DisplayRole) const;
 
-protected:
+protected: // Miscellaneous
 	
 	/** Returns hints that pertain to the layer */
 	Hints hints() const override;

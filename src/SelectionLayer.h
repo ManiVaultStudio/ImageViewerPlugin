@@ -12,7 +12,7 @@ class Points;
 /**
  * Selection layer class
  *
- * TODO
+ * Layer for selection visualization and manipulation
  *
  * @author Thomas Kroes
  */
@@ -46,7 +46,7 @@ public: // Enumerations
 		End = OverlayColor
 	};
 
-public:
+public: // Construction
 
 	/**
 	 * Constructor
@@ -57,8 +57,12 @@ public:
 	 */
 	SelectionLayer(const QString& datasetName, const QString& id, const QString& name, const int& flags);
 
+protected: // Initialization
+
 	/** Initializes the layer */
 	void init();
+
+public: // Miscellaneous
 
 	/**
 	 * Paints the layer

@@ -23,6 +23,7 @@ public:
 	using Elements = std::vector<ChannelType>;
 
 public:
+
 	/**
 	 * (Default) constructor
 	 * @param id Channel identifier

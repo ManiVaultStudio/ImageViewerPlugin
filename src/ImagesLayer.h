@@ -43,7 +43,7 @@ public: // Enumerations
 		End = Average
 	};
 
-public:
+public: // Construction
 
 	/**
 	 * Constructor
@@ -54,8 +54,12 @@ public:
 	 */
 	ImagesLayer(const QString& imagesDatasetName, const QString& id, const QString& name, const int& flags);
 
+protected: // Initialization
+
 	/** Initializes the layer */
 	void init();
+
+public: // Miscellaneous
 
 	/**
 	 * Paints the layer
@@ -206,7 +210,7 @@ public: // Getters/setters
 	 */
 	void setAverage(const bool& average);
 
-protected:
+protected: // Miscellaneous
 
 	/**
 	* Returns the image size

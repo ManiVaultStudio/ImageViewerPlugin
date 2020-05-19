@@ -22,7 +22,7 @@ public:
 		End = Start
 	};
 
-public:
+public: // Construction
 
 	/**
 	 * Constructor
@@ -31,6 +31,8 @@ public:
 	 * @param flags Configuration bit flags
 	 */
 	GroupLayer(const QString& id, const QString& name, const int& flags);
+
+public: // Miscellaneous
 
 	/**
 	 * Paints the layer
@@ -67,7 +69,7 @@ public: // Inherited MVC
 	 */
 	QModelIndexList setData(const QModelIndex& index, const QVariant& value, const int& role) override;
 
-protected:
+protected: // Miscellaneous
 
 	/** Returns hints that pertain to the layer */
 	Hints hints() const override;

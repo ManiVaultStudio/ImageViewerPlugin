@@ -18,7 +18,7 @@ class Prop;
 /**
  * Layer node class
  *
- * TODO
+ * This class represents a hierarchical layer node
  *
  * @author Thomas Kroes
  */
@@ -67,19 +67,19 @@ public:
 
 	/**  Columns */
 	enum class Column {
-		Name,					// Name of the layer
-		Type,					// Type of layer
-		DatasetName,			// Name of the dataset (if any)
-		DataName,				// Name of the data (if any)
-		ID,						// Layer identifier (for internal use)
-		ImageSize,				// Size of the image(s)
-		ImageWidth,				// Width of the image(s)
-		ImageHeight,			// Height of the image(s)
-		Opacity,				// Layer opacity
-		Scale,					// Layer scale
-		Flags,					// Configuration bit flags
-		Selection,				// Selection
-		SelectionSize,			// Size of the selection
+		Name,				// Name of the layer
+		Type,				// Type of layer
+		DatasetName,		// Name of the dataset (if any)
+		DataName,			// Name of the data (if any)
+		ID,					// Layer identifier (for internal use)
+		ImageSize,			// Size of the image(s)
+		ImageWidth,			// Width of the image(s)
+		ImageHeight,		// Height of the image(s)
+		Opacity,			// Layer opacity
+		Scale,				// Layer scale
+		Flags,				// Configuration bit flags
+		Selection,			// Selection
+		SelectionSize,		// Size of the selection
 
 		Start = Name,
 		End = SelectionSize
@@ -177,6 +177,8 @@ public:
 
 	/** Destructor */
 	virtual ~Layer();
+
+public: // Miscellaneous
 
 	/**
 	 * Adjust the layer scaling to fit into the supplied image size

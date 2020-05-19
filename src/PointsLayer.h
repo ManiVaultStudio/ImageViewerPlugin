@@ -67,14 +67,20 @@ public:
 	 */
 	PointsLayer(const QString& pointsDatasetName, const QString& id, const QString& name, const int& flags);
 
+protected: // Initialization
+
 	/** Initializes the layer */
 	void init();
+
+public:
 
 	/**
 	 * Adjust the layer scaling to fit into the supplied image size
 	 * @param imageSize Size of the image to scale into
 	 */
 	void matchScaling(const QSize& targetImageSize);
+
+public: // 2D painting
 
 	/**
 	 * Paints the layer

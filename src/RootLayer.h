@@ -27,6 +27,8 @@ public: // Construction
 	/** Default constructor */
 	RootLayer();
 
+public: // Visualization
+
 	/** TODO */
 	void render(const QMatrix4x4& parentMVP);
 
@@ -50,7 +52,7 @@ public: // Inherited MVC
 	/** TODO */
 	QModelIndexList setData(const QModelIndex& index, const QVariant& value, const int& role) override;
 
-protected:
+protected: // Miscellaneous
 
 	/**
 	* Returns the image size
