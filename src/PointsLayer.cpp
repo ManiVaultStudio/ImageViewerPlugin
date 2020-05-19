@@ -5,6 +5,7 @@
 
 #include "PointData.h"
 #include "ImageData/Images.h"
+#include "util/Timer.h"
 
 #include <QDebug>
 #include <QImage>
@@ -696,6 +697,10 @@ void PointsLayer::setConstantColor(const QColor& constantColor)
 
 void PointsLayer::computeChannel(const ChannelIndex& channelIndex)
 {
+#ifdef _DEBUG
+	auto timer = Timer("Compute channel");
+#endif
+
 	switch (channelIndex)
 	{
 		case ChannelIndex::Channel1:

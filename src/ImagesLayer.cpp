@@ -3,6 +3,7 @@
 #include "ImagesProp.h"
 
 #include "PointData.h"
+#include "util/Timer.h"
 
 #include <QDebug>
 #include <QFileInfo>
@@ -610,6 +611,10 @@ void ImagesLayer::setAverage(const bool& average)
 
 void ImagesLayer::computeChannel(const ChannelIndex& channelIndex)
 {
+#ifdef _DEBUG
+	auto timer = Timer("Compute channel");
+#endif
+
 	switch (channelIndex)
 	{
 		case ChannelIndex::Intensity:
@@ -630,6 +635,5 @@ void ImagesLayer::computeChannel(const ChannelIndex& channelIndex)
 
 		default:
 			break;
-	}
-	
+	}	
 }

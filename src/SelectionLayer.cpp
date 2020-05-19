@@ -5,6 +5,7 @@
 #include "Renderer.h"
 
 #include "PointData.h"
+#include "util/Timer.h"
 
 #include <set>
 
@@ -1111,6 +1112,10 @@ void SelectionLayer::setAutoZoomToSelection(const bool& autoZoomToSelection)
 
 void SelectionLayer::computeChannel(const ChannelIndex& channelIndex)
 {
+#ifdef _DEBUG
+	auto timer = Timer("Compute channel");
+#endif
+
 	switch (channelIndex)
 	{
 		case ChannelIndex::Selection:
@@ -1140,6 +1145,10 @@ void SelectionLayer::computeChannel(const ChannelIndex& channelIndex)
 
 void SelectionLayer::selectAll()
 {
+#ifdef _DEBUG
+	auto timer = Timer("Select all");
+#endif
+
 	auto& selection = dynamic_cast<Points&>(imageViewerPlugin->core()->requestSelection(_pointsDataset->getDataName()));
 
 	selection.indices.clear();
@@ -1158,6 +1167,10 @@ void SelectionLayer::selectAll()
 
 void SelectionLayer::selectNone()
 {
+#ifdef _DEBUG
+	auto timer = Timer("Select none");
+#endif
+
 	auto& selection = dynamic_cast<Points&>(imageViewerPlugin->core()->requestSelection(_pointsDataset->getDataName()));
 
 	selection.indices.clear();
@@ -1170,6 +1183,10 @@ void SelectionLayer::selectNone()
 
 void SelectionLayer::invertSelection()
 {
+#ifdef _DEBUG
+	auto timer = Timer("Invert selection");
+#endif
+
 	auto& selection = dynamic_cast<Points&>(imageViewerPlugin->core()->requestSelection(_pointsDataset->getDataName()));
 
 	std::set<std::uint32_t> selectionSet(selection.indices.begin(), selection.indices.end());
@@ -1193,6 +1210,10 @@ void SelectionLayer::zoomToSelection()
 
 void SelectionLayer::publishSelection()
 {
+#ifdef _DEBUG
+	auto timer = Timer("Publish selection");
+#endif
+
 	const auto selectionImage = propByName<SelectionToolProp>("SelectionTool")->selectionImage().mirrored(false, true);
 	
 	auto& selectionIndices	= dynamic_cast<Points&>(imageViewerPlugin->core()->requestSelection(_pointsDataset->getDataName())).indices;
@@ -1282,6 +1303,10 @@ void SelectionLayer::publishSelection()
 
 void SelectionLayer::computeSelectionBounds()
 {
+#ifdef _DEBUG
+	auto timer = Timer("Compute selection bounds");
+#endif
+
 	auto& selection = dynamic_cast<Points&>(imageViewerPlugin->core()->requestSelection(_pointsDataset->getDataName()));
 
 	if (selection.indices.empty()) {
