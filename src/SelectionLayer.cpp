@@ -18,6 +18,7 @@
 #include <QDebug>
 #include <QPainter>
 #include <QTextDocument>
+#include <QKeyEvent>
 
 const QColor SelectionLayer::toolColorForeground	= QColor(255, 174, 66, 200);
 const QColor SelectionLayer::toolColorBackground	= QColor(255, 174, 66, 150);
