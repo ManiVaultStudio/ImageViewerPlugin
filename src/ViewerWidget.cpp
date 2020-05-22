@@ -15,6 +15,7 @@
 #include <QOpenGLDebugLogger>
 #include <QPainter>
 #include <QMessageBox>
+#include <QKeyEvent>
 
 ViewerWidget::ViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	QOpenGLWidget(imageViewerPlugin),
