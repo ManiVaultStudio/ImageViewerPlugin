@@ -30,7 +30,7 @@ protected:
 	class ColorMapFilterModel : public QSortFilterProxyModel {
 	public:
 		/** Constructor */
-		ColorMapFilterModel::ColorMapFilterModel(QObject *parent, const ColorMap::Type& type = ColorMap::Type::OneDimensional) :
+		ColorMapFilterModel(QObject *parent, const ColorMap::Type& type = ColorMap::Type::OneDimensional) :
 			QSortFilterProxyModel(parent),
 			_type(type)
 		{
