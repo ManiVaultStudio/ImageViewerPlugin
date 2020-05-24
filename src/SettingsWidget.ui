@@ -73,7 +73,7 @@
   <customwidget>
    <class>LayersWidget</class>
    <extends>QWidget</extends>
-   <header>layerswidget.h</header>
+   <header>LayersWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

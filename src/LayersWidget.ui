@@ -301,7 +301,7 @@
   <customwidget>
    <class>LayerWidget</class>
    <extends>QWidget</extends>
-   <header>layerwidget.h</header>
+   <header>LayerWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

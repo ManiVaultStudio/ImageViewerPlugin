@@ -415,13 +415,13 @@
   <customwidget>
    <class>ColorMapComboBox</class>
    <extends>QWidget</extends>
-   <header>colormapcombobox.h</header>
+   <header>ColorMapComboBox.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>ColorPickerPushButton</class>
    <extends>QWidget</extends>
-   <header>colorpickerpushbutton.h</header>
+   <header>ColorPickerPushButton.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

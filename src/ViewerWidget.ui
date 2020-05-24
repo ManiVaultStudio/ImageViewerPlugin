@@ -86,7 +86,7 @@
   <customwidget>
    <class>ViewerWidget</class>
    <extends>QWidget</extends>
-   <header>viewerwidget.h</header>
+   <header>ViewerWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
