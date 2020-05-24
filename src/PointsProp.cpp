@@ -10,6 +10,8 @@
 #include <QOpenGLContext>
 #include <QOpenGLFunctions>
 
+#include <stdexcept> // For runtime_error.
+
 const std::string vertexShaderSource =
 	#include "PointsVertex.glsl"
 ;
@@ -109,13 +111,13 @@ void PointsProp::initialize()
 			const auto shaderProgram = shaderProgramByName("Quad");
 
 			if (!shaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSource.c_str()))
-				throw std::exception("Unable to compile quad vertex shader");
+				throw std::runtime_error("Unable to compile quad vertex shader");
 
 			if (!shaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSource.c_str()))
-				throw std::exception("Unable to compile quad fragment shader");
+				throw std::runtime_error("Unable to compile quad fragment shader");
 
 			if (!shaderProgram->link())
-				throw std::exception("Unable to link quad shader program");
+				throw std::runtime_error("Unable to link quad shader program");
 
 			const auto stride = 5 * sizeof(GLfloat);
 
@@ -135,7 +137,7 @@ void PointsProp::initialize()
 				shape->vbo().release();
 			}
 			else {
-				throw std::exception("Unable to bind quad shader program");
+				throw std::runtime_error("Unable to bind quad shader program");
 			}
 
 			_initialized = true;
@@ -201,7 +203,7 @@ void PointsProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 			shaderProgram->release();
 		}
 		else {
-			throw std::exception("Unable to bind quad shader program");
+			throw std::runtime_error("Unable to bind quad shader program");
 		}
 
 		if (textureByName("Channels")->isCreated())

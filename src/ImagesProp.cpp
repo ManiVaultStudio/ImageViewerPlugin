@@ -10,6 +10,8 @@
 #include <QOpenGLContext>
 #include <QOpenGLFunctions>
 
+#include <stdexcept> // For runtime_error.
+
 const std::string vertexShaderSource =
 	#include "ImagesVertex.glsl"
 ;
@@ -90,13 +92,13 @@ void ImagesProp::initialize()
 		const auto shaderProgram = shaderProgramByName("Quad");
 
 		if (!shaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSource.c_str()))
-			throw std::exception("Unable to compile quad vertex shader");
+			throw std::runtime_error("Unable to compile quad vertex shader");
 
 		if (!shaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSource.c_str()))
-			throw std::exception("Unable to compile quad fragment shader");
+			throw std::runtime_error("Unable to compile quad fragment shader");
 
 		if (!shaderProgram->link())
-			throw std::exception("Unable to link quad shader program");
+			throw std::runtime_error("Unable to link quad shader program");
 
 		const auto stride = 5 * sizeof(GLfloat);
 
@@ -116,7 +118,7 @@ void ImagesProp::initialize()
 			shape->vbo().release();
 		}
 		else {
-			throw std::exception("Unable to bind quad shader program");
+			throw std::runtime_error("Unable to bind quad shader program");
 		}
 
 		_initialized = true;
@@ -142,7 +144,7 @@ void ImagesProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 		const auto shaderProgram = shaderProgramByName("Quad");
 
 		if (!textureByName("Channels")->isCreated())
-			throw std::exception("Channels texture is not created");
+			throw std::runtime_error("Channels texture is not created");
 
 		renderer->openGLContext()->functions()->glActiveTexture(GL_TEXTURE1);
 		
@@ -151,7 +153,7 @@ void ImagesProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 		auto imagesLayer = static_cast<ImagesLayer*>(_node);
 
 		if (!shaderProgram->bind())
-			throw std::exception("Unable to bind quad shader program");
+			throw std::runtime_error("Unable to bind quad shader program");
 
 		const QVector2D displayRanges[] = {
 			imagesLayer->channel(0)->displayRangeVector()

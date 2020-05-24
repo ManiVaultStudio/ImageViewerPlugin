@@ -10,6 +10,8 @@
 #include <QOpenGLFunctions>
 #include <QOpenGLPixelTransferOptions>
 
+#include <stdexcept> // For runtime_error.
+
 const std::string vertexShaderSource =
 	#include "SelectionVertex.glsl"
 ;
@@ -90,20 +92,20 @@ void SelectionProp::initialize()
 		const auto shaderProgram = shaderProgramByName("Quad");
 
 		if (!shaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSource.c_str()))
-			throw std::exception("Unable to compile quad vertex shader");
+			throw std::runtime_error("Unable to compile quad vertex shader");
 
 		if (!shaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSource.c_str()))
-			throw std::exception("Unable to compile quad fragment shader");
+			throw std::runtime_error("Unable to compile quad fragment shader");
 
 		if (!shaderProgram->link())
-			throw std::exception("Unable to link quad shader program");
+			throw std::runtime_error("Unable to link quad shader program");
 
 		const auto stride = 5 * sizeof(GLfloat);
 
 		auto shape = shapeByName<QuadShape>("Quad");
 
 		if (!shaderProgram->bind())
-			throw std::exception("Unable to bind quad shader program");
+			throw std::runtime_error("Unable to bind quad shader program");
 
 		shape->vao().bind();
 		shape->vbo().bind();
@@ -141,14 +143,14 @@ void SelectionProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 		const auto quadTexture		= textureByName("Quad");
 
 		if (!textureByName("Channels")->isCreated())
-			throw std::exception("Channels texture is not created");
+			throw std::runtime_error("Channels texture is not created");
 
 		renderer->openGLContext()->functions()->glActiveTexture(GL_TEXTURE0);
 
 		textureByName("Channels")->bind();
 
 		if (!shaderProgram->bind())
-			throw std::exception("Unable to bind shader program");
+			throw std::runtime_error("Unable to bind shader program");
 
 		auto selectionLayer = static_cast<SelectionLayer*>(_node);
 

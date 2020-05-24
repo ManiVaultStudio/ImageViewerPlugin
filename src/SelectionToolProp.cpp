@@ -9,6 +9,8 @@
 #include <QOpenGLContext>
 #include <QOpenGLFunctions>
 
+#include <stdexcept> // For runtime_error.
+
 const std::string selectionToolVertexShaderSource =
 	#include "SelectionToolVertex.glsl"
 ;
@@ -130,7 +132,7 @@ void SelectionToolProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 			shaderProgram->release();
 		}
 		else {
-			throw std::exception("Unable to bind quad shader program");
+			throw std::runtime_error("Unable to bind quad shader program");
 		}
 	}
 	catch (std::exception& e)
@@ -153,7 +155,7 @@ void SelectionToolProp::compute()
 		renderer->bindOpenGLContext();
 
 		if (!_fbo->bind())
-			throw std::exception("Unable to bind frame buffer object");
+			throw std::runtime_error("Unable to bind frame buffer object");
 
 		glViewport(0, 0, _fbo->width(), _fbo->height());
 
@@ -263,7 +265,7 @@ void SelectionToolProp::compute()
 		}
 		else
 		{
-			throw std::exception("Unable to bind off screen shader program");
+			throw std::runtime_error("Unable to bind off screen shader program");
 		}
 
 		shape->vao().release();
@@ -293,7 +295,7 @@ void SelectionToolProp::reset()
 		}
 		else
 		{
-			throw std::exception("Unable to bind frame buffer object");
+			throw std::runtime_error("Unable to bind frame buffer object");
 		}
 	}
 	catch (std::exception& e)
@@ -336,13 +338,13 @@ void SelectionToolProp::loadSelectionToolShaderProgram()
 	const auto shaderProgram = shaderProgramByName("SelectionTool");
 
 	if (!shaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, selectionToolVertexShaderSource.c_str()))
-		throw std::exception("Unable to compile selection tool vertex shader");
+		throw std::runtime_error("Unable to compile selection tool vertex shader");
 
 	if (!shaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, selectionToolFragmentShaderSource.c_str()))
-		throw std::exception("Unable to compile selection tool fragment shader");
+		throw std::runtime_error("Unable to compile selection tool fragment shader");
 
 	if (!shaderProgram->link())
-		throw std::exception("Unable to link selection tool shader program");
+		throw std::runtime_error("Unable to link selection tool shader program");
 
 	const auto stride = 5 * sizeof(GLfloat);
 
@@ -362,7 +364,7 @@ void SelectionToolProp::loadSelectionToolShaderProgram()
 		shape->vbo().release();
 	}
 	else {
-		throw std::exception("Unable to bind selection tool shader program");
+		throw std::runtime_error("Unable to bind selection tool shader program");
 	}
 }
 
@@ -371,13 +373,13 @@ void SelectionToolProp::loadSelectionToolOffScreenShaderProgram()
 	const auto shaderProgram = shaderProgramByName("SelectionToolOffScreen");
 
 	if (!shaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, selectionToolOffScreenVertexShaderSource.c_str()))
-		throw std::exception("Unable to compile selection tool off-screen vertex shader");
+		throw std::runtime_error("Unable to compile selection tool off-screen vertex shader");
 
 	if (!shaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, selectionToolOffScreenFragmentShaderSource.c_str()))
-		throw std::exception("Unable to compile selection tool off-screen fragment shader");
+		throw std::runtime_error("Unable to compile selection tool off-screen fragment shader");
 
 	if (!shaderProgram->link())
-		throw std::exception("Unable to link selection tool off-screen shader program");
+		throw std::runtime_error("Unable to link selection tool off-screen shader program");
 
 	const auto stride = 5 * sizeof(GLfloat);
 
@@ -397,6 +399,6 @@ void SelectionToolProp::loadSelectionToolOffScreenShaderProgram()
 		shape->vbo().release();
 	}
 	else {
-		throw std::exception("Unable to bind selection tool off-screen shader program");
+		throw std::runtime_error("Unable to bind selection tool off-screen shader program");
 	}
 }
