@@ -396,25 +396,25 @@
   <customwidget>
    <class>ImagesLayerWidget</class>
    <extends>QWidget</extends>
-   <header>imageslayerwidget.h</header>
+   <header>ImagesLayerWidget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>ClustersLayerWidget</class>
    <extends>QWidget</extends>
-   <header>clusterslayerwidget.h</header>
+   <header>ClustersLayerWidget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>PointsLayerWidget</class>
    <extends>QWidget</extends>
-   <header>pointslayerwidget.h</header>
+   <header>PointsLayerWidget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>SelectionLayerWidget</class>
    <extends>QWidget</extends>
-   <header>selectionlayerwidget.h</header>
+   <header>SelectionLayerWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
