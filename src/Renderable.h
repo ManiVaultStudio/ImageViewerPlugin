@@ -9,6 +9,8 @@
 
 #include "Prop.h"
 
+#include <stdexcept> // For runtime_error.
+
 class QMouseEvent;
 class QWheelEvent;
 class QKeyEvent;
@@ -89,13 +91,13 @@ protected: // Prop management
 			auto propName	= prop->name();
 
 			if (_props.contains(propName))
-				throw std::exception(QString("%1 already exists").arg(propName).toLatin1());
+				throw std::runtime_error(QString("%1 already exists").arg(propName).toLatin1());
 
 			_props.insert(propName, newProp);
 		}
 		catch (const std::exception& e)
 		{
-			throw std::exception(QString("Unable to add prop: %1").arg(e.what()).toLatin1());
+			throw std::runtime_error(QString("Unable to add prop: %1").arg(e.what()).toLatin1());
 		}
 	}
 
@@ -107,13 +109,13 @@ protected: // Prop management
 	{
 		try {
 			if (!_props.contains(name))
-				throw std::exception(QString("%1 does not exist").arg(name).toLatin1());
+				throw std::runtime_error(QString("%1 does not exist").arg(name).toLatin1());
 
 			_props.remove(name);
 		}
 		catch (const std::exception& e)
 		{
-			throw std::exception(QString("Unable to remove prop: %1").arg(e.what()).toLatin1());
+			throw std::runtime_error(QString("Unable to remove prop: %1").arg(e.what()).toLatin1());
 		}
 	}
 
@@ -126,13 +128,13 @@ protected: // Prop management
 	{
 		try {
 			if (!_props.contains(name))
-				throw std::exception(QString("no prop named %1").arg(name).toLatin1());
+				throw std::runtime_error(QString("no prop named %1").arg(name).toLatin1());
 
 			return dynamic_cast<T*>(_props[name]);
 		}
 		catch (const std::exception& e)
 		{
-			throw std::exception(QString("Unable to retrieve prop: %1").arg(e.what()).toLatin1());
+			throw std::runtime_error(QString("Unable to retrieve prop: %1").arg(e.what()).toLatin1());
 		}
 	}
 
