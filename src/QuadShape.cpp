@@ -70,11 +70,16 @@ void QuadShape::setRectangle(const QRectF& rectangle)
 
 void QuadShape::createQuad()
 {
+	const auto left = static_cast<float>(_rectangle.left());
+	const auto right = static_cast<float>(_rectangle.right());
+	const auto bottom = static_cast<float>(_rectangle.bottom());
+	const auto top = static_cast<float>(_rectangle.top());
+
 	const float coordinates[4][3] = {
-		{ _rectangle.left(),		_rectangle.top(),		0.0f },
-		{ _rectangle.right(),		_rectangle.top(),		0.0f },
-		{ _rectangle.right(),		_rectangle.bottom(),	0.0f },
-		{ _rectangle.left(),		_rectangle.bottom(),	0.0f }
+		{ left,		top,	0.0f },
+		{ right,	top,	0.0f },
+		{ right,	bottom,	0.0f },
+		{ left,		bottom,	0.0f }
 	};
 
 	for (int j = 0; j < 4; ++j)
