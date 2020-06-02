@@ -47,7 +47,8 @@ source_group(UI FILES ${UIS})
 source_group(Shaders FILES ${SHADERS})
 source_group(Aux FILES ${AUX})
 
-include_directories("$ENV{HDPS_INSTALL_DIR}/$<CONFIGURATION>/include/" )
+# Note: src is included for ClustersLayerWidget.h
+include_directories("$ENV{HDPS_INSTALL_DIR}/$<CONFIGURATION>/include/" src)
 
 add_library(${PROJECT} SHARED ${SOURCES} ${UIS} ${SHADERS} ${AUX})
 
