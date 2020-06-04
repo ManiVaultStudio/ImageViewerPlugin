@@ -23,7 +23,7 @@ public:
 	ColorPickerPushButton(QWidget* parent);
 
 	/** Returns the currently selected color */
-	QColor currentColor() const;
+	[[nodiscard]] QColor currentColor() const;
 
 	/**
 	 * Sets the current color

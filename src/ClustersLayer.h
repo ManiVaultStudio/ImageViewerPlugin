@@ -46,14 +46,14 @@ public: // 2D painting
 public: // Inherited MVC
 
 	/** Returns the number of columns */
-	int columnCount() const override { return ult(Column::End) + 1; }
+	[[nodiscard]] int columnCount() const override { return ult(Column::End) + 1; }
 
 	/**
 	 * Returns the item flags for the given model index
 	 * @param index Model index
 	 * @return Item flags for the index
 	 */
-	Qt::ItemFlags flags(const QModelIndex& index) const override;
+	[[nodiscard]] Qt::ItemFlags flags(const QModelIndex& index) const override;
 
 	/**
 	 * Returns the data for the given model index and data role
@@ -61,7 +61,7 @@ public: // Inherited MVC
 	 * @param role Data role
 	 * @return Data in variant form
 	 */
-	QVariant data(const QModelIndex& index, const int& role) const override;
+	[[nodiscard]] QVariant data(const QModelIndex& index, const int& role) const override;
 
 	/**
 	 * Sets the data value for the given model index and data role
@@ -79,12 +79,12 @@ public: // Getters/setters
 	 * @param role Data role
 	 * @return Name of the clusters dataset to which the layer refers in variant form
 	 */
-	QVariant clustersDatasetName(const int& role = Qt::DisplayRole) const;
+	[[nodiscard]] QVariant clustersDatasetName(const int& role = Qt::DisplayRole) const;
 
 protected: // Miscellaneous
 	
 	/** Returns hints that pertain to the layer */
-	Hints hints() const override;
+	[[nodiscard]] Hints hints() const override;
 
 private:
 	QString			_clustersDatasetName;		/** Name of the clusters dataset to which the layer refers */

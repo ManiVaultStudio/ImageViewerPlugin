@@ -60,7 +60,7 @@ public: //
 public: // Getters/setters
 
 	/** Returns the current interaction mode */
-	InteractionMode interactionMode() const;
+	[[nodiscard]] InteractionMode interactionMode() const;
 
 	/**
 	 * Sets the current interaction mode
@@ -75,37 +75,37 @@ public: // Coorindate conversions
 	 * @param screenPoint Point in screen coordinates [0..width, 0..height]
 	 * @return Position in world coordinates
 	 */
-	QVector3D screenPointToWorldPosition(const QMatrix4x4& modelViewMatrix, const QPoint& screenPoint) const;
+	[[nodiscard]] QVector3D screenPointToWorldPosition(const QMatrix4x4& modelViewMatrix, const QPoint& screenPoint) const;
 
 	/** Convert position in world coordinates to point in normalized screen coordinates
 	 * @param position Position in world coordinates
 	 * @return Point in normalized screen coordinates [-1..1, -1..1]
 	 */
-	QVector2D worldPositionToNormalizedScreenPoint(const QVector3D& position) const;
+	[[nodiscard]] QVector2D worldPositionToNormalizedScreenPoint(const QVector3D& position) const;
 
 	/** Convert position in world coordinates to point in screen coordinates
 	 * @param position Position in world coordinates
 	 * @return Point in screen coordinates [0..width, 0..height]
 	 */
-	QPoint worldPositionToScreenPoint(const QVector3D& position) const;
+	[[nodiscard]] QPoint worldPositionToScreenPoint(const QVector3D& position) const;
 
 	/** Convert point in screen coordinates to point in normalized screen coordinates
 	 * @param screenPoint Point in screen coordinates [0..width, 0..height]
 	 * @return Point in normalized screen coordinates [-1..1, -1..1]
 	 */
-	QVector2D screenPointToNormalizedScreenPoint(const QVector2D& screenPoint) const;
+	[[nodiscard]] QVector2D screenPointToNormalizedScreenPoint(const QVector2D& screenPoint) const;
 
 	/** Returns the matrix that converts screen coordinates [0..width, 0..height] to normalized screen coordinates [-1..1, -1..1] */
-	QMatrix4x4 screenToNormalizedScreenMatrix() const;
+	[[nodiscard]] QMatrix4x4 screenToNormalizedScreenMatrix() const;
 
 	/** Returns the matrix that converts normalized screen coordinates [-1..1, -1..1] to screen coordinates [0..width, 0..height] */
-	QMatrix4x4 normalizedScreenToScreenMatrix() const;
+	[[nodiscard]] QMatrix4x4 normalizedScreenToScreenMatrix() const;
 
 	/** Returns the view matrix */
-	QMatrix4x4 viewMatrix() const;
+	[[nodiscard]] QMatrix4x4 viewMatrix() const;
 
 	/** Returns the projection matrix */
-	QMatrix4x4 projectionMatrix() const;
+	[[nodiscard]] QMatrix4x4 projectionMatrix() const;
 
 public: // Navigation
 
@@ -116,7 +116,7 @@ public: // Navigation
 	void pan(const QVector2D& delta);
 
 	/** Return the current zoom level */
-	float zoom() const;
+	[[nodiscard]] float zoom() const;
 
 	/**
 	 * Zoom the view
@@ -157,13 +157,13 @@ public: // Context menus
 public: // Miscellaneous
 
 	/** Returns the parent widget */
-	QOpenGLWidget* parentWidget() const;
+	[[nodiscard]] QOpenGLWidget* parentWidget() const;
 
 	/** Returns the parent widget size */
-	QSize parentWidgetSize() const;
+	[[nodiscard]] QSize parentWidgetSize() const;
 
 	/** Returns the parent widget */
-	QOpenGLContext* openGLContext() const;
+	[[nodiscard]] QOpenGLContext* openGLContext() const;
 
 	/** Binds the OpenGL context */
 	void bindOpenGLContext();

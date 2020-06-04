@@ -36,10 +36,10 @@ public: // Construction/destruction
 public:
 
 	/** Returns whether the prop is initialized */
-	bool isInitialized() const;
+	[[nodiscard]] bool isInitialized() const;
 
 	/** Returns the prop name */
-	QString name() const;
+	[[nodiscard]] QString name() const;
 
 	/**
 	 * Sets the prop name
@@ -48,7 +48,7 @@ public:
 	void setName(const QString& name);
 
 	/** Returns whether the prop is visible */
-	bool isVisible() const;
+	[[nodiscard]] bool isVisible() const;
 
 	/**
 	 * Sets whether the prop is visible
@@ -66,7 +66,7 @@ public:
 	QString fullName();
 
 	/** Returns the model matrix */
-	QMatrix4x4 modelMatrix() const;
+	[[nodiscard]] QMatrix4x4 modelMatrix() const;
 
 	/**
 	 * Sets the model matrix
@@ -82,7 +82,7 @@ public:
 	virtual void render(const QMatrix4x4& nodeMVP, const float& opacity);
 
 	/** Returns the bounding rectangle of the prop */
-	virtual QRectF boundingRectangle() const = 0;
+	[[nodiscard]] virtual QRectF boundingRectangle() const = 0;
 
 protected:
 
@@ -93,7 +93,7 @@ protected:
 	virtual void destroy();
 
 	/** Returns whether the prop can be rendered */
-	virtual bool canRender() const;
+	[[nodiscard]] virtual bool canRender() const;
 
 	/** Update shapes */
 	virtual void updateShapes() {};
@@ -130,7 +130,7 @@ protected: // Shape management
 	* @param name Name of the shape
 	*/
 	template<typename T>
-	const T* shapeByName(const QString& name) const
+	[[nodiscard]] const T* shapeByName(const QString& name) const
 	{
 		return dynamic_cast<T*>(_shapes[name].get());
 	}

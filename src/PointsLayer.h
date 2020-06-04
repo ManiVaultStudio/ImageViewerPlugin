@@ -91,14 +91,14 @@ public: // 2D painting
 public: // Inherited MVC
 
 	/** Returns the number of columns */
-	int columnCount() const override { return ult(Column::End) + 1; }
+	[[nodiscard]] int columnCount() const override { return ult(Column::End) + 1; }
 
 	/**
 	 * Returns the item flags for the given model index
 	 * @param index Model index
 	 * @return Item flags for the index
 	 */
-	Qt::ItemFlags flags(const QModelIndex& index) const override;
+	[[nodiscard]] Qt::ItemFlags flags(const QModelIndex& index) const override;
 
 	/**
 	 * Returns the data for the given model index and data role
@@ -106,7 +106,7 @@ public: // Inherited MVC
 	 * @param role Data role
 	 * @return Data in variant form
 	 */
-	QVariant data(const QModelIndex& index, const int& role) const override;
+	[[nodiscard]] QVariant data(const QModelIndex& index, const int& role) const override;
 
 	/**
 	 * Sets the data value for the given model index and data role
@@ -124,7 +124,7 @@ public: // Getters/setters
 	 * @param role Data role
 	 * @return Number of points in the dataset in variant form
 	 */
-	QVariant noPoints(const int& role = Qt::DisplayRole) const;
+	[[nodiscard]] QVariant noPoints(const int& role = Qt::DisplayRole) const;
 
 	/**
 	 * Sets the number of points in the dataset
@@ -137,7 +137,7 @@ public: // Getters/setters
 	 * @param role Data role
 	 * @return Number of dimensions in the dataset in variant form
 	 */
-	QVariant noDimensions(const int& role = Qt::DisplayRole) const;
+	[[nodiscard]] QVariant noDimensions(const int& role = Qt::DisplayRole) const;
 
 	/**
 	 * Sets the number of dimensions in the dataset
@@ -150,7 +150,7 @@ public: // Getters/setters
 	 * @param role Data role
 	 * @return Dimension names in variant form
 	 */
-	QVariant dimensionNames(const int& role = Qt::DisplayRole) const;
+	[[nodiscard]] QVariant dimensionNames(const int& role = Qt::DisplayRole) const;
 
 	/**
 	 * Sets the dimension names
@@ -164,7 +164,7 @@ public: // Getters/setters
 	 * @param role Data role
 	 * @return Whether a channel is enabled in variant form
 	 */
-	QVariant channelEnabled(const ChannelIndex& channelIndex, const int& role = Qt::DisplayRole) const;
+	[[nodiscard]] QVariant channelEnabled(const ChannelIndex& channelIndex, const int& role = Qt::DisplayRole) const;
 
 	/**
 	 * Sets whether a channel is enabled
@@ -179,7 +179,7 @@ public: // Getters/setters
 	 * @param role Data role
 	 * @return Channel name in variant form
 	 */
-	QVariant channelName(const ChannelIndex& channelIndex, const int& role = Qt::DisplayRole) const;
+	[[nodiscard]] QVariant channelName(const ChannelIndex& channelIndex, const int& role = Qt::DisplayRole) const;
 
 	/**
 	 * Sets a channel dimension identifier
@@ -194,7 +194,7 @@ public: // Getters/setters
 	 * @param role Data role
 	 * @return Channel identifier in variant form
 	 */
-	QVariant channelDimensionId(const ChannelIndex& channelIndex, const int& role = Qt::DisplayRole) const;
+	[[nodiscard]] QVariant channelDimensionId(const ChannelIndex& channelIndex, const int& role = Qt::DisplayRole) const;
 
 	/**
 	 * Sets a channel dimension identifier
@@ -208,7 +208,7 @@ public: // Getters/setters
 	 * @param role Data role
 	 * @return Maximum number of channels in variant form
 	 */
-	QVariant maxNoChannels(const int& role = Qt::DisplayRole) const;
+	[[nodiscard]] QVariant maxNoChannels(const int& role = Qt::DisplayRole) const;
 
 	/**
 	 * Sets the maximum number of channels
@@ -221,14 +221,14 @@ public: // Getters/setters
 	 * @param role Data role
 	 * @return Number of channels in variant form
 	 */
-	QVariant noChannels(const int& role = Qt::DisplayRole) const;
+	[[nodiscard]] QVariant noChannels(const int& role = Qt::DisplayRole) const;
 
 	/**
 	 * Returns the color space
 	 * @param role Data role
 	 * @return Color space in variant form
 	 */
-	QVariant colorSpace(const int& role) const;
+	[[nodiscard]] QVariant colorSpace(const int& role) const;
 
 	/**
 	 * Sets the color space
@@ -241,7 +241,7 @@ public: // Getters/setters
 	 * @param role Data role
 	 * @return Color map image in variant form
 	 */
-	QVariant colorMap(const int& role) const;
+	[[nodiscard]] QVariant colorMap(const int& role) const;
 
 	/**
 	 * Sets the color map image
@@ -254,7 +254,7 @@ public: // Getters/setters
 	 * @param role Data role
 	 * @return Whether to shade using constant color in variant form
 	 */
-	QVariant useConstantColor(const int& role) const;
+	[[nodiscard]] QVariant useConstantColor(const int& role) const;
 
 	/**
 	 * Sets whether to shade using constant color
@@ -267,7 +267,7 @@ public: // Getters/setters
 	 * @param role Data role
 	 * @return Constant color in variant form
 	 */
-	QVariant constantColor(const int& role) const;
+	[[nodiscard]] QVariant constantColor(const int& role) const;
 
 	/**
 	 * Sets the constant color
@@ -281,10 +281,10 @@ protected:
 	* Returns the image size
 	* @return Image size in variant form
 	*/
-	QSize imageSize() const override;
+	[[nodiscard]] QSize imageSize() const override;
 
 	/** Returns hints that pertain to the layer */
-	Hints hints() const override;
+	[[nodiscard]] Hints hints() const override;
 
 private:
 

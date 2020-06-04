@@ -37,13 +37,13 @@ public:
 	virtual void destroy();
 
 	/** Returns if the shape can be rendered */
-	virtual bool canRender() const = 0;
+	[[nodiscard]] virtual bool canRender() const = 0;
 
 	/** Renders the shape */
 	virtual void render() = 0;
 
 	/** Returns the shape name */
-	QString name() const;
+	[[nodiscard]] QString name() const;
 
 	/**
 	 * Sets the name

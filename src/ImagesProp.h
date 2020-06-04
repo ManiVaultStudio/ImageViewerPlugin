@@ -38,7 +38,7 @@ public: // Rendering
 	void render(const QMatrix4x4& nodeMVP, const float& opacity) override;
 
 	/** Returns the bounding rectangle of the prop */
-	QRectF boundingRectangle() const override;
+	[[nodiscard]] QRectF boundingRectangle() const override;
 
 protected: // Inherited
 

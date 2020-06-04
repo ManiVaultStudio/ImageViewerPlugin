@@ -31,7 +31,7 @@ public: // Inherited
 	void initialize() override;
 
 	/** Returns if the shape can be rendered */
-	bool canRender() const override;
+	[[nodiscard]] bool canRender() const override;
 
 	/** Renders the shape */
 	void render() override;
@@ -39,7 +39,7 @@ public: // Inherited
 public: // Miscellaneous
 
 	/** Returns the quad rectangle */
-	QRectF rectangle() const;
+	[[nodiscard]] QRectF rectangle() const;
 
 	/**
 	 * Set quad rectangle
@@ -48,7 +48,7 @@ public: // Miscellaneous
 	void setRectangle(const QRectF& rectangle);
 
 	/** Returns the quad size */
-	QSizeF imageSize() const;
+	[[nodiscard]] QSizeF imageSize() const;
 
 private: // Internal function(s)
 

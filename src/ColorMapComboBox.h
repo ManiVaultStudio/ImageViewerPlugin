@@ -41,14 +41,14 @@ protected:
 		 * @param row Row index
 		 * @param parent Parent index
 		 */
-		bool filterAcceptsRow(int row, const QModelIndex& parent) const override
+		[[nodiscard]] bool filterAcceptsRow(int row, const QModelIndex& parent) const override
 		{
 			const auto index = sourceModel()->index(row, ult(ColorMapModel::Column::NoDimensions));
 			return ult(_type) == sourceModel()->data(index, Qt::EditRole).toInt();
 		}
 
 		/** Returns the type of color map */
-		ColorMap::Type type() const {
+		[[nodiscard]] ColorMap::Type type() const {
 			return _type;
 		}
 
@@ -84,7 +84,7 @@ public: // Construction/destruction
 	void setModel(ColorMapModel* colorMapModel);
 
 	/** Returns the type of color map */
-	ColorMap::Type type() const;
+	[[nodiscard]] ColorMap::Type type() const;
 
 	/**
 	* Sets the type of color map
@@ -93,7 +93,7 @@ public: // Construction/destruction
 	void setType(const ColorMap::Type& type);
 
 	/** Returns the currently selected color map image */
-	QImage currentImage() const;
+	[[nodiscard]] QImage currentImage() const;
 
 signals:
 

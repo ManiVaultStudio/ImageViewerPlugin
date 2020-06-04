@@ -43,17 +43,17 @@ public:
 		}
 
 		/** Returns the hint title */
-		QString title() const {
+		[[nodiscard]] QString title() const {
 			return _title;
 		}
 
 		/** Returns the hint description */
-		QString description() const {
+		[[nodiscard]] QString description() const {
 			return _description;
 		}
 
 		/** Returns the whether the hint is active */
-		bool isActive() const {
+		[[nodiscard]] bool isActive() const {
 			return _active;
 		}
 
@@ -205,14 +205,14 @@ public: // Miscellaneous
 public: // MVC
 	
 	/** Returns the number of columns */
-	virtual int columnCount() const { return ult(Column::End) + 1; }
+	[[nodiscard]] virtual int columnCount() const { return ult(Column::End) + 1; }
 
 	/**
 	 * Returns the item flags for the given model index
 	 * @param index Model index
 	 * @return Item flags for the index
 	 */
-	virtual Qt::ItemFlags flags(const QModelIndex& index) const;
+	[[nodiscard]] virtual Qt::ItemFlags flags(const QModelIndex& index) const;
 
 	/**
 	 * Returns the data for the given model index and data role
@@ -220,7 +220,7 @@ public: // MVC
 	 * @param role Data role
 	 * @return Data in variant form
 	 */
-	virtual QVariant data(const QModelIndex& index, const int& role) const;
+	[[nodiscard]] virtual QVariant data(const QModelIndex& index, const int& role) const;
 
 	/**
 	 * Sets the data value for the given model index and data role
@@ -238,21 +238,21 @@ public: // Getters/setters
 	 * @param role The data role
 	 * @return Dataset name in variant form
 	 */
-	QVariant datasetName(const int& role) const;
+	[[nodiscard]] QVariant datasetName(const int& role) const;
 
 	/**
 	 * Returns the data name
 	 * @param role The data role
 	 * @return Data name in variant form
 	 */
-	QVariant dataName(const int& role) const;
+	[[nodiscard]] QVariant dataName(const int& role) const;
 
 	/**
 	 * Returns the layer type
 	 * @param role The data role
 	 * @return Layer type in variant form
 	 */
-	QVariant type(const int& role) const;
+	[[nodiscard]] QVariant type(const int& role) const;
 
 	/**
 	 * Sets the layer type
@@ -265,28 +265,28 @@ public: // Getters/setters
 	 * @param role Data role
 	 * @return Image size in variant form
 	 */
-	QVariant imageSize(const int& role) const;
+	[[nodiscard]] QVariant imageSize(const int& role) const;
 
 	/**
 	 * Returns the width of the images in the dataset
 	 * @param role The data role
 	 * @return Image width in variant form
 	 */
-	QVariant imageWidth(const int& role) const;
+	[[nodiscard]] QVariant imageWidth(const int& role) const;
 
 	/**
 	 * Returns the height of the images in the dataset
 	 * @param role The data role
 	 * @return Image height in variant form
 	 */
-	QVariant imageHeight(const int& role) const;
+	[[nodiscard]] QVariant imageHeight(const int& role) const;
 
 	/**
 	 * Returns the data point selection
 	 * @param role The data role
 	 * @return Data point selection in variant form
 	 */
-	QVariant selection(const int& role = Qt::DisplayRole) const;
+	[[nodiscard]] QVariant selection(const int& role = Qt::DisplayRole) const;
 
 	/**
 	 * Sets the data point selection
@@ -299,14 +299,14 @@ public: // Getters/setters
 	 * @param role The data role
 	 * @return Data point selection size in variant form
 	 */
-	QVariant selectionSize(const int& role = Qt::DisplayRole) const;
+	[[nodiscard]] QVariant selectionSize(const int& role = Qt::DisplayRole) const;
 
 	/**
 	 * Returns the pressed keys
 	 * @param role The data role
 	 * @return Keys in variant form
 	 */
-	QVariant keys(const int& role = Qt::DisplayRole) const;
+	[[nodiscard]] QVariant keys(const int& role = Qt::DisplayRole) const;
 
 	/**
 	 * Sets the keys
@@ -315,7 +315,7 @@ public: // Getters/setters
 	void setKeys(const int& keys);
 
 	/** Returns the recorded mouse event positions */
-	QVector<QPoint> mousePositions() const;
+	[[nodiscard]] QVector<QPoint> mousePositions() const;
 
 protected:
 	
@@ -323,16 +323,16 @@ protected:
 	 * Returns the image size
 	 * @return Image size
 	 */
-	virtual QSize imageSize() const = 0;
+	[[nodiscard]] virtual QSize imageSize() const = 0;
 
 	/**
 	 * Returns the number of pixels in the image
 	 * @return Number of pixels
 	 */
-	int noPixels() const;
+	[[nodiscard]] int noPixels() const;
 
 	/** Returns hints that pertain to the layer */
-	virtual Hints hints() const;
+	[[nodiscard]] virtual Hints hints() const;
 
 	/**
 	 * Draws the layer title

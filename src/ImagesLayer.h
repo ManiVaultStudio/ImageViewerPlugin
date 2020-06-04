@@ -70,14 +70,14 @@ public: // Miscellaneous
 public: // Inherited MVC
 
 	/** Returns the number of columns */
-	int columnCount() const override { return ult(Column::End) + 1; }
+	[[nodiscard]] int columnCount() const override { return ult(Column::End) + 1; }
 
 	/**
 	 * Returns the item flags for the given model index
 	 * @param index Model index
 	 * @return Item flags for the index
 	 */
-	Qt::ItemFlags flags(const QModelIndex& index) const override;
+	[[nodiscard]] Qt::ItemFlags flags(const QModelIndex& index) const override;
 
 	/**
 	 * Returns the data for the given model index and data role
@@ -85,7 +85,7 @@ public: // Inherited MVC
 	 * @param role Data role
 	 * @return Data in variant form
 	 */
-	QVariant data(const QModelIndex& index, const int& role) const override;
+	[[nodiscard]] QVariant data(const QModelIndex& index, const int& role) const override;
 
 	/**
 	 * Sets the data value for the given model index and data role
@@ -103,7 +103,7 @@ public: // Getters/setters
 	 * @param role The data role
 	 * @return Image data type in variant form
 	 */
-	QVariant imageDataType(const int& role) const;
+	[[nodiscard]] QVariant imageDataType(const int& role) const;
 
 	/**
 	 * Sets the image data type
@@ -116,21 +116,21 @@ public: // Getters/setters
 	 * @param role The data role
 	 * @return Number of images in variant form
 	 */
-	QVariant noImages(const int& role) const;
+	[[nodiscard]] QVariant noImages(const int& role) const;
 
 	/**
 	 * Returns the image names in the dataset
 	 * @param role The data role
 	 * @return Image names in variant form
 	 */
-	QVariant imageNames(const int& role) const;
+	[[nodiscard]] QVariant imageNames(const int& role) const;
 
 	/**
 	 * Returns the image identifiers in the dataset
 	 * @param role The data role
 	 * @return Image identifiers in variant form
 	 */
-	QVariant imageIds(const int& role) const;
+	[[nodiscard]] QVariant imageIds(const int& role) const;
 
 	/**
 	 * Sets the image names
@@ -143,7 +143,7 @@ public: // Getters/setters
 	 * @param role The data role
 	 * @return Image file paths in variant form
 	 */
-	QVariant imageFilePaths(const int& role) const;
+	[[nodiscard]] QVariant imageFilePaths(const int& role) const;
 
 	/**
 	 * Sets the image file paths (absolute)
@@ -156,7 +156,7 @@ public: // Getters/setters
 	 * @param role The data role
 	 * @return Referenced points dataset name in variant form
 	 */
-	QVariant pointsName(const int& role) const;
+	[[nodiscard]] QVariant pointsName(const int& role) const;
 
 	/**
 	 * Sets the referenced points dataset name
@@ -169,14 +169,14 @@ public: // Getters/setters
 	 * @param role The data role
 	 * @return Filtered image names in variant form
 	 */
-	QVariant filteredImageNames(const int& role) const;
+	[[nodiscard]] QVariant filteredImageNames(const int& role) const;
 
 	/**
 	 * Returns the current image identifier
 	 * @param role The data role
 	 * @return Current image identifier in variant form
 	 */
-	QVariant currentImageId(const int& role) const;
+	[[nodiscard]] QVariant currentImageId(const int& role) const;
 
 	/**
 	 * Sets the current image identifier
@@ -189,20 +189,20 @@ public: // Getters/setters
 	 * @param role The data role
 	 * @return Current image name in variant form
 	 */
-	QVariant currentImageName(const int& role) const;
+	[[nodiscard]] QVariant currentImageName(const int& role) const;
 
 	/**
 	 * Sets the current image file path
 	 * @param currentImage Current image file path
 	 */
-	QVariant currentImageFilePath(const int& role) const;
+	[[nodiscard]] QVariant currentImageFilePath(const int& role) const;
 
 	/**
 	 * Returns whether images are averaged
 	 * @param role The data role
 	 * @return Whether images are averaged in variant form
 	 */
-	QVariant average(const int& role) const;
+	[[nodiscard]] QVariant average(const int& role) const;
 
 	/**
 	 * Sets whether images are averaged
@@ -216,10 +216,10 @@ protected: // Miscellaneous
 	* Returns the image size
 	* @return Image size in variant form
 	*/
-	QSize imageSize() const override;
+	[[nodiscard]] QSize imageSize() const override;
 
 	/** Returns hints that pertain to the layer */
-	Hints hints() const override;
+	[[nodiscard]] Hints hints() const override;
 
 private:
 

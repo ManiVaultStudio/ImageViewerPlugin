@@ -47,7 +47,7 @@ public:
 	}
 
 	/** Returns whether the channel is enabled */
-	bool enabled() const
+	[[nodiscard]] bool enabled() const
 	{
 		return _enabled;
 	}
@@ -62,7 +62,7 @@ public:
 	}
 
 	/** Returns whether the channel is inverted */
-	bool inverted() const
+	[[nodiscard]] bool inverted() const
 	{
 		return _inverted;
 	}
@@ -77,7 +77,7 @@ public:
 	}
 
 	/** Returns the channel image size */
-	QSize imageSize() const
+	[[nodiscard]] QSize imageSize() const
 	{
 		return _imageSize;
 	}
@@ -103,13 +103,13 @@ public:
 	}
 
 	/** Returns the channel identifier */
-	const std::int32_t& id() const
+	[[nodiscard]] const std::int32_t& id() const
 	{
 		return _id;
 	}
 
 	/** Returns the channel name */
-	QString name() const
+	[[nodiscard]] QString name() const
 	{
 		return _name;
 	}
@@ -124,7 +124,7 @@ public:
 	}
 
 	/** Returns the channel dimension identifier */
-	const std::int32_t& dimensionId() const
+	[[nodiscard]] const std::int32_t& dimensionId() const
 	{
 		return _dimensionId;
 	}
@@ -139,7 +139,7 @@ public:
 	}
 
 	/** Returns the channel elements */
-	const Elements& elements() const
+	[[nodiscard]] const Elements& elements() const
 	{
 		return _elements;
 	}
@@ -158,25 +158,25 @@ public:
 	}
 
 	/** Returns the channel elements range */
-	Range range() const
+	[[nodiscard]] Range range() const
 	{
 		return _range;
 	}
 
 	/** Returns the display range */
-	Range displayRange() const
+	[[nodiscard]] Range displayRange() const
 	{
 		return _displayRange;
 	}
 
 	/** Returns the display range in vector format */
-	QVector2D displayRangeVector() const
+	[[nodiscard]] QVector2D displayRangeVector() const
 	{
 		return QVector2D(displayRange().min(), displayRange().max());
 	}
 
 	/** Returns the normalized window */
-	float windowNormalized() const
+	[[nodiscard]] float windowNormalized() const
 	{
 		return _windowNormalized;
 	}
@@ -193,7 +193,7 @@ public:
 	}
 
 	/** Returns the normalized level */
-	float levelNormalized() const
+	[[nodiscard]] float levelNormalized() const
 	{
 		return _levelNormalized;
 	}
@@ -210,7 +210,7 @@ public:
 	}
 
 	/** Returns the window */
-	float window() const
+	[[nodiscard]] float window() const
 	{
 		return _window;
 	}
@@ -225,7 +225,7 @@ public:
 	}
 
 	/** Returns the level */
-	float level() const
+	[[nodiscard]] float level() const
 	{
 		return _level;
 	}
@@ -279,7 +279,7 @@ public:
 	 * Determines whether the channel is valid (dimension identifier >= 0)
 	 * @return Whether the channel is valid
 	 */
-	bool isValid() const
+	[[nodiscard]] bool isValid() const
 	{
 		return _dimensionId >= 0;
 	}
@@ -348,12 +348,12 @@ public: // Miscellaneous
 	 * Get channel by identifier
 	 * @param channelId
 	 */
-	Channel<ChannelType>* channel(const std::uint32_t& channelId) const {
+	[[nodiscard]] Channel<ChannelType>* channel(const std::uint32_t& channelId) const {
 		return _channels.at(channelId).get();
 	}
 
 	/** Return the number of channels */
-	std::uint32_t noChannels() const {
+	[[nodiscard]] std::uint32_t noChannels() const {
 		return _channels.size();
 	}
 

@@ -43,7 +43,7 @@ public: // Rendering
 public: // Matrix functions
 
 	/** Returns the model matrix */
-	QMatrix4x4 modelMatrix() const;
+	[[nodiscard]] QMatrix4x4 modelMatrix() const;
 
 	/**
 	 * Sets the model matrix
@@ -52,15 +52,15 @@ public: // Matrix functions
 	void setModelMatrix(const QMatrix4x4& modelMatrix);
 
 	/** Returns the model-view matrix */
-	QMatrix4x4 modelViewMatrix() const;
+	[[nodiscard]] QMatrix4x4 modelViewMatrix() const;
 
 	/** Returns the model-view-projection matrix */
-	QMatrix4x4 modelViewProjectionMatrix() const;
+	[[nodiscard]] QMatrix4x4 modelViewProjectionMatrix() const;
 
 public: // Opacity
 
 	/** Returns the render opacity */
-	QVariant opacity(const int& role) const;
+	[[nodiscard]] QVariant opacity(const int& role) const;
 
 	/** Sets the render opacity
 	 * @param opacity Render opacity
@@ -68,7 +68,7 @@ public: // Opacity
 	void setOpacity(const float& opacity);
 
 	/** Returns the scale */
-	QVariant scale(const int& role) const;
+	[[nodiscard]] QVariant scale(const int& role) const;
 
 	/** Sets the scale
 	 * @param scale Scale
@@ -124,7 +124,7 @@ protected: // Prop management
 	 * @param name Prop name
 	 */
 	template<typename T>
-	const T* propByName(const QString& name) const
+	[[nodiscard]] [[nodiscard]] const T* propByName(const QString& name) const
 	{
 		try {
 			if (!_props.contains(name))
@@ -150,7 +150,7 @@ protected: // Prop management
 	}
 	
 	/** Returns all props */
-	const QMap<QString, Prop*> props() const
+	[[nodiscard]] const QMap<QString, Prop*> props() const
 	{
 		return _props;
 	}

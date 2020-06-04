@@ -53,7 +53,7 @@ public: // Data access
 	 * @param role Data role
 	 * @return Data in variant form
 	 */
-	QVariant data(const QModelIndex &index, int role) const override;
+	[[nodiscard]] QVariant data(const QModelIndex &index, int role) const override;
 	
 	/**
 	 * Returns the data for the given model row, column and data role
@@ -62,7 +62,7 @@ public: // Data access
 	 * @param role Data role
 	 * @return Data in variant form
 	 */
-	QVariant data(const int& row, const int& column, const int& role) const;
+	[[nodiscard]] QVariant data(const int& row, const int& column, const int& role) const;
 
 	/**
 	 * Sets the data value for the given model index and data role
@@ -88,7 +88,7 @@ public: // Data access
 	 * @param index Model index
 	 * @return Item flags for the index
 	 */
-	Qt::ItemFlags flags(const QModelIndex &index) const override;
+	[[nodiscard]] Qt::ItemFlags flags(const QModelIndex &index) const override;
 
 	/**
 	 * Returns the item flags for the given model row and column
@@ -96,7 +96,7 @@ public: // Data access
 	 * @param column Model column
 	 * @return Item flags for the index
 	 */
-	Qt::ItemFlags flags(const int& row, const int& column) const;
+	[[nodiscard]] Qt::ItemFlags flags(const int& row, const int& column) const;
 
 	/**
 	 * Returns the header data for the given section, orientation and data role
@@ -105,7 +105,7 @@ public: // Data access
 	 * @param role Data role
 	 * @return Header data in variant form
 	 */
-	QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+	[[nodiscard]] QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
 	/**
 	 * Returns the model index belonging to the given model row and column
@@ -114,28 +114,28 @@ public: // Data access
 	 * @param parent Parent model index
 	 * @return Model index for the given model row and column
 	 */
-	QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
+	[[nodiscard]] QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
 	
 	/**
 	 * Returns the parent model index
 	 * @param index Model index
 	 * @return Parent model index for the given model index
 	 */
-	QModelIndex parent(const QModelIndex& index) const override;
+	[[nodiscard]] QModelIndex parent(const QModelIndex& index) const override;
 
 	/**
 	 * Returns the number of rows in the model given the parent model index
 	 * @param parent Parent model index
 	 * @return Number of rows in the model given the parent model index
 	 */
-	int rowCount(const QModelIndex& parent = QModelIndex()) const override;
+	[[nodiscard]] int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 
 	/**
 	 * Returns the number of columns in the model given the parent model index
 	 * @param parent Parent model index
 	 * @return Number of columns in the model given the parent model index
 	 */
-	int columnCount(const QModelIndex& parent = QModelIndex()) const override;
+	[[nodiscard]] int columnCount(const QModelIndex& parent = QModelIndex()) const override;
 
 	/**
 	 * Inserts a layer into the model at the specified row give the parent index
@@ -159,7 +159,7 @@ public: // Data access
 	 * @param delta Amount to be moved up/down
 	 * @return Whether the layer may be moved up/down by delta
 	 */
-	bool mayMoveLayer(const QModelIndex& index, const int& delta) const;
+	[[nodiscard]] bool mayMoveLayer(const QModelIndex& index, const int& delta) const;
 
 	/**
 	 * Move layer to a new destination
@@ -172,7 +172,7 @@ public: // Data access
 	bool moveLayer(const QModelIndex& sourceParent, const int& sourceRow, const QModelIndex& targetParent, int targetRow);
 	
 	/** Returns which drop actions are supported by the model */
-	Qt::DropActions supportedDropActions() const override
+	[[nodiscard]] Qt::DropActions supportedDropActions() const override
 	{
 		return Qt::MoveAction | Qt::CopyAction;
 	}
@@ -203,14 +203,14 @@ public: // Miscellaneous
 public: // MIME drag and drop
 
 	/** Returns list of supported mime types (for drag and drop) */
-	QStringList mimeTypes() const override;
+	[[nodiscard]] QStringList mimeTypes() const override;
 
 	/**
 	 * Converts a list of model indices to mime data
 	 * @param indexes List of model indices
 	 * @return Mime data
 	 */
-	QMimeData* mimeData(const QModelIndexList& indexes) const override;
+	[[nodiscard]] QMimeData* mimeData(const QModelIndexList& indexes) const override;
 
 	/**
 	 * Invoked when mime data is dropped
@@ -229,7 +229,7 @@ public:
 	 * @param index Model index of the layer to obtain
 	 * @return Layer node
 	 */
-	Layer* getLayer(const QModelIndex& index) const;
+	[[nodiscard]] Layer* getLayer(const QModelIndex& index) const;
 
 private:
 	QItemSelectionModel		_selectionModel;	/** Selection model */

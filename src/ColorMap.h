@@ -30,19 +30,19 @@ public:
 	ColorMap(const QString& name = "", const QString& resourcePath = "", const Type& type = Type::OneDimensional, const QImage& image = QImage());
 
 	/** Returns the color map name */
-	QString name() const;
+	[[nodiscard]] QString name() const;
 
 	/** Returns the resource path */
-	QString resourcePath() const;
+	[[nodiscard]] QString resourcePath() const;
 
 	/** Returns the color map type */
-	Type type() const;
+	[[nodiscard]] Type type() const;
 
 	/** Returns the color map image */
-	QImage image() const;
+	[[nodiscard]] QImage image() const;
 
 	/** Returns the number of dimensions */
-	int noDimensions() const;
+	[[nodiscard]] int noDimensions() const;
 
 private:
 	QString		_name;				/** Name in the user interface */

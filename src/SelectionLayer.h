@@ -87,19 +87,19 @@ public: // Miscellaneous
 	* Returns the image size
 	* @return Image size in variant form
 	*/
-	QSize imageSize() const override;
+	[[nodiscard]] QSize imageSize() const override;
 
 public: // Inherited MVC
 
 	/** Returns the number of columns */
-	int columnCount() const override { return ult(Column::End) + 1; }
+	[[nodiscard]] int columnCount() const override { return ult(Column::End) + 1; }
 
 	/**
 	 * Returns the item flags for the given model index
 	 * @param index Model index
 	 * @return Item flags for the index
 	 */
-	Qt::ItemFlags flags(const QModelIndex& index) const override;
+	[[nodiscard]] Qt::ItemFlags flags(const QModelIndex& index) const override;
 
 	/**
 	 * Returns the data for the given model index and data role
@@ -107,7 +107,7 @@ public: // Inherited MVC
 	 * @param role Data role
 	 * @return Data in variant form
 	 */
-	QVariant data(const QModelIndex& index, const int& role) const override;
+	[[nodiscard]] QVariant data(const QModelIndex& index, const int& role) const override;
 
 	/**
 	 * Sets the data value for the given model index and data role
@@ -125,7 +125,7 @@ public: // Getters/setters
 	 * @param role Data role
 	 * @return Overlay color in variant form
 	 */
-	QVariant overlayColor(const int& role) const;
+	[[nodiscard]] QVariant overlayColor(const int& role) const;
 
 	/**
 	 * Sets the selection overlay color
@@ -138,7 +138,7 @@ public: // Getters/setters
 	 * @param role Data role
 	 * @return Pixel selection type in variant form
 	 */
-	QVariant pixelSelectionType(const int& role) const;
+	[[nodiscard]] QVariant pixelSelectionType(const int& role) const;
 
 	/**
 	 * Sets the pixel selection type
@@ -151,7 +151,7 @@ public: // Getters/setters
 	 * @param role Data role
 	 * @return Pixel selection modifier in variant form
 	 */
-	QVariant selectionModifier(const int& role) const;
+	[[nodiscard]] QVariant selectionModifier(const int& role) const;
 
 	/**
 	 * Sets the pixel selection modifier
@@ -164,7 +164,7 @@ public: // Getters/setters
 	 * @param role Data role
 	 * @return Brush radius in variant form
 	 */
-	QVariant brushRadius(const int& role) const;
+	[[nodiscard]] QVariant brushRadius(const int& role) const;
 
 	/**
 	 * Sets the brush radius
@@ -177,7 +177,7 @@ public: // Getters/setters
 	 * @param role Data role
 	 * @return whether auto zoom is enabled in variant form
 	 */
-	QVariant autoZoomToSelection(const int& role) const;
+	[[nodiscard]] QVariant autoZoomToSelection(const int& role) const;
 
 	/**
 	 * Sets whether auto zoom is enabled
@@ -188,7 +188,7 @@ public: // Getters/setters
 protected:
 
 	/** Returns hints that pertain to the layer */
-	Hints hints() const override;
+	[[nodiscard]] Hints hints() const override;
 
 private: // Miscellaneous
 

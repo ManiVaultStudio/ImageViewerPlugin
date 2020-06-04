@@ -41,13 +41,13 @@ public: // Visualization
 public: // Inherited MVC
 
 	/** TODO */
-	int columnCount() const override { return ult(Column::End) + 1; }
+	[[nodiscard]] int columnCount() const override { return ult(Column::End) + 1; }
 
 	/** TODO */
-	Qt::ItemFlags flags(const QModelIndex& index) const override;
+	[[nodiscard]] Qt::ItemFlags flags(const QModelIndex& index) const override;
 
 	/** TODO */
-	QVariant data(const QModelIndex& index, const int& role) const override;
+	[[nodiscard]] QVariant data(const QModelIndex& index, const int& role) const override;
 
 	/** TODO */
 	QModelIndexList setData(const QModelIndex& index, const QVariant& value, const int& role) override;
@@ -58,8 +58,8 @@ protected: // Miscellaneous
 	* Returns the image size
 	* @return Image size in variant form
 	*/
-	QSize imageSize() const override;
+	[[nodiscard]] QSize imageSize() const override;
 
 	/** Returns hints that pertain to the layer */
-	Hints hints() const override;
+	[[nodiscard]] Hints hints() const override;
 };

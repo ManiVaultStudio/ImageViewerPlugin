@@ -21,7 +21,7 @@ public:
 	Range(const float& min = 0.0f, const float& max = 0.0f);
 
 	/** Returns the range minimum */
-	float min() const;
+	[[nodiscard]] float min() const;
 
 	/**
 	 * Sets the range minimum
@@ -30,7 +30,7 @@ public:
 	void setMin(const float& min);
 
 	/** Returns the range maximum */
-	float max() const;
+	[[nodiscard]] float max() const;
 
 	/**
 	 * Sets the range maximum
@@ -48,7 +48,7 @@ public:
 	void setFullRange();
 
 	/** Returns the length of the range */
-	float length() const;
+	[[nodiscard]] float length() const;
 
 private:
 	float	_min;	/** Range minimum */

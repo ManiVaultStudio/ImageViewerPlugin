@@ -45,7 +45,7 @@ public: // Inherited from ViewPlugin
 	void selectionChanged(const QString dataset) Q_DECL_OVERRIDE;
 
 	/** Determines which data types this the image viewer is compatible with */
-	hdps::DataTypes supportedDataTypes() const Q_DECL_OVERRIDE;
+	[[nodiscard]] hdps::DataTypes supportedDataTypes() const Q_DECL_OVERRIDE;
 
 	/** TODO */
 	template<typename T>
@@ -78,7 +78,7 @@ public: //
 	/** TODO */
 	ColorMapModel& colorMapModel() { return _colorMapModel; }
 
-	QVector<QString> imageDatasets() const { return _imagesDatasets; }
+	[[nodiscard]] QVector<QString> imageDatasets() const { return _imagesDatasets; }
 
 	/** TODO */
 	Images* sourceImagesSetFromPointsSet(const QString& pointSetName);
