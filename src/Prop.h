@@ -31,7 +31,7 @@ public: // Construction/destruction
 	Prop(Node* node, const QString& name);
 
 	/** Destructor */
-	virtual ~Prop();
+	~Prop() override;
 
 public:
 

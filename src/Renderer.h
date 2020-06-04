@@ -43,10 +43,10 @@ public: //
 	void init() override;
 
 	/** Renders the layers */
-	void render();
+	void render() override;
 	
 	/** Destroys the renderer */
-	void destroy() {};
+	void destroy() override {};
 
 	/** Resizes the renderer */
 	void resize(QSize renderSize) override {};

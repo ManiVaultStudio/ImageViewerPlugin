@@ -29,7 +29,7 @@ public: // Construction/destruction
 	SettingsWidget(ImageViewerPlugin* imageViewerPlugin);
 
 	/** Destructor */
-	~SettingsWidget();
+	~SettingsWidget() override;
 
 private:
 	ImageViewerPlugin*						_imageViewerPlugin;		/** Pointer to the image viewer plugin */

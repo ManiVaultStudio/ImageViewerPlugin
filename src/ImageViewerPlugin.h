@@ -62,7 +62,7 @@ public: // Inherited from ViewPlugin
 	 *@param target Target object
 	 *@param event Event that occurred
 	 */
-	bool eventFilter(QObject* target, QEvent* event);
+	bool eventFilter(QObject* target, QEvent* event) override;
 
 public: //
 
@@ -106,8 +106,8 @@ public:
 	ImageViewerPluginFactory() {}
 
 	/** Destructor */
-	~ImageViewerPluginFactory() {}
+	~ImageViewerPluginFactory() override {}
 
 	/** Creates an image viewer plugin instance */
-	ImageViewerPlugin* produce();
+	ImageViewerPlugin* produce() override;
 };

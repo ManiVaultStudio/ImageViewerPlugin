@@ -28,7 +28,7 @@ public: // Construction/destruction
 	SelectionToolProp(SelectionLayer* selectionLayer, const QString& name);
 
 	/** Destructor */
-	~SelectionToolProp();
+	~SelectionToolProp() override;
 
 public: // Rendering
 
@@ -36,7 +36,7 @@ public: // Rendering
 	void render(const QMatrix4x4& nodeMVP, const float& opacity) override;
 
 	/** Returns the bounding rectangle of the prop */
-	QRectF boundingRectangle() const;
+	QRectF boundingRectangle() const override;
 
 public: // Pixel selection
 

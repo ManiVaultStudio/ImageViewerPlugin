@@ -30,7 +30,7 @@ public: // Construction
 public: // Visualization
 
 	/** TODO */
-	void render(const QMatrix4x4& parentMVP);
+	void render(const QMatrix4x4& parentMVP) override;
 
 	/**
 	 * Paints the layer

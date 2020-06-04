@@ -30,7 +30,7 @@ public:
 	LayersModel(ImageViewerPlugin* imageViewerPlugin);
 
 	/** Destructor */
-	~LayersModel();
+	~LayersModel() override;
 
 	/**
 	* Handles paint events
@@ -172,7 +172,7 @@ public: // Data access
 	bool moveLayer(const QModelIndex& sourceParent, const int& sourceRow, const QModelIndex& targetParent, int targetRow);
 	
 	/** Returns which drop actions are supported by the model */
-	Qt::DropActions supportedDropActions() const
+	Qt::DropActions supportedDropActions() const override
 	{
 		return Qt::MoveAction | Qt::CopyAction;
 	}
@@ -203,14 +203,14 @@ public: // Miscellaneous
 public: // MIME drag and drop
 
 	/** Returns list of supported mime types (for drag and drop) */
-	QStringList mimeTypes() const;
+	QStringList mimeTypes() const override;
 
 	/**
 	 * Converts a list of model indices to mime data
 	 * @param indexes List of model indices
 	 * @return Mime data
 	 */
-	QMimeData* mimeData(const QModelIndexList& indexes) const;
+	QMimeData* mimeData(const QModelIndexList& indexes) const override;
 
 	/**
 	 * Invoked when mime data is dropped
@@ -221,7 +221,7 @@ public: // MIME drag and drop
 	 * @param parent Parent model index where the drop takes place
 	 * @return Whether the mime data was properly dropped
 	 */
-	bool dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent);
+	bool dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) override;
 
 public:
 	/**

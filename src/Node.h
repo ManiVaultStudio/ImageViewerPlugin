@@ -40,7 +40,7 @@ public:
 	explicit Node(const QString& id, const QString& name, const int& flags);
 
 	/** Destructor */
-	virtual ~Node();
+	~Node() override;
 
 public: // Hierarchy
 

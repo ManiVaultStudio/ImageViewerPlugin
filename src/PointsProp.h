@@ -37,7 +37,7 @@ public: // Construction/destruction
 	PointsProp(PointsLayer* pointsLayer, const QString& name);
 
 	/** Destructor */
-	~PointsProp();
+	~PointsProp() override;
 
 public: // Rendering
 
@@ -49,7 +49,7 @@ public: // Rendering
 	void render(const QMatrix4x4& nodeMVP, const float& opacity) override;
 
 	/** Returns the bounding rectangle of the prop */
-	QRectF boundingRectangle() const;
+	QRectF boundingRectangle() const override;
 
 protected: // Inherited
 
