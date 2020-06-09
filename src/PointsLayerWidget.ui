@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>300</width>
-    <height>727</height>
+    <height>392</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -52,11 +52,14 @@
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Points&lt;/span&gt;&lt;br/&gt;Points configuration&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
      <property name="title">
       <string>Points</string>
      </property>
      <layout class="QGridLayout" name="gridLayout">
-      <item row="2" column="1">
+      <item row="4" column="1">
        <widget class="QComboBox" name="channel1ComboBox">
         <property name="enabled">
          <bool>true</bool>
@@ -70,6 +73,19 @@
        </widget>
       </item>
       <item row="6" column="1">
+       <widget class="QComboBox" name="channel2ComboBox">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>1</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="1">
        <widget class="QComboBox" name="colorSpaceComboBox">
         <item>
          <property name="text">
@@ -88,7 +104,7 @@
         </item>
        </widget>
       </item>
-      <item row="5" column="0">
+      <item row="7" column="0">
        <layout class="QHBoxLayout" name="channel3HorizontalLayout">
         <property name="spacing">
          <number>6</number>
@@ -125,7 +141,141 @@
         </item>
        </layout>
       </item>
-      <item row="2" column="0">
+      <item row="14" column="0">
+       <widget class="QLabel" name="indicesLabel">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Linked points&lt;/span&gt;&lt;br/&gt;Linked points dataset&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>Indices</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="0">
+       <layout class="QHBoxLayout" name="channel2HorizontalLayout">
+        <property name="spacing">
+         <number>6</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QLabel" name="channel2Label">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>Channel 2</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="channel2HorizontalSpacer">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="channel2CheckBox">
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="11" column="1">
+       <widget class="QStackedWidget" name="colorStackedWidget">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="currentIndex">
+         <number>1</number>
+        </property>
+        <widget class="QWidget" name="colorMapPage">
+         <layout class="QVBoxLayout" name="verticalLayout_2">
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <item>
+           <widget class="ColorMapComboBox" name="colorMapComboBox" native="true"/>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="colorPickerPage">
+         <layout class="QVBoxLayout" name="verticalLayout_3">
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <item>
+           <widget class="ColorPickerPushButton" name="colorPickerPushButton" native="true"/>
+          </item>
+         </layout>
+        </widget>
+       </widget>
+      </item>
+      <item row="7" column="1">
+       <widget class="QComboBox" name="channel3ComboBox">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>1</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+       </widget>
+      </item>
+      <item row="13" column="0">
+       <widget class="QLabel" name="pixelTypeLabel">
+        <property name="text">
+         <string>Pixel type</string>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="0">
+       <widget class="QLabel" name="colorSpaceLabel">
+        <property name="text">
+         <string>Color space</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
        <layout class="QHBoxLayout" name="channel1HorizontalLayout">
         <property name="spacing">
          <number>6</number>
@@ -186,21 +336,7 @@
         </item>
        </layout>
       </item>
-      <item row="10" column="1">
-       <widget class="QCheckBox" name="constantColorCheckBox">
-        <property name="text">
-         <string>Constant color</string>
-        </property>
-       </widget>
-      </item>
-      <item row="6" column="0">
-       <widget class="QLabel" name="colorSpaceLabel">
-        <property name="text">
-         <string>Color space</string>
-        </property>
-       </widget>
-      </item>
-      <item row="9" column="0">
+      <item row="11" column="0">
        <widget class="QLabel" name="colormapLabel">
         <property name="enabled">
          <bool>false</bool>
@@ -210,128 +346,29 @@
         </property>
        </widget>
       </item>
-      <item row="4" column="0">
-       <layout class="QHBoxLayout" name="channel2HorizontalLayout">
-        <property name="spacing">
-         <number>6</number>
-        </property>
-        <property name="bottomMargin">
-         <number>0</number>
-        </property>
-        <item>
-         <widget class="QLabel" name="channel2Label">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="text">
-           <string>Channel 2</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <spacer name="channel2HorizontalSpacer">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>40</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="channel2CheckBox">
-          <property name="text">
-           <string/>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item row="4" column="1">
-       <widget class="QComboBox" name="channel2ComboBox">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-          <horstretch>1</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
+      <item row="12" column="1">
+       <widget class="QCheckBox" name="constantColorCheckBox">
+        <property name="text">
+         <string>Constant color</string>
         </property>
        </widget>
       </item>
-      <item row="5" column="1">
-       <widget class="QComboBox" name="channel3ComboBox">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-          <horstretch>1</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
+      <item row="13" column="1">
+       <widget class="QComboBox" name="pixelTypeComboBox">
+        <item>
+         <property name="text">
+          <string>Intensity</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Index</string>
+         </property>
+        </item>
        </widget>
       </item>
-      <item row="9" column="1">
-       <widget class="QStackedWidget" name="colorStackedWidget">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="currentIndex">
-         <number>1</number>
-        </property>
-        <widget class="QWidget" name="colorMapPage">
-         <layout class="QVBoxLayout" name="verticalLayout_2">
-          <property name="spacing">
-           <number>0</number>
-          </property>
-          <property name="leftMargin">
-           <number>0</number>
-          </property>
-          <property name="topMargin">
-           <number>0</number>
-          </property>
-          <property name="rightMargin">
-           <number>0</number>
-          </property>
-          <property name="bottomMargin">
-           <number>0</number>
-          </property>
-          <item>
-           <widget class="ColorMapComboBox" name="colorMapComboBox" native="true"/>
-          </item>
-         </layout>
-        </widget>
-        <widget class="QWidget" name="colorPickerPage">
-         <layout class="QVBoxLayout" name="verticalLayout_3">
-          <property name="spacing">
-           <number>0</number>
-          </property>
-          <property name="leftMargin">
-           <number>0</number>
-          </property>
-          <property name="topMargin">
-           <number>0</number>
-          </property>
-          <property name="rightMargin">
-           <number>0</number>
-          </property>
-          <property name="bottomMargin">
-           <number>0</number>
-          </property>
-          <item>
-           <widget class="ColorPickerPushButton" name="colorPickerPushButton" native="true"/>
-          </item>
-         </layout>
-        </widget>
-       </widget>
+      <item row="14" column="1">
+       <widget class="QComboBox" name="indicesComboBox"/>
       </item>
      </layout>
     </widget>

@@ -19,9 +19,9 @@ class PointsLayer : public Layer, public virtual Channels<float>
 {
 	Q_OBJECT
 
-public:
+public: // Enumerations
 
-	/** Channel indices */
+	/** TODO */
 	enum class ChannelIndex {
 		Channel1,		/** Channel 1 */
 		Channel2,		/** Channel 2 */
@@ -31,29 +31,56 @@ public:
 		Count = Mask + 1
 	};
 
+	/** TODO */
+	enum class PixelType {
+		Intensity,		/** Intensity (color images) */
+		Index			/** Index (index images) */
+	};
+
+	/** TODO */
+	static QString pixelTypeName(const PixelType& pixelType)
+	{
+		switch (pixelType)
+		{
+			case PixelType::Intensity:
+				return "Intensity";
+
+			case PixelType::Index:
+				return "Index";
+
+			default:
+				break;
+		}
+
+		return QString();
+	}
+
 	/**  Columns */
 	enum class Column {
-		Channel1Name = ult(Layer::Column::End) + 1,			// First input channel name
-		Channel2Name,										// Second input channel name
-		Channel3Name,										// Third input channel name
-		Channel1DimensionId,								// First input channel dimension identifier
-		Channel2DimensionId,								// Second input channel dimension identifier
-		Channel3DimensionId,								// Third input channel dimension identifier
-		Channel1Enabled,									// First input channel enabled
-		Channel2Enabled,									// Second input channel enabled
-		Channel3Enabled,									// Third input channel enabled
-		NoChannels,											// Occupied number of channels
-		MaxNoChannels,										// The maximum number of channels
-		DimensionNames,										// Dimension names
-		NoPoints,											// Number of points in the dataset
-		NoDimensions,										// Number of dimensions in the dataset
-		ColorSpace,											// Color space (e.g. RGB, HSL and LAB)
-		ColorMap,											// Color map image
-		UseConstantColor,									// Whether to use constant colors for shading
-		ConstantColor,										// Const color
+		Channel1Name = ult(Layer::Column::End) + 1,		/** First input channel name */
+		Channel2Name,									/** Second input channel name */
+		Channel3Name,									/** Third input channel name */
+		Channel1DimensionId,							/** First input channel dimension identifier */
+		Channel2DimensionId,							/** Second input channel dimension identifier */
+		Channel3DimensionId,							/** Third input channel dimension identifier */
+		Channel1Enabled,								/** First input channel enabled */
+		Channel2Enabled,								/** Second input channel enabled */
+		Channel3Enabled,								/** Third input channel enabled */
+		NoChannels,										/** Occupied number of channels */
+		MaxNoChannels,									/** The maximum number of channels */
+		DimensionNames,									/** Dimension names */
+		NoPoints,										/** Number of points in the dataset */
+		NoDimensions,									/** Number of dimensions in the dataset */
+		ColorSpace,										/** Color space (e.g. RGB, HSL and LAB) */
+		ColorMap,										/** Color map image */
+		UseConstantColor,								/** Whether to use constant colors for shading */
+		ConstantColor,									/** Const color */
+		PixelType,										/** Type of pixel (e.g. intensity, index) */
+		LinkedPointsDatasetName,						/** Name of the linked points dataset */
+		LinkedPointsSelection,							/** Selection of the linked points dataset */
 
-		Start = Channel1Name,
-		End = ConstantColor
+		Start = Channel1Name,							/** Start column */
+		End = LinkedPointsSelection						/** End column */
 	};
 
 public:
@@ -275,6 +302,45 @@ public: // Getters/setters
 	 */
 	void setConstantColor(const QColor& constantColor);
 
+	/**
+	 * Returns the pixel type
+	 * @param role Data role
+	 * @return Pixel type in variant form
+	 */
+	QVariant pixelType(const int& role = Qt::DisplayRole) const;
+
+	/**
+	 * Sets the pixel type
+	 * @param pixelType Type of pixel
+	 */
+	void setPixelType(const PixelType& pixelType);
+
+	/**
+	 * Returns the name of the linked points dataset
+	 * @param role Data role
+	 * @return Name of the linked points dataset in variant form
+	 */
+	QVariant linkedPointsDatasetName(const int& role = Qt::DisplayRole) const;
+
+	/**
+	 * Sets the name of the linked points dataset
+	 * @param linkedPointsDatasetName Name of the linked points dataset
+	 */
+	void setLinkedPointsDatasetName(const QString& linkedPointsDatasetName);
+
+	/**
+	 * Returns the selection of the linked points dataset
+	 * @param role Data role
+	 * @return Selection of the linked points dataset in variant form
+	 */
+	QVariant linkedPointsSelection(const int& role = Qt::DisplayRole) const;
+
+	/**
+	 * Sets the selection of the linked points dataset
+	 * @param linkedPointsSelection Selection of the linked points dataset
+	 */
+	void setLinkedPointsSelection(const Indices& linkedPointsSelection);
+
 protected:
 
 	/**
@@ -312,14 +378,17 @@ signals:
 	void colorMapChanged(const QImage& colorMap);
 
 private:
-	Points*				_pointsDataset;			/** Points dataset to which the layer refers */
-	Images*				_imagesDataset;			/** Images dataset from which the points dataset originates */
-	std::uint32_t		_noPoints;				/** Number of points in the dataset */
-	std::uint32_t		_noDimensions;			/** Number of dimensions in the points dataset */
-	QStringList			_dimensionNames;		/** Dimension names in the points dataset */
-	std::uint32_t		_maxNoChannels;			/** Maximum number of channels (determined by the number of dimensions) */
-	ColorSpace			_colorSpace;			/** Color space */
-	QImage				_colorMap;				/** Color map (1D/2D) */
-	bool				_useConstantColor;		/** Pixel color is constant and the alpha is modulated by the intensity of the selected channel */
-	QColor				_constantColor;			/** Constant color */
+	PixelType			_pixelType;						/** Type of pixel (e.g. intensity, index) */
+	QString				_linkedPointsDatasetName;		/** Name of the linked points dataset */
+	Indices				_linkedPointsSelection;			/** Selection of the linked points dataset */
+	Points*				_pointsDataset;					/** Points dataset to which the layer refers */
+	Images*				_imagesDataset;					/** Images dataset from which the points dataset originates */
+	std::uint32_t		_noPoints;						/** Number of points in the dataset */
+	std::uint32_t		_noDimensions;					/** Number of dimensions in the points dataset */
+	QStringList			_dimensionNames;				/** Dimension names in the points dataset */
+	std::uint32_t		_maxNoChannels;					/** Maximum number of channels (determined by the number of dimensions) */
+	ColorSpace			_colorSpace;					/** Color space */
+	QImage				_colorMap;						/** Color map (1D/2D) */
+	bool				_useConstantColor;				/** Pixel color is constant and the alpha is modulated by the intensity of the selected channel */
+	QColor				_constantColor;					/** Constant color */
 };

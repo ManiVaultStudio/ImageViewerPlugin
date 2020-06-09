@@ -13,6 +13,9 @@
 PointsLayer::PointsLayer(const QString& pointsDatasetName, const QString& id, const QString& name, const int& flags) :
 	Layer(pointsDatasetName, Layer::Type::Points, id, name, flags),
 	Channels<float>(ult(ChannelIndex::Count)),
+	_pixelType(PixelType::Intensity),
+	_linkedPointsDatasetName(),
+	_linkedPointsSelection(),
 	_pointsDataset(nullptr),
 	_imagesDataset(nullptr),
 	_maxNoChannels(0),
@@ -80,6 +83,20 @@ Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
 	auto flags = Layer::flags(index);
 
 	switch (static_cast<Column>(index.column())) {
+		case Column::PixelType:
+			break;
+
+		case Column::LinkedPointsDatasetName:
+		{
+			if (_pixelType == PixelType::Index)
+				flags |= Qt::ItemIsEditable;
+
+			break;
+		}
+
+		case Column::LinkedPointsSelection:
+			break;
+
 		case Column::Channel1Name:
 		case Column::Channel1DimensionId:
 		{
@@ -172,6 +189,15 @@ QVariant PointsLayer::data(const QModelIndex& index, const int& role) const
 		return Layer::data(index, role);
 
 	switch (static_cast<Column>(index.column())) {
+		case Column::PixelType:
+			return pixelType(role);
+
+		case Column::LinkedPointsDatasetName:
+			return linkedPointsDatasetName(role);
+
+		case Column::LinkedPointsSelection:
+			return linkedPointsSelection(role);
+
 		case Column::Channel1Name:
 			return channelName(ChannelIndex::Channel1, role);
 
@@ -238,6 +264,20 @@ QModelIndexList PointsLayer::setData(const QModelIndex& index, const QVariant& v
 	QModelIndexList affectedIds = Layer::setData(index, value, role);
 
 	switch (static_cast<Column>(index.column())) {
+		case Column::PixelType:
+		{
+			setPixelType(static_cast<PixelType>(value.toInt()));
+
+			affectedIds << index.siblingAtColumn(ult(Column::LinkedPointsDatasetName));
+			break;
+		}
+
+		case Column::LinkedPointsDatasetName:
+			setLinkedPointsDatasetName(value.toString());
+
+		case Column::LinkedPointsSelection:
+			setLinkedPointsSelection(value.value<Indices>());
+
 		case Column::Channel1Name:
 			setChannelName(0, value.toString());
 			break;
@@ -693,6 +733,97 @@ QVariant PointsLayer::constantColor(const int& role) const
 void PointsLayer::setConstantColor(const QColor& constantColor)
 {
 	_constantColor = constantColor;
+}
+
+QVariant PointsLayer::pixelType(const int& role /*= Qt::DisplayRole*/) const
+{
+	const auto pixelTypeString = pixelTypeName(_pixelType);
+
+	switch (role)
+	{
+		case Qt::DisplayRole:
+			return pixelTypeString;
+
+		case Qt::EditRole:
+			return ult(_pixelType);
+
+		case Qt::ToolTipRole:
+			return QString("Pixel type: %1").arg(pixelTypeString);
+
+		default:
+			break;
+	}
+
+	return QVariant();
+}
+
+void PointsLayer::setPixelType(const PixelType& pixelType)
+{
+	_pixelType = pixelType;
+}
+
+QVariant PointsLayer::linkedPointsDatasetName(const int& role /*= Qt::DisplayRole*/) const
+{
+	switch (role)
+	{
+		case Qt::DisplayRole:
+			return _linkedPointsDatasetName;
+
+		case Qt::EditRole:
+			return _linkedPointsDatasetName;
+
+		case Qt::ToolTipRole:
+			return QString("Name of the linked points set: %1").arg(_linkedPointsDatasetName);
+
+		default:
+			break;
+	}
+
+	return QVariant();
+}
+
+void PointsLayer::setLinkedPointsDatasetName(const QString& linkedPointsDatasetName)
+{
+	_linkedPointsDatasetName = linkedPointsDatasetName;
+}
+
+QVariant PointsLayer::linkedPointsSelection(const int& role /*= Qt::DisplayRole*/) const
+{
+	auto selection = QStringList();
+
+	if (_linkedPointsSelection.size() <= 2) {
+		for (const auto& id : _linkedPointsSelection)
+			selection << QString::number(id);
+	}
+	else {
+		selection << QString::number(_linkedPointsSelection.first());
+		selection << "...";
+		selection << QString::number(_linkedPointsSelection.last());
+	}
+
+	const auto linkedPointsSelectionString = QString("[%1]").arg(selection.join(", "));
+
+	switch (role)
+	{
+		case Qt::DisplayRole:
+			return linkedPointsSelectionString;
+
+		case Qt::EditRole:
+			return QVariant::fromValue(_linkedPointsSelection);
+
+		case Qt::ToolTipRole:
+			return QString("Linked points selection: %1").arg(linkedPointsSelectionString);
+
+		default:
+			break;
+	}
+
+	return QVariant();
+}
+
+void PointsLayer::setLinkedPointsSelection(const Indices& linkedPointsSelection)
+{
+	_linkedPointsSelection = linkedPointsSelection;
 }
 
 void PointsLayer::computeChannel(const ChannelIndex& channelIndex)

@@ -88,7 +88,8 @@ private:
 	SettingsWidget*			_settingsWidget;		/** TODO */
 	LayersModel				_layersModel;			/** TODO */
 	ColorMapModel			_colorMapModel;			/** TODO */
-	QVector<QString>		_imagesDatasets;		/** Very unhappy with this approach, but there's (currently) no other way */
+	QVector<QString>		_imagesDatasets;		/** TODO */
+	QVector<QString>		_pointsDatasets;		/** TODO */
 };
 
 /**

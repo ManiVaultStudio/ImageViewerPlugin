@@ -36,6 +36,10 @@ void PointsLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 		}
 	});
 
+	QObject::connect(_ui->pixelTypeComboBox, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
+		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::PixelType)), index);
+	});
+
 	QObject::connect(_ui->channel2CheckBox, &QCheckBox::stateChanged, [this](int state) {
 		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Channel2Enabled)), state == Qt::Checked);
 		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Channel2DimensionId)), _ui->channel2ComboBox->currentIndex());
@@ -59,16 +63,7 @@ void PointsLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 	});
 
 	QObject::connect(_ui->constantColorCheckBox, &QCheckBox::stateChanged, [this](int state) {
-		switch (state)
-		{
-			case Qt::Unchecked:
-				_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::UseConstantColor)), false);
-				break;
-
-			case Qt::Checked:
-				_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::UseConstantColor)), true);
-				break;
-		}
+		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::UseConstantColor)), _ui->constantColorCheckBox->isChecked());
 	});
 
 	QObject::connect(_ui->colorSpaceComboBox, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
@@ -114,6 +109,17 @@ void PointsLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 		const auto mightEdit = validSelection && enabled;
 
 		_ui->groupBox->setEnabled(enabled);
+
+		if (column == ult(PointsLayer::Column::PixelType)) {
+		}
+
+		if (column == ult(PointsLayer::Column::LinkedPointsDatasetName)) {
+			//const auto channel1Name = _layersModel->data(topLeft.siblingAtColumn(ult(PointsLayer::Column::Channel1Name)), Qt::DisplayRole).toString();
+			const auto flags	= _layersModel->flags(topLeft.siblingAtColumn(ult(PointsLayer::Column::LinkedPointsDatasetName)));
+
+			_ui->indicesLabel->setEnabled(flags & Qt::ItemIsEditable);
+			_ui->indicesComboBox->setEnabled(flags & Qt::ItemIsEditable);
+		}
 
 		if (column == ult(PointsLayer::Column::DimensionNames)) {
 			const auto dimensionNames = _layersModel->data(topLeft.siblingAtColumn(ult(PointsLayer::Column::DimensionNames)), Qt::EditRole).toStringList();

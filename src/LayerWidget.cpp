@@ -137,7 +137,7 @@ void LayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex& bott
 
 	_ui->commonGroupBox->setVisible(noSelectedRows == 1);
 	_ui->commonGroupBox->setEnabled(noSelectedRows == 1);
-	_ui->navigationGroupBox->setVisible(noSelectedRows == 1);
+	//_ui->navigationGroupBox->setVisible(noSelectedRows == 1);
 
 	for (int column = topLeft.column(); column <= bottomRight.column(); column++) {
 		const auto index	= topLeft.siblingAtColumn(column);

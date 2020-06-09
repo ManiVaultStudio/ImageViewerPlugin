@@ -26,7 +26,8 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	_settingsWidget(),
 	_layersModel(this),
 	_colorMapModel(this, ColorMap::Type::OneDimensional),
-	_imagesDatasets()
+	_imagesDatasets(),
+	_pointsDatasets()
 {
 	Layer::imageViewerPlugin = this;
 	
@@ -71,10 +72,15 @@ Images* ImageViewerPlugin::sourceImagesSetFromPointsSet(const QString& pointSetN
 
 void ImageViewerPlugin::dataAdded(const QString dataset)
 {
-	auto images = dynamic_cast<Images*>(&_core->requestData(dataset));
+	auto imagesDataset = dynamic_cast<Images*>(&_core->requestData(dataset));
 
-	if (images != nullptr)
+	if (imagesDataset != nullptr)
 		_imagesDatasets << dataset;
+
+	auto pointsDataset = dynamic_cast<Points*>(&_core->requestData(dataset));
+
+	if (pointsDataset != nullptr)
+		_pointsDatasets << dataset;
 }
 
 void ImageViewerPlugin::dataChanged(const QString dataset)
