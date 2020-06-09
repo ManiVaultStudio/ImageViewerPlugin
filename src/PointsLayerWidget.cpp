@@ -116,17 +116,6 @@ void PointsLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 
 		_ui->groupBox->setEnabled(enabled);
 
-		if (column == ult(PointsLayer::Column::PixelType)) {
-		}
-
-		if (column == ult(PointsLayer::Column::LinkedPointsDatasetName)) {
-			//const auto channel1Name = _layersModel->data(topLeft.siblingAtColumn(ult(PointsLayer::Column::Channel1Name)), Qt::DisplayRole).toString();
-			const auto flags	= _layersModel->flags(topLeft.siblingAtColumn(ult(PointsLayer::Column::LinkedPointsDatasetName)));
-
-			_ui->indicesLabel->setEnabled(flags & Qt::ItemIsEditable);
-			_ui->indicesComboBox->setEnabled(flags & Qt::ItemIsEditable);
-		}
-
 		if (column == ult(PointsLayer::Column::DimensionNames)) {
 			const auto dimensionNames = _layersModel->data(topLeft.siblingAtColumn(ult(PointsLayer::Column::DimensionNames)), Qt::EditRole).toStringList();
 
@@ -318,6 +307,17 @@ void PointsLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 			_ui->colorPickerPushButton->blockSignals(true);
 			_ui->colorPickerPushButton->setCurrentColor(constantColor);
 			_ui->colorPickerPushButton->blockSignals(false);
+		}
+
+		if (column == ult(PointsLayer::Column::PixelType)) {
+		}
+
+		if (column == ult(PointsLayer::Column::IndicesDatasetName)) {
+			//const auto channel1Name = _layersModel->data(topLeft.siblingAtColumn(ult(PointsLayer::Column::Channel1Name)), Qt::DisplayRole).toString();
+			const auto flags = _layersModel->flags(topLeft.siblingAtColumn(ult(PointsLayer::Column::IndicesDatasetName)));
+
+			_ui->indicesLabel->setEnabled(flags & Qt::ItemIsEditable);
+			_ui->indicesComboBox->setEnabled(flags & Qt::ItemIsEditable);
 		}
 	}
 }
