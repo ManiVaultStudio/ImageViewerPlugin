@@ -78,18 +78,26 @@ public: //
 	/** TODO */
 	ColorMapModel& colorMapModel() { return _colorMapModel; }
 
-	QVector<QString> imageDatasets() const { return _imagesDatasets; }
+	QStringList imageDatasets() const { return _imagesDatasets; }
 
 	/** TODO */
 	Images* sourceImagesSetFromPointsSet(const QString& pointSetName);
 
+signals:
+	
+	/** TODO */
+	void imagesDatasetsChanged(const QStringList& imagesDatasets);
+
+	/** TODO */
+	void pointsDatasetsChanged(const QStringList& pointsDatasets);
+
 private:
-	ViewerWidget*			_viewerWidget;			/** TODO */
-	SettingsWidget*			_settingsWidget;		/** TODO */
-	LayersModel				_layersModel;			/** TODO */
-	ColorMapModel			_colorMapModel;			/** TODO */
-	QVector<QString>		_imagesDatasets;		/** TODO */
-	QVector<QString>		_pointsDatasets;		/** TODO */
+	ViewerWidget*		_viewerWidget;			/** TODO */
+	SettingsWidget*		_settingsWidget;		/** TODO */
+	LayersModel			_layersModel;			/** TODO */
+	ColorMapModel		_colorMapModel;			/** TODO */
+	QStringList			_imagesDatasets;		/** TODO */
+	QStringList			_pointsDatasets;		/** TODO */
 };
 
 /**

@@ -80,6 +80,12 @@ void PointsLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 	QObject::connect(_ui->colorPickerPushButton, &ColorPickerPushButton::currentColorChanged, [this](const QColor& currentColor) {
 		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::ConstantColor)), currentColor);
 	});
+
+	QObject::connect(_imageViewerPlugin, &ImageViewerPlugin::pointsDatasetsChanged, [this](const QStringList& pointsDatasets) {
+		_ui->indicesComboBox->clear();
+		_ui->indicesComboBox->insertItems(0, pointsDatasets);
+	});
+	
 }
 
 void PointsLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>& roles /*= QVector<int>()*/)

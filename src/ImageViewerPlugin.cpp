@@ -74,13 +74,17 @@ void ImageViewerPlugin::dataAdded(const QString dataset)
 {
 	auto imagesDataset = dynamic_cast<Images*>(&_core->requestData(dataset));
 
-	if (imagesDataset != nullptr)
+	if (imagesDataset != nullptr) {
 		_imagesDatasets << dataset;
+		emit imagesDatasetsChanged(_imagesDatasets);
+	}
 
 	auto pointsDataset = dynamic_cast<Points*>(&_core->requestData(dataset));
 
-	if (pointsDataset != nullptr)
+	if (pointsDataset != nullptr) {
 		_pointsDatasets << dataset;
+		emit pointsDatasetsChanged(_pointsDatasets);
+	}
 }
 
 void ImageViewerPlugin::dataChanged(const QString dataset)
@@ -104,7 +108,10 @@ void ImageViewerPlugin::selectionChanged(const QString dataset)
 hdps::DataTypes ImageViewerPlugin::supportedDataTypes() const
 {
 	hdps::DataTypes supportedTypes;
+	
 	supportedTypes.append(ImageType);
+	supportedTypes.append(PointType);
+
 	return supportedTypes;
 }
 

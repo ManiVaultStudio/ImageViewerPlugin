@@ -100,14 +100,15 @@ Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
 		case Column::Channel1Name:
 		case Column::Channel1DimensionId:
 		{
-			flags |= Qt::ItemIsEditable;
+			if (_pixelType == PixelType::Intensity)
+				flags |= Qt::ItemIsEditable;
 			break;
 		}
 
 		case Column::Channel2Name:
 		case Column::Channel2DimensionId:
 		{
-			if (!_useConstantColor && channel(1)->enabled())
+			if (_pixelType == PixelType::Intensity && !_useConstantColor && channel(1)->enabled())
 				flags |= Qt::ItemIsEditable;
 
 			break;
@@ -116,7 +117,7 @@ Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
 		case Column::Channel3Name:
 		case Column::Channel3DimensionId:
 		{
-			if (!_useConstantColor && channel(2)->enabled())
+			if (_pixelType == PixelType::Intensity && !_useConstantColor && channel(2)->enabled())
 				flags |= Qt::ItemIsEditable;
 
 			break;
@@ -127,7 +128,7 @@ Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
 
 		case Column::Channel2Enabled:
 		{
-			if (!_useConstantColor && channel(0)->enabled())
+			if (_pixelType == PixelType::Intensity && !_useConstantColor && channel(0)->enabled())
 				flags |= Qt::ItemIsEditable;
 
 			break;
@@ -135,7 +136,7 @@ Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
 
 		case Column::Channel3Enabled:
 		{
-			if (!_useConstantColor && channel(1)->enabled() && _noDimensions >= 3)
+			if (_pixelType == PixelType::Intensity && !_useConstantColor && channel(1)->enabled() && _noDimensions >= 3)
 				flags |= Qt::ItemIsEditable;
 
 			break;
@@ -150,7 +151,7 @@ Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
 
 		case Column::ColorSpace:
 		{
-			if (noChannels(Qt::EditRole).toInt() == 3)
+			if (_pixelType == PixelType::Intensity && noChannels(Qt::EditRole).toInt() == 3)
 				flags |= Qt::ItemIsEditable;
 
 			break;
@@ -269,42 +270,72 @@ QModelIndexList PointsLayer::setData(const QModelIndex& index, const QVariant& v
 			setPixelType(static_cast<PixelType>(value.toInt()));
 
 			affectedIds << index.siblingAtColumn(ult(Column::LinkedPointsDatasetName));
+			affectedIds << index.siblingAtColumn(ult(Column::Channel1DimensionId));
+			affectedIds << index.siblingAtColumn(ult(Column::Channel2DimensionId));
+			affectedIds << index.siblingAtColumn(ult(Column::Channel3DimensionId));
+			affectedIds << index.siblingAtColumn(ult(Column::Channel1Enabled));
+			affectedIds << index.siblingAtColumn(ult(Column::Channel2Enabled));
+			affectedIds << index.siblingAtColumn(ult(Column::Channel3Enabled));
+			affectedIds << index.siblingAtColumn(ult(Column::ColorSpace));
+			affectedIds << index.siblingAtColumn(ult(Column::ColorMap));
+
 			break;
 		}
 
 		case Column::LinkedPointsDatasetName:
+		{
 			setLinkedPointsDatasetName(value.toString());
 
+			break;
+		}
+
 		case Column::LinkedPointsSelection:
+		{
 			setLinkedPointsSelection(value.value<Indices>());
+			break;
+		}
 
 		case Column::Channel1Name:
+		{
 			setChannelName(0, value.toString());
 			break;
+		}
 
 		case Column::Channel2Name:
+		{
 			setChannelName(1, value.toString());
 			break;
+		}
 
 		case Column::Channel3Name:
+		{
 			setChannelName(2, value.toString());
 			break;
+		}
 
 		case Column::Channel1DimensionId:
+		{
 			setChannelDimensionId(ChannelIndex::Channel1, value.toInt());
 			break;
+		}
 
 		case Column::Channel2DimensionId:
+		{
 			setChannelDimensionId(ChannelIndex::Channel2, value.toInt());
 			break;
+		}
 
 		case Column::Channel3DimensionId:
+		{
 			setChannelDimensionId(ChannelIndex::Channel3, value.toInt());
 			break;
+		}
 
 		case Column::Channel1Enabled:
+		{
 			setChannelEnabled(ChannelIndex::Channel1, value.toBool());
 			break;
+		}
 
 		case Column::Channel2Enabled:
 		{
@@ -320,6 +351,7 @@ QModelIndexList PointsLayer::setData(const QModelIndex& index, const QVariant& v
 			affectedIds << index.siblingAtColumn(ult(Column::Channel3Enabled));
 			affectedIds << index.siblingAtColumn(ult(Column::ColorSpace));
 			affectedIds << index.siblingAtColumn(ult(Column::ColorMap));
+
 			break;
 		}
 
@@ -337,16 +369,17 @@ QModelIndexList PointsLayer::setData(const QModelIndex& index, const QVariant& v
 			affectedIds << index.siblingAtColumn(ult(Column::Channel3DimensionId));
 			affectedIds << index.siblingAtColumn(ult(Column::ColorSpace));
 			affectedIds << index.siblingAtColumn(ult(Column::ColorMap));
+
 			break;
 		}
 
 		case Column::MaxNoChannels:
+		{
 			setMaxNoChannels(value.toInt());
 			break;
+		}
 
 		case Column::NoChannels:
-			break;
-
 		case Column::NoPoints:
 		case Column::NoDimensions:
 			break;
@@ -361,12 +394,15 @@ QModelIndexList PointsLayer::setData(const QModelIndex& index, const QVariant& v
 			affectedIds << index.siblingAtColumn(ult(Column::Channel1Name));
 			affectedIds << index.siblingAtColumn(ult(Column::Channel2Name));
 			affectedIds << index.siblingAtColumn(ult(Column::Channel3Name));
+
 			break;
 		}
 
 		case Column::ColorMap:
+		{
 			setColorMap(value.value<QImage>());
 			break;
+		}
 
 		case Column::UseConstantColor:
 		{
@@ -387,9 +423,8 @@ QModelIndexList PointsLayer::setData(const QModelIndex& index, const QVariant& v
 			affectedIds << index.siblingAtColumn(ult(Column::ColorSpace));
 			affectedIds << index.siblingAtColumn(ult(Column::ColorMap));
 
-			if (_useConstantColor) {
+			if (_useConstantColor)
 				setConstantColor(_constantColor);
-			}
 
 			break;
 		}
