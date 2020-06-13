@@ -29,7 +29,6 @@ void LayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 	_layersModel = &_imageViewerPlugin->layersModel();
 
 	_ui->pointsLayerWidget->initialize(_imageViewerPlugin);
-	_ui->imagesLayerWidget->initialize(_imageViewerPlugin);
 	_ui->clustersLayerWidget->initialize(_imageViewerPlugin);
 	_ui->selectionLayerWidget->initialize(_imageViewerPlugin);
 

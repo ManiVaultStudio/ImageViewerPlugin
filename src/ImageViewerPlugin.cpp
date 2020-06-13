@@ -7,7 +7,6 @@
 
 #include "PointData.h"
 #include "IndexSet.h"
-#include "ImageData/Images.h"
 
 #include <QFontDatabase>
 #include <QItemSelectionModel>
@@ -26,7 +25,6 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	_settingsWidget(),
 	_layersModel(this),
 	_colorMapModel(this, ColorMap::Type::OneDimensional),
-	_imagesDatasets(),
 	_pointsDatasets()
 {
 	Layer::imageViewerPlugin = this;
@@ -52,33 +50,8 @@ void ImageViewerPlugin::init()
 	_layersModel.initialize();
 }
 
-Images* ImageViewerPlugin::sourceImagesSetFromPointsSet(const QString& pointSetName)
-{
-	const auto pointsSet			= _core->requestData<Points>(pointSetName);
-	const auto sourcePointsSet		= hdps::DataSet::getSourceData(pointsSet);
-	const auto sourcePointsDataName	= sourcePointsSet.getDataName();
-
-	auto originatesFromImages = false;
-
-	for (auto imageDataset : _imagesDatasets) {
-		Images& imagesSet = _core->requestData<Images>(imageDataset);
-
-		if (imagesSet.points()->getDataName() == sourcePointsDataName)
-			return &imagesSet;
-	}
-
-	return nullptr;
-}
-
 void ImageViewerPlugin::dataAdded(const QString dataset)
 {
-	auto imagesDataset = dynamic_cast<Images*>(&_core->requestData(dataset));
-
-	if (imagesDataset != nullptr) {
-		_imagesDatasets << dataset;
-		emit imagesDatasetsChanged(_imagesDatasets);
-	}
-
 	auto pointsDataset = dynamic_cast<Points*>(&_core->requestData(dataset));
 
 	if (pointsDataset != nullptr) {
@@ -101,7 +74,8 @@ void ImageViewerPlugin::selectionChanged(const QString dataset)
 
 	for (auto hit : hits) {
 		auto selection = dynamic_cast<Points&>(_core->requestSelection(dataset));
-		_layersModel.setData(hit.siblingAtColumn(ult(Layer::Column::Selection)), QVariant::fromValue(Indices::fromStdVector(selection.indices)));
+		const auto indices = QVector<uint>(selection.indices.begin(), selection.indices.end());
+		_layersModel.setData(hit.siblingAtColumn(ult(Layer::Column::Selection)), QVariant::fromValue(indices));
 	}
 }
 

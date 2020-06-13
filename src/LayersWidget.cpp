@@ -6,7 +6,6 @@
 #include "Layer.h"
 #include "GroupLayer.h"
 #include "PointsLayer.h"
-#include "ImagesLayer.h"
 #include "ClustersLayer.h"
 #include "SelectionLayer.h"
 
@@ -159,17 +158,19 @@ void LayersWidget::dragEnterEvent(QDragEnterEvent* dragEnterEvent)
 	const auto datasetType	= items.at(1);
 	
 	if (datasetType == "Points") {
-		auto imagesSet = _imageViewerPlugin->sourceImagesSetFromPointsSet(datasetName);
+		auto pointsDataset = _imageViewerPlugin->requestData<Points>(datasetName);
+		
+		if (pointsDataset.isDerivedData()) {
+			auto sourcePointsDataset = hdps::DataSet::getSourceData<Points>(pointsDataset);
 
-		if (imagesSet == nullptr)
-			return;
-
-		if (imagesSet->points()->getNumDimensions() >= 1)
-			dragEnterEvent->acceptProposedAction();
+			if (sourcePointsDataset.properties().value("Type", "").toString() == "Images")
+				dragEnterEvent->acceptProposedAction();
+		}
+		else {
+			if (pointsDataset.properties().value("Type", "").toString() == "Images")
+				dragEnterEvent->acceptProposedAction();
+		}
 	}
-
-	if (datasetType == "Images")
-		dragEnterEvent->acceptProposedAction();
 
 	if (datasetType == "Clusters")
 		dragEnterEvent->acceptProposedAction();
@@ -186,13 +187,6 @@ void LayersWidget::dropEvent(QDropEvent* dropEvent)
 	const auto layerFlags				= ult(Layer::Flag::Enabled) | ult(Layer::Flag::Renamable);
 
 	auto largestImageSize = QSize();
-
-	for (auto imageLayerIndex : layersModel().match(layersModel().index(0, ult(Layer::Column::Type)), Qt::EditRole, ult(Layer::Type::Images), -1, Qt::MatchExactly | Qt::MatchRecursive)) {
-		const auto imageSize = layersModel().data(imageLayerIndex.siblingAtColumn(ult(Layer::Column::ImageSize)), Qt::EditRole).toSize();
-
-		if (imageSize.width() > largestImageSize.width() && imageSize.height() > largestImageSize.height())
-			largestImageSize = imageSize;
-	}
 
 	for (auto imageLayerIndex : layersModel().match(layersModel().index(0, ult(Layer::Column::Type)), Qt::EditRole, ult(Layer::Type::Points), -1, Qt::MatchExactly | Qt::MatchRecursive)) {
 		const auto imageSize = layersModel().data(imageLayerIndex.siblingAtColumn(ult(Layer::Column::ImageSize)), Qt::EditRole).toSize();
@@ -225,19 +219,6 @@ void LayersWidget::dropEvent(QDropEvent* dropEvent)
 			layersModel().insertLayer(row, pointsLayer);
 			layersModel().selectRow(row);
 		}
-	}
-
-	if (datasetType == "Images") {
-		const auto imagesName = datasetName;
-		const auto selectionName = QString("%1_selection").arg(datasetName);
-
-		auto imagesLayer = new ImagesLayer(datasetName, imagesName, imagesName, layerFlags);
-
-		if (largestImageSize.isValid())
-			imagesLayer->matchScaling(largestImageSize);
-
-		layersModel().insertLayer(0, imagesLayer);
-		layersModel().selectRow(0);
 	}
 
 	if (datasetType == "Clusters") {

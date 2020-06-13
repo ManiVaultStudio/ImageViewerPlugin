@@ -297,9 +297,6 @@ QVariant Layer::type(const int& role) const
 		case Qt::DisplayRole:
 		{
 			switch (_type) {
-				case Type::Images:
-					return u8"\uf03e";
-
 				case Type::Selection:
 					return u8"\uf245";
 

@@ -78,11 +78,6 @@ public: //
 	/** TODO */
 	ColorMapModel& colorMapModel() { return _colorMapModel; }
 
-	QStringList imageDatasets() const { return _imagesDatasets; }
-
-	/** TODO */
-	Images* sourceImagesSetFromPointsSet(const QString& pointSetName);
-
 signals:
 	
 	/** TODO */
@@ -96,7 +91,6 @@ private:
 	SettingsWidget*		_settingsWidget;		/** TODO */
 	LayersModel			_layersModel;			/** TODO */
 	ColorMapModel		_colorMapModel;			/** TODO */
-	QStringList			_imagesDatasets;		/** TODO */
 	QStringList			_pointsDatasets;		/** TODO */
 };
 

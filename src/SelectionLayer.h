@@ -218,7 +218,6 @@ private: // Miscellaneous
 
 private:
 	Points*						_pointsDataset;				/** Points dataset to which the layer refers */
-	Images*						_imagesDataset;				/** Images dataset from which the points dataset originates */
 	QImage						_image;						/** Selection image */
 	std::vector<std::int32_t>	_indices;					/** Indices */
 	SelectionType				_selectionType;				/** Pixel selection type (e.g. rectangle, brush) */

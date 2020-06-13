@@ -4,7 +4,6 @@
 #include "RootLayer.h"
 #include "GroupLayer.h"
 #include "PointsLayer.h"
-#include "ImagesLayer.h"
 #include "ClustersLayer.h"
 #include "SelectionLayer.h"
 

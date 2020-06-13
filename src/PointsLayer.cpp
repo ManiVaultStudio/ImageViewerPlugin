@@ -4,7 +4,6 @@
 #include "Renderer.h"
 
 #include "PointData.h"
-#include "ImageData/Images.h"
 #include "util/Timer.h"
 
 #include <QDebug>
@@ -14,7 +13,6 @@ PointsLayer::PointsLayer(const QString& pointsDatasetName, const QString& id, co
 	Layer(pointsDatasetName, Layer::Type::Points, id, name, flags),
 	Channels<float>(ult(ChannelIndex::Count)),
 	_pointsDataset(nullptr),
-	_imagesDataset(nullptr),
 	_maxNoChannels(0),
 	_colorSpace(ColorSpace::RGB),
 	_colorMap(),
@@ -32,7 +30,6 @@ void PointsLayer::init()
 	addProp<PointsProp>(this, "Points");
 
 	_pointsDataset = &imageViewerPlugin->requestData<Points>(_datasetName);
-	_imagesDataset = imageViewerPlugin->sourceImagesSetFromPointsSet(_datasetName);
 
 	setNoPoints(_pointsDataset->getNumPoints());
 	setNoDimensions(_pointsDataset->getNumDimensions());
@@ -42,7 +39,7 @@ void PointsLayer::init()
 	setUseConstantColor(false);
 	setChannelEnabled(ChannelIndex::Channel1, true);
 
-	auto dimensionNames = QStringList::fromVector(QVector<QString>::fromStdVector(_pointsDataset->getDimensionNames()));
+	auto dimensionNames = QStringList(_pointsDataset->getDimensionNames().begin(), _pointsDataset->getDimensionNames().end());
 
 	if (dimensionNames.isEmpty()) {
 		for (int dimensionIndex = 0; dimensionIndex < noDimensions(Qt::EditRole).toInt(); dimensionIndex++) {
@@ -56,8 +53,10 @@ void PointsLayer::init()
 
 	auto selection = dynamic_cast<Points*>(&imageViewerPlugin->core()->requestSelection(pointsDataName));
 
-	if (selection)
-		setSelection(Indices::fromStdVector(selection->indices));
+	if (selection) {
+		const auto indices = selection->indices;
+		setSelection(QVector<std::uint32_t>(indices.begin(), indices.end()));
+	}
 
 	computeChannel(ChannelIndex::Mask);
 }
@@ -447,7 +446,13 @@ QModelIndexList PointsLayer::setData(const QModelIndex& index, const QVariant& v
 
 QSize PointsLayer::imageSize() const
 {
-	return _imagesDataset->imageSize();
+	if (_pointsDataset->isDerivedData()) {
+		auto sourcePointsDataset = hdps::DataSet::getSourceData<Points>(*_pointsDataset);
+
+		return sourcePointsDataset.properties().value("ImageSize", "").toSize();
+	}
+
+	return _pointsDataset->properties().value("ImageSize", "").toSize();
 }
 
 Layer::Hints PointsLayer::hints() const
@@ -896,7 +901,9 @@ void PointsLayer::computeChannel(const ChannelIndex& channelIndex)
 			}
 			else {
 				if (_pointsDataset->isFull()) {
-					for (int i = 0; i < noPixels(); i++) {
+					const auto noPixels = this->noPixels();
+
+					for (int i = 0; i < noPixels; i++) {
 						(*channel)[i] = _pointsDataset->getData()[i * _noDimensions + channel->dimensionId()];
 					}
 				}

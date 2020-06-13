@@ -137,7 +137,6 @@ public:
 	/** Layer types */
 	enum class Type {
 		Points,			/** Points dataset */
-		Images,			/** Images dataset */
 		Clusters,		/** Clusters dataset */
 		Selection,		/** Selection layer */
 		Group			/** Group layer */
@@ -147,17 +146,14 @@ public:
 	static QString typeName(const Type& type) {
 		switch (type)
 		{
-			case Type::Images:
-				return "Image";
-
-			case Type::Selection:
-				return "Selection";
+			case Type::Points:
+				return "Points";
 
 			case Type::Clusters:
 				return "Clusters";
 
-			case Type::Points:
-				return "Points";
+			case Type::Selection:
+				return "Selection";
 
 			default:
 				break;

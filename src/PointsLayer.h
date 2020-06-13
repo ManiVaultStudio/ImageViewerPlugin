@@ -6,7 +6,6 @@
 class QPainter;
 
 class Points;
-class Images;
 
 /**
  * Points layer class
@@ -379,7 +378,6 @@ signals:
 
 private:
 	Points*				_pointsDataset;				/** Points dataset to which the layer refers */
-	Images*				_imagesDataset;				/** Images dataset from which the points dataset originates */
 	std::uint32_t		_noPoints;					/** Number of points in the dataset */
 	std::uint32_t		_noDimensions;				/** Number of dimensions in the points dataset */
 	QStringList			_dimensionNames;			/** Dimension names in the points dataset */
