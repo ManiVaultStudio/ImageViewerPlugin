@@ -201,7 +201,9 @@ void LayersWidget::dropEvent(QDropEvent* dropEvent)
 		if (largestImageSize.isValid())
 			pointsLayer->matchScaling(largestImageSize);
 
-		if (createSelectionLayer) {
+		qDebug() << pointsLayer->imageCollectionType();
+
+		if (pointsLayer->imageCollectionType() == ult(ImageData::Type::Stack) && createSelectionLayer) {
 			auto selectionLayer = new SelectionLayer(datasetName, selectionName, selectionName, layerFlags);
 
 			selectionLayer->setOpacity(0.8f);
@@ -214,7 +216,7 @@ void LayersWidget::dropEvent(QDropEvent* dropEvent)
 			layersModel().selectRow(1);
 		}
 		else {
-			const auto row = selectionLayerIndices.first().row() + 1;
+			const auto row = selectionLayerIndices.isEmpty() ? 0 : selectionLayerIndices.first().row() + 1;
 
 			layersModel().insertLayer(row, pointsLayer);
 			layersModel().selectRow(row);

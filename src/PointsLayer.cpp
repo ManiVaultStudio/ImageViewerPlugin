@@ -6,6 +6,8 @@
 #include "PointData.h"
 #include "util/Timer.h"
 
+#include "ImageData/Images.h"
+
 #include <QDebug>
 #include <QImage>
 
@@ -455,6 +457,17 @@ QSize PointsLayer::imageSize() const
 	return _pointsDataset->properties().value("ImageSize", "").toSize();
 }
 
+std::int32_t PointsLayer::imageCollectionType() const
+{
+	if (_pointsDataset->isDerivedData()) {
+		auto sourcePointsDataset = hdps::DataSet::getSourceData<Points>(*_pointsDataset);
+
+		return sourcePointsDataset.properties().value("CollectionType", "").toInt();
+	}
+
+	return _pointsDataset->properties().value("CollectionType", "").toInt();
+}
+
 Layer::Hints PointsLayer::hints() const
 {
 	return Layer::hints();
@@ -883,40 +896,54 @@ void PointsLayer::computeChannel(const ChannelIndex& channelIndex)
 			if (channel->dimensionId() < 0)
 				return;
 
-			channel->setImageSize(imageSize());
+			switch (static_cast<ImageData::Type>(imageCollectionType()))
+			{
+				case ImageData::Type::Sequence:
+					break;
 
-			if (_pointsDataset->isDerivedData()) {
-				auto& sourceData = _pointsDataset->getSourceData<Points>(*_pointsDataset);
+				case ImageData::Type::Stack:
+				{
+					channel->setImageSize(imageSize());
 
-				if (sourceData.isFull()) {
-					for (int i = 0; i < _pointsDataset->getNumPoints(); i++) {
-						(*channel)[i] = _pointsDataset->getData()[i * _noDimensions + channel->dimensionId()];
+					if (_pointsDataset->isDerivedData()) {
+						auto& sourceData = _pointsDataset->getSourceData<Points>(*_pointsDataset);
+
+						if (sourceData.isFull()) {
+							for (int i = 0; i < _pointsDataset->getNumPoints(); i++) {
+								(*channel)[i] = _pointsDataset->getData()[i * _noDimensions + channel->dimensionId()];
+							}
+						}
+						else {
+							for (int i = 0; i < sourceData.indices.size(); i++) {
+								(*channel)[sourceData.indices[i]] = _pointsDataset->getData()[i * _noDimensions + channel->dimensionId()];
+							}
+						}
 					}
-				}
-				else {
-					for (int i = 0; i < sourceData.indices.size(); i++) {
-						(*channel)[sourceData.indices[i]] = _pointsDataset->getData()[i * _noDimensions + channel->dimensionId()];
+					else {
+						if (_pointsDataset->isFull()) {
+							const auto noPixels = this->noPixels();
+
+							for (int i = 0; i < noPixels; i++) {
+								(*channel)[i] = _pointsDataset->getData()[i * _noDimensions + channel->dimensionId()];
+							}
+						}
+						else {
+							for (const auto& index : _pointsDataset->indices) {
+								(*channel)[index] = _pointsDataset->getData()[index * _noDimensions + channel->dimensionId()];
+							}
+						}
 					}
+
+					channel->setChanged();
+
+					emit channelChanged(ult(channelIndex));
+
+					break;
 				}
+
+				default:
+					break;
 			}
-			else {
-				if (_pointsDataset->isFull()) {
-					const auto noPixels = this->noPixels();
-
-					for (int i = 0; i < noPixels; i++) {
-						(*channel)[i] = _pointsDataset->getData()[i * _noDimensions + channel->dimensionId()];
-					}
-				}
-				else {
-					for (const auto& index : _pointsDataset->indices) {
-						(*channel)[index] = _pointsDataset->getData()[index * _noDimensions + channel->dimensionId()];
-					}
-				}
-			}
-
-			channel->setChanged();
-
-			emit channelChanged(ult(channelIndex));
 
 			break;
 		}

@@ -340,13 +340,16 @@ public: // Getters/setters
 	 */
 	void setIndicesSelection(const Indices& indicesSelection);
 
-protected:
+public:
 
 	/**
 	* Returns the image size
 	* @return Image size in variant form
 	*/
 	QSize imageSize() const override;
+
+	/** Returns the image collection type */
+	std::int32_t imageCollectionType() const;
 
 	/** Returns hints that pertain to the layer */
 	Hints hints() const override;
