@@ -134,6 +134,16 @@ void ColorMapModel::setupModelData()
 {
 	auto prefix = ":/resources/colormaps";
 
+	const auto noSteps = 256;
+
+	QImage blackToWhite(noSteps, 1, QImage::Format::Format_RGB32);
+
+	for (int value = 0; value < noSteps; ++value) {
+		blackToWhite.setPixelColor(value, 0, QColor(value, value, value, 255));
+	}
+
+	_colorMaps.append(ColorMap("Black to white", "", ColorMap::Type::OneDimensional, blackToWhite));
+
 	QDirIterator iterator1D(QString("%1/1D/").arg(prefix), QDirIterator::Subdirectories);
 
 	while (iterator1D.hasNext()) {
