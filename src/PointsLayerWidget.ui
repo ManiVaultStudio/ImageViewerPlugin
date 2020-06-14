@@ -170,10 +170,10 @@
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="pushButton_3">
+         <widget class="QPushButton" name="channel3WindowLevelPushButton">
           <property name="maximumSize">
            <size>
-            <width>30</width>
+            <width>25</width>
             <height>16777215</height>
            </size>
           </property>
@@ -213,10 +213,10 @@
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="pushButton_2">
+         <widget class="QPushButton" name="channel2WindowLevelPushButton">
           <property name="maximumSize">
            <size>
-            <width>30</width>
+            <width>25</width>
             <height>16777215</height>
            </size>
           </property>
@@ -379,7 +379,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="pushButton">
+         <widget class="QPushButton" name="channel1WindowLevelPushButton">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
             <horstretch>0</horstretch>
@@ -394,7 +394,7 @@
           </property>
           <property name="maximumSize">
            <size>
-            <width>30</width>
+            <width>25</width>
             <height>16777215</height>
            </size>
           </property>

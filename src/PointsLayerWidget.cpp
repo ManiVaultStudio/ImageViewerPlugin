@@ -23,6 +23,16 @@ void PointsLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 	_imageViewerPlugin = imageViewerPlugin;
 	_layersModel = &_imageViewerPlugin->layersModel();
 
+	QFont font = QFont("Font Awesome 5 Free Solid", 9);
+
+	_ui->channel1WindowLevelPushButton->setFont(font);
+	_ui->channel2WindowLevelPushButton->setFont(font);
+	_ui->channel3WindowLevelPushButton->setFont(font);
+
+	_ui->channel1WindowLevelPushButton->setText(u8"\uf042");
+	_ui->channel2WindowLevelPushButton->setText(u8"\uf042");
+	_ui->channel3WindowLevelPushButton->setText(u8"\uf042");
+
 	QObject::connect(_layersModel, &LayersModel::dataChanged, this, &PointsLayerWidget::updateData);
 
 	QObject::connect(&_layersModel->selectionModel(), &QItemSelectionModel::selectionChanged, [this](const QItemSelection& selected, const QItemSelection& deselected) {
@@ -166,6 +176,7 @@ void PointsLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 
 			_ui->channel1Label->setEnabled(channel1Flags & Qt::ItemIsEditable);
 			_ui->channel1ComboBox->setEnabled(channel1Flags & Qt::ItemIsEditable);
+			_ui->channel1WindowLevelPushButton->setEnabled(channel1Flags & Qt::ItemIsEditable);
 		}
 
 		if (column == ult(PointsLayer::Column::Channel2DimensionId)) {
@@ -173,6 +184,7 @@ void PointsLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 
 			_ui->channel2Label->setEnabled(channel2Flags & Qt::ItemIsEditable);
 			_ui->channel2ComboBox->setEnabled(channel2Flags & Qt::ItemIsEditable);
+			_ui->channel2WindowLevelPushButton->setEnabled(channel2Flags & Qt::ItemIsEditable);
 		}
 
 		if (column == ult(PointsLayer::Column::Channel3DimensionId)) {
@@ -180,6 +192,7 @@ void PointsLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 
 			_ui->channel3Label->setEnabled(channel3Flags & Qt::ItemIsEditable);
 			_ui->channel3ComboBox->setEnabled(channel3Flags & Qt::ItemIsEditable);
+			_ui->channel3WindowLevelPushButton->setEnabled(channel3Flags & Qt::ItemIsEditable);
 		}
 
 		if (column == ult(PointsLayer::Column::Channel1Enabled)) {
