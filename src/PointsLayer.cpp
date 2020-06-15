@@ -380,6 +380,24 @@ QModelIndexList PointsLayer::setData(const QModelIndex& index, const QVariant& v
 			break;
 		}
 
+		case Column::Channel1Level:
+		{
+			setChannelLevel(ChannelIndex::Channel1, value.toFloat());
+			break;
+		}
+
+		case Column::Channel2Level:
+		{
+			setChannelLevel(ChannelIndex::Channel2, value.toFloat());
+			break;
+		}
+
+		case Column::Channel3Level:
+		{
+			setChannelLevel(ChannelIndex::Channel3, value.toFloat());
+			break;
+		}
+
 		case Column::MaxNoChannels:
 		{
 			setMaxNoChannels(value.toInt());
@@ -643,7 +661,7 @@ QVariant PointsLayer::channelWindow(const ChannelIndex& channelIndex, const int&
 
 void PointsLayer::setChannelWindow(const ChannelIndex& channelIndex, const float& window)
 {
-	channel(ult(channelIndex))->setWindow(window);
+	channel(ult(channelIndex))->setWindowNormalized(window);
 }
 
 QVariant PointsLayer::channelLevel(const ChannelIndex& channelIndex, const int& role /*= Qt::DisplayRole*/) const

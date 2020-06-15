@@ -2,11 +2,14 @@
 #include "LayersModel.h"
 #include "PointsLayer.h"
 #include "ImageViewerPlugin.h"
+#include "WindowLevelWidget.h"
 
 #include "ui_PointsLayerWidget.h"
 
 #include <QDebug>
 #include <QStringListModel>
+#include <QWidgetAction>
+#include <QToolButton>
 
 PointsLayerWidget::PointsLayerWidget(QWidget* parent) :
 	QWidget(parent),
@@ -44,6 +47,36 @@ void PointsLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 			const auto first = selected.indexes().first();
 			updateData(first.siblingAtColumn(ult(PointsLayer::Column::Start)), first.siblingAtColumn(ult(PointsLayer::Column::End)));
 		}
+	});
+
+	const auto showWindowLevelWidget = [&, this](QWidget* parent, const QModelIndex& windowIndex, const QModelIndex& levelIndex) {
+		auto windowLevelWidget = new WindowLevelWidget(parent, _imageViewerPlugin, windowIndex, levelIndex);
+
+		windowLevelWidget->show();
+	};
+
+	QObject::connect(_ui->channel1WindowLevelPushButton, &QPushButton::clicked, [&, this, showWindowLevelWidget]() {
+		const auto selectedRow	= _layersModel->selectionModel().selectedRows().first();
+		const auto windowIndex	= selectedRow.siblingAtColumn(ult(PointsLayer::Column::Channel1Window));
+		const auto levelIndex	= selectedRow.siblingAtColumn(ult(PointsLayer::Column::Channel1Level));
+
+		showWindowLevelWidget(_ui->channel1WindowLevelPushButton, windowIndex, levelIndex);
+	});
+
+	QObject::connect(_ui->channel2WindowLevelPushButton, &QPushButton::clicked, [&, this, showWindowLevelWidget]() {
+		const auto selectedRow	= _layersModel->selectionModel().selectedRows().first();
+		const auto windowIndex	= selectedRow.siblingAtColumn(ult(PointsLayer::Column::Channel2Window));
+		const auto levelIndex	= selectedRow.siblingAtColumn(ult(PointsLayer::Column::Channel2Level));
+
+		showWindowLevelWidget(_ui->channel2WindowLevelPushButton, windowIndex, levelIndex);
+	});
+
+	QObject::connect(_ui->channel3WindowLevelPushButton, &QPushButton::clicked, [&, this, showWindowLevelWidget]() {
+		const auto selectedRow	= _layersModel->selectionModel().selectedRows().first();
+		const auto windowIndex	= selectedRow.siblingAtColumn(ult(PointsLayer::Column::Channel3Window));
+		const auto levelIndex	= selectedRow.siblingAtColumn(ult(PointsLayer::Column::Channel3Level));
+
+		showWindowLevelWidget(_ui->channel3WindowLevelPushButton, windowIndex, levelIndex);
 	});
 
 	QObject::connect(_ui->pixelTypeComboBox, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
