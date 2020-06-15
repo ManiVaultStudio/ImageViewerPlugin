@@ -405,7 +405,7 @@ private:
 	void computeSequenceChannel(Channel<float>* channel);
 
 	void computeStackChannel(Channel<float>* channel, const ChannelIndex& channelIndex);
-	void computeMaskChannel(Channel<float>* channel);
+	void computeMaskChannel(Channel<float>* channel, const ChannelIndex& channelIndex);
 	void computeIndexChannel(Channel<float>* channel);
 
 	/** Updates the channel names */

@@ -997,25 +997,26 @@ void PointsLayer::computeChannel(const ChannelIndex& channelIndex)
 	auto timer = Timer("Compute channel");
 #endif
 
+	auto channel = this->channel(ult(channelIndex));
+
+	
+
+	channel->setImageSize(imageSize());
+
 	switch (channelIndex)
 	{
 		case ChannelIndex::Channel1:
 		case ChannelIndex::Channel2:
 		case ChannelIndex::Channel3:
 		{
-			auto channel = this->channel(ult(channelIndex));
-
 			if (channel->dimensionId() < 0)
-				return;
-
-			channel->setImageSize(imageSize());
+				break;
 
 			switch (static_cast<ImageData::Type>(imageCollectionType()))
 			{
 				case ImageData::Type::Sequence:
 				{
 					computeSequenceChannel(channel);
-					
 					break;
 				}
 
@@ -1034,37 +1035,7 @@ void PointsLayer::computeChannel(const ChannelIndex& channelIndex)
 
 		case ChannelIndex::Mask:
 		{
-			auto maskChannel = channel(ult(ChannelIndex::Mask));
-
-			maskChannel->setImageSize(imageSize());
-
-			if (_pointsDataset->isDerivedData()) {
-				auto& sourceData = _pointsDataset->getSourceData<Points>(*_pointsDataset);
-
-				if (sourceData.isFull()) {
-					maskChannel->fill(1.0f);
-				}
-				else {
-					for (auto index : sourceData.indices) {
-						(*maskChannel)[index] = 1.0f;
-					}
-				}
-			}
-			else {
-				if (_pointsDataset->isFull()) {
-					maskChannel->fill(1.0f);
-				}
-				else {
-					for (auto index : _pointsDataset->indices) {
-						(*maskChannel)[index] = 1.0f;
-					}
-				}
-			}
-
-			maskChannel->setChanged();
-
-			emit channelChanged(ult(channelIndex));
-
+			computeMaskChannel(channel, channelIndex);
 			break;
 		}
 
@@ -1113,8 +1084,34 @@ void PointsLayer::computeStackChannel(Channel<float>* channel, const ChannelInde
 	emit channelChanged(ult(channelIndex));
 }
 
-void PointsLayer::computeMaskChannel(Channel<float>* channel)
+void PointsLayer::computeMaskChannel(Channel<float>* channel, const ChannelIndex& channelIndex)
 {
+	if (_pointsDataset->isDerivedData()) {
+		auto& sourceData = _pointsDataset->getSourceData<Points>(*_pointsDataset);
+
+		if (sourceData.isFull()) {
+			channel->fill(1.0f);
+		}
+		else {
+			for (auto index : sourceData.indices) {
+				(*channel)[index] = 1.0f;
+			}
+		}
+	}
+	else {
+		if (_pointsDataset->isFull()) {
+			channel->fill(1.0f);
+		}
+		else {
+			for (auto index : _pointsDataset->indices) {
+				(*channel)[index] = 1.0f;
+			}
+		}
+	}
+
+	channel->setChanged();
+
+	emit channelChanged(ult(channelIndex));
 }
 
 void PointsLayer::computeIndexChannel(Channel<float>* channel)
