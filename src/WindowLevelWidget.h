@@ -12,7 +12,7 @@ namespace Ui {
 }
 
 /**
- * TODO
+ * Window/level settings popup widget class
  *
  * @author Thomas Kroes
  */
@@ -22,15 +22,23 @@ public: // Construction/destruction
 
 	/**
 	 * Constructor
+	 * @param parent Parent widget
 	 * @param imageViewerPlugin Pointer to the image viewer plugin
+	 * @param windowIndex Window model index
+	 * @param levelIndex Level model index
 	 */
 	WindowLevelWidget(QWidget* parent, ImageViewerPlugin* imageViewerPlugin, const QModelIndex& windowIndex, const QModelIndex& levelIndex);
 
 	/** Destructor */
 	~WindowLevelWidget();
 
+protected: // Miscellaneous
+
 	/**
-	 * Update from a range of indices
+	 * Update user interface from a range of indices
+	 * @param topLeft Top-left model index
+	 * @param bottomRight Bottom-right model index
+	 * @param roles Data roles
 	 */
 	void updateData(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>& roles = QVector<int>());
 
