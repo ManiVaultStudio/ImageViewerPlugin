@@ -398,6 +398,16 @@ private:
 	 */
 	void computeChannel(const ChannelIndex& channelIndex);
 
+	/**
+	 * Computes a sequence image channel
+	 * @param channel Channel
+	 */
+	void computeSequenceChannel(Channel<float>* channel);
+
+	void computeStackChannel(Channel<float>* channel, const ChannelIndex& channelIndex);
+	void computeMaskChannel(Channel<float>* channel);
+	void computeIndexChannel(Channel<float>* channel);
+
 	/** Updates the channel names */
 	void updateChannelNames();
 

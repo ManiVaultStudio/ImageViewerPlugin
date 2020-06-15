@@ -987,6 +987,8 @@ QVariant PointsLayer::indicesSelection(const int& role /*= Qt::DisplayRole*/) co
 void PointsLayer::setIndicesSelection(const Indices& indicesSelection)
 {
 	_indicesSelection = indicesSelection;
+
+	computeChannel(ChannelIndex::Channel1);
 }
 
 void PointsLayer::computeChannel(const ChannelIndex& channelIndex)
@@ -1012,45 +1014,14 @@ void PointsLayer::computeChannel(const ChannelIndex& channelIndex)
 			{
 				case ImageData::Type::Sequence:
 				{
-
+					computeSequenceChannel(channel);
+					
 					break;
 				}
 
 				case ImageData::Type::Stack:
 				{
-					if (_pointsDataset->isDerivedData()) {
-						auto& sourceData = _pointsDataset->getSourceData<Points>(*_pointsDataset);
-
-						if (sourceData.isFull()) {
-							for (int i = 0; i < _pointsDataset->getNumPoints(); i++) {
-								(*channel)[i] = _pointsDataset->getData()[i * _noDimensions + channel->dimensionId()];
-							}
-						}
-						else {
-							for (int i = 0; i < sourceData.indices.size(); i++) {
-								(*channel)[sourceData.indices[i]] = _pointsDataset->getData()[i * _noDimensions + channel->dimensionId()];
-							}
-						}
-					}
-					else {
-						if (_pointsDataset->isFull()) {
-							const auto noPixels = this->noPixels();
-
-							for (int i = 0; i < noPixels; i++) {
-								(*channel)[i] = _pointsDataset->getData()[i * _noDimensions + channel->dimensionId()];
-							}
-						}
-						else {
-							for (const auto& index : _pointsDataset->indices) {
-								(*channel)[index] = _pointsDataset->getData()[index * _noDimensions + channel->dimensionId()];
-							}
-						}
-					}
-
-					channel->setChanged();
-
-					emit channelChanged(ult(channelIndex));
-
+					computeStackChannel(channel, channelIndex);
 					break;
 				}
 
@@ -1100,6 +1071,54 @@ void PointsLayer::computeChannel(const ChannelIndex& channelIndex)
 		default:
 			break;
 	}
+}
+
+void PointsLayer::computeSequenceChannel(Channel<float>* channel)
+{
+}
+
+void PointsLayer::computeStackChannel(Channel<float>* channel, const ChannelIndex& channelIndex)
+{
+	if (_pointsDataset->isDerivedData()) {
+		auto& sourceData = _pointsDataset->getSourceData<Points>(*_pointsDataset);
+
+		if (sourceData.isFull()) {
+			for (int i = 0; i < _pointsDataset->getNumPoints(); i++) {
+				(*channel)[i] = _pointsDataset->getData()[i * _noDimensions + channel->dimensionId()];
+			}
+		}
+		else {
+			for (int i = 0; i < sourceData.indices.size(); i++) {
+				(*channel)[sourceData.indices[i]] = _pointsDataset->getData()[i * _noDimensions + channel->dimensionId()];
+			}
+		}
+	}
+	else {
+		if (_pointsDataset->isFull()) {
+			const auto noPixels = this->noPixels();
+
+			for (int i = 0; i < noPixels; i++) {
+				(*channel)[i] = _pointsDataset->getData()[i * _noDimensions + channel->dimensionId()];
+			}
+		}
+		else {
+			for (const auto& index : _pointsDataset->indices) {
+				(*channel)[index] = _pointsDataset->getData()[index * _noDimensions + channel->dimensionId()];
+			}
+		}
+	}
+
+	channel->setChanged();
+
+	emit channelChanged(ult(channelIndex));
+}
+
+void PointsLayer::computeMaskChannel(Channel<float>* channel)
+{
+}
+
+void PointsLayer::computeIndexChannel(Channel<float>* channel)
+{
 }
 
 void PointsLayer::updateChannelNames()
