@@ -65,6 +65,12 @@ public: // Enumerations
 		Channel1Enabled,								/** First input channel enabled */
 		Channel2Enabled,								/** Second input channel enabled */
 		Channel3Enabled,								/** Third input channel enabled */
+		Channel1Window,									/** First input channel normalized window */
+		Channel2Window,									/** Second input channel normalized window */
+		Channel3Window,									/** Third input channel normalized window */
+		Channel1Level,									/** First input channel normalized level */
+		Channel2Level,									/** Second input channel normalized level */
+		Channel3Level,									/** Third input channel normalized level */
 		NoChannels,										/** Occupied number of channels */
 		MaxNoChannels,									/** The maximum number of channels */
 		DimensionNames,									/** Dimension names */
@@ -198,6 +204,36 @@ public: // Getters/setters
 	 * @param enabled Whether the channel is enabled
 	 */
 	void setChannelEnabled(const ChannelIndex& channelIndex, const bool& enabled);
+
+	/**
+	 * Returns the channel window
+	 * @param id Channel index
+	 * @param role Data role
+	 * @return Channel window in variant form
+	 */
+	QVariant channelWindow(const ChannelIndex& channelIndex, const int& role = Qt::DisplayRole) const;
+
+	/**
+	 * Sets the channel window
+	 * @param id Channel index
+	 * @param window Channel window
+	 */
+	void setChannelWindow(const ChannelIndex& channelIndex, const float& window);
+
+	/**
+	 * Returns the channel level
+	 * @param id Channel index
+	 * @param role Data role
+	 * @return Channel level in variant form
+	 */
+	QVariant channelLevel(const ChannelIndex& channelIndex, const int& role = Qt::DisplayRole) const;
+
+	/**
+	 * Sets the channel level
+	 * @param id Channel index
+	 * @param level Channel level
+	 */
+	void setChannelLevel(const ChannelIndex& channelIndex, const float& level);
 
 	/**
 	 * Returns channel name by identifier

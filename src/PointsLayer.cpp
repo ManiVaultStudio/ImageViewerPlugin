@@ -218,6 +218,24 @@ QVariant PointsLayer::data(const QModelIndex& index, const int& role) const
 		case Column::Channel3Enabled:
 			return channelEnabled(ChannelIndex::Channel3, role);
 
+		case Column::Channel1Window:
+			return channelWindow(ChannelIndex::Channel1, role);
+
+		case Column::Channel2Window:
+			return channelWindow(ChannelIndex::Channel2, role);
+
+		case Column::Channel3Window:
+			return channelWindow(ChannelIndex::Channel3, role);
+
+		case Column::Channel1Level:
+			return channelLevel(ChannelIndex::Channel1, role);
+
+		case Column::Channel2Level:
+			return channelLevel(ChannelIndex::Channel2, role);
+
+		case Column::Channel3Level:
+			return channelLevel(ChannelIndex::Channel3, role);
+
 		case Column::MaxNoChannels:
 			return maxNoChannels(role);
 
@@ -341,6 +359,24 @@ QModelIndexList PointsLayer::setData(const QModelIndex& index, const QVariant& v
 			affectedIds << index.siblingAtColumn(ult(Column::ColorSpace));
 			affectedIds << index.siblingAtColumn(ult(Column::ColorMap));
 
+			break;
+		}
+
+		case Column::Channel1Window:
+		{
+			setChannelWindow(ChannelIndex::Channel1, value.toFloat());
+			break;
+		}
+
+		case Column::Channel2Window:
+		{
+			setChannelWindow(ChannelIndex::Channel2, value.toFloat());
+			break;
+		}
+
+		case Column::Channel3Window:
+		{
+			setChannelWindow(ChannelIndex::Channel3, value.toFloat());
 			break;
 		}
 
@@ -580,6 +616,62 @@ QVariant PointsLayer::channelEnabled(const ChannelIndex& channelIndex, const int
 void PointsLayer::setChannelEnabled(const ChannelIndex& channelIndex, const bool& enabled)
 {
 	channel(ult(channelIndex))->setEnabled(enabled);
+}
+
+QVariant PointsLayer::channelWindow(const ChannelIndex& channelIndex, const int& role /*= Qt::DisplayRole*/) const
+{
+	const auto channelWindow		= channel(ult(channelIndex))->windowNormalized();
+	const auto channelWindowString	= QString::number(channelWindow, 'f', 1);
+
+	switch (role)
+	{
+		case Qt::DisplayRole:
+			return channelWindowString;
+
+		case Qt::EditRole:
+			return channelWindow;
+
+		case Qt::ToolTipRole:
+			return QString("Normalized window: %1").arg(channelWindowString);
+
+		default:
+			break;
+	}
+
+	return QVariant();
+}
+
+void PointsLayer::setChannelWindow(const ChannelIndex& channelIndex, const float& window)
+{
+	channel(ult(channelIndex))->setWindow(window);
+}
+
+QVariant PointsLayer::channelLevel(const ChannelIndex& channelIndex, const int& role /*= Qt::DisplayRole*/) const
+{
+	const auto channelLevel			= channel(ult(channelIndex))->levelNormalized();
+	const auto channelLevelString	= QString::number(channelLevel, 'f', 1);
+
+	switch (role)
+	{
+		case Qt::DisplayRole:
+			return channelLevelString;
+
+		case Qt::EditRole:
+			return channelLevel;
+
+		case Qt::ToolTipRole:
+			return QString("Normalized level: %1").arg(channelLevelString);
+
+		default:
+			break;
+	}
+
+	return QVariant();
+}
+
+void PointsLayer::setChannelLevel(const ChannelIndex& channelIndex, const float& level)
+{
+	channel(ult(channelIndex))->setLevelNormalized(level);
 }
 
 QVariant PointsLayer::channelName(const ChannelIndex& channelIndex, const int& role /*= Qt::DisplayRole*/) const
@@ -896,15 +988,18 @@ void PointsLayer::computeChannel(const ChannelIndex& channelIndex)
 			if (channel->dimensionId() < 0)
 				return;
 
+			channel->setImageSize(imageSize());
+
 			switch (static_cast<ImageData::Type>(imageCollectionType()))
 			{
 				case ImageData::Type::Sequence:
+				{
+
 					break;
+				}
 
 				case ImageData::Type::Stack:
 				{
-					channel->setImageSize(imageSize());
-
 					if (_pointsDataset->isDerivedData()) {
 						auto& sourceData = _pointsDataset->getSourceData<Points>(*_pointsDataset);
 
