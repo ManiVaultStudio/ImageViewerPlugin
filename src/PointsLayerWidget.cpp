@@ -258,10 +258,6 @@ void PointsLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 			_ui->channel3CheckBox->blockSignals(false);
 		}
 
-		if (column == ult(PointsLayer::Column::NoChannels)) {
-			const auto maxNoChannels	= _layersModel->data(topLeft.siblingAtColumn(ult(PointsLayer::Column::MaxNoChannels)), Qt::EditRole).toInt();
-		}
-
 		if (column == ult(PointsLayer::Column::NoPoints)) {
 			_ui->noPointsLineEdit->blockSignals(true);
 			_ui->noPointsLineEdit->setText(QString::number(_layersModel->data(topLeft.siblingAtColumn(ult(PointsLayer::Column::NoPoints)), Qt::EditRole).toInt()));
