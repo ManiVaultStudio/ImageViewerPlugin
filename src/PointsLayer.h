@@ -401,12 +401,30 @@ private:
 	/**
 	 * Computes a sequence image channel
 	 * @param channel Channel
+	 * @param channelIndex Channel index
 	 */
-	void computeSequenceChannel(Channel<float>* channel);
+	void computeSequenceChannel(Channel<float>* channel, const ChannelIndex& channelIndex);
 
+	/**
+	 * Computes a stack image channel
+	 * @param channel Channel
+	 * @param channelIndex Channel index
+	 */
 	void computeStackChannel(Channel<float>* channel, const ChannelIndex& channelIndex);
+
+	/**
+	 * Computes a mask image channel
+	 * @param channel Channel
+	 * @param channelIndex Channel index
+	 */
 	void computeMaskChannel(Channel<float>* channel, const ChannelIndex& channelIndex);
-	void computeIndexChannel(Channel<float>* channel);
+
+	/**
+	 * Computes an index image channel
+	 * @param channel Channel
+	 * @param channelIndex Channel index
+	 */
+	void computeIndexChannel(Channel<float>* channel, const ChannelIndex& channelIndex);
 
 	/** Updates the channel names */
 	void updateChannelNames();
