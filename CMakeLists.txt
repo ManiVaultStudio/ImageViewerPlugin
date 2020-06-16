@@ -18,6 +18,12 @@ if(MSVC)
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MD")
 endif(MSVC)
 
+set(CMAKE_VERBOSE_MAKEFILE ON)
+
+if (APPLE)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -v" )
+endif(APPLE)
+
 find_package(OpenGL REQUIRED)
 find_package(Qt5 COMPONENTS Widgets WebEngineWidgets REQUIRED)
 find_package(OpenMP)
