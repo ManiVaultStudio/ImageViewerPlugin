@@ -83,10 +83,6 @@ void PointsLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 		showWindowLevelWidget(_ui->channel3WindowLevelPushButton, windowIndex, levelIndex);
 	});
 
-	QObject::connect(_ui->pixelTypeComboBox, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
-		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::PixelType)), index);
-	});
-
 	QObject::connect(_ui->channel2CheckBox, &QCheckBox::stateChanged, [this](int state) {
 		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Channel2Enabled)), state == Qt::Checked);
 		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Channel2DimensionId)), _ui->channel2ComboBox->currentIndex());
@@ -128,11 +124,21 @@ void PointsLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::ConstantColor)), currentColor);
 	});
 
-	QObject::connect(_imageViewerPlugin, &ImageViewerPlugin::pointsDatasetsChanged, [this](const QStringList& pointsDatasets) {
-		_ui->indicesComboBox->clear();
-		_ui->indicesComboBox->insertItems(0, pointsDatasets);
+	QObject::connect(_ui->pointTypeComboBox, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
+		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::PointType)), index);
 	});
-	
+
+	QObject::connect(_ui->indexSelectionComboBox, &QComboBox::currentTextChanged, [this](QString text) {
+		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::IndexSelectionDatasetName)), text);
+	});
+
+	QObject::connect(_imageViewerPlugin, &ImageViewerPlugin::pointsDatasetsChanged, [this](QStringList pointsDatasets) {
+
+		//pointsDatasets.removeAll(_datasetName);
+
+		_ui->indexSelectionComboBox->clear();
+		_ui->indexSelectionComboBox->insertItems(0, pointsDatasets);
+	});
 }
 
 void PointsLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>& roles /*= QVector<int>()*/)
@@ -335,10 +341,11 @@ void PointsLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 		}
 
 		if (column == ult(PointsLayer::Column::UseConstantColor)) {
-			const auto useConstantColor			= _layersModel->data(topLeft.siblingAtColumn(ult(PointsLayer::Column::UseConstantColor)), Qt::EditRole).toBool();
-			const auto useConstantColorFlags	= _layersModel->flags(topLeft.siblingAtColumn(ult(PointsLayer::Column::UseConstantColor)));
+			const auto useConstantColor	= _layersModel->data(topLeft.siblingAtColumn(ult(PointsLayer::Column::UseConstantColor)), Qt::EditRole).toBool();
+			const auto flags			= _layersModel->flags(topLeft.siblingAtColumn(ult(PointsLayer::Column::UseConstantColor)));
 
-			_ui->constantColorCheckBox->setEnabled(useConstantColorFlags & Qt::ItemIsEditable);
+			qDebug() << (flags & Qt::ItemIsEditable);
+			_ui->constantColorCheckBox->setEnabled(flags & Qt::ItemIsEditable);
 			_ui->constantColorCheckBox->blockSignals(true);
 			_ui->constantColorCheckBox->setChecked(useConstantColor);
 			_ui->constantColorCheckBox->blockSignals(false);
@@ -355,15 +362,15 @@ void PointsLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 			_ui->colorPickerPushButton->blockSignals(false);
 		}
 
-		if (column == ult(PointsLayer::Column::PixelType)) {
+		if (column == ult(PointsLayer::Column::PointType)) {
 		}
 
-		if (column == ult(PointsLayer::Column::IndicesDatasetName)) {
+		if (column == ult(PointsLayer::Column::IndexSelectionDatasetName)) {
 			//const auto channel1Name = _layersModel->data(topLeft.siblingAtColumn(ult(PointsLayer::Column::Channel1Name)), Qt::DisplayRole).toString();
-			const auto flags = _layersModel->flags(topLeft.siblingAtColumn(ult(PointsLayer::Column::IndicesDatasetName)));
-
-			_ui->indicesLabel->setEnabled(flags & Qt::ItemIsEditable);
-			_ui->indicesComboBox->setEnabled(flags & Qt::ItemIsEditable);
+			const auto flags = _layersModel->flags(topLeft.siblingAtColumn(ult(PointsLayer::Column::IndexSelectionDatasetName)));
+			
+			_ui->indexSelectionLabel->setEnabled(flags & Qt::ItemIsEditable);
+			_ui->indexSelectionComboBox->setEnabled(flags & Qt::ItemIsEditable);
 		}
 	}
 }

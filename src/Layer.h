@@ -362,5 +362,5 @@ protected:
 public:
 	static ImageViewerPlugin* imageViewerPlugin;		/** Pointer to the image viewer plugin for interfacing with datasets */
 	static const QColor hintsColor;						/** Color for hints */
-	static const qreal textMargins;							/** Text margins */
+	static const qreal textMargins;						/** Text margins */
 };

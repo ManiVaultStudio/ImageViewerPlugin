@@ -81,10 +81,7 @@ public: //
 signals:
 	
 	/** TODO */
-	void imagesDatasetsChanged(const QStringList& imagesDatasets);
-
-	/** TODO */
-	void pointsDatasetsChanged(const QStringList& pointsDatasets);
+	void pointsDatasetsChanged(QStringList pointsDatasets);
 
 private:
 	ViewerWidget*		_viewerWidget;			/** TODO */

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>333</width>
-    <height>126</height>
+    <height>154</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -59,7 +59,7 @@
            <enum>Qt::Horizontal</enum>
           </property>
           <property name="tickPosition">
-           <enum>QSlider::TicksBothSides</enum>
+           <enum>QSlider::NoTicks</enum>
           </property>
          </widget>
         </item>
@@ -72,7 +72,7 @@
            <enum>Qt::Horizontal</enum>
           </property>
           <property name="tickPosition">
-           <enum>QSlider::TicksBothSides</enum>
+           <enum>QSlider::NoTicks</enum>
           </property>
          </widget>
         </item>

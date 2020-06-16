@@ -55,7 +55,7 @@ void ImageViewerPlugin::dataAdded(const QString dataset)
 	auto pointsDataset = dynamic_cast<Points*>(&_core->requestData(dataset));
 
 	if (pointsDataset != nullptr) {
-		_pointsDatasets << dataset;
+		_pointsDatasets.insert(0, dataset);
 		emit pointsDatasetsChanged(_pointsDatasets);
 	}
 }
@@ -77,6 +77,8 @@ void ImageViewerPlugin::selectionChanged(const QString dataset)
 		const auto indices = QVector<uint>(selection.indices.begin(), selection.indices.end());
 		_layersModel.setData(hit.siblingAtColumn(ult(Layer::Column::Selection)), QVariant::fromValue(indices));
 	}
+
+	qDebug() << dataset;
 }
 
 hdps::DataTypes ImageViewerPlugin::supportedDataTypes() const

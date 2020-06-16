@@ -59,18 +59,95 @@
       <string>Points</string>
      </property>
      <layout class="QGridLayout" name="gridLayout">
-      <item row="16" column="0">
-       <widget class="QLabel" name="pixelTypeLabel">
+      <item row="6" column="0">
+       <widget class="QLabel" name="indexSelectionLabel">
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Linked points&lt;/span&gt;&lt;br/&gt;Linked points dataset&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
         <property name="text">
-         <string>Pixel type</string>
+         <string>Selection</string>
         </property>
        </widget>
       </item>
-      <item row="11" column="0">
+      <item row="13" column="0">
+       <widget class="QLabel" name="colormapLabel">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>Colormap</string>
+        </property>
+       </widget>
+      </item>
+      <item row="10" column="0">
        <widget class="QLabel" name="colorSpaceLabel">
         <property name="text">
          <string>Color space</string>
         </property>
+       </widget>
+      </item>
+      <item row="9" column="1">
+       <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="0,0">
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QComboBox" name="channel3ComboBox">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+            <horstretch>1</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="channel3WindowLevelPushButton">
+          <property name="maximumSize">
+           <size>
+            <width>25</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>+</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="10" column="1">
+       <widget class="QComboBox" name="colorSpaceComboBox">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <item>
+         <property name="text">
+          <string>RGB</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>HSL</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>LAB</string>
+         </property>
+        </item>
        </widget>
       </item>
       <item row="5" column="0">
@@ -113,8 +190,8 @@
           </property>
           <property name="sizeHint" stdset="0">
            <size>
-            <width>40</width>
-            <height>20</height>
+            <width>10</width>
+            <height>10</height>
            </size>
           </property>
          </spacer>
@@ -134,166 +211,7 @@
         </item>
        </layout>
       </item>
-      <item row="16" column="1">
-       <widget class="QComboBox" name="pixelTypeComboBox">
-        <item>
-         <property name="text">
-          <string>Intensity</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Index</string>
-         </property>
-        </item>
-       </widget>
-      </item>
-      <item row="17" column="1">
-       <widget class="QComboBox" name="indicesComboBox"/>
-      </item>
-      <item row="9" column="1">
-       <layout class="QHBoxLayout" name="horizontalLayout_3">
-        <property name="bottomMargin">
-         <number>0</number>
-        </property>
-        <item>
-         <widget class="QComboBox" name="channel3ComboBox">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-            <horstretch>1</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="channel3WindowLevelPushButton">
-          <property name="maximumSize">
-           <size>
-            <width>25</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>+</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item row="14" column="0">
-       <widget class="QLabel" name="colormapLabel">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="text">
-         <string>Colormap</string>
-        </property>
-       </widget>
-      </item>
-      <item row="7" column="1">
-       <layout class="QHBoxLayout" name="horizontalLayout_2">
-        <property name="bottomMargin">
-         <number>0</number>
-        </property>
-        <item>
-         <widget class="QComboBox" name="channel2ComboBox">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-            <horstretch>1</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="channel2WindowLevelPushButton">
-          <property name="maximumSize">
-           <size>
-            <width>25</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>+</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item row="15" column="1">
-       <widget class="QCheckBox" name="constantColorCheckBox">
-        <property name="text">
-         <string>Constant color</string>
-        </property>
-       </widget>
-      </item>
-      <item row="7" column="0">
-       <layout class="QHBoxLayout" name="channel2HorizontalLayout">
-        <property name="spacing">
-         <number>6</number>
-        </property>
-        <property name="bottomMargin">
-         <number>0</number>
-        </property>
-        <item>
-         <widget class="QLabel" name="channel2Label">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="text">
-           <string>Channel 2</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <spacer name="channel2HorizontalSpacer">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>40</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="channel2CheckBox">
-          <property name="text">
-           <string/>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item row="11" column="1">
-       <widget class="QComboBox" name="colorSpaceComboBox">
-        <item>
-         <property name="text">
-          <string>RGB</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>HSL</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>LAB</string>
-         </property>
-        </item>
-       </widget>
-      </item>
-      <item row="14" column="1">
+      <item row="13" column="1">
        <widget class="QStackedWidget" name="colorStackedWidget">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -350,14 +268,60 @@
         </widget>
        </widget>
       </item>
-      <item row="17" column="0">
-       <widget class="QLabel" name="indicesLabel">
-        <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Linked points&lt;/span&gt;&lt;br/&gt;Linked points dataset&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <item row="1" column="0">
+       <widget class="QLabel" name="pointTypeLabel">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
         </property>
         <property name="text">
-         <string>Indices</string>
+         <string>Point type</string>
         </property>
+       </widget>
+      </item>
+      <item row="14" column="1">
+       <widget class="QCheckBox" name="constantColorCheckBox">
+        <property name="text">
+         <string>Constant color</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="1">
+       <widget class="QComboBox" name="indexSelectionComboBox">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QComboBox" name="pointTypeComboBox">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <item>
+         <property name="text">
+          <string>Intensity</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Index</string>
+         </property>
+        </item>
        </widget>
       </item>
       <item row="5" column="1">
@@ -428,7 +392,7 @@
           <property name="sizeHint" stdset="0">
            <size>
             <width>40</width>
-            <height>20</height>
+            <height>10</height>
            </size>
           </property>
          </spacer>
@@ -442,18 +406,78 @@
         </item>
        </layout>
       </item>
-      <item row="10" column="1">
-       <spacer name="horizontalSpacer">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
+      <item row="7" column="1">
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <property name="bottomMargin">
+         <number>0</number>
         </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>200</width>
-          <height>0</height>
-         </size>
+        <item>
+         <widget class="QComboBox" name="channel2ComboBox">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+            <horstretch>1</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="channel2WindowLevelPushButton">
+          <property name="maximumSize">
+           <size>
+            <width>25</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>+</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="7" column="0">
+       <layout class="QHBoxLayout" name="channel2HorizontalLayout">
+        <property name="spacing">
+         <number>6</number>
         </property>
-       </spacer>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QLabel" name="channel2Label">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>Channel 2</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="channel2HorizontalSpacer">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>10</width>
+            <height>10</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="channel2CheckBox">
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
      </layout>
     </widget>

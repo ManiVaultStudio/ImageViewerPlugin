@@ -31,20 +31,20 @@ public: // Enumerations
 	};
 
 	/** TODO */
-	enum class PixelType {
+	enum class PointType {
 		Intensity,		/** Intensity (color images) */
 		Index			/** Index (index images) */
 	};
 
 	/** TODO */
-	static QString pixelTypeName(const PixelType& pixelType)
+	static QString pixelTypeName(const PointType& pixelType)
 	{
 		switch (pixelType)
 		{
-			case PixelType::Intensity:
+			case PointType::Intensity:
 				return "Intensity";
 
-			case PixelType::Index:
+			case PointType::Index:
 				return "Index";
 
 			default:
@@ -80,12 +80,11 @@ public: // Enumerations
 		ColorMap,										/** Color map image */
 		UseConstantColor,								/** Whether to use constant colors for shading */
 		ConstantColor,									/** Const color */
-		PixelType,										/** Type of pixel (e.g. intensity, index) */
-		IndicesDatasetName,								/** Name of the indices dataset */
-		IndicesSelection,								/** Selection of the indices dataset */
+		PointType,										/** Type of point (e.g. intensity, index) */
+		IndexSelectionDatasetName,						/** Name of the indices dataset */
 
 		Start = Channel1Name,							/** Start column */
-		End = IndicesSelection							/** End column */
+		End = IndexSelectionDatasetName					/** End column */
 	};
 
 public:
@@ -338,17 +337,17 @@ public: // Getters/setters
 	void setConstantColor(const QColor& constantColor);
 
 	/**
-	 * Returns the pixel type
+	 * Returns the point type
 	 * @param role Data role
-	 * @return Pixel type in variant form
+	 * @return Point type in variant form
 	 */
-	QVariant pixelType(const int& role = Qt::DisplayRole) const;
+	QVariant pointType(const int& role = Qt::DisplayRole) const;
 
 	/**
-	 * Sets the pixel type
+	 * Sets the point type
 	 * @param pixelType Type of pixel
 	 */
-	void setPixelType(const PixelType& pixelType);
+	void setPointType(const PointType& pointType);
 
 	/**
 	 * Returns the name of the indices dataset
@@ -369,12 +368,6 @@ public: // Getters/setters
 	 * @return Selection of the indices dataset in variant form
 	 */
 	QVariant indicesSelection(const int& role = Qt::DisplayRole) const;
-
-	/**
-	 * Sets the selection of the indices dataset
-	 * @param indicesSelection Selection of the indices dataset
-	 */
-	void setIndicesSelection(const Indices& indicesSelection);
 
 public:
 
@@ -417,7 +410,7 @@ private:
 	 * @param channel Channel
 	 * @param channelIndex Channel index
 	 */
-	void computeMaskChannel(Channel<float>* channel, const ChannelIndex& channelIndex);
+	void computeMaskChannel(Channel<float>* maskChannel, const ChannelIndex& channelIndex);
 
 	/**
 	 * Computes an index image channel
@@ -444,16 +437,16 @@ signals:
 	void colorMapChanged(const QImage& colorMap);
 
 private:
-	Points*				_pointsDataset;				/** Points dataset to which the layer refers */
-	std::uint32_t		_noPoints;					/** Number of points in the dataset */
-	std::uint32_t		_noDimensions;				/** Number of dimensions in the points dataset */
-	QStringList			_dimensionNames;			/** Dimension names in the points dataset */
-	std::uint32_t		_maxNoChannels;				/** Maximum number of channels (determined by the number of dimensions) */
-	ColorSpace			_colorSpace;				/** Color space */
-	QImage				_colorMap;					/** Color map (1D/2D) */
-	bool				_useConstantColor;			/** Pixel color is constant and the alpha is modulated by the intensity of the selected channel */
-	QColor				_constantColor;				/** Constant color */
-	PixelType			_pixelType;					/** Type of pixel (e.g. intensity, index) */
-	QString				_indicesDatasetName;		/** Name of the indices dataset */
-	Indices				_indicesSelection;			/** Selection of the indices dataset */
+	Points*				_pointsDataset;					/** Points dataset to which the layer refers */
+	std::uint32_t		_noPoints;						/** Number of points in the dataset */
+	std::uint32_t		_noDimensions;					/** Number of dimensions in the points dataset */
+	QStringList			_dimensionNames;				/** Dimension names in the points dataset */
+	std::uint32_t		_maxNoChannels;					/** Maximum number of channels (determined by the number of dimensions) */
+	ColorSpace			_colorSpace;					/** Color space */
+	QImage				_colorMap;						/** Color map (1D/2D) */
+	bool				_useConstantColor;				/** Pixel color is constant and the alpha is modulated by the intensity of the selected channel */
+	QColor				_constantColor;					/** Constant color */
+	PointType			_pointType;						/** Type of point (e.g. intensity, index) */
+	QString				_indexSelectionDatasetName;		/** Name of the index selection dataset */
+	Points*				_indexSelectionDataset;			/** Pointer to the index selection dataset */
 };

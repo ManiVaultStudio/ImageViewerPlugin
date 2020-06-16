@@ -11,6 +11,8 @@
 #include <QDebug>
 #include <QImage>
 
+#include <set>
+
 PointsLayer::PointsLayer(const QString& pointsDatasetName, const QString& id, const QString& name, const int& flags) :
 	Layer(pointsDatasetName, Layer::Type::Points, id, name, flags),
 	Channels<float>(ult(ChannelIndex::Count)),
@@ -20,9 +22,9 @@ PointsLayer::PointsLayer(const QString& pointsDatasetName, const QString& id, co
 	_colorMap(),
 	_useConstantColor(false),
 	_constantColor(Qt::green),
-	_pixelType(PixelType::Intensity),
-	_indicesDatasetName(),
-	_indicesSelection()
+	_pointType(PointType::Intensity),
+	_indexSelectionDatasetName(),
+	_indexSelectionDataset(nullptr)
 {
 	init();
 }
@@ -88,7 +90,7 @@ Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
 		case Column::Channel1Name:
 		case Column::Channel1DimensionId:
 		{
-			if (_pixelType == PixelType::Intensity)
+			if (_pointType == PointType::Intensity)
 				flags |= Qt::ItemIsEditable;
 			break;
 		}
@@ -96,7 +98,7 @@ Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
 		case Column::Channel2Name:
 		case Column::Channel2DimensionId:
 		{
-			if (_pixelType == PixelType::Intensity && !_useConstantColor && channel(1)->enabled())
+			if (_pointType == PointType::Intensity && !_useConstantColor && channel(1)->enabled())
 				flags |= Qt::ItemIsEditable;
 
 			break;
@@ -105,7 +107,7 @@ Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
 		case Column::Channel3Name:
 		case Column::Channel3DimensionId:
 		{
-			if (_pixelType == PixelType::Intensity && !_useConstantColor && channel(2)->enabled())
+			if (_pointType == PointType::Intensity && !_useConstantColor && channel(2)->enabled())
 				flags |= Qt::ItemIsEditable;
 
 			break;
@@ -116,7 +118,7 @@ Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
 
 		case Column::Channel2Enabled:
 		{
-			if (_pixelType == PixelType::Intensity && !_useConstantColor && channel(0)->enabled())
+			if (_pointType == PointType::Intensity && !_useConstantColor && channel(0)->enabled())
 				flags |= Qt::ItemIsEditable;
 
 			break;
@@ -124,7 +126,7 @@ Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
 
 		case Column::Channel3Enabled:
 		{
-			if (_pixelType == PixelType::Intensity && !_useConstantColor && channel(1)->enabled() && _noDimensions >= 3)
+			if (_pointType == PointType::Intensity && !_useConstantColor && channel(1)->enabled() && _noDimensions >= 3)
 				flags |= Qt::ItemIsEditable;
 
 			break;
@@ -139,7 +141,7 @@ Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
 
 		case Column::ColorSpace:
 		{
-			if (_pixelType == PixelType::Intensity && noChannels(Qt::EditRole).toInt() == 3)
+			if (_pointType == PointType::Intensity && noChannels(Qt::EditRole).toInt() == 3)
 				flags |= Qt::ItemIsEditable;
 
 			break;
@@ -155,29 +157,29 @@ Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
 			
 		case Column::UseConstantColor:
 		{
-			flags |= Qt::ItemIsEditable;
+			if (_pointType == PointType::Intensity)
+				flags |= Qt::ItemIsEditable;
+
 			break;
 		}
 
 		case Column::ConstantColor:
 		{
 			flags |= Qt::ItemIsEditable;
+
 			break;
 		}
 
-		case Column::PixelType:
+		case Column::PointType:
 			break;
 
-		case Column::IndicesDatasetName:
+		case Column::IndexSelectionDatasetName:
 		{
-			if (_pixelType == PixelType::Index)
+			if (_pointType == PointType::Index)
 				flags |= Qt::ItemIsEditable;
 
 			break;
 		}
-
-		case Column::IndicesSelection:
-			break;
 
 		default:
 			break;
@@ -264,14 +266,11 @@ QVariant PointsLayer::data(const QModelIndex& index, const int& role) const
 		case Column::ConstantColor:
 			return constantColor(role);
 
-		case Column::PixelType:
-			return pixelType(role);
+		case Column::PointType:
+			return pointType(role);
 
-		case Column::IndicesDatasetName:
+		case Column::IndexSelectionDatasetName:
 			return indicesDatasetName(role);
-
-		case Column::IndicesSelection:
-			return indicesSelection(role);
 
 		default:
 			break;
@@ -468,11 +467,11 @@ QModelIndexList PointsLayer::setData(const QModelIndex& index, const QVariant& v
 			break;
 		}
 
-		case Column::PixelType:
+		case Column::PointType:
 		{
-			setPixelType(static_cast<PixelType>(value.toInt()));
-
-			affectedIds << index.siblingAtColumn(ult(Column::IndicesDatasetName));
+			setPointType(static_cast<PointType>(value.toInt()));
+			
+			affectedIds << index.siblingAtColumn(ult(Column::IndexSelectionDatasetName));
 			affectedIds << index.siblingAtColumn(ult(Column::Channel1DimensionId));
 			affectedIds << index.siblingAtColumn(ult(Column::Channel2DimensionId));
 			affectedIds << index.siblingAtColumn(ult(Column::Channel3DimensionId));
@@ -481,20 +480,14 @@ QModelIndexList PointsLayer::setData(const QModelIndex& index, const QVariant& v
 			affectedIds << index.siblingAtColumn(ult(Column::Channel3Enabled));
 			affectedIds << index.siblingAtColumn(ult(Column::ColorSpace));
 			affectedIds << index.siblingAtColumn(ult(Column::ColorMap));
+			affectedIds << index.siblingAtColumn(ult(Column::UseConstantColor));
 
 			break;
 		}
 
-		case Column::IndicesDatasetName:
+		case Column::IndexSelectionDatasetName:
 		{
 			setIndicesDatasetName(value.toString());
-
-			break;
-		}
-
-		case Column::IndicesSelection:
-		{
-			setIndicesSelection(value.value<Indices>());
 			break;
 		}
 
@@ -903,9 +896,9 @@ void PointsLayer::setConstantColor(const QColor& constantColor)
 	_constantColor = constantColor;
 }
 
-QVariant PointsLayer::pixelType(const int& role /*= Qt::DisplayRole*/) const
+QVariant PointsLayer::pointType(const int& role /*= Qt::DisplayRole*/) const
 {
-	const auto pixelTypeString = pixelTypeName(_pixelType);
+	const auto pixelTypeString = pixelTypeName(_pointType);
 
 	switch (role)
 	{
@@ -913,7 +906,7 @@ QVariant PointsLayer::pixelType(const int& role /*= Qt::DisplayRole*/) const
 			return pixelTypeString;
 
 		case Qt::EditRole:
-			return ult(_pixelType);
+			return ult(_pointType);
 
 		case Qt::ToolTipRole:
 			return QString("Pixel type: %1").arg(pixelTypeString);
@@ -925,9 +918,13 @@ QVariant PointsLayer::pixelType(const int& role /*= Qt::DisplayRole*/) const
 	return QVariant();
 }
 
-void PointsLayer::setPixelType(const PixelType& pixelType)
+void PointsLayer::setPointType(const PointType& pointType)
 {
-	_pixelType = pixelType;
+	_pointType		= pointType;
+	_indexSelectionDataset	= _indexSelectionDatasetName.isEmpty() ? nullptr : &imageViewerPlugin->requestData<Points>(_indexSelectionDatasetName);
+
+	computeChannel(ChannelIndex::Channel1);
+	computeChannel(ChannelIndex::Mask);
 }
 
 QVariant PointsLayer::indicesDatasetName(const int& role /*= Qt::DisplayRole*/) const
@@ -935,13 +932,13 @@ QVariant PointsLayer::indicesDatasetName(const int& role /*= Qt::DisplayRole*/) 
 	switch (role)
 	{
 		case Qt::DisplayRole:
-			return _indicesDatasetName;
+			return _indexSelectionDatasetName;
 
 		case Qt::EditRole:
-			return _indicesDatasetName;
+			return _indexSelectionDatasetName;
 
 		case Qt::ToolTipRole:
-			return QString("Name of the indices dataset: %1").arg(_indicesDatasetName);
+			return QString("Name of the indices dataset: %1").arg(_indexSelectionDatasetName);
 
 		default:
 			break;
@@ -952,11 +949,15 @@ QVariant PointsLayer::indicesDatasetName(const int& role /*= Qt::DisplayRole*/) 
 
 void PointsLayer::setIndicesDatasetName(const QString& indicesDatasetName)
 {
-	_indicesDatasetName = indicesDatasetName;
+	_indexSelectionDatasetName	= indicesDatasetName;
+	_indexSelectionDataset		= _indexSelectionDatasetName.isEmpty() ? nullptr : &imageViewerPlugin->requestData<Points>(_indexSelectionDatasetName);
+
+	computeChannel(ChannelIndex::Channel1);
 }
 
 QVariant PointsLayer::indicesSelection(const int& role /*= Qt::DisplayRole*/) const
 {
+	/*
 	auto selection = QStringList();
 
 	if (_indicesSelection.size() <= 2) {
@@ -985,15 +986,8 @@ QVariant PointsLayer::indicesSelection(const int& role /*= Qt::DisplayRole*/) co
 		default:
 			break;
 	}
-
+	*/
 	return QVariant();
-}
-
-void PointsLayer::setIndicesSelection(const Indices& indicesSelection)
-{
-	_indicesSelection = indicesSelection;
-
-	computeChannel(ChannelIndex::Channel1);
 }
 
 void PointsLayer::computeChannel(const ChannelIndex& channelIndex)
@@ -1015,9 +1009,9 @@ void PointsLayer::computeChannel(const ChannelIndex& channelIndex)
 			if (channel->dimensionId() < 0)
 				break;
 
-			switch (_pixelType)
+			switch (_pointType)
 			{
-				case PointsLayer::PixelType::Intensity:
+				case PointsLayer::PointType::Intensity:
 				{
 					switch (static_cast<ImageData::Type>(imageCollectionType()))
 					{
@@ -1040,10 +1034,30 @@ void PointsLayer::computeChannel(const ChannelIndex& channelIndex)
 					break;
 				}
 
-				case PointsLayer::PixelType::Index:
+				case PointsLayer::PointType::Index:
 				{
+					/*
 					if (channelIndex == ChannelIndex::Channel1) {
 						computeIndexChannel(channel, channelIndex);
+					}
+					*/
+
+					switch (static_cast<ImageData::Type>(imageCollectionType()))
+					{
+						case ImageData::Type::Sequence:
+						{
+							computeSequenceChannel(channel, channelIndex);
+							break;
+						}
+
+						case ImageData::Type::Stack:
+						{
+							computeStackChannel(channel, channelIndex);
+							break;
+						}
+
+						default:
+							break;
 					}
 
 					break;
@@ -1140,43 +1154,83 @@ void PointsLayer::computeStackChannel(Channel<float>* channel, const ChannelInde
 	emit channelChanged(ult(channelIndex));
 }
 
-void PointsLayer::computeMaskChannel(Channel<float>* channel, const ChannelIndex& channelIndex)
+void PointsLayer::computeMaskChannel(Channel<float>* maskChannel, const ChannelIndex& channelIndex)
 {
-	if (_pointsDataset->isDerivedData()) {
-		auto& sourceData = _pointsDataset->getSourceData<Points>(*_pointsDataset);
+	switch (_pointType)
+	{
+		case PointsLayer::PointType::Intensity:
+		{
+			if (_pointsDataset->isDerivedData()) {
+				auto& sourceData = _pointsDataset->getSourceData<Points>(*_pointsDataset);
 
-		if (sourceData.isFull()) {
-			channel->fill(1.0f);
-		}
-		else {
-			for (auto index : sourceData.indices) {
-				(*channel)[index] = 1.0f;
+				if (sourceData.isFull()) {
+					maskChannel->fill(1.0f);
+				}
+				else {
+					for (auto index : sourceData.indices) {
+						(*maskChannel)[index] = 1.0f;
+					}
+				}
 			}
-		}
-	}
-	else {
-		if (_pointsDataset->isFull()) {
-			channel->fill(1.0f);
-		}
-		else {
-			for (auto index : _pointsDataset->indices) {
-				(*channel)[index] = 1.0f;
+			else {
+				if (_pointsDataset->isFull()) {
+					maskChannel->fill(1.0f);
+				}
+				else {
+					for (auto index : _pointsDataset->indices) {
+						(*maskChannel)[index] = 1.0f;
+					}
+				}
 			}
+
+			break;
 		}
+
+		case PointsLayer::PointType::Index:
+		{
+			maskChannel->fill(0.0f);
+
+			if (_indexSelectionDataset == nullptr)
+				break;
+
+			auto selectionSet = std::set<std::uint32_t>(_indexSelectionDataset->indices.begin(), _indexSelectionDataset->indices.end());
+
+			if (selectionSet.size() > 0) {
+				auto channel1 = this->channel(ult(ChannelIndex::Channel1));
+
+				const auto index = 0;
+
+				for (const auto& element : channel1->elements()) {
+					const auto index = static_cast<std::uint32_t>(element);
+
+					(*maskChannel)[index] = selectionSet.find(index) == selectionSet.end() ? 0.0f : 1.0f;
+				}
+			}
+			/**/
+
+			break;
+		}
+
+		default:
+			break;
 	}
 
-	channel->setChanged();
+	maskChannel->setChanged();
 
 	emit channelChanged(ult(channelIndex));
 }
 
 void PointsLayer::computeIndexChannel(Channel<float>* channel, const ChannelIndex& channelIndex)
 {
-	/*
 	auto& data = _pointsDataset->getData();
 
 	const auto dimensionId = channel->dimensionId();
 
+	channel->fill(1.0f);
+
+	qDebug() << _indexSelectionDatasetName;
+
+	/*
 	if (_pointsDataset->isDerivedData()) {
 		auto& sourceData = _pointsDataset->getSourceData<Points>(*_pointsDataset);
 
@@ -1205,11 +1259,11 @@ void PointsLayer::computeIndexChannel(Channel<float>* channel, const ChannelInde
 			}
 		}
 	}
+	*/
 
 	channel->setChanged();
 
 	emit channelChanged(ult(channelIndex));
-	*/
 }
 
 void PointsLayer::updateChannelNames()

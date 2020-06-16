@@ -245,6 +245,8 @@ public:
 		if (_elements.empty())
 			return;
 
+		_range.setFullRange();
+
 		//qDebug() << "Compute image range";
 
 		const auto[min, max] = std::minmax_element(_elements.begin(), _elements.end());
@@ -260,8 +262,8 @@ public:
 
 		const auto maxWindow = _range.length();
 
-		_level = std::clamp(_range.min() + (_levelNormalized * maxWindow), _range.min(), _range.max());
-		_window = std::clamp(_windowNormalized * maxWindow, _range.min(), _range.max());
+		_level		= std::clamp(_range.min() + (_levelNormalized * maxWindow), _range.min(), _range.max());
+		_window		= std::clamp(_windowNormalized * maxWindow, _range.min(), _range.max());
 
 		_displayRange.setMin(std::clamp(_level - (_window / 2.0f), _range.min(), _range.max()));
 		_displayRange.setMax(std::clamp(_level + (_window / 2.0f), _range.min(), _range.max()));
