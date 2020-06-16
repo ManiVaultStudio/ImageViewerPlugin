@@ -103,21 +103,26 @@ protected: // Initialization
 	/** Initializes the layer */
 	void init();
 
-public:
-
-	/**
-	 * Adjust the layer scaling to fit into the supplied image size
-	 * @param imageSize Size of the image to scale into
-	 */
-	void matchScaling(const QSize& targetImageSize);
-
-public: // 2D painting
+public: // Miscellaneous
 
 	/**
 	 * Paints the layer
 	 * @param painter Pointer to painter
 	 */
 	void paint(QPainter* painter) override;
+
+	/**
+	 * Handles a widget event
+	 * @param event Event
+	 * @param index Model index
+	 */
+	void handleEvent(QEvent* event, const QModelIndex& index) override;
+
+	/**
+	 * Adjust the layer scaling to fit into the supplied image size
+	 * @param imageSize Size of the image to scale into
+	 */
+	void matchScaling(const QSize& targetImageSize);
 
 public: // Inherited MVC
 

@@ -344,7 +344,6 @@ void PointsLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 			const auto useConstantColor	= _layersModel->data(topLeft.siblingAtColumn(ult(PointsLayer::Column::UseConstantColor)), Qt::EditRole).toBool();
 			const auto flags			= _layersModel->flags(topLeft.siblingAtColumn(ult(PointsLayer::Column::UseConstantColor)));
 
-			qDebug() << (flags & Qt::ItemIsEditable);
 			_ui->constantColorCheckBox->setEnabled(flags & Qt::ItemIsEditable);
 			_ui->constantColorCheckBox->blockSignals(true);
 			_ui->constantColorCheckBox->setChecked(useConstantColor);

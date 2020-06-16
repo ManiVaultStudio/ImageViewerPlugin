@@ -9,7 +9,9 @@
 #include "ImageData/Images.h"
 
 #include <QDebug>
-#include <QImage>
+//#include <QImage>
+#include <QPainter>
+#include <QMouseEvent>
 
 #include <set>
 
@@ -80,6 +82,56 @@ void PointsLayer::matchScaling(const QSize& targetImageSize)
 void PointsLayer::paint(QPainter* painter)
 {
 	Layer::paint(painter);
+
+	if (!isFlagSet(Node::Flag::Enabled) || renderer->interactionMode() != InteractionMode::LayerEditing)
+		return;
+
+	if (_mousePositions.isEmpty())
+		return;
+}
+
+void PointsLayer::handleEvent(QEvent* event, const QModelIndex& index)
+{
+	if (renderer->interactionMode() != InteractionMode::LayerEditing)
+		return;
+
+	QModelIndexList affectedIds;
+
+	switch (event->type())
+	{
+		case QEvent::MouseButtonPress:
+			break;
+
+		case QEvent::MouseButtonRelease:
+			break;
+
+		case QEvent::MouseMove:
+		{
+			auto mouseEvent = static_cast<QMouseEvent*>(event);
+
+			const auto mousePosition = mouseEvent->pos();
+
+			if (_mousePositions.isEmpty())
+				_mousePositions << mousePosition;
+
+			_mousePositions[0] = mousePosition;
+
+			break;
+		}
+
+		case QEvent::Wheel:
+		case QEvent::KeyPress:
+		case QEvent::KeyRelease:
+			break;
+
+		default:
+			break;
+	}
+
+	for (auto index : affectedIds)
+		emit Layer::imageViewerPlugin->layersModel().dataChanged(index, index);
+
+	Renderable::renderer->render();
 }
 
 Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
