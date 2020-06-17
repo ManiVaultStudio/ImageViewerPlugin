@@ -172,7 +172,7 @@ public:
 	Layer(const QString& datasetName, const Type& type, const QString& id, const QString& name, const int& flags);
 
 	/** Destructor */
-	virtual ~Layer();
+	~Layer() override;
 
 public: // Miscellaneous
 

@@ -32,7 +32,7 @@ public: // Construction/destruction
 	LayersWidget(QWidget* parent);
 
 	/** Destructor */
-	~LayersWidget();
+	~LayersWidget() override;
 
 public: // Initialization
 
@@ -48,13 +48,13 @@ private: // Drag and drop
 	 * Invoked when an item is dragged into the widget
 	 * @param dragEnterEvent Drag enter event
 	 */
-	void dragEnterEvent(QDragEnterEvent* dragEnterEvent);
+	void dragEnterEvent(QDragEnterEvent* dragEnterEvent) override;
 
 	/**
 	 * Invoked when an item is dropped onto the widget
 	 * @param dropEvent Drop event
 	 */
-	void dropEvent(QDropEvent* dropEvent);
+	void dropEvent(QDropEvent* dropEvent) override;
 
 private: // Miscellaneous
 

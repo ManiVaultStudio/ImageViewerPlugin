@@ -41,7 +41,7 @@ protected:
 		 * @param row Row index
 		 * @param parent Parent index
 		 */
-		bool filterAcceptsRow(int row, const QModelIndex& parent) const
+		bool filterAcceptsRow(int row, const QModelIndex& parent) const override
 		{
 			const auto index = sourceModel()->index(row, ult(ColorMapModel::Column::NoDimensions));
 			return ult(_type) == sourceModel()->data(index, Qt::EditRole).toInt();
