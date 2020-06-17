@@ -12,6 +12,7 @@
 //#include <QImage>
 #include <QPainter>
 #include <QMouseEvent>
+#include <QTextDocument>
 
 #include <set>
 
@@ -88,6 +89,41 @@ void PointsLayer::paint(QPainter* painter)
 
 	if (_mousePositions.isEmpty())
 		return;
+
+	//painter->drawPoint(_mousePositions.last());
+
+	/*
+	const auto textAngle = 0.75f * M_PI;
+	const auto size = 12.0f;
+	const auto textCenter = brushCenter + (_brushRadius + size) * QPointF(sin(textAngle), cos(textAngle));
+
+	textRectangle = QRectF(textCenter - QPointF(size, size), textCenter + QPointF(size, size));
+	*/
+
+	//renderer->
+	painter->setPen(Qt::SolidLine);
+	painter->setBrush(Qt::red);
+	painter->setPen(Qt::SolidLine);
+	painter->drawText(_mousePositions.last(), u8"Value:");//_mousePositions.last()
+
+	
+
+	QTextDocument hintsDocument;
+
+	QString hintsHtml;
+
+	const auto color = QString("rgba(%1, %2, %3, %4)").arg(QString::number(hintsColor.red()), QString::number(hintsColor.green()), QString::number(hintsColor.blue()), QString::number(isFlagSet(Flag::Enabled) ? hintsColor.alpha() : 80));
+
+	hintsHtml += QString("<div><table style='color: %1;'>").arg(color);
+
+	hintsHtml += QString("<tr><td>%1</td><td>%2</td></tr>").arg("Channel 1", "10.0");
+
+	hintsHtml += "</table></div>";
+
+	hintsDocument.setTextWidth(200);
+	//hintsDocument.setDocumentMargin(textMargins);
+	hintsDocument.setHtml(hintsHtml);
+	hintsDocument.drawContents(painter, QRect(_mousePositions.last(), QSize(1000, 1000)));
 }
 
 void PointsLayer::handleEvent(QEvent* event, const QModelIndex& index)

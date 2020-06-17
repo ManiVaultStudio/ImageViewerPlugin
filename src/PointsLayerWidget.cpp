@@ -17,8 +17,6 @@ PointsLayerWidget::PointsLayerWidget(QWidget* parent) :
 	_layersModel(nullptr)
 {
 	_ui->setupUi(this);
-
-	_ui->datasetInfoGroupBox->hide();
 }
 
 void PointsLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
@@ -39,6 +37,14 @@ void PointsLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 	_ui->channel1WindowLevelPushButton->setText(u8"\uf042");
 	_ui->channel2WindowLevelPushButton->setText(u8"\uf042");
 	_ui->channel3WindowLevelPushButton->setText(u8"\uf042");
+
+	_ui->channel1ProbePushButton->setFont(font);
+	_ui->channel2ProbePushButton->setFont(font);
+	_ui->channel3ProbePushButton->setFont(font);
+
+	_ui->channel1ProbePushButton->setText(u8"\uf1fb");
+	_ui->channel2ProbePushButton->setText(u8"\uf1fb");
+	_ui->channel3ProbePushButton->setText(u8"\uf1fb");
 
 	QObject::connect(_layersModel, &LayersModel::dataChanged, this, &PointsLayerWidget::updateData);
 
@@ -215,27 +221,33 @@ void PointsLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 		}
 
 		if (column == ult(PointsLayer::Column::Channel1DimensionId)) {
-			const auto channel1Flags = _layersModel->flags(topLeft.siblingAtColumn(ult(PointsLayer::Column::Channel1DimensionId)));
+			const auto flags	= _layersModel->flags(topLeft.siblingAtColumn(ult(PointsLayer::Column::Channel1DimensionId)));
+			const auto enabled	= flags & Qt::ItemIsEditable;
 
-			_ui->channel1Label->setEnabled(channel1Flags & Qt::ItemIsEditable);
-			_ui->channel1ComboBox->setEnabled(channel1Flags & Qt::ItemIsEditable);
-			_ui->channel1WindowLevelPushButton->setEnabled(channel1Flags & Qt::ItemIsEditable);
+			_ui->channel1Label->setEnabled(enabled);
+			_ui->channel1ComboBox->setEnabled(enabled);
+			_ui->channel1WindowLevelPushButton->setEnabled(enabled);
+			_ui->channel1ProbePushButton->setEnabled(enabled);
 		}
 
 		if (column == ult(PointsLayer::Column::Channel2DimensionId)) {
-			const auto channel2Flags = _layersModel->flags(topLeft.siblingAtColumn(ult(PointsLayer::Column::Channel2DimensionId)));
+			const auto flags	= _layersModel->flags(topLeft.siblingAtColumn(ult(PointsLayer::Column::Channel2DimensionId)));
+			const auto enabled	= flags & Qt::ItemIsEditable;
 
-			_ui->channel2Label->setEnabled(channel2Flags & Qt::ItemIsEditable);
-			_ui->channel2ComboBox->setEnabled(channel2Flags & Qt::ItemIsEditable);
-			_ui->channel2WindowLevelPushButton->setEnabled(channel2Flags & Qt::ItemIsEditable);
+			_ui->channel2Label->setEnabled(enabled);
+			_ui->channel2ComboBox->setEnabled(enabled);
+			_ui->channel2WindowLevelPushButton->setEnabled(enabled);
+			_ui->channel2ProbePushButton->setEnabled(enabled);
 		}
 
 		if (column == ult(PointsLayer::Column::Channel3DimensionId)) {
-			const auto channel3Flags = _layersModel->flags(topLeft.siblingAtColumn(ult(PointsLayer::Column::Channel3DimensionId)));
+			const auto flags	= _layersModel->flags(topLeft.siblingAtColumn(ult(PointsLayer::Column::Channel3DimensionId)));
+			const auto enabled	= flags & Qt::ItemIsEditable;
 
-			_ui->channel3Label->setEnabled(channel3Flags & Qt::ItemIsEditable);
-			_ui->channel3ComboBox->setEnabled(channel3Flags & Qt::ItemIsEditable);
-			_ui->channel3WindowLevelPushButton->setEnabled(channel3Flags & Qt::ItemIsEditable);
+			_ui->channel3Label->setEnabled(enabled);
+			_ui->channel3ComboBox->setEnabled(enabled);
+			_ui->channel3WindowLevelPushButton->setEnabled(enabled);
+			_ui->channel3ProbePushButton->setEnabled(enabled);
 		}
 
 		if (column == ult(PointsLayer::Column::Channel1Enabled)) {
@@ -266,24 +278,6 @@ void PointsLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 			_ui->channel3CheckBox->blockSignals(true);
 			_ui->channel3CheckBox->setChecked(channel3Enabled);
 			_ui->channel3CheckBox->blockSignals(false);
-		}
-
-		if (column == ult(PointsLayer::Column::NoPoints)) {
-			_ui->noPointsLineEdit->blockSignals(true);
-			_ui->noPointsLineEdit->setText(QString::number(_layersModel->data(topLeft.siblingAtColumn(ult(PointsLayer::Column::NoPoints)), Qt::EditRole).toInt()));
-			_ui->noPointsLineEdit->blockSignals(false);
-		}
-
-		if (column == ult(PointsLayer::Column::NoDimensions)) {
-			_ui->noDimensionsLineEdit->blockSignals(true);
-			_ui->noDimensionsLineEdit->setText(QString::number(_layersModel->data(topLeft.siblingAtColumn(ult(PointsLayer::Column::NoDimensions)), Qt::EditRole).toInt()));
-			_ui->noDimensionsLineEdit->blockSignals(false);
-		}
-
-		if (column == ult(Layer::Column::SelectionSize)) {
-			_ui->selectionSizeLineEdit->blockSignals(true);
-			_ui->selectionSizeLineEdit->setText(QString::number(_layersModel->data(topLeft.siblingAtColumn(ult(Layer::Column::SelectionSize)), Qt::EditRole).toInt()));
-			_ui->selectionSizeLineEdit->blockSignals(false);
 		}
 
 		if (column == ult(PointsLayer::Column::ColorSpace)) {

@@ -539,7 +539,7 @@ void Layer::drawHints(QPainter* painter)
 			hintsHtml += QString("<tr style='font-weight: %1'><td width=120>%2</td><td>: %3</td></tr>").arg(hint.isActive() ? "bold" : "normal", hint.title(), hint.description());
 	}
 
-	hintsHtml += "</table></div>?";
+	hintsHtml += "</table></div>";
 
 	hintsDocument.setTextWidth(painter->viewport().width());
 	hintsDocument.setDocumentMargin(textMargins);

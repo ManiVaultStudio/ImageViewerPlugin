@@ -93,7 +93,10 @@
        </widget>
       </item>
       <item row="9" column="1">
-       <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="0,0">
+       <layout class="QHBoxLayout" name="channel3EditHorizontalLayout" stretch="0,0,0">
+        <property name="spacing">
+         <number>2</number>
+        </property>
         <property name="bottomMargin">
          <number>0</number>
         </property>
@@ -118,8 +121,27 @@
             <height>16777215</height>
            </size>
           </property>
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Window/level&lt;/span&gt;&lt;br/&gt;Change window/level settings&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
           <property name="text">
            <string>+</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="channel3ProbePushButton">
+          <property name="maximumSize">
+           <size>
+            <width>25</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Probe channel&lt;/span&gt;&lt;br/&gt;Probe the channel value in the viewer&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string>P</string>
           </property>
          </widget>
         </item>
@@ -151,7 +173,7 @@
        </widget>
       </item>
       <item row="5" column="0">
-       <layout class="QHBoxLayout" name="channel1HorizontalLayout">
+       <layout class="QHBoxLayout" name="channel1TitleHorizontalLayout">
         <property name="spacing">
          <number>6</number>
         </property>
@@ -325,7 +347,10 @@
        </widget>
       </item>
       <item row="5" column="1">
-       <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0">
+       <layout class="QHBoxLayout" name="channel1EditHorizontalLayout" stretch="0,0,0">
+        <property name="spacing">
+         <number>2</number>
+        </property>
         <property name="bottomMargin">
          <number>0</number>
         </property>
@@ -358,19 +383,38 @@
           </property>
           <property name="maximumSize">
            <size>
-            <width>25</width>
-            <height>16777215</height>
+            <width>22</width>
+            <height>22</height>
            </size>
+          </property>
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Window/level&lt;/span&gt;&lt;br/&gt;Change window/level settings&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="text">
            <string>+</string>
           </property>
          </widget>
         </item>
+        <item>
+         <widget class="QPushButton" name="channel1ProbePushButton">
+          <property name="maximumSize">
+           <size>
+            <width>22</width>
+            <height>22</height>
+           </size>
+          </property>
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Probe channel&lt;/span&gt;&lt;br/&gt;Probe the channel value in the viewer&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string>p</string>
+          </property>
+         </widget>
+        </item>
        </layout>
       </item>
       <item row="9" column="0">
-       <layout class="QHBoxLayout" name="channel3HorizontalLayout">
+       <layout class="QHBoxLayout" name="channel3TitleHorizontalLayout">
         <property name="spacing">
          <number>6</number>
         </property>
@@ -407,7 +451,10 @@
        </layout>
       </item>
       <item row="7" column="1">
-       <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <layout class="QHBoxLayout" name="channel2EditHorizontalLayout">
+        <property name="spacing">
+         <number>2</number>
+        </property>
         <property name="bottomMargin">
          <number>0</number>
         </property>
@@ -432,15 +479,34 @@
             <height>16777215</height>
            </size>
           </property>
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Window/level&lt;br/&gt;&lt;/span&gt;Change window/level settings&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
           <property name="text">
            <string>+</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="channel2ProbePushButton">
+          <property name="maximumSize">
+           <size>
+            <width>25</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Probe channel&lt;/span&gt;&lt;br/&gt;Probe the channel value in the viewer&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string>P</string>
           </property>
          </widget>
         </item>
        </layout>
       </item>
       <item row="7" column="0">
-       <layout class="QHBoxLayout" name="channel2HorizontalLayout">
+       <layout class="QHBoxLayout" name="channel2TitleHorizontalLayout">
         <property name="spacing">
          <number>6</number>
         </property>
@@ -478,66 +544,6 @@
          </widget>
         </item>
        </layout>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item>
-    <widget class="QGroupBox" name="datasetInfoGroupBox">
-     <property name="title">
-      <string>Dataset info</string>
-     </property>
-     <layout class="QGridLayout" name="gridLayout_2">
-      <item row="0" column="1">
-       <widget class="QLineEdit" name="noPointsLineEdit">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QLineEdit" name="selectionSizeLineEdit">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0">
-       <widget class="QLabel" name="noPointsLabel">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="text">
-         <string>No. points</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="selectionSizeLabel">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="text">
-         <string>Selection size</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="noDimensionsLabel">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="text">
-         <string>No. dimensions</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QLineEdit" name="noDimensionsLineEdit">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-       </widget>
       </item>
      </layout>
     </widget>
