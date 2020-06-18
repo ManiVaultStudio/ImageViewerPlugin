@@ -163,11 +163,11 @@ void LayersWidget::dragEnterEvent(QDragEnterEvent* dragEnterEvent)
 		if (pointsDataset.isDerivedData()) {
 			auto sourcePointsDataset = hdps::DataSet::getSourceData<Points>(pointsDataset);
 
-			if (sourcePointsDataset.properties().value("Type", "").toString() == "Images")
+			if (sourcePointsDataset.getProperty("Type", "").toString() == "Images")
 				dragEnterEvent->acceptProposedAction();
 		}
 		else {
-			if (pointsDataset.properties().value("Type", "").toString() == "Images")
+			if (pointsDataset.getProperty("Type", "").toString() == "Images")
 				dragEnterEvent->acceptProposedAction();
 		}
 	}

@@ -707,10 +707,10 @@ QSize SelectionLayer::imageSize() const
 	if (_pointsDataset->isDerivedData()) {
 		auto sourcePointsDataset = hdps::DataSet::getSourceData<Points>(*_pointsDataset);
 
-		return sourcePointsDataset.properties().value("ImageSize", "").toSize();
+		return sourcePointsDataset.getProperty("ImageSize", QSize()).toSize();
 	}
 
-	return _pointsDataset->properties().value("ImageSize", "").toSize();
+	return _pointsDataset->getProperty("ImageSize", QSize()).toSize();
 }
 
 Qt::ItemFlags SelectionLayer::flags(const QModelIndex& index) const

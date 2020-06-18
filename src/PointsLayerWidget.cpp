@@ -46,6 +46,10 @@ void PointsLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 	_ui->channel2ProbePushButton->setText(u8"\uf1fb");
 	_ui->channel3ProbePushButton->setText(u8"\uf1fb");
 
+	_ui->channel1ProbePushButton->setVisible(false);
+	_ui->channel2ProbePushButton->setVisible(false);
+	_ui->channel3ProbePushButton->setVisible(false);
+
 	QObject::connect(_layersModel, &LayersModel::dataChanged, this, &PointsLayerWidget::updateData);
 
 	QObject::connect(&_layersModel->selectionModel(), &QItemSelectionModel::selectionChanged, [this](const QItemSelection& selected, const QItemSelection& deselected) {
@@ -221,33 +225,33 @@ void PointsLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 		}
 
 		if (column == ult(PointsLayer::Column::Channel1DimensionId)) {
-			const auto flags	= _layersModel->flags(topLeft.siblingAtColumn(ult(PointsLayer::Column::Channel1DimensionId)));
-			const auto enabled	= flags & Qt::ItemIsEditable;
+			const auto flags			= _layersModel->flags(topLeft.siblingAtColumn(ult(PointsLayer::Column::Channel1DimensionId)));
+			const auto channelEnabled	= flags & Qt::ItemIsEditable;
 
-			_ui->channel1Label->setEnabled(enabled);
-			_ui->channel1ComboBox->setEnabled(enabled);
-			_ui->channel1WindowLevelPushButton->setEnabled(enabled);
-			_ui->channel1ProbePushButton->setEnabled(enabled);
+			_ui->channel1Label->setEnabled(channelEnabled);
+			_ui->channel1ComboBox->setEnabled(channelEnabled);
+			_ui->channel1WindowLevelPushButton->setEnabled(channelEnabled);
+			_ui->channel1ProbePushButton->setEnabled(channelEnabled);
 		}
 
 		if (column == ult(PointsLayer::Column::Channel2DimensionId)) {
-			const auto flags	= _layersModel->flags(topLeft.siblingAtColumn(ult(PointsLayer::Column::Channel2DimensionId)));
-			const auto enabled	= flags & Qt::ItemIsEditable;
+			const auto flags			= _layersModel->flags(topLeft.siblingAtColumn(ult(PointsLayer::Column::Channel2DimensionId)));
+			const auto channelEnabled	= flags & Qt::ItemIsEditable;
 
-			_ui->channel2Label->setEnabled(enabled);
-			_ui->channel2ComboBox->setEnabled(enabled);
-			_ui->channel2WindowLevelPushButton->setEnabled(enabled);
-			_ui->channel2ProbePushButton->setEnabled(enabled);
+			_ui->channel2Label->setEnabled(channelEnabled);
+			_ui->channel2ComboBox->setEnabled(channelEnabled);
+			_ui->channel2WindowLevelPushButton->setEnabled(channelEnabled);
+			_ui->channel2ProbePushButton->setEnabled(channelEnabled);
 		}
 
 		if (column == ult(PointsLayer::Column::Channel3DimensionId)) {
-			const auto flags	= _layersModel->flags(topLeft.siblingAtColumn(ult(PointsLayer::Column::Channel3DimensionId)));
-			const auto enabled	= flags & Qt::ItemIsEditable;
+			const auto flags			= _layersModel->flags(topLeft.siblingAtColumn(ult(PointsLayer::Column::Channel3DimensionId)));
+			const auto channelEnabled	= flags & Qt::ItemIsEditable;
 
-			_ui->channel3Label->setEnabled(enabled);
-			_ui->channel3ComboBox->setEnabled(enabled);
-			_ui->channel3WindowLevelPushButton->setEnabled(enabled);
-			_ui->channel3ProbePushButton->setEnabled(enabled);
+			_ui->channel3Label->setEnabled(channelEnabled);
+			_ui->channel3ComboBox->setEnabled(channelEnabled);
+			_ui->channel3WindowLevelPushButton->setEnabled(channelEnabled);
+			_ui->channel3ProbePushButton->setEnabled(channelEnabled);
 		}
 
 		if (column == ult(PointsLayer::Column::Channel1Enabled)) {

@@ -98,7 +98,7 @@ void PointsLayer::paint(QPainter* painter)
 	const auto textCenter = brushCenter + (_brushRadius + size) * QPointF(sin(textAngle), cos(textAngle));
 
 	textRectangle = QRectF(textCenter - QPointF(size, size), textCenter + QPointF(size, size));
-	*/
+	
 
 	//renderer->
 	painter->setPen(Qt::SolidLine);
@@ -124,6 +124,7 @@ void PointsLayer::paint(QPainter* painter)
 	//hintsDocument.setDocumentMargin(textMargins);
 	hintsDocument.setHtml(hintsHtml);
 	hintsDocument.drawContents(painter, QRect(_mousePositions.last(), QSize(1000, 1000)));
+	*/
 }
 
 void PointsLayer::handleEvent(QEvent* event, const QModelIndex& index)
@@ -591,10 +592,10 @@ QSize PointsLayer::imageSize() const
 	if (_pointsDataset->isDerivedData()) {
 		auto sourcePointsDataset = hdps::DataSet::getSourceData<Points>(*_pointsDataset);
 
-		return sourcePointsDataset.properties().value("ImageSize", "").toSize();
+		return sourcePointsDataset.getProperty("ImageSize", QSize()).toSize();
 	}
 
-	return _pointsDataset->properties().value("ImageSize", "").toSize();
+	return _pointsDataset->getProperty("ImageSize", QSize()).toSize();
 }
 
 std::int32_t PointsLayer::imageCollectionType() const
@@ -602,10 +603,10 @@ std::int32_t PointsLayer::imageCollectionType() const
 	if (_pointsDataset->isDerivedData()) {
 		auto sourcePointsDataset = hdps::DataSet::getSourceData<Points>(*_pointsDataset);
 
-		return sourcePointsDataset.properties().value("CollectionType", "").toInt();
+		return sourcePointsDataset.getProperty("CollectionType", ImageData::Type::Undefined).toInt();
 	}
 
-	return _pointsDataset->properties().value("CollectionType", "").toInt();
+	return _pointsDataset->getProperty("CollectionType", ImageData::Type::Undefined).toInt();
 }
 
 Layer::Hints PointsLayer::hints() const
@@ -830,8 +831,11 @@ QVariant PointsLayer::channelDimensionId(const ChannelIndex& channelIndex, const
 void PointsLayer::setChannelDimensionId(const ChannelIndex& channelIndex, const std::uint32_t& dimensionId)
 {
 	channel(ult(channelIndex))->setDimensionId(dimensionId);
-
+	
 	computeChannel(channelIndex);
+
+	channel(ult(channelIndex))->computeRange();
+	channel(ult(channelIndex))->computeDisplayRange();
 }
 
 QVariant PointsLayer::maxNoChannels(const int& role /*= Qt::DisplayRole*/) const
@@ -1010,9 +1014,6 @@ void PointsLayer::setPointType(const PointType& pointType)
 {
 	_pointType		= pointType;
 	_indexSelectionDataset	= _indexSelectionDatasetName.isEmpty() ? nullptr : &imageViewerPlugin->requestData<Points>(_indexSelectionDatasetName);
-
-	computeChannel(ChannelIndex::Channel1);
-	computeChannel(ChannelIndex::Mask);
 }
 
 QVariant PointsLayer::indicesDatasetName(const int& role /*= Qt::DisplayRole*/) const

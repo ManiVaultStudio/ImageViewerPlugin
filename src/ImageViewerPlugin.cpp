@@ -77,8 +77,6 @@ void ImageViewerPlugin::selectionChanged(const QString dataset)
 		const auto indices = QVector<uint>(selection.indices.begin(), selection.indices.end());
 		_layersModel.setData(hit.siblingAtColumn(ult(Layer::Column::Selection)), QVariant::fromValue(indices));
 	}
-
-	qDebug() << dataset;
 }
 
 hdps::DataTypes ImageViewerPlugin::supportedDataTypes() const
