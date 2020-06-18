@@ -83,6 +83,9 @@ signals:
 	/** TODO */
 	void pointsDatasetsChanged(QStringList pointsDatasets);
 
+	/** Signals that the selection of a dataset has changed */
+	void selectionIndicesChanged(const QString& name);
+
 private:
 	ViewerWidget*		_viewerWidget;			/** TODO */
 	SettingsWidget*		_settingsWidget;		/** TODO */

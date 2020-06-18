@@ -3,6 +3,7 @@
 #include "SettingsWidget.h"
 #include "LayersModel.h"
 #include "Layer.h"
+#include "PointsLayer.h"
 #include "Renderer.h"
 
 #include "PointData.h"
@@ -77,6 +78,8 @@ void ImageViewerPlugin::selectionChanged(const QString dataset)
 		const auto indices = QVector<uint>(selection.indices.begin(), selection.indices.end());
 		_layersModel.setData(hit.siblingAtColumn(ult(Layer::Column::Selection)), QVariant::fromValue(indices));
 	}
+
+	emit selectionIndicesChanged(dataset);
 }
 
 hdps::DataTypes ImageViewerPlugin::supportedDataTypes() const

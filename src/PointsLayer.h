@@ -355,17 +355,24 @@ public: // Getters/setters
 	void setPointType(const PointType& pointType);
 
 	/**
-	 * Returns the name of the indices dataset
+	 * Returns the name of the index selection dataset
 	 * @param role Data role
-	 * @return Name of the indices dataset in variant form
+	 * @return Name of the index selection dataset in variant form
 	 */
-	QVariant indicesDatasetName(const int& role = Qt::DisplayRole) const;
+	QVariant indexSelectionDatasetName(const int& role = Qt::DisplayRole) const;
 
 	/**
-	 * Sets the name of the indices points dataset
-	 * @param indicesDatasetName Name of the indices dataset
+	 * Returns the name of the index selection raw data
+	 * @param role Data role
+	 * @return Name of the index selection raw data in variant form
 	 */
-	void setIndicesDatasetName(const QString& indicesDatasetName);
+	QVariant indexSelectionDataName(const int& role = Qt::DisplayRole) const;
+
+	/**
+	 * Sets the name of the index selection dataset
+	 * @param indicesDatasetName Name of the index selection dataset
+	 */
+	void setIndexSelectionDatasetName(const QString& indexSelectionDatasetName);
 
 	/**
 	 * Returns the selection of the indices dataset

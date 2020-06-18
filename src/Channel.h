@@ -304,6 +304,16 @@ public:
 		setChanged();
 	}
 
+	/** Returns an HTML tooltip representation of the channel */
+	QString htmlTooltip() const {
+		
+		QString rows;
+
+		const auto description = QString("<table>%1</table>").arg(rows);
+
+		return QString("<html><head / ><body><p><span style='font-weight:600;'>%1<br/></span>%2</p></body></html>").arg(_name, description);
+	}
+
 private:
 	bool			_enabled;				/** Whether the channel is enabled */
 	bool			_inverted;				/** Whether the channel is inverted */

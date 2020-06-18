@@ -55,6 +55,8 @@ void PointsLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 	QObject::connect(&_layersModel->selectionModel(), &QItemSelectionModel::selectionChanged, [this](const QItemSelection& selected, const QItemSelection& deselected) {
 		const auto selectedRows = _layersModel->selectionModel().selectedRows();
 
+		//_ui->channel1Label->setToolTip();
+
 		if (selectedRows.isEmpty())
 			updateData(QModelIndex(), QModelIndex());
 		else {

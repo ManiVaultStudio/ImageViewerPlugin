@@ -30,6 +30,15 @@ PointsLayer::PointsLayer(const QString& pointsDatasetName, const QString& id, co
 	_indexSelectionDataset(nullptr)
 {
 	init();
+
+	QObject::connect(imageViewerPlugin, &ImageViewerPlugin::selectionIndicesChanged, [this](const QString& name) {
+		if (_pointType == PointType::Index && _indexSelectionDataset != nullptr) {
+			if (name == _indexSelectionDataset->getDataName()) {
+				computeChannel(ChannelIndex::Channel1);
+				computeChannel(ChannelIndex::Mask);
+			}
+		}
+	});
 }
 
 void PointsLayer::init()
@@ -359,7 +368,7 @@ QVariant PointsLayer::data(const QModelIndex& index, const int& role) const
 			return pointType(role);
 
 		case Column::IndexSelectionDatasetName:
-			return indicesDatasetName(role);
+			return indexSelectionDatasetName(role);
 
 		default:
 			break;
@@ -570,13 +579,14 @@ QModelIndexList PointsLayer::setData(const QModelIndex& index, const QVariant& v
 			affectedIds << index.siblingAtColumn(ult(Column::ColorSpace));
 			affectedIds << index.siblingAtColumn(ult(Column::ColorMap));
 			affectedIds << index.siblingAtColumn(ult(Column::UseConstantColor));
+			affectedIds << index.siblingAtColumn(ult(Column::ConstantColor));
 
 			break;
 		}
 
 		case Column::IndexSelectionDatasetName:
 		{
-			setIndicesDatasetName(value.toString());
+			setIndexSelectionDatasetName(value.toString());
 			break;
 		}
 
@@ -1012,11 +1022,31 @@ QVariant PointsLayer::pointType(const int& role /*= Qt::DisplayRole*/) const
 
 void PointsLayer::setPointType(const PointType& pointType)
 {
-	_pointType		= pointType;
+	_pointType				= pointType;
 	_indexSelectionDataset	= _indexSelectionDatasetName.isEmpty() ? nullptr : &imageViewerPlugin->requestData<Points>(_indexSelectionDatasetName);
+
+	switch (_pointType)
+	{
+		case PointsLayer::PointType::Intensity:
+		{
+			setUseConstantColor(false);
+			break;
+		}
+
+		case PointsLayer::PointType::Index:
+		{
+			setUseConstantColor(true);
+			setConstantColor(Qt::red);
+			break;
+		}
+
+		default:
+			break;
+	}
+	computeChannel(ChannelIndex::Mask);
 }
 
-QVariant PointsLayer::indicesDatasetName(const int& role /*= Qt::DisplayRole*/) const
+QVariant PointsLayer::indexSelectionDatasetName(const int& role /*= Qt::DisplayRole*/) const
 {
 	switch (role)
 	{
@@ -1027,7 +1057,7 @@ QVariant PointsLayer::indicesDatasetName(const int& role /*= Qt::DisplayRole*/) 
 			return _indexSelectionDatasetName;
 
 		case Qt::ToolTipRole:
-			return QString("Name of the indices dataset: %1").arg(_indexSelectionDatasetName);
+			return QString("Name of the index selection dataset: %1").arg(_indexSelectionDatasetName);
 
 		default:
 			break;
@@ -1036,9 +1066,34 @@ QVariant PointsLayer::indicesDatasetName(const int& role /*= Qt::DisplayRole*/) 
 	return QVariant();
 }
 
-void PointsLayer::setIndicesDatasetName(const QString& indicesDatasetName)
+QVariant PointsLayer::indexSelectionDataName(const int& role /*= Qt::DisplayRole*/) const
 {
-	_indexSelectionDatasetName	= indicesDatasetName;
+	if (_indexSelectionDataset == nullptr)
+		return "";
+
+	const auto indexSelectionDataName = _indexSelectionDataset->getDataName();
+
+	switch (role)
+	{
+		case Qt::DisplayRole:
+			return indexSelectionDataName;
+
+		case Qt::EditRole:
+			return indexSelectionDataName;
+
+		case Qt::ToolTipRole:
+			return QString("Name of the index selection raw data: %1").arg(indexSelectionDataName);
+
+		default:
+			break;
+	}
+
+	return QVariant();
+}
+
+void PointsLayer::setIndexSelectionDatasetName(const QString& indexSelectionDatasetName)
+{
+	_indexSelectionDatasetName	= indexSelectionDatasetName;
 	_indexSelectionDataset		= _indexSelectionDatasetName.isEmpty() ? nullptr : &imageViewerPlugin->requestData<Points>(_indexSelectionDatasetName);
 
 	computeChannel(ChannelIndex::Channel1);
@@ -1282,20 +1337,28 @@ void PointsLayer::computeMaskChannel(Channel<float>* maskChannel, const ChannelI
 			if (_indexSelectionDataset == nullptr)
 				break;
 
-			auto selectionSet = std::set<std::uint32_t>(_indexSelectionDataset->indices.begin(), _indexSelectionDataset->indices.end());
+			auto& selection = dynamic_cast<Points&>(imageViewerPlugin->core()->requestSelection(_indexSelectionDataset->getDataName()));
 
-			if (selectionSet.size() > 0) {
-				auto channel1 = this->channel(ult(ChannelIndex::Channel1));
+			std::vector<bool> selectedElements;
 
-				const auto index = 0;
+			selectedElements.resize(maskChannel->elements().size());
 
-				for (const auto& element : channel1->elements()) {
-					const auto index = static_cast<std::uint32_t>(element);
-
-					(*maskChannel)[index] = selectionSet.find(index) == selectionSet.end() ? 0.0f : 1.0f;
-				}
+			for (const auto& index : selection.indices) {
+				selectedElements[index] = 1;
 			}
-			/**/
+
+			auto indexChannel = this->channel(ult(ChannelIndex::Channel1));
+
+			const auto noElements = indexChannel->elements().size();
+
+			for (int i = 0; i < noElements; ++i) {
+				const auto index = static_cast<std::int32_t>((*indexChannel)[i]);
+
+				if (index > 0)
+					(*maskChannel)[i] = selectedElements[index + 1] ? 1 : 0;
+				else
+					(*maskChannel)[i] = 0.0f;
+			}
 
 			break;
 		}
@@ -1316,39 +1379,6 @@ void PointsLayer::computeIndexChannel(Channel<float>* channel, const ChannelInde
 	const auto dimensionId = channel->dimensionId();
 
 	channel->fill(1.0f);
-
-	qDebug() << _indexSelectionDatasetName;
-
-	/*
-	if (_pointsDataset->isDerivedData()) {
-		auto& sourceData = _pointsDataset->getSourceData<Points>(*_pointsDataset);
-
-		if (sourceData.isFull()) {
-			for (int i = 0; i < _pointsDataset->getNumPoints(); i++) {
-				(*channel)[i] = data[i * _noDimensions + dimensionId];
-			}
-		}
-		else {
-			for (int i = 0; i < sourceData.indices.size(); i++) {
-				(*channel)[sourceData.indices[i]] = data[i * _noDimensions + dimensionId];
-			}
-		}
-	}
-	else {
-		if (_pointsDataset->isFull()) {
-			const auto noPixels = this->noPixels();
-
-			for (int i = 0; i < noPixels; i++) {
-				(*channel)[i] = data[i * _noDimensions + dimensionId];
-			}
-		}
-		else {
-			for (const auto& index : _pointsDataset->indices) {
-				(*channel)[index] = data[index * _noDimensions + dimensionId];
-			}
-		}
-	}
-	*/
 
 	channel->setChanged();
 

@@ -8,6 +8,7 @@ uniform int noChannels;						// Number of active channels
 uniform bool useConstantColor;				// Whether the pixel color is constant and the alpha is modulated by the intensity of the selected channel
 uniform vec4 constantColor;					// Constant color
 uniform int colorSpace;						// Color space (0: RGB, 1: HSL)
+uniform int pointType;						// Type of point (e.g. intensity or index)
 uniform float opacity;						// Layer opacity
 in vec2 uv;									// Input texture coordinates
 out vec4 fragmentColor;						// Output fragment
@@ -184,7 +185,20 @@ void main(void)
 	
 	if (useConstantColor) {
 		fragmentColor = constantColor;
-		fragmentColor.a = opacity * toneMapChannel(displayRanges[0].x, displayRanges[0].y, texture(channelTextures, vec3(uv, 0)).r);
+
+		switch (pointType) {
+			case 0:
+				fragmentColor.a = opacity * toneMapChannel(displayRanges[0].x, displayRanges[0].y, texture(channelTextures, vec3(uv, 0)).r);
+				break;
+
+			case 1:
+				fragmentColor.a = opacity;
+				break;
+
+			default:
+				break;
+		}
+		
 	} else {
 		fragmentColor.a = opacity;
 	}
