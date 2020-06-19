@@ -141,11 +141,30 @@ void PointsLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 	});
 
 	QObject::connect(_imageViewerPlugin, &ImageViewerPlugin::pointsDatasetsChanged, [this](QStringList pointsDatasets) {
+		const auto selectedRows = _layersModel->selectionModel().selectedRows();
 
-		//pointsDatasets.removeAll(_datasetName);
+		if (selectedRows.isEmpty())
+			return;
 
+		const auto selectedRow					= selectedRows.first();
+		const auto datasetName					= _layersModel->data(selectedRow.siblingAtColumn(ult(Layer::Column::DatasetName)), Qt::EditRole).toString();
+		const auto indexSelectionDatasetName	= _layersModel->data(selectedRow.siblingAtColumn(ult(PointsLayer::Column::IndexSelectionDatasetName)), Qt::EditRole).toString();
+
+		_ui->indexSelectionComboBox->blockSignals(true);
 		_ui->indexSelectionComboBox->clear();
+
+		pointsDatasets.removeOne(datasetName);
+
 		_ui->indexSelectionComboBox->insertItems(0, pointsDatasets);
+
+		if (indexSelectionDatasetName.isEmpty()) {
+			_ui->indexSelectionComboBox->setCurrentIndex(-1);
+		}
+		else {
+			_ui->indexSelectionComboBox->setCurrentText(indexSelectionDatasetName);
+		}
+
+		_ui->indexSelectionComboBox->blockSignals(false);
 	});
 }
 
@@ -361,9 +380,19 @@ void PointsLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 		}
 
 		if (column == ult(PointsLayer::Column::IndexSelectionDatasetName)) {
-			//const auto channel1Name = _layersModel->data(topLeft.siblingAtColumn(ult(PointsLayer::Column::Channel1Name)), Qt::DisplayRole).toString();
-			const auto flags = _layersModel->flags(topLeft.siblingAtColumn(ult(PointsLayer::Column::IndexSelectionDatasetName)));
+			const auto indexSelectionDatasetName	= _layersModel->data(topLeft.siblingAtColumn(ult(PointsLayer::Column::IndexSelectionDatasetName)), Qt::EditRole).toString();
+			const auto flags						= _layersModel->flags(topLeft.siblingAtColumn(ult(PointsLayer::Column::IndexSelectionDatasetName)));
 			
+			_ui->indexSelectionComboBox->blockSignals(true);
+
+			if (indexSelectionDatasetName.isEmpty()) {
+				_ui->indexSelectionComboBox->setCurrentIndex(-1);
+			} else {
+				_ui->indexSelectionComboBox->setCurrentText(indexSelectionDatasetName);
+			}
+
+			_ui->indexSelectionComboBox->blockSignals(false);
+
 			_ui->indexSelectionLabel->setEnabled(flags & Qt::ItemIsEditable);
 			_ui->indexSelectionComboBox->setEnabled(flags & Qt::ItemIsEditable);
 		}
