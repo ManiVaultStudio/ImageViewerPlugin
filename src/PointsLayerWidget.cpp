@@ -26,10 +26,6 @@ void PointsLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 
 	QFont font = QFont("Font Awesome 5 Free Solid", 9);
 
-	_ui->channel1ComboBox->view()->setFixedWidth(300);
-	_ui->channel2ComboBox->view()->setFixedWidth(300);
-	_ui->channel3ComboBox->view()->setFixedWidth(300);
-
 	_ui->channel1WindowLevelPushButton->setFont(font);
 	_ui->channel2WindowLevelPushButton->setFont(font);
 	_ui->channel3WindowLevelPushButton->setFont(font);
