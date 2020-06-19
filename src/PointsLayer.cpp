@@ -216,7 +216,7 @@ Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
 
 		case Column::Channel2Enabled:
 		{
-			if (_pointType == PointType::Intensity && !_useConstantColor && channel(0)->enabled())
+			if (_pointType == PointType::Intensity && !_useConstantColor && channel(0)->enabled() && _noDimensions > 1)
 				flags |= Qt::ItemIsEditable;
 
 			break;

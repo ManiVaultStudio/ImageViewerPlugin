@@ -351,7 +351,7 @@ public: // Construction
 	Channels(const std::uint32_t& noChannels = 0)
 	{
 		for (std::uint32_t channelId = 0; channelId < noChannels; channelId++)
-			_channels.push_back(std::make_shared<Channel<ChannelType>>(channelId, QString("Channel %1").arg(channelId)));
+			_channels.push_back(std::make_shared<Channel<ChannelType>>(channelId, QString("Channel %1").arg(channelId + 1)));
 	}
 
 public: // Miscellaneous
