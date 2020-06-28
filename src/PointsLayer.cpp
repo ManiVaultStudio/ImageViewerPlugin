@@ -714,31 +714,15 @@ void PointsLayer::computeChannel(const ChannelIndex& channelIndex)
 
 			channel->setImageSize(imageSize());
 
+			const int32_t dimensionIndices[] = { channel->dimensionId() };
+
 			if (_pointsDataset->isDerivedData()) {
 				auto& sourceData = _pointsDataset->getSourceData<Points>(*_pointsDataset);
 
-				if (sourceData.isFull()) {
-					for (int i = 0; i < _pointsDataset->getNumPoints(); i++) {
-						(*channel)[i] = _pointsDataset->getData()[i * _noDimensions + channel->dimensionId()];
-					}
-				}
-				else {
-					for (int i = 0; i < sourceData.indices.size(); i++) {
-						(*channel)[sourceData.indices[i]] = _pointsDataset->getData()[i * _noDimensions + channel->dimensionId()];
-					}
-				}
+				sourceData.populateDataForDimensions(*channel, dimensionIndices);
 			}
 			else {
-				if (_pointsDataset->isFull()) {
-					for (int i = 0; i < noPixels(); i++) {
-						(*channel)[i] = _pointsDataset->getData()[i * _noDimensions + channel->dimensionId()];
-					}
-				}
-				else {
-					for (const auto& index : _pointsDataset->indices) {
-						(*channel)[index] = _pointsDataset->getData()[index * _noDimensions + channel->dimensionId()];
-					}
-				}
+				_pointsDataset->populateDataForDimensions(*channel, dimensionIndices);
 			}
 
 			channel->setChanged();
