@@ -92,6 +92,8 @@ private:
 	LayersModel			_layersModel;			/** TODO */
 	ColorMapModel		_colorMapModel;			/** TODO */
 	QStringList			_pointsDatasets;		/** TODO */
+
+	static int noInstances;
 };
 
 /**

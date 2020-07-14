@@ -20,6 +20,8 @@ using namespace hdps;
 
 Q_PLUGIN_METADATA(IID "nl.tudelft.ImageViewerPlugin")
 
+int ImageViewerPlugin::noInstances = 0;
+
 ImageViewerPlugin::ImageViewerPlugin() : 
 	ViewPlugin("Image Viewer"),
 	_viewerWidget(),
@@ -29,9 +31,10 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	_pointsDatasets()
 {
 	Layer::imageViewerPlugin = this;
-	
-	_viewerWidget	= new ViewerWidget(this);
-	_settingsWidget	= new SettingsWidget(this);
+
+	noInstances++;
+
+	_guiName = QString("Image viewer %1").arg(QString::number(noInstances));
 }
 
 void ImageViewerPlugin::init()
@@ -42,6 +45,9 @@ void ImageViewerPlugin::init()
 	layout->setSpacing(0);
 	
 	setMainLayout(layout);
+
+	_viewerWidget = new ViewerWidget(this);
+	_settingsWidget = new SettingsWidget(this);
 
 	addWidget(_viewerWidget);
 	addWidget(_settingsWidget);

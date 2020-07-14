@@ -12,6 +12,7 @@
 #include "ui_LayersWidget.h"
 
 #include "PointData.h"
+#include "FloatProperty/FloatProperty.h"
 
 #include <QItemSelectionModel>
 #include <QDebug>
@@ -33,6 +34,10 @@ LayersWidget::~LayersWidget() = default;
 void LayersWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 {
 	_imageViewerPlugin = imageViewerPlugin;
+
+	layout()->addWidget(FloatProperty::standardWidget(_imageViewerPlugin, "Parameter A", this));
+	layout()->addWidget(FloatProperty::standardWidget(_imageViewerPlugin, "Parameter B", this));
+	layout()->addWidget(FloatProperty::standardWidget(_imageViewerPlugin, "Parameter C", this));
 
 	_ui->layerWidget->initialize(_imageViewerPlugin);
 

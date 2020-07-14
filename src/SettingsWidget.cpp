@@ -1,5 +1,6 @@
 #include "SettingsWidget.h"
 #include "LayersWidget.h"
+#include "ImageViewerPlugin.h"
 
 #include "ui_SettingsWidget.h"
 
