@@ -298,6 +298,10 @@ void SelectionLayer::handleEvent(QEvent* event, const QModelIndex& index)
 
 	switch (event->type())
 	{
+		// Prevent recursive paint events
+		case QEvent::Paint:
+			return;
+
 		case QEvent::MouseButtonPress:
 		{
 			auto mouseEvent = static_cast<QMouseEvent*>(event);

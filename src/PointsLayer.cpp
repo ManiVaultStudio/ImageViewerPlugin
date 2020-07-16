@@ -141,10 +141,12 @@ void PointsLayer::handleEvent(QEvent* event, const QModelIndex& index)
 	if (renderer->interactionMode() != InteractionMode::LayerEditing)
 		return;
 
-	QModelIndexList affectedIds;
-
 	switch (event->type())
 	{
+		// Prevent recursive paint events
+		case QEvent::Paint:
+			return;
+
 		case QEvent::MouseButtonPress:
 			break;
 
@@ -173,9 +175,6 @@ void PointsLayer::handleEvent(QEvent* event, const QModelIndex& index)
 		default:
 			break;
 	}
-
-	for (auto index : affectedIds)
-		emit Layer::imageViewerPlugin->layersModel().dataChanged(index, index);
 
 	Renderable::renderer->render();
 }
