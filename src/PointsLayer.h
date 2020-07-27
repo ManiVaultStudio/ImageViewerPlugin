@@ -3,9 +3,21 @@
 #include "Layer.h"
 #include "Channel.h"
 
+#include "external/half.hpp"
+
 class QPainter;
 
 class Points;
+
+//#define FLOAT_32_POINTS_CHANNEL
+
+#ifdef FLOAT_32_POINTS_CHANNEL
+	using PointsChannelType = float;
+#else
+	using PointsChannelType = half_float::half;
+#endif
+
+using PointsChannel = Channel<PointsChannelType>;
 
 /**
  * Points layer class
@@ -14,7 +26,7 @@ class Points;
  *
  * @author Thomas Kroes
  */
-class PointsLayer : public Layer, public virtual Channels<float>
+class PointsLayer : public Layer, public virtual Channels<PointsChannelType>
 {
 	Q_OBJECT
 
@@ -408,28 +420,28 @@ private:
 	 * @param channel Channel
 	 * @param channelIndex Channel index
 	 */
-	void computeSequenceChannel(Channel<float>* channel, const ChannelIndex& channelIndex);
+	void computeSequenceChannel(PointsChannel* channel, const ChannelIndex& channelIndex);
 
 	/**
 	 * Computes a stack image channel
 	 * @param channel Channel
 	 * @param channelIndex Channel index
 	 */
-	void computeStackChannel(Channel<float>* channel, const ChannelIndex& channelIndex);
+	void computeStackChannel(PointsChannel* channel, const ChannelIndex& channelIndex);
 
 	/**
 	 * Computes a mask image channel
 	 * @param channel Channel
 	 * @param channelIndex Channel index
 	 */
-	void computeMaskChannel(Channel<float>* maskChannel, const ChannelIndex& channelIndex);
+	void computeMaskChannel(PointsChannel* maskChannel, const ChannelIndex& channelIndex);
 
 	/**
 	 * Computes an index image channel
 	 * @param channel Channel
 	 * @param channelIndex Channel index
 	 */
-	void computeIndexChannel(Channel<float>* channel, const ChannelIndex& channelIndex);
+	void computeIndexChannel(PointsChannel* channel, const ChannelIndex& channelIndex);
 
 	/** Updates the channel names */
 	void updateChannelNames();

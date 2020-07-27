@@ -18,7 +18,7 @@
 
 PointsLayer::PointsLayer(const QString& pointsDatasetName, const QString& id, const QString& name, const int& flags) :
 	Layer(pointsDatasetName, Layer::Type::Points, id, name, flags),
-	Channels<float>(ult(ChannelIndex::Count)),
+	Channels<PointsChannelType>(ult(ChannelIndex::Count)),
 	_pointsDataset(nullptr),
 	_maxNoChannels(0),
 	_colorSpace(ColorSpace::RGB),
@@ -1224,9 +1224,9 @@ void PointsLayer::computeChannel(const ChannelIndex& channelIndex)
 	}
 }
 
-void PointsLayer::computeSequenceChannel(Channel<float>* channel, const ChannelIndex& channelIndex)
+void PointsLayer::computeSequenceChannel(PointsChannel* channel, const ChannelIndex& channelIndex)
 {
-	channel->fill(0.0f);
+	channel->fill(PointsChannelType());
 
 	_pointsDataset->visitFromBeginToEnd([this, channel](auto begin, auto end) {
 		const auto width		= channel->imageSize().width();
@@ -1240,14 +1240,16 @@ void PointsLayer::computeSequenceChannel(Channel<float>* channel, const ChannelI
 				const auto pixelIndex = y * width + x;
 
 				if (hasSelection) {
+					auto average = 0.0f;
+
 					for (const auto& index : _selection) {
-						(*channel)[pixelIndex] += begin[index * noPixels + pixelIndex];
+						average += begin[index * noPixels + pixelIndex];
 					}
 
-					(*channel)[pixelIndex] /= static_cast<float>(_selection.count());
+					(*channel)[pixelIndex] = average / static_cast<float>(_selection.count());
 				}
 				else {
-					(*channel)[pixelIndex] = begin[dimensionId * noPixels + pixelIndex];
+					(*channel)[pixelIndex] = PointsChannelType(begin[dimensionId * noPixels + pixelIndex]);
 				}
 			}
 		}
@@ -1258,22 +1260,25 @@ void PointsLayer::computeSequenceChannel(Channel<float>* channel, const ChannelI
 	emit channelChanged(ult(channelIndex));
 }
 
-void PointsLayer::computeStackChannel(Channel<float>* channel, const ChannelIndex& channelIndex)
+void PointsLayer::computeStackChannel(PointsChannel* channel, const ChannelIndex& channelIndex)
 {
+	channel->fill(PointsChannelType());
+	
 	_pointsDataset->visitFromBeginToEnd([this, channel](auto begin, auto end) {
 		const auto dimensionId = channel->dimensionId();
 
+		
 		if (_pointsDataset->isDerivedData()) {
 			auto& sourceData = _pointsDataset->getSourceData<Points>(*_pointsDataset);
 
 			if (sourceData.isFull()) {
 				for (int i = 0; i < _pointsDataset->getNumPoints(); i++) {
-					(*channel)[i] = begin[i * _noDimensions + dimensionId];
+					(*channel)[i] = PointsChannelType(begin[i * _noDimensions + dimensionId]);
 				}
 			}
 			else {
 				for (int i = 0; i < sourceData.indices.size(); i++) {
-					(*channel)[sourceData.indices[i]] = begin[i * _noDimensions + dimensionId];
+					(*channel)[sourceData.indices[i]] = PointsChannelType(begin[i * _noDimensions + dimensionId]);
 				}
 			}
 		}
@@ -1282,23 +1287,24 @@ void PointsLayer::computeStackChannel(Channel<float>* channel, const ChannelInde
 				const auto noPixels = this->noPixels();
 
 				for (int i = 0; i < noPixels; i++) {
-					(*channel)[i] = begin[i * _noDimensions + dimensionId];
+					(*channel)[i] = PointsChannelType(begin[i * _noDimensions + dimensionId]);
 				}
 			}
 			else {
 				for (const auto& index : _pointsDataset->indices) {
-					(*channel)[index] = begin[index * _noDimensions + dimensionId];
+					(*channel)[index] = PointsChannelType(begin[index * _noDimensions + dimensionId]);
 				}
 			}
 		}
+		
 	});
-
+	/**/
 	channel->setChanged();
 
 	emit channelChanged(ult(channelIndex));
 }
 
-void PointsLayer::computeMaskChannel(Channel<float>* maskChannel, const ChannelIndex& channelIndex)
+void PointsLayer::computeMaskChannel(PointsChannel* maskChannel, const ChannelIndex& channelIndex)
 {
 	switch (_pointType)
 	{
@@ -1308,21 +1314,21 @@ void PointsLayer::computeMaskChannel(Channel<float>* maskChannel, const ChannelI
 				auto& sourceData = _pointsDataset->getSourceData<Points>(*_pointsDataset);
 
 				if (sourceData.isFull()) {
-					maskChannel->fill(1.0f);
+					maskChannel->fill(PointsChannelType(1));
 				}
 				else {
 					for (auto index : sourceData.indices) {
-						(*maskChannel)[index] = 1.0f;
+						(*maskChannel)[index] = PointsChannelType(1);
 					}
 				}
 			}
 			else {
 				if (_pointsDataset->isFull()) {
-					maskChannel->fill(1.0f);
+					maskChannel->fill(PointsChannelType(1));
 				}
 				else {
 					for (auto index : _pointsDataset->indices) {
-						(*maskChannel)[index] = 1.0f;
+						(*maskChannel)[index] = PointsChannelType(1);
 					}
 				}
 			}
@@ -1332,7 +1338,7 @@ void PointsLayer::computeMaskChannel(Channel<float>* maskChannel, const ChannelI
 
 		case PointsLayer::PointType::Index:
 		{
-			maskChannel->fill(0.0f);
+			maskChannel->fill(PointsChannelType());
 
 			if (_indexSelectionDataset == nullptr)
 				break;
@@ -1344,7 +1350,7 @@ void PointsLayer::computeMaskChannel(Channel<float>* maskChannel, const ChannelI
 			selectedElements.resize(maskChannel->elements().size());
 
 			for (const auto& index : selection.indices) {
-				selectedElements[index] = 1;
+				selectedElements[index] = PointsChannelType(1);
 			}
 
 			auto indexChannel = this->channel(ult(ChannelIndex::Channel1));
@@ -1355,9 +1361,9 @@ void PointsLayer::computeMaskChannel(Channel<float>* maskChannel, const ChannelI
 				const auto index = static_cast<std::int32_t>((*indexChannel)[i]);
 
 				if (index > 0)
-					(*maskChannel)[i] = selectedElements[index + 1] ? 1 : 0;
+					(*maskChannel)[i] = PointsChannelType(selectedElements[index + 1] ? 1 : 0);
 				else
-					(*maskChannel)[i] = 0.0f;
+					(*maskChannel)[i] = PointsChannelType(0);
 			}
 
 			break;
@@ -1372,11 +1378,11 @@ void PointsLayer::computeMaskChannel(Channel<float>* maskChannel, const ChannelI
 	emit channelChanged(ult(channelIndex));
 }
 
-void PointsLayer::computeIndexChannel(Channel<float>* channel, const ChannelIndex& channelIndex)
+void PointsLayer::computeIndexChannel(PointsChannel* channel, const ChannelIndex& channelIndex)
 {
 	const auto dimensionId = channel->dimensionId();
 
-	channel->fill(1.0f);
+	channel->fill(PointsChannelType(1));
 
 	channel->setChanged();
 

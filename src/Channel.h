@@ -32,6 +32,7 @@ public:
 	 */
 	Channel(const std::uint32_t& id, const QString& name, const std::uint32_t& dimensionId = -1) :
 		_enabled(false),
+		_inverted(false),
 		_imageSize(),
 		_id(id),
 		_name(name),
