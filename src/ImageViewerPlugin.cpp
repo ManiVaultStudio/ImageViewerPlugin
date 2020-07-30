@@ -7,7 +7,6 @@
 #include "Renderer.h"
 
 #include "PointData.h"
-#include "IndexSet.h"
 
 #include <QFontDatabase>
 #include <QItemSelectionModel>
