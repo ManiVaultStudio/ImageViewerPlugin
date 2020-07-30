@@ -686,7 +686,7 @@ void SelectionLayer::subsetFromSelectedPixels()
 
 	const hdps::DataSet& selection = core->requestSelection(dataName);
 
-	core->createSubsetFromSelection(selection, dataName, QString("%1_subset").arg(_pointsDataset->getName()));
+	core->createSubsetFromSelection(selection, *_pointsDataset, QString("%1_subset").arg(_pointsDataset->getName()));
 
 	selectNone();
 }
