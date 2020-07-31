@@ -1229,27 +1229,36 @@ void PointsLayer::computeSequenceChannel(Channel<float>* channel, const ChannelI
 {
 	channel->fill(0.0f);
 
-	_pointsDataset->visitFromBeginToEnd([this, channel](auto begin, auto end) {
+	_pointsDataset->visitData([this, channel](auto pointData) {
+		const auto hasSelection	= _selection.count() > 0;
+		const auto dimensionId	= channel->dimensionId();
 		const auto width		= channel->imageSize().width();
 		const auto height		= channel->imageSize().height();
 		const auto noPixels		= width * height;
-		const auto hasSelection	= _selection.count() > 0;
-		const auto dimensionId	= channel->dimensionId();
 
-		for (int x = 0; x < width; x++) {
-			for (int y = 0; y < height; y++) {
-				const auto pixelIndex = y * width + x;
+		if (hasSelection) {
+			for (const auto& index : _selection) {
+				auto pixelIndex = 0;
 
-				if (hasSelection) {
-					for (const auto& index : _selection) {
-						(*channel)[pixelIndex] += begin[index * noPixels + pixelIndex];
-					}
+				auto point = pointData[index];
 
-					(*channel)[pixelIndex] /= static_cast<float>(_selection.count());
+				for (auto dataValue : pointData[index]) {
+					(*channel)[pixelIndex] += dataValue;
+					pixelIndex++;
 				}
-				else {
-					(*channel)[pixelIndex] = begin[dimensionId * noPixels + pixelIndex];
-				}
+			}
+
+			for (int pixelIndex = 0; pixelIndex < noPixels; pixelIndex++) {
+				(*channel)[pixelIndex] /= static_cast<float>(_selection.count());
+			}
+		}
+		else {
+			auto pixelIndex = 0;
+
+			for (auto dataValue : pointData[dimensionId]) {
+				(*channel)[pixelIndex] = dataValue;
+				pixelIndex++;
+				
 			}
 		}
 	});
