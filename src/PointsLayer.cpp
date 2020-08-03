@@ -1290,28 +1290,13 @@ void PointsLayer::computeMaskChannel(Channel<float>* maskChannel, const ChannelI
 	{
 		case PointsLayer::PointType::Intensity:
 		{
-			if (_pointsDataset->isDerivedData()) {
-				auto& sourceData = _pointsDataset->getSourceData<Points>(*_pointsDataset);
+			maskChannel->fill(0.0f);
 
-				if (sourceData.isFull()) {
-					maskChannel->fill(1.0f);
+			_pointsDataset->visitData([this, maskChannel](auto pointData) {
+				for (auto pointView : pointData) {
+					(*maskChannel)[pointView.index()] = 1.0f;
 				}
-				else {
-					for (auto index : sourceData.indices) {
-						(*maskChannel)[index] = 1.0f;
-					}
-				}
-			}
-			else {
-				if (_pointsDataset->isFull()) {
-					maskChannel->fill(1.0f);
-				}
-				else {
-					for (auto index : _pointsDataset->indices) {
-						(*maskChannel)[index] = 1.0f;
-					}
-				}
-			}
+			});
 
 			break;
 		}
