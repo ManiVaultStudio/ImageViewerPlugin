@@ -1269,36 +1269,13 @@ void PointsLayer::computeSequenceChannel(Channel<float>* channel, const ChannelI
 
 void PointsLayer::computeStackChannel(Channel<float>* channel, const ChannelIndex& channelIndex)
 {
-	_pointsDataset->visitFromBeginToEnd([this, channel](auto begin, auto end) {
+	channel->fill(0.0f);
+
+	_pointsDataset->visitData([this, channel](auto pointData) {
 		const auto dimensionId = channel->dimensionId();
 
-		if (_pointsDataset->isDerivedData()) {
-			auto& sourceData = _pointsDataset->getSourceData<Points>(*_pointsDataset);
-
-			if (sourceData.isFull()) {
-				for (int i = 0; i < _pointsDataset->getNumPoints(); i++) {
-					(*channel)[i] = begin[i * _noDimensions + dimensionId];
-				}
-			}
-			else {
-				for (int i = 0; i < sourceData.indices.size(); i++) {
-					(*channel)[sourceData.indices[i]] = begin[i * _noDimensions + dimensionId];
-				}
-			}
-		}
-		else {
-			if (_pointsDataset->isFull()) {
-				const auto noPixels = this->noPixels();
-
-				for (int i = 0; i < noPixels; i++) {
-					(*channel)[i] = begin[i * _noDimensions + dimensionId];
-				}
-			}
-			else {
-				for (const auto& index : _pointsDataset->indices) {
-					(*channel)[index] = begin[index * _noDimensions + dimensionId];
-				}
-			}
+		for (auto pointView : pointData) {
+			(*channel)[pointView.index()] = pointView[dimensionId];
 		}
 	});
 
