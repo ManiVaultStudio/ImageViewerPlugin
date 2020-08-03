@@ -1240,8 +1240,6 @@ void PointsLayer::computeSequenceChannel(Channel<float>* channel, const ChannelI
 			for (const auto& index : _selection) {
 				auto pixelIndex = 0;
 
-				auto point = pointData[index];
-
 				for (auto dataValue : pointData[index]) {
 					(*channel)[pixelIndex] += dataValue;
 					pixelIndex++;
