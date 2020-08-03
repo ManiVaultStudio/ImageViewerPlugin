@@ -1237,16 +1237,10 @@ void PointsLayer::computeSequenceChannel(Channel<float>* channel, const ChannelI
 
 		if (hasSelection) {
 			for (const auto& index : _selection) {
-				auto pixelIndex = 0;
+				const auto point	= pointData[index];
+				const auto sum		= std::accumulate(point.begin(), point.end(), 0.0);
 
-				for (auto dataValue : pointData[index]) {
-					(*channel)[pixelIndex] += dataValue;
-					pixelIndex++;
-				}
-			}
-
-			for (int pixelIndex = 0; pixelIndex < noPixels; pixelIndex++) {
-				(*channel)[pixelIndex] /= static_cast<float>(_selection.count());
+				(*channel)[index] = static_cast<float>(sum / _selection.count());
 			}
 		}
 		else {
