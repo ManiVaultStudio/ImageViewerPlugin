@@ -56,7 +56,7 @@ void PointsLayer::init()
 	setUseConstantColor(false);
 	setChannelEnabled(ChannelIndex::Channel1, true);
 
-	auto dimensionNames = QStringList(_pointsDataset->getDimensionNames().begin(), _pointsDataset->getDimensionNames().end());
+	auto dimensionNames = hdps::fromStdVector<QStringList>(_pointsDataset->getDimensionNames());
 
 	if (dimensionNames.isEmpty()) {
 		for (int dimensionIndex = 0; dimensionIndex < noDimensions(Qt::EditRole).toInt(); dimensionIndex++) {
@@ -71,8 +71,7 @@ void PointsLayer::init()
 	auto selection = dynamic_cast<Points*>(&imageViewerPlugin->core()->requestSelection(pointsDataName));
 
 	if (selection) {
-		const auto indices = selection->indices;
-		setSelection(QVector<std::uint32_t>(indices.begin(), indices.end()));
+		setSelection(hdps::fromStdVector<QVector<std::uint32_t>>(selection->indices));
 	}
 
 	computeChannel(ChannelIndex::Mask);
