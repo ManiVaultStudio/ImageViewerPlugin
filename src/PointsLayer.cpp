@@ -1264,7 +1264,7 @@ void PointsLayer::computeStackChannel(Channel<float>* channel, const ChannelInde
 {
 	channel->fill(0.0f);
 
-	_pointsDataset->visitData([this, channel](auto pointData) {
+	_pointsDataset->visitSourceData([this, channel](auto pointData) {
 		const auto dimensionId = channel->dimensionId();
 
 		for (auto pointView : pointData) {
