@@ -1,5 +1,7 @@
 #pragma once
 
+#include <algorithm> // For std::copy.
+#include <iterator> // For std::back_inserter.
 #include <vector>
 #include <map>
 #include <type_traits>
@@ -200,4 +202,20 @@ inline QString colorSpaceName(const ColorSpace& colorSpace)
 	}
 
 	return "";
+}
+
+namespace hdps
+{
+	/**
+	 * Creates a container of the specified type, and copies the elements from the
+	 * specified `std::vector` into the created container.
+	 */
+	template <typename ContainerType, typename ValueType>
+	auto fromStdVector(const std::vector<ValueType>& stdVector)
+	{
+		ContainerType result;
+		result.reserve(static_cast<int>(stdVector.size()));
+		std::copy(stdVector.cbegin(), stdVector.cend(), std::back_inserter(result));
+		return result;
+	}
 }

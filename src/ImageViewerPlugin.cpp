@@ -74,7 +74,7 @@ void ImageViewerPlugin::selectionChanged(const QString dataset)
 
 	for (auto hit : hits) {
 		auto selection = dynamic_cast<Points&>(_core->requestSelection(dataset));
-		const auto indices = QVector<uint>(selection.indices.begin(), selection.indices.end());
+		const auto indices = hdps::fromStdVector<QVector<uint>>(selection.indices);
 		_layersModel.setData(hit.siblingAtColumn(ult(Layer::Column::Selection)), QVariant::fromValue(indices));
 	}
 
