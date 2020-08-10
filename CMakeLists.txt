@@ -31,7 +31,7 @@ set(PLUGIN
 file(GLOB MODEL src/*Model.* src/*Layer.* src/*Dataset.* src/*Layer.* src/*Item.* src/Range.* src/*ProxyModel.* src/*Node.* src/*Renderable*.* src/Channel*.*)
 file(GLOB RENDERING src/*Renderer.* src/*Actor.* src/*Prop.* src/*Shape.*)
 file(GLOB WIDGETS src/*Widget.* src/*Color*.*)
-file(GLOB HALF_FLOAT src/external/half_float/*.*)
+file(GLOB HALF_FLOAT src/external/half-2.1.0/include/*.h)
 file(GLOB UIS src/*.ui)
 file(GLOB SHADERS src/*.glsl )
 file(GLOB JSON src/*.json)

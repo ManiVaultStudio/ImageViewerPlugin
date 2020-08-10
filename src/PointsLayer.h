@@ -3,7 +3,7 @@
 #include "Layer.h"
 #include "Channel.h"
 
-#include "external/half.hpp"
+#include "external/half-2.1.0/include/half.hpp"
 
 class QPainter;
 
