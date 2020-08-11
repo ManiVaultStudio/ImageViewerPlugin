@@ -5,6 +5,14 @@
 
 #include "external/half-2.1.0/include/half.hpp"
 
+#ifdef OPENGL_HALF_FLOAT_TEXTURE
+	using PointsChannelType = half_float::half;
+#else
+	using PointsChannelType = float;
+#endif
+
+using PointsChannel = Channel<PointsChannelType>;
+
 class QPainter;
 
 class Points;

@@ -14,7 +14,7 @@ set(OPENGL_HALF_FLOAT_TEXTURE ON CACHE BOOL "Use half-precision (16-bit) floatin
 
 if(OPENGL_HALF_FLOAT_TEXTURE)
 	message("Using half-precision (16-bit) floating-point OpenGL textures")
-	add_definitions(-OPENGL_HALF_FLOAT_TEXTURE)
+	add_definitions(-DOPENGL_HALF_FLOAT_TEXTURE)
 else()
 	message("Using full-precision (32-bit) floating-point OpenGL textures")
 endif()
