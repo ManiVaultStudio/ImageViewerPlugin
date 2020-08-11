@@ -60,13 +60,24 @@ PointsProp::PointsProp(PointsLayer* pointsLayer, const QString& name) :
 				texture->setSize(imageSize.width(), imageSize.height(), 2);
 				texture->setSize(imageSize.width(), imageSize.height(), 3);
 				texture->setSize(imageSize.width(), imageSize.height(), 4);
+				
+#ifdef OPENGL_HALF_FLOAT_TEXTURE
+				texture->setFormat(QOpenGLTexture::R16F);
+				texture->allocateStorage(QOpenGLTexture::Red, QOpenGLTexture::Float16);
+#else
 				texture->setFormat(QOpenGLTexture::R32F);
 				texture->allocateStorage(QOpenGLTexture::Red, QOpenGLTexture::Float32);
+#endif
+
 				texture->setWrapMode(QOpenGLTexture::ClampToEdge);
 				texture->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
 			}
 
+#ifdef OPENGL_HALF_FLOAT_TEXTURE
+			texture->setData(0, channel->id(), QOpenGLTexture::PixelFormat::Red, QOpenGLTexture::PixelType::Float16, channel->elements().data());
+#else
 			texture->setData(0, channel->id(), QOpenGLTexture::PixelFormat::Red, QOpenGLTexture::PixelType::Float32, channel->elements().data());
+#endif
 
 			const auto rectangle = QRectF(QPointF(0.f, 0.f), QSizeF(static_cast<float>(imageSize.width()), static_cast<float>(imageSize.height())));
 
