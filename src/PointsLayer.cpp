@@ -1264,7 +1264,7 @@ void PointsLayer::computeSequenceChannel(PointsChannel* channel, const ChannelIn
 void PointsLayer::computeStackChannel(PointsChannel* channel, const ChannelIndex& channelIndex)
 {
 	channel->fill(PointsChannelType(0.0f));
-
+	
 	_pointsDataset->visitSourceData([this, channel](auto pointData) {
 		const auto dimensionId = channel->dimensionId();
 

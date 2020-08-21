@@ -245,14 +245,13 @@ public:
 		if (_elements.empty())
 			return;
 
-		_range.setFullRange();
-
 		//qDebug() << "Compute image range";
 
-		const auto[min, max] = std::minmax_element(_elements.begin(), _elements.end());
+		const auto minMax = std::minmax_element(_elements.begin(), _elements.end());
 
-		_range.setMin(*min);
-		_range.setMax(*max);
+		_range.setMin(static_cast<float>(*minMax.first));
+		_range.setMax(static_cast<float>(*minMax.second));
+		
 	}
 
 	/** Compute display range */
