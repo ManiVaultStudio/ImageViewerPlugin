@@ -1,6 +1,5 @@
 <RCC>
     <qresource prefix="/">
-        <file>resources/fonts/FontAwesome.otf</file>
         <file>resources/colormaps/1D/BrBG.png</file>
         <file>resources/colormaps/1D/BuPu.png</file>
         <file>resources/colormaps/1D/GnBu.png</file>
