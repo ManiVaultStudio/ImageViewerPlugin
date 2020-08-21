@@ -49,12 +49,13 @@ PointsProp::PointsProp(PointsLayer* pointsLayer, const QString& name) :
 
 			auto texture = textureByName("Channels");
 
-			if (!texture->isCreated())
-				texture->create();
+			if (!texture->isCreated() || imageSize != QSize(texture->width(), texture->height())) {
+				if (texture->isCreated())
+					texture->destroy();
 
-			if (imageSize != QSize(texture->width(), texture->height())) {
-				texture->destroy();
 				texture->create();
+				texture->setWrapMode(QOpenGLTexture::ClampToEdge);
+				texture->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
 				texture->setLayers(4);
 				texture->setSize(imageSize.width(), imageSize.height(), 1);
 				texture->setSize(imageSize.width(), imageSize.height(), 2);
@@ -68,16 +69,19 @@ PointsProp::PointsProp(PointsLayer* pointsLayer, const QString& name) :
 				texture->setFormat(QOpenGLTexture::R32F);
 				texture->allocateStorage(QOpenGLTexture::Red, QOpenGLTexture::Float32);
 #endif
-
-				texture->setWrapMode(QOpenGLTexture::ClampToEdge);
-				texture->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
 			}
-
+			
 #ifdef OPENGL_HALF_FLOAT_TEXTURE
-			texture->setData(0, channel->id(), QOpenGLTexture::PixelFormat::Red, QOpenGLTexture::PixelType::Float16, channel->elements().data());
+			auto data = std::vector<std::uint16_t>();// (imageSize.width() + 1) * (imageSize.height()));
+
+			data.resize(texture->width() * texture->height());
+
+			texture->setData(0, channel->id(), QOpenGLTexture::PixelFormat::Red, QOpenGLTexture::PixelType::Float16, static_cast<const void*>(channel->elements().data()));
+			//texture->setData(0, channel->id(), QOpenGLTexture::PixelFormat::Red, QOpenGLTexture::PixelType::Float16, static_cast<const void*>(data.data()));
 #else
 			texture->setData(0, channel->id(), QOpenGLTexture::PixelFormat::Red, QOpenGLTexture::PixelType::Float32, channel->elements().data());
 #endif
+			/**/
 
 			const auto rectangle = QRectF(QPointF(0.f, 0.f), QSizeF(static_cast<float>(imageSize.width()), static_cast<float>(imageSize.height())));
 
