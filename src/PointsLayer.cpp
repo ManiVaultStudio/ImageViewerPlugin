@@ -51,7 +51,6 @@ void PointsLayer::init()
 	setNoPoints(_pointsDataset->getNumPoints());
 	setNoDimensions(_pointsDataset->getNumDimensions());
 	setMaxNoChannels(std::min(3u, _noDimensions));
-	setChannelDimensionId(ChannelIndex::Channel1, 0);
 	setColorMap(imageViewerPlugin->colorMapModel().colorMap(0)->image());
 	setUseConstantColor(false);
 	setChannelEnabled(ChannelIndex::Channel1, true);
@@ -65,6 +64,10 @@ void PointsLayer::init()
 	}
 
 	setDimensionNames(dimensionNames);
+
+	setChannelDimensionId(ChannelIndex::Channel1, 0);
+	setChannelDimensionId(ChannelIndex::Channel2, std::min(1, dimensionNames.count()));
+	setChannelDimensionId(ChannelIndex::Channel3, std::min(2, dimensionNames.count()));
 
 	const auto pointsDataName = hdps::DataSet::getSourceData(*_pointsDataset).getDataName();
 
@@ -183,6 +186,9 @@ Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
 	auto flags = Layer::flags(index);
 
 	switch (static_cast<Column>(index.column())) {
+		case Column::DimensionNames:
+			break;
+
 		case Column::Channel1Name:
 		case Column::Channel1DimensionId:
 		{
@@ -230,7 +236,6 @@ Qt::ItemFlags PointsLayer::flags(const QModelIndex& index) const
 
 		case Column::MaxNoChannels:
 		case Column::NoChannels:
-		case Column::DimensionNames:
 		case Column::NoPoints:
 		case Column::NoDimensions:
 			break;
@@ -290,6 +295,9 @@ QVariant PointsLayer::data(const QModelIndex& index, const int& role) const
 		return Layer::data(index, role);
 
 	switch (static_cast<Column>(index.column())) {
+		case Column::DimensionNames:
+			return dimensionNames(role);
+
 		case Column::Channel1Name:
 			return channelName(ChannelIndex::Channel1, role);
 
@@ -340,9 +348,6 @@ QVariant PointsLayer::data(const QModelIndex& index, const int& role) const
 
 		case Column::NoChannels:
 			return noChannels(role);
-
-		case Column::DimensionNames:
-			return dimensionNames(role);
 			
 		case Column::NoPoints:
 			return noPoints(role);
@@ -384,6 +389,9 @@ QModelIndexList PointsLayer::setData(const QModelIndex& index, const QVariant& v
 	}
 
 	switch (static_cast<Column>(index.column())) {
+		case Column::DimensionNames:
+			break;
+
 		case Column::Channel1Name:
 		{
 			setChannelName(0, value.toString());
