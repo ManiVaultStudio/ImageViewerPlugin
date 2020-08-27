@@ -56,7 +56,8 @@ public: // Enumerations
 
 	/**  Columns */
 	enum class Column {
-		Channel1Name = ult(Layer::Column::End) + 1,		/** First input channel name */
+		DimensionNames = ult(Layer::Column::End) + 1,	/** Dimension names */
+		Channel1Name,									/** First input channel name */
 		Channel2Name,									/** Second input channel name */
 		Channel3Name,									/** Third input channel name */
 		Channel1DimensionId,							/** First input channel dimension identifier */
@@ -73,7 +74,6 @@ public: // Enumerations
 		Channel3Level,									/** Third input channel normalized level */
 		NoChannels,										/** Occupied number of channels */
 		MaxNoChannels,									/** The maximum number of channels */
-		DimensionNames,									/** Dimension names */
 		NoPoints,										/** Number of points in the dataset */
 		NoDimensions,									/** Number of dimensions in the dataset */
 		ColorSpace,										/** Color space (e.g. RGB, HSL and LAB) */
@@ -83,7 +83,7 @@ public: // Enumerations
 		PointType,										/** Type of point (e.g. intensity, index) */
 		IndexSelectionDatasetName,						/** Name of the indices dataset */
 
-		Start = Channel1Name,							/** Start column */
+		Start = DimensionNames,							/** Start column */
 		End = IndexSelectionDatasetName					/** End column */
 	};
 
