@@ -137,7 +137,6 @@ public:
 	/** Layer types */
 	enum class Type {
 		Points,			/** Points dataset */
-		Clusters,		/** Clusters dataset */
 		Selection,		/** Selection layer */
 		Group			/** Group layer */
 	};
@@ -148,9 +147,6 @@ public:
 		{
 			case Type::Points:
 				return "Points";
-
-			case Type::Clusters:
-				return "Clusters";
 
 			case Type::Selection:
 				return "Selection";

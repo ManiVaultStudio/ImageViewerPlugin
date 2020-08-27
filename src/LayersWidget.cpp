@@ -6,7 +6,6 @@
 #include "Layer.h"
 #include "GroupLayer.h"
 #include "PointsLayer.h"
-#include "ClustersLayer.h"
 #include "SelectionLayer.h"
 
 #include "ui_LayersWidget.h"

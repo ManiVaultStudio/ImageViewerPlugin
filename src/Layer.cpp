@@ -300,9 +300,6 @@ QVariant Layer::type(const int& role) const
 				case Type::Selection:
 					return u8"\uf245";
 
-				case Type::Clusters:
-					return u8"\uf141";
-
 				case Type::Points:
 					return u8"\uf58d";
 

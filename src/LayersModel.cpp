@@ -4,7 +4,6 @@
 #include "RootLayer.h"
 #include "GroupLayer.h"
 #include "PointsLayer.h"
-#include "ClustersLayer.h"
 #include "SelectionLayer.h"
 
 #include <QFont>
@@ -18,23 +17,6 @@ LayersModel::LayersModel(ImageViewerPlugin* imageViewerPlugin) :
 	_selectionModel(this),
 	_root(nullptr)
 {
-	/*
-	auto pointsLayer = new PointsLayer(nullptr, "points", "Points", ult(Layer::Flag::Enabled) | ult(Layer::Flag::Renamable));
-	auto imagesLayer = new ImagesLayer(nullptr, "images", "Images", ult(Layer::Flag::Enabled) | ult(Layer::Flag::Renamable));
-	auto clusterLayer = new ClustersLayer(nullptr, "clusters", "Clusters", ult(Layer::Flag::Enabled) | ult(Layer::Flag::Renamable));
-	auto selectionLayer = new SelectionLayer(nullptr, "selection", "Selection", ult(Layer::Flag::Enabled) | ult(Layer::Flag::Renamable));
-
-	insertLayer(0, pointsLayer);
-
-	insertLayer(0, imagesLayer, index(0, 0));
-	insertLayer(0, clusterLayer, index(0, 0));
-	insertLayer(0, selectionLayer, index(0, 0));
-
-	insertLayer(0, new ImagesLayer(nullptr, "images", "Images", ult(Layer::Flag::Enabled) | ult(Layer::Flag::Renamable)));
-	insertLayer(0, new ClustersLayer(nullptr, "clusters", "Clusters", ult(Layer::Flag::Enabled) | ult(Layer::Flag::Renamable)));
-	insertLayer(0, new ImagesLayer(nullptr, "images", "Images", ult(Layer::Flag::Enabled) | ult(Layer::Flag::Renamable)));
-	insertLayer(0, new ClustersLayer(nullptr, "clusters", "Clusters", ult(Layer::Flag::Enabled) | ult(Layer::Flag::Renamable)));
-	*/
 }
 
 LayersModel::~LayersModel()

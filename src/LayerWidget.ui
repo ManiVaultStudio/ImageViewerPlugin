@@ -47,7 +47,7 @@
    <item row="2" column="0">
     <widget class="QStackedWidget" name="settingsStackedWidget">
      <property name="currentIndex">
-      <number>2</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="pointsLayerPage">
       <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -72,25 +72,6 @@
           </sizepolicy>
          </property>
         </widget>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="clustersLayerPage">
-      <layout class="QVBoxLayout" name="verticalLayout_5">
-       <property name="leftMargin">
-        <number>0</number>
-       </property>
-       <property name="topMargin">
-        <number>0</number>
-       </property>
-       <property name="rightMargin">
-        <number>0</number>
-       </property>
-       <property name="bottomMargin">
-        <number>0</number>
-       </property>
-       <item>
-        <widget class="ClustersLayerWidget" name="clustersLayerWidget" native="true"/>
        </item>
       </layout>
      </widget>
@@ -374,12 +355,6 @@
   </layout>
  </widget>
  <customwidgets>
-  <customwidget>
-   <class>ClustersLayerWidget</class>
-   <extends>QWidget</extends>
-   <header>ClustersLayerWidget.h</header>
-   <container>1</container>
-  </customwidget>
   <customwidget>
    <class>PointsLayerWidget</class>
    <extends>QWidget</extends>
