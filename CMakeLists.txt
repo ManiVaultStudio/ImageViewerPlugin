@@ -50,6 +50,8 @@ source_group(Aux FILES ${AUX})
 # Note: src is included for ClustersLayerWidget.h
 include_directories("$ENV{HDPS_INSTALL_DIR}/$<CONFIGURATION>/include/" src)
 
+QT5_WRAP_UI(UI_HEADERS ${UIS})
+
 add_library(${PROJECT} SHARED ${SOURCES} ${UIS} ${SHADERS} ${AUX})
 
 target_compile_features(${PROJECT} PRIVATE cxx_std_17)
@@ -63,10 +65,6 @@ endif()
 target_link_libraries(${PROJECT} ${OPENGL_LIBRARIES})
 target_link_libraries(${PROJECT} Qt5::Widgets)
 target_link_libraries(${PROJECT} Qt5::WebEngineWidgets)
-
-if(OpenMP_CXX_FOUND)
-	target_link_libraries(${PROJECT} OpenMP::OpenMP_CXX)
-endif()
 
 target_link_libraries(${PROJECT} "$ENV{HDPS_INSTALL_DIR}/$<CONFIGURATION>/lib/${CMAKE_SHARED_LIBRARY_PREFIX}HDPS_Public${LIB_SUFFIX}")
 target_link_libraries(${PROJECT} "$ENV{HDPS_INSTALL_DIR}/$<CONFIGURATION>/lib/${CMAKE_SHARED_LIBRARY_PREFIX}PointData${LIB_SUFFIX}")
