@@ -104,6 +104,12 @@ void LayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 
 	QObject::connect(_layersModel, &LayersModel::dataChanged, this, &LayerWidget::updateData);
 
+	/*
+	QObject::connect(_layersModel, &LayersModel::rowsRemoved, [this](const QModelIndex &parent, int first, int last) {
+		_layersModel->selectionModel()
+	});
+	*/
+
 	QObject::connect(&_layersModel->selectionModel(), &QItemSelectionModel::selectionChanged, [this](const QItemSelection& selected, const QItemSelection& deselected) {
 		const auto selectedRows = _layersModel->selectionModel().selectedRows();
 
@@ -125,18 +131,19 @@ void LayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex& bott
 {
 	const auto selectedRows		= _layersModel->selectionModel().selectedRows();
 	const auto noSelectedRows	= selectedRows.size();
+	const auto showLayerEditor	= noSelectedRows == 1;
+
+	_ui->commonGroupBox->setVisible(showLayerEditor);
+	_ui->commonGroupBox->setEnabled(showLayerEditor);
+	_ui->navigationGroupBox->setVisible(showLayerEditor);
 
 	if (noSelectedRows != 1)
 		return;
-
+	
 	if (selectedRows.first().row() != topLeft.row())
 		return;
 
 	const auto enabled = _layersModel->data(topLeft.siblingAtColumn(ult(Layer::Column::Name)), Qt::CheckStateRole).toInt() == Qt::Checked;
-
-	_ui->commonGroupBox->setVisible(noSelectedRows == 1);
-	_ui->commonGroupBox->setEnabled(noSelectedRows == 1);
-	//_ui->navigationGroupBox->setVisible(noSelectedRows == 1);
 
 	for (int column = topLeft.column(); column <= bottomRight.column(); column++) {
 		const auto index	= topLeft.siblingAtColumn(column);
@@ -144,7 +151,7 @@ void LayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex& bott
 		auto validSelection	= false;
 		auto flags			= 0;
 
-		if (index.isValid() && noSelectedRows == 1) {
+		if (index.isValid()) {
 			validSelection	= true;
 			flags			= _layersModel->data(topLeft.siblingAtColumn(ult(Layer::Column::Flags)), Qt::EditRole).toInt();
 		}
@@ -152,7 +159,7 @@ void LayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex& bott
 		const auto mightEdit = validSelection && enabled;
 
 		if (column == ult(Layer::Column::Name)) {
-			_ui->enabledCheckBox->setEnabled(noSelectedRows == 1);
+			//_ui->enabledCheckBox->setEnabled(noSelectedRows == 1);
 			_ui->enabledCheckBox->blockSignals(true);
 			_ui->enabledCheckBox->setChecked(enabled);
 			_ui->enabledCheckBox->blockSignals(false);
