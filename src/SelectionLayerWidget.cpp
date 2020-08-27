@@ -29,8 +29,11 @@ void SelectionLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 		if (selectedRows.isEmpty())
 			updateData(QModelIndex(), QModelIndex());
 		else {
-			const auto first = selected.indexes().first();
-			updateData(first.siblingAtColumn(ult(SelectionLayer::Column::Start)), first.siblingAtColumn(ult(SelectionLayer::Column::End)));
+			const auto first		= selected.indexes().first();
+			const auto layerType	= _layersModel->data(first.siblingAtColumn(ult(Layer::Column::Type)), Qt::EditRole);
+
+			if (layerType == ult(Layer::Type::Selection))
+				updateData(first.siblingAtColumn(ult(SelectionLayer::Column::Start)), first.siblingAtColumn(ult(SelectionLayer::Column::End)));
 		}
 	});
 
