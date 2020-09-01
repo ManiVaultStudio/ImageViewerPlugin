@@ -61,21 +61,6 @@ public:
 		_enabled = enabled;
 	}
 
-	/** Returns whether the channel is inverted */
-	bool inverted() const
-	{
-		return _inverted;
-	}
-
-	/**
-	 * Sets  whether the channel is inverted
-	 * @param enabled Whether the channel is inverted
-	 */
-	void setInverted(const bool& inverted)
-	{
-		_inverted = inverted;
-	}
-
 	/** Returns the channel image size */
 	QSize imageSize() const
 	{
@@ -316,7 +301,6 @@ public:
 
 private:
 	bool			_enabled;				/** Whether the channel is enabled */
-	bool			_inverted;				/** Whether the channel is inverted */
 	QSize			_imageSize;				/** Image size */
 	std::int32_t	_id;					/** Identifier (for internal use) */
 	QString			_name;					/** Name (for use in the GUI) */
