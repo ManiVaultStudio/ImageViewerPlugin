@@ -66,8 +66,8 @@ void PointsLayer::init()
 	setDimensionNames(dimensionNames);
 
 	setChannelDimensionId(ChannelIndex::Channel1, 0);
-	setChannelDimensionId(ChannelIndex::Channel2, std::min(1, dimensionNames.count()));
-	setChannelDimensionId(ChannelIndex::Channel3, std::min(2, dimensionNames.count()));
+	setChannelDimensionId(ChannelIndex::Channel2, std::min(1, dimensionNames.count() - 1));
+	setChannelDimensionId(ChannelIndex::Channel3, std::min(2, dimensionNames.count() - 1));
 
 	const auto pointsDataName = hdps::DataSet::getSourceData(*_pointsDataset).getDataName();
 
