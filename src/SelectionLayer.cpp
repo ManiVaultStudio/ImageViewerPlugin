@@ -6,6 +6,7 @@
 
 #include "PointData.h"
 #include "util/Timer.h"
+#include "Application.h"
 
 #include <set>
 
@@ -262,14 +263,14 @@ void SelectionLayer::paint(QPainter* painter)
 				case SelectionModifier::Add:
 				{
 					painter->setPen(toolColorForeground);
-					painter->drawText(textRectangle, u8"\uf055", QTextOption(Qt::AlignCenter));
+					painter->drawText(textRectangle, hdps::Application::getIconFont("FontAwesome").getIconCharacter("plus-circle"), QTextOption(Qt::AlignCenter));
 					break;
 				}
 
 				case SelectionModifier::Remove:
 				{
 					painter->setPen(toolColorForeground);
-					painter->drawText(textRectangle, u8"\uf056", QTextOption(Qt::AlignCenter));
+					painter->drawText(textRectangle, hdps::Application::getIconFont("FontAwesome").getIconCharacter("minus-circle"), QTextOption(Qt::AlignCenter));
 					break;
 				}
 

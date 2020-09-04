@@ -6,6 +6,8 @@
 
 #include "ui_PointsLayerWidget.h"
 
+#include "Application.h"
+
 #include <QDebug>
 #include <QStringListModel>
 #include <QWidgetAction>
@@ -23,24 +25,28 @@ void PointsLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 {
 	_imageViewerPlugin = imageViewerPlugin;
 	_layersModel = &_imageViewerPlugin->layersModel();
+	
+	const auto fontAwesome = hdps::Application::getIconFont("FontAwesome").getFont(9);
+	
+	_ui->channel1WindowLevelPushButton->setFont(fontAwesome);
+	_ui->channel2WindowLevelPushButton->setFont(fontAwesome);
+	_ui->channel3WindowLevelPushButton->setFont(fontAwesome);
 
-	QFont font = QFont("Font Awesome 5 Free Solid", 9);
+	const auto windowLevelIconCharacter = hdps::Application::getIconFont("FontAwesome").getIconCharacter("adjust");
 
-	_ui->channel1WindowLevelPushButton->setFont(font);
-	_ui->channel2WindowLevelPushButton->setFont(font);
-	_ui->channel3WindowLevelPushButton->setFont(font);
+	_ui->channel1WindowLevelPushButton->setText(windowLevelIconCharacter);
+	_ui->channel2WindowLevelPushButton->setText(windowLevelIconCharacter);
+	_ui->channel3WindowLevelPushButton->setText(windowLevelIconCharacter);
 
-	_ui->channel1WindowLevelPushButton->setText(u8"\uf042");
-	_ui->channel2WindowLevelPushButton->setText(u8"\uf042");
-	_ui->channel3WindowLevelPushButton->setText(u8"\uf042");
+	_ui->channel1ProbePushButton->setFont(fontAwesome);
+	_ui->channel2ProbePushButton->setFont(fontAwesome);
+	_ui->channel3ProbePushButton->setFont(fontAwesome);
 
-	_ui->channel1ProbePushButton->setFont(font);
-	_ui->channel2ProbePushButton->setFont(font);
-	_ui->channel3ProbePushButton->setFont(font);
-
-	_ui->channel1ProbePushButton->setText(u8"\uf1fb");
-	_ui->channel2ProbePushButton->setText(u8"\uf1fb");
-	_ui->channel3ProbePushButton->setText(u8"\uf1fb");
+	const auto eyeDropperIconCharacter = hdps::Application::getIconFont("FontAwesome").getIconCharacter("eye-dropper");
+	
+	_ui->channel1ProbePushButton->setText(eyeDropperIconCharacter);
+	_ui->channel2ProbePushButton->setText(eyeDropperIconCharacter);
+	_ui->channel3ProbePushButton->setText(eyeDropperIconCharacter);
 
 	_ui->channel1ProbePushButton->setVisible(false);
 	_ui->channel2ProbePushButton->setVisible(false);

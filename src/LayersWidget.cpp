@@ -11,6 +11,7 @@
 #include "ui_LayersWidget.h"
 
 #include "PointData.h"
+#include "Application.h"
 
 #include <QItemSelectionModel>
 #include <QDebug>
@@ -46,9 +47,9 @@ void LayersWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 	_ui->layerMoveUpPushButton->setFont(font);
 	_ui->layerMoveDownPushButton->setFont(font);
 
-	_ui->layerRemovePushButton->setText(u8"\uf2ed");
-	_ui->layerMoveUpPushButton->setText(u8"\uf0d8");
-	_ui->layerMoveDownPushButton->setText(u8"\uf0d7");
+	_ui->layerRemovePushButton->setText(hdps::Application::getIconFont("FontAwesome").getIconCharacter("trash-alt"));
+	_ui->layerMoveUpPushButton->setText(hdps::Application::getIconFont("FontAwesome").getIconCharacter("caret-up"));
+	_ui->layerMoveDownPushButton->setText(hdps::Application::getIconFont("FontAwesome").getIconCharacter("caret-down"));
 
 	QObject::connect(_ui->layerMoveUpPushButton, &QPushButton::clicked, [this]() {
 		const auto selectedRows = layersSelectionModel().selectedRows();
