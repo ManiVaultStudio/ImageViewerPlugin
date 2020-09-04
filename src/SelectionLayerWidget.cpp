@@ -4,6 +4,8 @@
 #include "ImageViewerPlugin.h"
 #include "ColorPickerPushButton.h"
 
+#include "Application.h"
+
 #include "ui_SelectionLayerWidget.h"
 
 #include <QDebug>
@@ -49,13 +51,13 @@ void SelectionLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(SelectionLayer::Column::PixelSelectionModifier)), ult(SelectionModifier::Remove));
 	});
 
-	QFont font = QFont("Font Awesome 5 Free Solid", 9);
+	const auto& fontAwesome = hdps::Application::getIconFont("FontAwesome");
 
-	_ui->pixelSelectionModifierAddPushButton->setFont(font);
-	_ui->pixelSelectionModifierRemovePushButton->setFont(font);
+	_ui->pixelSelectionModifierAddPushButton->setFont(fontAwesome.getFont(9));
+	_ui->pixelSelectionModifierRemovePushButton->setFont(fontAwesome.getFont(9));
 
-	_ui->pixelSelectionModifierAddPushButton->setText(u8"\uf067");
-	_ui->pixelSelectionModifierRemovePushButton->setText(u8"\uf068");
+	_ui->pixelSelectionModifierAddPushButton->setText(fontAwesome.getIconCharacter("plus-circle"));
+	_ui->pixelSelectionModifierRemovePushButton->setText(fontAwesome.getIconCharacter("minus-circle"));
 
 	_ui->brushRadiusDoubleSpinBox->setMinimum(static_cast<double>(SelectionLayer::minBrushRadius));
 	_ui->brushRadiusDoubleSpinBox->setMaximum(static_cast<double>(SelectionLayer::maxBrushRadius));

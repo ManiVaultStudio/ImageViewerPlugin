@@ -5,6 +5,8 @@
 #include "ImageData/Images.h"
 #include "PointData.h"
 
+#include "Application.h"
+
 #include <QFont>
 #include <QDebug>
 #include <QPainter>
@@ -286,7 +288,7 @@ QVariant Layer::type(const int& role) const
 	switch (role)
 	{
 		case Qt::FontRole:
-			return QFont("Font Awesome 5 Free Solid", 9);
+			return hdps::Application::getIconFont("FontAwesome").getFont(9);
 
 		case Qt::EditRole:
 			return static_cast<int>(_type);
@@ -298,10 +300,10 @@ QVariant Layer::type(const int& role) const
 		{
 			switch (_type) {
 				case Type::Selection:
-					return u8"\uf245";
+					return hdps::Application::getIconFont("FontAwesome").getIconCharacter("mouse-pointer");
 
 				case Type::Points:
-					return u8"\uf58d";
+					return hdps::Application::getIconFont("FontAwesome").getIconCharacter("th");
 
 				default:
 					break;
@@ -309,6 +311,9 @@ QVariant Layer::type(const int& role) const
 
 			break;
 		}
+
+		case Qt::TextAlignmentRole:
+			return Qt::AlignCenter;
 
 		default:
 			break;
