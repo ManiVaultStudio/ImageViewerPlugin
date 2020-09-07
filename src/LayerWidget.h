@@ -42,7 +42,7 @@ public: // Initialization and update
 	 * @param bottomRight Bottom right model index
 	 * @param roles Data roles
 	 */
-	void updateData(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>& roles = QVector<int>());
+	void updateData(const QModelIndex& begin, const QModelIndex& end, const QVector<int>& roles = QVector<int>());
 
 private:
 	ImageViewerPlugin*					_imageViewerPlugin;		/** Pointer to the image viewer plugin */

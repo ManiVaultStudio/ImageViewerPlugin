@@ -74,10 +74,8 @@ void LayersWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 	});
 
 	QObject::connect(_ui->layerRemovePushButton, &QPushButton::clicked, [this]() {
-		const auto selectedRows = layersSelectionModel().selectedRows();
-
-		if (selectedRows.size() == 1) {
-			layersModel().removeLayer(selectedRows.first());
+		for (auto selectedRow : layersSelectionModel().selectedRows()) {
+			layersModel().removeLayer(selectedRow);
 			layersModel().selectRow(0);
 		}
 	});
@@ -89,7 +87,7 @@ void LayersWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 	headerView->setSectionResizeMode(QHeaderView::ResizeToContents);
 	headerView->hide();
 
-	for (int column = ult(Layer::Column::Start); column < ult(Layer::Column::End); column++)
+	for (int column = ult(Layer::Column::Start); column <= ult(Layer::Column::End); column++)
 		headerView->hideSection(column);
 
 	headerView->showSection(ult(Layer::Column::Name));
@@ -129,7 +127,7 @@ void LayersWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 			_ui->layerMoveDownPushButton->setToolTip(mayMoveDown ? QString("Move %1 down one level").arg(name) : "");
 		}
 
-		_ui->layerRemovePushButton->setEnabled(noSelectedRows == 1);
+		_ui->layerRemovePushButton->setEnabled(noSelectedRows > 0);
 	};
 
 	QObject::connect(&layersModel(), &QAbstractItemModel::rowsMoved, [this, updateButtons](const QModelIndex& parent, int start, int end, const QModelIndex& destination, int row) {

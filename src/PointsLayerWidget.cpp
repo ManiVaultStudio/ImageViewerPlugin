@@ -62,10 +62,9 @@ void PointsLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 		if (selectedRows.isEmpty())
 			updateData(QModelIndex(), QModelIndex());
 		else {
-			const auto first		= selected.indexes().first();
-			const auto layerType	= _layersModel->data(first.siblingAtColumn(ult(Layer::Column::Type)), Qt::EditRole);
+			const auto first = selectedRows.first();
 			
-			if (layerType == ult(Layer::Type::Points))
+			if (selectedRows.count() == 1 && _layersModel->data(first.siblingAtColumn(ult(Layer::Column::Type)), Qt::EditRole) == ult(Layer::Type::Points))
 				updateData(first.siblingAtColumn(ult(PointsLayer::Column::Start)), first.siblingAtColumn(ult(PointsLayer::Column::End)));
 		}
 	});
