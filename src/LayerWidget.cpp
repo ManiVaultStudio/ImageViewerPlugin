@@ -34,10 +34,8 @@ void LayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 	_ui->settingsStackedWidget->setVisible(false);
 
 	QObject::connect(_ui->visibleCheckBox, &QCheckBox::stateChanged, [this](int state) {
-		const auto selectedRows = _layersModel->selectionModel().selectedRows();
-		
-		if (selectedRows.count() == 1) {
-			_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(Layer::Column::Name)), static_cast<int>(state), Qt::CheckStateRole);
+		for (auto selectedRow : _layersModel->selectionModel().selectedRows()) {
+			_layersModel->setData(selectedRow.siblingAtColumn(ult(Layer::Column::Name)), static_cast<int>(state), Qt::CheckStateRole);
 		}
 	});
 
@@ -98,12 +96,6 @@ void LayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 
 	QObject::connect(_layersModel, &LayersModel::dataChanged, this, &LayerWidget::updateData);
 
-	/*
-	QObject::connect(_layersModel, &LayersModel::rowsRemoved, [this](const QModelIndex &parent, int first, int last) {
-		_layersModel->selectionModel()
-	});
-	*/
-
 	QObject::connect(&_layersModel->selectionModel(), &QItemSelectionModel::selectionChanged, [this](const QItemSelection& selected, const QItemSelection& deselected) {
 		const auto selectedRows = _layersModel->selectionModel().selectedRows();
 
@@ -132,8 +124,25 @@ void LayerWidget::updateData(const QModelIndex& begin, const QModelIndex& end, c
 		_ui->settingsStackedWidget->setCurrentIndex(selectedRows.first().siblingAtColumn(ult(Layer::Column::Type)).data(Qt::EditRole).toInt());
 
 	for (int column = begin.column(); column <= end.column(); column++) {
-
 		if (column == ult(Layer::Column::Name)) {
+			auto visible = QVector<int>();
+
+			for (auto selectedRow : selectedRows)
+				visible << (selectedRow.siblingAtColumn(ult(Layer::Column::Name)).data(Qt::CheckStateRole).toInt() == Qt::Checked ? 1 : 0);
+
+			const auto noVisible = std::accumulate(visible.begin(), visible.end(), 0);
+
+			_ui->visibleCheckBox->blockSignals(true);
+
+			if (noVisible == 0)
+				_ui->visibleCheckBox->setCheckState(Qt::Unchecked);
+			else if (noVisible == visible.count())
+				_ui->visibleCheckBox->setCheckState(Qt::Checked);
+			else
+				_ui->visibleCheckBox->setCheckState(Qt::PartiallyChecked);
+
+			_ui->visibleCheckBox->blockSignals(false);
+
 			const auto name = noSelectedRows == 1 ? _layersModel->data(end.siblingAtColumn(ult(Layer::Column::Name)), Qt::EditRole).toString() : "...";
 
 			_ui->nameLabel->setEnabled(noSelectedRows == 1);
@@ -149,8 +158,6 @@ void LayerWidget::updateData(const QModelIndex& begin, const QModelIndex& end, c
 		const auto opacity = end.siblingAtColumn(ult(Layer::Column::Opacity)).data(Qt::EditRole).toFloat();
 
 		if (column == ult(Layer::Column::Opacity)) {
-			
-
 			_ui->opacityDoubleSpinBox->blockSignals(true);
 			_ui->opacityDoubleSpinBox->setValue(100.0f * opacity);
 			_ui->opacityDoubleSpinBox->blockSignals(false);

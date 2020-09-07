@@ -74,10 +74,11 @@ void LayersWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 	});
 
 	QObject::connect(_ui->layerRemovePushButton, &QPushButton::clicked, [this]() {
-		for (auto selectedRow : layersSelectionModel().selectedRows()) {
-			layersModel().removeLayer(selectedRow);
+		
+		layersModel().removeLayers(layersSelectionModel().selectedRows());
+
+		if (layersModel().rowCount() >= 1)
 			layersModel().selectRow(0);
-		}
 	});
 
 	_ui->layersGroupBox->setEnabled(true);

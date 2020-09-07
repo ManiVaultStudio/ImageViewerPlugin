@@ -147,11 +147,11 @@ public: // Data access
 	bool insertLayer(int row, Layer* layer, const QModelIndex& parent = QModelIndex());
 
 	/**
-	 * Removes a layer at the specified model index
-	 * @param index Model index of the layer to remove
-	 * @return Whether the layer was successfully removed
+	 * Removes one ore more layers at the specified model indices
+	 * @param indices Model indices of the layers to remove
+	 * @return Whether the layers were successfully removed
 	 */
-	bool removeLayer(const QModelIndex& index);
+	bool removeLayers(const QModelIndexList& indices);
 
 	/**
 	 * Determines whether a layer may be moved by delta

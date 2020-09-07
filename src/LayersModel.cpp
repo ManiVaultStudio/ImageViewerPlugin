@@ -164,16 +164,22 @@ QModelIndex LayersModel::parent(const QModelIndex &index) const
 	return createIndex(parentLayer->childIndex(), 0, parentLayer);
 }
 
-bool LayersModel::removeLayer(const QModelIndex& index)
+bool LayersModel::removeLayers(const QModelIndexList& indices)
 {
-	const auto row = index.row();
+	QModelIndexList sortedIndices = indices;
 
-	beginRemoveRows(index.parent(), row, row);
-	{
-		getLayer(index.parent())->removeChild(row);
+	qSort(sortedIndices.begin(), sortedIndices.end(), qGreater<QModelIndex>());
+
+	for (auto sortedIndex : sortedIndices) {
+		const int row = sortedIndex.row();
+
+		beginRemoveRows(sortedIndex.parent(), row, row);
+		{
+			getLayer(sortedIndex.parent())->removeChild(row);
+		}
+		endRemoveRows();
 	}
-	endRemoveRows();
-	
+
 	return true;
 }
 
