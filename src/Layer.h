@@ -67,8 +67,8 @@ public:
 
 	/**  Columns */
 	enum class Column {
-		Name,				// Name of the layer
 		Type,				// Type of layer
+		Name,				// Name of the layer
 		DatasetName,		// Name of the dataset (if any)
 		DataName,			// Name of the data (if any)
 		ID,					// Layer identifier (for internal use)
@@ -81,7 +81,7 @@ public:
 		Selection,			// Selection
 		SelectionSize,		// Size of the selection
 
-		Start = Name,
+		Start = Type,
 		End = SelectionSize
 	};
 
