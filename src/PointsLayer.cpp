@@ -1271,13 +1271,40 @@ void PointsLayer::computeStackChannel(Channel<float>* channel, const ChannelInde
 {
 	channel->fill(0.0f);
 
-	_pointsDataset->visitSourceData([this, channel](auto pointData) {
-		const auto dimensionId = channel->dimensionId();
+	const auto dimensionId = channel->dimensionId();
 
-		for (auto pointView : pointData) {
-			(*channel)[pointView.index()] = pointView[dimensionId];
-		}
-	});
+	if (_pointsDataset->isDerivedData()) {
+		_pointsDataset->visitData([this, channel, dimensionId](auto pointData) {
+			auto& sourceData = _pointsDataset->getSourceData<Points>(*_pointsDataset);
+
+			if (sourceData.isFull()) {
+				for (int i = 0; i < _pointsDataset->getNumPoints(); i++)
+					(*channel)[i] = pointData[i][dimensionId];
+			}
+			else {
+				for (int i = 0; i < sourceData.indices.size(); i++)
+					(*channel)[sourceData.indices[i]] = pointData[i][dimensionId];
+			}
+		});
+
+		/* This does not work with derived data from subsets
+		_pointsDataset->visitData([this, channel](auto pointData) {
+			const auto dimensionId = channel->dimensionId();
+
+			for (auto pointView : pointData) {
+				(*channel)[_pointsDataset->indices[pointView.index()]] = pointView[dimensionId];
+			}
+		});
+		*/
+	}
+	else {
+		_pointsDataset->visitSourceData([this, channel](auto pointData) {
+			const auto dimensionId = channel->dimensionId();
+
+			for (auto pointView : pointData)
+				(*channel)[pointView.index()] = pointView[dimensionId];
+		});
+	}
 
 	channel->setChanged();
 
@@ -1292,11 +1319,26 @@ void PointsLayer::computeMaskChannel(Channel<float>* maskChannel, const ChannelI
 		{
 			maskChannel->fill(0.0f);
 
-			_pointsDataset->visitData([this, maskChannel](auto pointData) {
-				for (auto pointView : pointData) {
-					(*maskChannel)[pointView.index()] = 1.0f;
-				}
-			});
+			if (_pointsDataset->isDerivedData()) {
+				_pointsDataset->visitData([this, maskChannel](auto pointData) {
+					auto& sourceData = _pointsDataset->getSourceData<Points>(*_pointsDataset);
+
+					if (sourceData.isFull()) {
+						for (int i = 0; i < _pointsDataset->getNumPoints(); i++)
+							(*maskChannel)[i] = 1.0f;
+					}
+					else {
+						for (int i = 0; i < sourceData.indices.size(); i++)
+							(*maskChannel)[sourceData.indices[i]] = 1.0f;
+					}
+				});
+			} else {
+				_pointsDataset->visitData([this, maskChannel](auto pointData) {
+					for (auto pointView : pointData) {
+						(*maskChannel)[pointView.index()] = 1.0f;
+					}
+				});
+			}
 
 			break;
 		}
