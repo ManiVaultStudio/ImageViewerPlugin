@@ -114,7 +114,7 @@ bool ViewerWidget::eventFilter(QObject* target, QEvent* event)
 	if (_keys & Qt::Key_Space)
 		_renderer->handleEvent(event);
 	else
-		_imageViewerPlugin->layersModel().dispatchEventToSelectedLayer(event);
+		_imageViewerPlugin->getLayersModel().dispatchEventToSelectedLayer(event);
 
 	return QWidget::eventFilter(target, event);
 }
@@ -139,7 +139,7 @@ void ViewerWidget::initializeGL()
 void ViewerWidget::paintGL()
 {
 	try {
-		auto& layersModel = _imageViewerPlugin->layersModel();
+		auto& layersModel = _imageViewerPlugin->getLayersModel();
 
 		QPainter painter;
 
@@ -190,7 +190,7 @@ void ViewerWidget::paintGL()
 
 void ViewerWidget::resizeGL(int w, int h)
 {
-	auto root = _imageViewerPlugin->layersModel().getLayer(QModelIndex());
+	auto root = _imageViewerPlugin->getLayersModel().getLayer(QModelIndex());
 
 	if (root != nullptr)
 		_renderer->zoomToRectangle(root->boundingRectangle());

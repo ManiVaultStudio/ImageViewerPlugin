@@ -26,7 +26,7 @@ LayerWidget::LayerWidget(QWidget* parent) :
 void LayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 {
 	_imageViewerPlugin = imageViewerPlugin;
-	_layersModel = &_imageViewerPlugin->layersModel();
+	_layersModel = &_imageViewerPlugin->getLayersModel();
 
 	_ui->pointsLayerWidget->initialize(_imageViewerPlugin);
 	_ui->selectionLayerWidget->initialize(_imageViewerPlugin);

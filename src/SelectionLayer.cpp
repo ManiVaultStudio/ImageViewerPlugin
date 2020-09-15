@@ -674,7 +674,7 @@ void SelectionLayer::handleEvent(QEvent* event, const QModelIndex& index)
 	}
 	
 	for (auto index : affectedIds)
-		emit Layer::imageViewerPlugin->layersModel().dataChanged(index, index);
+		emit Layer::imageViewerPlugin->getLayersModel().dataChanged(index, index);
 
 	Renderable::renderer->render();
 }
