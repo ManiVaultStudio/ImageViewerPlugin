@@ -36,7 +36,7 @@ void LayersWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 
 	_ui->layerWidget->initialize(_imageViewerPlugin);
 
-	_ui->layersTreeView->setModel(&_imageViewerPlugin->layersModel());
+	_ui->layersTreeView->setModel(&_imageViewerPlugin->getLayersModel());
 	_ui->layersTreeView->setSelectionModel(&layersSelectionModel());
 	_ui->layersTreeView->setDragDropOverwriteMode(false);
 	_ui->layersTreeView->setHeaderHidden(false);
@@ -146,7 +146,7 @@ void LayersWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 	QObject::connect(&layersSelectionModel(), &QItemSelectionModel::selectionChanged, [this, updateButtons](const QItemSelection &selected, const QItemSelection &deselected) {
 		updateButtons();
 
-		_imageViewerPlugin->viewerWidget()->update();
+		_imageViewerPlugin->getViewerWidget()->update();
 	});
 }
 
@@ -230,7 +230,7 @@ void LayersWidget::dropEvent(QDropEvent* dropEvent)
 
 LayersModel& LayersWidget::layersModel()
 {
-	return _imageViewerPlugin->layersModel();
+	return _imageViewerPlugin->getLayersModel();
 }
 
 QItemSelectionModel& LayersWidget::layersSelectionModel()

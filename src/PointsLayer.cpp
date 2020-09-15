@@ -36,6 +36,8 @@ PointsLayer::PointsLayer(const QString& pointsDatasetName, const QString& id, co
 			if (name == _indexSelectionDataset->getDataName()) {
 				computeChannel(ChannelIndex::Channel1);
 				computeChannel(ChannelIndex::Mask);
+
+				Renderable::renderer->render();
 			}
 		}
 	});
@@ -51,7 +53,7 @@ void PointsLayer::init()
 	setNoPoints(_pointsDataset->getNumPoints());
 	setNoDimensions(_pointsDataset->getNumDimensions());
 	setMaxNoChannels(std::min(3u, _noDimensions));
-	setColorMap(imageViewerPlugin->colorMapModel().colorMap(0)->image());
+	setColorMap(imageViewerPlugin->getColorMapModel().colorMap(0)->image());
 	setUseConstantColor(false);
 	setChannelEnabled(ChannelIndex::Channel1, true);
 

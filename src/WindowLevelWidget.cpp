@@ -23,9 +23,9 @@ WindowLevelWidget::WindowLevelWidget(QWidget* parent, ImageViewerPlugin* imageVi
 
 	move(parent->mapToGlobal(parent->rect().bottomRight()) - QPoint(width(), 0));
 
-	QObject::connect(&_imageViewerPlugin->layersModel(), &LayersModel::dataChanged, this, &WindowLevelWidget::updateData);
+	QObject::connect(&_imageViewerPlugin->getLayersModel(), &LayersModel::dataChanged, this, &WindowLevelWidget::updateData);
 
-	auto& layersModel = _imageViewerPlugin->layersModel();
+	auto& layersModel = _imageViewerPlugin->getLayersModel();
 
 	QObject::connect(_ui->windowDoubleSpinBox, qOverload<double>(&QDoubleSpinBox::valueChanged), [&](double value) {
 		layersModel.setData(_windowIndex, value);
@@ -56,7 +56,7 @@ WindowLevelWidget::~WindowLevelWidget() = default;
 
 void WindowLevelWidget::updateData(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>& roles /*= QVector<int>()*/)
 {
-	auto& layersModel = _imageViewerPlugin->layersModel();
+	auto& layersModel = _imageViewerPlugin->getLayersModel();
 
 	const auto window	= layersModel.data(_windowIndex, Qt::EditRole).toFloat();
 	const auto level	= layersModel.data(_levelIndex, Qt::EditRole).toFloat();

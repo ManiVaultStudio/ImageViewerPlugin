@@ -25,7 +25,7 @@ public:
 public:
 
 	/**
-	 * (Default) constructor
+	 * Constructor
 	 * @param id Channel identifier
 	 * @param name Channel name
 	 * @param dimensionId Channel dimension identifier

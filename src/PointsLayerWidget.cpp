@@ -24,7 +24,7 @@ PointsLayerWidget::PointsLayerWidget(QWidget* parent) :
 void PointsLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 {
 	_imageViewerPlugin = imageViewerPlugin;
-	_layersModel = &_imageViewerPlugin->layersModel();
+	_layersModel = &_imageViewerPlugin->getLayersModel();
 	
 	const auto fontAwesome = hdps::Application::getIconFont("FontAwesome").getFont(9);
 	
@@ -53,6 +53,35 @@ void PointsLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 	_ui->channel3ProbePushButton->setVisible(false);
 
 	QObject::connect(_layersModel, &LayersModel::dataChanged, this, &PointsLayerWidget::updateData);
+
+	const auto updateIndexSelectionComboBox = [this]() {
+		auto pointsDatasets = _imageViewerPlugin->getPointsDatasets();
+
+		_ui->indexSelectionComboBox->blockSignals(true);
+		_ui->indexSelectionComboBox->clear();
+
+		const auto selectedRows = _layersModel->selectionModel().selectedRows();
+
+		if (!selectedRows.isEmpty()) {
+			const auto selectedRow					= selectedRows.first();
+			const auto datasetName					= _layersModel->data(selectedRow.siblingAtColumn(ult(Layer::Column::DatasetName)), Qt::EditRole).toString();
+			const auto indexSelectionDatasetName	= _layersModel->data(selectedRow.siblingAtColumn(ult(PointsLayer::Column::IndexSelectionDatasetName)), Qt::EditRole).toString();
+
+			_ui->indexSelectionComboBox->insertItems(0, pointsDatasets);
+
+			pointsDatasets.removeOne(datasetName);
+
+			if (indexSelectionDatasetName.isEmpty())
+				_ui->indexSelectionComboBox->setCurrentIndex(-1);
+			else
+				_ui->indexSelectionComboBox->setCurrentText(indexSelectionDatasetName);
+		}
+		else {
+			_ui->indexSelectionComboBox->insertItems(0, pointsDatasets);
+		}
+
+		_ui->indexSelectionComboBox->blockSignals(false);
+	};
 
 	QObject::connect(&_layersModel->selectionModel(), &QItemSelectionModel::selectionChanged, [this](const QItemSelection& selected, const QItemSelection& deselected) {
 		const auto selectedRows = _layersModel->selectionModel().selectedRows();
@@ -129,7 +158,7 @@ void PointsLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::ColorSpace)), index);
 	});
 
-	_ui->colorMapComboBox->setModel(&_imageViewerPlugin->colorMapModel());
+	_ui->colorMapComboBox->setModel(&_imageViewerPlugin->getColorMapModel());
 	_ui->colorMapComboBox->setType(ColorMap::Type::TwoDimensional);
 
 	QObject::connect(_ui->colorMapComboBox, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
@@ -148,32 +177,11 @@ void PointsLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::IndexSelectionDatasetName)), text);
 	});
 
-	QObject::connect(_imageViewerPlugin, &ImageViewerPlugin::pointsDatasetsChanged, [this](QStringList pointsDatasets) {
-		const auto selectedRows = _layersModel->selectionModel().selectedRows();
-
-		if (selectedRows.isEmpty())
-			return;
-
-		const auto selectedRow					= selectedRows.first();
-		const auto datasetName					= _layersModel->data(selectedRow.siblingAtColumn(ult(Layer::Column::DatasetName)), Qt::EditRole).toString();
-		const auto indexSelectionDatasetName	= _layersModel->data(selectedRow.siblingAtColumn(ult(PointsLayer::Column::IndexSelectionDatasetName)), Qt::EditRole).toString();
-
-		_ui->indexSelectionComboBox->blockSignals(true);
-		_ui->indexSelectionComboBox->clear();
-
-		pointsDatasets.removeOne(datasetName);
-
-		_ui->indexSelectionComboBox->insertItems(0, pointsDatasets);
-
-		if (indexSelectionDatasetName.isEmpty()) {
-			_ui->indexSelectionComboBox->setCurrentIndex(-1);
-		}
-		else {
-			_ui->indexSelectionComboBox->setCurrentText(indexSelectionDatasetName);
-		}
-
-		_ui->indexSelectionComboBox->blockSignals(false);
+	QObject::connect(_imageViewerPlugin, &ImageViewerPlugin::pointsDatasetsChanged, [this, updateIndexSelectionComboBox](QStringList pointsDatasets) {
+		updateIndexSelectionComboBox();
 	});
+	
+	updateIndexSelectionComboBox();
 }
 
 void PointsLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>& roles /*= QVector<int>()*/)

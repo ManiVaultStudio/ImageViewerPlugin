@@ -17,6 +17,7 @@ class SettingsWidget;
 /**
  * Image viewer plugin class
  * This HDPS view plugin class provides functionality to view/interact with high-dimensional image data
+ * 
  * @author Thomas Kroes
  */
 class ImageViewerPlugin : public ViewPlugin
@@ -47,7 +48,6 @@ public: // Inherited from ViewPlugin
 	/** Determines which data types this the image viewer is compatible with */
 	hdps::DataTypes supportedDataTypes() const Q_DECL_OVERRIDE;
 
-	/** TODO */
 	template<typename T>
 	T& requestData(const QString& datasetName)
 	{
@@ -64,23 +64,39 @@ public: // Inherited from ViewPlugin
 	 */
 	bool eventFilter(QObject* target, QEvent* event) override;
 
-public: //
+public: // Miscellaneous
 
 	/** Returns the image viewer widget */
-	ViewerWidget* viewerWidget() { return _viewerWidget; }
+	ViewerWidget* getViewerWidget() {
+		return _viewerWidget;
+	}
 
 	/** Returns the settings widget */
-	SettingsWidget* settingsWidget() { return _settingsWidget; }
+	SettingsWidget* getSettingsWidget()
+	{
+		return _settingsWidget;
+	}
 
-	/** TODO */
-	LayersModel& layersModel() { return _layersModel; }
+	/** Returns the layer model */
+	LayersModel& getLayersModel()
+	{
+		return _layersModel;
+	}
 
-	/** TODO */
-	ColorMapModel& colorMapModel() { return _colorMapModel; }
+	/** Returns the color map model */
+	ColorMapModel& getColorMapModel()
+	{
+		return _colorMapModel;
+	}
+
+	/** Returns the names of the points datasets in HDPS */
+	QStringList getPointsDatasets() const {
+		return _pointsDatasets;
+	}
 
 signals:
 	
-	/** TODO */
+	/** Signals that list of point datasets in HDPS has changed */
 	void pointsDatasetsChanged(QStringList pointsDatasets);
 
 	/** Signals that the selection of a dataset has changed */

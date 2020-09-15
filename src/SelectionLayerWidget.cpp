@@ -21,7 +21,7 @@ SelectionLayerWidget::SelectionLayerWidget(QWidget* parent) :
 void SelectionLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 {
 	_imageViewerPlugin = imageViewerPlugin;
-	_layersModel = &_imageViewerPlugin->layersModel();
+	_layersModel = &_imageViewerPlugin->getLayersModel();
 
 	QObject::connect(_layersModel, &LayersModel::dataChanged, this, &SelectionLayerWidget::updateData);
 
