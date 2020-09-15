@@ -42,7 +42,7 @@ PointsProp::PointsProp(PointsLayer* pointsLayer, const QString& name) :
 		{
 			auto channel = pointsLayer->channel(channelId);
 
-			const auto imageSize = channel->imageSize();
+			const auto imageSize = channel->getImageSize();
 
 			if (!imageSize.isValid())
 				return;
@@ -66,7 +66,7 @@ PointsProp::PointsProp(PointsLayer* pointsLayer, const QString& name) :
 				texture->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
 			}
 
-			texture->setData(0, channel->id(), QOpenGLTexture::PixelFormat::Red, QOpenGLTexture::PixelType::Float32, channel->elements().data());
+			texture->setData(0, channel->getId(), QOpenGLTexture::PixelFormat::Red, QOpenGLTexture::PixelType::Float32, channel->getElements().data());
 
 			const auto rectangle = QRectF(QPointF(0.f, 0.f), QSizeF(static_cast<float>(imageSize.width()), static_cast<float>(imageSize.height())));
 
@@ -178,9 +178,9 @@ void PointsProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 		
 		if (shaderProgram->bind()) {
 			const QVector2D displayRanges[] = {
-				pointsLayer->channel(0)->displayRangeVector(),
-				pointsLayer->channel(1)->displayRangeVector(),
-				pointsLayer->channel(2)->displayRangeVector()
+				pointsLayer->channel(0)->getDisplayRangeVector(),
+				pointsLayer->channel(1)->getDisplayRangeVector(),
+				pointsLayer->channel(2)->getDisplayRangeVector()
 			};
 
 			const auto noChannels		= pointsLayer->noChannels(Qt::EditRole).toInt();

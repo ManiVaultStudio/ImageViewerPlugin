@@ -34,7 +34,7 @@ SelectionProp::SelectionProp(SelectionLayer* selectionLayer, const QString& name
 
 			auto channel = selectionLayer->channel(channelId);
 
-			const auto imageSize = channel->imageSize();
+			const auto imageSize = channel->getImageSize();
 
 			if (!imageSize.isValid())
 				return;
@@ -59,7 +59,7 @@ SelectionProp::SelectionProp(SelectionLayer* selectionLayer, const QString& name
 
 			options.setAlignment(1);
 
-			texture->setData(0, channel->id(), QOpenGLTexture::PixelFormat::Red, QOpenGLTexture::PixelType::UInt8, channel->elements().data(), &options);// channel->elements().data());
+			texture->setData(0, channel->getId(), QOpenGLTexture::PixelFormat::Red, QOpenGLTexture::PixelType::UInt8, channel->getElements().data(), &options);// channel->elements().data());
 
 			const auto rectangle = QRectF(QPointF(0.f, 0.f), QSizeF(imageSize));
 

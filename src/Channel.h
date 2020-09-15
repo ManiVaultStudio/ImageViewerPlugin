@@ -47,7 +47,7 @@ public:
 	}
 
 	/** Returns whether the channel is enabled */
-	bool enabled() const
+	bool getEnabled() const
 	{
 		return _enabled;
 	}
@@ -62,7 +62,7 @@ public:
 	}
 
 	/** Returns the channel image size */
-	QSize imageSize() const
+	QSize getImageSize() const
 	{
 		return _imageSize;
 	}
@@ -88,13 +88,13 @@ public:
 	}
 
 	/** Returns the channel identifier */
-	const std::int32_t& id() const
+	const std::int32_t& getId() const
 	{
 		return _id;
 	}
 
 	/** Returns the channel name */
-	QString name() const
+	QString getName() const
 	{
 		return _name;
 	}
@@ -109,7 +109,7 @@ public:
 	}
 
 	/** Returns the channel dimension identifier */
-	const std::int32_t& dimensionId() const
+	const std::int32_t& getDimensionId() const
 	{
 		return _dimensionId;
 	}
@@ -124,7 +124,7 @@ public:
 	}
 
 	/** Returns the channel elements */
-	const Elements& elements() const
+	const Elements& getElements() const
 	{
 		return _elements;
 	}
@@ -143,25 +143,25 @@ public:
 	}
 
 	/** Returns the channel elements range */
-	Range range() const
+	Range getRange() const
 	{
 		return _range;
 	}
 
 	/** Returns the display range */
-	Range displayRange() const
+	Range getDisplayRange() const
 	{
 		return _displayRange;
 	}
 
 	/** Returns the display range in vector format */
-	QVector2D displayRangeVector() const
+	QVector2D getDisplayRangeVector() const
 	{
-		return QVector2D(displayRange().min(), displayRange().max());
+		return QVector2D(getDisplayRange().min(), getDisplayRange().max());
 	}
 
 	/** Returns the normalized window */
-	float windowNormalized() const
+	float getWindowNormalized() const
 	{
 		return _windowNormalized;
 	}
@@ -178,7 +178,7 @@ public:
 	}
 
 	/** Returns the normalized level */
-	float levelNormalized() const
+	float getLevelNormalized() const
 	{
 		return _levelNormalized;
 	}
@@ -195,7 +195,7 @@ public:
 	}
 
 	/** Returns the window */
-	float window() const
+	float getWindow() const
 	{
 		return _window;
 	}
@@ -210,7 +210,7 @@ public:
 	}
 
 	/** Returns the level */
-	float level() const
+	float getLevel() const
 	{
 		return _level;
 	}
