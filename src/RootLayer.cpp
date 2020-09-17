@@ -33,10 +33,10 @@ Qt::ItemFlags RootLayer::getFlags(const QModelIndex& index) const
 	return flags;
 }
 
-QVariant RootLayer::data(const QModelIndex& index, const int& role) const
+QVariant RootLayer::getData(const QModelIndex& index, const int& role) const
 {
 	if (index.column() < ult(Column::Start))
-		return Layer::data(index, role);
+		return Layer::getData(index, role);
 
 	/*
 	switch (static_cast<Column>(index.column())) {

@@ -793,10 +793,10 @@ Qt::ItemFlags SelectionLayer::getFlags(const QModelIndex& index) const
 	return flags;
 }
 
-QVariant SelectionLayer::data(const QModelIndex& index, const int& role) const
+QVariant SelectionLayer::getData(const QModelIndex& index, const int& role) const
 {
 	if (index.column() < ult(Column::Start))
-		return Layer::data(index, role);
+		return Layer::getData(index, role);
 
 	switch (static_cast<Column>(index.column())) {
 		case Column::PixelSelectionType:

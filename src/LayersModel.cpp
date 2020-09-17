@@ -56,7 +56,7 @@ QVariant LayersModel::data(const QModelIndex &index, int role) const
 
 	auto layer = getLayer(index);
 
-	return layer->data(index, role);
+	return layer->getData(index, role);
 }
 
 QVariant LayersModel::data(const int& row, const int& column, const int& role) const

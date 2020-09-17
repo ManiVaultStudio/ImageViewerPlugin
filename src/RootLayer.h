@@ -41,13 +41,13 @@ public: // Visualization
 public: // Inherited MVC
 
 	/** TODO */
-	int columnCount() const override { return ult(Column::End) + 1; }
+	int getColumnCount() const override { return ult(Column::End) + 1; }
 
 	/** TODO */
 	Qt::ItemFlags getFlags(const QModelIndex& index) const override;
 
 	/** TODO */
-	QVariant data(const QModelIndex& index, const int& role) const override;
+	QVariant getData(const QModelIndex& index, const int& role) const override;
 
 	/** TODO */
 	QModelIndexList setData(const QModelIndex& index, const QVariant& value, const int& role) override;

@@ -197,7 +197,7 @@ public: // Miscellaneous
 public: // MVC
 	
 	/** Returns the number of columns */
-	virtual int columnCount() const { return ult(Column::End) + 1; }
+	virtual int getColumnCount() const { return ult(Column::End) + 1; }
 
 	/**
 	 * Returns the item flags for the given model index
@@ -212,7 +212,7 @@ public: // MVC
 	 * @param role Data role
 	 * @return Data in variant form
 	 */
-	virtual QVariant data(const QModelIndex& index, const int& role) const;
+	virtual QVariant getData(const QModelIndex& index, const int& role) const;
 
 	/**
 	 * Sets the data value for the given model index and data role

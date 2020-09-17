@@ -127,7 +127,7 @@ public: // Miscellaneous
 public: // Inherited MVC
 
 	/** Returns the number of columns */
-	int columnCount() const override { return ult(Column::End) + 1; }
+	int getColumnCount() const override { return ult(Column::End) + 1; }
 
 	/**
 	 * Returns the item flags for the given model index
@@ -142,7 +142,7 @@ public: // Inherited MVC
 	 * @param role Data role
 	 * @return Data in variant form
 	 */
-	QVariant data(const QModelIndex& index, const int& role) const override;
+	QVariant getData(const QModelIndex& index, const int& role) const override;
 
 	/**
 	 * Sets the data value for the given model index and data role

@@ -100,7 +100,7 @@ Qt::ItemFlags Layer::getFlags(const QModelIndex& index) const
 	return flags;
 }
 
-QVariant Layer::data(const QModelIndex& index, const int& role) const
+QVariant Layer::getData(const QModelIndex& index, const int& role) const
 {
 	switch (static_cast<Column>(index.column())) {
 		case Column::Name:
