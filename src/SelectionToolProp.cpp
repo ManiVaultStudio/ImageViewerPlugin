@@ -182,7 +182,7 @@ void SelectionToolProp::compute()
 			shaderProgram->setUniformValue("selectionType", selectionType);
 
 			const auto fboSize = QSizeF(static_cast<float>(_fbo->size().width()), static_cast<float>(_fbo->size().height()));
-			const auto mouseEvents = selectionLayer->mousePositions();
+			const auto mouseEvents = selectionLayer->getMousePositions();
 			const auto noMouseEvents = mouseEvents.size();
 
 			shaderProgram->setUniformValue("imageSize", fboSize.width(), fboSize.height());

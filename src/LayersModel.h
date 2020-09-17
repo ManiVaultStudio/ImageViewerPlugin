@@ -200,7 +200,7 @@ public: // Miscellaneous
 	/** Returns the selection model */
 	QItemSelectionModel& selectionModel() { return _selectionModel; }
 
-public: // MIME drag and drop
+public: // Inherited MIME drag and drop
 
 	/** Returns list of supported mime types (for drag and drop) */
 	QStringList mimeTypes() const override;

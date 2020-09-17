@@ -56,7 +56,7 @@ void SelectionLayer::init()
 	_pointsDataset	= &imageViewerPlugin->requestData<Points>(_datasetName);
 	_dataName		= hdps::DataSet::getSourceData(*_pointsDataset).getDataName();
 
-	_indices.resize(noPixels());
+	_indices.resize(getNoPixels());
 
 	if (_pointsDataset->isFull()) {
 		if (_pointsDataset->isDerivedData()) {
@@ -74,7 +74,7 @@ void SelectionLayer::init()
 			}*/
 		}
 		else {
-			_indices.resize(noPixels());
+			_indices.resize(getNoPixels());
 			std::iota(std::begin(_indices), std::end(_indices), 0);
 		}
 	}
@@ -745,7 +745,7 @@ Qt::ItemFlags SelectionLayer::getFlags(const QModelIndex& index) const
 
 		case Column::SelectAll:
 		{
-			if (_selection.count() < noPixels())
+			if (_selection.count() < getNoPixels())
 				flags |= Qt::ItemIsEditable;
 
 			break;
@@ -1161,7 +1161,7 @@ void SelectionLayer::selectAll()
 	auto& selection = dynamic_cast<Points&>(imageViewerPlugin->core()->requestSelection(_pointsDataset->getDataName()));
 
 	selection.indices.clear();
-	selection.indices.reserve(noPixels());
+	selection.indices.reserve(getNoPixels());
 
 	for (const auto& index : _indices) {
 		if (index > 0)
@@ -1202,9 +1202,9 @@ void SelectionLayer::invertSelection()
 
 	std::set<std::uint32_t> selectionSet(selection.indices.begin(), selection.indices.end());
 
-	selection.indices.resize(noPixels() - selectionSet.size());
+	selection.indices.resize(getNoPixels() - selectionSet.size());
 
-	const auto noPixels = this->noPixels();
+	const auto noPixels = this->getNoPixels();
 
 	for (int i = 0; i < noPixels; i++) {
 		if (_indices[i] >= 0 && selectionSet.count(i) == 0)
@@ -1232,7 +1232,7 @@ void SelectionLayer::publishSelection()
 
 	const auto noComponents		= 4;
 	const auto width			= static_cast<float>(getImageSize().width());
-	const auto noPixels			= this->noPixels();
+	const auto noPixels			= this->getNoPixels();
 
 	auto index = 0;
 

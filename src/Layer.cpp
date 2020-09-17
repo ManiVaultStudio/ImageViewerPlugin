@@ -107,13 +107,13 @@ QVariant Layer::data(const QModelIndex& index, const int& role) const
 			return getName(role);
 
 		case Column::DatasetName:
-			return datasetName(role);
+			return getDatasetName(role);
 
 		case Column::DataName:
-			return dataName(role);
+			return getDataName(role);
 
 		case Column::Type:
-			return type(role);
+			return getType(role);
 
 		case Column::ID:
 			return getID(role);
@@ -122,10 +122,10 @@ QVariant Layer::data(const QModelIndex& index, const int& role) const
 			return getImageSize(role);
 
 		case Column::ImageWidth:
-			return imageWidth(role);
+			return getImageWidth(role);
 
 		case Column::ImageHeight:
-			return imageHeight(role);
+			return getImageHeight(role);
 
 		case Column::Opacity:
 			return getOpacity(role);
@@ -137,10 +137,10 @@ QVariant Layer::data(const QModelIndex& index, const int& role) const
 			return Node::getFlags(role);
 
 		case Column::Selection:
-			return selection(role);
+			return getSelection(role);
 
 		case Column::SelectionSize:
-			return selectionSize(role);
+			return getSelectionSize(role);
 
 		default:
 			break;
@@ -245,7 +245,7 @@ QModelIndexList Layer::setData(const QModelIndex& index, const QVariant& value, 
 	return affectedIndices;
 }
 
-QVariant Layer::datasetName(const int& role) const
+QVariant Layer::getDatasetName(const int& role) const
 {
 	switch (role)
 	{
@@ -263,7 +263,7 @@ QVariant Layer::datasetName(const int& role) const
 	return QVariant();
 }
 
-QVariant Layer::dataName(const int& role) const
+QVariant Layer::getDataName(const int& role) const
 {
 	switch (role)
 	{
@@ -281,9 +281,9 @@ QVariant Layer::dataName(const int& role) const
 	return QVariant();
 }
 
-QVariant Layer::type(const int& role) const
+QVariant Layer::getType(const int& role) const
 {
-	const auto typeName = Layer::typeName(_type);
+	const auto typeName = Layer::getTypeName(_type);
 
 	switch (role)
 	{
@@ -350,7 +350,7 @@ QVariant Layer::getImageSize(const int& role /*= Qt::DisplayRole*/) const
 	return QVariant();
 }
 
-QVariant Layer::imageWidth(const int& role) const
+QVariant Layer::getImageWidth(const int& role) const
 {
 	const auto imageSize	= this->getImageSize(Qt::EditRole).toSize();
 	const auto widthString	= QString::number(imageSize.width());
@@ -373,7 +373,7 @@ QVariant Layer::imageWidth(const int& role) const
 	return QVariant();
 }
 
-QVariant Layer::imageHeight(const int& role) const
+QVariant Layer::getImageHeight(const int& role) const
 {
 	const auto imageSize	= this->getImageSize(Qt::EditRole).toSize();
 	const auto heightString = QString::number(imageSize.height());
@@ -396,7 +396,7 @@ QVariant Layer::imageHeight(const int& role) const
 	return QVariant();
 }
 
-QVariant Layer::selection(const int& role /*= Qt::DisplayRole*/) const
+QVariant Layer::getSelection(const int& role /*= Qt::DisplayRole*/) const
 {
 	auto selection = QStringList();
 
@@ -435,7 +435,7 @@ void Layer::setSelection(const Indices& selection)
 	_selection = selection;
 }
 
-QVariant Layer::selectionSize(const int& role /*= Qt::DisplayRole*/) const
+QVariant Layer::getSelectionSize(const int& role /*= Qt::DisplayRole*/) const
 {
 	const auto selectionSizeString = QString::number(_selection.size());
 
@@ -459,7 +459,7 @@ QVariant Layer::selectionSize(const int& role /*= Qt::DisplayRole*/) const
 	return QVariant();
 }
 
-QVariant Layer::keys(const int& role /*= Qt::DisplayRole*/) const
+QVariant Layer::getKeys(const int& role /*= Qt::DisplayRole*/) const
 {
 	const auto keysString = "";
 
@@ -488,12 +488,12 @@ void Layer::setKeys(const int& keys)
 	_keys = keys;
 }
 
-QVector<QPoint> Layer::mousePositions() const
+QVector<QPoint> Layer::getMousePositions() const
 {
 	return _mousePositions;
 }
 
-int Layer::noPixels() const
+int Layer::getNoPixels() const
 {
 	return getImageSize().width() * getImageSize().height();
 }
@@ -535,10 +535,10 @@ void Layer::drawHints(QPainter* painter)
 	hintsHtml += QString("<div style='height: 100%'><table style='color: %1;'>").arg(color);
 
 	for (auto hint : getHints()) {
-		if (hint.title().isEmpty())
+		if (hint.getTitle().isEmpty())
 			hintsHtml += "<tr><td></td><td></td></tr>";
 		else
-			hintsHtml += QString("<tr style='font-weight: %1'><td width=120>%2</td><td>: %3</td></tr>").arg(hint.isActive() ? "bold" : "normal", hint.title(), hint.description());
+			hintsHtml += QString("<tr style='font-weight: %1'><td width=120>%2</td><td>: %3</td></tr>").arg(hint.isActive() ? "bold" : "normal", hint.getTitle(), hint.getDescription());
 	}
 
 	hintsHtml += "</table></div>";
