@@ -113,7 +113,7 @@ void SelectionToolProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 		Prop::render(nodeMVP, opacity);
 
 		const auto shape			= shapeByName<QuadShape>("Quad");
-		const auto shaderProgram	= shaderProgramByName("SelectionTool");
+		const auto shaderProgram	= getShaderProgramByName("SelectionTool");
 
 		if (shaderProgram->bind()) {
 			glBindTexture(GL_TEXTURE_2D, _fbo->texture());
@@ -125,7 +125,7 @@ void SelectionToolProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 			shaderProgram->setUniformValue("offScreenTexture", 0);
 			shaderProgram->setUniformValue("color", SelectionLayer::fillColor);
 			shaderProgram->setUniformValue("opacity", opacity);
-			shaderProgram->setUniformValue("transform", nodeMVP * modelMatrix());
+			shaderProgram->setUniformValue("transform", nodeMVP * getModelMatrix());
 
 			shape->render();
 
@@ -166,9 +166,9 @@ void SelectionToolProp::compute()
 		auto shape = shapeByName<QuadShape>("Quad");
 
 		auto selectionLayer = static_cast<SelectionLayer*>(_node);
-		auto modelViewMatrix = selectionLayer->modelViewMatrix() * modelMatrix();
+		auto modelViewMatrix = selectionLayer->modelViewMatrix() * getModelMatrix();
 
-		const auto shaderProgram = shaderProgramByName("SelectionToolOffScreen");
+		const auto shaderProgram = getShaderProgramByName("SelectionToolOffScreen");
 
 		shape->getVAO().bind();
 		
@@ -335,7 +335,7 @@ void SelectionToolProp::updateModelMatrix()
 
 void SelectionToolProp::loadSelectionToolShaderProgram()
 {
-	const auto shaderProgram = shaderProgramByName("SelectionTool");
+	const auto shaderProgram = getShaderProgramByName("SelectionTool");
 
 	if (!shaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, selectionToolVertexShaderSource.c_str()))
 		throw std::runtime_error("Unable to compile selection tool vertex shader");
@@ -370,7 +370,7 @@ void SelectionToolProp::loadSelectionToolShaderProgram()
 
 void SelectionToolProp::loadSelectionToolOffScreenShaderProgram()
 {
-	const auto shaderProgram = shaderProgramByName("SelectionToolOffScreen");
+	const auto shaderProgram = getShaderProgramByName("SelectionToolOffScreen");
 
 	if (!shaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, selectionToolOffScreenVertexShaderSource.c_str()))
 		throw std::runtime_error("Unable to compile selection tool off-screen vertex shader");

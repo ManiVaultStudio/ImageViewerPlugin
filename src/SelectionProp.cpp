@@ -39,7 +39,7 @@ SelectionProp::SelectionProp(SelectionLayer* selectionLayer, const QString& name
 			if (!imageSize.isValid())
 				return;
 
-			auto texture = textureByName("Channels");
+			auto texture = getTextureByName("Channels");
 
 			if (!texture->isCreated())
 				texture->create();
@@ -89,7 +89,7 @@ void SelectionProp::initialize()
 
 		Prop::initialize();
 
-		const auto shaderProgram = shaderProgramByName("Quad");
+		const auto shaderProgram = getShaderProgramByName("Quad");
 
 		if (!shaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSource.c_str()))
 			throw std::runtime_error("Unable to compile quad vertex shader");
@@ -139,15 +139,15 @@ void SelectionProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 		Prop::render(nodeMVP, opacity);
 
 		const auto shape			= shapeByName<QuadShape>("Quad");
-		const auto shaderProgram	= shaderProgramByName("Quad");
-		const auto quadTexture		= textureByName("Quad");
+		const auto shaderProgram	= getShaderProgramByName("Quad");
+		const auto quadTexture		= getTextureByName("Quad");
 
-		if (!textureByName("Channels")->isCreated())
+		if (!getTextureByName("Channels")->isCreated())
 			throw std::runtime_error("Channels texture is not created");
 
 		renderer->getOpenGLContext()->functions()->glActiveTexture(GL_TEXTURE0);
 
-		textureByName("Channels")->bind();
+		getTextureByName("Channels")->bind();
 
 		if (!shaderProgram->bind())
 			throw std::runtime_error("Unable to bind shader program");
@@ -160,13 +160,13 @@ void SelectionProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 		shaderProgram->setUniformValue("textureSize", QSizeF(selectionLayer->imageSize()));
 		shaderProgram->setUniformValue("overlayColor", overlayColor);
 		shaderProgram->setUniformValue("opacity", opacity);
-		shaderProgram->setUniformValue("transform", nodeMVP * modelMatrix());
+		shaderProgram->setUniformValue("transform", nodeMVP * getModelMatrix());
 
 		shape->render();
 
 		shaderProgram->release();
 
-		textureByName("Channels")->release();
+		getTextureByName("Channels")->release();
 	}
 	catch (std::exception& e)
 	{

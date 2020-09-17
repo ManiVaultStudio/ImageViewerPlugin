@@ -1352,7 +1352,7 @@ void SelectionLayer::computeSelectionBounds()
 
 	topLeft -= QVector3D(1.0f, 1.0f, 0.0f);
 
-	auto m = propByName<SelectionProp>("Selection")->modelMatrix();
+	auto m = propByName<SelectionProp>("Selection")->getModelMatrix();
 
 	_selectionBounds = QRect(renderer->getWorldPositionToScreenPoint(m * topLeft), renderer->getWorldPositionToScreenPoint(m * bottomRight));
 }

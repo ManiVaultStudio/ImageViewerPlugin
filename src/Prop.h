@@ -63,10 +63,10 @@ public:
 	void hide();
 
 	/** Returns the full shape name (actor_name::prop_name::shape_name */
-	QString fullName();
+	QString getFullName();
 
 	/** Returns the model matrix */
-	QMatrix4x4 modelMatrix() const;
+	QMatrix4x4 getModelMatrix() const;
 
 	/**
 	 * Sets the model matrix
@@ -147,7 +147,7 @@ protected: // Shader program management
 	* Get shader program by name
 	* @param name Name of the shader program
 	*/
-	QSharedPointer<QOpenGLShaderProgram> shaderProgramByName(const QString& name);
+	QSharedPointer<QOpenGLShaderProgram> getShaderProgramByName(const QString& name);
 
 protected: // Texture management
 
@@ -161,7 +161,7 @@ protected: // Texture management
 	* Get texture by name
 	* @param name Name of the texture
 	*/
-	QSharedPointer<QOpenGLTexture>& textureByName(const QString& name);
+	QSharedPointer<QOpenGLTexture>& getTextureByName(const QString& name);
 
 public:
 	static Renderer* renderer;														/** Static renderer instance */
