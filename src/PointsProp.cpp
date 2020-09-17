@@ -227,7 +227,7 @@ QRectF PointsProp::getBoundingRectangle() const
 {
 	auto rectangle = shapeByName<QuadShape>("Quad")->getRectangle();
 
-	rectangle.setSize(_node->scale(Qt::EditRole).toFloat() * rectangle.size());
+	rectangle.setSize(_node->getScale(Qt::EditRole).toFloat() * rectangle.size());
 
 	return rectangle;
 }

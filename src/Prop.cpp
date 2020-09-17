@@ -131,7 +131,7 @@ QString Prop::getFullName()
 
 QMatrix4x4 Prop::getModelMatrix() const
 {
-	return _node->modelMatrix() * _modelMatrix;
+	return _node->getModelMatrix() * _modelMatrix;
 }
 
 void Prop::setModelMatrix(const QMatrix4x4& modelMatrix)

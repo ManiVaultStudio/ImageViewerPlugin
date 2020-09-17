@@ -31,16 +31,16 @@ public: // Enumerations
 
 	/**  Columns */
 	enum class Column {
-		PixelSelectionType = ult(Layer::Column::End) + 1,		// Type of pixel selection
-		PixelSelectionModifier,									// Pixel selection modifier
-		BrushRadius,											// Brush radius
-		SelectAll,												// Select all pixels
-		SelectNone,												// Select no pixels
-		InvertSelection,										// Invert the pixel selection
-		AutoZoomToSelection,									// Zoom automatically to the pixel selection
-		ZoomToSelection,										// Zoom to the pixel selection
-		CreateSubset,											// Create subset
-		OverlayColor,											// Selection overlay color
+		PixelSelectionType = ult(Layer::Column::End) + 1,		/** Type of pixel selection */
+		PixelSelectionModifier,									/** Pixel selection modifier */
+		BrushRadius,											/** Brush radius */
+		SelectAll,												/** Select all pixels */
+		SelectNone,												/** Select no pixels */
+		InvertSelection,										/** Invert the pixel selection */
+		AutoZoomToSelection,									/** Zoom automatically to the pixel selection */
+		ZoomToSelection,										/** Zoom to the pixel selection */
+		CreateSubset,											/** Create subset */
+		OverlayColor,											/** Selection overlay color */
 
 		Start = PixelSelectionType,
 		End = OverlayColor

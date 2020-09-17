@@ -128,10 +128,10 @@ QVariant Layer::data(const QModelIndex& index, const int& role) const
 			return imageHeight(role);
 
 		case Column::Opacity:
-			return opacity(role);
+			return getOpacity(role);
 
 		case Column::Scale:
-			return scale(role);
+			return getScale(role);
 
 		case Column::Flags:
 			return Node::flags(role);

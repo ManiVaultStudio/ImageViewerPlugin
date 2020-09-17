@@ -9,7 +9,7 @@
 
 #include "Prop.h"
 
-#include <stdexcept> // For runtime_error.
+#include <stdexcept>
 
 class QMouseEvent;
 class QWheelEvent;
@@ -43,7 +43,7 @@ public: // Rendering
 public: // Matrix functions
 
 	/** Returns the model matrix */
-	QMatrix4x4 modelMatrix() const;
+	QMatrix4x4 getModelMatrix() const;
 
 	/**
 	 * Sets the model matrix
@@ -52,15 +52,15 @@ public: // Matrix functions
 	void setModelMatrix(const QMatrix4x4& modelMatrix);
 
 	/** Returns the model-view matrix */
-	QMatrix4x4 modelViewMatrix() const;
+	QMatrix4x4 getModelViewMatrix() const;
 
 	/** Returns the model-view-projection matrix */
-	QMatrix4x4 modelViewProjectionMatrix() const;
+	QMatrix4x4 getModelViewProjectionMatrix() const;
 
 public: // Opacity
 
 	/** Returns the render opacity */
-	QVariant opacity(const int& role) const;
+	QVariant getOpacity(const int& role) const;
 
 	/** Sets the render opacity
 	 * @param opacity Render opacity
@@ -68,7 +68,7 @@ public: // Opacity
 	void setOpacity(const float& opacity);
 
 	/** Returns the scale */
-	QVariant scale(const int& role) const;
+	QVariant getScale(const int& role) const;
 
 	/** Sets the scale
 	 * @param scale Scale
@@ -124,7 +124,7 @@ protected: // Prop management
 	 * @param name Prop name
 	 */
 	template<typename T>
-	const T* propByName(const QString& name) const
+	const T* getPropByName(const QString& name) const
 	{
 		try {
 			if (!_props.contains(name))
@@ -143,10 +143,10 @@ protected: // Prop management
 	 * @param name Prop name
 	 */
 	template<typename T>
-	T* propByName(const QString& name)
+	T* getPropByName(const QString& name)
 	{
 		const auto constThis = const_cast<const Renderable*>(this);
-		return const_cast<T*>(constThis->propByName<T>(name));
+		return const_cast<T*>(constThis->getPropByName<T>(name));
 	}
 	
 	/** Returns all props */

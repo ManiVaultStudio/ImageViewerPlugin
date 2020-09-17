@@ -488,7 +488,7 @@ void SelectionLayer::handleEvent(QEvent* event, const QModelIndex& index)
 			}
 
 			if (shouldComputePixelSelection)
-				propByName<SelectionToolProp>("SelectionTool")->compute();
+				getPropByName<SelectionToolProp>("SelectionTool")->compute();
 
 			break;
 		}
@@ -1225,7 +1225,7 @@ void SelectionLayer::publishSelection()
 {
 	auto timer = Timer("Publish selection");
 
-	const auto selectionImage = propByName<SelectionToolProp>("SelectionTool")->getSelectionImage().mirrored(false, true);
+	const auto selectionImage = getPropByName<SelectionToolProp>("SelectionTool")->getSelectionImage().mirrored(false, true);
 	
 	auto& selectionIndices	= dynamic_cast<Points&>(imageViewerPlugin->core()->requestSelection(_pointsDataset->getDataName())).indices;
 	auto& sourceIndices		= _pointsDataset->getSourceData<Points>(*_pointsDataset).indices;
@@ -1310,7 +1310,7 @@ void SelectionLayer::publishSelection()
 	else
 		imageViewerPlugin->core()->notifySelectionChanged(_pointsDataset->getDataName());
 
-	propByName<SelectionToolProp>("SelectionTool")->reset();
+	getPropByName<SelectionToolProp>("SelectionTool")->reset();
 }
 
 void SelectionLayer::computeSelectionBounds()
@@ -1352,7 +1352,7 @@ void SelectionLayer::computeSelectionBounds()
 
 	topLeft -= QVector3D(1.0f, 1.0f, 0.0f);
 
-	auto m = propByName<SelectionProp>("Selection")->getModelMatrix();
+	const auto modelMatrix = getPropByName<SelectionProp>("Selection")->getModelMatrix();
 
-	_selectionBounds = QRect(renderer->getWorldPositionToScreenPoint(m * topLeft), renderer->getWorldPositionToScreenPoint(m * bottomRight));
+	_selectionBounds = QRect(renderer->getWorldPositionToScreenPoint(modelMatrix * topLeft), renderer->getWorldPositionToScreenPoint(modelMatrix * bottomRight));
 }

@@ -166,7 +166,7 @@ void SelectionToolProp::compute()
 		auto shape = shapeByName<QuadShape>("Quad");
 
 		auto selectionLayer = static_cast<SelectionLayer*>(_node);
-		auto modelViewMatrix = selectionLayer->modelViewMatrix() * getModelMatrix();
+		auto modelViewMatrix = selectionLayer->getModelViewMatrix() * getModelMatrix();
 
 		const auto shaderProgram = getShaderProgramByName("SelectionToolOffScreen");
 

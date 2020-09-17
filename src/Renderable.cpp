@@ -15,7 +15,7 @@ Renderable::Renderable() :
 
 Renderable::~Renderable() = default;
 
-QMatrix4x4 Renderable::modelMatrix() const
+QMatrix4x4 Renderable::getModelMatrix() const
 {
 	auto scaleMatrix = QMatrix4x4();
 
@@ -32,17 +32,17 @@ void Renderable::setModelMatrix(const QMatrix4x4& modelMatrix)
 	_modelMatrix = modelMatrix;
 }
 
-QMatrix4x4 Renderable::modelViewMatrix() const
+QMatrix4x4 Renderable::getModelViewMatrix() const
 {
 	return renderer->getViewMatrix() * _modelMatrix;
 }
 
-QMatrix4x4 Renderable::modelViewProjectionMatrix() const
+QMatrix4x4 Renderable::getModelViewProjectionMatrix() const
 {
-	return renderer->getProjectionMatrix() * modelViewMatrix();
+	return renderer->getProjectionMatrix() * getModelViewMatrix();
 }
 
-QVariant Renderable::opacity(const int& role) const
+QVariant Renderable::getOpacity(const int& role) const
 {
 	const auto opacityString = QString("%1%").arg(QString::number(100.0f * _opacity, 'f', 1));
 
@@ -69,7 +69,7 @@ void Renderable::setOpacity(const float& opacity)
 	_opacity = opacity;
 }
 
-QVariant Renderable::scale(const int& role) const
+QVariant Renderable::getScale(const int& role) const
 {
 	const auto scaleString = QString("%1%").arg(QString::number(100.0f * _scale, 'f', 1));
 
