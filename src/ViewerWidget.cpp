@@ -157,7 +157,7 @@ void ViewerWidget::paintGL()
 		auto root = layersModel.getLayer(QModelIndex());
 
 		if (root)
-			root->render(_renderer->projectionMatrix() * _renderer->viewMatrix());
+			root->render(_renderer->getProjectionMatrix() * _renderer->getViewMatrix());
 
 		painter.endNativePainting();
 
@@ -193,7 +193,7 @@ void ViewerWidget::resizeGL(int w, int h)
 	auto root = _imageViewerPlugin->getLayersModel().getLayer(QModelIndex());
 
 	if (root != nullptr)
-		_renderer->zoomToRectangle(root->boundingRectangle());
+		_renderer->zoomToRectangle(root->getBoundingRectangle());
 }
 
 void ViewerWidget::drawBackground(QPainter* painter)
@@ -205,7 +205,7 @@ void ViewerWidget::drawBackground(QPainter* painter)
 
 QMenu* ViewerWidget::getContextMenu()
 {
-	auto contextMenu = _renderer->contextMenu();
+	auto contextMenu = _renderer->getContextMenu();
 	/*
 	if (_imageViewerPlugin->imageCollectionType() == ImageCollectionType::Stack) {
 		auto* createSubsetFromSelectionAction = new QAction("Create subset from selection");

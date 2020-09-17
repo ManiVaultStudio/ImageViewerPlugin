@@ -82,7 +82,7 @@ public:
 	virtual void render(const QMatrix4x4& nodeMVP, const float& opacity);
 
 	/** Returns the bounding rectangle of the prop */
-	virtual QRectF boundingRectangle() const = 0;
+	virtual QRectF getBoundingRectangle() const = 0;
 
 protected:
 

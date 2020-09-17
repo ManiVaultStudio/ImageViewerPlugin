@@ -1225,7 +1225,7 @@ void SelectionLayer::publishSelection()
 {
 	auto timer = Timer("Publish selection");
 
-	const auto selectionImage = propByName<SelectionToolProp>("SelectionTool")->selectionImage().mirrored(false, true);
+	const auto selectionImage = propByName<SelectionToolProp>("SelectionTool")->getSelectionImage().mirrored(false, true);
 	
 	auto& selectionIndices	= dynamic_cast<Points&>(imageViewerPlugin->core()->requestSelection(_pointsDataset->getDataName())).indices;
 	auto& sourceIndices		= _pointsDataset->getSourceData<Points>(*_pointsDataset).indices;
@@ -1354,5 +1354,5 @@ void SelectionLayer::computeSelectionBounds()
 
 	auto m = propByName<SelectionProp>("Selection")->modelMatrix();
 
-	_selectionBounds = QRect(renderer->worldPositionToScreenPoint(m * topLeft), renderer->worldPositionToScreenPoint(m * bottomRight));
+	_selectionBounds = QRect(renderer->getWorldPositionToScreenPoint(m * topLeft), renderer->getWorldPositionToScreenPoint(m * bottomRight));
 }

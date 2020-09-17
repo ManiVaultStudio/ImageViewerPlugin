@@ -194,8 +194,8 @@ void SelectionToolProp::compute()
 					if (noMouseEvents < 2)
 						break;
 
-					const auto rectangleTopLeft = renderer->screenPointToWorldPosition(modelViewMatrix, mouseEvents.first());
-					const auto rectangleBottomRight = renderer->screenPointToWorldPosition(modelViewMatrix, mouseEvents.last());
+					const auto rectangleTopLeft = renderer->getScreenPointToWorldPosition(modelViewMatrix, mouseEvents.first());
+					const auto rectangleBottomRight = renderer->getScreenPointToWorldPosition(modelViewMatrix, mouseEvents.last());
 					const auto rectangleTopLeftUV = QVector2D(rectangleTopLeft.x() / fboSize.width(), rectangleTopLeft.y() / fboSize.height());
 					const auto rectangleBottomRightUV = QVector2D(rectangleBottomRight.x() / fboSize.width(), rectangleBottomRight.y() / fboSize.height());
 					const auto rectangle = QRectF(QPointF(rectangleTopLeftUV.x(), rectangleTopLeftUV.y()), QPointF(rectangleBottomRightUV.x(), rectangleBottomRightUV.y())).normalized();
@@ -212,22 +212,22 @@ void SelectionToolProp::compute()
 					if (noMouseEvents <= 0)
 						break;
 
-					const auto brushCenter = renderer->screenPointToWorldPosition(modelViewMatrix, QPoint(0.0f, 0.0f));
-					const auto brushPerimeter = renderer->screenPointToWorldPosition(modelViewMatrix, QPoint(selectionLayer->brushRadius(Qt::EditRole).toFloat(), 0.0f));
+					const auto brushCenter = renderer->getScreenPointToWorldPosition(modelViewMatrix, QPoint(0.0f, 0.0f));
+					const auto brushPerimeter = renderer->getScreenPointToWorldPosition(modelViewMatrix, QPoint(selectionLayer->brushRadius(Qt::EditRole).toFloat(), 0.0f));
 					const auto brushRadiusWorld = (brushPerimeter - brushCenter).length();
 
 					shaderProgram->setUniformValue("brushRadius", brushRadiusWorld);
 
 					if (noMouseEvents == 1) {
-						const auto brushCenter = renderer->screenPointToWorldPosition(modelViewMatrix, mouseEvents.last()).toVector2D();
+						const auto brushCenter = renderer->getScreenPointToWorldPosition(modelViewMatrix, mouseEvents.last()).toVector2D();
 
 						shaderProgram->setUniformValue("previousBrushCenter", brushCenter);
 						shaderProgram->setUniformValue("currentBrushCenter", brushCenter);
 					}
 
 					if (noMouseEvents > 1) {
-						const auto previousBrushCenter = renderer->screenPointToWorldPosition(modelViewMatrix, mouseEvents[noMouseEvents - 2]).toVector2D();
-						const auto currentBrushCenter = renderer->screenPointToWorldPosition(modelViewMatrix, mouseEvents.last()).toVector2D();
+						const auto previousBrushCenter = renderer->getScreenPointToWorldPosition(modelViewMatrix, mouseEvents[noMouseEvents - 2]).toVector2D();
+						const auto currentBrushCenter = renderer->getScreenPointToWorldPosition(modelViewMatrix, mouseEvents.last()).toVector2D();
 
 						shaderProgram->setUniformValue("previousBrushCenter", previousBrushCenter);
 						shaderProgram->setUniformValue("currentBrushCenter", currentBrushCenter);
@@ -248,7 +248,7 @@ void SelectionToolProp::compute()
 					points.reserve(static_cast<std::int32_t>(noMouseEvents));
 
 					for (const auto& mouseEvent : mouseEvents)
-						points.push_back(renderer->screenPointToWorldPosition(modelViewMatrix, mouseEvent).toVector2D());
+						points.push_back(renderer->getScreenPointToWorldPosition(modelViewMatrix, mouseEvent).toVector2D());
 
 					shaderProgram->setUniformValueArray("points", &points[0], static_cast<std::int32_t>(points.size()));
 					shaderProgram->setUniformValue("noPoints", static_cast<int>(points.size()));
@@ -307,12 +307,12 @@ void SelectionToolProp::reset()
 	}
 }
 
-QRectF SelectionToolProp::boundingRectangle() const
+QRectF SelectionToolProp::getBoundingRectangle() const
 {
 	return shapeByName<QuadShape>("Quad")->rectangle();
 }
 
-QImage SelectionToolProp::selectionImage()
+QImage SelectionToolProp::getSelectionImage()
 {
 	if (_fbo.isNull())
 		return QImage();

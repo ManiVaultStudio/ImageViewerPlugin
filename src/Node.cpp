@@ -44,7 +44,7 @@ bool Node::insertChild(const int& position, Node* node)
 
 	Renderable::renderer->render();
 
-	Renderable::renderer->zoomToRectangle(rootItem()->boundingRectangle());
+	Renderable::renderer->zoomToRectangle(rootItem()->getBoundingRectangle());
 	
 	return true;
 }
@@ -128,16 +128,16 @@ void Node::render(const QMatrix4x4& parentMVP)
 		prop->render(mvp, _opacity);
 }
 
-QRectF Node::boundingRectangle() const
+QRectF Node::getBoundingRectangle() const
 {
 	QRectF bounds;
 
 	for (auto prop : _props.values())
-		bounds |= prop->boundingRectangle();
+		bounds |= prop->getBoundingRectangle();
 
 	for (auto child : _children)
 	{
-		bounds |= child->boundingRectangle();
+		bounds |= child->getBoundingRectangle();
 	}
 
 	return bounds;

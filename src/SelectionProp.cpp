@@ -145,7 +145,7 @@ void SelectionProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 		if (!textureByName("Channels")->isCreated())
 			throw std::runtime_error("Channels texture is not created");
 
-		renderer->openGLContext()->functions()->glActiveTexture(GL_TEXTURE0);
+		renderer->getOpenGLContext()->functions()->glActiveTexture(GL_TEXTURE0);
 
 		textureByName("Channels")->bind();
 
@@ -177,7 +177,7 @@ void SelectionProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 	}
 }
 
-QRectF SelectionProp::boundingRectangle() const
+QRectF SelectionProp::getBoundingRectangle() const
 {
 	return shapeByName<QuadShape>("Quad")->rectangle();
 }

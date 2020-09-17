@@ -100,7 +100,7 @@ public: // Rendering
 	void render(const QMatrix4x4& parentMVP) override;
 
 	/** Computes the enveloping bounding rectangle of the node and its descendants */
-	QRectF boundingRectangle() const;
+	QRectF getBoundingRectangle() const;
 
 public: // Getters/setters
 

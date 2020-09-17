@@ -165,12 +165,12 @@ void PointsProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 		const auto shaderProgram	= shaderProgramByName("Quad");
 
 		if (textureByName("ColorMap")->isCreated()) {
-			renderer->openGLContext()->functions()->glActiveTexture(GL_TEXTURE0);
+			renderer->getOpenGLContext()->functions()->glActiveTexture(GL_TEXTURE0);
 			textureByName("ColorMap")->bind();
 		}
 
 		if (textureByName("Channels")->isCreated()) {
-			renderer->openGLContext()->functions()->glActiveTexture(GL_TEXTURE1);
+			renderer->getOpenGLContext()->functions()->glActiveTexture(GL_TEXTURE1);
 			textureByName("Channels")->bind();
 		}
 
@@ -223,7 +223,7 @@ void PointsProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 	}
 }
 
-QRectF PointsProp::boundingRectangle() const
+QRectF PointsProp::getBoundingRectangle() const
 {
 	auto rectangle = shapeByName<QuadShape>("Quad")->rectangle();
 

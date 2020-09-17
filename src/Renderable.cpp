@@ -34,12 +34,12 @@ void Renderable::setModelMatrix(const QMatrix4x4& modelMatrix)
 
 QMatrix4x4 Renderable::modelViewMatrix() const
 {
-	return renderer->viewMatrix() * _modelMatrix;
+	return renderer->getViewMatrix() * _modelMatrix;
 }
 
 QMatrix4x4 Renderable::modelViewProjectionMatrix() const
 {
-	return renderer->projectionMatrix() * modelViewMatrix();
+	return renderer->getProjectionMatrix() * modelViewMatrix();
 }
 
 QVariant Renderable::opacity(const int& role) const

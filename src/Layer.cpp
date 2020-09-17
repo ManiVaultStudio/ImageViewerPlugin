@@ -49,7 +49,7 @@ void Layer::paint(QPainter* painter)
 
 void Layer::zoomExtents()
 {
-	renderer->zoomToRectangle(boundingRectangle());
+	renderer->zoomToRectangle(getBoundingRectangle());
 }
 
 Qt::ItemFlags Layer::flags(const QModelIndex& index) const
