@@ -143,7 +143,7 @@ protected: // Prop management
 	}
 	
 	/** Returns all props */
-	const QMap<QString, Prop*> props() const
+	const QMap<QString, Prop*> getProps() const
 	{
 		return _props;
 	}

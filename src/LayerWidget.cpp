@@ -34,13 +34,13 @@ void LayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 	_ui->settingsStackedWidget->setVisible(false);
 
 	QObject::connect(_ui->visibleCheckBox, &QCheckBox::stateChanged, [this](int state) {
-		for (auto selectedRow : _layersModel->selectionModel().selectedRows()) {
+		for (auto selectedRow : _layersModel->getSelectionModel().selectedRows()) {
 			_layersModel->setData(selectedRow.siblingAtColumn(ult(Layer::Column::Name)), static_cast<int>(state), Qt::CheckStateRole);
 		}
 	});
 
 	QObject::connect(_ui->nameLineEdit, &QLineEdit::textEdited, [this](const QString& text) {
-		const auto selectedRows = _layersModel->selectionModel().selectedRows();
+		const auto selectedRows = _layersModel->getSelectionModel().selectedRows();
 
 		if (selectedRows.count() == 1) {
 			_layersModel->setData(selectedRows.first().siblingAtColumn(ult(Layer::Column::Name)), text);
@@ -50,7 +50,7 @@ void LayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 	QObject::connect(_ui->opacityDoubleSpinBox, qOverload<double>(&QDoubleSpinBox::valueChanged), [this](double value) {
 		const auto range = _ui->opacityDoubleSpinBox->maximum() - _ui->opacityDoubleSpinBox->minimum();
 
-		for (auto selectedRow : _layersModel->selectionModel().selectedRows()) {
+		for (auto selectedRow : _layersModel->getSelectionModel().selectedRows()) {
 			_layersModel->setData(selectedRow.siblingAtColumn(ult(Layer::Column::Opacity)), value / static_cast<float>(range));
 		}
 	});
@@ -58,7 +58,7 @@ void LayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 	QObject::connect(_ui->opacityHorizontalSlider, &QSlider::valueChanged, [this](int value) {
 		const auto range = _ui->opacityHorizontalSlider->maximum() - _ui->opacityHorizontalSlider->minimum();
 
-		for (auto selectedRow : _layersModel->selectionModel().selectedRows()) {
+		for (auto selectedRow : _layersModel->getSelectionModel().selectedRows()) {
 			_layersModel->setData(selectedRow.siblingAtColumn(ult(Layer::Column::Opacity)), static_cast<float>(value) / static_cast<float>(range));
 		}
 	});
@@ -66,19 +66,19 @@ void LayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 	QObject::connect(_ui->scaleDoubleSpinBox, qOverload<double>(&QDoubleSpinBox::valueChanged), [this](double value) {
 		const auto range = _ui->scaleDoubleSpinBox->maximum() - _ui->scaleDoubleSpinBox->minimum();
 
-		for (auto selectedRow : _layersModel->selectionModel().selectedRows()) {
+		for (auto selectedRow : _layersModel->getSelectionModel().selectedRows()) {
 			_layersModel->setData(selectedRow.siblingAtColumn(ult(Layer::Column::Scale)), static_cast<float>(value) / static_cast<float>(range));
 		}
 	});
 
 	QObject::connect(_ui->scaleHorizontalSlider, &QSlider::valueChanged, [this](int value) {
-		for (auto selectedRow : _layersModel->selectionModel().selectedRows()) {
+		for (auto selectedRow : _layersModel->getSelectionModel().selectedRows()) {
 			_layersModel->setData(selectedRow.siblingAtColumn(ult(Layer::Column::Scale)), static_cast<float>(value) / 100.0f);
 		}
 	});
 
 	QObject::connect(_ui->resetPushButton, &QPushButton::clicked, [this]() {
-		const auto selectedRows = _layersModel->selectionModel().selectedRows();
+		const auto selectedRows = _layersModel->getSelectionModel().selectedRows();
 
 		for (auto selectedRow : selectedRows) {
 			_layersModel->setData(selectedRow.siblingAtColumn(ult(Layer::Column::Opacity)), 1.0f);
@@ -87,7 +87,7 @@ void LayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 	});
 
 	QObject::connect(_ui->zoomExtentsPushButton, &QPushButton::clicked, [this]() {
-		const auto selectedRows = _layersModel->selectionModel().selectedRows();
+		const auto selectedRows = _layersModel->getSelectionModel().selectedRows();
 
 		if (selectedRows.count() == 1) {
 			_layersModel->getLayer(selectedRows.first())->zoomExtents();
@@ -96,8 +96,8 @@ void LayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 
 	QObject::connect(_layersModel, &LayersModel::dataChanged, this, &LayerWidget::updateData);
 
-	QObject::connect(&_layersModel->selectionModel(), &QItemSelectionModel::selectionChanged, [this](const QItemSelection& selected, const QItemSelection& deselected) {
-		const auto selectedRows = _layersModel->selectionModel().selectedRows();
+	QObject::connect(&_layersModel->getSelectionModel(), &QItemSelectionModel::selectionChanged, [this](const QItemSelection& selected, const QItemSelection& deselected) {
+		const auto selectedRows = _layersModel->getSelectionModel().selectedRows();
 
 		if (selectedRows.isEmpty()) {
 			updateData(QModelIndex(), QModelIndex());
@@ -110,7 +110,7 @@ void LayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 
 void LayerWidget::updateData(const QModelIndex& begin, const QModelIndex& end, const QVector<int>& roles /*= QVector<int>()*/)
 {
-	const auto selectedRows		= _layersModel->selectionModel().selectedRows();
+	const auto selectedRows		= _layersModel->getSelectionModel().selectedRows();
 	const auto noSelectedRows	= selectedRows.size();
 	const auto showLayerEditor	= noSelectedRows > 0;
 

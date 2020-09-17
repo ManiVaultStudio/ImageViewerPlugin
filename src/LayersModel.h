@@ -45,7 +45,7 @@ public:
 	 */
 	void dispatchEventToSelectedLayer(QEvent* event);
 
-public: // Data access
+public: // Inherited MVC
 
 	/**
 	 * Returns the data for the given model index and data role
@@ -195,10 +195,10 @@ public: // Miscellaneous
 	void selectRow(const std::int32_t& row);
 
 	/** Returns the selected layer (if any) */
-	Layer* selectedLayer();
+	Layer* getSelectedLayer();
 
 	/** Returns the selection model */
-	QItemSelectionModel& selectionModel() { return _selectionModel; }
+	QItemSelectionModel& getSelectionModel() { return _selectionModel; }
 
 public: // Inherited MIME drag and drop
 

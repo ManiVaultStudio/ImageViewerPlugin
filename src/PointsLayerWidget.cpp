@@ -60,7 +60,7 @@ void PointsLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 		_ui->indexSelectionComboBox->blockSignals(true);
 		_ui->indexSelectionComboBox->clear();
 
-		const auto selectedRows = _layersModel->selectionModel().selectedRows();
+		const auto selectedRows = _layersModel->getSelectionModel().selectedRows();
 
 		if (!selectedRows.isEmpty()) {
 			const auto selectedRow					= selectedRows.first();
@@ -83,8 +83,8 @@ void PointsLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 		_ui->indexSelectionComboBox->blockSignals(false);
 	};
 
-	QObject::connect(&_layersModel->selectionModel(), &QItemSelectionModel::selectionChanged, [this](const QItemSelection& selected, const QItemSelection& deselected) {
-		const auto selectedRows = _layersModel->selectionModel().selectedRows();
+	QObject::connect(&_layersModel->getSelectionModel(), &QItemSelectionModel::selectionChanged, [this](const QItemSelection& selected, const QItemSelection& deselected) {
+		const auto selectedRows = _layersModel->getSelectionModel().selectedRows();
 
 		//_ui->channel1Label->setToolTip();
 
@@ -105,7 +105,7 @@ void PointsLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 	};
 
 	QObject::connect(_ui->channel1WindowLevelPushButton, &QPushButton::clicked, [&, this, showWindowLevelWidget]() {
-		const auto selectedRow	= _layersModel->selectionModel().selectedRows().first();
+		const auto selectedRow	= _layersModel->getSelectionModel().selectedRows().first();
 		const auto windowIndex	= selectedRow.siblingAtColumn(ult(PointsLayer::Column::Channel1Window));
 		const auto levelIndex	= selectedRow.siblingAtColumn(ult(PointsLayer::Column::Channel1Level));
 
@@ -113,7 +113,7 @@ void PointsLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 	});
 
 	QObject::connect(_ui->channel2WindowLevelPushButton, &QPushButton::clicked, [&, this, showWindowLevelWidget]() {
-		const auto selectedRow	= _layersModel->selectionModel().selectedRows().first();
+		const auto selectedRow	= _layersModel->getSelectionModel().selectedRows().first();
 		const auto windowIndex	= selectedRow.siblingAtColumn(ult(PointsLayer::Column::Channel2Window));
 		const auto levelIndex	= selectedRow.siblingAtColumn(ult(PointsLayer::Column::Channel2Level));
 
@@ -121,7 +121,7 @@ void PointsLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 	});
 
 	QObject::connect(_ui->channel3WindowLevelPushButton, &QPushButton::clicked, [&, this, showWindowLevelWidget]() {
-		const auto selectedRow	= _layersModel->selectionModel().selectedRows().first();
+		const auto selectedRow	= _layersModel->getSelectionModel().selectedRows().first();
 		const auto windowIndex	= selectedRow.siblingAtColumn(ult(PointsLayer::Column::Channel3Window));
 		const auto levelIndex	= selectedRow.siblingAtColumn(ult(PointsLayer::Column::Channel3Level));
 
@@ -129,52 +129,52 @@ void PointsLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 	});
 
 	QObject::connect(_ui->channel2CheckBox, &QCheckBox::stateChanged, [this](int state) {
-		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Channel2Enabled)), state == Qt::Checked);
-		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Channel2DimensionId)), _ui->channel2ComboBox->currentIndex());
+		_layersModel->setData(_layersModel->getSelectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Channel2Enabled)), state == Qt::Checked);
+		_layersModel->setData(_layersModel->getSelectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Channel2DimensionId)), _ui->channel2ComboBox->currentIndex());
 	});
 
 	QObject::connect(_ui->channel3CheckBox, &QCheckBox::stateChanged, [this](int state) {
-		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Channel3Enabled)), state == Qt::Checked);
-		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Channel3DimensionId)), _ui->channel3ComboBox->currentIndex());
+		_layersModel->setData(_layersModel->getSelectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Channel3Enabled)), state == Qt::Checked);
+		_layersModel->setData(_layersModel->getSelectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Channel3DimensionId)), _ui->channel3ComboBox->currentIndex());
 	});
 
 	QObject::connect(_ui->channel1ComboBox, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
-		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Channel1DimensionId)), index);
+		_layersModel->setData(_layersModel->getSelectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Channel1DimensionId)), index);
 	});
 
 	QObject::connect(_ui->channel2ComboBox, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
-		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Channel2DimensionId)), index);
+		_layersModel->setData(_layersModel->getSelectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Channel2DimensionId)), index);
 	});
 
 	QObject::connect(_ui->channel3ComboBox, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
-		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Channel3DimensionId)), index);
+		_layersModel->setData(_layersModel->getSelectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Channel3DimensionId)), index);
 	});
 
 	QObject::connect(_ui->constantColorCheckBox, &QCheckBox::stateChanged, [this](int state) {
-		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::UseConstantColor)), _ui->constantColorCheckBox->isChecked());
+		_layersModel->setData(_layersModel->getSelectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::UseConstantColor)), _ui->constantColorCheckBox->isChecked());
 	});
 
 	QObject::connect(_ui->colorSpaceComboBox, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
-		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::ColorSpace)), index);
+		_layersModel->setData(_layersModel->getSelectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::ColorSpace)), index);
 	});
 
 	_ui->colorMapComboBox->setModel(&_imageViewerPlugin->getColorMapModel());
 	_ui->colorMapComboBox->setType(ColorMap::Type::TwoDimensional);
 
 	QObject::connect(_ui->colorMapComboBox, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
-		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::ColorMap)), _ui->colorMapComboBox->getCurrentImage());
+		_layersModel->setData(_layersModel->getSelectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::ColorMap)), _ui->colorMapComboBox->getCurrentImage());
 	});
 
 	QObject::connect(_ui->colorPickerPushButton, &ColorPickerPushButton::currentColorChanged, [this](const QColor& currentColor) {
-		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::ConstantColor)), currentColor);
+		_layersModel->setData(_layersModel->getSelectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::ConstantColor)), currentColor);
 	});
 
 	QObject::connect(_ui->pointTypeComboBox, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
-		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::PointType)), index);
+		_layersModel->setData(_layersModel->getSelectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::PointType)), index);
 	});
 
 	QObject::connect(_ui->indexSelectionComboBox, &QComboBox::currentTextChanged, [this](QString text) {
-		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::IndexSelectionDatasetName)), text);
+		_layersModel->setData(_layersModel->getSelectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::IndexSelectionDatasetName)), text);
 	});
 
 	QObject::connect(_imageViewerPlugin, &ImageViewerPlugin::pointsDatasetsChanged, [this, updateIndexSelectionComboBox](QStringList pointsDatasets) {
@@ -186,7 +186,7 @@ void PointsLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 
 void PointsLayerWidget::updateData(const QModelIndex& begin, const QModelIndex& end, const QVector<int>& roles /*= QVector<int>()*/)
 {
-	const auto selectedRows = _layersModel->selectionModel().selectedRows();
+	const auto selectedRows = _layersModel->getSelectionModel().selectedRows();
 	const auto noSelectedRows = selectedRows.size();
 
 	if (noSelectedRows != 1)

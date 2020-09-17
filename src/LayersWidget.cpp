@@ -235,5 +235,5 @@ LayersModel& LayersWidget::getLayersModel()
 
 QItemSelectionModel& LayersWidget::getLayersSelectionModel()
 {
-	return getLayersModel().selectionModel();
+	return getLayersModel().getSelectionModel();
 }

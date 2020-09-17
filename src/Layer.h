@@ -85,7 +85,7 @@ public:
 	};
 
 	/** Get string representation of layer column enumeration */
-	static QString columnName(const Column& column) {
+	static QString getColumnName(const Column& column) {
 		switch (column) {
 			case Column::Name:
 				return "Name";

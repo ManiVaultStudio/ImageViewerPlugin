@@ -25,8 +25,8 @@ void SelectionLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 
 	QObject::connect(_layersModel, &LayersModel::dataChanged, this, &SelectionLayerWidget::updateData);
 
-	QObject::connect(&_layersModel->selectionModel(), &QItemSelectionModel::selectionChanged, [this](const QItemSelection& selected, const QItemSelection& deselected) {
-		const auto selectedRows = _layersModel->selectionModel().selectedRows();
+	QObject::connect(&_layersModel->getSelectionModel(), &QItemSelectionModel::selectionChanged, [this](const QItemSelection& selected, const QItemSelection& deselected) {
+		const auto selectedRows = _layersModel->getSelectionModel().selectedRows();
 
 		if (selectedRows.isEmpty())
 			updateData(QModelIndex(), QModelIndex());
@@ -40,15 +40,15 @@ void SelectionLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 	});
 
 	QObject::connect(_ui->pixelSelectionTypeComboBox, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
-		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(SelectionLayer::Column::PixelSelectionType)), index);
+		_layersModel->setData(_layersModel->getSelectionModel().currentIndex().siblingAtColumn(ult(SelectionLayer::Column::PixelSelectionType)), index);
 	});
 
 	QObject::connect(_ui->pixelSelectionModifierAddPushButton, &QPushButton::clicked, [this]() {
-		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(SelectionLayer::Column::PixelSelectionModifier)), ult(SelectionModifier::Add));
+		_layersModel->setData(_layersModel->getSelectionModel().currentIndex().siblingAtColumn(ult(SelectionLayer::Column::PixelSelectionModifier)), ult(SelectionModifier::Add));
 	});
 
 	QObject::connect(_ui->pixelSelectionModifierRemovePushButton, &QPushButton::clicked, [this]() {
-		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(SelectionLayer::Column::PixelSelectionModifier)), ult(SelectionModifier::Remove));
+		_layersModel->setData(_layersModel->getSelectionModel().currentIndex().siblingAtColumn(ult(SelectionLayer::Column::PixelSelectionModifier)), ult(SelectionModifier::Remove));
 	});
 
 	const auto& fontAwesome = hdps::Application::getIconFont("FontAwesome");
@@ -66,49 +66,49 @@ void SelectionLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 	_ui->brushRadiusHorizontalSlider->setMaximum(static_cast<int>(SelectionLayer::maxBrushRadius));
 
 	QObject::connect(_ui->brushRadiusDoubleSpinBox, qOverload<double>(&QDoubleSpinBox::valueChanged), [this](double value) {
-		const auto selectedRows = _layersModel->selectionModel().selectedRows();
+		const auto selectedRows = _layersModel->getSelectionModel().selectedRows();
 
 		if (selectedRows.count() == 1)
 			_layersModel->setData(selectedRows.first().siblingAtColumn(ult(SelectionLayer::Column::BrushRadius)), value);
 	});
 
 	QObject::connect(_ui->brushRadiusHorizontalSlider, &QSlider::valueChanged, [this](int value) {
-		const auto selectedRows = _layersModel->selectionModel().selectedRows();
+		const auto selectedRows = _layersModel->getSelectionModel().selectedRows();
 
 		if (selectedRows.count() == 1)
 			_layersModel->setData(selectedRows.first().siblingAtColumn(ult(SelectionLayer::Column::BrushRadius)), value);
 	});
 
 	QObject::connect(_ui->selectAllPushButton, &QPushButton::clicked, [this]() {
-		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(SelectionLayer::Column::SelectAll)), QVariant());
+		_layersModel->setData(_layersModel->getSelectionModel().currentIndex().siblingAtColumn(ult(SelectionLayer::Column::SelectAll)), QVariant());
 	});
 
 	QObject::connect(_ui->selectNonePushButton, &QPushButton::clicked, [this]() {
-		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(SelectionLayer::Column::SelectNone)), QVariant());
+		_layersModel->setData(_layersModel->getSelectionModel().currentIndex().siblingAtColumn(ult(SelectionLayer::Column::SelectNone)), QVariant());
 	});
 
 	QObject::connect(_ui->invertSelectionPushButton, &QPushButton::clicked, [this]() {
-		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(SelectionLayer::Column::InvertSelection)), QVariant());
+		_layersModel->setData(_layersModel->getSelectionModel().currentIndex().siblingAtColumn(ult(SelectionLayer::Column::InvertSelection)), QVariant());
 	});
 
 	QObject::connect(_ui->colorPickerPushButton, &ColorPickerPushButton::currentColorChanged, [this](const QColor& currentColor) {
-		_layersModel->setData(_layersModel->selectionModel().currentIndex().siblingAtColumn(ult(SelectionLayer::Column::OverlayColor)), currentColor);
+		_layersModel->setData(_layersModel->getSelectionModel().currentIndex().siblingAtColumn(ult(SelectionLayer::Column::OverlayColor)), currentColor);
 	});
 
 	QObject::connect(_ui->subsetFromSelectedPixelsPushButton, &QPushButton::clicked, [this](const QColor& currentColor) {
-		static_cast<SelectionLayer*>(_layersModel->selectedLayer())->subsetFromSelectedPixels();
+		static_cast<SelectionLayer*>(_layersModel->getSelectedLayer())->subsetFromSelectedPixels();
 	});
 
 	_ui->subsetFromSelectionBoundsPushButton->hide();
 
 	QObject::connect(_ui->subsetFromSelectionBoundsPushButton, &QPushButton::clicked, [this](const QColor& currentColor) {
-		static_cast<SelectionLayer*>(_layersModel->selectedLayer())->subsetFromSelectionBounds();
+		static_cast<SelectionLayer*>(_layersModel->getSelectedLayer())->subsetFromSelectionBounds();
 	});
 }
 
 void SelectionLayerWidget::updateData(const QModelIndex& begin, const QModelIndex& end, const QVector<int>& roles /*= QVector<int>()*/)
 {
-	const auto selectedRows		= _layersModel->selectionModel().selectedRows();
+	const auto selectedRows		= _layersModel->getSelectionModel().selectedRows();
 	const auto noSelectedRows	= selectedRows.size();
 	const auto enabled			= _layersModel->data(begin.siblingAtColumn(ult(Layer::Column::Name)), Qt::CheckStateRole).toBool();
 

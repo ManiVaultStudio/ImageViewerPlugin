@@ -70,7 +70,7 @@ PointsProp::PointsProp(PointsLayer* pointsLayer, const QString& name) :
 
 			const auto rectangle = QRectF(QPointF(0.f, 0.f), QSizeF(static_cast<float>(imageSize.width()), static_cast<float>(imageSize.height())));
 
-			this->shapeByName<QuadShape>("Quad")->setRectangle(rectangle);
+			this->getShapeByName<QuadShape>("Quad")->setRectangle(rectangle);
 
 			updateModelMatrix();
 		}
@@ -121,7 +121,7 @@ void PointsProp::initialize()
 
 			const auto stride = 5 * sizeof(GLfloat);
 
-			auto shape = shapeByName<QuadShape>("Quad");
+			auto shape = getShapeByName<QuadShape>("Quad");
 
 			if (shaderProgram->bind()) {
 				shape->getVAO().bind();
@@ -161,7 +161,7 @@ void PointsProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 		
 		Prop::render(nodeMVP, opacity);
 
-		const auto shape			= shapeByName<QuadShape>("Quad");
+		const auto shape			= getShapeByName<QuadShape>("Quad");
 		const auto shaderProgram	= getShaderProgramByName("Quad");
 
 		if (getTextureByName("ColorMap")->isCreated()) {
@@ -225,7 +225,7 @@ void PointsProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 
 QRectF PointsProp::getBoundingRectangle() const
 {
-	auto rectangle = shapeByName<QuadShape>("Quad")->getRectangle();
+	auto rectangle = getShapeByName<QuadShape>("Quad")->getRectangle();
 
 	rectangle.setSize(_node->getScale(Qt::EditRole).toFloat() * rectangle.size());
 
@@ -236,7 +236,7 @@ void PointsProp::updateModelMatrix()
 {
 	QMatrix4x4 modelMatrix;
 
-	const auto rectangle = shapeByName<QuadShape>("Quad")->getRectangle();
+	const auto rectangle = getShapeByName<QuadShape>("Quad")->getRectangle();
 
 	modelMatrix.translate(-0.5f * rectangle.width(), -0.5f * rectangle.height(), 0.0f);
 

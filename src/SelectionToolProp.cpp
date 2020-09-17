@@ -64,7 +64,7 @@ SelectionToolProp::SelectionToolProp(SelectionLayer* selectionLayer, const QStri
 
 			const auto rectangle = QRectF(QPointF(0.f, 0.f), QSizeF(imageSize));
 
-			this->shapeByName<QuadShape>("Quad")->setRectangle(rectangle);
+			this->getShapeByName<QuadShape>("Quad")->setRectangle(rectangle);
 
 			updateModelMatrix();
 		}
@@ -112,7 +112,7 @@ void SelectionToolProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 
 		Prop::render(nodeMVP, opacity);
 
-		const auto shape			= shapeByName<QuadShape>("Quad");
+		const auto shape			= getShapeByName<QuadShape>("Quad");
 		const auto shaderProgram	= getShaderProgramByName("SelectionTool");
 
 		if (shaderProgram->bind()) {
@@ -163,7 +163,7 @@ void SelectionToolProp::compute()
 
 		transform.ortho(0.0f, _fbo->width(), 0.0f, _fbo->height(), -1.0f, +1.0f);
 
-		auto shape = shapeByName<QuadShape>("Quad");
+		auto shape = getShapeByName<QuadShape>("Quad");
 
 		auto selectionLayer = static_cast<SelectionLayer*>(_node);
 		auto modelViewMatrix = selectionLayer->getModelViewMatrix() * getModelMatrix();
@@ -309,7 +309,7 @@ void SelectionToolProp::reset()
 
 QRectF SelectionToolProp::getBoundingRectangle() const
 {
-	return shapeByName<QuadShape>("Quad")->getRectangle();
+	return getShapeByName<QuadShape>("Quad")->getRectangle();
 }
 
 QImage SelectionToolProp::getSelectionImage()
@@ -326,7 +326,7 @@ void SelectionToolProp::updateModelMatrix()
 {
 	QMatrix4x4 modelMatrix;
 
-	const auto rectangle = shapeByName<QuadShape>("Quad")->getRectangle();
+	const auto rectangle = getShapeByName<QuadShape>("Quad")->getRectangle();
 
 	modelMatrix.translate(-0.5f * rectangle.width(), -0.5f * rectangle.height(), 0.0f);
 
@@ -348,7 +348,7 @@ void SelectionToolProp::loadSelectionToolShaderProgram()
 
 	const auto stride = 5 * sizeof(GLfloat);
 
-	auto shape = shapeByName<QuadShape>("Quad");
+	auto shape = getShapeByName<QuadShape>("Quad");
 
 	if (shaderProgram->bind()) {
 		shape->getVAO().bind();
@@ -383,7 +383,7 @@ void SelectionToolProp::loadSelectionToolOffScreenShaderProgram()
 
 	const auto stride = 5 * sizeof(GLfloat);
 
-	auto shape = shapeByName<QuadShape>("Quad");
+	auto shape = getShapeByName<QuadShape>("Quad");
 
 	if (shaderProgram->bind()) {
 		shape->getVAO().bind();

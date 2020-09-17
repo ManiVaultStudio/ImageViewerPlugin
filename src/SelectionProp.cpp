@@ -63,7 +63,7 @@ SelectionProp::SelectionProp(SelectionLayer* selectionLayer, const QString& name
 
 			const auto rectangle = QRectF(QPointF(0.f, 0.f), QSizeF(imageSize));
 
-			this->shapeByName<QuadShape>("Quad")->setRectangle(rectangle);
+			this->getShapeByName<QuadShape>("Quad")->setRectangle(rectangle);
 
 			updateModelMatrix();
 		}
@@ -102,7 +102,7 @@ void SelectionProp::initialize()
 
 		const auto stride = 5 * sizeof(GLfloat);
 
-		auto shape = shapeByName<QuadShape>("Quad");
+		auto shape = getShapeByName<QuadShape>("Quad");
 
 		if (!shaderProgram->bind())
 			throw std::runtime_error("Unable to bind quad shader program");
@@ -138,7 +138,7 @@ void SelectionProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 
 		Prop::render(nodeMVP, opacity);
 
-		const auto shape			= shapeByName<QuadShape>("Quad");
+		const auto shape			= getShapeByName<QuadShape>("Quad");
 		const auto shaderProgram	= getShaderProgramByName("Quad");
 		const auto quadTexture		= getTextureByName("Quad");
 
@@ -179,14 +179,14 @@ void SelectionProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 
 QRectF SelectionProp::getBoundingRectangle() const
 {
-	return shapeByName<QuadShape>("Quad")->getRectangle();
+	return getShapeByName<QuadShape>("Quad")->getRectangle();
 }
 
 void SelectionProp::updateModelMatrix()
 {
 	QMatrix4x4 modelMatrix;
 
-	const auto rectangle = shapeByName<QuadShape>("Quad")->getRectangle();
+	const auto rectangle = getShapeByName<QuadShape>("Quad")->getRectangle();
 
 	modelMatrix.translate(-0.5f * rectangle.width(), -0.5f * rectangle.height(), 0.0f);
 

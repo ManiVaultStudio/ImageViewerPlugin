@@ -120,7 +120,7 @@ protected: // Shape management
 	* @param name Name of the shape
 	*/
 	template<typename T>
-	T* shapeByName(const QString& name)
+	T* getShapeByName(const QString& name)
 	{
 		return dynamic_cast<T*>(_shapes[name].get());
 	}
@@ -130,7 +130,7 @@ protected: // Shape management
 	* @param name Name of the shape
 	*/
 	template<typename T>
-	const T* shapeByName(const QString& name) const
+	const T* getShapeByName(const QString& name) const
 	{
 		return dynamic_cast<T*>(_shapes[name].get());
 	}

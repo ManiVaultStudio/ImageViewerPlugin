@@ -16,7 +16,7 @@ class RootLayer : public Layer, public Channels<std::uint8_t>
 {
 public:
 	
-	/** TODO */
+	/** Columns */
 	enum class Column {
 		Start = ult(Layer::Column::End) + 1,
 		End = Start
@@ -29,7 +29,7 @@ public: // Construction
 
 public: // Visualization
 
-	/** TODO */
+	/** Renders the layer */
 	void render(const QMatrix4x4& parentMVP) override;
 
 	/**
@@ -40,16 +40,31 @@ public: // Visualization
 
 public: // Inherited MVC
 
-	/** TODO */
+	/** Returns the number of columns */
 	int getColumnCount() const override { return ult(Column::End) + 1; }
 
-	/** TODO */
+	/**
+	 * Returns the item flags for the given model index
+	 * @param index Model index
+	 * @return Item flags for the index
+	 */
 	Qt::ItemFlags getFlags(const QModelIndex& index) const override;
 
-	/** TODO */
+	/**
+	 * Returns the data for the given model index and data role
+	 * @param index Model index
+	 * @param role Data role
+	 * @return Data in variant form
+	 */
 	QVariant getData(const QModelIndex& index, const int& role) const override;
 
-	/** TODO */
+	/**
+	 * Sets the data value for the given model index and data role
+	 * @param index Model index
+	 * @param value Data value in variant form
+	 * @param role Data role
+	 * @return Model indices that are affected by the operation
+	 */
 	QModelIndexList setData(const QModelIndex& index, const QVariant& value, const int& role) override;
 
 protected: // Miscellaneous

@@ -36,7 +36,7 @@ public: // Enumerations
 		Index			/** Index (index images) */
 	};
 
-	/** TODO */
+	/** Pixel type name */
 	static QString pixelTypeName(const PointType& pixelType)
 	{
 		switch (pixelType)
@@ -54,7 +54,7 @@ public: // Enumerations
 		return QString();
 	}
 
-	/**  Columns */
+	/** Columns */
 	enum class Column {
 		DimensionNames = ult(Layer::Column::End) + 1,	/** Dimension names */
 		Channel1Name,									/** First input channel name */

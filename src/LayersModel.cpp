@@ -26,10 +26,10 @@ LayersModel::~LayersModel()
 
 void LayersModel::paint(QPainter* painter)
 {
-	if (selectedLayer() == nullptr)
+	if (getSelectedLayer() == nullptr)
 		return;
 
-	selectedLayer()->paint(painter);
+	getSelectedLayer()->paint(painter);
 }
 
 void LayersModel::dispatchEventToSelectedLayer(QEvent* event)
@@ -39,7 +39,7 @@ void LayersModel::dispatchEventToSelectedLayer(QEvent* event)
 	if (selectedRows.isEmpty())
 		return;
 
-	selectedLayer()->handleEvent(event, selectedRows.first());
+	getSelectedLayer()->handleEvent(event, selectedRows.first());
 }
 
 int LayersModel::columnCount(const QModelIndex& parent /*= QModelIndex()*/) const
@@ -110,7 +110,7 @@ QVariant LayersModel::headerData(int section, Qt::Orientation orientation, int r
 		return QVariant();
 
 	if (orientation == Qt::Horizontal) {
-		return Layer::columnName(static_cast<Layer::Column>(section));
+		return Layer::getColumnName(static_cast<Layer::Column>(section));
 	}
 
 	return QVariant();
@@ -248,7 +248,7 @@ void LayersModel::selectRow(const std::int32_t& row)
 	_selectionModel.setCurrentIndex(index(row, 0), QItemSelectionModel::SelectionFlag::Current | QItemSelectionModel::SelectionFlag::ClearAndSelect | QItemSelectionModel::SelectionFlag::Rows);
 }
 
-Layer* LayersModel::selectedLayer()
+Layer* LayersModel::getSelectedLayer()
 {
 	const auto selectedRows = _selectionModel.selectedRows();
 
