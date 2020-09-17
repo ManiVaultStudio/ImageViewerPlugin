@@ -36,7 +36,7 @@ public:
 	/** Constructor */
 	ColorMapModel(QObject* parent, const ColorMap::Type& type);
 
-public: // Inherited
+public: // Inherited MVC
 
 	/**
 	 * Returns the the number of model columns
