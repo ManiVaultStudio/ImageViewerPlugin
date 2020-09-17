@@ -15,7 +15,6 @@
 class QMenu;
 
 class ImageViewerPlugin;
-class LayersModel;
 
 /**
  * Viewer widget class
@@ -71,7 +70,7 @@ protected: // OpenGL functions
 private:
 
 	/** Returns the context menu */
-	QMenu* contextMenu();
+	QMenu* getContextMenu();
 
 private:
 	ImageViewerPlugin*						_imageViewerPlugin;			/** Pointer to the image viewer plugin */

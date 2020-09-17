@@ -16,14 +16,17 @@ class ColorPickerPushButton : public QPushButton
 	Q_OBJECT
 
 public:
+
 	/**
 	 * Constructor
 	 * @param parent Pointer to parent widget
 	 */
 	ColorPickerPushButton(QWidget* parent);
 
+public: // Getters/setters
+
 	/** Returns the currently selected color */
-	QColor currentColor() const;
+	QColor getCurrentColor() const;
 
 	/**
 	 * Sets the current color

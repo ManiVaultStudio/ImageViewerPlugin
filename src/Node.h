@@ -8,9 +8,6 @@
 #include <QImage>
 #include <QModelIndex>
 
-class Dataset;
-class Actor;
-
 /**
  * Node class
  *
@@ -49,10 +46,10 @@ public: // Hierarchy
 	 * @param index Index of the child node
 	 * @return Child at index
 	 */
-	Node* child(const int& index);
+	Node* getChild(const int& index);
 
 	/** Returns the number of children */
-	int childCount() const;
+	int getChildCount() const;
 
 	/**
 	 * Inserts a child at a position
@@ -63,7 +60,7 @@ public: // Hierarchy
 	bool insertChild(const int& position, Node* node);
 
 	/** Returns the parent node (if it exists, else returns nullptr) */
-	Node* parent();
+	Node* getParent();
 
 	/**
 	 * Sets the parent node
@@ -80,7 +77,7 @@ public: // Hierarchy
 	bool removeChild(const int& position, const bool& purge = true);
 
 	/** Returns the child index w.r.t. its parent */
-	int childIndex() const;
+	int getChildIndex() const;
 
 	/** Returns whether the node has children or not */
 	bool hasChildren() const;
@@ -92,7 +89,7 @@ public: // Hierarchy
 	bool isLeaf() const;
 
 	/** Returns the root node */
-	Node* rootItem();
+	Node* getRootItem();
 
 public: // Rendering
 
@@ -100,7 +97,7 @@ public: // Rendering
 	void render(const QMatrix4x4& parentMVP) override;
 
 	/** Computes the enveloping bounding rectangle of the node and its descendants */
-	QRectF boundingRectangle() const;
+	QRectF getBoundingRectangle() const;
 
 public: // Getters/setters
 
@@ -109,7 +106,7 @@ public: // Getters/setters
 	 * @param role Data role
 	 * @return Identifier
 	 */
-	QVariant id(const int& role) const;
+	QVariant getID(const int& role) const;
 
 	/**
 	 * Sets the node identifier
@@ -121,7 +118,7 @@ public: // Getters/setters
 	 * Returns the node name
 	 * @param role Data role
 	 */
-	QVariant name(const int& role) const;
+	QVariant getName(const int& role) const;
 
 	/**
 	 * Sets the node name
@@ -142,7 +139,7 @@ public: // Getters/setters
 	 * @param role Data role
 	 * @return Whether the configuration flag is set or not
 	 */
-	QVariant flag(const Flag& flag, const int& role) const;
+	QVariant getFlag(const Flag& flag, const int& role) const;
 
 	/**
 	 * Sets the node configuration flag
@@ -156,7 +153,7 @@ public: // Getters/setters
 	 * @param role Data role
 	 * @return Configuration flags
 	 */
-	QVariant flags(const int& role) const;
+	QVariant getFlags(const int& role) const;
 
 	/**
 	 * Sets the node configuration flags
@@ -171,7 +168,7 @@ public: // Getters/setters
 	bool isRenderable() const;
 
 	/** Returns the aggregated check state of the children of the node */
-	Qt::CheckState aggregatedCheckState() const;
+	Qt::CheckState getAggregatedCheckState() const;
 
 protected:
 	QString				_id;			/** Identifier (internal use) */

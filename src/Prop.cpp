@@ -57,7 +57,7 @@ void Prop::addShaderProgram(const QString& name)
 	_shaderPrograms.insert(name, QSharedPointer<QOpenGLShaderProgram>::create());
 }
 
-QSharedPointer<QOpenGLShaderProgram> Prop::shaderProgramByName(const QString& name)
+QSharedPointer<QOpenGLShaderProgram> Prop::getShaderProgramByName(const QString& name)
 {
 	return _shaderPrograms.value(name);
 }
@@ -67,7 +67,7 @@ void Prop::addTexture(const QString& name, const QOpenGLTexture::Target& target)
 	_textures.insert(name, QSharedPointer<QOpenGLTexture>::create(target));
 }
 
-QSharedPointer<QOpenGLTexture>& Prop::textureByName(const QString& name)
+QSharedPointer<QOpenGLTexture>& Prop::getTextureByName(const QString& name)
 {
 	return _textures[name];
 }
@@ -92,11 +92,11 @@ void Prop::setName(const QString& name)
 	if (name == _name)
 		return;
 
-	const auto oldName = fullName();
+	const auto oldName = getFullName();
 
 	_name = name;
 
-	qDebug() << "Rename" << oldName << "to" << fullName();
+	qDebug() << "Rename" << oldName << "to" << getFullName();
 }
 
 bool Prop::isVisible() const
@@ -111,7 +111,7 @@ void Prop::setVisible(const bool& visible)
 
 	_visible = visible;
 
-	qDebug() << (_visible ? "Show" : "Hide") << fullName();
+	qDebug() << (_visible ? "Show" : "Hide") << getFullName();
 }
 
 void Prop::show()
@@ -124,14 +124,14 @@ void Prop::hide()
 	setVisible(false);
 }
 
-QString Prop::fullName()
+QString Prop::getFullName()
 {
 	return _name;
 }
 
-QMatrix4x4 Prop::modelMatrix() const
+QMatrix4x4 Prop::getModelMatrix() const
 {
-	return _node->modelMatrix() * _modelMatrix;
+	return _node->getModelMatrix() * _modelMatrix;
 }
 
 void Prop::setModelMatrix(const QMatrix4x4& modelMatrix)

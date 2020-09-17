@@ -19,9 +19,9 @@ void RootLayer::paint(QPainter* painter)
 {
 }
 
-Qt::ItemFlags RootLayer::flags(const QModelIndex& index) const
+Qt::ItemFlags RootLayer::getFlags(const QModelIndex& index) const
 {
-	auto flags = Layer::flags(index);
+	auto flags = Layer::getFlags(index);
 
 	/*
 	switch (static_cast<Column>(index.column())) {
@@ -33,10 +33,10 @@ Qt::ItemFlags RootLayer::flags(const QModelIndex& index) const
 	return flags;
 }
 
-QVariant RootLayer::data(const QModelIndex& index, const int& role) const
+QVariant RootLayer::getData(const QModelIndex& index, const int& role) const
 {
 	if (index.column() < ult(Column::Start))
-		return Layer::data(index, role);
+		return Layer::getData(index, role);
 
 	/*
 	switch (static_cast<Column>(index.column())) {
@@ -62,12 +62,12 @@ QModelIndexList RootLayer::setData(const QModelIndex& index, const QVariant& val
 	return affectedIds;
 }
 
-QSize RootLayer::imageSize() const
+QSize RootLayer::getImageSize() const
 {
 	return QSize();
 }
 
-Layer::Hints RootLayer::hints() const
+Layer::Hints RootLayer::getHints() const
 {
-	return Layer::hints();
+	return Layer::getHints();
 }

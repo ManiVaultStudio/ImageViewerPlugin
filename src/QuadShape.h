@@ -39,7 +39,7 @@ public: // Inherited
 public: // Miscellaneous
 
 	/** Returns the quad rectangle */
-	QRectF rectangle() const;
+	QRectF getRectangle() const;
 
 	/**
 	 * Set quad rectangle
@@ -48,7 +48,7 @@ public: // Miscellaneous
 	void setRectangle(const QRectF& rectangle);
 
 	/** Returns the quad size */
-	QSizeF imageSize() const;
+	QSizeF getImageSize() const;
 
 private: // Internal function(s)
 

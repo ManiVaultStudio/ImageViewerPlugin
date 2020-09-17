@@ -20,7 +20,7 @@ Node::~Node()
 	qDeleteAll(_children);
 }
 
-Node* Node::child(const int& index)
+Node* Node::getChild(const int& index)
 {
 	if (index < 0 || index >= _children.size())
 		return nullptr;
@@ -28,7 +28,7 @@ Node* Node::child(const int& index)
 	return _children.at(index);
 }
 
-int Node::childCount() const
+int Node::getChildCount() const
 {
 	return _children.count();
 }
@@ -44,12 +44,12 @@ bool Node::insertChild(const int& position, Node* node)
 
 	Renderable::renderer->render();
 
-	Renderable::renderer->zoomToRectangle(rootItem()->boundingRectangle());
+	Renderable::renderer->zoomToRectangle(getRootItem()->getBoundingRectangle());
 	
 	return true;
 }
 
-Node* Node::parent()
+Node* Node::getParent()
 {
 	return _parent;
 }
@@ -74,7 +74,7 @@ bool Node::removeChild(const int& position, const bool& purge /*= true*/)
 	return true;
 }
 
-int Node::childIndex() const
+int Node::getChildIndex() const
 {
 	if (_parent)
 		return _parent->_children.indexOf(const_cast<Node*>(this));
@@ -84,7 +84,7 @@ int Node::childIndex() const
 
 bool Node::hasChildren() const
 {
-	return childCount() > 0;
+	return getChildCount() > 0;
 }
 
 bool Node::isRoot() const
@@ -97,12 +97,12 @@ bool Node::isLeaf() const
 	return !hasChildren();
 }
 
-Node* Node::rootItem()
+Node* Node::getRootItem()
 {
-	if (parent() == nullptr)
+	if (getParent() == nullptr)
 		return this;
 
-	return _parent->rootItem();
+	return _parent->getRootItem();
 }
 
 void Node::render(const QMatrix4x4& parentMVP)
@@ -128,22 +128,22 @@ void Node::render(const QMatrix4x4& parentMVP)
 		prop->render(mvp, _opacity);
 }
 
-QRectF Node::boundingRectangle() const
+QRectF Node::getBoundingRectangle() const
 {
 	QRectF bounds;
 
 	for (auto prop : _props.values())
-		bounds |= prop->boundingRectangle();
+		bounds |= prop->getBoundingRectangle();
 
 	for (auto child : _children)
 	{
-		bounds |= child->boundingRectangle();
+		bounds |= child->getBoundingRectangle();
 	}
 
 	return bounds;
 }
 
-QVariant Node::id(const int& role) const
+QVariant Node::getID(const int& role) const
 {
 	switch (role)
 	{
@@ -166,7 +166,7 @@ void Node::setId(const QString& id)
 	_id = id;
 }
 
-QVariant Node::name(const int& role) const
+QVariant Node::getName(const int& role) const
 {
 	switch (role)
 	{
@@ -178,7 +178,7 @@ QVariant Node::name(const int& role) const
 			return QString("Name: %1").arg(_name);
 
 		case Qt::CheckStateRole:
-			return aggregatedCheckState();
+			return getAggregatedCheckState();
 
 		default:
 			break;
@@ -197,7 +197,7 @@ bool Node::isFlagSet(const Flag& flag) const
 	return _flags & static_cast<int>(flag);
 }
 
-QVariant Node::flag(const Flag& flag, const int& role) const
+QVariant Node::getFlag(const Flag& flag, const int& role) const
 {
 	const auto flagString = isFlagSet(flag) ? "true" : "false";
 
@@ -252,7 +252,7 @@ void Node::setFlag(const Flag& flag, const bool& enabled /*= true*/)
 	}
 }
 
-QVariant Node::flags(const int& role) const
+QVariant Node::getFlags(const int& role) const
 {
 	const auto flagsString = QString("%1%").arg(QString::number(_flags));
 
@@ -289,17 +289,17 @@ bool Node::isRenderable() const
 	return isFlagSet(Flag::Renderable);
 }
 
-Qt::CheckState Node::aggregatedCheckState() const
+Qt::CheckState Node::getAggregatedCheckState() const
 {
 	if (isLeaf())
-		return flag(Flag::Enabled, Qt::EditRole).toBool() ? Qt::Checked : Qt::Unchecked;
+		return getFlag(Flag::Enabled, Qt::EditRole).toBool() ? Qt::Checked : Qt::Unchecked;
 
 	QSet<int> states;
 
 	for (auto treeItem : _children) {
 		auto layer = static_cast<Node*>(treeItem);
 
-		states.insert(layer->aggregatedCheckState());
+		states.insert(layer->getAggregatedCheckState());
 	}
 
 	if (states.count() > 1)

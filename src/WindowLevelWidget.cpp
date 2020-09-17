@@ -54,7 +54,7 @@ WindowLevelWidget::WindowLevelWidget(QWidget* parent, ImageViewerPlugin* imageVi
 
 WindowLevelWidget::~WindowLevelWidget() = default;
 
-void WindowLevelWidget::updateData(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>& roles /*= QVector<int>()*/)
+void WindowLevelWidget::updateData(const QModelIndex& begin, const QModelIndex& end, const QVector<int>& roles /*= QVector<int>()*/)
 {
 	auto& layersModel = _imageViewerPlugin->getLayersModel();
 
@@ -63,7 +63,7 @@ void WindowLevelWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 
 	_ui->resetPushButton->setEnabled(window != 1.0f || level != 0.5f);
 
-	if (topLeft == _windowIndex) {
+	if (begin == _windowIndex) {
 		_ui->windowDoubleSpinBox->blockSignals(true);
 		_ui->windowDoubleSpinBox->setValue(window);
 		_ui->windowDoubleSpinBox->blockSignals(false);
@@ -73,7 +73,7 @@ void WindowLevelWidget::updateData(const QModelIndex& topLeft, const QModelIndex
 		_ui->windowHorizontalSlider->blockSignals(false);
 	}
 
-	if (topLeft == _levelIndex) {
+	if (begin == _levelIndex) {
 		_ui->levelDoubleSpinBox->blockSignals(true);
 		_ui->levelDoubleSpinBox->setValue(level);
 		_ui->levelDoubleSpinBox->blockSignals(false);

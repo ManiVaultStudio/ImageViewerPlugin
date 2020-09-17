@@ -32,7 +32,7 @@ Layer::~Layer() = default;
 
 void Layer::matchScaling(const QSize& targetImageSize)
 {
-	const auto layerImageSize	= imageSize();
+	const auto layerImageSize	= getImageSize();
 	const auto widthScaling		= static_cast<float>(targetImageSize.width()) / layerImageSize.width();
 	const auto heightScaling	= static_cast<float>(targetImageSize.height()) / layerImageSize.height();
 
@@ -49,10 +49,10 @@ void Layer::paint(QPainter* painter)
 
 void Layer::zoomExtents()
 {
-	renderer->zoomToRectangle(boundingRectangle());
+	renderer->zoomToRectangle(getBoundingRectangle());
 }
 
-Qt::ItemFlags Layer::flags(const QModelIndex& index) const
+Qt::ItemFlags Layer::getFlags(const QModelIndex& index) const
 {
 	Qt::ItemFlags flags = Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled;
 
@@ -63,7 +63,7 @@ Qt::ItemFlags Layer::flags(const QModelIndex& index) const
 		{
 			flags |= Qt::ItemIsUserCheckable;
 
-			if (flag(Layer::Flag::Renamable, Qt::EditRole).toBool())
+			if (getFlag(Layer::Flag::Renamable, Qt::EditRole).toBool())
 				flags |= Qt::ItemIsEditable;
 
 			break;
@@ -100,47 +100,47 @@ Qt::ItemFlags Layer::flags(const QModelIndex& index) const
 	return flags;
 }
 
-QVariant Layer::data(const QModelIndex& index, const int& role) const
+QVariant Layer::getData(const QModelIndex& index, const int& role) const
 {
 	switch (static_cast<Column>(index.column())) {
 		case Column::Name:
-			return name(role);
+			return getName(role);
 
 		case Column::DatasetName:
-			return datasetName(role);
+			return getDatasetName(role);
 
 		case Column::DataName:
-			return dataName(role);
+			return getDataName(role);
 
 		case Column::Type:
-			return type(role);
+			return getType(role);
 
 		case Column::ID:
-			return id(role);
+			return getID(role);
 
 		case Column::ImageSize:
-			return imageSize(role);
+			return getImageSize(role);
 
 		case Column::ImageWidth:
-			return imageWidth(role);
+			return getImageWidth(role);
 
 		case Column::ImageHeight:
-			return imageHeight(role);
+			return getImageHeight(role);
 
 		case Column::Opacity:
-			return opacity(role);
+			return getOpacity(role);
 
 		case Column::Scale:
-			return scale(role);
+			return getScale(role);
 
 		case Column::Flags:
-			return Node::flags(role);
+			return Node::getFlags(role);
 
 		case Column::Selection:
-			return selection(role);
+			return getSelection(role);
 
 		case Column::SelectionSize:
-			return selectionSize(role);
+			return getSelectionSize(role);
 
 		default:
 			break;
@@ -245,7 +245,7 @@ QModelIndexList Layer::setData(const QModelIndex& index, const QVariant& value, 
 	return affectedIndices;
 }
 
-QVariant Layer::datasetName(const int& role) const
+QVariant Layer::getDatasetName(const int& role) const
 {
 	switch (role)
 	{
@@ -263,7 +263,7 @@ QVariant Layer::datasetName(const int& role) const
 	return QVariant();
 }
 
-QVariant Layer::dataName(const int& role) const
+QVariant Layer::getDataName(const int& role) const
 {
 	switch (role)
 	{
@@ -281,9 +281,9 @@ QVariant Layer::dataName(const int& role) const
 	return QVariant();
 }
 
-QVariant Layer::type(const int& role) const
+QVariant Layer::getType(const int& role) const
 {
-	const auto typeName = Layer::typeName(_type);
+	const auto typeName = Layer::getTypeName(_type);
 
 	switch (role)
 	{
@@ -327,9 +327,9 @@ void Layer::setType(const Type& type)
 	_type = type;
 }
 
-QVariant Layer::imageSize(const int& role /*= Qt::DisplayRole*/) const
+QVariant Layer::getImageSize(const int& role /*= Qt::DisplayRole*/) const
 {
-	const auto imageSize		= this->imageSize();
+	const auto imageSize		= this->getImageSize();
 	const auto imageSizeString	= QString::number(imageSize.width()) + " x" + QString::number(imageSize.height());
 
 	switch (role)
@@ -350,9 +350,9 @@ QVariant Layer::imageSize(const int& role /*= Qt::DisplayRole*/) const
 	return QVariant();
 }
 
-QVariant Layer::imageWidth(const int& role) const
+QVariant Layer::getImageWidth(const int& role) const
 {
-	const auto imageSize	= this->imageSize(Qt::EditRole).toSize();
+	const auto imageSize	= this->getImageSize(Qt::EditRole).toSize();
 	const auto widthString	= QString::number(imageSize.width());
 
 	switch (role)
@@ -373,9 +373,9 @@ QVariant Layer::imageWidth(const int& role) const
 	return QVariant();
 }
 
-QVariant Layer::imageHeight(const int& role) const
+QVariant Layer::getImageHeight(const int& role) const
 {
-	const auto imageSize	= this->imageSize(Qt::EditRole).toSize();
+	const auto imageSize	= this->getImageSize(Qt::EditRole).toSize();
 	const auto heightString = QString::number(imageSize.height());
 
 	switch (role)
@@ -396,7 +396,7 @@ QVariant Layer::imageHeight(const int& role) const
 	return QVariant();
 }
 
-QVariant Layer::selection(const int& role /*= Qt::DisplayRole*/) const
+QVariant Layer::getSelection(const int& role /*= Qt::DisplayRole*/) const
 {
 	auto selection = QStringList();
 
@@ -435,7 +435,7 @@ void Layer::setSelection(const Indices& selection)
 	_selection = selection;
 }
 
-QVariant Layer::selectionSize(const int& role /*= Qt::DisplayRole*/) const
+QVariant Layer::getSelectionSize(const int& role /*= Qt::DisplayRole*/) const
 {
 	const auto selectionSizeString = QString::number(_selection.size());
 
@@ -459,7 +459,7 @@ QVariant Layer::selectionSize(const int& role /*= Qt::DisplayRole*/) const
 	return QVariant();
 }
 
-QVariant Layer::keys(const int& role /*= Qt::DisplayRole*/) const
+QVariant Layer::getKeys(const int& role /*= Qt::DisplayRole*/) const
 {
 	const auto keysString = "";
 
@@ -488,17 +488,17 @@ void Layer::setKeys(const int& keys)
 	_keys = keys;
 }
 
-QVector<QPoint> Layer::mousePositions() const
+QVector<QPoint> Layer::getMousePositions() const
 {
 	return _mousePositions;
 }
 
-int Layer::noPixels() const
+int Layer::getNoPixels() const
 {
-	return imageSize().width() * imageSize().height();
+	return getImageSize().width() * getImageSize().height();
 }
 
-Layer::Hints Layer::hints() const
+Layer::Hints Layer::getHints() const
 {
 	return Hints({
 		Hint(),
@@ -516,7 +516,7 @@ void Layer::drawTitle(QPainter* painter)
 
 	const auto color = QString("rgba(%1, %2, %3, %4)").arg(QString::number(hintsColor.red()), QString::number(hintsColor.green()), QString::number(hintsColor.blue()), QString::number(isFlagSet(Flag::Enabled) ? hintsColor.alpha() : 80));
 
-	QString titleHtml = QString("<div style='width: 100%; text-align: center; color: %1; font-weight: bold;'>%2 (%3x%4)<div>").arg(color, _name, QString::number(imageSize().width()), QString::number(imageSize().height()));
+	QString titleHtml = QString("<div style='width: 100%; text-align: center; color: %1; font-weight: bold;'>%2 (%3x%4)<div>").arg(color, _name, QString::number(getImageSize().width()), QString::number(getImageSize().height()));
 	
 	titleDocument.setTextWidth(painter->viewport().width());
 	titleDocument.setDocumentMargin(textMargins);
@@ -534,11 +534,11 @@ void Layer::drawHints(QPainter* painter)
 
 	hintsHtml += QString("<div style='height: 100%'><table style='color: %1;'>").arg(color);
 
-	for (auto hint : hints()) {
-		if (hint.title().isEmpty())
+	for (auto hint : getHints()) {
+		if (hint.getTitle().isEmpty())
 			hintsHtml += "<tr><td></td><td></td></tr>";
 		else
-			hintsHtml += QString("<tr style='font-weight: %1'><td width=120>%2</td><td>: %3</td></tr>").arg(hint.isActive() ? "bold" : "normal", hint.title(), hint.description());
+			hintsHtml += QString("<tr style='font-weight: %1'><td width=120>%2</td><td>: %3</td></tr>").arg(hint.isActive() ? "bold" : "normal", hint.getTitle(), hint.getDescription());
 	}
 
 	hintsHtml += "</table></div>";

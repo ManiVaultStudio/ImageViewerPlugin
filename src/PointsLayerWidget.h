@@ -37,12 +37,12 @@ public: // Initialization and update
 	void initialize(ImageViewerPlugin* imageViewerPlugin);
 
 	/**
-	 * Updates the user interface with data from the given layer model indices
-	 * @param topLeft Top left model index
-	 * @param bottomRight Bottom right model index
+	 * Updates the UI with model indices ranging from \p begin to \p end
+	 * @param begin Start of model index range
+	 * @param end End of model index range
 	 * @param roles Data roles
 	 */
-	void updateData(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>& roles = QVector<int>());
+	void updateData(const QModelIndex& begin, const QModelIndex& end, const QVector<int>& roles = QVector<int>());
 
 private:
 	ImageViewerPlugin*						_imageViewerPlugin;		/** Pointer to the image viewer plugin */

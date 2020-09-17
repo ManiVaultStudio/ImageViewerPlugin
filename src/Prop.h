@@ -63,10 +63,10 @@ public:
 	void hide();
 
 	/** Returns the full shape name (actor_name::prop_name::shape_name */
-	QString fullName();
+	QString getFullName();
 
 	/** Returns the model matrix */
-	QMatrix4x4 modelMatrix() const;
+	QMatrix4x4 getModelMatrix() const;
 
 	/**
 	 * Sets the model matrix
@@ -82,7 +82,7 @@ public:
 	virtual void render(const QMatrix4x4& nodeMVP, const float& opacity);
 
 	/** Returns the bounding rectangle of the prop */
-	virtual QRectF boundingRectangle() const = 0;
+	virtual QRectF getBoundingRectangle() const = 0;
 
 protected:
 
@@ -120,7 +120,7 @@ protected: // Shape management
 	* @param name Name of the shape
 	*/
 	template<typename T>
-	T* shapeByName(const QString& name)
+	T* getShapeByName(const QString& name)
 	{
 		return dynamic_cast<T*>(_shapes[name].get());
 	}
@@ -130,7 +130,7 @@ protected: // Shape management
 	* @param name Name of the shape
 	*/
 	template<typename T>
-	const T* shapeByName(const QString& name) const
+	const T* getShapeByName(const QString& name) const
 	{
 		return dynamic_cast<T*>(_shapes[name].get());
 	}
@@ -147,7 +147,7 @@ protected: // Shader program management
 	* Get shader program by name
 	* @param name Name of the shader program
 	*/
-	QSharedPointer<QOpenGLShaderProgram> shaderProgramByName(const QString& name);
+	QSharedPointer<QOpenGLShaderProgram> getShaderProgramByName(const QString& name);
 
 protected: // Texture management
 
@@ -161,7 +161,7 @@ protected: // Texture management
 	* Get texture by name
 	* @param name Name of the texture
 	*/
-	QSharedPointer<QOpenGLTexture>& textureByName(const QString& name);
+	QSharedPointer<QOpenGLTexture>& getTextureByName(const QString& name);
 
 public:
 	static Renderer* renderer;														/** Static renderer instance */

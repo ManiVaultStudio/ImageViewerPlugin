@@ -53,16 +53,16 @@ QVariant ColorMapModel::data(const QModelIndex& index, int role /* = Qt::Display
 			switch (index.column()) {
 				case ult(Column::Preview):
 				{
-					switch (colorMap.noDimensions())
+					switch (colorMap.getNoDimensions())
 					{
 						case 0:
-							return icon(colorMap.image(), QSize(15, 15));
+							return icon(colorMap.getImage(), QSize(15, 15));
 
 						case 1:
-							return icon(colorMap.image(), QSize(60, 12));
+							return icon(colorMap.getImage(), QSize(60, 12));
 
 						case 2:
-							return icon(colorMap.image(), QSize(32, 32));
+							return icon(colorMap.getImage(), QSize(32, 32));
 
 						default:
 							break;
@@ -84,16 +84,16 @@ QVariant ColorMapModel::data(const QModelIndex& index, int role /* = Qt::Display
 		{
 			switch (index.column()) {
 				case ult(Column::Preview):
-					return colorMap.name();
+					return colorMap.getName();
 
 				case ult(Column::Name):
-					return colorMap.name();
+					return colorMap.getName();
 
 				case ult(Column::Image):
 					break;
 
 				case ult(Column::ResourcePath):
-					colorMap.resourcePath();
+					colorMap.getResourcePath();
 			}
 
 			break;
@@ -106,16 +106,16 @@ QVariant ColorMapModel::data(const QModelIndex& index, int role /* = Qt::Display
 					return QVariant();
 
 				case ult(Column::Name):
-					return colorMap.name();
+					return colorMap.getName();
 
 				case ult(Column::Image):
-					return colorMap.image();
+					return colorMap.getImage();
 
 				case ult(Column::NoDimensions):
-					return colorMap.noDimensions();
+					return colorMap.getNoDimensions();
 
 				case ult(Column::ResourcePath):
-					return colorMap.resourcePath();
+					return colorMap.getResourcePath();
 			}
 			break;
 		}
@@ -178,7 +178,7 @@ void ColorMapModel::setupModelData()
 	endInsertRows();
 }
 
-const ColorMap* ColorMapModel::colorMap(const int& row) const
+const ColorMap* ColorMapModel::getColorMap(const int& row) const
 {
 	const auto colorMapIndex = index(row, 0);
 

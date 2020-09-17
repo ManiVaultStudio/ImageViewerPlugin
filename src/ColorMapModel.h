@@ -32,8 +32,11 @@ public:
 	};
 
 public:
+
 	/** Constructor */
 	ColorMapModel(QObject* parent, const ColorMap::Type& type);
+
+public: // Inherited MVC
 
 	/**
 	 * Returns the the number of model columns
@@ -54,6 +57,8 @@ public:
 	 */
 	QVariant data(const QModelIndex& index, int role /* = Qt::DisplayRole */) const override;
 
+public: // Miscellaneous
+
 	/** Setups the model data (e.g. loads color maps from resources) */
 	void setupModelData();
 
@@ -61,7 +66,7 @@ public:
 	 * Returns a color map given a row index
 	 * @param row Row index
 	 */
-	const ColorMap* colorMap(const int& row) const;
+	const ColorMap* getColorMap(const int& row) const;
 
 private:
 	QVector<ColorMap>	_colorMaps;		/** Color maps data */

@@ -29,6 +29,7 @@ protected:
 	 */
 	class ColorMapFilterModel : public QSortFilterProxyModel {
 	public:
+
 		/** Constructor */
 		ColorMapFilterModel(QObject *parent, const ColorMap::Type& type = ColorMap::Type::OneDimensional) :
 			QSortFilterProxyModel(parent),
@@ -77,6 +78,8 @@ public: // Construction/destruction
 	 */
 	ColorMapComboBox(QWidget* parent, const ColorMap::Type& type = ColorMap::Type::OneDimensional);
 
+public: 
+
 	/**
 	 * Sets the associated color map model
 	 * @param colorMapModel The color map model
@@ -84,7 +87,7 @@ public: // Construction/destruction
 	void setModel(ColorMapModel* colorMapModel);
 
 	/** Returns the type of color map */
-	ColorMap::Type type() const;
+	ColorMap::Type getType() const;
 
 	/**
 	* Sets the type of color map
@@ -93,7 +96,7 @@ public: // Construction/destruction
 	void setType(const ColorMap::Type& type);
 
 	/** Returns the currently selected color map image */
-	QImage currentImage() const;
+	QImage getCurrentImage() const;
 
 signals:
 

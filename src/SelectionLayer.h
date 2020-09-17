@@ -31,16 +31,16 @@ public: // Enumerations
 
 	/**  Columns */
 	enum class Column {
-		PixelSelectionType = ult(Layer::Column::End) + 1,		// Type of pixel selection
-		PixelSelectionModifier,									// Pixel selection modifier
-		BrushRadius,											// Brush radius
-		SelectAll,												// Select all pixels
-		SelectNone,												// Select no pixels
-		InvertSelection,										// Invert the pixel selection
-		AutoZoomToSelection,									// Zoom automatically to the pixel selection
-		ZoomToSelection,										// Zoom to the pixel selection
-		CreateSubset,											// Create subset
-		OverlayColor,											// Selection overlay color
+		PixelSelectionType = ult(Layer::Column::End) + 1,		/** Type of pixel selection */
+		PixelSelectionModifier,									/** Pixel selection modifier */
+		BrushRadius,											/** Brush radius */
+		SelectAll,												/** Select all pixels */
+		SelectNone,												/** Select no pixels */
+		InvertSelection,										/** Invert the pixel selection */
+		AutoZoomToSelection,									/** Zoom automatically to the pixel selection */
+		ZoomToSelection,										/** Zoom to the pixel selection */
+		CreateSubset,											/** Create subset */
+		OverlayColor,											/** Selection overlay color */
 
 		Start = PixelSelectionType,
 		End = OverlayColor
@@ -87,19 +87,19 @@ public: // Miscellaneous
 	* Returns the image size
 	* @return Image size in variant form
 	*/
-	QSize imageSize() const override;
+	QSize getImageSize() const override;
 
-public: // Inherited MVC
+public: // Inherited
 
 	/** Returns the number of columns */
-	int columnCount() const override { return ult(Column::End) + 1; }
+	int getColumnCount() const override { return ult(Column::End) + 1; }
 
 	/**
 	 * Returns the item flags for the given model index
 	 * @param index Model index
 	 * @return Item flags for the index
 	 */
-	Qt::ItemFlags flags(const QModelIndex& index) const override;
+	Qt::ItemFlags getFlags(const QModelIndex& index) const override;
 
 	/**
 	 * Returns the data for the given model index and data role
@@ -107,7 +107,7 @@ public: // Inherited MVC
 	 * @param role Data role
 	 * @return Data in variant form
 	 */
-	QVariant data(const QModelIndex& index, const int& role) const override;
+	QVariant getData(const QModelIndex& index, const int& role) const override;
 
 	/**
 	 * Sets the data value for the given model index and data role
@@ -125,7 +125,7 @@ public: // Getters/setters
 	 * @param role Data role
 	 * @return Overlay color in variant form
 	 */
-	QVariant overlayColor(const int& role) const;
+	QVariant getOverlayColor(const int& role) const;
 
 	/**
 	 * Sets the selection overlay color
@@ -138,7 +138,7 @@ public: // Getters/setters
 	 * @param role Data role
 	 * @return Pixel selection type in variant form
 	 */
-	QVariant pixelSelectionType(const int& role) const;
+	QVariant getPixelSelectionType(const int& role) const;
 
 	/**
 	 * Sets the pixel selection type
@@ -151,20 +151,20 @@ public: // Getters/setters
 	 * @param role Data role
 	 * @return Pixel selection modifier in variant form
 	 */
-	QVariant selectionModifier(const int& role) const;
+	QVariant getSelectionModifier(const int& role) const;
 
 	/**
 	 * Sets the pixel selection modifier
 	 * @param pixelSelectionModifier Pixel selection modifier
 	 */
-	void pixelSelectionModifier(const SelectionModifier& pixelSelectionModifier);
+	void getPixelSelectionModifier(const SelectionModifier& pixelSelectionModifier);
 
 	/**
 	 * Returns the brush radius
 	 * @param role Data role
 	 * @return Brush radius in variant form
 	 */
-	QVariant brushRadius(const int& role) const;
+	QVariant getBrushRadius(const int& role) const;
 
 	/**
 	 * Sets the brush radius
@@ -177,7 +177,7 @@ public: // Getters/setters
 	 * @param role Data role
 	 * @return whether auto zoom is enabled in variant form
 	 */
-	QVariant autoZoomToSelection(const int& role) const;
+	QVariant getAutoZoomToSelection(const int& role) const;
 
 	/**
 	 * Sets whether auto zoom is enabled
@@ -188,7 +188,7 @@ public: // Getters/setters
 protected:
 
 	/** Returns hints that pertain to the layer */
-	Hints hints() const override;
+	Hints getHints() const override;
 
 private: // Miscellaneous
 

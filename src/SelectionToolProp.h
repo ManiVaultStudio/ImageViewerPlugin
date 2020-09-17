@@ -36,7 +36,7 @@ public: // Rendering
 	void render(const QMatrix4x4& nodeMVP, const float& opacity) override;
 
 	/** Returns the bounding rectangle of the prop */
-	QRectF boundingRectangle() const override;
+	QRectF getBoundingRectangle() const override;
 
 public: // Pixel selection
 
@@ -47,7 +47,7 @@ public: // Pixel selection
 	void reset();
 
 	/** Returns the pixel selection in image format */
-	QImage selectionImage();
+	QImage getSelectionImage();
 
 protected: // Inherited
 

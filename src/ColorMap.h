@@ -13,40 +13,49 @@
  * @author Thomas Kroes
  */
 class ColorMap {
+
 public: // Enumerations
 
 	/**
-	* Color map type
-	* Defines the color map types
-	*/
+	 * Color map type
+	 * Defines the color map types
+	 */
 	enum class Type {
-		ZeroDimensional,	/** Zero-dimensional color map (solid color) */
+		ZeroDimensional,	/** Zero-dimensional color map (not in use at the moment) */
 		OneDimensional,		/** One-dimensional color map */
 		TwoDimensional		/** Two-dimensional color map */
 	};
 
-public:
-	/** (Default) constructor */
+public: // Construction/destruction
+
+	/** (Default) constructor
+	 * @param name Name of the color map
+	 * @param resourcePath Resource path of the color map image
+	 * @param name Color map type
+	 * @param image Color map image
+	 */
 	ColorMap(const QString& name = "", const QString& resourcePath = "", const Type& type = Type::OneDimensional, const QImage& image = QImage());
 
+public: // Getters
+
 	/** Returns the color map name */
-	QString name() const;
+	QString getName() const;
 
 	/** Returns the resource path */
-	QString resourcePath() const;
+	QString getResourcePath() const;
 
 	/** Returns the color map type */
-	Type type() const;
+	Type getType() const;
 
 	/** Returns the color map image */
-	QImage image() const;
+	QImage getImage() const;
 
 	/** Returns the number of dimensions */
-	int noDimensions() const;
+	int getNoDimensions() const;
 
 private:
-	QString		_name;				/** Name in the user interface */
-	QString		_resourcePath;		/** Resource path of the color image */
-	Type		_type;				/** Color map type */
-	QImage		_image;				/** Color map image */
+	const QString		_name;				/** Name in the user interface */
+	const QString		_resourcePath;		/** Resource path of the color image */
+	const Type			_type;				/** Color map type */
+	const QImage		_image;				/** Color map image */
 };

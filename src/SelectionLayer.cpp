@@ -56,7 +56,7 @@ void SelectionLayer::init()
 	_pointsDataset	= &imageViewerPlugin->requestData<Points>(_datasetName);
 	_dataName		= hdps::DataSet::getSourceData(*_pointsDataset).getDataName();
 
-	_indices.resize(noPixels());
+	_indices.resize(getNoPixels());
 
 	if (_pointsDataset->isFull()) {
 		if (_pointsDataset->isDerivedData()) {
@@ -74,7 +74,7 @@ void SelectionLayer::init()
 			}*/
 		}
 		else {
-			_indices.resize(noPixels());
+			_indices.resize(getNoPixels());
 			std::iota(std::begin(_indices), std::end(_indices), 0);
 		}
 	}
@@ -488,7 +488,7 @@ void SelectionLayer::handleEvent(QEvent* event, const QModelIndex& index)
 			}
 
 			if (shouldComputePixelSelection)
-				propByName<SelectionToolProp>("SelectionTool")->compute();
+				getPropByName<SelectionToolProp>("SelectionTool")->compute();
 
 			break;
 		}
@@ -572,13 +572,13 @@ void SelectionLayer::handleEvent(QEvent* event, const QModelIndex& index)
 
 				case Qt::Key::Key_Shift:
 				{
-					pixelSelectionModifier(SelectionModifier::Add);
+					getPixelSelectionModifier(SelectionModifier::Add);
 					break;
 				}
 
 				case Qt::Key::Key_Control:
 				{
-					pixelSelectionModifier(SelectionModifier::Remove);
+					getPixelSelectionModifier(SelectionModifier::Remove);
 					break;
 				}
 
@@ -656,7 +656,7 @@ void SelectionLayer::handleEvent(QEvent* event, const QModelIndex& index)
 				case Qt::Key::Key_Shift:
 				case Qt::Key::Key_Control:
 				{
-					pixelSelectionModifier(SelectionModifier::Replace);
+					getPixelSelectionModifier(SelectionModifier::Replace);
 
 					affectedIds << index.siblingAtColumn(ult(Column::PixelSelectionModifier));
 					break;
@@ -707,7 +707,7 @@ void SelectionLayer::subsetFromSelectionBounds()
 	*/
 }
 
-QSize SelectionLayer::imageSize() const
+QSize SelectionLayer::getImageSize() const
 {
 	if (_pointsDataset->isDerivedData()) {
 		auto sourcePointsDataset = hdps::DataSet::getSourceData<Points>(*_pointsDataset);
@@ -718,9 +718,9 @@ QSize SelectionLayer::imageSize() const
 	return _pointsDataset->getProperty("ImageSize", QSize()).toSize();
 }
 
-Qt::ItemFlags SelectionLayer::flags(const QModelIndex& index) const
+Qt::ItemFlags SelectionLayer::getFlags(const QModelIndex& index) const
 {
-	auto flags = Layer::flags(index);
+	auto flags = Layer::getFlags(index);
 
 	switch (static_cast<Column>(index.column())) {
 		case Column::PixelSelectionType:
@@ -745,7 +745,7 @@ Qt::ItemFlags SelectionLayer::flags(const QModelIndex& index) const
 
 		case Column::SelectAll:
 		{
-			if (_selection.count() < noPixels())
+			if (_selection.count() < getNoPixels())
 				flags |= Qt::ItemIsEditable;
 
 			break;
@@ -793,20 +793,20 @@ Qt::ItemFlags SelectionLayer::flags(const QModelIndex& index) const
 	return flags;
 }
 
-QVariant SelectionLayer::data(const QModelIndex& index, const int& role) const
+QVariant SelectionLayer::getData(const QModelIndex& index, const int& role) const
 {
 	if (index.column() < ult(Column::Start))
-		return Layer::data(index, role);
+		return Layer::getData(index, role);
 
 	switch (static_cast<Column>(index.column())) {
 		case Column::PixelSelectionType:
-			return pixelSelectionType(role);
+			return getPixelSelectionType(role);
 
 		case Column::PixelSelectionModifier:
-			return selectionModifier(role);
+			return getSelectionModifier(role);
 
 		case Column::BrushRadius:
-			return brushRadius(role);
+			return getBrushRadius(role);
 
 		case Column::SelectAll:
 		case Column::SelectNone:
@@ -814,14 +814,14 @@ QVariant SelectionLayer::data(const QModelIndex& index, const int& role) const
 			break;
 
 		case Column::AutoZoomToSelection:
-			return autoZoomToSelection(role);
+			return getAutoZoomToSelection(role);
 
 		case Column::ZoomToSelection:
 		case Column::CreateSubset:
 			break;
 
 		case Column::OverlayColor:
-			return overlayColor(role);
+			return getOverlayColor(role);
 
 		default:
 			break;
@@ -856,7 +856,7 @@ QModelIndexList SelectionLayer::setData(const QModelIndex& index, const QVariant
 
 		case Column::PixelSelectionModifier:
 		{
-			pixelSelectionModifier(static_cast<SelectionModifier>(value.toInt()));
+			getPixelSelectionModifier(static_cast<SelectionModifier>(value.toInt()));
 			break;
 		}
 
@@ -909,9 +909,9 @@ QModelIndexList SelectionLayer::setData(const QModelIndex& index, const QVariant
 	return affectedIds;
 }
 
-Layer::Hints SelectionLayer::hints() const
+Layer::Hints SelectionLayer::getHints() const
 {
-	auto result = Layer::hints();
+	auto result = Layer::getHints();
 
 	result << Hints({
 		Hint(),
@@ -982,7 +982,7 @@ Layer::Hints SelectionLayer::hints() const
 	return result;
 }
 
-QVariant SelectionLayer::overlayColor(const int& role) const
+QVariant SelectionLayer::getOverlayColor(const int& role) const
 {
 	const auto overlayColorString = QString("rgb(%1, %2, %3)").arg(QString::number(_overlayColor.red()), QString::number(_overlayColor.green()), QString::number(_overlayColor.blue()));
 
@@ -1009,7 +1009,7 @@ void SelectionLayer::setOverlayColor(const QColor& overlayColor)
 	_overlayColor = overlayColor;
 }
 
-QVariant SelectionLayer::pixelSelectionType(const int& role) const
+QVariant SelectionLayer::getPixelSelectionType(const int& role) const
 {
 	const auto pixelSelectionTypeString = selectionTypeName(_selectionType);
 
@@ -1038,7 +1038,7 @@ void SelectionLayer::setPixelSelectionType(const SelectionType& pixelSelectionTy
 	_mousePositions.clear();
 }
 
-QVariant SelectionLayer::selectionModifier(const int& role) const
+QVariant SelectionLayer::getSelectionModifier(const int& role) const
 {
 	const auto pixelSelectionModifierString = selectionModifierName(_selectionModifier);
 
@@ -1060,12 +1060,12 @@ QVariant SelectionLayer::selectionModifier(const int& role) const
 	return QVariant();
 }
 
-void SelectionLayer::pixelSelectionModifier(const SelectionModifier& pixelSelectionModifier)
+void SelectionLayer::getPixelSelectionModifier(const SelectionModifier& pixelSelectionModifier)
 {
 	_selectionModifier = pixelSelectionModifier;
 }
 
-QVariant SelectionLayer::brushRadius(const int& role) const
+QVariant SelectionLayer::getBrushRadius(const int& role) const
 {
 	const auto brushRadiusString = QString::number(_brushRadius, 'f', 1);
 
@@ -1092,7 +1092,7 @@ void SelectionLayer::setBrushRadius(const float& brushRadius)
 	_brushRadius = std::max(0.1f, brushRadius);
 }
 
-QVariant SelectionLayer::autoZoomToSelection(const int& role) const
+QVariant SelectionLayer::getAutoZoomToSelection(const int& role) const
 {
 	const auto autoZoomToSelectionString = _autoZoomToSelection ? "true" : "false";
 
@@ -1131,9 +1131,9 @@ void SelectionLayer::computeChannel(const ChannelIndex& channelIndex)
 		{
 			auto& selection = dynamic_cast<Points&>(imageViewerPlugin->core()->requestSelection(_pointsDataset->getDataName()));
 
-			auto& selectionChannel = (*channel(ult(ChannelIndex::Selection)));
+			auto& selectionChannel = (*getChannel(ult(ChannelIndex::Selection)));
 
-			selectionChannel.setImageSize(imageSize());
+			selectionChannel.setImageSize(getImageSize());
 			selectionChannel.fill(0);
 
 			for (auto selectionIndex : selection.indices) {
@@ -1161,7 +1161,7 @@ void SelectionLayer::selectAll()
 	auto& selection = dynamic_cast<Points&>(imageViewerPlugin->core()->requestSelection(_pointsDataset->getDataName()));
 
 	selection.indices.clear();
-	selection.indices.reserve(noPixels());
+	selection.indices.reserve(getNoPixels());
 
 	for (const auto& index : _indices) {
 		if (index > 0)
@@ -1202,9 +1202,9 @@ void SelectionLayer::invertSelection()
 
 	std::set<std::uint32_t> selectionSet(selection.indices.begin(), selection.indices.end());
 
-	selection.indices.resize(noPixels() - selectionSet.size());
+	selection.indices.resize(getNoPixels() - selectionSet.size());
 
-	const auto noPixels = this->noPixels();
+	const auto noPixels = this->getNoPixels();
 
 	for (int i = 0; i < noPixels; i++) {
 		if (_indices[i] >= 0 && selectionSet.count(i) == 0)
@@ -1225,14 +1225,14 @@ void SelectionLayer::publishSelection()
 {
 	auto timer = Timer("Publish selection");
 
-	const auto selectionImage = propByName<SelectionToolProp>("SelectionTool")->selectionImage().mirrored(false, true);
+	const auto selectionImage = getPropByName<SelectionToolProp>("SelectionTool")->getSelectionImage().mirrored(false, true);
 	
 	auto& selectionIndices	= dynamic_cast<Points&>(imageViewerPlugin->core()->requestSelection(_pointsDataset->getDataName())).indices;
 	auto& sourceIndices		= _pointsDataset->getSourceData<Points>(*_pointsDataset).indices;
 
 	const auto noComponents		= 4;
-	const auto width			= static_cast<float>(imageSize().width());
-	const auto noPixels			= this->noPixels();
+	const auto width			= static_cast<float>(getImageSize().width());
+	const auto noPixels			= this->getNoPixels();
 
 	auto index = 0;
 
@@ -1310,7 +1310,7 @@ void SelectionLayer::publishSelection()
 	else
 		imageViewerPlugin->core()->notifySelectionChanged(_pointsDataset->getDataName());
 
-	propByName<SelectionToolProp>("SelectionTool")->reset();
+	getPropByName<SelectionToolProp>("SelectionTool")->reset();
 }
 
 void SelectionLayer::computeSelectionBounds()
@@ -1328,10 +1328,10 @@ void SelectionLayer::computeSelectionBounds()
 		return;
 	}
 
-	auto& selectionChannel = (*channel(ult(ChannelIndex::Selection)));
+	auto& selectionChannel = (*getChannel(ult(ChannelIndex::Selection)));
 
-	const auto width = static_cast<float>(imageSize().width());
-	const auto height = static_cast<float>(imageSize().height());
+	const auto width = static_cast<float>(getImageSize().width());
+	const auto height = static_cast<float>(getImageSize().height());
 
 	std::vector<uint32_t> xCoordinates;
 	std::vector<uint32_t> yCoordinates;
@@ -1341,7 +1341,7 @@ void SelectionLayer::computeSelectionBounds()
 
 	for (auto selectionIndex : selection.indices) {
 		const int y = height - static_cast<std::int32_t>(floorf(selectionIndex / width));
-		const int x = width - (selectionIndex % imageSize().width());
+		const int x = width - (selectionIndex % getImageSize().width());
 
 		xCoordinates.push_back(x);
 		yCoordinates.push_back(y);
@@ -1352,7 +1352,7 @@ void SelectionLayer::computeSelectionBounds()
 
 	topLeft -= QVector3D(1.0f, 1.0f, 0.0f);
 
-	auto m = propByName<SelectionProp>("Selection")->modelMatrix();
+	const auto modelMatrix = getPropByName<SelectionProp>("Selection")->getModelMatrix();
 
-	_selectionBounds = QRect(renderer->worldPositionToScreenPoint(m * topLeft), renderer->worldPositionToScreenPoint(m * bottomRight));
+	_selectionBounds = QRect(renderer->getWorldPositionToScreenPoint(modelMatrix * topLeft), renderer->getWorldPositionToScreenPoint(modelMatrix * bottomRight));
 }

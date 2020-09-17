@@ -40,14 +40,14 @@ PointsProp::PointsProp(PointsLayer* pointsLayer, const QString& name) :
 	QObject::connect(pointsLayer, &PointsLayer::channelChanged, [this, pointsLayer](const std::uint32_t& channelId) {
 		renderer->bindOpenGLContext();
 		{
-			auto channel = pointsLayer->channel(channelId);
+			auto channel = pointsLayer->getChannel(channelId);
 
-			const auto imageSize = channel->imageSize();
+			const auto imageSize = channel->getImageSize();
 
 			if (!imageSize.isValid())
 				return;
 
-			auto texture = textureByName("Channels");
+			auto texture = getTextureByName("Channels");
 
 			if (!texture->isCreated())
 				texture->create();
@@ -66,11 +66,11 @@ PointsProp::PointsProp(PointsLayer* pointsLayer, const QString& name) :
 				texture->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
 			}
 
-			texture->setData(0, channel->id(), QOpenGLTexture::PixelFormat::Red, QOpenGLTexture::PixelType::Float32, channel->elements().data());
+			texture->setData(0, channel->getId(), QOpenGLTexture::PixelFormat::Red, QOpenGLTexture::PixelType::Float32, channel->getElements().data());
 
 			const auto rectangle = QRectF(QPointF(0.f, 0.f), QSizeF(static_cast<float>(imageSize.width()), static_cast<float>(imageSize.height())));
 
-			this->shapeByName<QuadShape>("Quad")->setRectangle(rectangle);
+			this->getShapeByName<QuadShape>("Quad")->setRectangle(rectangle);
 
 			updateModelMatrix();
 		}
@@ -83,7 +83,7 @@ PointsProp::PointsProp(PointsLayer* pointsLayer, const QString& name) :
 			if (colorMap.isNull())
 				return;
 
-			auto& texture = textureByName("ColorMap");
+			auto& texture = getTextureByName("ColorMap");
 			
 			texture.reset(new QOpenGLTexture(colorMap));
 
@@ -108,7 +108,7 @@ void PointsProp::initialize()
 		{
 			Prop::initialize();
 
-			const auto shaderProgram = shaderProgramByName("Quad");
+			const auto shaderProgram = getShaderProgramByName("Quad");
 
 			if (!shaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSource.c_str()))
 				throw std::runtime_error("Unable to compile quad vertex shader");
@@ -121,11 +121,11 @@ void PointsProp::initialize()
 
 			const auto stride = 5 * sizeof(GLfloat);
 
-			auto shape = shapeByName<QuadShape>("Quad");
+			auto shape = getShapeByName<QuadShape>("Quad");
 
 			if (shaderProgram->bind()) {
-				shape->vao().bind();
-				shape->vbo().bind();
+				shape->getVAO().bind();
+				shape->getVBO().bind();
 
 				shaderProgram->enableAttributeArray(QuadShape::_vertexAttribute);
 				shaderProgram->enableAttributeArray(QuadShape::_textureAttribute);
@@ -133,8 +133,8 @@ void PointsProp::initialize()
 				shaderProgram->setAttributeBuffer(QuadShape::_textureAttribute, GL_FLOAT, 3 * sizeof(GLfloat), 2, stride);
 				shaderProgram->release();
 
-				shape->vao().release();
-				shape->vbo().release();
+				shape->getVAO().release();
+				shape->getVBO().release();
 			}
 			else {
 				throw std::runtime_error("Unable to bind quad shader program");
@@ -161,33 +161,33 @@ void PointsProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 		
 		Prop::render(nodeMVP, opacity);
 
-		const auto shape			= shapeByName<QuadShape>("Quad");
-		const auto shaderProgram	= shaderProgramByName("Quad");
+		const auto shape			= getShapeByName<QuadShape>("Quad");
+		const auto shaderProgram	= getShaderProgramByName("Quad");
 
-		if (textureByName("ColorMap")->isCreated()) {
-			renderer->openGLContext()->functions()->glActiveTexture(GL_TEXTURE0);
-			textureByName("ColorMap")->bind();
+		if (getTextureByName("ColorMap")->isCreated()) {
+			renderer->getOpenGLContext()->functions()->glActiveTexture(GL_TEXTURE0);
+			getTextureByName("ColorMap")->bind();
 		}
 
-		if (textureByName("Channels")->isCreated()) {
-			renderer->openGLContext()->functions()->glActiveTexture(GL_TEXTURE1);
-			textureByName("Channels")->bind();
+		if (getTextureByName("Channels")->isCreated()) {
+			renderer->getOpenGLContext()->functions()->glActiveTexture(GL_TEXTURE1);
+			getTextureByName("Channels")->bind();
 		}
 
 		auto pointsLayer = static_cast<PointsLayer*>(_node);
 		
 		if (shaderProgram->bind()) {
 			const QVector2D displayRanges[] = {
-				pointsLayer->channel(0)->displayRangeVector(),
-				pointsLayer->channel(1)->displayRangeVector(),
-				pointsLayer->channel(2)->displayRangeVector()
+				pointsLayer->getChannel(0)->getDisplayRangeVector(),
+				pointsLayer->getChannel(1)->getDisplayRangeVector(),
+				pointsLayer->getChannel(2)->getDisplayRangeVector()
 			};
 
-			const auto noChannels		= pointsLayer->noChannels(Qt::EditRole).toInt();
-			const auto useConstantColor	= pointsLayer->useConstantColor(Qt::EditRole).toBool();
-			const auto constantColor	= pointsLayer->constantColor(Qt::EditRole).value<QColor>();
-			const auto colorSpace		= pointsLayer->colorSpace(Qt::EditRole).toInt();
-			const auto pointType		= pointsLayer->pointType(Qt::EditRole).toInt();
+			const auto noChannels		= pointsLayer->getNoChannels(Qt::EditRole).toInt();
+			const auto useConstantColor	= pointsLayer->getUseConstantColor(Qt::EditRole).toBool();
+			const auto constantColor	= pointsLayer->getConstantColor(Qt::EditRole).value<QColor>();
+			const auto colorSpace		= pointsLayer->getColorSpace(Qt::EditRole).toInt();
+			const auto pointType		= pointsLayer->getPointType(Qt::EditRole).toInt();
 
 			shaderProgram->setUniformValue("colorMapTexture", 0);
 			shaderProgram->setUniformValue("channelTextures", 1);
@@ -198,7 +198,7 @@ void PointsProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 			shaderProgram->setUniformValue("pointType", pointType);
 			shaderProgram->setUniformValueArray("displayRanges", displayRanges, 3);
 			shaderProgram->setUniformValue("opacity", opacity);
-			shaderProgram->setUniformValue("transform", nodeMVP * modelMatrix());
+			shaderProgram->setUniformValue("transform", nodeMVP * getModelMatrix());
 
 			shape->render();
 
@@ -208,11 +208,11 @@ void PointsProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 			throw std::runtime_error("Unable to bind quad shader program");
 		}
 
-		if (textureByName("Channels")->isCreated())
-			textureByName("Channels")->release();
+		if (getTextureByName("Channels")->isCreated())
+			getTextureByName("Channels")->release();
 
-		if (textureByName("ColorMap")->isCreated())
-			textureByName("ColorMap")->release();
+		if (getTextureByName("ColorMap")->isCreated())
+			getTextureByName("ColorMap")->release();
 	}
 	catch (std::exception& e)
 	{
@@ -223,11 +223,11 @@ void PointsProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 	}
 }
 
-QRectF PointsProp::boundingRectangle() const
+QRectF PointsProp::getBoundingRectangle() const
 {
-	auto rectangle = shapeByName<QuadShape>("Quad")->rectangle();
+	auto rectangle = getShapeByName<QuadShape>("Quad")->getRectangle();
 
-	rectangle.setSize(_node->scale(Qt::EditRole).toFloat() * rectangle.size());
+	rectangle.setSize(_node->getScale(Qt::EditRole).toFloat() * rectangle.size());
 
 	return rectangle;
 }
@@ -236,7 +236,7 @@ void PointsProp::updateModelMatrix()
 {
 	QMatrix4x4 modelMatrix;
 
-	const auto rectangle = shapeByName<QuadShape>("Quad")->rectangle();
+	const auto rectangle = getShapeByName<QuadShape>("Quad")->getRectangle();
 
 	modelMatrix.translate(-0.5f * rectangle.width(), -0.5f * rectangle.height(), 0.0f);
 

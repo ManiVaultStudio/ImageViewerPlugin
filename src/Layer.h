@@ -12,7 +12,6 @@
 class QPaintEvent;
 
 class ImageViewerPlugin;
-class Dataset;
 class Prop;
 
 /**
@@ -43,12 +42,12 @@ public:
 		}
 
 		/** Returns the hint title */
-		QString title() const {
+		QString getTitle() const {
 			return _title;
 		}
 
 		/** Returns the hint description */
-		QString description() const {
+		QString getDescription() const {
 			return _description;
 		}
 
@@ -58,9 +57,9 @@ public:
 		}
 
 	private:
-		QString	_title;				/** Title of the hint */
-		QString	_description;		/** The hint description */
-		bool	_active;			/** Whether the hint is active */
+		QString		_title;				/** Title of the hint */
+		QString		_description;		/** The hint description */
+		bool		_active;			/** Whether the hint is active */
 	};
 
 	using Hints = QVector<Hint>;
@@ -86,7 +85,7 @@ public:
 	};
 
 	/** Get string representation of layer column enumeration */
-	static QString columnName(const Column& column) {
+	static QString getColumnName(const Column& column) {
 		switch (column) {
 			case Column::Name:
 				return "Name";
@@ -142,7 +141,7 @@ public:
 	};
 
 	/** Get string representation of layer type enumeration */
-	static QString typeName(const Type& type) {
+	static QString getTypeName(const Type& type) {
 		switch (type)
 		{
 			case Type::Points:
@@ -161,6 +160,7 @@ public:
 	/**
 	 * Constructor
 	 * @param datasetName Name of the dataset
+	 * @param type Type of layer
 	 * @param id Layer identifier
 	 * @param name Layer name
 	 * @param flags Configuration bit flags
@@ -197,14 +197,14 @@ public: // Miscellaneous
 public: // MVC
 	
 	/** Returns the number of columns */
-	virtual int columnCount() const { return ult(Column::End) + 1; }
+	virtual int getColumnCount() const { return ult(Column::End) + 1; }
 
 	/**
 	 * Returns the item flags for the given model index
 	 * @param index Model index
 	 * @return Item flags for the index
 	 */
-	virtual Qt::ItemFlags flags(const QModelIndex& index) const;
+	virtual Qt::ItemFlags getFlags(const QModelIndex& index) const;
 
 	/**
 	 * Returns the data for the given model index and data role
@@ -212,7 +212,7 @@ public: // MVC
 	 * @param role Data role
 	 * @return Data in variant form
 	 */
-	virtual QVariant data(const QModelIndex& index, const int& role) const;
+	virtual QVariant getData(const QModelIndex& index, const int& role) const;
 
 	/**
 	 * Sets the data value for the given model index and data role
@@ -230,21 +230,21 @@ public: // Getters/setters
 	 * @param role The data role
 	 * @return Dataset name in variant form
 	 */
-	QVariant datasetName(const int& role) const;
+	QVariant getDatasetName(const int& role) const;
 
 	/**
 	 * Returns the data name
 	 * @param role The data role
 	 * @return Data name in variant form
 	 */
-	QVariant dataName(const int& role) const;
+	QVariant getDataName(const int& role) const;
 
 	/**
 	 * Returns the layer type
 	 * @param role The data role
 	 * @return Layer type in variant form
 	 */
-	QVariant type(const int& role) const;
+	QVariant getType(const int& role) const;
 
 	/**
 	 * Sets the layer type
@@ -257,28 +257,28 @@ public: // Getters/setters
 	 * @param role Data role
 	 * @return Image size in variant form
 	 */
-	QVariant imageSize(const int& role) const;
+	QVariant getImageSize(const int& role) const;
 
 	/**
 	 * Returns the width of the images in the dataset
 	 * @param role The data role
 	 * @return Image width in variant form
 	 */
-	QVariant imageWidth(const int& role) const;
+	QVariant getImageWidth(const int& role) const;
 
 	/**
 	 * Returns the height of the images in the dataset
 	 * @param role The data role
 	 * @return Image height in variant form
 	 */
-	QVariant imageHeight(const int& role) const;
+	QVariant getImageHeight(const int& role) const;
 
 	/**
 	 * Returns the data point selection
 	 * @param role The data role
 	 * @return Data point selection in variant form
 	 */
-	QVariant selection(const int& role = Qt::DisplayRole) const;
+	QVariant getSelection(const int& role = Qt::DisplayRole) const;
 
 	/**
 	 * Sets the data point selection
@@ -291,14 +291,14 @@ public: // Getters/setters
 	 * @param role The data role
 	 * @return Data point selection size in variant form
 	 */
-	QVariant selectionSize(const int& role = Qt::DisplayRole) const;
+	QVariant getSelectionSize(const int& role = Qt::DisplayRole) const;
 
 	/**
 	 * Returns the pressed keys
 	 * @param role The data role
 	 * @return Keys in variant form
 	 */
-	QVariant keys(const int& role = Qt::DisplayRole) const;
+	QVariant getKeys(const int& role = Qt::DisplayRole) const;
 
 	/**
 	 * Sets the keys
@@ -307,7 +307,7 @@ public: // Getters/setters
 	void setKeys(const int& keys);
 
 	/** Returns the recorded mouse event positions */
-	QVector<QPoint> mousePositions() const;
+	QVector<QPoint> getMousePositions() const;
 
 protected:
 	
@@ -315,16 +315,16 @@ protected:
 	 * Returns the image size
 	 * @return Image size
 	 */
-	virtual QSize imageSize() const = 0;
+	virtual QSize getImageSize() const = 0;
 
 	/**
 	 * Returns the number of pixels in the image
 	 * @return Number of pixels
 	 */
-	int noPixels() const;
+	int getNoPixels() const;
 
 	/** Returns hints that pertain to the layer */
-	virtual Hints hints() const;
+	virtual Hints getHints() const;
 
 	/**
 	 * Draws the layer title

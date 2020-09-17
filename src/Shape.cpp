@@ -16,9 +16,9 @@ Shape::Shape(Prop* prop, const QString& name) :
 
 Shape::~Shape() = default;
 
-QString Shape::fullName()
+QString Shape::getFullName()
 {
-	return QString("%2::%3").arg(prop()->name(), _name);
+	return QString("%2::%3").arg(getProp()->name(), _name);
 }
 
 void Shape::initialize()
@@ -49,7 +49,7 @@ void Shape::render()
 	//qDebug() << "Render" << fullName();
 }
 
-QString Shape::name() const
+QString Shape::getName() const
 {
 	return _name;
 }
@@ -59,14 +59,14 @@ void Shape::setName(const QString& name)
 	if (name == _name)
 		return;
 
-	const auto oldName = fullName();
+	const auto oldName = getFullName();
 
 	_name = name;
 
-	qDebug() << "Rename" << oldName << "to" << fullName();
+	qDebug() << "Rename" << oldName << "to" << getFullName();
 }
 
-Prop* Shape::prop()
+Prop* Shape::getProp()
 {
 	return _prop;
 }

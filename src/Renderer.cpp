@@ -107,46 +107,46 @@ void Renderer::setInteractionMode(const InteractionMode& interactionMode)
 	_interactionMode = interactionMode;
 }
 
-QVector3D Renderer::screenPointToWorldPosition(const QMatrix4x4& modelViewMatrix, const QPoint& screenPoint) const
+QVector3D Renderer::getScreenPointToWorldPosition(const QMatrix4x4& modelViewMatrix, const QPoint& screenPoint) const
 {
-	return QVector3D(screenPoint.x(), parentWidgetSize().height()- screenPoint.y(), 0).unproject(modelViewMatrix, projectionMatrix(), QRect(0, 0, parentWidgetSize().width(), parentWidgetSize().height()));
+	return QVector3D(screenPoint.x(), getParentWidgetSize().height()- screenPoint.y(), 0).unproject(modelViewMatrix, getProjectionMatrix(), QRect(0, 0, getParentWidgetSize().width(), getParentWidgetSize().height()));
 }
 
-QVector2D Renderer::worldPositionToNormalizedScreenPoint(const QVector3D& position) const
+QVector2D Renderer::getWorldPositionToNormalizedScreenPoint(const QVector3D& position) const
 {
-	const auto clipSpacePos = projectionMatrix() * (viewMatrix() * QVector4D(position, 1.0));
+	const auto clipSpacePos = getProjectionMatrix() * (getViewMatrix() * QVector4D(position, 1.0));
 	return (clipSpacePos.toVector3D() / clipSpacePos.w()).toVector2D();
 }
 
-QPoint Renderer::worldPositionToScreenPoint(const QVector3D& position) const
+QPoint Renderer::getWorldPositionToScreenPoint(const QVector3D& position) const
 {
-	const auto normalizedScreenPoint	= worldPositionToNormalizedScreenPoint(position);
-	const auto viewSize					= QVector2D(parentWidgetSize().width(), parentWidgetSize().height());
+	const auto normalizedScreenPoint	= getWorldPositionToNormalizedScreenPoint(position);
+	const auto viewSize					= QVector2D(getParentWidgetSize().width(), getParentWidgetSize().height());
 
 	return (viewSize * ((QVector2D(1.0f, 1.0f) + normalizedScreenPoint) / 2.0f)).toPoint();
 }
 
-QVector2D Renderer::screenPointToNormalizedScreenPoint(const QVector2D& screenPoint) const
+QVector2D Renderer::getScreenPointToNormalizedScreenPoint(const QVector2D& screenPoint) const
 {
-	const auto viewSize = QVector2D(parentWidgetSize().width(), parentWidgetSize().height());
-	return QVector2D(-1.f, -1.f) + 2.f * (QVector2D(screenPoint.x(), parentWidgetSize().height() - screenPoint.y()) / viewSize);
+	const auto viewSize = QVector2D(getParentWidgetSize().width(), getParentWidgetSize().height());
+	return QVector2D(-1.f, -1.f) + 2.f * (QVector2D(screenPoint.x(), getParentWidgetSize().height() - screenPoint.y()) / viewSize);
 }
 
-QMatrix4x4 Renderer::screenToNormalizedScreenMatrix() const
+QMatrix4x4 Renderer::getScreenToNormalizedScreenMatrix() const
 {
 	QMatrix4x4 translate, scale;
 
 	translate.translate(-1.0f, -1.0f, 0.0f);
-	scale.scale(2.0f / static_cast<float>(parentWidgetSize().width()), 2.0f / static_cast<float>(parentWidgetSize().height()), 1.0f);
+	scale.scale(2.0f / static_cast<float>(getParentWidgetSize().width()), 2.0f / static_cast<float>(getParentWidgetSize().height()), 1.0f);
 	
 	return translate * scale;
 }
 
-QMatrix4x4 Renderer::normalizedScreenToScreenMatrix() const
+QMatrix4x4 Renderer::getNormalizedScreenToScreenMatrix() const
 {
 	QMatrix4x4 translate, scale;
 
-	const auto size		= QSizeF(parentWidgetSize());
+	const auto size		= QSizeF(getParentWidgetSize());
 	const auto halfSize = 0.5f * size;
 
 	
@@ -156,7 +156,7 @@ QMatrix4x4 Renderer::normalizedScreenToScreenMatrix() const
 	return translate * scale;// *;
 }
 
-QMatrix4x4 Renderer::viewMatrix() const
+QMatrix4x4 Renderer::getViewMatrix() const
 {
 	QMatrix4x4 lookAt, scale;
 
@@ -166,9 +166,9 @@ QMatrix4x4 Renderer::viewMatrix() const
 	return scale * lookAt;
 }
 
-QMatrix4x4 Renderer::projectionMatrix() const
+QMatrix4x4 Renderer::getProjectionMatrix() const
 {
-	const auto halfSize = parentWidgetSize() / 2;
+	const auto halfSize = getParentWidgetSize() / 2;
 
 	QMatrix4x4 matrix;
 
@@ -206,7 +206,7 @@ void Renderer::zoomAround(const QPoint& screenPoint, const float& factor)
 
 	qDebug() << "Zoom around" << screenPoint << "by" << factor;
 
-	const auto pWorld		= screenPointToWorldPosition(viewMatrix(), screenPoint);
+	const auto pWorld		= getScreenPointToWorldPosition(getViewMatrix(), screenPoint);
 	const auto pAnchor		= pWorld.toVector2D();
 	const auto pPanOld		= _pan;
 	const auto vPanOld		= pPanOld - pAnchor;
@@ -226,8 +226,8 @@ void Renderer::zoomToRectangle(const QRectF& rectangle)
 	resetView();
 
 	const auto center	= rectangle.center();
-	const auto factorX	= (parentWidgetSize().width() - 2 * _margin) / static_cast<float>(rectangle.width());
-	const auto factorY	= (parentWidgetSize().height() - 2 * _margin) / static_cast<float>(rectangle.height());
+	const auto factorX	= (getParentWidgetSize().width() - 2 * _margin) / static_cast<float>(rectangle.width());
+	const auto factorY	= (getParentWidgetSize().height() - 2 * _margin) / static_cast<float>(rectangle.height());
 	
 	zoomBy(factorX < factorY ? factorX : factorY);
 }
@@ -258,15 +258,15 @@ void Renderer::resetView()
 
 void Renderer::bindOpenGLContext()
 {
-	parentWidget()->makeCurrent();
+	getParentWidget()->makeCurrent();
 }
 
 void Renderer::releaseOpenGLContext()
 {
-	parentWidget()->doneCurrent();
+	getParentWidget()->doneCurrent();
 }
 
-QMenu* Renderer::viewMenu()
+QMenu* Renderer::getViewMenu()
 {
 	auto* menu = new QMenu("View");
 
@@ -296,18 +296,18 @@ QMenu* Renderer::viewMenu()
 	return menu;
 }
 
-QMenu* Renderer::contextMenu()
+QMenu* Renderer::getContextMenu()
 {
 	auto* menu = new QMenu("Context");
 
-	menu->addMenu(viewMenu());
+	menu->addMenu(getViewMenu());
 	menu->addSeparator();
 	//menu->addMenu(selectionPickerActor()->contextMenu());
 
 	return menu;
 }
 
-bool Renderer::allowsContextMenu()
+bool Renderer::getAllowsContextMenu()
 {
 	auto showContextMenu = false;
 
@@ -336,17 +336,17 @@ bool Renderer::allowsContextMenu()
 	return false;
 }
 
-QOpenGLWidget* Renderer::parentWidget() const
+QOpenGLWidget* Renderer::getParentWidget() const
 {
 	return dynamic_cast<QOpenGLWidget*>(parent());
 }
 
-QOpenGLContext* Renderer::openGLContext() const
+QOpenGLContext* Renderer::getOpenGLContext() const
 {
-	return parentWidget()->context();
+	return getParentWidget()->context();
 }
 
-QSize Renderer::parentWidgetSize() const
+QSize Renderer::getParentWidgetSize() const
 {
-	return parentWidget()->size();
+	return getParentWidget()->size();
 }

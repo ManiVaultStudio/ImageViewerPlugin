@@ -8,30 +8,29 @@ ColorMap::ColorMap(const QString& name /*= ""*/, const QString& resourcePath /*=
 	_type(type),
 	_image(image)
 {
-
 }
 
-QString ColorMap::name() const
+QString ColorMap::getName() const
 {
 	return _name;
 }
 
-QString ColorMap::resourcePath() const
+QString ColorMap::getResourcePath() const
 {
 	return _resourcePath;
 }
 
-ColorMap::Type ColorMap::type() const
+ColorMap::Type ColorMap::getType() const
 {
 	return _type;
 }
 
-QImage ColorMap::image() const
+QImage ColorMap::getImage() const
 {
 	return _image;
 }
 
-int ColorMap::noDimensions() const
+int ColorMap::getNoDimensions() const
 {
 	return ult(_type);
 }

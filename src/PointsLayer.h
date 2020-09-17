@@ -20,7 +20,7 @@ class PointsLayer : public Layer, public virtual Channels<float>
 
 public: // Enumerations
 
-	/** TODO */
+	/** Channel index enumerations */
 	enum class ChannelIndex {
 		Channel1,		/** Channel 1 */
 		Channel2,		/** Channel 2 */
@@ -30,13 +30,13 @@ public: // Enumerations
 		Count = Mask + 1
 	};
 
-	/** TODO */
+	/** Point types enumerations */
 	enum class PointType {
 		Intensity,		/** Intensity (color images) */
 		Index			/** Index (index images) */
 	};
 
-	/** TODO */
+	/** Pixel type name */
 	static QString pixelTypeName(const PointType& pixelType)
 	{
 		switch (pixelType)
@@ -54,7 +54,7 @@ public: // Enumerations
 		return QString();
 	}
 
-	/**  Columns */
+	/** Columns */
 	enum class Column {
 		DimensionNames = ult(Layer::Column::End) + 1,	/** Dimension names */
 		Channel1Name,									/** First input channel name */
@@ -127,14 +127,14 @@ public: // Miscellaneous
 public: // Inherited MVC
 
 	/** Returns the number of columns */
-	int columnCount() const override { return ult(Column::End) + 1; }
+	int getColumnCount() const override { return ult(Column::End) + 1; }
 
 	/**
 	 * Returns the item flags for the given model index
 	 * @param index Model index
 	 * @return Item flags for the index
 	 */
-	Qt::ItemFlags flags(const QModelIndex& index) const override;
+	Qt::ItemFlags getFlags(const QModelIndex& index) const override;
 
 	/**
 	 * Returns the data for the given model index and data role
@@ -142,7 +142,7 @@ public: // Inherited MVC
 	 * @param role Data role
 	 * @return Data in variant form
 	 */
-	QVariant data(const QModelIndex& index, const int& role) const override;
+	QVariant getData(const QModelIndex& index, const int& role) const override;
 
 	/**
 	 * Sets the data value for the given model index and data role
@@ -160,7 +160,7 @@ public: // Getters/setters
 	 * @param role Data role
 	 * @return Number of points in the dataset in variant form
 	 */
-	QVariant noPoints(const int& role = Qt::DisplayRole) const;
+	QVariant getNoPoints(const int& role = Qt::DisplayRole) const;
 
 	/**
 	 * Sets the number of points in the dataset
@@ -173,7 +173,7 @@ public: // Getters/setters
 	 * @param role Data role
 	 * @return Number of dimensions in the dataset in variant form
 	 */
-	QVariant noDimensions(const int& role = Qt::DisplayRole) const;
+	QVariant getNoDimensions(const int& role = Qt::DisplayRole) const;
 
 	/**
 	 * Sets the number of dimensions in the dataset
@@ -186,7 +186,7 @@ public: // Getters/setters
 	 * @param role Data role
 	 * @return Dimension names in variant form
 	 */
-	QVariant dimensionNames(const int& role = Qt::DisplayRole) const;
+	QVariant getDimensionNames(const int& role = Qt::DisplayRole) const;
 
 	/**
 	 * Sets the dimension names
@@ -200,7 +200,7 @@ public: // Getters/setters
 	 * @param role Data role
 	 * @return Whether a channel is enabled in variant form
 	 */
-	QVariant channelEnabled(const ChannelIndex& channelIndex, const int& role = Qt::DisplayRole) const;
+	QVariant getChannelEnabled(const ChannelIndex& channelIndex, const int& role = Qt::DisplayRole) const;
 
 	/**
 	 * Sets whether a channel is enabled
@@ -215,7 +215,7 @@ public: // Getters/setters
 	 * @param role Data role
 	 * @return Channel window in variant form
 	 */
-	QVariant channelWindow(const ChannelIndex& channelIndex, const int& role = Qt::DisplayRole) const;
+	QVariant getChannelWindow(const ChannelIndex& channelIndex, const int& role = Qt::DisplayRole) const;
 
 	/**
 	 * Sets the channel window
@@ -230,7 +230,7 @@ public: // Getters/setters
 	 * @param role Data role
 	 * @return Channel level in variant form
 	 */
-	QVariant channelLevel(const ChannelIndex& channelIndex, const int& role = Qt::DisplayRole) const;
+	QVariant getChannelLevel(const ChannelIndex& channelIndex, const int& role = Qt::DisplayRole) const;
 
 	/**
 	 * Sets the channel level
@@ -245,7 +245,7 @@ public: // Getters/setters
 	 * @param role Data role
 	 * @return Channel name in variant form
 	 */
-	QVariant channelName(const ChannelIndex& channelIndex, const int& role = Qt::DisplayRole) const;
+	QVariant getChannelName(const ChannelIndex& channelIndex, const int& role = Qt::DisplayRole) const;
 
 	/**
 	 * Sets a channel dimension identifier
@@ -260,7 +260,7 @@ public: // Getters/setters
 	 * @param role Data role
 	 * @return Channel identifier in variant form
 	 */
-	QVariant channelDimensionId(const ChannelIndex& channelIndex, const int& role = Qt::DisplayRole) const;
+	QVariant getChannelDimensionId(const ChannelIndex& channelIndex, const int& role = Qt::DisplayRole) const;
 
 	/**
 	 * Sets a channel dimension identifier
@@ -274,7 +274,7 @@ public: // Getters/setters
 	 * @param role Data role
 	 * @return Maximum number of channels in variant form
 	 */
-	QVariant maxNoChannels(const int& role = Qt::DisplayRole) const;
+	QVariant getMaxNoChannels(const int& role = Qt::DisplayRole) const;
 
 	/**
 	 * Sets the maximum number of channels
@@ -287,14 +287,14 @@ public: // Getters/setters
 	 * @param role Data role
 	 * @return Number of channels in variant form
 	 */
-	QVariant noChannels(const int& role = Qt::DisplayRole) const;
+	QVariant getNoChannels(const int& role = Qt::DisplayRole) const;
 
 	/**
 	 * Returns the color space
 	 * @param role Data role
 	 * @return Color space in variant form
 	 */
-	QVariant colorSpace(const int& role) const;
+	QVariant getColorSpace(const int& role) const;
 
 	/**
 	 * Sets the color space
@@ -307,7 +307,7 @@ public: // Getters/setters
 	 * @param role Data role
 	 * @return Color map image in variant form
 	 */
-	QVariant colorMap(const int& role) const;
+	QVariant getColorMap(const int& role) const;
 
 	/**
 	 * Sets the color map image
@@ -320,7 +320,7 @@ public: // Getters/setters
 	 * @param role Data role
 	 * @return Whether to shade using constant color in variant form
 	 */
-	QVariant useConstantColor(const int& role) const;
+	QVariant getUseConstantColor(const int& role) const;
 
 	/**
 	 * Sets whether to shade using constant color
@@ -333,7 +333,7 @@ public: // Getters/setters
 	 * @param role Data role
 	 * @return Constant color in variant form
 	 */
-	QVariant constantColor(const int& role) const;
+	QVariant getConstantColor(const int& role) const;
 
 	/**
 	 * Sets the constant color
@@ -346,7 +346,7 @@ public: // Getters/setters
 	 * @param role Data role
 	 * @return Point type in variant form
 	 */
-	QVariant pointType(const int& role = Qt::DisplayRole) const;
+	QVariant getPointType(const int& role = Qt::DisplayRole) const;
 
 	/**
 	 * Sets the point type
@@ -359,14 +359,14 @@ public: // Getters/setters
 	 * @param role Data role
 	 * @return Name of the index selection dataset in variant form
 	 */
-	QVariant indexSelectionDatasetName(const int& role = Qt::DisplayRole) const;
+	QVariant getIndexSelectionDatasetName(const int& role = Qt::DisplayRole) const;
 
 	/**
 	 * Returns the name of the index selection raw data
 	 * @param role Data role
 	 * @return Name of the index selection raw data in variant form
 	 */
-	QVariant indexSelectionDataName(const int& role = Qt::DisplayRole) const;
+	QVariant getIndexSelectionDataName(const int& role = Qt::DisplayRole) const;
 
 	/**
 	 * Sets the name of the index selection dataset
@@ -379,7 +379,7 @@ public: // Getters/setters
 	 * @param role Data role
 	 * @return Selection of the indices dataset in variant form
 	 */
-	QVariant indicesSelection(const int& role = Qt::DisplayRole) const;
+	QVariant getIndicesSelection(const int& role = Qt::DisplayRole) const;
 
 public:
 
@@ -387,13 +387,13 @@ public:
 	* Returns the image size
 	* @return Image size in variant form
 	*/
-	QSize imageSize() const override;
+	QSize getImageSize() const override;
 
 	/** Returns the image collection type */
-	std::int32_t imageCollectionType() const;
+	std::int32_t getImageCollectionType() const;
 
 	/** Returns hints that pertain to the layer */
-	Hints hints() const override;
+	Hints getHints() const override;
 
 private:
 
