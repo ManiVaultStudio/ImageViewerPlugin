@@ -7,7 +7,7 @@ Range::Range(const float& min /*= 0.0f*/, const float& max /*= 0.0f*/) :
 
 }
 
-float Range::min() const
+float Range::getMin() const
 {
 	return _min;
 }
@@ -17,7 +17,7 @@ void Range::setMin(const float& min)
 	_min = std::min(min, _max);
 }
 
-float Range::max() const
+float Range::getMax() const
 {
 	return _max;
 }
@@ -39,7 +39,7 @@ void Range::setFullRange()
 	_min = std::numeric_limits<float>::max();
 }
 
-float Range::length() const
+float Range::getLength() const
 {
 	return _max - _min;
 }

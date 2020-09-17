@@ -157,7 +157,7 @@ public:
 	/** Returns the display range in vector format */
 	QVector2D getDisplayRangeVector() const
 	{
-		return QVector2D(getDisplayRange().min(), getDisplayRange().max());
+		return QVector2D(getDisplayRange().getMin(), getDisplayRange().getMax());
 	}
 
 	/** Returns the normalized window */
@@ -245,13 +245,13 @@ public:
 	{
 		//qDebug() << "Compute display range";
 
-		const auto maxWindow = _range.length();
+		const auto maxWindow = _range.getLength();
 
-		_level		= std::clamp(_range.min() + (_levelNormalized * maxWindow), _range.min(), _range.max());
-		_window		= std::clamp(_windowNormalized * maxWindow, _range.min(), _range.max());
+		_level		= std::clamp(_range.getMin() + (_levelNormalized * maxWindow), _range.getMin(), _range.getMax());
+		_window		= std::clamp(_windowNormalized * maxWindow, _range.getMin(), _range.getMax());
 
-		_displayRange.setMin(std::clamp(_level - (_window / 2.0f), _range.min(), _range.max()));
-		_displayRange.setMax(std::clamp(_level + (_window / 2.0f), _range.min(), _range.max()));
+		_displayRange.setMin(std::clamp(_level - (_window / 2.0f), _range.getMin(), _range.getMax()));
+		_displayRange.setMax(std::clamp(_level + (_window / 2.0f), _range.getMin(), _range.getMax()));
 	}
 
 	/**
