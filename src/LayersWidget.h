@@ -59,13 +59,13 @@ private: // Drag and drop
 private: // Miscellaneous
 
 	/** Returns the datasets model */
-	DatasetsModel* datasetsModel();
+	DatasetsModel* getDatasetsModel();
 
 	/** Returns the layers model */
-	LayersModel& layersModel();
+	LayersModel& getLayersModel();
 
 	/** Returns the layers selection model */
-	QItemSelectionModel& layersSelectionModel();
+	QItemSelectionModel& getLayersSelectionModel();
 
 private:
 	ImageViewerPlugin*					_imageViewerPlugin;		/** Pointer to the image viewer plugin */
