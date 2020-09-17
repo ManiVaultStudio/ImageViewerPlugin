@@ -84,7 +84,7 @@ bool LayersModel::setData(const int& row, const int& column, const QVariant& val
 
 Qt::ItemFlags LayersModel::flags(const QModelIndex& index) const
 {
-	return getLayer(index)->flags(index);
+	return getLayer(index)->getFlags(index);
 }
 
 Qt::ItemFlags LayersModel::flags(const int& row, const int& column) const
@@ -126,7 +126,7 @@ QModelIndex LayersModel::index(int row, int column, const QModelIndex &parent) c
 	if (!parentLayer)
 		return QModelIndex();
 
-	auto childLayer = parentLayer->child(row);
+	auto childLayer = parentLayer->getChild(row);
 
 	if (childLayer)
 		return createIndex(row, column, childLayer);
@@ -156,12 +156,12 @@ QModelIndex LayersModel::parent(const QModelIndex &index) const
 		return QModelIndex();
 
 	auto childLayer		= getLayer(index);
-	auto parentLayer	= childLayer ? childLayer->parent() : nullptr;
+	auto parentLayer	= childLayer ? childLayer->getParent() : nullptr;
 
 	if (parentLayer == _root || !parentLayer)
 		return QModelIndex();
 
-	return createIndex(parentLayer->childIndex(), 0, parentLayer);
+	return createIndex(parentLayer->getChildIndex(), 0, parentLayer);
 }
 
 bool LayersModel::removeLayers(const QModelIndexList& indices)
@@ -203,7 +203,7 @@ bool LayersModel::moveLayer(const QModelIndex& sourceParent, const int& sourceRo
 		if (beginMoveRows(sourceParent, sourceRow, sourceRow, targetParent, targetRow)) {
 			auto sourceParentLayer	= getLayer(sourceParent);
 			auto targetParentLayer	= getLayer(targetParent);
-			auto sourceLayer		= sourceParentLayer->child(sourceRow);
+			auto sourceLayer		= sourceParentLayer->getChild(sourceRow);
 
 			sourceParentLayer->removeChild(sourceRow, false);
 			targetParentLayer->insertChild(targetRow > sourceRow ? targetRow - 1 : targetRow, sourceLayer);
@@ -215,7 +215,7 @@ bool LayersModel::moveLayer(const QModelIndex& sourceParent, const int& sourceRo
 		if (beginMoveRows(sourceParent, sourceRow, sourceRow, targetParent, targetRow)) {
 			auto sourceParentLayer	= getLayer(sourceParent);
 			auto targetParentLayer	= getLayer(targetParent);
-			auto sourceLayer		= sourceParentLayer->child(sourceRow);
+			auto sourceLayer		= sourceParentLayer->getChild(sourceRow);
 
 			sourceParentLayer->removeChild(sourceRow, false);
 			targetParentLayer->insertChild(targetRow, sourceLayer);
@@ -262,7 +262,7 @@ int LayersModel::rowCount(const QModelIndex& parent /*= QModelIndex()*/) const
 {
 	const auto parentLayer = getLayer(parent);
 
-	return parentLayer ? parentLayer->childCount() : 0;
+	return parentLayer ? parentLayer->getChildCount() : 0;
 }
 
 QStringList LayersModel::mimeTypes() const

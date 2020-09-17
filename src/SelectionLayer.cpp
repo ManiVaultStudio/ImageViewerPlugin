@@ -718,9 +718,9 @@ QSize SelectionLayer::getImageSize() const
 	return _pointsDataset->getProperty("ImageSize", QSize()).toSize();
 }
 
-Qt::ItemFlags SelectionLayer::flags(const QModelIndex& index) const
+Qt::ItemFlags SelectionLayer::getFlags(const QModelIndex& index) const
 {
-	auto flags = Layer::flags(index);
+	auto flags = Layer::getFlags(index);
 
 	switch (static_cast<Column>(index.column())) {
 		case Column::PixelSelectionType:

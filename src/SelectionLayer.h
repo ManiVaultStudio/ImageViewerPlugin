@@ -99,7 +99,7 @@ public: // Inherited
 	 * @param index Model index
 	 * @return Item flags for the index
 	 */
-	Qt::ItemFlags flags(const QModelIndex& index) const override;
+	Qt::ItemFlags getFlags(const QModelIndex& index) const override;
 
 	/**
 	 * Returns the data for the given model index and data role

@@ -200,9 +200,9 @@ void LayersWidget::dropEvent(QDropEvent* dropEvent)
 		if (largestImageSize.isValid())
 			pointsLayer->matchScaling(largestImageSize);
 
-		qDebug() << pointsLayer->imageCollectionType();
+		qDebug() << pointsLayer->getImageCollectionType();
 
-		if (pointsLayer->imageCollectionType() == ult(ImageData::Type::Stack) && createSelectionLayer) {
+		if (pointsLayer->getImageCollectionType() == ult(ImageData::Type::Stack) && createSelectionLayer) {
 			auto selectionLayer = new SelectionLayer(datasetName, selectionName, selectionName, layerFlags);
 
 			selectionLayer->setOpacity(0.8f);

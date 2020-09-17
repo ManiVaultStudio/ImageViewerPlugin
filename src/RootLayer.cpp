@@ -19,9 +19,9 @@ void RootLayer::paint(QPainter* painter)
 {
 }
 
-Qt::ItemFlags RootLayer::flags(const QModelIndex& index) const
+Qt::ItemFlags RootLayer::getFlags(const QModelIndex& index) const
 {
-	auto flags = Layer::flags(index);
+	auto flags = Layer::getFlags(index);
 
 	/*
 	switch (static_cast<Column>(index.column())) {

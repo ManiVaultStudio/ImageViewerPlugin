@@ -44,7 +44,7 @@ public: // Inherited MVC
 	int columnCount() const override { return ult(Column::End) + 1; }
 
 	/** TODO */
-	Qt::ItemFlags flags(const QModelIndex& index) const override;
+	Qt::ItemFlags getFlags(const QModelIndex& index) const override;
 
 	/** TODO */
 	QVariant data(const QModelIndex& index, const int& role) const override;

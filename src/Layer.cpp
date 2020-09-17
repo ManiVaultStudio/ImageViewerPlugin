@@ -52,7 +52,7 @@ void Layer::zoomExtents()
 	renderer->zoomToRectangle(getBoundingRectangle());
 }
 
-Qt::ItemFlags Layer::flags(const QModelIndex& index) const
+Qt::ItemFlags Layer::getFlags(const QModelIndex& index) const
 {
 	Qt::ItemFlags flags = Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled;
 
@@ -63,7 +63,7 @@ Qt::ItemFlags Layer::flags(const QModelIndex& index) const
 		{
 			flags |= Qt::ItemIsUserCheckable;
 
-			if (flag(Layer::Flag::Renamable, Qt::EditRole).toBool())
+			if (getFlag(Layer::Flag::Renamable, Qt::EditRole).toBool())
 				flags |= Qt::ItemIsEditable;
 
 			break;
@@ -104,7 +104,7 @@ QVariant Layer::data(const QModelIndex& index, const int& role) const
 {
 	switch (static_cast<Column>(index.column())) {
 		case Column::Name:
-			return name(role);
+			return getName(role);
 
 		case Column::DatasetName:
 			return datasetName(role);
@@ -116,7 +116,7 @@ QVariant Layer::data(const QModelIndex& index, const int& role) const
 			return type(role);
 
 		case Column::ID:
-			return id(role);
+			return getID(role);
 
 		case Column::ImageSize:
 			return getImageSize(role);
@@ -134,7 +134,7 @@ QVariant Layer::data(const QModelIndex& index, const int& role) const
 			return getScale(role);
 
 		case Column::Flags:
-			return Node::flags(role);
+			return Node::getFlags(role);
 
 		case Column::Selection:
 			return selection(role);

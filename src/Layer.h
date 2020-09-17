@@ -204,7 +204,7 @@ public: // MVC
 	 * @param index Model index
 	 * @return Item flags for the index
 	 */
-	virtual Qt::ItemFlags flags(const QModelIndex& index) const;
+	virtual Qt::ItemFlags getFlags(const QModelIndex& index) const;
 
 	/**
 	 * Returns the data for the given model index and data role

@@ -12,9 +12,9 @@ void GroupLayer::paint(QPainter* painter)
 {
 }
 
-Qt::ItemFlags GroupLayer::flags(const QModelIndex& index) const
+Qt::ItemFlags GroupLayer::getFlags(const QModelIndex& index) const
 {
-	auto flags = Layer::flags(index);
+	auto flags = Layer::getFlags(index);
 
 	/*
 	switch (static_cast<Column>(index.column())) {
