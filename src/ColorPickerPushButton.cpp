@@ -22,14 +22,14 @@ ColorPickerPushButton::ColorPickerPushButton(QWidget* parent) :
 	});
 }
 
-QColor ColorPickerPushButton::currentColor() const
+QColor ColorPickerPushButton::getCurrentColor() const
 {
 	return _colorDialog->currentColor();
 }
 
 void ColorPickerPushButton::setCurrentColor(const QColor& color)
 {
-	if (color != currentColor())
+	if (color != getCurrentColor())
 		_colorDialog->setCurrentColor(color);
 
 	auto icon = QPixmap(_iconSize);

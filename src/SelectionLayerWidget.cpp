@@ -106,21 +106,21 @@ void SelectionLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 	});
 }
 
-void SelectionLayerWidget::updateData(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>& roles /*= QVector<int>()*/)
+void SelectionLayerWidget::updateData(const QModelIndex& begin, const QModelIndex& end, const QVector<int>& roles /*= QVector<int>()*/)
 {
 	const auto selectedRows		= _layersModel->selectionModel().selectedRows();
 	const auto noSelectedRows	= selectedRows.size();
-	const auto enabled			= _layersModel->data(topLeft.siblingAtColumn(ult(Layer::Column::Name)), Qt::CheckStateRole).toBool();
+	const auto enabled			= _layersModel->data(begin.siblingAtColumn(ult(Layer::Column::Name)), Qt::CheckStateRole).toBool();
 
-	for (int column = topLeft.column(); column <= bottomRight.column(); column++) {
-		const auto index = _layersModel->index(topLeft.row(), column);
+	for (int column = begin.column(); column <= end.column(); column++) {
+		const auto index = _layersModel->index(begin.row(), column);
 
 		auto validSelection = false;
 		auto flags = 0;
 
 		if (index.isValid() && noSelectedRows == 1) {
 			validSelection = true;
-			flags = _layersModel->data(topLeft.row(), ult(Layer::Column::Flags), Qt::EditRole).toInt();
+			flags = _layersModel->data(begin.row(), ult(Layer::Column::Flags), Qt::EditRole).toInt();
 		}
 
 		const auto mightEdit = validSelection && enabled;
@@ -128,14 +128,14 @@ void SelectionLayerWidget::updateData(const QModelIndex& topLeft, const QModelIn
 		_ui->pixelSelectionGroupBox->setEnabled(enabled);
 		_ui->displayGroupBox->setEnabled(enabled);
 		
-		const auto overlayColorFlags = _layersModel->flags(topLeft.row(), ult(SelectionLayer::Column::OverlayColor));
+		const auto overlayColorFlags = _layersModel->flags(begin.row(), ult(SelectionLayer::Column::OverlayColor));
 
 		//_ui->colorLabel->setEnabled(mightEdit && overlayColorFlags & Qt::ItemIsEditable);
 		//_ui->colorPickerPushButton->setEnabled(mightEdit && overlayColorFlags & Qt::ItemIsEditable);
 
 		if (column == ult(SelectionLayer::Column::PixelSelectionType)) {
-			const auto pixelSelectionType		= _layersModel->data(topLeft.row(), ult(SelectionLayer::Column::PixelSelectionType), Qt::EditRole).toInt();
-			const auto pixelSelectionTypeFlags	= _layersModel->flags(topLeft.row(), ult(SelectionLayer::Column::PixelSelectionType));
+			const auto pixelSelectionType		= _layersModel->data(begin.row(), ult(SelectionLayer::Column::PixelSelectionType), Qt::EditRole).toInt();
+			const auto pixelSelectionTypeFlags	= _layersModel->flags(begin.row(), ult(SelectionLayer::Column::PixelSelectionType));
 
 			_ui->pixelSelectionTypeComboBox->setEnabled(pixelSelectionTypeFlags & Qt::ItemIsEditable);
 
@@ -145,8 +145,8 @@ void SelectionLayerWidget::updateData(const QModelIndex& topLeft, const QModelIn
 		}
 
 		if (column == ult(SelectionLayer::Column::PixelSelectionModifier)) {
-			const auto pixelSelectionModifier		= _layersModel->data(topLeft.row(), ult(SelectionLayer::Column::PixelSelectionModifier), Qt::EditRole).toInt();
-			const auto pixelSelectionModifierFlags	= _layersModel->flags(topLeft.row(), ult(SelectionLayer::Column::PixelSelectionModifier));
+			const auto pixelSelectionModifier		= _layersModel->data(begin.row(), ult(SelectionLayer::Column::PixelSelectionModifier), Qt::EditRole).toInt();
+			const auto pixelSelectionModifierFlags	= _layersModel->flags(begin.row(), ult(SelectionLayer::Column::PixelSelectionModifier));
 
 			_ui->pixelSelectionModifierAddPushButton->blockSignals(true);
 			_ui->pixelSelectionModifierAddPushButton->setChecked(pixelSelectionModifier == ult(SelectionModifier::Add));
@@ -158,8 +158,8 @@ void SelectionLayerWidget::updateData(const QModelIndex& topLeft, const QModelIn
 		}
 
 		if (column == ult(SelectionLayer::Column::BrushRadius)) {
-			const auto brushRadius		= _layersModel->data(topLeft.row(), ult(SelectionLayer::Column::BrushRadius), Qt::EditRole).toFloat();
-			const auto brushRadiusFlags	= _layersModel->flags(topLeft.row(), ult(SelectionLayer::Column::BrushRadius));
+			const auto brushRadius		= _layersModel->data(begin.row(), ult(SelectionLayer::Column::BrushRadius), Qt::EditRole).toFloat();
+			const auto brushRadiusFlags	= _layersModel->flags(begin.row(), ult(SelectionLayer::Column::BrushRadius));
 
 			_ui->brushRadiusLabel->setEnabled(brushRadiusFlags & Qt::ItemIsEditable);
 			_ui->brushRadiusDoubleSpinBox->setEnabled(brushRadiusFlags & Qt::ItemIsEditable);
@@ -175,32 +175,32 @@ void SelectionLayerWidget::updateData(const QModelIndex& topLeft, const QModelIn
 		}
 
 		if (column == ult(SelectionLayer::Column::SelectAll)) {
-			const auto selectAllFlags = _layersModel->flags(topLeft.row(), ult(SelectionLayer::Column::SelectAll));
+			const auto selectAllFlags = _layersModel->flags(begin.row(), ult(SelectionLayer::Column::SelectAll));
 
 			_ui->selectAllPushButton->setEnabled(selectAllFlags & Qt::ItemIsEditable);
 		}
 
 		if (column == ult(SelectionLayer::Column::SelectNone)) {
-			const auto selectNoneFlags = _layersModel->flags(topLeft.row(), ult(SelectionLayer::Column::SelectNone));
+			const auto selectNoneFlags = _layersModel->flags(begin.row(), ult(SelectionLayer::Column::SelectNone));
 
 			_ui->selectNonePushButton->setEnabled(selectNoneFlags & Qt::ItemIsEditable);
 		}
 
 		if (column == ult(SelectionLayer::Column::InvertSelection)) {
-			const auto invertSelectionFlags = _layersModel->flags(topLeft.row(), ult(SelectionLayer::Column::InvertSelection));
+			const auto invertSelectionFlags = _layersModel->flags(begin.row(), ult(SelectionLayer::Column::InvertSelection));
 
 			_ui->invertSelectionPushButton->setEnabled(invertSelectionFlags & Qt::ItemIsEditable);
 		}
 
 		if (column == ult(SelectionLayer::Column::CreateSubset)) {
-			const auto createSubsetFlags = _layersModel->flags(topLeft.row(), ult(SelectionLayer::Column::CreateSubset));
+			const auto createSubsetFlags = _layersModel->flags(begin.row(), ult(SelectionLayer::Column::CreateSubset));
 
 			_ui->subsetFromSelectedPixelsPushButton->setEnabled(createSubsetFlags & Qt::ItemIsEditable);
 			_ui->subsetFromSelectionBoundsPushButton->setEnabled(createSubsetFlags & Qt::ItemIsEditable);
 		}
 
 		if (column == ult(SelectionLayer::Column::OverlayColor)) {
-			const auto overlayColor = _layersModel->data(topLeft.row(), ult(SelectionLayer::Column::OverlayColor), Qt::EditRole).value<QColor>();
+			const auto overlayColor = _layersModel->data(begin.row(), ult(SelectionLayer::Column::OverlayColor), Qt::EditRole).value<QColor>();
 
 			_ui->colorPickerPushButton->blockSignals(true);
 			_ui->colorPickerPushButton->setCurrentColor(overlayColor);

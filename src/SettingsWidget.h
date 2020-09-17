@@ -5,7 +5,6 @@
 #include <QWidget>
 
 class ImageViewerPlugin;
-class DatasetsModel;
 
 namespace Ui {
 	class SettingsWidget;

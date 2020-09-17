@@ -53,7 +53,7 @@ void PointsLayer::init()
 	setNoPoints(_pointsDataset->getNumPoints());
 	setNoDimensions(_pointsDataset->getNumDimensions());
 	setMaxNoChannels(std::min(3u, _noDimensions));
-	setColorMap(imageViewerPlugin->getColorMapModel().colorMap(0)->image());
+	setColorMap(imageViewerPlugin->getColorMapModel().getColorMap(0)->getImage());
 	setUseConstantColor(false);
 	setChannelEnabled(ChannelIndex::Channel1, true);
 
@@ -1280,7 +1280,7 @@ void PointsLayer::computeStackChannel(Channel<float>* channel, const ChannelInde
 			auto& sourceData = _pointsDataset->getSourceData<Points>(*_pointsDataset);
 
 			if (sourceData.isFull()) {
-				for (int i = 0; i < _pointsDataset->getNumPoints(); i++)
+				for (unsigned int i = 0; i < _pointsDataset->getNumPoints(); i++)
 					(*channel)[i] = pointData[i][dimensionId];
 			}
 			else {

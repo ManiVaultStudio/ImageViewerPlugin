@@ -203,7 +203,7 @@ void ViewerWidget::drawBackground(QPainter* painter)
 	painter->drawRect(rect());
 }
 
-QMenu* ViewerWidget::contextMenu()
+QMenu* ViewerWidget::getContextMenu()
 {
 	auto contextMenu = _renderer->contextMenu();
 	/*
