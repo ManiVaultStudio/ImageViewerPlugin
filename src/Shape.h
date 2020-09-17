@@ -43,7 +43,7 @@ public:
 	virtual void render() = 0;
 
 	/** Returns the shape name */
-	QString name() const;
+	QString getName() const;
 
 	/**
 	 * Sets the name
@@ -52,16 +52,16 @@ public:
 	void setName(const QString& name);
 
 	/** Returns the prop to which the shape is attached */
-	Prop* prop();
+	Prop* getProp();
 
 	/** Returns the full shape name (actor_name::prop_name::shape_name */
-	QString fullName();
+	QString getFullName();
 
 	/** Returns the vertex array object */
-	QOpenGLVertexArrayObject& vao() { return _vao; }
+	QOpenGLVertexArrayObject& getVAO() { return _vao; }
 
 	/** Returns the vertex buffer object */
-	QOpenGLBuffer& vbo() { return _vbo; }
+	QOpenGLBuffer& getVBO() { return _vbo; }
 
 protected:
 	Prop*						_prop;		/** Parent prop */

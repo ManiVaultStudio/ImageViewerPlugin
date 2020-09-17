@@ -124,8 +124,8 @@ void PointsProp::initialize()
 			auto shape = shapeByName<QuadShape>("Quad");
 
 			if (shaderProgram->bind()) {
-				shape->vao().bind();
-				shape->vbo().bind();
+				shape->getVAO().bind();
+				shape->getVBO().bind();
 
 				shaderProgram->enableAttributeArray(QuadShape::_vertexAttribute);
 				shaderProgram->enableAttributeArray(QuadShape::_textureAttribute);
@@ -133,8 +133,8 @@ void PointsProp::initialize()
 				shaderProgram->setAttributeBuffer(QuadShape::_textureAttribute, GL_FLOAT, 3 * sizeof(GLfloat), 2, stride);
 				shaderProgram->release();
 
-				shape->vao().release();
-				shape->vbo().release();
+				shape->getVAO().release();
+				shape->getVBO().release();
 			}
 			else {
 				throw std::runtime_error("Unable to bind quad shader program");
