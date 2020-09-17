@@ -55,7 +55,7 @@ QModelIndexList GroupLayer::setData(const QModelIndex& index, const QVariant& va
 	return affectedIds;
 }
 
-Layer::Hints GroupLayer::hints() const
+Layer::Hints GroupLayer::getHints() const
 {
-	return Layer::hints();
+	return Layer::getHints();
 }

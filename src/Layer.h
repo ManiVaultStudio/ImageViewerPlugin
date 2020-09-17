@@ -257,7 +257,7 @@ public: // Getters/setters
 	 * @param role Data role
 	 * @return Image size in variant form
 	 */
-	QVariant imageSize(const int& role) const;
+	QVariant getImageSize(const int& role) const;
 
 	/**
 	 * Returns the width of the images in the dataset
@@ -315,7 +315,7 @@ protected:
 	 * Returns the image size
 	 * @return Image size
 	 */
-	virtual QSize imageSize() const = 0;
+	virtual QSize getImageSize() const = 0;
 
 	/**
 	 * Returns the number of pixels in the image
@@ -324,7 +324,7 @@ protected:
 	int noPixels() const;
 
 	/** Returns hints that pertain to the layer */
-	virtual Hints hints() const;
+	virtual Hints getHints() const;
 
 	/**
 	 * Draws the layer title

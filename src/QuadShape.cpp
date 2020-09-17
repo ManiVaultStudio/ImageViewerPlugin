@@ -48,12 +48,12 @@ void QuadShape::render()
 	_vao.release();
 }
 
-QRectF QuadShape::rectangle() const
+QRectF QuadShape::getRectangle() const
 {
 	return _rectangle;
 }
 
-QSizeF QuadShape::imageSize() const
+QSizeF QuadShape::getImageSize() const
 {
 	return _rectangle.size();
 }

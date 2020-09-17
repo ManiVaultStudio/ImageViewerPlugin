@@ -58,8 +58,8 @@ protected: // Miscellaneous
 	* Returns the image size
 	* @return Image size in variant form
 	*/
-	QSize imageSize() const override;
+	QSize getImageSize() const override;
 
 	/** Returns hints that pertain to the layer */
-	Hints hints() const override;
+	Hints getHints() const override;
 };

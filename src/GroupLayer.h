@@ -72,5 +72,5 @@ public: // Inherited MVC
 protected: // Miscellaneous
 
 	/** Returns hints that pertain to the layer */
-	Hints hints() const override;
+	Hints getHints() const override;
 };

@@ -32,7 +32,7 @@ Layer::~Layer() = default;
 
 void Layer::matchScaling(const QSize& targetImageSize)
 {
-	const auto layerImageSize	= imageSize();
+	const auto layerImageSize	= getImageSize();
 	const auto widthScaling		= static_cast<float>(targetImageSize.width()) / layerImageSize.width();
 	const auto heightScaling	= static_cast<float>(targetImageSize.height()) / layerImageSize.height();
 
@@ -119,7 +119,7 @@ QVariant Layer::data(const QModelIndex& index, const int& role) const
 			return id(role);
 
 		case Column::ImageSize:
-			return imageSize(role);
+			return getImageSize(role);
 
 		case Column::ImageWidth:
 			return imageWidth(role);
@@ -327,9 +327,9 @@ void Layer::setType(const Type& type)
 	_type = type;
 }
 
-QVariant Layer::imageSize(const int& role /*= Qt::DisplayRole*/) const
+QVariant Layer::getImageSize(const int& role /*= Qt::DisplayRole*/) const
 {
-	const auto imageSize		= this->imageSize();
+	const auto imageSize		= this->getImageSize();
 	const auto imageSizeString	= QString::number(imageSize.width()) + " x" + QString::number(imageSize.height());
 
 	switch (role)
@@ -352,7 +352,7 @@ QVariant Layer::imageSize(const int& role /*= Qt::DisplayRole*/) const
 
 QVariant Layer::imageWidth(const int& role) const
 {
-	const auto imageSize	= this->imageSize(Qt::EditRole).toSize();
+	const auto imageSize	= this->getImageSize(Qt::EditRole).toSize();
 	const auto widthString	= QString::number(imageSize.width());
 
 	switch (role)
@@ -375,7 +375,7 @@ QVariant Layer::imageWidth(const int& role) const
 
 QVariant Layer::imageHeight(const int& role) const
 {
-	const auto imageSize	= this->imageSize(Qt::EditRole).toSize();
+	const auto imageSize	= this->getImageSize(Qt::EditRole).toSize();
 	const auto heightString = QString::number(imageSize.height());
 
 	switch (role)
@@ -495,10 +495,10 @@ QVector<QPoint> Layer::mousePositions() const
 
 int Layer::noPixels() const
 {
-	return imageSize().width() * imageSize().height();
+	return getImageSize().width() * getImageSize().height();
 }
 
-Layer::Hints Layer::hints() const
+Layer::Hints Layer::getHints() const
 {
 	return Hints({
 		Hint(),
@@ -516,7 +516,7 @@ void Layer::drawTitle(QPainter* painter)
 
 	const auto color = QString("rgba(%1, %2, %3, %4)").arg(QString::number(hintsColor.red()), QString::number(hintsColor.green()), QString::number(hintsColor.blue()), QString::number(isFlagSet(Flag::Enabled) ? hintsColor.alpha() : 80));
 
-	QString titleHtml = QString("<div style='width: 100%; text-align: center; color: %1; font-weight: bold;'>%2 (%3x%4)<div>").arg(color, _name, QString::number(imageSize().width()), QString::number(imageSize().height()));
+	QString titleHtml = QString("<div style='width: 100%; text-align: center; color: %1; font-weight: bold;'>%2 (%3x%4)<div>").arg(color, _name, QString::number(getImageSize().width()), QString::number(getImageSize().height()));
 	
 	titleDocument.setTextWidth(painter->viewport().width());
 	titleDocument.setDocumentMargin(textMargins);
@@ -534,7 +534,7 @@ void Layer::drawHints(QPainter* painter)
 
 	hintsHtml += QString("<div style='height: 100%'><table style='color: %1;'>").arg(color);
 
-	for (auto hint : hints()) {
+	for (auto hint : getHints()) {
 		if (hint.title().isEmpty())
 			hintsHtml += "<tr><td></td><td></td></tr>";
 		else

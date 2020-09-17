@@ -103,11 +103,11 @@ signals:
 	void selectionIndicesChanged(const QString& name);
 
 private:
-	ViewerWidget*		_viewerWidget;			/** TODO */
-	SettingsWidget*		_settingsWidget;		/** TODO */
-	LayersModel			_layersModel;			/** TODO */
-	ColorMapModel		_colorMapModel;			/** TODO */
-	QStringList			_pointsDatasets;		/** TODO */
+	ViewerWidget*		_viewerWidget;			/** The image viewer widget */
+	SettingsWidget*		_settingsWidget;		/** Settings widget */
+	LayersModel			_layersModel;			/** Layers model */
+	ColorMapModel		_colorMapModel;			/** Colormap model */
+	QStringList			_pointsDatasets;		/** Point datasets loaded in HDPS */
 };
 
 /**

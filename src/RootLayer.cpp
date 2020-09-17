@@ -62,12 +62,12 @@ QModelIndexList RootLayer::setData(const QModelIndex& index, const QVariant& val
 	return affectedIds;
 }
 
-QSize RootLayer::imageSize() const
+QSize RootLayer::getImageSize() const
 {
 	return QSize();
 }
 
-Layer::Hints RootLayer::hints() const
+Layer::Hints RootLayer::getHints() const
 {
-	return Layer::hints();
+	return Layer::getHints();
 }

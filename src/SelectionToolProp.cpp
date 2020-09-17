@@ -120,7 +120,7 @@ void SelectionToolProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 
 			auto selectionLayer = static_cast<SelectionLayer*>(_node);
 
-			const auto overlayColor = selectionLayer->overlayColor(Qt::EditRole).value<QColor>();
+			const auto overlayColor = selectionLayer->getOverlayColor(Qt::EditRole).value<QColor>();
 
 			shaderProgram->setUniformValue("offScreenTexture", 0);
 			shaderProgram->setUniformValue("color", SelectionLayer::fillColor);
@@ -175,7 +175,7 @@ void SelectionToolProp::compute()
 		if (shaderProgram->bind()) {
 			glBindTexture(GL_TEXTURE_2D, _fbo->texture());
 
-			const auto selectionType = selectionLayer->pixelSelectionType(Qt::EditRole).toInt();
+			const auto selectionType = selectionLayer->getPixelSelectionType(Qt::EditRole).toInt();
 
 			shaderProgram->setUniformValue("pixelSelectionTexture", 0);
 			shaderProgram->setUniformValue("transform", transform);
@@ -213,7 +213,7 @@ void SelectionToolProp::compute()
 						break;
 
 					const auto brushCenter = renderer->getScreenPointToWorldPosition(modelViewMatrix, QPoint(0.0f, 0.0f));
-					const auto brushPerimeter = renderer->getScreenPointToWorldPosition(modelViewMatrix, QPoint(selectionLayer->brushRadius(Qt::EditRole).toFloat(), 0.0f));
+					const auto brushPerimeter = renderer->getScreenPointToWorldPosition(modelViewMatrix, QPoint(selectionLayer->getBrushRadius(Qt::EditRole).toFloat(), 0.0f));
 					const auto brushRadiusWorld = (brushPerimeter - brushCenter).length();
 
 					shaderProgram->setUniformValue("brushRadius", brushRadiusWorld);
@@ -309,7 +309,7 @@ void SelectionToolProp::reset()
 
 QRectF SelectionToolProp::getBoundingRectangle() const
 {
-	return shapeByName<QuadShape>("Quad")->rectangle();
+	return shapeByName<QuadShape>("Quad")->getRectangle();
 }
 
 QImage SelectionToolProp::getSelectionImage()
@@ -326,7 +326,7 @@ void SelectionToolProp::updateModelMatrix()
 {
 	QMatrix4x4 modelMatrix;
 
-	const auto rectangle = shapeByName<QuadShape>("Quad")->rectangle();
+	const auto rectangle = shapeByName<QuadShape>("Quad")->getRectangle();
 
 	modelMatrix.translate(-0.5f * rectangle.width(), -0.5f * rectangle.height(), 0.0f);
 

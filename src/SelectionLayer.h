@@ -87,9 +87,9 @@ public: // Miscellaneous
 	* Returns the image size
 	* @return Image size in variant form
 	*/
-	QSize imageSize() const override;
+	QSize getImageSize() const override;
 
-public: // Inherited MVC
+public: // Inherited
 
 	/** Returns the number of columns */
 	int columnCount() const override { return ult(Column::End) + 1; }
@@ -125,7 +125,7 @@ public: // Getters/setters
 	 * @param role Data role
 	 * @return Overlay color in variant form
 	 */
-	QVariant overlayColor(const int& role) const;
+	QVariant getOverlayColor(const int& role) const;
 
 	/**
 	 * Sets the selection overlay color
@@ -138,7 +138,7 @@ public: // Getters/setters
 	 * @param role Data role
 	 * @return Pixel selection type in variant form
 	 */
-	QVariant pixelSelectionType(const int& role) const;
+	QVariant getPixelSelectionType(const int& role) const;
 
 	/**
 	 * Sets the pixel selection type
@@ -151,20 +151,20 @@ public: // Getters/setters
 	 * @param role Data role
 	 * @return Pixel selection modifier in variant form
 	 */
-	QVariant selectionModifier(const int& role) const;
+	QVariant getSelectionModifier(const int& role) const;
 
 	/**
 	 * Sets the pixel selection modifier
 	 * @param pixelSelectionModifier Pixel selection modifier
 	 */
-	void pixelSelectionModifier(const SelectionModifier& pixelSelectionModifier);
+	void getPixelSelectionModifier(const SelectionModifier& pixelSelectionModifier);
 
 	/**
 	 * Returns the brush radius
 	 * @param role Data role
 	 * @return Brush radius in variant form
 	 */
-	QVariant brushRadius(const int& role) const;
+	QVariant getBrushRadius(const int& role) const;
 
 	/**
 	 * Sets the brush radius
@@ -177,7 +177,7 @@ public: // Getters/setters
 	 * @param role Data role
 	 * @return whether auto zoom is enabled in variant form
 	 */
-	QVariant autoZoomToSelection(const int& role) const;
+	QVariant getAutoZoomToSelection(const int& role) const;
 
 	/**
 	 * Sets whether auto zoom is enabled
@@ -188,7 +188,7 @@ public: // Getters/setters
 protected:
 
 	/** Returns hints that pertain to the layer */
-	Hints hints() const override;
+	Hints getHints() const override;
 
 private: // Miscellaneous
 

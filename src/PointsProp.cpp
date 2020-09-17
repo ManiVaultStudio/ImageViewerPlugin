@@ -225,7 +225,7 @@ void PointsProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 
 QRectF PointsProp::getBoundingRectangle() const
 {
-	auto rectangle = shapeByName<QuadShape>("Quad")->rectangle();
+	auto rectangle = shapeByName<QuadShape>("Quad")->getRectangle();
 
 	rectangle.setSize(_node->scale(Qt::EditRole).toFloat() * rectangle.size());
 
@@ -236,7 +236,7 @@ void PointsProp::updateModelMatrix()
 {
 	QMatrix4x4 modelMatrix;
 
-	const auto rectangle = shapeByName<QuadShape>("Quad")->rectangle();
+	const auto rectangle = shapeByName<QuadShape>("Quad")->getRectangle();
 
 	modelMatrix.translate(-0.5f * rectangle.width(), -0.5f * rectangle.height(), 0.0f);
 

@@ -84,7 +84,7 @@ void PointsLayer::init()
 
 void PointsLayer::matchScaling(const QSize& targetImageSize)
 {
-	const auto layerImageSize	= QSizeF(imageSize());
+	const auto layerImageSize	= QSizeF(getImageSize());
 	const auto widthScaling		= static_cast<float>(targetImageSize.width()) / layerImageSize.width();
 	const auto heightScaling	= static_cast<float>(targetImageSize.height()) / layerImageSize.height();
 
@@ -605,7 +605,7 @@ QModelIndexList PointsLayer::setData(const QModelIndex& index, const QVariant& v
 	return affectedIds;
 }
 
-QSize PointsLayer::imageSize() const
+QSize PointsLayer::getImageSize() const
 {
 	if (_pointsDataset->isDerivedData()) {
 		auto sourcePointsDataset = hdps::DataSet::getSourceData<Points>(*_pointsDataset);
@@ -627,9 +627,9 @@ std::int32_t PointsLayer::imageCollectionType() const
 	return _pointsDataset->getProperty("CollectionType", ImageData::Type::Undefined).toInt();
 }
 
-Layer::Hints PointsLayer::hints() const
+Layer::Hints PointsLayer::getHints() const
 {
-	return Layer::hints();
+	return Layer::getHints();
 }
 
 QVariant PointsLayer::noPoints(const int& role /*= Qt::DisplayRole*/) const
@@ -1150,7 +1150,7 @@ void PointsLayer::computeChannel(const ChannelIndex& channelIndex)
 
 	auto channel = this->channel(ult(channelIndex));
 
-	channel->setImageSize(imageSize());
+	channel->setImageSize(getImageSize());
 
 	switch (channelIndex)
 	{
