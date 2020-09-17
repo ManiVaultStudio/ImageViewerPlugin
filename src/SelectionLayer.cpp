@@ -1200,14 +1200,15 @@ void SelectionLayer::invertSelection()
 
 	auto& indices = selection.indices;
 
-	std::set<std::uint32_t> selectionSet(selection.indices.begin(), selection.indices.end());
+	std::set<std::uint32_t> selectionSet(indices.begin(), indices.end());
 
-	selection.indices.resize(getNoPixels() - selectionSet.size());
+	const auto noPixels = getNoPixels();
 
-	const auto noPixels = this->getNoPixels();
+	selection.indices.clear();
+	selection.indices.reserve(noPixels - selectionSet.size());
 
 	for (int i = 0; i < noPixels; i++) {
-		if (_indices[i] >= 0 && selectionSet.count(i) == 0)
+		if (selectionSet.find(i) == selectionSet.end())
 			selection.indices.push_back(i);
 	}
 
