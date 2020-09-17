@@ -1,19 +1,12 @@
 #pragma once
 
 #include <QObject>
-#include <QColor>
-#include <QVector2D>
 #include <QMatrix4x4>
 #include <QMap>
-#include <QSharedPointer>
 
 #include "Prop.h"
 
 #include <stdexcept>
-
-class QMouseEvent;
-class QWheelEvent;
-class QKeyEvent;
 
 /**
  * Renderable class
