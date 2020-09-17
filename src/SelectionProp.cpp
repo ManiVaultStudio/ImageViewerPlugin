@@ -32,7 +32,7 @@ SelectionProp::SelectionProp(SelectionLayer* selectionLayer, const QString& name
 		{
 			renderer->bindOpenGLContext();
 
-			auto channel = selectionLayer->channel(channelId);
+			auto channel = selectionLayer->getChannel(channelId);
 
 			const auto imageSize = channel->getImageSize();
 

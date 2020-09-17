@@ -44,7 +44,7 @@ SelectionToolProp::SelectionToolProp(SelectionLayer* selectionLayer, const QStri
 			if (channelId != 0)
 				return;
 
-			auto channel = selectionLayer->channel(channelId);
+			auto channel = selectionLayer->getChannel(channelId);
 
 			const auto imageSize = channel->getImageSize();
 

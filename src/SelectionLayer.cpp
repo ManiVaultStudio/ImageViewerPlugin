@@ -1131,7 +1131,7 @@ void SelectionLayer::computeChannel(const ChannelIndex& channelIndex)
 		{
 			auto& selection = dynamic_cast<Points&>(imageViewerPlugin->core()->requestSelection(_pointsDataset->getDataName()));
 
-			auto& selectionChannel = (*channel(ult(ChannelIndex::Selection)));
+			auto& selectionChannel = (*getChannel(ult(ChannelIndex::Selection)));
 
 			selectionChannel.setImageSize(getImageSize());
 			selectionChannel.fill(0);
@@ -1328,7 +1328,7 @@ void SelectionLayer::computeSelectionBounds()
 		return;
 	}
 
-	auto& selectionChannel = (*channel(ult(ChannelIndex::Selection)));
+	auto& selectionChannel = (*getChannel(ult(ChannelIndex::Selection)));
 
 	const auto width = static_cast<float>(getImageSize().width());
 	const auto height = static_cast<float>(getImageSize().height());

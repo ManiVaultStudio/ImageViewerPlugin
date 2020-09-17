@@ -296,7 +296,7 @@ public:
 
 		const auto description = QString("<table>%1</table>").arg(rows);
 
-		return QString("<html><head / ><body><p><span style='font-weight:600;'>%1<br/></span>%2</p></body></html>").arg(_name, description);
+		return QString("<html><head/><body><p><span style='font-weight:600;'>%1<br/></span>%2</p></body></html>").arg(_name, description);
 	}
 
 private:
@@ -344,12 +344,12 @@ public: // Miscellaneous
 	 * Get channel by identifier
 	 * @param channelId
 	 */
-	Channel<ChannelType>* channel(const std::uint32_t& channelId) const {
+	Channel<ChannelType>* getChannel(const std::uint32_t& channelId) const {
 		return _channels.at(channelId).get();
 	}
 
 	/** Return the number of channels */
-	std::uint32_t noChannels() const {
+	std::uint32_t getNoChannels() const {
 		return _channels.size();
 	}
 

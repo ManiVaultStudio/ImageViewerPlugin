@@ -40,7 +40,7 @@ PointsProp::PointsProp(PointsLayer* pointsLayer, const QString& name) :
 	QObject::connect(pointsLayer, &PointsLayer::channelChanged, [this, pointsLayer](const std::uint32_t& channelId) {
 		renderer->bindOpenGLContext();
 		{
-			auto channel = pointsLayer->channel(channelId);
+			auto channel = pointsLayer->getChannel(channelId);
 
 			const auto imageSize = channel->getImageSize();
 
@@ -178,9 +178,9 @@ void PointsProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 		
 		if (shaderProgram->bind()) {
 			const QVector2D displayRanges[] = {
-				pointsLayer->channel(0)->getDisplayRangeVector(),
-				pointsLayer->channel(1)->getDisplayRangeVector(),
-				pointsLayer->channel(2)->getDisplayRangeVector()
+				pointsLayer->getChannel(0)->getDisplayRangeVector(),
+				pointsLayer->getChannel(1)->getDisplayRangeVector(),
+				pointsLayer->getChannel(2)->getDisplayRangeVector()
 			};
 
 			const auto noChannels		= pointsLayer->getNoChannels(Qt::EditRole).toInt();
