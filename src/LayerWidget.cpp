@@ -48,26 +48,20 @@ void LayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 	});
 
 	QObject::connect(_ui->opacityDoubleSpinBox, qOverload<double>(&QDoubleSpinBox::valueChanged), [this](double value) {
-		const auto range = _ui->opacityDoubleSpinBox->maximum() - _ui->opacityDoubleSpinBox->minimum();
-
 		for (auto selectedRow : _layersModel->getSelectionModel().selectedRows()) {
-			_layersModel->setData(selectedRow.siblingAtColumn(ult(Layer::Column::Opacity)), value / static_cast<float>(range));
+			_layersModel->setData(selectedRow.siblingAtColumn(ult(Layer::Column::Opacity)), value / 100.0f);
 		}
 	});
 
 	QObject::connect(_ui->opacityHorizontalSlider, &QSlider::valueChanged, [this](int value) {
-		const auto range = _ui->opacityHorizontalSlider->maximum() - _ui->opacityHorizontalSlider->minimum();
-
 		for (auto selectedRow : _layersModel->getSelectionModel().selectedRows()) {
-			_layersModel->setData(selectedRow.siblingAtColumn(ult(Layer::Column::Opacity)), static_cast<float>(value) / static_cast<float>(range));
+			_layersModel->setData(selectedRow.siblingAtColumn(ult(Layer::Column::Opacity)), static_cast<float>(value) / 100.0f);
 		}
 	});
 
 	QObject::connect(_ui->scaleDoubleSpinBox, qOverload<double>(&QDoubleSpinBox::valueChanged), [this](double value) {
-		const auto range = _ui->scaleDoubleSpinBox->maximum() - _ui->scaleDoubleSpinBox->minimum();
-
 		for (auto selectedRow : _layersModel->getSelectionModel().selectedRows()) {
-			_layersModel->setData(selectedRow.siblingAtColumn(ult(Layer::Column::Scale)), static_cast<float>(value) / static_cast<float>(range));
+			_layersModel->setData(selectedRow.siblingAtColumn(ult(Layer::Column::Scale)), static_cast<float>(value) / 100.0f);
 		}
 	});
 
