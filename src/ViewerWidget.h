@@ -46,6 +46,22 @@ public: // Events
 	 */
 	bool eventFilter(QObject* target, QEvent* event) override;
 
+public: // Hints
+
+	/** Returns whether to show hints */
+	bool getShowHints() const;
+
+	/**
+	 * Sets whether to show hints
+	 * @param showHints Whether to show hints
+	 */
+	void setShowHints(const bool& showHints);
+
+public: // Zoom
+
+	/** Zoom to the extents of all visible layers */
+	void zoomExtents();
+
 protected: // OpenGL functions
 
 	/** Initializes the OpenGL window */
@@ -53,13 +69,6 @@ protected: // OpenGL functions
 
 	/** Paints the OpenGL content */
 	void paintGL() override;
-
-	/**
-	 * Invoked when the OpenGL viewport changes size
-	 * @param w Width of the viewport
-	 * @param h Height of the viewport
-	 */
-	void resizeGL(int w, int h) override;
 
 	/**
 	 * Draws a gradient background

@@ -3,6 +3,8 @@
 
 #include "ui_SettingsWidget.h"
 
+#include "Application.h"
+
 #include <QVBoxLayout>
 #include <QDebug>
 
@@ -14,9 +16,8 @@ SettingsWidget::SettingsWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_ui->setupUi(this);
 	
 	_ui->layersWidget->initialize(_imageViewerPlugin);
-	_ui->showHintsCheckBox->hide();
 
-	setFixedWidth(300);
+	//setFixedWidth(300);
 }
 
 SettingsWidget::~SettingsWidget() = default;

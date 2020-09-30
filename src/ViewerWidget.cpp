@@ -66,6 +66,8 @@ ViewerWidget::ViewerWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_backgroundGradient.setColorAt(0.7, QColor(30, 30, 30));
 
 	this->installEventFilter(this);
+
+	setShowHints(_imageViewerPlugin->getSetting("ShowHints").toBool());
 }
 
 ViewerWidget::~ViewerWidget()
@@ -117,6 +119,30 @@ bool ViewerWidget::eventFilter(QObject* target, QEvent* event)
 		_imageViewerPlugin->getLayersModel().dispatchEventToSelectedLayer(event);
 
 	return QWidget::eventFilter(target, event);
+}
+
+bool ViewerWidget::getShowHints() const
+{
+	return Layer::showHints;
+}
+
+void ViewerWidget::setShowHints(const bool& showHints)
+{
+	Layer::showHints = showHints;
+
+	_imageViewerPlugin->setSetting("ShowHints", Layer::showHints);
+
+	update();
+}
+
+void ViewerWidget::zoomExtents()
+{
+	auto root = _imageViewerPlugin->getLayersModel().getLayer(QModelIndex());
+
+	if (root != nullptr)
+		_renderer->zoomToRectangle(root->getBoundingRectangle());
+
+	update();
 }
 
 void ViewerWidget::initializeGL()
@@ -186,14 +212,6 @@ void ViewerWidget::paintGL()
 		}
 		
 #endif
-}
-
-void ViewerWidget::resizeGL(int w, int h)
-{
-	auto root = _imageViewerPlugin->getLayersModel().getLayer(QModelIndex());
-
-	if (root != nullptr)
-		_renderer->zoomToRectangle(root->getBoundingRectangle());
 }
 
 void ViewerWidget::drawBackground(QPainter* painter)
