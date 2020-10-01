@@ -1,50 +1,33 @@
 #pragma once
 
-#include "Common.h"
-#include "Renderer.h"
-
-#include "ImageData/ImageData.h"
-
 #include <memory>
 
-#include <QOpenGLWidget>
-#include <QOpenGLFunctions>
-#include <QOpenGLDebugLogger>
-#include <QRadialGradient>
+#include <QWidget>
 
-class QMenu;
+namespace Ui {
+	class ViewerWidget;
+}
 
 class ImageViewerPlugin;
+class CanvasWidget;
+class StatusbarWidget;
 
 /**
  * Viewer widget class
- * 
- * This is an OpenGL widget class that renders images from a layer based system
- * 
+ *
+ * This is a container class for the canvas widget (in which the images are drawn) and the status bar widget
+ *
  * @author Thomas Kroes
  */
-class ViewerWidget : public QOpenGLWidget, protected QOpenGLFunctions
+class ViewerWidget : public QWidget
 {
-	Q_OBJECT
+public: // Construction
 
-public: // Construction/destruction
 	/**
 	 * Constructor
-	 * @param imageViewerPlugin Pointer to the image viewer plugin
+	 * @param parent Parent widget
 	 */
-	ViewerWidget(ImageViewerPlugin* imageViewerPlugin);
-
-	/** Destructor */
-	~ViewerWidget() override;
-
-public: // Events
-
-	/**
-	 * Widget event capture
-	 *@param target Target object
-	 *@param event Event that occurred
-	 */
-	bool eventFilter(QObject* target, QEvent* event) override;
+	ViewerWidget(QWidget* parent);
 
 public: // Hints
 
@@ -57,34 +40,15 @@ public: // Hints
 	 */
 	void setShowHints(const bool& showHints);
 
-public: // Zoom
+public: // Getters
 
-	/** Zoom to the extents of all visible layers */
-	void zoomExtents();
+	/** Get a pointer to the canvas widget */
+	CanvasWidget* getCanvasWidget();
 
-protected: // OpenGL functions
-
-	/** Initializes the OpenGL window */
-	void initializeGL() override;
-
-	/** Paints the OpenGL content */
-	void paintGL() override;
-
-	/**
-	 * Draws a gradient background
-	 * @param painter Pointer to painter
-	 */
-	void drawBackground(QPainter* painter);
+	/** Get a pointer to the statusbar widget */
+	StatusbarWidget* getStatusbarWidget();
 
 private:
-
-	/** Returns the context menu */
-	QMenu* getContextMenu();
-
-private:
-	ImageViewerPlugin*						_imageViewerPlugin;			/** Pointer to the image viewer plugin */
-	Renderer*								_renderer;					/** Pointer to the renderer which is attached to the viewer widget */
-	std::unique_ptr<QOpenGLDebugLogger>		_openglDebugLogger;			/** OpenGL logger instance for debugging (only enabled in debug mode for performance reasons) */
-	QRadialGradient							_backgroundGradient;		/** Viewport gradient background */
-	int										_keys;						/** Currently pressed keyboard keys */
+	ImageViewerPlugin*					_imageViewerPlugin;		/** Pointer to the image viewer plugin */
+	std::unique_ptr<Ui::ViewerWidget>	_ui;					/** User interface as produced by Qt designer */
 };

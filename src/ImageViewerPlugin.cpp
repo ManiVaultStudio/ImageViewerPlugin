@@ -15,6 +15,7 @@
 #include <QDebug>
 #include <QEvent>
 #include <QKeyEvent>
+#include <QSplitter>
 
 using namespace hdps;
 
@@ -31,32 +32,33 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	Layer::imageViewerPlugin = this;
 	
 	_viewerWidget		= new ViewerWidget(this);
-	_statusbarWidget	= new StatusbarWidget(this);
 	_settingsWidget		= new SettingsWidget(this);
 }
 
 void ImageViewerPlugin::init()
 {
 	auto layout = new QHBoxLayout();
-	
+
 	layout->setMargin(0);
 	layout->setSpacing(0);
-	
+
 	setMainLayout(layout);
+
+	auto splitter = new QSplitter();
 
 	auto viewerLayout = new QVBoxLayout();
 
-	viewerLayout->addWidget(_viewerWidget);
-	viewerLayout->addWidget(_statusbarWidget);
+	splitter->addWidget(_viewerWidget);
+	splitter->addWidget(_settingsWidget);
 
-	layout->addLayout(viewerLayout);
-	layout->addWidget(_settingsWidget);
+	splitter->setStretchFactor(0, 1);
+	splitter->setStretchFactor(1, 0);
 
-	layout->setStretchFactor(_viewerWidget, 1);
+	splitter->setCollapsible(1, true);
+
+	addWidget(splitter);
 
 	_layersModel.initialize();
-
-	_statusbarWidget->initialize(this);
 }
 
 void ImageViewerPlugin::dataAdded(const QString dataset)
@@ -94,7 +96,6 @@ hdps::DataTypes ImageViewerPlugin::supportedDataTypes() const
 {
 	hdps::DataTypes supportedTypes;
 	
-	supportedTypes.append(ImageType);
 	supportedTypes.append(PointType);
 
 	return supportedTypes;

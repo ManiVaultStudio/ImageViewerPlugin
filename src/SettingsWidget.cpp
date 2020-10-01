@@ -16,8 +16,6 @@ SettingsWidget::SettingsWidget(ImageViewerPlugin* imageViewerPlugin) :
 	_ui->setupUi(this);
 	
 	_ui->layersWidget->initialize(_imageViewerPlugin);
-
-	//setFixedWidth(300);
 }
 
 SettingsWidget::~SettingsWidget() = default;
