@@ -12,6 +12,7 @@ using hdps::plugin::ViewPlugin;
 
 class Images;
 class ViewerWidget;
+class StatusbarWidget;
 class SettingsWidget;
 
 /**
@@ -104,6 +105,7 @@ signals:
 
 private:
 	ViewerWidget*		_viewerWidget;			/** The image viewer widget */
+	StatusbarWidget*	_statusbarWidget;		/** The status bar widget */
 	SettingsWidget*		_settingsWidget;		/** Settings widget */
 	LayersModel			_layersModel;			/** Layers model */
 	ColorMapModel		_colorMapModel;			/** Colormap model */

@@ -12,9 +12,10 @@
 #include <QPainter>
 #include <QTextDocument>
 
-ImageViewerPlugin* Layer::imageViewerPlugin	= nullptr;
-const QColor Layer::hintsColor				= QColor(255, 174, 66, 200);
-const qreal Layer::textMargins				= 10.0;
+ImageViewerPlugin* Layer::imageViewerPlugin		= nullptr;
+bool Layer::showHints							= true;
+const QColor Layer::hintsColor					= QColor(255, 174, 66, 200);
+const qreal Layer::textMargins					= 10.0;
 
 Layer::Layer(const QString& datasetName, const Type& type, const QString& id, const QString& name, const int& flags) :
 	Node(id, name, flags),
@@ -526,6 +527,9 @@ void Layer::drawTitle(QPainter* painter)
 
 void Layer::drawHints(QPainter* painter)
 {
+	if (!Layer::showHints)
+		return;
+
 	QTextDocument hintsDocument;
 
 	QString hintsHtml;

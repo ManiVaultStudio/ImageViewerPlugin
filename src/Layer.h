@@ -356,7 +356,8 @@ protected:
 	int					_keys;				/** Pressed keyboard buttons */
 
 public:
-	static ImageViewerPlugin* imageViewerPlugin;		/** Pointer to the image viewer plugin for interfacing with datasets */
-	static const QColor hintsColor;						/** Color for hints */
-	static const qreal textMargins;						/** Text margins */
+	static ImageViewerPlugin*	imageViewerPlugin;		/** Pointer to the image viewer plugin for interfacing with datasets */
+	static bool					showHints;				/** Whether to show hints */
+	static const QColor			hintsColor;				/** Color for hints */
+	static const qreal			textMargins;			/** Text margins */
 };
