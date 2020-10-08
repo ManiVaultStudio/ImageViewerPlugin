@@ -1142,6 +1142,43 @@ QVariant PointsLayer::getIndicesSelection(const int& role /*= Qt::DisplayRole*/)
 	return QVariant();
 }
 
+void PointsLayer::setSelection(const Indices& selection)
+{
+	Layer::setSelection(selection);
+
+	switch (_pointType)
+	{
+		case PointsLayer::PointType::Intensity:
+			break;
+
+		case PointsLayer::PointType::Index:
+		{
+			_pointsDataset->visitData([this](auto pointData) {
+				if (_indexSelectionDataset != nullptr) {
+					QSet<std::uint32_t> indexSet;
+
+					for (const auto& index : _selection) {
+						indexSet.insert(pointData[index][0] + 1);
+					}
+
+					const auto indexDataName = _indexSelectionDataset->getDataName();
+
+					auto& selectionIndices = dynamic_cast<Points&>(imageViewerPlugin->core()->requestSelection(indexDataName)).indices;
+
+					selectionIndices = std::vector<std::uint32_t>(indexSet.begin(), indexSet.end());
+
+					imageViewerPlugin->core()->notifySelectionChanged(indexDataName);
+				}
+			});
+
+			break;
+		}
+
+		default:
+			break;
+	}
+}
+
 void PointsLayer::computeChannel(const ChannelIndex& channelIndex)
 {
 #ifdef _DEBUG

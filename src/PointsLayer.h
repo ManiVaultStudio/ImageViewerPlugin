@@ -381,6 +381,12 @@ public: // Getters/setters
 	 */
 	QVariant getIndicesSelection(const int& role = Qt::DisplayRole) const;
 
+	/**
+	 * Sets the data point selection
+	 * @param selection Data point selection
+	 */
+	void setSelection(const Indices& selection) override;
+
 public:
 
 	/**

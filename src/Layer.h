@@ -284,7 +284,7 @@ public: // Getters/setters
 	 * Sets the data point selection
 	 * @param selection Data point selection
 	 */
-	void setSelection(const Indices& selection);
+	virtual void setSelection(const Indices& selection);
 
 	/**
 	 * Returns the size of the data point selection
