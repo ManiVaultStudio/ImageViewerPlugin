@@ -257,6 +257,9 @@ void SelectionToolProp::compute()
 					break;
 				}
 
+				case SelectionType::Sample:
+					break;
+
 				default:
 					break;
 			}

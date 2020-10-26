@@ -20,6 +20,7 @@
 #include <QPainter>
 #include <QTextDocument>
 #include <QKeyEvent>
+#include <QtMath>
 
 const QColor SelectionLayer::toolColorForeground	= QColor(255, 174, 66, 200);
 const QColor SelectionLayer::toolColorBackground	= QColor(255, 174, 66, 150);
@@ -238,6 +239,26 @@ void SelectionLayer::paint(QPainter* painter)
 			break;
 		}
 
+		case SelectionType::Sample:
+		{
+			if (_mousePositions.size() == 1) {
+				const auto center	= _mousePositions.last();
+				const auto r1		= 3.0f;
+				const auto r2		= 10.0f;
+
+				painter->setPen(QPen(QBrush(toolColorForeground), perimeterLineWidth));
+
+				for (int section = 0; section < 4; ++section) {
+					const auto rotation	= section * M_PI_2;
+					const auto point	= QPointF(qSin(rotation), qCos(rotation));
+
+					painter->drawLine(center + r1 * point, center + r2 * point);
+				}
+			}
+
+			break;
+		}
+
 		default:
 			break;
 	}
@@ -350,6 +371,7 @@ void SelectionLayer::handleEvent(QEvent* event, const QModelIndex& index)
 				}
 
 				case SelectionType::Brush:
+				case SelectionType::Sample:
 				{
 					_mousePositions.clear();
 					_mousePositions << mouseEvent->pos();
@@ -445,6 +467,22 @@ void SelectionLayer::handleEvent(QEvent* event, const QModelIndex& index)
 					break;
 				}
 
+				case SelectionType::Brush:
+				{
+					if (mouseEvent->buttons() & Qt::LeftButton) {
+						_mousePositions << mouseEvent->pos();
+						shouldComputePixelSelection = true;
+					}
+					else {
+						if (_mousePositions.isEmpty())
+							_mousePositions << mouseEvent->pos();
+
+						_mousePositions.last() = mouseEvent->pos();
+					}
+
+					break;
+				}
+
 				case SelectionType::Lasso:
 				{
 					if (mouseEvent->buttons() & Qt::LeftButton)
@@ -467,18 +505,16 @@ void SelectionLayer::handleEvent(QEvent* event, const QModelIndex& index)
 					break;
 				}
 
-				case SelectionType::Brush:
+				case SelectionType::Sample:
 				{
-					if (mouseEvent->buttons() & Qt::LeftButton) {
+					if (_mousePositions.isEmpty())
 						_mousePositions << mouseEvent->pos();
-						shouldComputePixelSelection = true;
-					}
-					else {
-						if (_mousePositions.isEmpty())
-							_mousePositions << mouseEvent->pos();
-
+					else
 						_mousePositions.last() = mouseEvent->pos();
-					}
+
+					shouldComputePixelSelection = false;
+
+					publishSelection();
 
 					break;
 				}
@@ -501,8 +537,6 @@ void SelectionLayer::handleEvent(QEvent* event, const QModelIndex& index)
 			{
 				case SelectionType::None:
 				case SelectionType::Rectangle:
-				case SelectionType::Lasso:
-				case SelectionType::Polygon:
 					break;
 
 				case SelectionType::Brush:
@@ -514,6 +548,11 @@ void SelectionLayer::handleEvent(QEvent* event, const QModelIndex& index)
 
 					break;
 				}
+
+				case SelectionType::Lasso:
+				case SelectionType::Polygon:
+				case SelectionType::Sample:
+					break;
 
 				default:
 					break;
@@ -538,12 +577,16 @@ void SelectionLayer::handleEvent(QEvent* event, const QModelIndex& index)
 					setPixelSelectionType(SelectionType::Brush);
 					break;
 
+				case Qt::Key::Key_P:
+					setPixelSelectionType(SelectionType::Polygon);
+					break;
+
 				case Qt::Key::Key_L:
 					setPixelSelectionType(SelectionType::Lasso);
 					break;
 
-				case Qt::Key::Key_P:
-					setPixelSelectionType(SelectionType::Polygon);
+				case Qt::Key::Key_S:
+					setPixelSelectionType(SelectionType::Sample);
 					break;
 
 				case Qt::Key::Key_A:
@@ -588,14 +631,12 @@ void SelectionLayer::handleEvent(QEvent* event, const QModelIndex& index)
 					{
 						case SelectionType::None:
 						case SelectionType::Rectangle:
+						case SelectionType::Brush:
 							break;
 
 						case SelectionType::Lasso:
 						case SelectionType::Polygon:
 							_mousePositions.clear();
-							break;
-
-						case SelectionType::Brush:
 							break;
 
 						default:
@@ -611,13 +652,31 @@ void SelectionLayer::handleEvent(QEvent* event, const QModelIndex& index)
 
 			switch (keyEvent->key())
 			{
-				case Qt::Key::Key_R:
-				case Qt::Key::Key_B:
-				case Qt::Key::Key_L:
-				case Qt::Key::Key_P:
+				case Qt::Key::Key_R: {
 					affectedIds << index.siblingAtColumn(ult(Column::PixelSelectionType));
-					affectedIds << index.siblingAtColumn(ult(Column::BrushRadius));
 					break;
+				}
+				
+				case Qt::Key::Key_B: {
+					affectedIds << index.siblingAtColumn(ult(Column::BrushRadius));
+					affectedIds << index.siblingAtColumn(ult(Column::PixelSelectionType));
+					break;
+				}
+				
+				case Qt::Key::Key_L: {
+					affectedIds << index.siblingAtColumn(ult(Column::PixelSelectionType));
+					break;
+				}
+				
+				case Qt::Key::Key_P: {
+					affectedIds << index.siblingAtColumn(ult(Column::PixelSelectionType));
+					break;
+				}
+
+				case Qt::Key::Key_S: {
+					affectedIds << index.siblingAtColumn(ult(Column::PixelSelectionType));
+					break;
+				}
 
 				case Qt::Key::Key_A:
 				case Qt::Key::Key_D:
@@ -915,10 +974,11 @@ Layer::Hints SelectionLayer::getHints() const
 
 	result << Hints({
 		Hint(),
-		Hint("R", "Rectangle selection tool", _selectionType == SelectionType::Rectangle),
-		Hint("B", "Brush selection tool", _selectionType == SelectionType::Brush),
-		Hint("P", "Polygon selection tool", _selectionType == SelectionType::Polygon),
-		Hint("L", "Lasso selection tool", _selectionType == SelectionType::Lasso),
+		Hint("R", "Rectangle", _selectionType == SelectionType::Rectangle),
+		Hint("B", "Brush", _selectionType == SelectionType::Brush),
+		Hint("P", "Polygon", _selectionType == SelectionType::Polygon),
+		Hint("L", "Lasso", _selectionType == SelectionType::Lasso),
+		Hint("S", "Sample", _selectionType == SelectionType::Sample),
 		Hint(),
 		Hint("A", "Select all pixels"),
 		Hint("D", "Deselect all pixels"),
@@ -1226,86 +1286,108 @@ void SelectionLayer::publishSelection()
 {
 	auto timer = Timer("Publish selection");
 
-	const auto selectionImage = getPropByName<SelectionToolProp>("SelectionTool")->getSelectionImage().mirrored(false, true);
-	
-	auto& selectionIndices	= dynamic_cast<Points&>(imageViewerPlugin->core()->requestSelection(_pointsDataset->getDataName())).indices;
-	auto& sourceIndices		= _pointsDataset->getSourceData<Points>(*_pointsDataset).indices;
+	auto& selectionIndices = dynamic_cast<Points&>(imageViewerPlugin->core()->requestSelection(_pointsDataset->getDataName())).indices;
 
-	const auto noComponents		= 4;
-	const auto width			= static_cast<float>(getImageSize().width());
-	const auto noPixels			= this->getNoPixels();
-
-	auto index = 0;
-
-	auto sourceIndex = [this, sourceIndices](const int& pixelId) {
-		if (_pointsDataset->isDerivedData())
-			return _indices[pixelId];
-		else
-			return _indices[pixelId];
-	};
-
-	switch (_selectionModifier)
+	switch (_selectionType)
 	{
-		case SelectionModifier::Replace:
-		{
-			selectionIndices.clear();
-			selectionIndices.reserve(noPixels);
+		case SelectionType::None:
+			break;
 
-			for (std::int32_t p = 0; p < noPixels; ++p) {
-				if (selectionImage.bits()[p * noComponents] > 0) {
-					index = sourceIndex(p);
+		case SelectionType::Rectangle:
+		case SelectionType::Brush:
+		case SelectionType::Lasso:
+		case SelectionType::Polygon: {
+			const auto selectionImage = getPropByName<SelectionToolProp>("SelectionTool")->getSelectionImage().mirrored(false, true);
 
-					if (index >= 0)
-						selectionIndices.push_back(index);
+			auto& sourceIndices = _pointsDataset->getSourceData<Points>(*_pointsDataset).indices;
+
+			const auto noComponents = 4;
+			const auto width = static_cast<float>(getImageSize().width());
+			const auto noPixels = this->getNoPixels();
+
+			auto index = 0;
+
+			auto sourceIndex = [this, sourceIndices](const int& pixelId) {
+				if (_pointsDataset->isDerivedData())
+					return _indices[pixelId];
+				else
+					return _indices[pixelId];
+			};
+
+			switch (_selectionModifier)
+			{
+				case SelectionModifier::Replace:
+				{
+					selectionIndices.clear();
+					selectionIndices.reserve(noPixels);
+
+					for (std::int32_t p = 0; p < noPixels; ++p) {
+						if (selectionImage.bits()[p * noComponents] > 0) {
+							index = sourceIndex(p);
+
+							if (index >= 0)
+								selectionIndices.push_back(index);
+						}
+					}
+
+					break;
 				}
+
+				case SelectionModifier::Add:
+				{
+					auto selectionSet = std::set<std::uint32_t>(selectionIndices.begin(), selectionIndices.end());
+
+					for (std::int32_t p = 0; p < noPixels; ++p) {
+						if (selectionImage.bits()[p * noComponents] > 0) {
+							index = sourceIndex(p);
+
+							if (index >= 0)
+								selectionSet.insert(index);
+						}
+					}
+
+					selectionIndices = std::vector<std::uint32_t>(selectionSet.begin(), selectionSet.end());
+					break;
+				}
+
+				case SelectionModifier::Remove:
+				{
+					auto selectionSet = std::set<std::uint32_t>(selectionIndices.begin(), selectionIndices.end());
+
+					for (std::int32_t p = 0; p < noPixels; ++p) {
+						if (selectionImage.bits()[p * noComponents] > 0) {
+							index = sourceIndex(p);
+
+							if (index >= 0)
+								selectionSet.erase(index);
+						}
+					}
+
+					selectionIndices = std::vector<std::uint32_t>(selectionSet.begin(), selectionSet.end());
+					break;
+				}
+
+				case SelectionModifier::All:
+				case SelectionModifier::None:
+				case SelectionModifier::Invert:
+					break;
+
+				default:
+					break;
 			}
 
 			break;
 		}
-			
-		case SelectionModifier::Add:
-		{
-			auto selectionSet = std::set<std::uint32_t>(selectionIndices.begin(), selectionIndices.end());
 
-			for (std::int32_t p = 0; p < noPixels; ++p) {
-				if (selectionImage.bits()[p * noComponents] > 0) {
-					index = sourceIndex(p);
-
-					if (index >= 0)
-						selectionSet.insert(index);
-				}
-			}
-
-			selectionIndices = std::vector<std::uint32_t>(selectionSet.begin(), selectionSet.end());
+		case SelectionType::Sample: {
+			//renderer->getScreenPointToWorldPosition()
 			break;
 		}
-
-		case SelectionModifier::Remove:
-		{
-			auto selectionSet = std::set<std::uint32_t>(selectionIndices.begin(), selectionIndices.end());
-
-			for (std::int32_t p = 0; p < noPixels; ++p) {
-				if (selectionImage.bits()[p * noComponents] > 0) {
-					index = sourceIndex(p);
-
-					if (index >= 0)
-						selectionSet.erase(index);
-				}
-			}
-
-			selectionIndices = std::vector<std::uint32_t>(selectionSet.begin(), selectionSet.end());
-			break;
-		}
-		
-		case SelectionModifier::All:
-		case SelectionModifier::None:
-		case SelectionModifier::Invert:
-			break;
 
 		default:
 			break;
 	}
-	
+
 	if (_pointsDataset->isDerivedData())
 		imageViewerPlugin->core()->notifySelectionChanged(_pointsDataset->getSourceData<Points>(*_pointsDataset).getDataName());
 	else

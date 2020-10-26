@@ -165,7 +165,7 @@ void PointsLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 		_layersModel->setData(_layersModel->getSelectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::ColorMap)), _ui->colorMapComboBox->getCurrentImage());
 	});
 
-	QObject::connect(_ui->colorPickerPushButton, &ColorPickerPushButton::currentColorChanged, [this](const QColor& currentColor) {
+	QObject::connect(_ui->colorPickerPushButton, &ColorPickerPushButton::colorChanged, [this](const QColor& currentColor) {
 		_layersModel->setData(_layersModel->getSelectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::ConstantColor)), currentColor);
 	});
 
@@ -383,7 +383,7 @@ void PointsLayerWidget::updateData(const QModelIndex& begin, const QModelIndex& 
 			const auto constantColor = begin.siblingAtColumn(ult(PointsLayer::Column::ConstantColor));
 
 			_ui->colorPickerPushButton->blockSignals(true);
-			_ui->colorPickerPushButton->setCurrentColor(constantColor.data(Qt::EditRole).value<QColor>());
+			_ui->colorPickerPushButton->setColor(constantColor.data(Qt::EditRole).value<QColor>());
 			_ui->colorPickerPushButton->blockSignals(false);
 		}
 

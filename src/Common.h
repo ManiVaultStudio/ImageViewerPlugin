@@ -58,7 +58,8 @@ enum class SelectionType
 	Rectangle,		/** A rectangle is drawn to select pixels */
 	Brush,			/** A brush is used the paint selection */
 	Lasso,			/** A lasso tool is used to enclose pixels */
-	Polygon			/** A polygon is drawn to select pixels */
+	Polygon,		/** Select pixels by drawing a polygon */
+	Sample			/** Select the pixel directly under the cursor */
 };
 
 /**
@@ -80,6 +81,9 @@ inline QString selectionTypeName(const SelectionType& selectionType)
 
 	case SelectionType::Polygon:
 		return "Polygon";
+
+	case SelectionType::Sample:
+		return "Sample";
 
 	default:
 		break;
