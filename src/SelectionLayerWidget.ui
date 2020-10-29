@@ -185,6 +185,11 @@
             <string>Polygon</string>
            </property>
           </item>
+          <item>
+           <property name="text">
+            <string>Sample</string>
+           </property>
+          </item>
          </widget>
         </item>
         <item>

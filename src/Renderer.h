@@ -143,17 +143,6 @@ public: // Navigation
 	/** Reset the view */
 	void resetView();
 
-public: // Context menus
-
-	/** Returns the view menu */
-	QMenu* getViewMenu();
-
-	/** Returns the context menu */
-	QMenu* getContextMenu();
-
-	/** Whether the display of a context menu is allowed */
-	bool getAllowsContextMenu();
-
 public: // Miscellaneous
 
 	/** Returns the parent widget */

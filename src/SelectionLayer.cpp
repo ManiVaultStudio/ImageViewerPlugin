@@ -87,6 +87,7 @@ void SelectionLayer::init()
 		}
 	}
 
+	updateModelMatrix();
 	computeChannel(ChannelIndex::Selection);
 }
 
@@ -1380,7 +1381,16 @@ void SelectionLayer::publishSelection()
 		}
 
 		case SelectionType::Sample: {
-			//renderer->getScreenPointToWorldPosition()
+			if (isWithin(_mousePositions.last())) {
+				const auto textureCoordinate = getTextureCoordinateFromScreenPoint(_mousePositions.last());
+				const auto imageWidth		= getImageWidth(Qt::EditRole).toInt();
+				const auto pointIndex		= textureCoordinate.y() * imageWidth + textureCoordinate.x();
+
+				selectionIndices = std::vector<std::uint32_t>({ static_cast<std::uint32_t>(pointIndex) });
+				//qDebug() << _mousePositions.last();
+				//qDebug() << textureCoordinate;
+			}
+			
 			break;
 		}
 

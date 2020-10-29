@@ -43,9 +43,4 @@ protected: // Inherited
 
 	/** Initializes the prop */
 	void initialize() override;
-
-protected:
-
-	/** Updates the internal model matrix */
-	void updateModelMatrix();
 };

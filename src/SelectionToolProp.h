@@ -54,11 +54,6 @@ protected: // Inherited
 	/** Initializes the prop */
 	void initialize() override;
 
-protected: // Miscellaneous
-
-	/** Updates the internal model matrix */
-	void updateModelMatrix();
-
 private: // Shader programs
 
 	/** Loads the shader program for the selection tool rendering */
