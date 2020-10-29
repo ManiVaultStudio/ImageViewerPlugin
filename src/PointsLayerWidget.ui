@@ -654,7 +654,7 @@
   <customwidget>
    <class>ColorPickerPushButton</class>
    <extends>QWidget</extends>
-   <header>ColorPickerPushButton.h</header>
+   <header>widgets/ColorPickerPushButton.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

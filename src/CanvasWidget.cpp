@@ -210,22 +210,3 @@ void CanvasWidget::drawBackground(QPainter* painter)
 	painter->setBrush(_backgroundGradient);
 	painter->drawRect(rect());
 }
-
-QMenu* CanvasWidget::getContextMenu()
-{
-	auto contextMenu = _renderer->getContextMenu();
-	/*
-	if (_imageViewerPlugin->imageCollectionType() == ImageCollectionType::Stack) {
-		auto* createSubsetFromSelectionAction = new QAction("Create subset from selection");
-
-		createSubsetFromSelectionAction->setEnabled(_imageViewerPlugin->noSelectedPixels() > 0);
-
-		connect(createSubsetFromSelectionAction, &QAction::triggered, _imageViewerPlugin, &ImageViewerPlugin::createSubsetFromSelection);
-
-		contextMenu->addSeparator();
-		contextMenu->addAction(createSubsetFromSelectionAction);
-	}
-	*/
-
-	return contextMenu;
-}

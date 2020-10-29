@@ -317,6 +317,21 @@ protected:
 	 */
 	virtual QSize getImageSize() const = 0;
 
+	/** Updates the model matrix */
+	void updateModelMatrix();
+
+	/** Get discrete texture coordinates from \p screenPoint
+	 * @param screenPoint Screen point [0..(screenWidth - 1), 0..(screenHeight - 1)]
+	 * @return Discrete texture coordinates [0..(textureWidth - 1), 0..(textureHeight - 1)]
+	 */
+	QPoint getTextureCoordinateFromScreenPoint(const QPoint& screenPoint) const;
+
+	/** Determines whether \p screenPoint is within the bounds of the layer
+	 * @param screenPoint Screen point [0..(screenWidth - 1), 0..(screenHeight - 1)]
+	 * @return Whether \p screenPoint is within the bounds of the layer
+	 */
+	bool isWithin(const QPoint& screenPoint) const;
+
 	/**
 	 * Returns the number of pixels in the image
 	 * @return Number of pixels

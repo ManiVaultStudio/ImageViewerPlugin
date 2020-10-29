@@ -11,6 +11,7 @@
 #include <QDebug>
 #include <QPainter>
 #include <QTextDocument>
+#include <QtMath>
 
 ImageViewerPlugin* Layer::imageViewerPlugin		= nullptr;
 bool Layer::showHints							= true;
@@ -349,6 +350,36 @@ QVariant Layer::getImageSize(const int& role /*= Qt::DisplayRole*/) const
 	}
 
 	return QVariant();
+}
+
+void Layer::updateModelMatrix()
+{
+	QMatrix4x4 modelMatrix;
+
+	modelMatrix.translate(-0.5f * getImageWidth(Qt::EditRole).toInt(), -0.5f * getImageHeight(Qt::EditRole).toInt(), 0.0f);
+
+	setModelMatrix(modelMatrix);
+}
+
+QPoint Layer::getTextureCoordinateFromScreenPoint(const QPoint& screenPoint) const
+{
+	auto correctedScreenPosition = QPoint(renderer->getParentWidgetSize().width() - screenPoint.x(), screenPoint.y());
+	const auto worldPosition = renderer->getScreenPointToWorldPosition(getModelViewMatrix(), correctedScreenPosition);
+
+	return QPoint(qFloor(worldPosition.x()), qFloor(worldPosition.y()));
+}
+
+bool Layer::isWithin(const QPoint& screenPoint) const
+{
+	const auto textureCoordinate = getTextureCoordinateFromScreenPoint(screenPoint);
+
+	if (textureCoordinate.x() < 0 || textureCoordinate.x() >= getImageWidth(Qt::EditRole).toInt())
+		return false;
+
+	if (textureCoordinate.y() < 0 || textureCoordinate.y() >= getImageHeight(Qt::EditRole).toInt())
+		return false;
+
+	return true;
 }
 
 QVariant Layer::getImageWidth(const int& role) const

@@ -2,7 +2,6 @@
 #include "LayersModel.h"
 #include "SelectionLayer.h"
 #include "ImageViewerPlugin.h"
-#include "ColorPickerPushButton.h"
 
 #include "Application.h"
 
@@ -91,7 +90,7 @@ void SelectionLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 		_layersModel->setData(_layersModel->getSelectionModel().currentIndex().siblingAtColumn(ult(SelectionLayer::Column::InvertSelection)), QVariant());
 	});
 
-	QObject::connect(_ui->colorPickerPushButton, &ColorPickerPushButton::currentColorChanged, [this](const QColor& currentColor) {
+	QObject::connect(_ui->colorPickerPushButton, &ColorPickerPushButton::colorChanged, [this](const QColor& currentColor) {
 		_layersModel->setData(_layersModel->getSelectionModel().currentIndex().siblingAtColumn(ult(SelectionLayer::Column::OverlayColor)), currentColor);
 	});
 
@@ -203,7 +202,7 @@ void SelectionLayerWidget::updateData(const QModelIndex& begin, const QModelInde
 			const auto overlayColor = _layersModel->data(begin.row(), ult(SelectionLayer::Column::OverlayColor), Qt::EditRole).value<QColor>();
 
 			_ui->colorPickerPushButton->blockSignals(true);
-			_ui->colorPickerPushButton->setCurrentColor(overlayColor);
+			_ui->colorPickerPushButton->setColor(overlayColor);
 			_ui->colorPickerPushButton->blockSignals(false);
 		}
 	}

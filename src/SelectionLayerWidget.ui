@@ -9,7 +9,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>300</width>
+    <width>317</width>
     <height>620</height>
    </rect>
   </property>
@@ -183,6 +183,11 @@
           <item>
            <property name="text">
             <string>Polygon</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Sample</string>
            </property>
           </item>
          </widget>
@@ -369,7 +374,7 @@
   <customwidget>
    <class>ColorPickerPushButton</class>
    <extends>QWidget</extends>
-   <header>ColorPickerPushButton.h</header>
+   <header>widgets/ColorPickerPushButton.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
