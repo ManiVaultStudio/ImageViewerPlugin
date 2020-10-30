@@ -183,10 +183,10 @@ void CanvasWidget::paintGL()
 	}
 	catch (std::exception& e)
 	{
-		QMessageBox(QMessageBox::Critical, "Rendering failed", e.what());
+		QMessageBox::critical(nullptr, "Rendering failed", e.what());
 	}
 	catch (...) {
-		QMessageBox(QMessageBox::Critical, "Rendering failed", "An unhandled exception occurred");
+		QMessageBox::critical(nullptr, "Rendering failed", "An unhandled exception occurred");
 	}
 
 #ifdef _DEBUG
