@@ -20,7 +20,7 @@ StatusbarWidget::StatusbarWidget(QWidget* parent) :
 		imageViewerPlugin->getViewerWidget()->getCanvasWidget()->zoomExtents();
 	});
 
-	_ui->showHintsCheckBox->setChecked(imageViewerPlugin->getViewerWidget()->getShowHints());
+	_ui->showHintsCheckBox->setChecked(imageViewerPlugin->getSetting("ShowHints").toBool());
 
 	QObject::connect(_ui->showHintsCheckBox, &QCheckBox::stateChanged, [imageViewerPlugin](int state) {
 		imageViewerPlugin->getViewerWidget()->setShowHints(state);

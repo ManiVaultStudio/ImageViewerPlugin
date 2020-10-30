@@ -12,7 +12,6 @@ ViewerWidget::ViewerWidget(QWidget* parent) :
 	_ui{ std::make_unique<Ui::ViewerWidget>() }
 {
 	_ui->setupUi(this);
-
 	_ui->canvasWidget->initialize(_imageViewerPlugin);
 
 	setShowHints(_imageViewerPlugin->getSetting("ShowHints").toBool());
