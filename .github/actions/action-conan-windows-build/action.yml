@@ -1,0 +1,70 @@
+name: 'Common cmake steps'
+description: 'Encapsulate cmake composite run steps that are common for Windows, Linux and Mac'
+# reference https://docs.github.com/en/free-pro-team@latest/actions/creating-actions/creating-a-composite-run-steps-action
+inputs:
+  conan-visual-version: 
+    description: 'MSVC version: 15, 16 represent msvc-2017 or msvc-2019'
+    required: true
+  conan-visual-runtime: 
+    description: 'MD or MDd'
+    required: true
+  conan-build-type:
+    description: 'Debug or Release'
+    required: true
+  conan-user:  
+    description: 'pass secrets.LKEB_ARTIFACTORY_USER'
+    required: true
+  conan-password: 
+    description: 'pass secrets.LKEB_ARTIFACTORY_PASSWORD'
+    required: true
+  conan-pem: 
+    description: 'pass secrets.LKEB_CERT_CHAIN'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install conan & build configuration
+      run: |
+
+        pip install conan
+        pip install conan_package_tools bincrafters_package_tools
+        pip install -Iv cmake>=3.17
+        echo CMake version:
+        cmake --version
+        for /f "delims=" %%i in ('where cmake') do set CONAN_CMAKE_PROGRAM="%%i"
+        set CONAN_USER_HOME=%cd%\_conan
+        mkdir %CONAN_USER_HOME%
+        conan user
+        echo Add LKEB artifactory as remote
+        conan remote add %CONAN_LKEB_ARTIFACTORY% %CONAN_UPLOAD%
+        echo Extend conan cacert.pem
+        for /f "delims=" %%i in ('conan config home') do set CONANHOME=%%i
+        SETLOCAL EnableDelayedExpansion
+        echo !CONAN_PEM! >> %CONANHOME%\cacert.pem
+        ENDLOCAL
+        echo Add upload user
+        conan user -r %CONAN_LKEB_ARTIFACTORY% -p ${{ inputs.conan-password }} ${{ inputs.conan-user }}
+        
+        conan profile new action_build
+        conan profile update settings.os=Windows action_build
+        conan profile update settings.os_build=Windows action_build
+        conan profile update settings.arch=x86_64 action_build
+        conan profile update settings.arch_build=x86_64 action_build
+        conan profile update settings.compiler="Visual Studio" action_build
+        conan profile update settings.compiler.runtime=${{ inputs.conan-visual-runtime }} action_build
+        conan profile update settings.compiler.version=${{ inputs.conan-visual-version }} action_build
+        conan profile update settings.build_type=${{ inputs.conan-build-type }} action_build
+        conan profile update options.ImageViewerPlugin:shared=True action_build
+        conan profile show action_build
+
+        mkdir _build
+        conan create . ImageViewerPlugin/latest@lkeb/stable --profile action_build
+        conan upload --all --force --confirm -r %CONAN_LKEB_ARTIFACTORY% ImageViewerPlugin/*
+
+      shell: cmd
+      env:
+        BUILD_SHARED: True
+        CONAN_UPLOAD: https://lkeb-artifactory.lumc.nl/artifactory/api/conan/conan-local
+        CONAN_LKEB_ARTIFACTORY: lkeb-artifactory
+        CONAN_PEM: ${{ inputs.conan-pem }}
