@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ViewPlugin.h>
+#include "Application.h"
 
 #include "LayersModel.h"
 #include "ColorMapModel.h"
@@ -30,6 +31,11 @@ public:
 	ImageViewerPlugin();
 
 public: // Inherited from ViewPlugin
+
+	/** Returns the icon of this plugin */
+	QIcon getIcon() const override {
+		return hdps::Application::getIconFont("FontAwesome").getIcon("images");
+	}
 
 	/** Initializes the plugin */
 	void init() override;
