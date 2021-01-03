@@ -33,6 +33,8 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	
 	_viewerWidget		= new ViewerWidget(this);
 	_settingsWidget		= new SettingsWidget(this);
+
+	setDockingLocation(hdps::gui::DockableWidget::DockingLocation::Right);
 }
 
 void ImageViewerPlugin::init()
