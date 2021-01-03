@@ -33,6 +33,8 @@ ImageViewerPlugin::ImageViewerPlugin() :
 	
 	_viewerWidget		= new ViewerWidget(this);
 	_settingsWidget		= new SettingsWidget(this);
+
+	setDockingLocation(hdps::gui::DockableWidget::DockingLocation::Right);
 }
 
 void ImageViewerPlugin::init()
@@ -42,7 +44,7 @@ void ImageViewerPlugin::init()
 	layout->setMargin(0);
 	layout->setSpacing(0);
 
-	setMainLayout(layout);
+	setLayout(layout);
 
 	auto splitter = new QSplitter();
 
@@ -56,7 +58,7 @@ void ImageViewerPlugin::init()
 
 	splitter->setCollapsible(1, true);
 
-	addWidget(splitter);
+	layout->addWidget(splitter);
 
 	_layersModel.initialize();
 }

@@ -616,13 +616,13 @@ void SelectionLayer::handleEvent(QEvent* event, const QModelIndex& index)
 
 				case Qt::Key::Key_Shift:
 				{
-					getPixelSelectionModifier(SelectionModifier::Add);
+					setPixelSelectionModifier(SelectionModifier::Add);
 					break;
 				}
 
 				case Qt::Key::Key_Control:
 				{
-					getPixelSelectionModifier(SelectionModifier::Remove);
+					setPixelSelectionModifier(SelectionModifier::Remove);
 					break;
 				}
 
@@ -716,7 +716,7 @@ void SelectionLayer::handleEvent(QEvent* event, const QModelIndex& index)
 				case Qt::Key::Key_Shift:
 				case Qt::Key::Key_Control:
 				{
-					getPixelSelectionModifier(SelectionModifier::Replace);
+					setPixelSelectionModifier(SelectionModifier::Replace);
 
 					affectedIds << index.siblingAtColumn(ult(Column::PixelSelectionModifier));
 					break;
@@ -916,7 +916,7 @@ QModelIndexList SelectionLayer::setData(const QModelIndex& index, const QVariant
 
 		case Column::PixelSelectionModifier:
 		{
-			getPixelSelectionModifier(static_cast<SelectionModifier>(value.toInt()));
+			setPixelSelectionModifier(static_cast<SelectionModifier>(value.toInt()));
 			break;
 		}
 
@@ -1121,7 +1121,7 @@ QVariant SelectionLayer::getSelectionModifier(const int& role) const
 	return QVariant();
 }
 
-void SelectionLayer::getPixelSelectionModifier(const SelectionModifier& pixelSelectionModifier)
+void SelectionLayer::setPixelSelectionModifier(const SelectionModifier& pixelSelectionModifier)
 {
 	_selectionModifier = pixelSelectionModifier;
 }

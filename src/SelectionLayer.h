@@ -157,7 +157,7 @@ public: // Getters/setters
 	 * Sets the pixel selection modifier
 	 * @param pixelSelectionModifier Pixel selection modifier
 	 */
-	void getPixelSelectionModifier(const SelectionModifier& pixelSelectionModifier);
+	void setPixelSelectionModifier(const SelectionModifier& pixelSelectionModifier);
 
 	/**
 	 * Returns the brush radius
