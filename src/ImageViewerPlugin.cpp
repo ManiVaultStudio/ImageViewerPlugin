@@ -2,19 +2,13 @@
 #include "ViewerWidget.h"
 #include "StatusbarWidget.h"
 #include "SettingsWidget.h"
-#include "LayersModel.h"
 #include "Layer.h"
-#include "PointsLayer.h"
-#include "Renderer.h"
 
 #include "PointData.h"
 
 #include <QFontDatabase>
-#include <QItemSelectionModel>
-#include <QFileInfo>
 #include <QDebug>
 #include <QEvent>
-#include <QKeyEvent>
 #include <QSplitter>
 
 using namespace hdps;
@@ -23,8 +17,9 @@ Q_PLUGIN_METADATA(IID "nl.tudelft.ImageViewerPlugin")
 
 ImageViewerPlugin::ImageViewerPlugin() :
     ViewPlugin("Image Viewer"),
-    _viewerWidget(),
-    _settingsWidget(),
+    _viewerWidget(nullptr),
+    _statusbarWidget(nullptr),
+    _settingsWidget(nullptr),
     _layersModel(this),
     _colorMapModel(this, ColorMap::Type::OneDimensional),
     _pointsDatasets()
