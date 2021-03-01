@@ -22,7 +22,7 @@ bool onSegment(vec2 p, vec2 q, vec2 r)
 { 
     if (q.x <= max(p.x, r.x) && q.x >= min(p.x, r.x) && q.y <= max(p.y, r.y) && q.y >= min(p.y, r.y)) 
         return true;
-	
+    
     return false; 
 }
 
@@ -33,11 +33,11 @@ int orientation(vec2 p, vec2 q, vec2 r)
   
     if (val == 0) {
 
-		// Colinear
-		return 0;
-	}
-	
-	// Clock or counterclock wise 
+        // Colinear
+        return 0;
+    }
+    
+    // Clock or counterclock wise 
     return (val > 0) ? 1 : 2;
 } 
 
@@ -57,21 +57,21 @@ bool doIntersect(vec2 p1, vec2 q1, vec2 p2, vec2 q2)
     // Special Cases 
     // p1, q1 and p2 are colinear and p2 lies on segment p1q1 
     if (o1 == 0 && onSegment(p1, p2, q1))
-		return true; 
+        return true; 
   
     // p1, q1 and p2 are colinear and q2 lies on segment p1q1 
     if (o2 == 0 && onSegment(p1, q2, q1))
-		return true;
+        return true;
   
     // p2, q2 and p1 are colinear and p1 lies on segment p2q2 
     if (o3 == 0 && onSegment(p2, p1, q2))
-		return true;
+        return true;
   
      // p2, q2 and q1 are colinear and q1 lies on segment p2q2 
     if (o4 == 0 && onSegment(p2, q1, q2))
-		return true;
+        return true;
   
-	// Doesn't fall in any of the above cases 
+    // Doesn't fall in any of the above cases 
     return false;
 } 
 
@@ -80,14 +80,14 @@ bool isInside(vec2 p)
 { 
     // There must be at least 3 vertices in points
     if (noPoints < 3)
-		return false;
+        return false;
   
     // Create a point for line segment from p to infinite 
     vec2 extreme = vec2(10000.0f, p.y); 
   
     // Count intersections of the above line with sides of polygon 
     int count = 0, i = 0;
-	
+    
     do
     { 
         int next = (i + 1) % noPoints; 
@@ -103,55 +103,55 @@ bool isInside(vec2 p)
         } 
         i = next; 
     } while (i != 0); 
-	
+    
     // Return true if count is odd, false otherwise 
     return bool(count & 1);  // Same as (count % 2 == 1) 
 
-	return true;
+    return true;
 }
 
 void main(void)
 {
-	vec2 P = uv * imageSize;
+    vec2 P = uv * imageSize;
 
-	switch (selectionType) {
-		case 0:
-		{
-			bool inRectangle	= uv.x >= rectangleTopLeft.x && uv.x < rectangleBottomRight.x && uv.y >= rectangleTopLeft.y && uv.y < rectangleBottomRight.y;
-			fragmentColor		= inRectangle ? vec4(1) : vec4(vec3(0), 1);
-			break;
-		}
+    switch (selectionType) {
+        case 0:
+        {
+            bool inRectangle    = uv.x >= rectangleTopLeft.x && uv.x < rectangleBottomRight.x && uv.y >= rectangleTopLeft.y && uv.y < rectangleBottomRight.y;
+            fragmentColor       = inRectangle ? vec4(1) : vec4(vec3(0), 1);
+            break;
+        }
 
-		case 1:
-		{
-			bool inBrush		= length(P - currentBrushCenter) < brushRadius;
-			bool prevInBrush	= texture(pixelSelectionTexture, vec2(1.0f - uv.x, uv.y)).r > 0;
-			
-			if (currentBrushCenter != previousBrushCenter) {
-				vec2 A		= currentBrushCenter - previousBrushCenter;
-				vec2 AN		= normalize(A);
-				vec2 B		= P - previousBrushCenter;
-				float dotBA	= dot(B, normalize(A));
+        case 1:
+        {
+            bool inBrush        = length(P - currentBrushCenter) < brushRadius;
+            bool prevInBrush    = texture(pixelSelectionTexture, vec2(1.0f - uv.x, uv.y)).r > 0;
+            
+            if (currentBrushCenter != previousBrushCenter) {
+                vec2 A      = currentBrushCenter - previousBrushCenter;
+                vec2 AN     = normalize(A);
+                vec2 B      = P - previousBrushCenter;
+                float dotBA = dot(B, normalize(A));
 
-				if (dotBA > 0 && dotBA < length(A)) {
-					vec2 C = previousBrushCenter + dotBA * AN;
-					
-					if (length(P - C) < brushRadius)
-						inBrush = true;
-				}
-			}
+                if (dotBA > 0 && dotBA < length(A)) {
+                    vec2 C = previousBrushCenter + dotBA * AN;
+                    
+                    if (length(P - C) < brushRadius)
+                        inBrush = true;
+                }
+            }
 
-			fragmentColor = (inBrush || prevInBrush) ? vec4(1) : vec4(vec3(0), 1);
+            fragmentColor = (inBrush || prevInBrush) ? vec4(1) : vec4(vec3(0), 1);
 
-			break;
-		}
+            break;
+        }
 
-		case 2:
-		case 3:
-		{
-			fragmentColor = isInside(P) ? vec4(1) : vec4(vec3(0), 1);
-			break;
-		}
-	}
+        case 2:
+        case 3:
+        {
+            fragmentColor = isInside(P) ? vec4(1) : vec4(vec3(0), 1);
+            break;
+        }
+    }
 }
 )"

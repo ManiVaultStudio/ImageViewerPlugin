@@ -5,7 +5,7 @@
 #include <QWidget>
 
 namespace Ui {
-	class StatusbarWidget;
+    class StatusbarWidget;
 }
 
 class ImageViewerPlugin;
@@ -19,12 +19,12 @@ class StatusbarWidget : public QWidget
 {
 public: // Construction
 
-	/**
-	 * Constructor
-	 * @param parent Parent widget
-	 */
-	StatusbarWidget(QWidget* parent);
+    /**
+     * Constructor
+     * @param parent Parent widget
+     */
+    StatusbarWidget(QWidget* parent);
 
 private:
-	std::unique_ptr<Ui::StatusbarWidget> _ui;		/** User interface as produced by Qt designer */
+    std::unique_ptr<Ui::StatusbarWidget> _ui;       /** User interface as produced by Qt designer */
 };

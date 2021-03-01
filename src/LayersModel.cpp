@@ -13,319 +13,319 @@
 #include <QMimeData>
 
 LayersModel::LayersModel(ImageViewerPlugin* imageViewerPlugin) :
-	QAbstractItemModel(imageViewerPlugin),
-	_selectionModel(this),
-	_root(nullptr)
+    QAbstractItemModel(imageViewerPlugin),
+    _selectionModel(this),
+    _root(nullptr)
 {
 }
 
 LayersModel::~LayersModel()
 {
-	delete _root;
+    delete _root;
 }
 
 void LayersModel::paint(QPainter* painter)
 {
-	if (getSelectedLayer() == nullptr)
-		return;
+    if (getSelectedLayer() == nullptr)
+        return;
 
-	getSelectedLayer()->paint(painter);
+    getSelectedLayer()->paint(painter);
 }
 
 void LayersModel::dispatchEventToSelectedLayer(QEvent* event)
 {
-	const auto selectedRows = _selectionModel.selectedRows();
+    const auto selectedRows = _selectionModel.selectedRows();
 
-	if (selectedRows.isEmpty())
-		return;
+    if (selectedRows.isEmpty())
+        return;
 
-	getSelectedLayer()->handleEvent(event, selectedRows.first());
+    getSelectedLayer()->handleEvent(event, selectedRows.first());
 }
 
 int LayersModel::columnCount(const QModelIndex& parent /*= QModelIndex()*/) const
 {
-	Q_UNUSED(parent);
+    Q_UNUSED(parent);
 
-	return ult(Layer::Column::End) + 1;
+    return ult(Layer::Column::End) + 1;
 }
 
 QVariant LayersModel::data(const QModelIndex &index, int role) const
 {
-	if (!index.isValid())
-		return QVariant();
+    if (!index.isValid())
+        return QVariant();
 
-	auto layer = getLayer(index);
+    auto layer = getLayer(index);
 
-	return layer->getData(index, role);
+    return layer->getData(index, role);
 }
 
 QVariant LayersModel::data(const int& row, const int& column, const int& role) const
 {
-	return data(index(row, column), role);
+    return data(index(row, column), role);
 }
 
 bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int role /*= Qt::EditRole*/)
 {
-	auto layer = getLayer(index);
+    auto layer = getLayer(index);
 
-	const auto affectedIndices = layer->setData(index, value, role);
+    const auto affectedIndices = layer->setData(index, value, role);
 
-	for (auto affectedIndex : affectedIndices) {
-		emit dataChanged(affectedIndex, affectedIndex);
-	}
+    for (auto affectedIndex : affectedIndices) {
+        emit dataChanged(affectedIndex, affectedIndex);
+    }
 
-	return true;
+    return true;
 }
 
 bool LayersModel::setData(const int& row, const int& column, const QVariant& value, int role /*= Qt::EditRole*/)
 {
-	return setData(index(row, column), value, role);
+    return setData(index(row, column), value, role);
 }
 
 Qt::ItemFlags LayersModel::flags(const QModelIndex& index) const
 {
-	return getLayer(index)->getFlags(index);
+    return getLayer(index)->getFlags(index);
 }
 
 Qt::ItemFlags LayersModel::flags(const int& row, const int& column) const
 {
-	return flags(index(row, column));
+    return flags(index(row, column));
 }
 
 Layer* LayersModel::getLayer(const QModelIndex& index) const
 {
-	if (index.isValid()) {
-		auto layer = static_cast<Layer*>(index.internalPointer());
-		
-		if (layer)
-			return layer;
-	}
+    if (index.isValid()) {
+        auto layer = static_cast<Layer*>(index.internalPointer());
+        
+        if (layer)
+            return layer;
+    }
 
-	return _root;
+    return _root;
 }
 
 QVariant LayersModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
-	if (role != Qt::DisplayRole)
-		return QVariant();
+    if (role != Qt::DisplayRole)
+        return QVariant();
 
-	if (orientation == Qt::Horizontal) {
-		return Layer::getColumnName(static_cast<Layer::Column>(section));
-	}
+    if (orientation == Qt::Horizontal) {
+        return Layer::getColumnName(static_cast<Layer::Column>(section));
+    }
 
-	return QVariant();
+    return QVariant();
 }
 
 QModelIndex LayersModel::index(int row, int column, const QModelIndex &parent) const
 {
-	if (parent.isValid() && parent.column() != 0)
-		return QModelIndex();
+    if (parent.isValid() && parent.column() != 0)
+        return QModelIndex();
 
-	auto parentLayer = getLayer(parent);
+    auto parentLayer = getLayer(parent);
 
-	if (!parentLayer)
-		return QModelIndex();
+    if (!parentLayer)
+        return QModelIndex();
 
-	auto childLayer = parentLayer->getChild(row);
+    auto childLayer = parentLayer->getChild(row);
 
-	if (childLayer)
-		return createIndex(row, column, childLayer);
+    if (childLayer)
+        return createIndex(row, column, childLayer);
 
-	return QModelIndex();
+    return QModelIndex();
 }
 
 bool LayersModel::insertLayer(int row, Layer* layer, const QModelIndex& parent /*= QModelIndex()*/)
 {
-	auto parentLayer = getLayer(parent);
+    auto parentLayer = getLayer(parent);
 
-	if (!parentLayer)
-		return false;
+    if (!parentLayer)
+        return false;
 
-	beginInsertRows(parent, row, row);
-	{
-		parentLayer->insertChild(row, layer);
-	}
-	endInsertRows();
+    beginInsertRows(parent, row, row);
+    {
+        parentLayer->insertChild(row, layer);
+    }
+    endInsertRows();
 
-	return true;
+    return true;
 }
 
 QModelIndex LayersModel::parent(const QModelIndex &index) const
 {
-	if (!index.isValid())
-		return QModelIndex();
+    if (!index.isValid())
+        return QModelIndex();
 
-	auto childLayer		= getLayer(index);
-	auto parentLayer	= childLayer ? childLayer->getParent() : nullptr;
+    auto childLayer     = getLayer(index);
+    auto parentLayer    = childLayer ? childLayer->getParent() : nullptr;
 
-	if (parentLayer == _root || !parentLayer)
-		return QModelIndex();
+    if (parentLayer == _root || !parentLayer)
+        return QModelIndex();
 
-	return createIndex(parentLayer->getChildIndex(), 0, parentLayer);
+    return createIndex(parentLayer->getChildIndex(), 0, parentLayer);
 }
 
 bool LayersModel::removeLayers(const QModelIndexList& indices)
 {
-	QModelIndexList sortedIndices = indices;
+    QModelIndexList sortedIndices = indices;
 
-	qSort(sortedIndices.begin(), sortedIndices.end(), qGreater<QModelIndex>());
+    qSort(sortedIndices.begin(), sortedIndices.end(), qGreater<QModelIndex>());
 
-	for (auto sortedIndex : sortedIndices) {
-		const int row = sortedIndex.row();
+    for (auto sortedIndex : sortedIndices) {
+        const int row = sortedIndex.row();
 
-		beginRemoveRows(sortedIndex.parent(), row, row);
-		{
-			getLayer(sortedIndex.parent())->removeChild(row);
-		}
-		endRemoveRows();
-	}
+        beginRemoveRows(sortedIndex.parent(), row, row);
+        {
+            getLayer(sortedIndex.parent())->removeChild(row);
+        }
+        endRemoveRows();
+    }
 
-	return true;
+    return true;
 }
 
 bool LayersModel::mayMoveLayer(const QModelIndex& index, const int& delta) const
 {
-	const auto sourceIndex = index;
-	const auto targetIndex = index.siblingAtRow(index.row() + delta);
+    const auto sourceIndex = index;
+    const auto targetIndex = index.siblingAtRow(index.row() + delta);
 
-	if (!sourceIndex.isValid() || !targetIndex.isValid())
-		return false;
+    if (!sourceIndex.isValid() || !targetIndex.isValid())
+        return false;
 
-	return true;
+    return true;
 }
 
 bool LayersModel::moveLayer(const QModelIndex& sourceParent, const int& sourceRow, const QModelIndex& targetParent, int targetRow)
 {
-	if (targetRow < 0)
-		targetRow = 0;
+    if (targetRow < 0)
+        targetRow = 0;
 
-	if (sourceParent == targetParent) {
-		if (beginMoveRows(sourceParent, sourceRow, sourceRow, targetParent, targetRow)) {
-			auto sourceParentLayer	= getLayer(sourceParent);
-			auto targetParentLayer	= getLayer(targetParent);
-			auto sourceLayer		= sourceParentLayer->getChild(sourceRow);
+    if (sourceParent == targetParent) {
+        if (beginMoveRows(sourceParent, sourceRow, sourceRow, targetParent, targetRow)) {
+            auto sourceParentLayer  = getLayer(sourceParent);
+            auto targetParentLayer  = getLayer(targetParent);
+            auto sourceLayer        = sourceParentLayer->getChild(sourceRow);
 
-			sourceParentLayer->removeChild(sourceRow, false);
-			targetParentLayer->insertChild(targetRow > sourceRow ? targetRow - 1 : targetRow, sourceLayer);
+            sourceParentLayer->removeChild(sourceRow, false);
+            targetParentLayer->insertChild(targetRow > sourceRow ? targetRow - 1 : targetRow, sourceLayer);
 
-			endMoveRows();
-		}
-	}
-	else {
-		if (beginMoveRows(sourceParent, sourceRow, sourceRow, targetParent, targetRow)) {
-			auto sourceParentLayer	= getLayer(sourceParent);
-			auto targetParentLayer	= getLayer(targetParent);
-			auto sourceLayer		= sourceParentLayer->getChild(sourceRow);
+            endMoveRows();
+        }
+    }
+    else {
+        if (beginMoveRows(sourceParent, sourceRow, sourceRow, targetParent, targetRow)) {
+            auto sourceParentLayer  = getLayer(sourceParent);
+            auto targetParentLayer  = getLayer(targetParent);
+            auto sourceLayer        = sourceParentLayer->getChild(sourceRow);
 
-			sourceParentLayer->removeChild(sourceRow, false);
-			targetParentLayer->insertChild(targetRow, sourceLayer);
+            sourceParentLayer->removeChild(sourceRow, false);
+            targetParentLayer->insertChild(targetRow, sourceLayer);
 
-			endMoveRows();
-		}
-	}
+            endMoveRows();
+        }
+    }
 
-	return true;
+    return true;
 }
 
 void LayersModel::initialize()
 {
-	_root = new RootLayer();
+    _root = new RootLayer();
 }
 
 void LayersModel::selectionChanged(const QString& name, const Indices& indices)
 {
-	const auto hits = match(index(0, ult(Layer::Column::DatasetName)), Qt::DisplayRole, name, -1, Qt::MatchExactly);
+    const auto hits = match(index(0, ult(Layer::Column::DatasetName)), Qt::DisplayRole, name, -1, Qt::MatchExactly);
 
-	for (auto hit : hits) {
-		qDebug() << data(hit.siblingAtColumn(ult(Layer::Column::Name)), Qt::DisplayRole);
-	}
+    for (auto hit : hits) {
+        qDebug() << data(hit.siblingAtColumn(ult(Layer::Column::Name)), Qt::DisplayRole);
+    }
 
-	//_datasetsModel.setData(hits.first().siblingAtColumn(ult(DatasetsModel::Column::Selection)), QVariant::fromValue(Indices::fromStdVector(dataset.indices())));
+    //_datasetsModel.setData(hits.first().siblingAtColumn(ult(DatasetsModel::Column::Selection)), QVariant::fromValue(Indices::fromStdVector(dataset.indices())));
 }
 
 void LayersModel::selectRow(const std::int32_t& row)
 {
-	_selectionModel.setCurrentIndex(index(row, 0), QItemSelectionModel::SelectionFlag::Current | QItemSelectionModel::SelectionFlag::ClearAndSelect | QItemSelectionModel::SelectionFlag::Rows);
+    _selectionModel.setCurrentIndex(index(row, 0), QItemSelectionModel::SelectionFlag::Current | QItemSelectionModel::SelectionFlag::ClearAndSelect | QItemSelectionModel::SelectionFlag::Rows);
 }
 
 Layer* LayersModel::getSelectedLayer()
 {
-	const auto selectedRows = _selectionModel.selectedRows();
+    const auto selectedRows = _selectionModel.selectedRows();
 
-	if (selectedRows.isEmpty())
-		return nullptr;
+    if (selectedRows.isEmpty())
+        return nullptr;
 
-	return getLayer(selectedRows.first());
+    return getLayer(selectedRows.first());
 }
 
 int LayersModel::rowCount(const QModelIndex& parent /*= QModelIndex()*/) const
 {
-	const auto parentLayer = getLayer(parent);
+    const auto parentLayer = getLayer(parent);
 
-	return parentLayer ? parentLayer->getChildCount() : 0;
+    return parentLayer ? parentLayer->getChildCount() : 0;
 }
 
 QStringList LayersModel::mimeTypes() const
 {
-	QStringList types;
+    QStringList types;
 
-	types << "layer";
+    types << "layer";
 
-	return types;
+    return types;
 }
 
 QMimeData* LayersModel::mimeData(const QModelIndexList& indexes) const
 {
-	if (!indexes[0].isValid())
-		return nullptr;
+    if (!indexes[0].isValid())
+        return nullptr;
 
-	const auto index = indexes[0];
+    const auto index = indexes[0];
 
-	const auto layerAddress = (quintptr)indexes[0].internalPointer();
+    const auto layerAddress = (quintptr)indexes[0].internalPointer();
 
-	auto mimeData = new QMimeData();
+    auto mimeData = new QMimeData();
 
-	QByteArray encodedData;
+    QByteArray encodedData;
 
-	QDataStream dataStream(&encodedData, QIODevice::WriteOnly);
+    QDataStream dataStream(&encodedData, QIODevice::WriteOnly);
 
-	dataStream << index.row() << index.column() << layerAddress;
+    dataStream << index.row() << index.column() << layerAddress;
 
-	mimeData->setData("layer", encodedData);
+    mimeData->setData("layer", encodedData);
 
-	return mimeData;
+    return mimeData;
 }
 
 bool LayersModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent)
 {
-	if (!canDropMimeData(data, action, row, column, parent))
-		return false;
+    if (!canDropMimeData(data, action, row, column, parent))
+        return false;
 
-	switch (action) {
-		case Qt::IgnoreAction:
-			break;
+    switch (action) {
+        case Qt::IgnoreAction:
+            break;
 
-		case Qt::MoveAction:
-		{
-			QByteArray bytes = data->data("layer");
-			QDataStream stream(&bytes, QIODevice::QIODevice::ReadOnly);
-			
-			qintptr sourceInternalPointer;
-			int sourceRow;
-			int sourceColumn;
+        case Qt::MoveAction:
+        {
+            QByteArray bytes = data->data("layer");
+            QDataStream stream(&bytes, QIODevice::QIODevice::ReadOnly);
+            
+            qintptr sourceInternalPointer;
+            int sourceRow;
+            int sourceColumn;
 
-			stream >> sourceRow >> sourceColumn >> sourceInternalPointer;
+            stream >> sourceRow >> sourceColumn >> sourceInternalPointer;
 
-			QModelIndex index = createIndex(sourceRow, sourceColumn, sourceInternalPointer);
+            QModelIndex index = createIndex(sourceRow, sourceColumn, sourceInternalPointer);
 
-			moveLayer(index.parent(), index.row(), parent, row);
-			
-			break;
-		}
+            moveLayer(index.parent(), index.row(), parent, row);
+            
+            break;
+        }
 
-		default:
-			break;
-	}
+        default:
+            break;
+    }
 
-	return true;
+    return true;
 }

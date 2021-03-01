@@ -25,59 +25,59 @@ class ImageViewerPlugin;
  */
 class CanvasWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public: // Construction/destruction
 
-	/**
-	 * Constructor
-	 * @param parent Parent widget
-	 */
-	CanvasWidget(QWidget* parent);
+    /**
+     * Constructor
+     * @param parent Parent widget
+     */
+    CanvasWidget(QWidget* parent);
 
-	/**
-	 * Constructor
-	 * @param imageViewerPlugin Pointer to the image viewer plugin
-	 */
-	CanvasWidget(ImageViewerPlugin* imageViewerPlugin);
+    /**
+     * Constructor
+     * @param imageViewerPlugin Pointer to the image viewer plugin
+     */
+    CanvasWidget(ImageViewerPlugin* imageViewerPlugin);
 
-	/** Destructor */
-	~CanvasWidget() override;
+    /** Destructor */
+    ~CanvasWidget() override;
 
-	void initialize(ImageViewerPlugin* imageViewerPlugin);
+    void initialize(ImageViewerPlugin* imageViewerPlugin);
 
 public: // Events
 
-	/**
-	 * Widget event capture
-	 *@param target Target object
-	 *@param event Event that occurred
-	 */
-	bool eventFilter(QObject* target, QEvent* event) override;
+    /**
+     * Widget event capture
+     *@param target Target object
+     *@param event Event that occurred
+     */
+    bool eventFilter(QObject* target, QEvent* event) override;
 
 public: // Zoom
 
-	/** Zoom to the extents of all visible layers */
-	void zoomExtents();
+    /** Zoom to the extents of all visible layers */
+    void zoomExtents();
 
 protected: // OpenGL functions
 
-	/** Initializes the OpenGL window */
-	void initializeGL() override;
+    /** Initializes the OpenGL window */
+    void initializeGL() override;
 
-	/** Paints the OpenGL content */
-	void paintGL() override;
+    /** Paints the OpenGL content */
+    void paintGL() override;
 
-	/**
-	 * Draws a gradient background
-	 * @param painter Pointer to painter
-	 */
-	void drawBackground(QPainter* painter);
+    /**
+     * Draws a gradient background
+     * @param painter Pointer to painter
+     */
+    void drawBackground(QPainter* painter);
 
 private:
-	ImageViewerPlugin*						_imageViewerPlugin;			/** Pointer to the image viewer plugin */
-	Renderer*								_renderer;					/** Pointer to the renderer which is attached to the viewer widget */
-	std::unique_ptr<QOpenGLDebugLogger>		_openglDebugLogger;			/** OpenGL logger instance for debugging (only enabled in debug mode for performance reasons) */
-	QRadialGradient							_backgroundGradient;		/** Viewport gradient background */
-	int										_keys;						/** Currently pressed keyboard keys */
+    ImageViewerPlugin*                      _imageViewerPlugin;         /** Pointer to the image viewer plugin */
+    Renderer*                               _renderer;                  /** Pointer to the renderer which is attached to the viewer widget */
+    std::unique_ptr<QOpenGLDebugLogger>     _openglDebugLogger;         /** OpenGL logger instance for debugging (only enabled in debug mode for performance reasons) */
+    QRadialGradient                         _backgroundGradient;        /** Viewport gradient background */
+    int                                     _keys;                      /** Currently pressed keyboard keys */
 };

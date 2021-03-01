@@ -7,7 +7,7 @@
 class ImageViewerPlugin;
 
 namespace Ui {
-	class SettingsWidget;
+    class SettingsWidget;
 }
 
 /**
@@ -21,16 +21,16 @@ class SettingsWidget : public QWidget
 {
 public: // Construction/destruction
 
-	/**
-	 * Constructor
-	 * @param imageViewerPlugin Pointer to the image viewer plugin
-	 */
-	SettingsWidget(ImageViewerPlugin* imageViewerPlugin);
+    /**
+     * Constructor
+     * @param imageViewerPlugin Pointer to the image viewer plugin
+     */
+    SettingsWidget(ImageViewerPlugin* imageViewerPlugin);
 
-	/** Destructor */
-	~SettingsWidget() override;
+    /** Destructor */
+    ~SettingsWidget() override;
 
 private:
-	ImageViewerPlugin*						_imageViewerPlugin;		/** Pointer to the image viewer plugin */
-	std::unique_ptr<Ui::SettingsWidget>		_ui;					/** User interface as produced by Qt designer */
+    ImageViewerPlugin*                      _imageViewerPlugin;     /** Pointer to the image viewer plugin */
+    std::unique_ptr<Ui::SettingsWidget>     _ui;                    /** User interface as produced by Qt designer */
 };

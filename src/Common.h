@@ -19,9 +19,9 @@ class QOpenGLShaderProgram;
  */
 enum class InteractionMode
 {
-	None,				/** No interaction takes place */
-	Navigation,			/** The image view position and zoom are manipulated */
-	LayerEditing		/** Layer editing interaction */
+    None,               /** No interaction takes place */
+    Navigation,         /** The image view position and zoom are manipulated */
+    LayerEditing        /** Layer editing interaction */
 };
 
 /**
@@ -30,22 +30,22 @@ enum class InteractionMode
  */
 inline QString interactionModeTypeName(const InteractionMode& interactionMode)
 {
-	switch (interactionMode)
-	{
-		case InteractionMode::None:
-			return "None";
+    switch (interactionMode)
+    {
+        case InteractionMode::None:
+            return "None";
 
-		case InteractionMode::Navigation:
-			return "Navigation";
+        case InteractionMode::Navigation:
+            return "Navigation";
 
-		case InteractionMode::LayerEditing:
-			return "Layer editing";
+        case InteractionMode::LayerEditing:
+            return "Layer editing";
 
-		default:
-			break;
-	}
+        default:
+            break;
+    }
 
-	return "";
+    return "";
 }
 
 /**
@@ -54,12 +54,12 @@ inline QString interactionModeTypeName(const InteractionMode& interactionMode)
  */
 enum class SelectionType
 {
-	None = -1,		/** Not set */
-	Rectangle,		/** A rectangle is drawn to select pixels */
-	Brush,			/** A brush is used the paint selection */
-	Lasso,			/** A lasso tool is used to enclose pixels */
-	Polygon,		/** Select pixels by drawing a polygon */
-	Sample			/** Select the pixel directly under the cursor */
+    None = -1,      /** Not set */
+    Rectangle,      /** A rectangle is drawn to select pixels */
+    Brush,          /** A brush is used the paint selection */
+    Lasso,          /** A lasso tool is used to enclose pixels */
+    Polygon,        /** Select pixels by drawing a polygon */
+    Sample          /** Select the pixel directly under the cursor */
 };
 
 /**
@@ -68,28 +68,28 @@ enum class SelectionType
  */
 inline QString selectionTypeName(const SelectionType& selectionType)
 {
-	switch (selectionType)
-	{
-	case SelectionType::Rectangle:
-		return "Rectangle";
+    switch (selectionType)
+    {
+    case SelectionType::Rectangle:
+        return "Rectangle";
 
-	case SelectionType::Brush:
-		return "Brush";
+    case SelectionType::Brush:
+        return "Brush";
 
-	case SelectionType::Lasso:
-		return "Lasso";
+    case SelectionType::Lasso:
+        return "Lasso";
 
-	case SelectionType::Polygon:
-		return "Polygon";
+    case SelectionType::Polygon:
+        return "Polygon";
 
-	case SelectionType::Sample:
-		return "Sample";
+    case SelectionType::Sample:
+        return "Sample";
 
-	default:
-		break;
-	}
+    default:
+        break;
+    }
 
-	return "";
+    return "";
 }
 
 /**
@@ -98,15 +98,15 @@ inline QString selectionTypeName(const SelectionType& selectionType)
  */
 enum class ActorEvent
 {
-	None			= 1ul << 0,													/** Don't capture mouse events */
-	MousePress		= 1ul << 1,													/** Capture mouse press events */
-	MouseRelease	= 1ul << 2,													/** Capture mouse release events */
-	MouseMove		= 1ul << 3,													/** Capture mouse move events */
-	MouseWheel		= 1ul << 4,													/** Capture mouse wheel events */
-	MouseAll		= MousePress | MouseRelease | MouseMove | MouseWheel,		/** Capture all mouse events */
+    None            = 1ul << 0,                                                 /** Don't capture mouse events */
+    MousePress      = 1ul << 1,                                                 /** Capture mouse press events */
+    MouseRelease    = 1ul << 2,                                                 /** Capture mouse release events */
+    MouseMove       = 1ul << 3,                                                 /** Capture mouse move events */
+    MouseWheel      = 1ul << 4,                                                 /** Capture mouse wheel events */
+    MouseAll        = MousePress | MouseRelease | MouseMove | MouseWheel,       /** Capture all mouse events */
 
-	KeyPress		= 1ul << 5,													/** Capture key press events */
-	KeyRelease		= 1ul << 6,													/** Capture key release events */
+    KeyPress        = 1ul << 5,                                                 /** Capture key press events */
+    KeyRelease      = 1ul << 6,                                                 /** Capture key release events */
 };
 
 /**
@@ -115,41 +115,41 @@ enum class ActorEvent
  */
 inline QString actorEventName(const ActorEvent& actorEvent)
 {
-	switch (actorEvent)
-	{
-		case ActorEvent::None:
-			return "None";
+    switch (actorEvent)
+    {
+        case ActorEvent::None:
+            return "None";
 
-		case ActorEvent::MousePress:
-			return "MousePress";
+        case ActorEvent::MousePress:
+            return "MousePress";
 
-		case ActorEvent::MouseRelease:
-			return "MouseRelease";
+        case ActorEvent::MouseRelease:
+            return "MouseRelease";
 
-		case ActorEvent::MouseMove:
-			return "MouseMove";
+        case ActorEvent::MouseMove:
+            return "MouseMove";
 
-		case ActorEvent::MouseWheel:
-			return "MouseWheel";
+        case ActorEvent::MouseWheel:
+            return "MouseWheel";
 
-		case ActorEvent::MouseAll:
-			return "MouseAll";
+        case ActorEvent::MouseAll:
+            return "MouseAll";
 
-		default:
-			break;
-	}
+        default:
+            break;
+    }
 
-	return "";
+    return "";
 }
 
 enum Roles {
-	FontIconText = Qt::UserRole
+    FontIconText = Qt::UserRole
 };
 
 template <typename E>
 constexpr auto ult(E e) noexcept
 {
-	return static_cast<std::underlying_type_t<E>>(e);
+    return static_cast<std::underlying_type_t<E>>(e);
 }
 
 using Indices = QVector<std::uint32_t>;
@@ -159,18 +159,18 @@ Q_DECLARE_METATYPE(Indices);
 /** Turns a lengthy list of strings into an abbreviated string */
 inline QString abbreviatedStringList(const QStringList& stringList)
 {
-	const auto noStrings = stringList.size();
+    const auto noStrings = stringList.size();
 
-	if (noStrings == 1)
-		return QString("%1").arg(stringList.first());
+    if (noStrings == 1)
+        return QString("%1").arg(stringList.first());
 
-	if (noStrings == 2)
-		return QString("[%1, %2]").arg(stringList.first(), stringList.last());
+    if (noStrings == 2)
+        return QString("[%1, %2]").arg(stringList.first(), stringList.last());
 
-	if (noStrings > 2)
-		return QString("[%1, ..., %2]").arg(stringList.first(), stringList.last());
+    if (noStrings > 2)
+        return QString("[%1, ..., %2]").arg(stringList.first(), stringList.last());
 
-	return QString("[]");
+    return QString("[]");
 }
 
 /**
@@ -179,9 +179,9 @@ inline QString abbreviatedStringList(const QStringList& stringList)
  */
 enum class ColorSpace
 {
-	RGB,	/** Red Green Blue */
-	HSL,	/** Hue Saturation Lightness */
-	LAB		/**  */
+    RGB,    /** Red Green Blue */
+    HSL,    /** Hue Saturation Lightness */
+    LAB     /**  */
 };
 
 /**
@@ -190,36 +190,36 @@ enum class ColorSpace
  */
 inline QString colorSpaceName(const ColorSpace& colorSpace)
 {
-	switch (colorSpace)
-	{
-		case ColorSpace::RGB:
-			return "RGB";
+    switch (colorSpace)
+    {
+        case ColorSpace::RGB:
+            return "RGB";
 
-		case ColorSpace::HSL:
-			return "HSL";
+        case ColorSpace::HSL:
+            return "HSL";
 
-		case ColorSpace::LAB:
-			return "LAB";
+        case ColorSpace::LAB:
+            return "LAB";
 
-		default:
-			break;
-	}
+        default:
+            break;
+    }
 
-	return "";
+    return "";
 }
 
 namespace hdps
 {
-	/**
-	 * Creates a container of the specified type, and copies the elements from the
-	 * specified `std::vector` into the created container.
-	 */
-	template <typename ContainerType, typename ValueType>
-	auto fromStdVector(const std::vector<ValueType>& stdVector)
-	{
-		ContainerType result;
-		result.reserve(static_cast<int>(stdVector.size()));
-		std::copy(stdVector.cbegin(), stdVector.cend(), std::back_inserter(result));
-		return result;
-	}
+    /**
+     * Creates a container of the specified type, and copies the elements from the
+     * specified `std::vector` into the created container.
+     */
+    template <typename ContainerType, typename ValueType>
+    auto fromStdVector(const std::vector<ValueType>& stdVector)
+    {
+        ContainerType result;
+        result.reserve(static_cast<int>(stdVector.size()));
+        std::copy(stdVector.cbegin(), stdVector.cend(), std::back_inserter(result));
+        return result;
+    }
 }
