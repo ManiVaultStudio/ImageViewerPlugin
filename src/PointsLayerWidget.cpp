@@ -170,7 +170,7 @@ void PointsLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
     });
 
     QObject::connect(_ui->pointTypeComboBox, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
-        _layersModel->setData(_layersModel->getSelectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::PointType)), index);
+        _layersModel->setData(_layersModel->getSelectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::PixelType)), index);
     });
 
     QObject::connect(_ui->indexSelectionComboBox, &QComboBox::currentTextChanged, [this](QString text) {
@@ -387,7 +387,7 @@ void PointsLayerWidget::updateData(const QModelIndex& begin, const QModelIndex& 
             _ui->colorPickerPushButton->blockSignals(false);
         }
 
-        if (column == ult(PointsLayer::Column::PointType)) {
+        if (column == ult(PointsLayer::Column::PixelType)) {
         }
 
         if (column == ult(PointsLayer::Column::IndexSelectionDatasetName)) {

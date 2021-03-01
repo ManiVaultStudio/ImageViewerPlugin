@@ -71,7 +71,6 @@ void SelectionLayer::init()
         affectedIds << index.siblingAtColumn(ult(Column::CreateSubset));
         */
     });
-
     
     updateModelMatrix();
     computeChannel(ChannelIndex::Selection);

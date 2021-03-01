@@ -30,29 +30,18 @@ public: // Enumerations
         Count = Mask + 1
     };
 
-    /** Point types enumerations */
-    enum class PointType {
+    /** Pixel type */
+    enum class PixelType {
         Intensity,      /** Intensity (color images) */
         Index           /** Index (index images) */
     };
 
-    /** Pixel type name */
-    static QString pixelTypeName(const PointType& pixelType)
-    {
-        switch (pixelType)
-        {
-            case PointType::Intensity:
-                return "Intensity";
+    /** Maps pixel type name to pixel type enum and vice versa */
+    static QMap<QString, PixelType> const pixelTypes;
 
-            case PointType::Index:
-                return "Index";
-
-            default:
-                break;
-        }
-
-        return QString();
-    }
+    /** Get string/enum representation of pixel type */
+    static QString getPixelTypeName(const PixelType& pixelType) { return pixelTypes.key(pixelType); }
+    static PixelType getPixelTypeEnum(const QString& typeName) { return pixelTypes[typeName]; }
 
     /** Columns */
     enum class Column {
@@ -80,7 +69,7 @@ public: // Enumerations
         ColorMap,                                       /** Color map image */
         UseConstantColor,                               /** Whether to use constant colors for shading */
         ConstantColor,                                  /** Const color */
-        PointType,                                      /** Type of point (e.g. intensity, index) */
+        PixelType,                                      /** Type of point (e.g. intensity, index) */
         IndexSelectionDatasetName,                      /** Name of the indices dataset */
 
         Start = DimensionNames,                         /** Start column */
@@ -342,17 +331,17 @@ public: // Getters/setters
     void setConstantColor(const QColor& constantColor);
 
     /**
-     * Returns the point type
+     * Returns the pixel type
      * @param role Data role
-     * @return Point type in variant form
+     * @return Pixel type in variant form
      */
-    QVariant getPointType(const int& role = Qt::DisplayRole) const;
+    QVariant getPixelType(const int& role = Qt::DisplayRole) const;
 
     /**
-     * Sets the point type
-     * @param pixelType Type of pixel
+     * Sets the pixel type
+     * @param pixelType Type of the pixel
      */
-    void setPointType(const PointType& pointType);
+    void setPixelType(const PixelType& pointType);
 
     /**
      * Returns the name of the index selection dataset
@@ -463,7 +452,7 @@ private:
     QImage              _colorMap;                      /** Color map (1D/2D) */
     bool                _useConstantColor;              /** Pixel color is constant and the alpha is modulated by the intensity of the selected channel */
     QColor              _constantColor;                 /** Constant color */
-    PointType           _pointType;                     /** Type of point (e.g. intensity, index) */
+    PixelType           _pixelType;                     /** Type of pixel (e.g. intensity, index) */
     QString             _indexSelectionDatasetName;     /** Name of the index selection dataset */
     Points*             _indexSelectionDataset;         /** Pointer to the index selection dataset */
 };
