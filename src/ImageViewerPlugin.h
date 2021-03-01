@@ -1,8 +1,8 @@
 #pragma once
 
 #include <ViewPlugin.h>
-#include "Application.h"
 
+#include "Application.h"
 #include "LayersModel.h"
 #include "ColorMapModel.h"
 

@@ -4,11 +4,7 @@
 #include "SettingsWidget.h"
 #include "Layer.h"
 
-#include "PointData.h"
-
-#include <QFontDatabase>
 #include <QDebug>
-#include <QEvent>
 #include <QSplitter>
 
 using namespace hdps;
