@@ -37,7 +37,6 @@ SelectionLayer::SelectionLayer(const QString& datasetName, const QString& id, co
 	Channels<std::uint8_t>(ult(ChannelIndex::Count)),
 	_pointsDataset(nullptr),
 	_image(),
-	_indices(),
 	_selectionType(SelectionType::Rectangle),
 	_selectionModifier(SelectionModifier::Replace),
 	_brushRadius(defaultBrushRadius),
@@ -55,40 +54,37 @@ void SelectionLayer::init()
 	addProp<SelectionProp>(this, "Selection");
 
 	_pointsDataset	= &imageViewerPlugin->requestData<Points>(_datasetName);
-	_dataName		= hdps::DataSet::getSourceData(*_pointsDataset).getDataName();
 
-	_indices.resize(getNoPixels());
+    /*
+    registerDataEventByType(PointType, [this](hdps::DataEvent* dataEvent) {
+        if (dataEvent->getType() == hdps::EventType::SelectionChanged) {
+            qDebug() << "Selection changed event";
+            computeChannel(ChannelIndex::Selection);
+        }
+    });
+    */
 
-	if (_pointsDataset->isFull()) {
-		if (_pointsDataset->isDerivedData()) {
-			std::fill(_indices.begin(), _indices.end(), -1);
-
-			auto sourceIndices = _pointsDataset->getSourceData<Points>(*_pointsDataset).indices;
-
-			
-			for (int i = 0; i < sourceIndices.size(); ++i) {
-				_indices[sourceIndices[i]] = sourceIndices[i];
-			}
-			/*
-			for (auto index : _pointsDataset->indices) {
-				_indices[sourceIndices[index]] = index;
-			}*/
-		}
-		else {
-			_indices.resize(getNoPixels());
-			std::iota(std::begin(_indices), std::end(_indices), 0);
-		}
-	}
-	else {
-		std::fill(_indices.begin(), _indices.end(), -1);
-
-		for (auto index : _pointsDataset->indices) {
-			_indices[index] = index;
-		}
-	}
-
+    registerDataEventByType(PointType, std::bind(&SelectionLayer::onDataEvent, this, std::placeholders::_1));
 	updateModelMatrix();
 	computeChannel(ChannelIndex::Selection);
+}
+
+void SelectionLayer::onDataEvent(hdps::DataEvent* dataEvent)
+{
+    if (dataEvent->getType() == hdps::EventType::SelectionChanged) {
+        qDebug() << "Selection changed event";
+        computeChannel(ChannelIndex::Selection);
+
+        /*
+        QModelIndexList affectedIds;
+
+        affectedIds << index.siblingAtColumn(ult(Column::SelectAll));
+        affectedIds << index.siblingAtColumn(ult(Column::SelectNone));
+        affectedIds << index.siblingAtColumn(ult(Column::InvertSelection));
+        affectedIds << index.siblingAtColumn(ult(Column::ZoomToSelection));
+        affectedIds << index.siblingAtColumn(ult(Column::CreateSubset));
+        */
+    }
 }
 
 void SelectionLayer::paint(QPainter* painter)
@@ -679,12 +675,6 @@ void SelectionLayer::handleEvent(QEvent* event, const QModelIndex& index)
 					break;
 				}
 
-				case Qt::Key::Key_A:
-				case Qt::Key::Key_D:
-				case Qt::Key::Key_I:
-					affectedIds << index.siblingAtColumn(ult(Layer::Column::Selection));
-					break;
-
 				case Qt::Key::Key_Shift:
 				case Qt::Key::Key_Control:
 					affectedIds << index.siblingAtColumn(ult(Column::PixelSelectionModifier));
@@ -743,9 +733,7 @@ void SelectionLayer::subsetFromSelectedPixels()
 {
 	auto core = imageViewerPlugin->core();
 
-	const auto dataName = _pointsDataset->getDataName();
-
-	const hdps::DataSet& selection = core->requestSelection(dataName);
+    const auto& selection = static_cast<Points&>(_pointsDataset->getSelection());
 
 	core->createSubsetFromSelection(selection, *_pointsDataset, QString("%1_subset").arg(_pointsDataset->getName()));
 
@@ -769,6 +757,9 @@ void SelectionLayer::subsetFromSelectionBounds()
 
 QSize SelectionLayer::getImageSize() const
 {
+    if (_pointsDataset == nullptr)
+        return QSize();
+
 	if (_pointsDataset->isDerivedData()) {
 		auto sourcePointsDataset = hdps::DataSet::getSourceData<Points>(*_pointsDataset);
 
@@ -781,6 +772,8 @@ QSize SelectionLayer::getImageSize() const
 Qt::ItemFlags SelectionLayer::getFlags(const QModelIndex& index) const
 {
 	auto flags = Layer::getFlags(index);
+
+    const auto selectionSize = static_cast<Points&>(_pointsDataset->getSelection()).indices.size();
 
 	switch (static_cast<Column>(index.column())) {
 		case Column::PixelSelectionType:
@@ -805,7 +798,7 @@ Qt::ItemFlags SelectionLayer::getFlags(const QModelIndex& index) const
 
 		case Column::SelectAll:
 		{
-			if (_selection.count() < getNoPixels())
+			if (selectionSize < getNoPixels())
 				flags |= Qt::ItemIsEditable;
 
 			break;
@@ -813,7 +806,7 @@ Qt::ItemFlags SelectionLayer::getFlags(const QModelIndex& index) const
 
 		case Column::SelectNone:
 		{
-			if (_selection.count() > 0)
+			if (selectionSize > 0)
 				flags |= Qt::ItemIsEditable;
 
 			break;
@@ -833,7 +826,7 @@ Qt::ItemFlags SelectionLayer::getFlags(const QModelIndex& index) const
 		case Column::ZoomToSelection:
 		case Column::CreateSubset:
 		{
-			if (!_autoZoomToSelection && _selection.count() > 0)
+			if (!_autoZoomToSelection && selectionSize > 0)
 				flags |= Qt::ItemIsEditable;
 
 			break;
@@ -848,7 +841,6 @@ Qt::ItemFlags SelectionLayer::getFlags(const QModelIndex& index) const
 		default:
 			break;
 	}
-
 
 	return flags;
 }
@@ -892,18 +884,7 @@ QVariant SelectionLayer::getData(const QModelIndex& index, const int& role) cons
 
 QModelIndexList SelectionLayer::setData(const QModelIndex& index, const QVariant& value, const int& role)
 {
-	QModelIndexList affectedIds = Layer::setData(index, value, role);
-
-	if (static_cast<Layer::Column>(index.column()) == Layer::Column::Selection) {
-		computeChannel(ChannelIndex::Selection);
-		computeSelectionBounds();
-
-		affectedIds << index.siblingAtColumn(ult(Column::SelectAll));
-		affectedIds << index.siblingAtColumn(ult(Column::SelectNone));
-		affectedIds << index.siblingAtColumn(ult(Column::InvertSelection));
-		affectedIds << index.siblingAtColumn(ult(Column::ZoomToSelection));
-		affectedIds << index.siblingAtColumn(ult(Column::CreateSubset));
-	}
+    QModelIndexList affectedIds = Layer::setData(index, value, role);
 
 	switch (static_cast<Column>(index.column())) {
 		case Column::PixelSelectionType:
@@ -1182,35 +1163,55 @@ void SelectionLayer::setAutoZoomToSelection(const bool& autoZoomToSelection)
 
 void SelectionLayer::computeChannel(const ChannelIndex& channelIndex)
 {
+    if (_pointsDataset == nullptr)
+        return;
+
 #ifdef _DEBUG
-	auto timer = Timer("Compute channel");
+    auto timer = Timer("Compute channel");
 #endif
 
-	switch (channelIndex)
-	{
-		case ChannelIndex::Selection:
-		{
-			auto& selection = dynamic_cast<Points&>(imageViewerPlugin->core()->requestSelection(_pointsDataset->getDataName()));
+    switch (channelIndex)
+    {
+        case ChannelIndex::Selection:
+        {
+            auto& selectionChannel = (*getChannel(ult(ChannelIndex::Selection)));
 
-			auto& selectionChannel = (*getChannel(ult(ChannelIndex::Selection)));
+            selectionChannel.setImageSize(getImageSize());
+            selectionChannel.fill(0);
 
-			selectionChannel.setImageSize(getImageSize());
-			selectionChannel.fill(0);
+            for (auto selectionIndex : getSelectionIndices())
+                selectionChannel[selectionIndex] = 255;
 
-			for (auto selectionIndex : selection.indices) {
-				selectionChannel[selectionIndex] = 255;
-			}
+            selectionChannel.setChanged();
 
-			selectionChannel.setChanged();
+            emit channelChanged(ult(ChannelIndex::Selection));
 
-			emit channelChanged(ult(ChannelIndex::Selection));
+            break;
+        }
 
-			break;
-		}
+        default:
+            break;
+    }
+}
 
-		default:
-			break;
-	}
+Points& SelectionLayer::getSelection()
+{
+    return static_cast<Points&>(_pointsDataset->getSelection());
+}
+
+std::vector<std::uint32_t>& SelectionLayer::getSelectionIndices()
+{
+    return getSelection().indices;
+}
+
+std::uint32_t SelectionLayer::getSelectionSize() const
+{
+    return static_cast<std::uint32_t>(const_cast<SelectionLayer*>(this)->getSelectionIndices().size());
+}
+
+bool SelectionLayer::hasSelection() const
+{
+    return getSelectionSize() > 0;
 }
 
 void SelectionLayer::selectAll()
@@ -1219,20 +1220,20 @@ void SelectionLayer::selectAll()
 	auto timer = Timer("Select all");
 #endif
 
-	auto& selection = dynamic_cast<Points&>(imageViewerPlugin->core()->requestSelection(_pointsDataset->getDataName()));
+    auto& selectionIndices = getSelectionIndices();
 
-	selection.indices.clear();
-	selection.indices.reserve(getNoPixels());
+	selectionIndices.clear();
+	selectionIndices.reserve(getNoPixels());
 
-	for (const auto& index : _indices) {
+	for (const auto& index : getSelectionIndices()) {
 		if (index > 0)
-			selection.indices.push_back(index);
+            selectionIndices.push_back(index);
 	}
 
 	if (_pointsDataset->isDerivedData())
-		imageViewerPlugin->core()->notifySelectionChanged(_pointsDataset->getSourceData<Points>(*_pointsDataset).getDataName());
+		imageViewerPlugin->core()->notifySelectionChanged(_pointsDataset->getSourceData<Points>(*_pointsDataset).getName());
 	else
-		imageViewerPlugin->core()->notifySelectionChanged(_pointsDataset->getDataName());
+		imageViewerPlugin->core()->notifySelectionChanged(_pointsDataset->getName());
 }
 
 void SelectionLayer::selectNone()
@@ -1241,14 +1242,14 @@ void SelectionLayer::selectNone()
 	auto timer = Timer("Select none");
 #endif
 
-	auto& selection = dynamic_cast<Points&>(imageViewerPlugin->core()->requestSelection(_pointsDataset->getDataName()));
+    auto& selectionIndices = getSelectionIndices();
 
-	selection.indices.clear();
+    selectionIndices.clear();
 
 	if (_pointsDataset->isDerivedData())
-		imageViewerPlugin->core()->notifySelectionChanged(_pointsDataset->getSourceData<Points>(*_pointsDataset).getDataName());
+		imageViewerPlugin->core()->notifySelectionChanged(_pointsDataset->getSourceData<Points>(*_pointsDataset).getName());
 	else
-		imageViewerPlugin->core()->notifySelectionChanged(_pointsDataset->getDataName());
+		imageViewerPlugin->core()->notifySelectionChanged(_pointsDataset->getName());
 }
 
 void SelectionLayer::invertSelection()
@@ -1257,26 +1258,24 @@ void SelectionLayer::invertSelection()
 	auto timer = Timer("Invert selection");
 #endif
 
-	auto& selection = dynamic_cast<Points&>(imageViewerPlugin->core()->requestSelection(_pointsDataset->getDataName()));
+    auto& selectionIndices = getSelectionIndices();
 
-	auto& indices = selection.indices;
-
-	std::set<std::uint32_t> selectionSet(indices.begin(), indices.end());
+	std::set<std::uint32_t> selectionSet(selectionIndices.begin(), selectionIndices.end());
 
 	const auto noPixels = getNoPixels();
 
-	selection.indices.clear();
-	selection.indices.reserve(noPixels - selectionSet.size());
+	selectionIndices.clear();
+	selectionIndices.reserve(noPixels - selectionSet.size());
 
 	for (int i = 0; i < noPixels; i++) {
 		if (selectionSet.find(i) == selectionSet.end())
-			selection.indices.push_back(i);
+            selectionIndices.push_back(i);
 	}
 
 	if (_pointsDataset->isDerivedData())
-		imageViewerPlugin->core()->notifySelectionChanged(_pointsDataset->getSourceData<Points>(*_pointsDataset).getDataName());
+		imageViewerPlugin->core()->notifySelectionChanged(_pointsDataset->getSourceData<Points>(*_pointsDataset).getName());
 	else
-		imageViewerPlugin->core()->notifySelectionChanged(_pointsDataset->getDataName());
+		imageViewerPlugin->core()->notifySelectionChanged(_pointsDataset->getName());
 }
 
 void SelectionLayer::zoomToSelection()
@@ -1287,7 +1286,7 @@ void SelectionLayer::publishSelection()
 {
 	auto timer = Timer("Publish selection");
 
-	auto& selectionIndices = dynamic_cast<Points&>(imageViewerPlugin->core()->requestSelection(_pointsDataset->getDataName())).indices;
+    auto& selectionIndices = getSelectionIndices();
 
 	switch (_selectionType)
 	{
@@ -1303,17 +1302,8 @@ void SelectionLayer::publishSelection()
 			auto& sourceIndices = _pointsDataset->getSourceData<Points>(*_pointsDataset).indices;
 
 			const auto noComponents = 4;
-			const auto width = static_cast<float>(getImageSize().width());
-			const auto noPixels = this->getNoPixels();
-
-			auto index = 0;
-
-			auto sourceIndex = [this, sourceIndices](const int& pixelId) {
-				if (_pointsDataset->isDerivedData())
-					return _indices[pixelId];
-				else
-					return _indices[pixelId];
-			};
+			const auto width        = static_cast<float>(getImageSize().width());
+			const auto noPixels     = this->getNoPixels();
 
 			switch (_selectionModifier)
 			{
@@ -1322,13 +1312,9 @@ void SelectionLayer::publishSelection()
 					selectionIndices.clear();
 					selectionIndices.reserve(noPixels);
 
-					for (std::int32_t p = 0; p < noPixels; ++p) {
-						if (selectionImage.bits()[p * noComponents] > 0) {
-							index = sourceIndex(p);
-
-							if (index >= 0)
-								selectionIndices.push_back(index);
-						}
+					for (std::uint32_t pixelIndex = 0; pixelIndex < noPixels; ++pixelIndex) {
+						if (selectionImage.bits()[pixelIndex * noComponents] > 0)
+                            selectionIndices.push_back(pixelIndex);
 					}
 
 					break;
@@ -1338,12 +1324,9 @@ void SelectionLayer::publishSelection()
 				{
 					auto selectionSet = std::set<std::uint32_t>(selectionIndices.begin(), selectionIndices.end());
 
-					for (std::int32_t p = 0; p < noPixels; ++p) {
-						if (selectionImage.bits()[p * noComponents] > 0) {
-							index = sourceIndex(p);
-
-							if (index >= 0)
-								selectionSet.insert(index);
+					for (std::int32_t pixelIndex = 0; pixelIndex < noPixels; ++pixelIndex) {
+						if (selectionImage.bits()[pixelIndex * noComponents] > 0) {
+                            selectionSet.insert(pixelIndex);
 						}
 					}
 
@@ -1355,12 +1338,9 @@ void SelectionLayer::publishSelection()
 				{
 					auto selectionSet = std::set<std::uint32_t>(selectionIndices.begin(), selectionIndices.end());
 
-					for (std::int32_t p = 0; p < noPixels; ++p) {
-						if (selectionImage.bits()[p * noComponents] > 0) {
-							index = sourceIndex(p);
-
-							if (index >= 0)
-								selectionSet.erase(index);
+					for (std::int32_t pixelIndex = 0; pixelIndex < noPixels; ++pixelIndex) {
+						if (selectionImage.bits()[pixelIndex * noComponents] > 0) {
+                            selectionSet.erase(pixelIndex);
 						}
 					}
 
@@ -1399,9 +1379,9 @@ void SelectionLayer::publishSelection()
 	}
 
 	if (_pointsDataset->isDerivedData())
-		imageViewerPlugin->core()->notifySelectionChanged(_pointsDataset->getSourceData<Points>(*_pointsDataset).getDataName());
+		imageViewerPlugin->core()->notifySelectionChanged(_pointsDataset->getSourceData<Points>(*_pointsDataset).getName());
 	else
-		imageViewerPlugin->core()->notifySelectionChanged(_pointsDataset->getDataName());
+		imageViewerPlugin->core()->notifySelectionChanged(_pointsDataset->getName());
 
 	getPropByName<SelectionToolProp>("SelectionTool")->reset();
 }
@@ -1414,9 +1394,9 @@ void SelectionLayer::computeSelectionBounds()
 
 	return;
 
-	auto& selection = dynamic_cast<Points&>(imageViewerPlugin->core()->requestSelection(_pointsDataset->getDataName()));
+    auto& selectionIndices = static_cast<Points&>(_pointsDataset->getSelection()).indices;
 
-	if (selection.indices.empty()) {
+	if (selectionIndices.empty()) {
 		_selectionBounds = QRect();
 		return;
 	}
@@ -1429,10 +1409,10 @@ void SelectionLayer::computeSelectionBounds()
 	std::vector<uint32_t> xCoordinates;
 	std::vector<uint32_t> yCoordinates;
 
-	xCoordinates.reserve(selection.indices.size());
-	yCoordinates.reserve(selection.indices.size());
+	xCoordinates.reserve(selectionIndices.size());
+	yCoordinates.reserve(selectionIndices.size());
 
-	for (auto selectionIndex : selection.indices) {
+	for (auto selectionIndex : selectionIndices) {
 		const int y = height - static_cast<std::int32_t>(floorf(selectionIndex / width));
 		const int x = width - (selectionIndex % getImageSize().width());
 

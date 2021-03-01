@@ -62,6 +62,12 @@ protected: // Initialization
 	/** Initializes the layer */
 	void init();
 
+    /**
+     * Data event callback
+     * @param dataEvent Data event that occurred
+     */
+    void onDataEvent(hdps::DataEvent* dataEvent);
+
 public: // Miscellaneous
 
 	/**
@@ -192,11 +198,23 @@ protected:
 
 private: // Miscellaneous
 
-	/**
-	 * Computes a specific channel
-	 * @param channelIndex Channel identifier
-	 */
-	void computeChannel(const ChannelIndex& channelIndex);
+    /**
+     * Computes a specific channel
+     * @param channelIndex Channel identifier
+     */
+    void computeChannel(const ChannelIndex& channelIndex);
+
+    /** Get selection */
+    Points& getSelection();
+
+    /** Get selection indices */
+    std::vector<std::uint32_t>& getSelectionIndices();
+
+    /** Get number of selection data points */
+    std::uint32_t getSelectionSize() const;
+
+    /** Determine whether any data points are selected */
+    bool hasSelection() const;
 
 	/** Selects all pixels */
 	void selectAll();
@@ -217,16 +235,15 @@ private: // Miscellaneous
 	void computeSelectionBounds();
 
 private:
-	Points*						_pointsDataset;				/** Points dataset to which the layer refers */
-	QImage						_image;						/** Selection image */
-	std::vector<std::int32_t>	_indices;					/** Indices */
-	SelectionType				_selectionType;				/** Pixel selection type (e.g. rectangle, brush) */
-	SelectionModifier			_selectionModifier;			/** Pixel selection modifier (e.g. replace, add) */
-	float						_brushRadius;				/** Brush radius */
-	QColor						_overlayColor;				/** Selection overlay color */
-	bool						_autoZoomToSelection;		/** Automatically zoom to selection */
-	QRect						_pixelBounds;				/** Visible pixels bounding rectangle */
-	QRect						_selectionBounds;			/** Pixel selection bounding rectangle */
+	Points*				_pointsDataset;				/** Points dataset to which the layer refers */
+	QImage				_image;						/** Selection image */
+	SelectionType		_selectionType;				/** Pixel selection type (e.g. rectangle, brush) */
+	SelectionModifier   _selectionModifier;			/** Pixel selection modifier (e.g. replace, add) */
+	float				_brushRadius;				/** Brush radius */
+	QColor				_overlayColor;				/** Selection overlay color */
+	bool				_autoZoomToSelection;		/** Automatically zoom to selection */
+	QRect				_pixelBounds;				/** Visible pixels bounding rectangle */
+	QRect				_selectionBounds;			/** Pixel selection bounding rectangle */
 
 public:
 	static const QColor toolColorForeground;	/** Foreground tool color for brushes and pens */

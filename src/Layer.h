@@ -9,6 +9,8 @@
 #include <QModelIndex>
 #include <QVector>
 
+#include "event/EventListener.h"
+
 class QPaintEvent;
 
 class ImageViewerPlugin;
@@ -21,7 +23,7 @@ class Prop;
  *
  * @author Thomas Kroes
  */
-class Layer : public Node
+class Layer : public Node, public hdps::EventListener
 {
 	Q_OBJECT
 
@@ -69,7 +71,6 @@ public:
 		Type,				// Type of layer
 		Name,				// Name of the layer
 		DatasetName,		// Name of the dataset (if any)
-		DataName,			// Name of the data (if any)
 		ID,					// Layer identifier (for internal use)
 		ImageSize,			// Size of the image(s)
 		ImageWidth,			// Width of the image(s)
@@ -77,11 +78,9 @@ public:
 		Opacity,			// Layer opacity
 		Scale,				// Layer scale
 		Flags,				// Configuration bit flags
-		Selection,			// Selection
-		SelectionSize,		// Size of the selection
 
 		Start = Type,
-		End = SelectionSize
+		End = Flags
 	};
 
 	/** Get string representation of layer column enumeration */
@@ -95,9 +94,6 @@ public:
 
 			case Column::DatasetName:
 				return "Dataset Name";
-
-			case Column::DataName:
-				return "Data Name";
 
 			case Column::ID:
 				return "ID";
@@ -119,12 +115,6 @@ public:
 
 			case Column::Flags:
 				return "Flags";
-
-			case Column::Selection:
-				return "Selection";
-
-			case Column::SelectionSize:
-				return "Selection Size";
 
 			default:
 				return QString();
@@ -233,13 +223,6 @@ public: // Getters/setters
 	QVariant getDatasetName(const int& role) const;
 
 	/**
-	 * Returns the data name
-	 * @param role The data role
-	 * @return Data name in variant form
-	 */
-	QVariant getDataName(const int& role) const;
-
-	/**
 	 * Returns the layer type
 	 * @param role The data role
 	 * @return Layer type in variant form
@@ -272,26 +255,6 @@ public: // Getters/setters
 	 * @return Image height in variant form
 	 */
 	QVariant getImageHeight(const int& role) const;
-
-	/**
-	 * Returns the data point selection
-	 * @param role The data role
-	 * @return Data point selection in variant form
-	 */
-	QVariant getSelection(const int& role = Qt::DisplayRole) const;
-
-	/**
-	 * Sets the data point selection
-	 * @param selection Data point selection
-	 */
-	virtual void setSelection(const Indices& selection);
-
-	/**
-	 * Returns the size of the data point selection
-	 * @param role The data role
-	 * @return Data point selection size in variant form
-	 */
-	QVariant getSelectionSize(const int& role = Qt::DisplayRole) const;
 
 	/**
 	 * Returns the pressed keys
@@ -363,9 +326,7 @@ signals:
 
 protected:
 	QString				_datasetName;		/** Name of the dataset to which the layer refers */
-	QString				_dataName;			/** Name of the raw data to which the layer refers */
 	Layer::Type			_type;				/** Type of layer */
-	Indices				_selection;			/** Data point selection */
 	QVector<QPoint>		_mousePositions;	/** Recorded mouse positions */
 	int					_mouseButtons;		/** State of the left, middle and right mouse buttons */
 	int					_keys;				/** Pressed keyboard buttons */

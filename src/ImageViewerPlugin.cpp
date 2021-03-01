@@ -61,46 +61,20 @@ void ImageViewerPlugin::init()
 	layout->addWidget(splitter);
 
 	_layersModel.initialize();
-}
 
-void ImageViewerPlugin::dataAdded(const QString dataset)
-{
-	auto pointsDataset = dynamic_cast<Points*>(&_core->requestData(dataset));
+    /*
+    auto pointsDataset = dynamic_cast<Points*>(&_core->requestData(dataset));
 
-	if (pointsDataset != nullptr) {
-		_pointsDatasets.insert(0, dataset);
-		emit pointsDatasetsChanged(_pointsDatasets);
-	}
-}
+    if (pointsDataset != nullptr) {
+        _pointsDatasets.insert(0, dataset);
+        emit pointsDatasetsChanged(_pointsDatasets);
+    }
+    hdps::DataTypes supportedTypes;
 
-void ImageViewerPlugin::dataChanged(const QString dataset)
-{
-}
+    supportedTypes.append(PointType);
 
-void ImageViewerPlugin::dataRemoved(const QString dataset)
-{
-}
-
-void ImageViewerPlugin::selectionChanged(const QString dataset)
-{
-	const auto hits = _layersModel.match(_layersModel.index(0, ult(Layer::Column::DataName)), Qt::DisplayRole, dataset, -1, Qt::MatchExactly);
-
-	for (auto hit : hits) {
-		auto selection = dynamic_cast<Points&>(_core->requestSelection(dataset));
-		const auto indices = hdps::fromStdVector<QVector<uint>>(selection.indices);
-		_layersModel.setData(hit.siblingAtColumn(ult(Layer::Column::Selection)), QVariant::fromValue(indices));
-	}
-
-	emit selectionIndicesChanged(dataset);
-}
-
-hdps::DataTypes ImageViewerPlugin::supportedDataTypes() const
-{
-	hdps::DataTypes supportedTypes;
-	
-	supportedTypes.append(PointType);
-
-	return supportedTypes;
+    return supportedTypes;
+    */
 }
 
 bool ImageViewerPlugin::eventFilter(QObject* target, QEvent* event)

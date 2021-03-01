@@ -31,6 +31,8 @@ PointsLayer::PointsLayer(const QString& pointsDatasetName, const QString& id, co
 {
 	init();
 
+    /*
+    TODO: FIX
 	QObject::connect(imageViewerPlugin, &ImageViewerPlugin::selectionIndicesChanged, [this](const QString& name) {
 		if (_pointType == PointType::Index && _indexSelectionDataset != nullptr) {
 			if (name == _indexSelectionDataset->getDataName()) {
@@ -41,6 +43,7 @@ PointsLayer::PointsLayer(const QString& pointsDatasetName, const QString& id, co
 			}
 		}
 	});
+    */
 }
 
 void PointsLayer::init()
@@ -48,7 +51,6 @@ void PointsLayer::init()
 	addProp<PointsProp>(this, "Points");
 
 	_pointsDataset	= &imageViewerPlugin->requestData<Points>(_datasetName);
-	_dataName		= hdps::DataSet::getSourceData(*_pointsDataset).getDataName();
 
 	setNoPoints(_pointsDataset->getNumPoints());
 	setNoDimensions(_pointsDataset->getNumDimensions());
@@ -71,15 +73,9 @@ void PointsLayer::init()
 	setChannelDimensionId(ChannelIndex::Channel2, std::min(1, dimensionNames.count() - 1));
 	setChannelDimensionId(ChannelIndex::Channel3, std::min(2, dimensionNames.count() - 1));
 
-	const auto pointsDataName = hdps::DataSet::getSourceData(*_pointsDataset).getDataName();
+    const auto& selection = static_cast<Points&>(_pointsDataset->getSelection());
 
-	auto selection = dynamic_cast<Points*>(&imageViewerPlugin->core()->requestSelection(pointsDataName));
-
-	if (selection) {
-		setSelection(hdps::fromStdVector<QVector<std::uint32_t>>(selection->indices));
-	}
-
-	computeChannel(ChannelIndex::Mask);
+    computeChannel(ChannelIndex::Mask);
 }
 
 void PointsLayer::matchScaling(const QSize& targetImageSize)
@@ -385,10 +381,6 @@ QVariant PointsLayer::getData(const QModelIndex& index, const int& role) const
 QModelIndexList PointsLayer::setData(const QModelIndex& index, const QVariant& value, const int& role)
 {
 	QModelIndexList affectedIds = Layer::setData(index, value, role);
-
-	if (static_cast<Layer::Column>(index.column()) == Layer::Column::Selection) {
-		computeChannel(ChannelIndex::Channel1);
-	}
 
 	switch (static_cast<Column>(index.column())) {
 		case Column::DimensionNames:
@@ -1074,31 +1066,6 @@ QVariant PointsLayer::getIndexSelectionDatasetName(const int& role /*= Qt::Displ
 	return QVariant();
 }
 
-QVariant PointsLayer::getIndexSelectionDataName(const int& role /*= Qt::DisplayRole*/) const
-{
-	if (_indexSelectionDataset == nullptr)
-		return "";
-
-	const auto indexSelectionDataName = _indexSelectionDataset->getDataName();
-
-	switch (role)
-	{
-		case Qt::DisplayRole:
-			return indexSelectionDataName;
-
-		case Qt::EditRole:
-			return indexSelectionDataName;
-
-		case Qt::ToolTipRole:
-			return QString("Name of the index selection raw data: %1").arg(indexSelectionDataName);
-
-		default:
-			break;
-	}
-
-	return QVariant();
-}
-
 void PointsLayer::setIndexSelectionDatasetName(const QString& indexSelectionDatasetName)
 {
 	_indexSelectionDatasetName	= indexSelectionDatasetName;
@@ -1140,43 +1107,6 @@ QVariant PointsLayer::getIndicesSelection(const int& role /*= Qt::DisplayRole*/)
 	}
 	*/
 	return QVariant();
-}
-
-void PointsLayer::setSelection(const Indices& selection)
-{
-	Layer::setSelection(selection);
-
-	switch (_pointType)
-	{
-		case PointsLayer::PointType::Intensity:
-			break;
-
-		case PointsLayer::PointType::Index:
-		{
-			_pointsDataset->visitData([this](auto pointData) {
-				if (_indexSelectionDataset != nullptr) {
-					QSet<std::uint32_t> indexSet;
-
-					for (const auto& index : _selection) {
-						indexSet.insert(pointData[index][0] + 1);
-					}
-
-					const auto indexDataName = _indexSelectionDataset->getDataName();
-
-					auto& selectionIndices = dynamic_cast<Points&>(imageViewerPlugin->core()->requestSelection(indexDataName)).indices;
-
-					selectionIndices = std::vector<std::uint32_t>(indexSet.begin(), indexSet.end());
-
-					imageViewerPlugin->core()->notifySelectionChanged(indexDataName);
-				}
-			});
-
-			break;
-		}
-
-		default:
-			break;
-	}
 }
 
 void PointsLayer::computeChannel(const ChannelIndex& channelIndex)
@@ -1276,18 +1206,17 @@ void PointsLayer::computeSequenceChannel(Channel<float>* channel, const ChannelI
 	channel->fill(0.0f);
 
 	_pointsDataset->visitData([this, channel](auto pointData) {
-		const auto hasSelection	= _selection.count() > 0;
-		const auto dimensionId	= channel->getDimensionId();
-		const auto width		= channel->getImageSize().width();
-		const auto height		= channel->getImageSize().height();
-		const auto noPixels		= width * height;
+		const auto dimensionId	    = channel->getDimensionId();
+		const auto width		    = channel->getImageSize().width();
+		const auto height		    = channel->getImageSize().height();
+		const auto noPixels		    = width * height;
 
-		if (hasSelection) {
-			for (const auto& index : _selection) {
+		if (hasSelection()) {
+			for (const auto& index : getSelectionIndices()) {
 				const auto point	= pointData[index];
 				const auto sum		= std::accumulate(point.begin(), point.end(), 0.0);
 
-				(*channel)[index] = static_cast<float>(sum / _selection.count());
+				(*channel)[index] = static_cast<float>(sum / getSelectionSize());
 			}
 		}
 		else {
@@ -1389,7 +1318,7 @@ void PointsLayer::computeMaskChannel(Channel<float>* maskChannel, const ChannelI
 			if (_indexSelectionDataset == nullptr)
 				break;
 
-			auto& selection = dynamic_cast<Points&>(imageViewerPlugin->core()->requestSelection(_indexSelectionDataset->getDataName()));
+            const auto& selection = static_cast<Points&>(_indexSelectionDataset->getSelection());
 
 			std::vector<bool> selectedElements;
 
@@ -1467,4 +1396,24 @@ void PointsLayer::updateChannelNames()
 				break;
 		}
 	}
+}
+
+Points& PointsLayer::getSelection()
+{
+    return static_cast<Points&>(_pointsDataset->getSelection());
+}
+
+std::vector<std::uint32_t>& PointsLayer::getSelectionIndices()
+{
+    return getSelection().indices;
+}
+
+std::uint32_t PointsLayer::getSelectionSize() const
+{
+    return static_cast<std::uint32_t>(const_cast<PointsLayer*>(this)->getSelectionIndices().size());
+}
+
+bool PointsLayer::hasSelection() const
+{
+    return getSelectionSize() > 0;
 }

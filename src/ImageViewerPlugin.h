@@ -40,21 +40,6 @@ public: // Inherited from ViewPlugin
 	/** Initializes the plugin */
 	void init() override;
 
-	/** Invoked when image data is added */
-	void dataAdded(const QString name) Q_DECL_OVERRIDE;
-
-	/** Invoked when image data changes */
-	void dataChanged(const QString name) Q_DECL_OVERRIDE;
-
-	/** Invoked when image data is removed */
-	void dataRemoved(const QString name) Q_DECL_OVERRIDE;
-
-	/** Invoked when the selection changes */
-	void selectionChanged(const QString dataset) Q_DECL_OVERRIDE;
-
-	/** Determines which data types this the image viewer is compatible with */
-	hdps::DataTypes supportedDataTypes() const Q_DECL_OVERRIDE;
-
 	template<typename T>
 	T& requestData(const QString& datasetName)
 	{
@@ -105,9 +90,6 @@ signals:
 	
 	/** Signals that list of point datasets in HDPS has changed */
 	void pointsDatasetsChanged(QStringList pointsDatasets);
-
-	/** Signals that the selection of a dataset has changed */
-	void selectionIndicesChanged(const QString& name);
 
 private:
 	ViewerWidget*		_viewerWidget;			/** The image viewer widget */

@@ -362,13 +362,6 @@ public: // Getters/setters
 	QVariant getIndexSelectionDatasetName(const int& role = Qt::DisplayRole) const;
 
 	/**
-	 * Returns the name of the index selection raw data
-	 * @param role Data role
-	 * @return Name of the index selection raw data in variant form
-	 */
-	QVariant getIndexSelectionDataName(const int& role = Qt::DisplayRole) const;
-
-	/**
 	 * Sets the name of the index selection dataset
 	 * @param indicesDatasetName Name of the index selection dataset
 	 */
@@ -380,12 +373,6 @@ public: // Getters/setters
 	 * @return Selection of the indices dataset in variant form
 	 */
 	QVariant getIndicesSelection(const int& role = Qt::DisplayRole) const;
-
-	/**
-	 * Sets the data point selection
-	 * @param selection Data point selection
-	 */
-	void setSelection(const Indices& selection) override;
 
 public:
 
@@ -439,6 +426,18 @@ private:
 
 	/** Updates the channel names */
 	void updateChannelNames();
+
+    /** Get selection */
+    Points& getSelection();
+
+    /** Get selection indices */
+    std::vector<std::uint32_t>& getSelectionIndices();
+
+    /** Get number of selection data points */
+    std::uint32_t getSelectionSize() const;
+
+    /** Determine whether any data points are selected */
+    bool hasSelection() const;
 
 signals:
 

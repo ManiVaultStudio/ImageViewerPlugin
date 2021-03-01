@@ -20,10 +20,9 @@ const qreal Layer::textMargins					= 10.0;
 
 Layer::Layer(const QString& datasetName, const Type& type, const QString& id, const QString& name, const int& flags) :
 	Node(id, name, flags),
+    hdps::EventListener(),
 	_datasetName(datasetName),
-	_dataName(),
 	_type(type),
-	_selection(),
 	_mousePositions(),
 	_mouseButtons(),
 	_keys()
@@ -72,7 +71,6 @@ Qt::ItemFlags Layer::getFlags(const QModelIndex& index) const
 		}
 
 		case Column::DatasetName:
-		case Column::DataName:
 		case Column::Type:
 		case Column::ID:
 		case Column::ImageSize:
@@ -91,10 +89,6 @@ Qt::ItemFlags Layer::getFlags(const QModelIndex& index) const
 		case Column::Flags:
 			break;
 
-		case Column::Selection:
-		case Column::SelectionSize:
-			break;
-
 		default:
 			break;
 	}
@@ -110,9 +104,6 @@ QVariant Layer::getData(const QModelIndex& index, const int& role) const
 
 		case Column::DatasetName:
 			return getDatasetName(role);
-
-		case Column::DataName:
-			return getDataName(role);
 
 		case Column::Type:
 			return getType(role);
@@ -137,12 +128,6 @@ QVariant Layer::getData(const QModelIndex& index, const int& role) const
 
 		case Column::Flags:
 			return Node::getFlags(role);
-
-		case Column::Selection:
-			return getSelection(role);
-
-		case Column::SelectionSize:
-			return getSelectionSize(role);
 
 		default:
 			break;
@@ -195,7 +180,6 @@ QModelIndexList Layer::setData(const QModelIndex& index, const QVariant& value, 
 					break;
 
 				case Column::DatasetName:
-				case Column::DataName:
 					break;
 
 				case Column::Type:
@@ -221,14 +205,6 @@ QModelIndexList Layer::setData(const QModelIndex& index, const QVariant& value, 
 
 				case Column::Flags:
 					setFlags(value.toInt());
-					break;
-
-				case Column::Selection:
-					setSelection(value.value<Indices>());
-					affectedIndices << index.siblingAtColumn(ult(Column::SelectionSize));
-					break;
-
-				case Column::SelectionSize:
 					break;
 
 				default:
@@ -257,24 +233,6 @@ QVariant Layer::getDatasetName(const int& role) const
 
 		case Qt::ToolTipRole:
 			return QString("Dataset name: %1").arg(_datasetName);
-
-		default:
-			break;
-	}
-
-	return QVariant();
-}
-
-QVariant Layer::getDataName(const int& role) const
-{
-	switch (role)
-	{
-		case Qt::DisplayRole:
-		case Qt::EditRole:
-			return _dataName;
-
-		case Qt::ToolTipRole:
-			return QString("Data name: %1").arg(_dataName);
 
 		default:
 			break;
@@ -420,69 +378,6 @@ QVariant Layer::getImageHeight(const int& role) const
 
 		case Qt::ToolTipRole:
 			return QString("Image height: %1 pixels").arg(heightString);
-
-		default:
-			break;
-	}
-
-	return QVariant();
-}
-
-QVariant Layer::getSelection(const int& role /*= Qt::DisplayRole*/) const
-{
-	auto selection = QStringList();
-
-	if (_selection.size() <= 2) {
-		for (const auto& id : _selection)
-			selection << QString::number(id);
-	}
-	else {
-		selection << QString::number(_selection.first());
-		selection << "...";
-		selection << QString::number(_selection.last());
-	}
-
-	const auto selectionString = QString("[%1]").arg(selection.join(", "));
-
-	switch (role)
-	{
-		case Qt::DisplayRole:
-			return selectionString;
-
-		case Qt::EditRole:
-			return QVariant::fromValue(_selection);
-
-		case Qt::ToolTipRole:
-			return QString("Selection: %1").arg(selectionString);
-
-		default:
-			break;
-	}
-
-	return QVariant();
-}
-
-void Layer::setSelection(const Indices& selection)
-{
-	_selection = selection;
-}
-
-QVariant Layer::getSelectionSize(const int& role /*= Qt::DisplayRole*/) const
-{
-	const auto selectionSizeString = QString::number(_selection.size());
-
-	switch (role)
-	{
-		case Qt::DisplayRole:
-			return selectionSizeString;
-
-		case Qt::EditRole:
-			return _selection.size();
-
-		case Qt::ToolTipRole:
-		{
-			return QString("Selection size: %1").arg(selectionSizeString);
-		}
 
 		default:
 			break;
