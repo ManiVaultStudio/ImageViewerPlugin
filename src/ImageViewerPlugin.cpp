@@ -77,39 +77,6 @@ void ImageViewerPlugin::init()
     */
 }
 
-bool ImageViewerPlugin::eventFilter(QObject* target, QEvent* event)
-{
-    switch (event->type())
-    {
-        case QEvent::KeyPress:
-        {
-            auto keyEvent = static_cast<QKeyEvent*>(event);
-
-            if (!keyEvent->isAutoRepeat() && keyEvent->key() == Qt::Key_Space) {
-                _layersModel.dispatchEventToSelectedLayer(event);
-            }
-
-            break;
-        }
-
-        case QEvent::KeyRelease:
-        {
-            auto keyEvent = static_cast<QKeyEvent*>(event);
-
-            if (!keyEvent->isAutoRepeat() && keyEvent->key() == Qt::Key_Space) {
-                _layersModel.dispatchEventToSelectedLayer(event);
-            }
-
-            break;
-        }
-
-        default:
-            break;
-    }
-
-    return QWidget::eventFilter(target, event);
-}
-
 ImageViewerPlugin* ImageViewerPluginFactory::produce()
 {
     return new ImageViewerPlugin();

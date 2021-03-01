@@ -49,13 +49,6 @@ public: // Inherited from ViewPlugin
     /** Returns a pointer to the core interface */
     hdps::CoreInterface* core() { return _core; }
 
-    /**
-     * Event filter
-     *@param target Target object
-     *@param event Event that occurred
-     */
-    bool eventFilter(QObject* target, QEvent* event) override;
-
 public: // Miscellaneous
 
     /** Returns the image viewer widget */
