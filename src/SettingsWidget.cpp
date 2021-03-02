@@ -9,13 +9,13 @@
 #include <QDebug>
 
 SettingsWidget::SettingsWidget(ImageViewerPlugin* imageViewerPlugin) :
-	QWidget(),
-	_imageViewerPlugin(imageViewerPlugin),
-	_ui{ std::make_unique<Ui::SettingsWidget>() }
+    QWidget(),
+    _imageViewerPlugin(imageViewerPlugin),
+    _ui{ std::make_unique<Ui::SettingsWidget>() }
 {
-	_ui->setupUi(this);
-	
-	_ui->layersWidget->initialize(_imageViewerPlugin);
+    _ui->setupUi(this);
+    
+    _ui->layersWidget->initialize(_imageViewerPlugin);
 }
 
 SettingsWidget::~SettingsWidget() = default;

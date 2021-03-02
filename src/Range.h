@@ -13,46 +13,46 @@ class Range
 {
 public:
 
-	/**
-	 * Constructor
-	 * @param min Range minimum
-	 * @param max Range maximum
-	 */
-	Range(const float& min = 0.0f, const float& max = 0.0f);
+    /**
+     * Constructor
+     * @param min Range minimum
+     * @param max Range maximum
+     */
+    Range(const float& min = 0.0f, const float& max = 0.0f);
 
-	/** Returns the range minimum */
-	float getMin() const;
+    /** Returns the range minimum */
+    float getMin() const;
 
-	/**
-	 * Sets the range minimum
-	 * @param min Range minimum
-	 */
-	void setMin(const float& min);
+    /**
+     * Sets the range minimum
+     * @param min Range minimum
+     */
+    void setMin(const float& min);
 
-	/** Returns the range maximum */
-	float getMax() const;
+    /** Returns the range maximum */
+    float getMax() const;
 
-	/**
-	 * Sets the range maximum
-	 * @param max Range maximum
-	 */
-	void setMax(const float& max);
+    /**
+     * Sets the range maximum
+     * @param max Range maximum
+     */
+    void setMax(const float& max);
 
-	/**
-	 * Make the range include the specified value
-	 * @param value Value to include
-	 */
-	void include(const float& value);
+    /**
+     * Make the range include the specified value
+     * @param value Value to include
+     */
+    void include(const float& value);
 
-	/** Set the range minimum and maximum to the float minimum and maximum */
-	void setFullRange();
+    /** Set the range minimum and maximum to the float minimum and maximum */
+    void setFullRange();
 
-	/** Returns the length of the range */
-	float getLength() const;
+    /** Returns the length of the range */
+    float getLength() const;
 
 private:
-	float	_min;	/** Range minimum */
-	float	_max;	/** Range maximum */
+    float   _min;   /** Range minimum */
+    float   _max;   /** Range maximum */
 };
 
 Q_DECLARE_METATYPE(Range);

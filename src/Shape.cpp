@@ -7,10 +7,10 @@
 #include <QDebug>
 
 Shape::Shape(Prop* prop, const QString& name) :
-	_prop(prop),
-	_name(name),
-	_vao(),
-	_vbo()
+    _prop(prop),
+    _name(name),
+    _vao(),
+    _vbo()
 {
 }
 
@@ -18,55 +18,55 @@ Shape::~Shape() = default;
 
 QString Shape::getFullName()
 {
-	return QString("%2::%3").arg(getProp()->name(), _name);
+    return QString("%2::%3").arg(getProp()->name(), _name);
 }
 
 void Shape::initialize()
 {
-	//qDebug() << "Initialize" << fullName();
+    //qDebug() << "Initialize" << fullName();
 
-	Prop::renderer->bindOpenGLContext();
+    Prop::renderer->bindOpenGLContext();
 
-	_vao.create();
-	_vbo.create();
+    _vao.create();
+    _vbo.create();
 }
 
 void Shape::destroy()
 {
-	//qDebug() << "Destroy" << fullName();
+    //qDebug() << "Destroy" << fullName();
 
-	Prop::renderer->bindOpenGLContext();
+    Prop::renderer->bindOpenGLContext();
 
-	_vao.destroy();
-	_vao.release();
+    _vao.destroy();
+    _vao.release();
 
-	_vbo.destroy();
-	_vbo.release();
+    _vbo.destroy();
+    _vbo.release();
 }
 
 void Shape::render()
 {
-	//qDebug() << "Render" << fullName();
+    //qDebug() << "Render" << fullName();
 }
 
 QString Shape::getName() const
 {
-	return _name;
+    return _name;
 }
 
 void Shape::setName(const QString& name)
 {
-	if (name == _name)
-		return;
+    if (name == _name)
+        return;
 
-	const auto oldName = getFullName();
+    const auto oldName = getFullName();
 
-	_name = name;
+    _name = name;
 
-	qDebug() << "Rename" << oldName << "to" << getFullName();
+    qDebug() << "Rename" << oldName << "to" << getFullName();
 }
 
 Prop* Shape::getProp()
 {
-	return _prop;
+    return _prop;
 }

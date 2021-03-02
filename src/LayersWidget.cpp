@@ -19,221 +19,221 @@
 #include <QMimeData>
 
 LayersWidget::LayersWidget(QWidget* parent) :
-	QWidget(parent),
-	_imageViewerPlugin(nullptr),
-	_ui{ std::make_unique<Ui::LayersWidget>() }
+    QWidget(parent),
+    _imageViewerPlugin(nullptr),
+    _ui{ std::make_unique<Ui::LayersWidget>() }
 {
-	setAcceptDrops(true);
+    setAcceptDrops(true);
 
-	_ui->setupUi(this);
+    _ui->setupUi(this);
 }
 
 LayersWidget::~LayersWidget() = default;
 
 void LayersWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 {
-	_imageViewerPlugin = imageViewerPlugin;
+    _imageViewerPlugin = imageViewerPlugin;
 
-	_ui->layerWidget->initialize(_imageViewerPlugin);
+    _ui->layerWidget->initialize(_imageViewerPlugin);
 
-	_ui->layersTreeView->setModel(&_imageViewerPlugin->getLayersModel());
-	_ui->layersTreeView->setSelectionModel(&getLayersSelectionModel());
-	_ui->layersTreeView->setDragDropOverwriteMode(false);
-	_ui->layersTreeView->setHeaderHidden(false);
+    _ui->layersTreeView->setModel(&_imageViewerPlugin->getLayersModel());
+    _ui->layersTreeView->setSelectionModel(&getLayersSelectionModel());
+    _ui->layersTreeView->setDragDropOverwriteMode(false);
+    _ui->layersTreeView->setHeaderHidden(false);
 
-	QFont font = QFont("Font Awesome 5 Free Solid", 9);
+    QFont font = QFont("Font Awesome 5 Free Solid", 9);
 
-	_ui->layerRemovePushButton->setFont(font);
-	_ui->layerMoveUpPushButton->setFont(font);
-	_ui->layerMoveDownPushButton->setFont(font);
+    _ui->layerRemovePushButton->setFont(font);
+    _ui->layerMoveUpPushButton->setFont(font);
+    _ui->layerMoveDownPushButton->setFont(font);
 
-	_ui->layerRemovePushButton->setText(hdps::Application::getIconFont("FontAwesome").getIconCharacter("trash-alt"));
-	_ui->layerMoveUpPushButton->setText(hdps::Application::getIconFont("FontAwesome").getIconCharacter("caret-up"));
-	_ui->layerMoveDownPushButton->setText(hdps::Application::getIconFont("FontAwesome").getIconCharacter("caret-down"));
+    _ui->layerRemovePushButton->setText(hdps::Application::getIconFont("FontAwesome").getIconCharacter("trash-alt"));
+    _ui->layerMoveUpPushButton->setText(hdps::Application::getIconFont("FontAwesome").getIconCharacter("caret-up"));
+    _ui->layerMoveDownPushButton->setText(hdps::Application::getIconFont("FontAwesome").getIconCharacter("caret-down"));
 
-	QObject::connect(_ui->layerMoveUpPushButton, &QPushButton::clicked, [this]() {
-		const auto selectedRows = getLayersSelectionModel().selectedRows();
+    QObject::connect(_ui->layerMoveUpPushButton, &QPushButton::clicked, [this]() {
+        const auto selectedRows = getLayersSelectionModel().selectedRows();
 
-		if (selectedRows.size() == 1) {
-			const auto firstRow = selectedRows.first();
-			const auto parent = firstRow.parent();
+        if (selectedRows.size() == 1) {
+            const auto firstRow = selectedRows.first();
+            const auto parent = firstRow.parent();
 
-			getLayersModel().moveLayer(parent, firstRow.row(), parent, firstRow.row() - 1);
-		}
-	});
+            getLayersModel().moveLayer(parent, firstRow.row(), parent, firstRow.row() - 1);
+        }
+    });
 
-	QObject::connect(_ui->layerMoveDownPushButton, &QPushButton::clicked, [this]() {
-		const auto selectedRows = getLayersSelectionModel().selectedRows();
+    QObject::connect(_ui->layerMoveDownPushButton, &QPushButton::clicked, [this]() {
+        const auto selectedRows = getLayersSelectionModel().selectedRows();
 
-		if (selectedRows.size() == 1) {
-			const auto firstRow = selectedRows.first();
-			const auto parent = firstRow.parent();
+        if (selectedRows.size() == 1) {
+            const auto firstRow = selectedRows.first();
+            const auto parent = firstRow.parent();
 
-			getLayersModel().moveLayer(parent, firstRow.row() + 1, parent, firstRow.row());
-		}
-	});
+            getLayersModel().moveLayer(parent, firstRow.row() + 1, parent, firstRow.row());
+        }
+    });
 
-	QObject::connect(_ui->layerRemovePushButton, &QPushButton::clicked, [this]() {
-		
-		getLayersModel().removeLayers(getLayersSelectionModel().selectedRows());
+    QObject::connect(_ui->layerRemovePushButton, &QPushButton::clicked, [this]() {
+        
+        getLayersModel().removeLayers(getLayersSelectionModel().selectedRows());
 
-		if (getLayersModel().rowCount() >= 1)
-			getLayersModel().selectRow(0);
-	});
+        if (getLayersModel().rowCount() >= 1)
+            getLayersModel().selectRow(0);
+    });
 
-	_ui->layersGroupBox->setEnabled(true);
+    _ui->layersGroupBox->setEnabled(true);
 
-	auto headerView = _ui->layersTreeView->header();
+    auto headerView = _ui->layersTreeView->header();
 
-	headerView->setSectionResizeMode(QHeaderView::ResizeToContents);
-	headerView->hide();
+    headerView->setSectionResizeMode(QHeaderView::ResizeToContents);
+    headerView->hide();
 
-	for (int column = ult(Layer::Column::Start); column <= ult(Layer::Column::End); column++)
-		headerView->hideSection(column);
+    for (int column = ult(Layer::Column::Start); column <= ult(Layer::Column::End); column++)
+        headerView->hideSection(column);
 
-	headerView->showSection(ult(Layer::Column::Name));
-	headerView->showSection(ult(Layer::Column::Type));
-	headerView->showSection(ult(Layer::Column::Opacity));
-	headerView->showSection(ult(Layer::Column::ImageWidth));
-	headerView->showSection(ult(Layer::Column::ImageHeight));
-	headerView->showSection(ult(Layer::Column::Scale));
+    headerView->showSection(ult(Layer::Column::Name));
+    headerView->showSection(ult(Layer::Column::Type));
+    headerView->showSection(ult(Layer::Column::Opacity));
+    headerView->showSection(ult(Layer::Column::ImageWidth));
+    headerView->showSection(ult(Layer::Column::ImageHeight));
+    headerView->showSection(ult(Layer::Column::Scale));
 
-	headerView->setSectionResizeMode(ult(Layer::Column::Name), QHeaderView::Interactive);
+    headerView->setSectionResizeMode(ult(Layer::Column::Name), QHeaderView::Interactive);
 
-	auto updateButtons = [this]() {
-		const auto selectedRows = getLayersSelectionModel().selectedRows();
-		const auto noSelectedRows = selectedRows.size();
+    auto updateButtons = [this]() {
+        const auto selectedRows = getLayersSelectionModel().selectedRows();
+        const auto noSelectedRows = selectedRows.size();
 
-		_ui->layerRemovePushButton->setEnabled(false);
-		_ui->layerMoveUpPushButton->setEnabled(false);
-		_ui->layerMoveDownPushButton->setEnabled(false);
+        _ui->layerRemovePushButton->setEnabled(false);
+        _ui->layerMoveUpPushButton->setEnabled(false);
+        _ui->layerMoveDownPushButton->setEnabled(false);
 
-		_ui->layerRemovePushButton->setToolTip("");
-		_ui->layerMoveUpPushButton->setToolTip("");
-		_ui->layerMoveDownPushButton->setToolTip("");
+        _ui->layerRemovePushButton->setToolTip("");
+        _ui->layerMoveUpPushButton->setToolTip("");
+        _ui->layerMoveDownPushButton->setToolTip("");
 
-		if (noSelectedRows == 1) {
-			const auto firstRow = selectedRows.first();
-			const auto row = firstRow.row();
-			const auto name = firstRow.siblingAtColumn(ult(Layer::Column::Name)).data(Qt::EditRole).toString();
+        if (noSelectedRows == 1) {
+            const auto firstRow = selectedRows.first();
+            const auto row = firstRow.row();
+            const auto name = firstRow.siblingAtColumn(ult(Layer::Column::Name)).data(Qt::EditRole).toString();
 
-			const auto mayMoveUp = getLayersModel().mayMoveLayer(firstRow, -1);
+            const auto mayMoveUp = getLayersModel().mayMoveLayer(firstRow, -1);
 
-			_ui->layerMoveUpPushButton->setEnabled(mayMoveUp);
-			_ui->layerMoveUpPushButton->setToolTip(mayMoveUp ? QString("Move %1 up one level").arg(name) : "");
+            _ui->layerMoveUpPushButton->setEnabled(mayMoveUp);
+            _ui->layerMoveUpPushButton->setToolTip(mayMoveUp ? QString("Move %1 up one level").arg(name) : "");
 
-			const auto mayMoveDown = getLayersModel().mayMoveLayer(firstRow, 1);
+            const auto mayMoveDown = getLayersModel().mayMoveLayer(firstRow, 1);
 
-			_ui->layerMoveDownPushButton->setEnabled(mayMoveDown);
-			_ui->layerMoveDownPushButton->setToolTip(mayMoveDown ? QString("Move %1 down one level").arg(name) : "");
-		}
+            _ui->layerMoveDownPushButton->setEnabled(mayMoveDown);
+            _ui->layerMoveDownPushButton->setToolTip(mayMoveDown ? QString("Move %1 down one level").arg(name) : "");
+        }
 
-		_ui->layerRemovePushButton->setEnabled(noSelectedRows > 0);
-	};
+        _ui->layerRemovePushButton->setEnabled(noSelectedRows > 0);
+    };
 
-	QObject::connect(&getLayersModel(), &QAbstractItemModel::rowsMoved, [this, updateButtons](const QModelIndex& parent, int start, int end, const QModelIndex& destination, int row) {
-		updateButtons();
-	});
+    QObject::connect(&getLayersModel(), &QAbstractItemModel::rowsMoved, [this, updateButtons](const QModelIndex& parent, int start, int end, const QModelIndex& destination, int row) {
+        updateButtons();
+    });
 
-	QObject::connect(&getLayersModel(), &QAbstractItemModel::rowsInserted, [this, updateButtons](const QModelIndex &parent, int first, int last) {
-		_ui->layersTreeView->header()->setVisible(getLayersModel().rowCount() > 0);
-	});
+    QObject::connect(&getLayersModel(), &QAbstractItemModel::rowsInserted, [this, updateButtons](const QModelIndex &parent, int first, int last) {
+        _ui->layersTreeView->header()->setVisible(getLayersModel().rowCount() > 0);
+    });
 
-	QObject::connect(&getLayersModel(), &QAbstractItemModel::rowsRemoved, [this, updateButtons](const QModelIndex &parent, int first, int last) {
-		_ui->layersTreeView->header()->setVisible(getLayersModel().rowCount() > 0);
-	});
+    QObject::connect(&getLayersModel(), &QAbstractItemModel::rowsRemoved, [this, updateButtons](const QModelIndex &parent, int first, int last) {
+        _ui->layersTreeView->header()->setVisible(getLayersModel().rowCount() > 0);
+    });
 
-	QObject::connect(&getLayersSelectionModel(), &QItemSelectionModel::selectionChanged, [this, updateButtons](const QItemSelection &selected, const QItemSelection &deselected) {
-		updateButtons();
+    QObject::connect(&getLayersSelectionModel(), &QItemSelectionModel::selectionChanged, [this, updateButtons](const QItemSelection &selected, const QItemSelection &deselected) {
+        updateButtons();
 
-		_imageViewerPlugin->getViewerWidget()->update();
-	});
+        _imageViewerPlugin->getViewerWidget()->update();
+    });
 }
 
 void LayersWidget::dragEnterEvent(QDragEnterEvent* dragEnterEvent)
 {
-	const auto items		= dragEnterEvent->mimeData()->text().split("\n");
-	const auto datasetName	= items.at(0);
-	const auto datasetType	= items.at(1);
-	
-	if (datasetType == "Points") {
-		auto pointsDataset = _imageViewerPlugin->requestData<Points>(datasetName);
-		
-		if (pointsDataset.isDerivedData()) {
-			auto sourcePointsDataset = hdps::DataSet::getSourceData<Points>(pointsDataset);
+    const auto items        = dragEnterEvent->mimeData()->text().split("\n");
+    const auto datasetName  = items.at(0);
+    const auto datasetType  = items.at(1);
+    
+    if (datasetType == "Points") {
+        auto pointsDataset = _imageViewerPlugin->requestData<Points>(datasetName);
+        
+        if (pointsDataset.isDerivedData()) {
+            auto sourcePointsDataset = hdps::DataSet::getSourceData<Points>(pointsDataset);
 
-			if (sourcePointsDataset.getProperty("Type", "").toString() == "Images")
-				dragEnterEvent->acceptProposedAction();
-		}
-		else {
-			if (pointsDataset.getProperty("Type", "").toString() == "Images")
-				dragEnterEvent->acceptProposedAction();
-		}
-	}
+            if (sourcePointsDataset.getProperty("Type", "").toString() == "Images")
+                dragEnterEvent->acceptProposedAction();
+        }
+        else {
+            if (pointsDataset.getProperty("Type", "").toString() == "Images")
+                dragEnterEvent->acceptProposedAction();
+        }
+    }
 
-	if (datasetType == "Clusters")
-		dragEnterEvent->acceptProposedAction();
+    if (datasetType == "Clusters")
+        dragEnterEvent->acceptProposedAction();
 }
 
 void LayersWidget::dropEvent(QDropEvent* dropEvent)
 {
-	const auto items					= dropEvent->mimeData()->text().split("\n");
-	const auto datasetName				= items.at(0);
-	const auto datasetType				= items.at(1);
-	const auto selectionName			= QString("%1_selection").arg(datasetName);
-	const auto selectionLayerIndices	= getLayersModel().match(getLayersModel().index(0, ult(Layer::Column::ID)), Qt::DisplayRole, selectionName, -1, Qt::MatchExactly);
-	const auto createSelectionLayer		= selectionLayerIndices.isEmpty();
-	const auto layerFlags				= ult(Layer::Flag::Enabled) | ult(Layer::Flag::Renamable);
+    const auto items                    = dropEvent->mimeData()->text().split("\n");
+    const auto datasetName              = items.at(0);
+    const auto datasetType              = items.at(1);
+    const auto selectionName            = QString("%1_selection").arg(datasetName);
+    const auto selectionLayerIndices    = getLayersModel().match(getLayersModel().index(0, ult(Layer::Column::ID)), Qt::DisplayRole, selectionName, -1, Qt::MatchExactly);
+    const auto createSelectionLayer     = selectionLayerIndices.isEmpty();
+    const auto layerFlags               = ult(Layer::Flag::Enabled) | ult(Layer::Flag::Renamable);
 
-	auto largestImageSize = QSize();
+    auto largestImageSize = QSize();
 
-	for (auto imageLayerIndex : getLayersModel().match(getLayersModel().index(0, ult(Layer::Column::Type)), Qt::EditRole, ult(Layer::Type::Points), -1, Qt::MatchExactly | Qt::MatchRecursive)) {
-		const auto imageSize = getLayersModel().data(imageLayerIndex.siblingAtColumn(ult(Layer::Column::ImageSize)), Qt::EditRole).toSize();
+    for (auto imageLayerIndex : getLayersModel().match(getLayersModel().index(0, ult(Layer::Column::Type)), Qt::EditRole, ult(Layer::Type::Points), -1, Qt::MatchExactly | Qt::MatchRecursive)) {
+        const auto imageSize = getLayersModel().data(imageLayerIndex.siblingAtColumn(ult(Layer::Column::ImageSize)), Qt::EditRole).toSize();
 
-		if (imageSize.width() > largestImageSize.width() && imageSize.height() > largestImageSize.height())
-			largestImageSize = imageSize;
-	}
+        if (imageSize.width() > largestImageSize.width() && imageSize.height() > largestImageSize.height())
+            largestImageSize = imageSize;
+    }
 
-	if (datasetType == "Points") {
-		auto pointsLayer = new PointsLayer(datasetName, datasetName, datasetName, layerFlags);
+    if (datasetType == "Points") {
+        auto pointsLayer = new PointsLayer(datasetName, datasetName, datasetName, layerFlags);
 
-		if (largestImageSize.isValid())
-			pointsLayer->matchScaling(largestImageSize);
+        if (largestImageSize.isValid())
+            pointsLayer->matchScaling(largestImageSize);
 
-		qDebug() << pointsLayer->getImageCollectionType();
+        qDebug() << pointsLayer->getImageCollectionType();
 
-		if (pointsLayer->getImageCollectionType() == ult(ImageData::Type::Stack) && createSelectionLayer) {
-			auto selectionLayer = new SelectionLayer(datasetName, selectionName, selectionName, layerFlags);
+        if (pointsLayer->getImageCollectionType() == ult(ImageData::Type::Stack) && createSelectionLayer) {
+            auto selectionLayer = new SelectionLayer(datasetName, selectionName, selectionName, layerFlags);
 
-			selectionLayer->setOpacity(0.8f);
+            selectionLayer->setOpacity(0.8f);
 
-			if (largestImageSize.isValid())
-				selectionLayer->matchScaling(largestImageSize);
+            if (largestImageSize.isValid())
+                selectionLayer->matchScaling(largestImageSize);
 
-			getLayersModel().insertLayer(0, pointsLayer);
-			getLayersModel().insertLayer(0, selectionLayer);
-			getLayersModel().selectRow(1);
-		}
-		else {
-			const auto row = selectionLayerIndices.isEmpty() ? 0 : selectionLayerIndices.first().row() + 1;
+            getLayersModel().insertLayer(0, pointsLayer);
+            getLayersModel().insertLayer(0, selectionLayer);
+            getLayersModel().selectRow(1);
+        }
+        else {
+            const auto row = selectionLayerIndices.isEmpty() ? 0 : selectionLayerIndices.first().row() + 1;
 
-			getLayersModel().insertLayer(row, pointsLayer);
-			getLayersModel().selectRow(row);
-		}
-	}
+            getLayersModel().insertLayer(row, pointsLayer);
+            getLayersModel().selectRow(row);
+        }
+    }
 
-	if (datasetType == "Clusters") {
-	}
+    if (datasetType == "Clusters") {
+    }
 
-	dropEvent->acceptProposedAction();
+    dropEvent->acceptProposedAction();
 }
 
 LayersModel& LayersWidget::getLayersModel()
 {
-	return _imageViewerPlugin->getLayersModel();
+    return _imageViewerPlugin->getLayersModel();
 }
 
 QItemSelectionModel& LayersWidget::getLayersSelectionModel()
 {
-	return getLayersModel().getSelectionModel();
+    return getLayersModel().getSelectionModel();
 }

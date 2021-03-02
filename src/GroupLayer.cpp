@@ -3,8 +3,8 @@
 #include <QDebug>
 
 GroupLayer::GroupLayer(const QString& id, const QString& name, const int& flags) :
-	Layer("", Layer::Type::Group, id, name, flags),
-	Channels<std::uint8_t>()
+    Layer("", Layer::Type::Group, id, name, flags),
+    Channels<std::uint8_t>()
 {
 }
 
@@ -14,48 +14,48 @@ void GroupLayer::paint(QPainter* painter)
 
 Qt::ItemFlags GroupLayer::getFlags(const QModelIndex& index) const
 {
-	auto flags = Layer::getFlags(index);
+    auto flags = Layer::getFlags(index);
 
-	/*
-	switch (static_cast<Column>(index.column())) {
-		default:
-			break;
-	}
-	*/
+    /*
+    switch (static_cast<Column>(index.column())) {
+        default:
+            break;
+    }
+    */
 
-	return flags;
+    return flags;
 }
 
 QVariant GroupLayer::getData(const QModelIndex& index, const int& role) const
 {
-	if (index.column() < ult(Column::Start))
-		return Layer::getData(index, role);
+    if (index.column() < ult(Column::Start))
+        return Layer::getData(index, role);
 
-	/*
-	switch (static_cast<Column>(index.column())) {
-		default:
-			break;
-	}
-	*/
+    /*
+    switch (static_cast<Column>(index.column())) {
+        default:
+            break;
+    }
+    */
 
-	return QVariant();
+    return QVariant();
 }
 
 QModelIndexList GroupLayer::setData(const QModelIndex& index, const QVariant& value, const int& role)
 {
-	QModelIndexList affectedIds = Layer::setData(index, value, role);
+    QModelIndexList affectedIds = Layer::setData(index, value, role);
 
-	/*
-	switch (static_cast<Column>(index.column())) {
-		default:
-			break;
-	}
-	*/
+    /*
+    switch (static_cast<Column>(index.column())) {
+        default:
+            break;
+    }
+    */
 
-	return affectedIds;
+    return affectedIds;
 }
 
 Layer::Hints GroupLayer::getHints() const
 {
-	return Layer::getHints();
+    return Layer::getHints();
 }

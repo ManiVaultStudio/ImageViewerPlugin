@@ -18,195 +18,195 @@
 #include <QKeyEvent>
 
 CanvasWidget::CanvasWidget(QWidget* parent) :
-	QOpenGLWidget(parent),
-	QOpenGLFunctions(),
-	_imageViewerPlugin(nullptr),
-	_renderer(new Renderer(this)),
-	_openglDebugLogger(std::make_unique<QOpenGLDebugLogger>()),
-	_keys()
+    QOpenGLWidget(parent),
+    QOpenGLFunctions(),
+    _imageViewerPlugin(nullptr),
+    _renderer(new Renderer(this)),
+    _openglDebugLogger(std::make_unique<QOpenGLDebugLogger>()),
+    _keys()
 {
 }
 
 void CanvasWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 {
-	_imageViewerPlugin = imageViewerPlugin;
+    _imageViewerPlugin = imageViewerPlugin;
 
-	Layer::imageViewerPlugin = _imageViewerPlugin;
-	Renderable::renderer = _renderer;
-	Prop::renderer = _renderer;
+    Layer::imageViewerPlugin = _imageViewerPlugin;
+    Renderable::renderer = _renderer;
+    Prop::renderer = _renderer;
 
-	setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
-	setFocusPolicy(Qt::StrongFocus);
-	setMouseTracking(true);
+    setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
+    setFocusPolicy(Qt::StrongFocus);
+    setMouseTracking(true);
 
-	QSurfaceFormat surfaceFormat;
+    QSurfaceFormat surfaceFormat;
 
-	surfaceFormat.setRenderableType(QSurfaceFormat::OpenGL);
-	surfaceFormat.setSamples(4);
+    surfaceFormat.setRenderableType(QSurfaceFormat::OpenGL);
+    surfaceFormat.setSamples(4);
 
 #ifdef __APPLE__
-	// Ask for an OpenGL 3.3 Core Context as the default
-	surfaceFormat.setVersion(3, 3);
-	surfaceFormat.setProfile(QSurfaceFormat::CoreProfile);
-	surfaceFormat.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
-	//QSurfaceFormat::setDefaultFormat(defaultFormat);
+    // Ask for an OpenGL 3.3 Core Context as the default
+    surfaceFormat.setVersion(3, 3);
+    surfaceFormat.setProfile(QSurfaceFormat::CoreProfile);
+    surfaceFormat.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
+    //QSurfaceFormat::setDefaultFormat(defaultFormat);
 #else
-	// Ask for an OpenGL 4.3 Core Context as the default
-	surfaceFormat.setVersion(4, 3);
-	surfaceFormat.setProfile(QSurfaceFormat::CoreProfile);
-	surfaceFormat.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
+    // Ask for an OpenGL 4.3 Core Context as the default
+    surfaceFormat.setVersion(4, 3);
+    surfaceFormat.setProfile(QSurfaceFormat::CoreProfile);
+    surfaceFormat.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
 #endif
 
 #ifdef _DEBUG
-	surfaceFormat.setOption(QSurfaceFormat::DebugContext);
+    surfaceFormat.setOption(QSurfaceFormat::DebugContext);
 #endif
-	
-	surfaceFormat.setSamples(16);
+    
+    surfaceFormat.setSamples(16);
 
-	setFormat(surfaceFormat);
+    setFormat(surfaceFormat);
 
-	_backgroundGradient.setCoordinateMode(QGradient::ObjectBoundingMode);
-	_backgroundGradient.setCenter(0.5, 0.50);
-	_backgroundGradient.setFocalPoint(0.5, 0.5);
-	_backgroundGradient.setColorAt(0.0, QColor(100, 100, 100));
-	_backgroundGradient.setColorAt(0.7, QColor(30, 30, 30));
+    _backgroundGradient.setCoordinateMode(QGradient::ObjectBoundingMode);
+    _backgroundGradient.setCenter(0.5, 0.50);
+    _backgroundGradient.setFocalPoint(0.5, 0.5);
+    _backgroundGradient.setColorAt(0.0, QColor(100, 100, 100));
+    _backgroundGradient.setColorAt(0.7, QColor(30, 30, 30));
 
-	this->installEventFilter(this);
+    this->installEventFilter(this);
 }
 
 CanvasWidget::~CanvasWidget()
 {
-	_renderer->destroy();
+    _renderer->destroy();
 }
 
 bool CanvasWidget::eventFilter(QObject* target, QEvent* event)
 {
-	switch (event->type())
-	{
-		case QEvent::KeyPress:
-		{
-			auto keyEvent = static_cast<QKeyEvent*>(event);
+    switch (event->type())
+    {
+        case QEvent::KeyPress:
+        {
+            auto keyEvent = static_cast<QKeyEvent*>(event);
 
-			if (!keyEvent->isAutoRepeat()) {
-				if (keyEvent->key() == Qt::Key_Space) {
-					_keys |= Qt::Key_Space;
-					_renderer->setInteractionMode(InteractionMode::Navigation);
-					setCursor(Qt::ClosedHandCursor);
-				}
-			}
+            if (!keyEvent->isAutoRepeat()) {
+                if (keyEvent->key() == Qt::Key_Space) {
+                    _keys |= Qt::Key_Space;
+                    _renderer->setInteractionMode(InteractionMode::Navigation);
+                    setCursor(Qt::ClosedHandCursor);
+                }
+            }
 
-			break;
-		}
+            break;
+        }
 
-		case QEvent::KeyRelease:
-		{
-			auto keyEvent = static_cast<QKeyEvent*>(event);
+        case QEvent::KeyRelease:
+        {
+            auto keyEvent = static_cast<QKeyEvent*>(event);
 
-			if (!keyEvent->isAutoRepeat()) {
-				if (keyEvent->key() == Qt::Key_Space) {
-					_keys &= ~Qt::Key_Space;
-					_renderer->setInteractionMode(InteractionMode::LayerEditing);
-					setCursor(Qt::ArrowCursor);
-				}
-			}
+            if (!keyEvent->isAutoRepeat()) {
+                if (keyEvent->key() == Qt::Key_Space) {
+                    _keys &= ~Qt::Key_Space;
+                    _renderer->setInteractionMode(InteractionMode::LayerEditing);
+                    setCursor(Qt::ArrowCursor);
+                }
+            }
 
-			break;
-		}
+            break;
+        }
 
-		default:
-			break;
-	}
+        default:
+            break;
+    }
 
-	if (_keys & Qt::Key_Space)
-		_renderer->handleEvent(event);
-	else
-		_imageViewerPlugin->getLayersModel().dispatchEventToSelectedLayer(event);
+    if (_keys & Qt::Key_Space)
+        _renderer->handleEvent(event);
+    else
+        _imageViewerPlugin->getLayersModel().dispatchEventToSelectedLayer(event);
 
-	return QWidget::eventFilter(target, event);
+    return QWidget::eventFilter(target, event);
 }
 
 void CanvasWidget::zoomExtents()
 {
-	auto root = _imageViewerPlugin->getLayersModel().getLayer(QModelIndex());
+    auto root = _imageViewerPlugin->getLayersModel().getLayer(QModelIndex());
 
-	if (root != nullptr)
-		_renderer->zoomToRectangle(root->getBoundingRectangle());
+    if (root != nullptr)
+        _renderer->zoomToRectangle(root->getBoundingRectangle());
 
-	update();
+    update();
 }
 
 void CanvasWidget::initializeGL()
 {
-	qDebug() << "Initializing OpenGL";
+    qDebug() << "Initializing OpenGL";
 
-	initializeOpenGLFunctions();
+    initializeOpenGLFunctions();
 
-	makeCurrent();
-	
+    makeCurrent();
+    
 #ifdef _DEBUG
-	_openglDebugLogger->initialize();
+    _openglDebugLogger->initialize();
 #endif
 
-	//_renderer->zoomToRectangle(QRectF(-40, -40, 80, 80));
+    //_renderer->zoomToRectangle(QRectF(-40, -40, 80, 80));
 
-	doneCurrent();
+    doneCurrent();
 }
 
 void CanvasWidget::paintGL()
 {
-	try {
-		auto& layersModel = _imageViewerPlugin->getLayersModel();
+    try {
+        auto& layersModel = _imageViewerPlugin->getLayersModel();
 
-		QPainter painter;
+        QPainter painter;
 
-		painter.begin(this);
+        painter.begin(this);
 
-		painter.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
+        painter.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
 
-		drawBackground(&painter);
+        drawBackground(&painter);
 
-		painter.beginNativePainting();
+        painter.beginNativePainting();
 
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-		auto root = layersModel.getLayer(QModelIndex());
+        auto root = layersModel.getLayer(QModelIndex());
 
-		if (root)
-			root->render(_renderer->getProjectionMatrix() * _renderer->getViewMatrix());
+        if (root)
+            root->render(_renderer->getProjectionMatrix() * _renderer->getViewMatrix());
 
-		painter.endNativePainting();
+        painter.endNativePainting();
 
-		layersModel.paint(&painter);
+        layersModel.paint(&painter);
 
-		painter.end();
-	}
-	catch (std::exception& e)
-	{
-		QMessageBox::critical(nullptr, "Rendering failed", e.what());
-	}
-	catch (...) {
-		QMessageBox::critical(nullptr, "Rendering failed", "An unhandled exception occurred");
-	}
+        painter.end();
+    }
+    catch (std::exception& e)
+    {
+        QMessageBox::critical(nullptr, "Rendering failed", e.what());
+    }
+    catch (...) {
+        QMessageBox::critical(nullptr, "Rendering failed", "An unhandled exception occurred");
+    }
 
 #ifdef _DEBUG
-	for (const QOpenGLDebugMessage& message : _openglDebugLogger->loggedMessages())
-		switch (message.severity())
-		{
-			case QOpenGLDebugMessage::HighSeverity:
-				qDebug() << message;
-				break;
+    for (const QOpenGLDebugMessage& message : _openglDebugLogger->loggedMessages())
+        switch (message.severity())
+        {
+            case QOpenGLDebugMessage::HighSeverity:
+                qDebug() << message;
+                break;
 
-			default:
-				break;
-		}
-		
+            default:
+                break;
+        }
+        
 #endif
 }
 
 void CanvasWidget::drawBackground(QPainter* painter)
 {
-	painter->setPen(Qt::NoPen);
-	painter->setBrush(_backgroundGradient);
-	painter->drawRect(rect());
+    painter->setPen(Qt::NoPen);
+    painter->setBrush(_backgroundGradient);
+    painter->drawRect(rect());
 }

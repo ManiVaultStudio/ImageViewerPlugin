@@ -14,55 +14,55 @@ class PointsLayer;
  */
 class PointsProp : public Prop
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public: // Enumerations
 
-	/** Texture identifiers */
-	enum class TextureId {
-		ColorMap = 0,
-		Channel1,
-		Channel2,
-		Channel3,
-		Channel4
-	};
+    /** Texture identifiers */
+    enum class TextureId {
+        ColorMap = 0,
+        Channel1,
+        Channel2,
+        Channel3,
+        Channel4
+    };
 
 public: // Construction/destruction
 
-	/**
-	 * Constructor
-	 * @param pointsLayer Pointer to the associated points layer
-	 * @param name Name of the prop
-	 */
-	PointsProp(PointsLayer* pointsLayer, const QString& name);
+    /**
+     * Constructor
+     * @param pointsLayer Pointer to the associated points layer
+     * @param name Name of the prop
+     */
+    PointsProp(PointsLayer* pointsLayer, const QString& name);
 
-	/** Destructor */
-	~PointsProp() override;
+    /** Destructor */
+    ~PointsProp() override;
 
 public: // Rendering
 
-	/**
-	 * Renders the prop
-	 * @param nodeMVP Node model view projection matrix
-	 * @param opacity Render opacity [0-1]
-	 */
-	void render(const QMatrix4x4& nodeMVP, const float& opacity) override;
+    /**
+     * Renders the prop
+     * @param nodeMVP Node model view projection matrix
+     * @param opacity Render opacity [0-1]
+     */
+    void render(const QMatrix4x4& nodeMVP, const float& opacity) override;
 
-	/** Returns the bounding rectangle of the prop */
-	QRectF getBoundingRectangle() const override;
+    /** Returns the bounding rectangle of the prop */
+    QRectF getBoundingRectangle() const override;
 
 protected: // Inherited
 
-	/** Initializes the prop */
-	void initialize() override;
+    /** Initializes the prop */
+    void initialize() override;
 
 protected: // Miscellaneous
 
-	/** Updates the internal model matrix */
-	void updateModelMatrix();
+    /** Updates the internal model matrix */
+    void updateModelMatrix();
 
 private:
-	std::int32_t		_noChannels;		/** Number of active channels */
+    std::int32_t        _noChannels;        /** Number of active channels */
 
-	static const GLuint channels[];
+    static const GLuint channels[];
 };
