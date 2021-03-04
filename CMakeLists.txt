@@ -19,6 +19,8 @@ endif(MSVC)
 find_package(OpenGL REQUIRED)
 find_package(Qt5 COMPONENTS Widgets WebEngineWidgets REQUIRED)
 find_package(OpenMP)
+# Normalize the incoming install path
+file(TO_CMAKE_PATH $ENV{HDPS_INSTALL_DIR} INSTALL_DIR)
 
 set(PLUGIN
 	src/Common.h
@@ -46,7 +48,7 @@ source_group(Shaders FILES ${SHADERS})
 source_group(Aux FILES ${AUX})
 
 # Note: src is included for ClustersLayerWidget.h
-include_directories("$ENV{HDPS_INSTALL_DIR}/$<CONFIGURATION>/include/" src)
+include_directories("${INSTALL_DIR}/$<CONFIGURATION>/include/" src)
 
 QT5_WRAP_UI(UI_HEADERS ${UIS})
 
@@ -64,12 +66,26 @@ target_link_libraries(${PROJECT} ${OPENGL_LIBRARIES})
 target_link_libraries(${PROJECT} Qt5::Widgets)
 target_link_libraries(${PROJECT} Qt5::WebEngineWidgets)
 
-target_link_libraries(${PROJECT} "$ENV{HDPS_INSTALL_DIR}/$<CONFIGURATION>/lib/${CMAKE_SHARED_LIBRARY_PREFIX}HDPS_Public${LIB_SUFFIX}")
-target_link_libraries(${PROJECT} "$ENV{HDPS_INSTALL_DIR}/$<CONFIGURATION>/lib/${CMAKE_SHARED_LIBRARY_PREFIX}PointData${LIB_SUFFIX}")
-target_link_libraries(${PROJECT} "$ENV{HDPS_INSTALL_DIR}/$<CONFIGURATION>/lib/${CMAKE_SHARED_LIBRARY_PREFIX}ImageData${LIB_SUFFIX}")
+target_link_libraries(${PROJECT} "${INSTALL_DIR}/$<CONFIGURATION>/lib/${CMAKE_SHARED_LIBRARY_PREFIX}HDPS_Public${LIB_SUFFIX}")
+target_link_libraries(${PROJECT} "${INSTALL_DIR}/$<CONFIGURATION>/lib/${CMAKE_SHARED_LIBRARY_PREFIX}PointData${LIB_SUFFIX}")
+target_link_libraries(${PROJECT} "${INSTALL_DIR}/$<CONFIGURATION>/lib/${CMAKE_SHARED_LIBRARY_PREFIX}ImageData${LIB_SUFFIX}")
+
+install(TARGETS ${PROJECT}
+   RUNTIME DESTINATION Plugins COMPONENT SHAREDLIB
+   LIBRARY DESTINATION lib COMPONENT LINKLIB
+   ARCHIVE DESTINATION lib COMPONENT LINKLIB
+)
 
 add_custom_command(TARGET ${PROJECT} POST_BUILD
-    COMMAND "${CMAKE_COMMAND}" -E copy_if_different
-	"$<TARGET_FILE:${PROJECT}>"
-	"$ENV{HDPS_INSTALL_DIR}/$<CONFIGURATION>/Plugins/$<TARGET_FILE_NAME:${PROJECT}>"
+	COMMAND "${CMAKE_COMMAND}"
+	--install ${CMAKE_BINARY_DIR}
+	--config $<CONFIGURATION>
+	--prefix ${INSTALL_DIR}/$<CONFIGURATION>
+	--verbose
 )
+
+# add_custom_command(TARGET ${PROJECT} POST_BUILD
+#     COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+# 	"$<TARGET_FILE:${PROJECT}>"
+# 	"$ENV{HDPS_INSTALL_DIR}/$<CONFIGURATION>/Plugins/$<TARGET_FILE_NAME:${PROJECT}>"
+# )
