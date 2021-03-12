@@ -38,6 +38,13 @@ PointsLayer::PointsLayer(const QString& pointsDatasetName, const QString& id, co
         if (dataEvent->getType() == hdps::EventType::SelectionChanged) {
             auto selectionChangedEvent = static_cast<hdps::SelectionChangedEvent*>(dataEvent);
 
+            if (getImageCollectionType() == ImageData::Type::Sequence) {
+                computeChannel(ChannelIndex::Channel1);
+                computeChannel(ChannelIndex::Mask);
+
+                Renderable::renderer->render();
+            }
+            
             if (_pixelType == PixelType::Index && _indexSelectionDataset != nullptr) {
                 if (selectionChangedEvent->dataSetName == _indexSelectionDataset->getName()) {
                     computeChannel(ChannelIndex::Channel1);
@@ -52,6 +59,8 @@ PointsLayer::PointsLayer(const QString& pointsDatasetName, const QString& id, co
 
 void PointsLayer::init()
 {
+    setEventCore(imageViewerPlugin->core());
+
     addProp<PointsProp>(this, "Points");
 
     _pointsDataset  = &imageViewerPlugin->requestData<Points>(_datasetName);
@@ -1129,9 +1138,6 @@ void PointsLayer::computeChannel(const ChannelIndex& channelIndex)
         case ChannelIndex::Channel2:
         case ChannelIndex::Channel3:
         {
-            if (channel->getDimensionId() < 0)
-                break;
-
             switch (_pixelType)
             {
                 case PointsLayer::PixelType::Intensity:
@@ -1146,7 +1152,9 @@ void PointsLayer::computeChannel(const ChannelIndex& channelIndex)
 
                         case ImageData::Type::Stack:
                         {
-                            computeStackChannel(channel, channelIndex);
+                            if (channel->getDimensionId() > 0)
+                                computeStackChannel(channel, channelIndex);
+
                             break;
                         }
 
@@ -1214,23 +1222,21 @@ void PointsLayer::computeSequenceChannel(Channel<float>* channel, const ChannelI
         const auto width            = channel->getImageSize().width();
         const auto height           = channel->getImageSize().height();
         const auto noPixels         = width * height;
+        const auto selectionIndices = getSelectionIndices();
 
         if (hasSelection()) {
-            for (const auto& index : getSelectionIndices()) {
-                const auto point    = pointData[index];
-                const auto sum      = std::accumulate(point.begin(), point.end(), 0.0);
+            for (int p = 0; p < noPixels; p++) {
+                auto sum = 0.0f;
 
-                (*channel)[index] = static_cast<float>(sum / getSelectionSize());
+                for (auto selectionIndex : selectionIndices)
+                    sum += pointData[selectionIndex][p];
+
+                (*channel)[p] = static_cast<float>(sum / getSelectionSize());
             }
         }
         else {
-            auto pixelIndex = 0;
-
-            for (auto dataValue : pointData[dimensionId]) {
-                (*channel)[pixelIndex] = dataValue;
-                pixelIndex++;
-                
-            }
+            for (int p = 0; p < noPixels; p++)
+                (*channel)[p] = pointData[dimensionId][p];
         }
     });
 
@@ -1289,27 +1295,31 @@ void PointsLayer::computeMaskChannel(Channel<float>* maskChannel, const ChannelI
     {
         case PointsLayer::PixelType::Intensity:
         {
-            maskChannel->fill(0.0f);
+            maskChannel->fill(1.0f);
 
-            if (_pointsDataset->isDerivedData()) {
-                _pointsDataset->visitData([this, maskChannel](auto pointData) {
-                    auto& sourceData = _pointsDataset->getSourceData<Points>(*_pointsDataset);
+            if (getImageCollectionType() == ImageData::Type::Stack)
+            {
+                if (_pointsDataset->isDerivedData()) {
+                    _pointsDataset->visitData([this, maskChannel](auto pointData) {
+                        auto& sourceData = _pointsDataset->getSourceData<Points>(*_pointsDataset);
 
-                    if (sourceData.isFull()) {
-                        for (int i = 0; i < _pointsDataset->getNumPoints(); i++)
-                            (*maskChannel)[i] = 1.0f;
-                    }
-                    else {
-                        for (int i = 0; i < sourceData.indices.size(); i++)
-                            (*maskChannel)[sourceData.indices[i]] = 1.0f;
-                    }
-                });
-            } else {
-                _pointsDataset->visitData([this, maskChannel](auto pointData) {
-                    for (auto pointView : pointData) {
-                        (*maskChannel)[pointView.index()] = 1.0f;
-                    }
-                });
+                        if (sourceData.isFull()) {
+                            for (int i = 0; i < _pointsDataset->getNumPoints(); i++)
+                                (*maskChannel)[i] = 1.0f;
+                        }
+                        else {
+                            for (int i = 0; i < sourceData.indices.size(); i++)
+                                (*maskChannel)[sourceData.indices[i]] = 1.0f;
+                        }
+                    });
+                }
+                else {
+                    _pointsDataset->visitData([this, maskChannel](auto pointData) {
+                        for (auto pointView : pointData) {
+                            (*maskChannel)[pointView.index()] = 1.0f;
+                        }
+                    });
+                }
             }
 
             break;
