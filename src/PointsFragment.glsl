@@ -33,9 +33,9 @@ vec3 hslToRgb(float hue, float saturation, float lightness)
 {
     vec3 rgb1, rgbResult;
 
-    float chroma = ( 1.0 - (float) abs( 2.0 * lightness - 1.0 ) ) * saturation;
+    float chroma = (1.0f - abs(2.0f * lightness - 1.0f)) * saturation;
     float h1 = hue / 60.0;
-	float x = chroma * ( 1.0 - (float) abs( fmodf(h1, 2.0) - 1.0 ));
+    float x = chroma * ( 1.0f - abs( fmodf(h1, 2.0f) - 1.0f ));
 
     if ( ( 0 <= h1 ) && ( h1 < 1 ) ) {
 
