@@ -7,6 +7,7 @@
 #include "GroupLayer.h"
 #include "PointsLayer.h"
 #include "SelectionLayer.h"
+#include "LayerWidget.h"
 
 #include "ui_LayersWidget.h"
 
@@ -17,11 +18,14 @@
 #include <QDebug>
 #include <QDragEnterEvent>
 #include <QMimeData>
+#include <QScrollArea>
 
 LayersWidget::LayersWidget(QWidget* parent) :
     QWidget(parent),
     _imageViewerPlugin(nullptr),
-    _ui{ std::make_unique<Ui::LayersWidget>() }
+    _ui{ std::make_unique<Ui::LayersWidget>() },
+    _scrollArea(new QScrollArea(this)),
+    _layerWidget(new LayerWidget(this))
 {
     setAcceptDrops(true);
 
@@ -34,7 +38,13 @@ void LayersWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 {
     _imageViewerPlugin = imageViewerPlugin;
 
-    _ui->layerWidget->initialize(_imageViewerPlugin);
+    _layerWidget->initialize(_imageViewerPlugin);
+
+    layout()->addWidget(_scrollArea);
+
+    _scrollArea->setWidget(_layerWidget);
+    _scrollArea->setWidgetResizable(true);
+    _scrollArea->setStyleSheet("QScrollArea { border: none; }");
 
     _ui->layersTreeView->setModel(&_imageViewerPlugin->getLayersModel());
     _ui->layersTreeView->setSelectionModel(&getLayersSelectionModel());
@@ -199,8 +209,6 @@ void LayersWidget::dropEvent(QDropEvent* dropEvent)
 
         if (largestImageSize.isValid())
             pointsLayer->matchScaling(largestImageSize);
-
-        qDebug() << pointsLayer->getImageCollectionType();
 
         if (pointsLayer->getImageCollectionType() == ult(ImageData::Type::Stack) && createSelectionLayer) {
             auto selectionLayer = new SelectionLayer(datasetName, selectionName, selectionName, layerFlags);

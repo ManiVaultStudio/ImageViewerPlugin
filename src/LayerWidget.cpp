@@ -2,6 +2,8 @@
 #include "LayersModel.h"
 #include "Layer.h"
 #include "ImageViewerPlugin.h"
+#include "PointsLayerWidget.h"
+#include "SelectionLayerWidget.h"
 
 #include "ui_LayerWidget.h"
 
@@ -9,13 +11,17 @@
 #include <QCheckBox>
 #include <QDoubleSpinBox>
 #include <QDebug>
+#include <QStackedWidget>
 
 #include <set>
 
 LayerWidget::LayerWidget(QWidget* parent) :
     QWidget(parent),
     _ui{ std::make_unique<Ui::LayerWidget>() },
-    _layersModel(nullptr)
+    _layersModel(nullptr),
+    _stackedWidget(new StackedWidget()),
+    _pointsLayerWidget(new PointsLayerWidget(this)),
+    _selectionLayerWidget(new SelectionLayerWidget(this))
 {
     _ui->setupUi(this);
 
@@ -28,10 +34,14 @@ void LayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
     _imageViewerPlugin = imageViewerPlugin;
     _layersModel = &_imageViewerPlugin->getLayersModel();
 
-    _ui->pointsLayerWidget->initialize(_imageViewerPlugin);
-    _ui->selectionLayerWidget->initialize(_imageViewerPlugin);
+    _pointsLayerWidget->initialize(_imageViewerPlugin);
+    _selectionLayerWidget->initialize(_imageViewerPlugin);
 
-    _ui->settingsStackedWidget->setVisible(false);
+    _stackedWidget->addWidget(_pointsLayerWidget);
+    _stackedWidget->addWidget(_selectionLayerWidget);
+    _stackedWidget->setVisible(false);
+
+    layout()->addWidget(_stackedWidget);
 
     QObject::connect(_ui->visibleCheckBox, &QCheckBox::stateChanged, [this](int state) {
         for (auto selectedRow : _layersModel->getSelectionModel().selectedRows()) {
@@ -112,10 +122,10 @@ void LayerWidget::updateData(const QModelIndex& begin, const QModelIndex& end, c
     _ui->commonGroupBox->setEnabled(showLayerEditor);
     _ui->navigationGroupBox->setVisible(false);
 
-    _ui->settingsStackedWidget->setVisible(selectedRows.count() == 1);
+    _stackedWidget->setVisible(selectedRows.count() == 1);
 
     if (!selectedRows.isEmpty())
-        _ui->settingsStackedWidget->setCurrentIndex(selectedRows.first().siblingAtColumn(ult(Layer::Column::Type)).data(Qt::EditRole).toInt());
+        _stackedWidget->setCurrentIndex(selectedRows.first().siblingAtColumn(ult(Layer::Column::Type)).data(Qt::EditRole).toInt());
 
     for (int column = begin.column(); column <= end.column(); column++) {
         if (column == ult(Layer::Column::Name)) {

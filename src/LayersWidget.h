@@ -9,10 +9,12 @@ namespace Ui {
 }
 
 class QItemSelectionModel;
+class QScrollArea;
 
 class ImageViewerPlugin;
 class DatasetsModel;
 class LayersModel;
+class LayerWidget;
 
 /**
  * Layers widget class
@@ -70,4 +72,6 @@ private: // Miscellaneous
 private:
     ImageViewerPlugin*                  _imageViewerPlugin;     /** Pointer to the image viewer plugin */
     std::unique_ptr<Ui::LayersWidget>   _ui;                    /** User interface as produced by Qt designer */
+    QScrollArea*                        _scrollArea;            /** TODO */
+    LayerWidget*                        _layerWidget;           /** TODO */
 };

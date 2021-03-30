@@ -16,6 +16,8 @@ SettingsWidget::SettingsWidget(ImageViewerPlugin* imageViewerPlugin) :
     _ui->setupUi(this);
     
     _ui->layersWidget->initialize(_imageViewerPlugin);
+
+    setAutoFillBackground(true);
 }
 
 SettingsWidget::~SettingsWidget() = default;
