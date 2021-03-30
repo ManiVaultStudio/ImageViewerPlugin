@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include <QWidget>
+#include <QStackedWidget>
 
 namespace Ui {
     class LayerWidget;
@@ -10,6 +10,8 @@ namespace Ui {
 
 class ImageViewerPlugin;
 class LayersModel;
+class PointsLayerWidget;
+class SelectionLayerWidget;
 
 /**
  * Layer widget class
@@ -20,6 +22,13 @@ class LayersModel;
  */
 class LayerWidget : public QWidget
 {
+public:
+    class StackedWidget : public QStackedWidget {
+    public:
+        QSize sizeHint() const override { return currentWidget()->sizeHint(); }
+        QSize minimumSizeHint() const override { return currentWidget()->minimumSizeHint(); }
+    };
+
 public: // Construction
 
     /**
@@ -45,7 +54,10 @@ public: // Initialization and update
     void updateData(const QModelIndex& begin, const QModelIndex& end, const QVector<int>& roles = QVector<int>());
 
 private:
-    ImageViewerPlugin*                  _imageViewerPlugin;     /** Pointer to the image viewer plugin */
-    std::unique_ptr<Ui::LayerWidget>    _ui;                    /** User interface as produced by Qt designer */
-    LayersModel*                        _layersModel;           /** Pointer to the layers model */
+    ImageViewerPlugin*                  _imageViewerPlugin;         /** Pointer to the image viewer plugin */
+    std::unique_ptr<Ui::LayerWidget>    _ui;                        /** User interface as produced by Qt designer */
+    LayersModel*                        _layersModel;               /** Pointer to the layers model */
+    StackedWidget*                      _stackedWidget;             /** TODO: only a temporary solution */
+    PointsLayerWidget*                  _pointsLayerWidget;         /** TODO: only a temporary solution */
+    SelectionLayerWidget*               _selectionLayerWidget;      /** TODO: only a temporary solution */
 };
