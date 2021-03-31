@@ -65,11 +65,13 @@ void CanvasWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 
     setFormat(surfaceFormat);
 
+    const auto backgroundColor = QColor(50, 50, 50);
+
     _backgroundGradient.setCoordinateMode(QGradient::ObjectBoundingMode);
     _backgroundGradient.setCenter(0.5, 0.50);
     _backgroundGradient.setFocalPoint(0.5, 0.5);
-    _backgroundGradient.setColorAt(0.0, QColor(100, 100, 100));
-    _backgroundGradient.setColorAt(0.7, QColor(30, 30, 30));
+    _backgroundGradient.setColorAt(0.0, backgroundColor);
+    _backgroundGradient.setColorAt(0.7, backgroundColor);
 
     this->installEventFilter(this);
 }

@@ -44,20 +44,6 @@ public: // Initialization
      */
     void initialize(ImageViewerPlugin* imageViewerPlugin);
 
-private: // Drag and drop
-
-    /**
-     * Invoked when an item is dragged into the widget
-     * @param dragEnterEvent Drag enter event
-     */
-    void dragEnterEvent(QDragEnterEvent* dragEnterEvent) override;
-
-    /**
-     * Invoked when an item is dropped onto the widget
-     * @param dropEvent Drop event
-     */
-    void dropEvent(QDropEvent* dropEvent) override;
-
 private: // Miscellaneous
 
     /** Returns the datasets model */

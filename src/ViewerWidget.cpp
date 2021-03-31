@@ -11,6 +11,8 @@ ViewerWidget::ViewerWidget(QWidget* parent) :
     _imageViewerPlugin(dynamic_cast<ImageViewerPlugin*>(parent)),
     _ui{ std::make_unique<Ui::ViewerWidget>() }
 {
+    setAcceptDrops(true);
+
     _ui->setupUi(this);
     _ui->canvasWidget->initialize(_imageViewerPlugin);
 

@@ -16,6 +16,12 @@ class ViewerWidget;
 class StatusbarWidget;
 class SettingsWidget;
 
+namespace hdps {
+    namespace gui {
+        class DropWidget;
+    }
+}
+
 /**
  * Image viewer plugin class
  * This HDPS view plugin class provides functionality to view/interact with high-dimensional image data
@@ -85,12 +91,13 @@ signals:
     void pointsDatasetsChanged(QStringList pointsDatasets);
 
 private:
-    ViewerWidget*       _viewerWidget;          /** The image viewer widget */
-    StatusbarWidget*    _statusbarWidget;       /** The status bar widget */
-    SettingsWidget*     _settingsWidget;        /** Settings widget */
-    LayersModel         _layersModel;           /** Layers model */
-    ColorMapModel       _colorMapModel;         /** Colormap model */
-    QStringList         _pointsDatasets;        /** Point datasets loaded in HDPS */
+    ViewerWidget*               _viewerWidget;          /** The image viewer widget */
+    StatusbarWidget*            _statusbarWidget;       /** The status bar widget */
+    SettingsWidget*             _settingsWidget;        /** Settings widget */
+    LayersModel                 _layersModel;           /** Layers model */
+    ColorMapModel               _colorMapModel;         /** Colormap model */
+    QStringList                 _pointsDatasets;        /** Point datasets loaded in HDPS */
+    hdps::gui::DropWidget*      _dropWidget;            /** Widget for dropping data */
 };
 
 /**

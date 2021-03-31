@@ -27,8 +27,6 @@ LayersWidget::LayersWidget(QWidget* parent) :
     _scrollArea(new QScrollArea(this)),
     _layerWidget(new LayerWidget(this))
 {
-    setAcceptDrops(true);
-
     _ui->setupUi(this);
 }
 
@@ -158,82 +156,6 @@ void LayersWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 
         _imageViewerPlugin->getViewerWidget()->update();
     });
-}
-
-void LayersWidget::dragEnterEvent(QDragEnterEvent* dragEnterEvent)
-{
-    const auto items        = dragEnterEvent->mimeData()->text().split("\n");
-    const auto datasetName  = items.at(0);
-    const auto datasetType  = items.at(1);
-    
-    if (datasetType == "Points") {
-        auto pointsDataset = _imageViewerPlugin->requestData<Points>(datasetName);
-        
-        if (pointsDataset.isDerivedData()) {
-            auto sourcePointsDataset = hdps::DataSet::getSourceData<Points>(pointsDataset);
-
-            if (sourcePointsDataset.getProperty("Type", "").toString() == "Images")
-                dragEnterEvent->acceptProposedAction();
-        }
-        else {
-            if (pointsDataset.getProperty("Type", "").toString() == "Images")
-                dragEnterEvent->acceptProposedAction();
-        }
-    }
-
-    if (datasetType == "Clusters")
-        dragEnterEvent->acceptProposedAction();
-}
-
-void LayersWidget::dropEvent(QDropEvent* dropEvent)
-{
-    const auto items                    = dropEvent->mimeData()->text().split("\n");
-    const auto datasetName              = items.at(0);
-    const auto datasetType              = items.at(1);
-    const auto selectionName            = QString("%1_selection").arg(datasetName);
-    const auto selectionLayerIndices    = getLayersModel().match(getLayersModel().index(0, ult(Layer::Column::ID)), Qt::DisplayRole, selectionName, -1, Qt::MatchExactly);
-    const auto createSelectionLayer     = selectionLayerIndices.isEmpty();
-    const auto layerFlags               = ult(Layer::Flag::Enabled) | ult(Layer::Flag::Renamable);
-
-    auto largestImageSize = QSize();
-
-    for (auto imageLayerIndex : getLayersModel().match(getLayersModel().index(0, ult(Layer::Column::Type)), Qt::EditRole, ult(Layer::Type::Points), -1, Qt::MatchExactly | Qt::MatchRecursive)) {
-        const auto imageSize = getLayersModel().data(imageLayerIndex.siblingAtColumn(ult(Layer::Column::ImageSize)), Qt::EditRole).toSize();
-
-        if (imageSize.width() > largestImageSize.width() && imageSize.height() > largestImageSize.height())
-            largestImageSize = imageSize;
-    }
-
-    if (datasetType == "Points") {
-        auto pointsLayer = new PointsLayer(datasetName, datasetName, datasetName, layerFlags);
-
-        if (largestImageSize.isValid())
-            pointsLayer->matchScaling(largestImageSize);
-
-        if (pointsLayer->getImageCollectionType() == ult(ImageData::Type::Stack) && createSelectionLayer) {
-            auto selectionLayer = new SelectionLayer(datasetName, selectionName, selectionName, layerFlags);
-
-            selectionLayer->setOpacity(0.8f);
-
-            if (largestImageSize.isValid())
-                selectionLayer->matchScaling(largestImageSize);
-
-            getLayersModel().insertLayer(0, pointsLayer);
-            getLayersModel().insertLayer(0, selectionLayer);
-            getLayersModel().selectRow(1);
-        }
-        else {
-            const auto row = selectionLayerIndices.isEmpty() ? 0 : selectionLayerIndices.first().row() + 1;
-
-            getLayersModel().insertLayer(row, pointsLayer);
-            getLayersModel().selectRow(row);
-        }
-    }
-
-    if (datasetType == "Clusters") {
-    }
-
-    dropEvent->acceptProposedAction();
 }
 
 LayersModel& LayersWidget::getLayersModel()
