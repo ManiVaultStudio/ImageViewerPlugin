@@ -64,29 +64,7 @@ void LayersWidget::dropEvent(QDropEvent* dropEvent)
     }
 
     if (datasetType == "Points") {
-        auto pointsLayer = new PointsLayer(datasetName, datasetName, datasetName, layerFlags);
-
-        if (largestImageSize.isValid())
-            pointsLayer->matchScaling(largestImageSize);
-
-        if (pointsLayer->getImageCollectionType() == ult(ImageData::Type::Stack) && createSelectionLayer) {
-            auto selectionLayer = new SelectionLayer(datasetName, selectionName, selectionName, layerFlags);
-
-            selectionLayer->setOpacity(0.8f);
-
-            if (largestImageSize.isValid())
-                selectionLayer->matchScaling(largestImageSize);
-
-            getLayersModel().insertLayer(0, pointsLayer);
-            getLayersModel().insertLayer(0, selectionLayer);
-            getLayersModel().selectRow(1);
-        }
-        else {
-            const auto row = selectionLayerIndices.isEmpty() ? 0 : selectionLayerIndices.first().row() + 1;
-
-            getLayersModel().insertLayer(row, pointsLayer);
-            getLayersModel().selectRow(row);
-        }
+        
     }
 
     if (datasetType == "Clusters") {
@@ -114,7 +92,7 @@ ImageViewerPlugin::ImageViewerPlugin() :
 
     setDockingLocation(hdps::gui::DockableWidget::DockingLocation::Right);
 
-    _dropWidget->setDropIndicatorWidget(new DropWidget::DropIndicatorWidget(this, "No data loaded", "Drag items from the data hierarchy to this view to visualize data..."));
+    _dropWidget->setDropIndicatorWidget(new DropWidget::DropIndicatorWidget(this, "No high-dimensional images loaded", "Drag items from the data hierarchy to this view to visualize data..."));
 
     _dropWidget->initialize([this](const QMimeData* mimeData) -> DropWidget::DropRegions {
         DropWidget::DropRegions dropRegions;
@@ -132,14 +110,21 @@ ImageViewerPlugin::ImageViewerPlugin() :
             auto pointsDataset = hdps::DataSet::getSourceData<Points>(_core->requestData<Points>(datasetName));
 
             if (pointsDataset.getProperty("Type", "").toString() == "Images") {
-                dropRegions << new DropWidget::DropRegion(this, "Points", "Load images from points", true, [this]() {
-                    qDebug() << "loadPointData(candidateDatasetName);";
+                dropRegions << new DropWidget::DropRegion(this, "Images", "Add a layer for the display of high-dimensional images", true, [this, datasetName]() {
+                    _layersModel.addPointsDataset(datasetName);
                 });
             }
         }
 
         return dropRegions;
     });
+
+    const auto updateDropIndicatorVisibility = [this]() -> void {
+        _dropWidget->setShowDropIndicator(_layersModel.rowCount() == 0);
+    };
+
+    connect(&_layersModel, &QAbstractItemModel::rowsInserted, this, [updateDropIndicatorVisibility]() { updateDropIndicatorVisibility(); });
+    connect(&_layersModel, &QAbstractItemModel::rowsRemoved, this, [updateDropIndicatorVisibility]() { updateDropIndicatorVisibility(); });
 }
 
 void ImageViewerPlugin::init()

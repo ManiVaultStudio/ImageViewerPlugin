@@ -183,10 +183,9 @@ public: // Miscellaneous
     void initialize();
 
     /**
-     * Call this when a dataset selection has changed
-     * @param name Dataset name
+     * 
      */
-    void selectionChanged(const QString& name, const Indices& indices);
+    void addPointsDataset(const QString& datasetName);
 
     /**
      * Select a single row
@@ -199,29 +198,6 @@ public: // Miscellaneous
 
     /** Returns the selection model */
     QItemSelectionModel& getSelectionModel() { return _selectionModel; }
-
-public: // Inherited MIME drag and drop
-
-    /** Returns list of supported mime types (for drag and drop) */
-    QStringList mimeTypes() const override;
-
-    /**
-     * Converts a list of model indices to mime data
-     * @param indexes List of model indices
-     * @return Mime data
-     */
-    QMimeData* mimeData(const QModelIndexList& indexes) const override;
-
-    /**
-     * Invoked when mime data is dropped
-     * @param data Dropped mime data
-     * @param action Type of drop action
-     * @param row Row identifier where the drop takes place
-     * @param column Column identifier where the drop takes place
-     * @param parent Parent model index where the drop takes place
-     * @return Whether the mime data was properly dropped
-     */
-    bool dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) override;
 
 public:
     /**

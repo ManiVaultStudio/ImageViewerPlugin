@@ -232,15 +232,45 @@ void LayersModel::initialize()
     _root = new RootLayer();
 }
 
-void LayersModel::selectionChanged(const QString& name, const Indices& indices)
+void LayersModel::addPointsDataset(const QString& datasetName)
 {
-    const auto hits = match(index(0, ult(Layer::Column::DatasetName)), Qt::DisplayRole, name, -1, Qt::MatchExactly);
+    const auto selectionName            = QString("%1_selection").arg(datasetName);
+    const auto selectionLayerIndices    = match(index(0, ult(Layer::Column::ID)), Qt::DisplayRole, selectionName, -1, Qt::MatchExactly);
+    const auto createSelectionLayer     = selectionLayerIndices.isEmpty();
+    const auto layerFlags               = ult(Layer::Flag::Enabled) | ult(Layer::Flag::Renamable);
 
-    for (auto hit : hits) {
-        qDebug() << data(hit.siblingAtColumn(ult(Layer::Column::Name)), Qt::DisplayRole);
+    auto pointsLayer = new PointsLayer(datasetName, datasetName, datasetName, layerFlags);
+
+    auto largestImageSize = QSize();
+
+    for (auto imageLayerIndex : match(index(0, ult(Layer::Column::Type)), Qt::EditRole, ult(Layer::Type::Points), -1, Qt::MatchExactly | Qt::MatchRecursive)) {
+        const auto imageSize = data(imageLayerIndex.siblingAtColumn(ult(Layer::Column::ImageSize)), Qt::EditRole).toSize();
+
+        if (imageSize.width() > largestImageSize.width() && imageSize.height() > largestImageSize.height())
+            largestImageSize = imageSize;
     }
 
-    //_datasetsModel.setData(hits.first().siblingAtColumn(ult(DatasetsModel::Column::Selection)), QVariant::fromValue(Indices::fromStdVector(dataset.indices())));
+    if (largestImageSize.isValid())
+        pointsLayer->matchScaling(largestImageSize);
+
+    if (pointsLayer->getImageCollectionType() == ult(ImageData::Type::Stack) && createSelectionLayer) {
+        auto selectionLayer = new SelectionLayer(datasetName, selectionName, selectionName, layerFlags);
+
+        selectionLayer->setOpacity(0.8f);
+
+        if (largestImageSize.isValid())
+            selectionLayer->matchScaling(largestImageSize);
+
+        insertLayer(0, pointsLayer);
+        insertLayer(0, selectionLayer);
+        selectRow(1);
+    }
+    else {
+        const auto row = selectionLayerIndices.isEmpty() ? 0 : selectionLayerIndices.first().row() + 1;
+
+        insertLayer(row, pointsLayer);
+        selectRow(row);
+    }
 }
 
 void LayersModel::selectRow(const std::int32_t& row)
@@ -263,69 +293,4 @@ int LayersModel::rowCount(const QModelIndex& parent /*= QModelIndex()*/) const
     const auto parentLayer = getLayer(parent);
 
     return parentLayer ? parentLayer->getChildCount() : 0;
-}
-
-QStringList LayersModel::mimeTypes() const
-{
-    QStringList types;
-
-    types << "layer";
-
-    return types;
-}
-
-QMimeData* LayersModel::mimeData(const QModelIndexList& indexes) const
-{
-    if (!indexes[0].isValid())
-        return nullptr;
-
-    const auto index = indexes[0];
-
-    const auto layerAddress = (quintptr)indexes[0].internalPointer();
-
-    auto mimeData = new QMimeData();
-
-    QByteArray encodedData;
-
-    QDataStream dataStream(&encodedData, QIODevice::WriteOnly);
-
-    dataStream << index.row() << index.column() << layerAddress;
-
-    mimeData->setData("layer", encodedData);
-
-    return mimeData;
-}
-
-bool LayersModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent)
-{
-    if (!canDropMimeData(data, action, row, column, parent))
-        return false;
-
-    switch (action) {
-        case Qt::IgnoreAction:
-            break;
-
-        case Qt::MoveAction:
-        {
-            QByteArray bytes = data->data("layer");
-            QDataStream stream(&bytes, QIODevice::QIODevice::ReadOnly);
-            
-            qintptr sourceInternalPointer;
-            int sourceRow;
-            int sourceColumn;
-
-            stream >> sourceRow >> sourceColumn >> sourceInternalPointer;
-
-            QModelIndex index = createIndex(sourceRow, sourceColumn, sourceInternalPointer);
-
-            moveLayer(index.parent(), index.row(), parent, row);
-            
-            break;
-        }
-
-        default:
-            break;
-    }
-
-    return true;
 }
