@@ -22,6 +22,8 @@
 #include <QKeyEvent>
 #include <QtMath>
 
+using namespace hdps;
+
 const QColor SelectionLayer::toolColorForeground = QColor(255, 174, 66, 200);
 const QColor SelectionLayer::toolColorBackground = QColor(255, 174, 66, 150);
 const QColor SelectionLayer::fillColor = QColor(255, 174, 66, 120);
@@ -57,19 +59,36 @@ void SelectionLayer::init()
 
     setEventCore(imageViewerPlugin->core());
 
-    registerDataEventByType(PointType, [this](hdps::DataEvent* dataEvent) {
+    registerDataEventByType(PointType, [this](DataEvent* dataEvent) {
+        if (dataEvent->dataSetName != _datasetName)
+            return;
+
+        if (dataEvent->getType() != EventType::SelectionChanged)
+            return;
+
+        qDebug() << "SelectionChanged";
+
         computeChannel(ChannelIndex::Selection);
         Renderable::renderer->render();
 
-        /*
-        QModelIndexList affectedIds;
+        auto& layersModel = imageViewerPlugin->getLayersModel();
 
-        affectedIds << index.siblingAtColumn(ult(Column::SelectAll));
-        affectedIds << index.siblingAtColumn(ult(Column::SelectNone));
-        affectedIds << index.siblingAtColumn(ult(Column::InvertSelection));
-        affectedIds << index.siblingAtColumn(ult(Column::ZoomToSelection));
-        affectedIds << index.siblingAtColumn(ult(Column::CreateSubset));
-        */
+        const auto hits = layersModel.match(layersModel.index(0, ult(Layer::Column::ID)), Qt::DisplayRole, QString("%1_selection").arg(_datasetName), -1, Qt::MatchExactly);
+
+        if (hits.count() == 1) {
+            const auto hit = hits.first();
+
+            QModelIndexList affectedIds;
+
+            affectedIds << hit.siblingAtColumn(ult(Column::SelectAll));
+            affectedIds << hit.siblingAtColumn(ult(Column::SelectNone));
+            affectedIds << hit.siblingAtColumn(ult(Column::InvertSelection));
+            affectedIds << hit.siblingAtColumn(ult(Column::ZoomToSelection));
+            affectedIds << hit.siblingAtColumn(ult(Column::CreateSubset));
+
+            for (auto modelIndex : affectedIds)
+                emit imageViewerPlugin->getLayersModel().dataChanged(modelIndex, modelIndex);
+        }
     });
     
     updateModelMatrix();
@@ -1205,24 +1224,20 @@ bool SelectionLayer::hasSelection() const
 
 void SelectionLayer::selectAll()
 {
-#ifdef _DEBUG
-    auto timer = Timer("Select all");
-#endif
-
     auto& selectionIndices = getSelectionIndices();
 
     selectionIndices.clear();
-    selectionIndices.reserve(getNoPixels());
+    selectionIndices.resize(getNoPixels());
 
-    for (const auto& index : getSelectionIndices()) {
-        if (index > 0)
+    if (_pointsDataset->isFull()) {
+        std::iota(selectionIndices.begin(), selectionIndices.end(), 0);
+    }
+    else {
+        for (const auto& index : _pointsDataset->indices)
             selectionIndices.push_back(index);
     }
 
-    if (_pointsDataset->isDerivedData())
-        imageViewerPlugin->core()->notifySelectionChanged(_pointsDataset->getSourceData<Points>(*_pointsDataset).getName());
-    else
-        imageViewerPlugin->core()->notifySelectionChanged(_pointsDataset->getName());
+    imageViewerPlugin->core()->notifySelectionChanged(_pointsDataset->getName());
 }
 
 void SelectionLayer::selectNone()
@@ -1235,10 +1250,14 @@ void SelectionLayer::selectNone()
 
     selectionIndices.clear();
 
+    /*
     if (_pointsDataset->isDerivedData())
         imageViewerPlugin->core()->notifySelectionChanged(_pointsDataset->getSourceData<Points>(*_pointsDataset).getName());
     else
         imageViewerPlugin->core()->notifySelectionChanged(_pointsDataset->getName());
+    */
+
+    imageViewerPlugin->core()->notifySelectionChanged(_pointsDataset->getName());
 }
 
 void SelectionLayer::invertSelection()
@@ -1261,10 +1280,14 @@ void SelectionLayer::invertSelection()
             selectionIndices.push_back(i);
     }
 
+    /*
     if (_pointsDataset->isDerivedData())
         imageViewerPlugin->core()->notifySelectionChanged(_pointsDataset->getSourceData<Points>(*_pointsDataset).getName());
     else
         imageViewerPlugin->core()->notifySelectionChanged(_pointsDataset->getName());
+    */
+
+    imageViewerPlugin->core()->notifySelectionChanged(_pointsDataset->getName());
 }
 
 void SelectionLayer::zoomToSelection()
