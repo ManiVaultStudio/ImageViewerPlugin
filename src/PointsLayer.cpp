@@ -1152,7 +1152,7 @@ void PointsLayer::computeChannel(const ChannelIndex& channelIndex)
 
                         case ImageData::Type::Stack:
                         {
-                            if (channel->getDimensionId() > 0)
+                            if (channel->getDimensionId() >= 0)
                                 computeStackChannel(channel, channelIndex);
 
                             break;
