@@ -92,7 +92,7 @@ ImageViewerPlugin::ImageViewerPlugin() :
 
     setDockingLocation(hdps::gui::DockableWidget::DockingLocation::Right);
 
-    _dropWidget->setDropIndicatorWidget(new DropWidget::DropIndicatorWidget(this, "No high-dimensional images loaded", "Drag items from the data hierarchy to this view to visualize data..."));
+    _dropWidget->setDropIndicatorWidget(new DropWidget::DropIndicatorWidget(this, "No data loaded", "Drag an item from the data hierarchy and drop it here to visualize data..."));
 
     _dropWidget->initialize([this](const QMimeData* mimeData) -> DropWidget::DropRegions {
         DropWidget::DropRegions dropRegions;
@@ -110,7 +110,7 @@ ImageViewerPlugin::ImageViewerPlugin() :
             auto pointsDataset = hdps::DataSet::getSourceData<Points>(_core->requestData<Points>(datasetName));
 
             if (pointsDataset.getProperty("Type", "").toString() == "Images") {
-                dropRegions << new DropWidget::DropRegion(this, "Images", "Add a layer for the display of high-dimensional images", true, [this, datasetName]() {
+                dropRegions << new DropWidget::DropRegion(this, "Images", QString("Add an image layer for %1").arg(datasetName), true, [this, datasetName]() {
                     _layersModel.addPointsDataset(datasetName);
                 });
             }
