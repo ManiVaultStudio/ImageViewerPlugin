@@ -66,8 +66,6 @@ void SelectionLayer::init()
         if (dataEvent->getType() != EventType::SelectionChanged)
             return;
 
-        qDebug() << "SelectionChanged";
-
         computeChannel(ChannelIndex::Selection);
         Renderable::renderer->render();
 
