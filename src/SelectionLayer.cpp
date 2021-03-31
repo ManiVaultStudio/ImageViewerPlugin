@@ -1242,30 +1242,15 @@ void SelectionLayer::selectAll()
 
 void SelectionLayer::selectNone()
 {
-#ifdef _DEBUG
-    auto timer = Timer("Select none");
-#endif
-
     auto& selectionIndices = getSelectionIndices();
 
     selectionIndices.clear();
-
-    /*
-    if (_pointsDataset->isDerivedData())
-        imageViewerPlugin->core()->notifySelectionChanged(_pointsDataset->getSourceData<Points>(*_pointsDataset).getName());
-    else
-        imageViewerPlugin->core()->notifySelectionChanged(_pointsDataset->getName());
-    */
 
     imageViewerPlugin->core()->notifySelectionChanged(_pointsDataset->getName());
 }
 
 void SelectionLayer::invertSelection()
 {
-#ifdef _DEBUG
-    auto timer = Timer("Invert selection");
-#endif
-
     auto& selectionIndices = getSelectionIndices();
 
     std::set<std::uint32_t> selectionSet(selectionIndices.begin(), selectionIndices.end());
@@ -1279,13 +1264,6 @@ void SelectionLayer::invertSelection()
         if (selectionSet.find(i) == selectionSet.end())
             selectionIndices.push_back(i);
     }
-
-    /*
-    if (_pointsDataset->isDerivedData())
-        imageViewerPlugin->core()->notifySelectionChanged(_pointsDataset->getSourceData<Points>(*_pointsDataset).getName());
-    else
-        imageViewerPlugin->core()->notifySelectionChanged(_pointsDataset->getName());
-    */
 
     imageViewerPlugin->core()->notifySelectionChanged(_pointsDataset->getName());
 }
