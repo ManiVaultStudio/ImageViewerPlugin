@@ -3,7 +3,7 @@ import os
 import shutil
 import pathlib
 import subprocess
-from rules_support import CoreBranchInfo
+from rules_support import PluginBranchInfo
 
 
 class ImageViewerPluginConan(ConanFile):
@@ -43,7 +43,7 @@ class ImageViewerPluginConan(ConanFile):
 
     def set_version(self):
         # Assign a version from the branch name
-        branch_info = CoreBranchInfo(self.recipe_folder)
+        branch_info = PluginBranchInfo(self.recipe_folder)
         self.version = branch_info.version
 
     # Remove runtime and use always default (MD/MDd)
