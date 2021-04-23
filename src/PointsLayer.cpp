@@ -54,6 +54,11 @@ PointsLayer::PointsLayer(const QString& pointsDatasetName, const QString& id, co
                 }
             }
         }
+
+		if (dataEvent->getType() == hdps::EventType::DataChanged) {
+			computeChannel(ChannelIndex::Channel1);
+			Renderable::renderer->render();
+		}
     });
 }
 
