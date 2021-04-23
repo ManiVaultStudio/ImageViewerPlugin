@@ -68,7 +68,7 @@ PointsProp::PointsProp(PointsLayer* pointsLayer, const QString& name) :
 
             texture->setData(0, channel->getId(), QOpenGLTexture::PixelFormat::Red, QOpenGLTexture::PixelType::Float32, channel->getElements().data());
 
-            const auto rectangle = QRectF(QPointF(0.f, 0.f), QSizeF(static_cast<float>(imageSize.width()), static_cast<float>(imageSize.height())));
+			const auto rectangle = QRectF(QPointF(0.f, 0.f), QSizeF(imageSize));
 
             this->getShapeByName<QuadShape>("Quad")->setRectangle(rectangle);
 

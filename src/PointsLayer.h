@@ -107,12 +107,6 @@ public: // Miscellaneous
      */
     void handleEvent(QEvent* event, const QModelIndex& index) override;
 
-    /**
-     * Adjust the layer scaling to fit into the supplied image size
-     * @param imageSize Size of the image to scale into
-     */
-    void matchScaling(const QSize& targetImageSize);
-
 public: // Inherited MVC
 
     /** Returns the number of columns */

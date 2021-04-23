@@ -64,6 +64,8 @@ SelectionProp::SelectionProp(SelectionLayer* selectionLayer, const QString& name
             const auto rectangle = QRectF(QPointF(0.f, 0.f), QSizeF(imageSize));
 
             this->getShapeByName<QuadShape>("Quad")->setRectangle(rectangle);
+
+			updateModelMatrix();
         }
         catch (std::exception& e)
         {
@@ -158,7 +160,7 @@ void SelectionProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
         shaderProgram->setUniformValue("textureSize", QSizeF(selectionLayer->getImageSize()));
         shaderProgram->setUniformValue("overlayColor", overlayColor);
         shaderProgram->setUniformValue("opacity", opacity);
-        shaderProgram->setUniformValue("transform", nodeMVP);
+        shaderProgram->setUniformValue("transform", nodeMVP * getModelMatrix());
 
         shape->render();
 
@@ -177,5 +179,20 @@ void SelectionProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 
 QRectF SelectionProp::getBoundingRectangle() const
 {
-    return getShapeByName<QuadShape>("Quad")->getRectangle();
+	auto rectangle = getShapeByName<QuadShape>("Quad")->getRectangle();
+
+	rectangle.setSize(_node->getScale(Qt::EditRole).toFloat() * rectangle.size());
+
+	return rectangle;
+}
+
+void SelectionProp::updateModelMatrix()
+{
+	QMatrix4x4 modelMatrix;
+
+	const auto rectangle = getShapeByName<QuadShape>("Quad")->getRectangle();
+
+	modelMatrix.translate(-0.5f * rectangle.width(), -0.5f * rectangle.height(), 0.0f);
+
+	setModelMatrix(modelMatrix);
 }
