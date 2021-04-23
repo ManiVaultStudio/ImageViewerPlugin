@@ -65,6 +65,8 @@ SelectionToolProp::SelectionToolProp(SelectionLayer* selectionLayer, const QStri
             const auto rectangle = QRectF(QPointF(0.f, 0.f), QSizeF(imageSize));
 
             this->getShapeByName<QuadShape>("Quad")->setRectangle(rectangle);
+
+			updateModelMatrix();
         }
         catch (std::exception& e)
         {
@@ -123,7 +125,7 @@ void SelectionToolProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
             shaderProgram->setUniformValue("offScreenTexture", 0);
             shaderProgram->setUniformValue("color", SelectionLayer::fillColor);
             shaderProgram->setUniformValue("opacity", opacity);
-            shaderProgram->setUniformValue("transform", nodeMVP);
+			shaderProgram->setUniformValue("transform", nodeMVP * getModelMatrix());
 
             shape->render();
 
@@ -164,7 +166,7 @@ void SelectionToolProp::compute()
         auto shape = getShapeByName<QuadShape>("Quad");
 
         auto selectionLayer = static_cast<SelectionLayer*>(_node);
-        auto modelViewMatrix = selectionLayer->getModelViewMatrix();
+        auto modelViewMatrix = selectionLayer->getModelViewMatrix() * getModelMatrix();
 
         const auto shaderProgram = getShaderProgramByName("SelectionToolOffScreen");
 
@@ -391,4 +393,15 @@ void SelectionToolProp::loadSelectionToolOffScreenShaderProgram()
     else {
         throw std::runtime_error("Unable to bind selection tool off-screen shader program");
     }
+}
+
+void SelectionToolProp::updateModelMatrix()
+{
+	QMatrix4x4 modelMatrix;
+
+	const auto rectangle = getShapeByName<QuadShape>("Quad")->getRectangle();
+
+	modelMatrix.translate(-0.5f * rectangle.width(), -0.5f * rectangle.height(), 0.0f);
+
+	setModelMatrix(modelMatrix);
 }

@@ -96,17 +96,6 @@ void PointsLayer::init()
     computeChannel(ChannelIndex::Mask);
 }
 
-void PointsLayer::matchScaling(const QSize& targetImageSize)
-{
-    const auto layerImageSize   = QSizeF(getImageSize());
-    const auto widthScaling     = static_cast<float>(targetImageSize.width()) / layerImageSize.width();
-    const auto heightScaling    = static_cast<float>(targetImageSize.height()) / layerImageSize.height();
-
-    const auto scale = std::min(widthScaling, heightScaling);
-
-    setScale(scale);
-}
-
 void PointsLayer::paint(QPainter* painter)
 {
     Layer::paint(painter);

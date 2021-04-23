@@ -310,13 +310,14 @@ QVariant Layer::getImageSize(const int& role /*= Qt::DisplayRole*/) const
     return QVariant();
 }
 
+// TODO
 void Layer::updateModelMatrix()
 {
     QMatrix4x4 modelMatrix;
 
     modelMatrix.translate(-0.5f * getImageWidth(Qt::EditRole).toInt(), -0.5f * getImageHeight(Qt::EditRole).toInt(), 0.0f);
 
-    setModelMatrix(modelMatrix);
+    //setModelMatrix(modelMatrix);
 }
 
 QPoint Layer::getTextureCoordinateFromScreenPoint(const QPoint& screenPoint) const
