@@ -54,35 +54,6 @@ void PointsLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 
     QObject::connect(_layersModel, &LayersModel::dataChanged, this, &PointsLayerWidget::updateData);
 
-    const auto updateIndexSelectionComboBox = [this]() {
-        auto pointsDatasets = _imageViewerPlugin->getPointsDatasets();
-
-        _ui->indexSelectionComboBox->blockSignals(true);
-        _ui->indexSelectionComboBox->clear();
-
-        const auto selectedRows = _layersModel->getSelectionModel().selectedRows();
-
-        if (!selectedRows.isEmpty()) {
-            const auto selectedRow                  = selectedRows.first();
-            const auto datasetName                  = _layersModel->data(selectedRow.siblingAtColumn(ult(Layer::Column::DatasetName)), Qt::EditRole).toString();
-            const auto indexSelectionDatasetName    = _layersModel->data(selectedRow.siblingAtColumn(ult(PointsLayer::Column::IndexSelectionDatasetName)), Qt::EditRole).toString();
-
-            _ui->indexSelectionComboBox->insertItems(0, pointsDatasets);
-
-            pointsDatasets.removeOne(datasetName);
-
-            if (indexSelectionDatasetName.isEmpty())
-                _ui->indexSelectionComboBox->setCurrentIndex(-1);
-            else
-                _ui->indexSelectionComboBox->setCurrentText(indexSelectionDatasetName);
-        }
-        else {
-            _ui->indexSelectionComboBox->insertItems(0, pointsDatasets);
-        }
-
-        _ui->indexSelectionComboBox->blockSignals(false);
-    };
-
     QObject::connect(&_layersModel->getSelectionModel(), &QItemSelectionModel::selectionChanged, [this](const QItemSelection& selected, const QItemSelection& deselected) {
         const auto selectedRows = _layersModel->getSelectionModel().selectedRows();
 
@@ -168,20 +139,6 @@ void PointsLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
     QObject::connect(_ui->colorPickerPushButton, &ColorPickerPushButton::colorChanged, [this](const QColor& currentColor) {
         _layersModel->setData(_layersModel->getSelectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::ConstantColor)), currentColor);
     });
-
-    QObject::connect(_ui->pointTypeComboBox, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
-        _layersModel->setData(_layersModel->getSelectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::PixelType)), index);
-    });
-
-    QObject::connect(_ui->indexSelectionComboBox, &QComboBox::currentTextChanged, [this](QString text) {
-        _layersModel->setData(_layersModel->getSelectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::IndexSelectionDatasetName)), text);
-    });
-
-    QObject::connect(_imageViewerPlugin, &ImageViewerPlugin::pointsDatasetsChanged, [this, updateIndexSelectionComboBox](QStringList pointsDatasets) {
-        updateIndexSelectionComboBox();
-    });
-    
-    updateIndexSelectionComboBox();
 }
 
 void PointsLayerWidget::updateData(const QModelIndex& begin, const QModelIndex& end, const QVector<int>& roles /*= QVector<int>()*/)
@@ -385,26 +342,6 @@ void PointsLayerWidget::updateData(const QModelIndex& begin, const QModelIndex& 
             _ui->colorPickerPushButton->blockSignals(true);
             _ui->colorPickerPushButton->setColor(constantColor.data(Qt::EditRole).value<QColor>());
             _ui->colorPickerPushButton->blockSignals(false);
-        }
-
-        if (column == ult(PointsLayer::Column::PixelType)) {
-        }
-
-        if (column == ult(PointsLayer::Column::IndexSelectionDatasetName)) {
-            const auto indexSelectionDatasetName = begin.siblingAtColumn(ult(PointsLayer::Column::IndexSelectionDatasetName));
-            
-            _ui->indexSelectionComboBox->blockSignals(true);
-
-            if (indexSelectionDatasetName.data(Qt::EditRole).toString().isEmpty()) {
-                _ui->indexSelectionComboBox->setCurrentIndex(-1);
-            } else {
-                _ui->indexSelectionComboBox->setCurrentText(indexSelectionDatasetName.data(Qt::EditRole).toString());
-            }
-
-            _ui->indexSelectionComboBox->blockSignals(false);
-
-            _ui->indexSelectionLabel->setEnabled(indexSelectionDatasetName.flags() & Qt::ItemIsEditable);
-            _ui->indexSelectionComboBox->setEnabled(indexSelectionDatasetName.flags() & Qt::ItemIsEditable);
         }
     }
 }
