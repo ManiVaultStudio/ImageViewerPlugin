@@ -14,6 +14,11 @@
 
 #include <set>
 
+const QMap<QString, PointsLayer::InterpolationType> PointsLayer::interpolationTypes = {
+	{ "Bilinear", PointsLayer::InterpolationType::Bilinear },
+	{ "NearestNeighbour", PointsLayer::InterpolationType::NearestNeighbour }
+};
+
 PointsLayer::PointsLayer(const QString& pointsDatasetName, const QString& id, const QString& name, const int& flags) :
     Layer(pointsDatasetName, Layer::Type::Points, id, name, flags),
     Channels<float>(ult(ChannelIndex::Count)),

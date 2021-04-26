@@ -61,6 +61,19 @@ public: // Enumerations
         End = ConstantColor								/** End column */
     };
 
+	/** Interpolation type */
+	enum class InterpolationType {
+		Bilinear,			/** Bilinear interpolation */
+		NearestNeighbour    /** Nearest neighbour interpolation */
+	};
+
+	/** Maps interpolation type name to interpolation type enum and vice versa */
+	static QMap<QString, InterpolationType> const interpolationTypes;
+
+	/** Get string/enum representation of interpolation type */
+	static QString getInterpolationTypeName(const InterpolationType& interpolationType) { return interpolationTypes.key(interpolationType); }
+	static InterpolationType getInterpolationTypeEnum(const QString& interpolationName) { return interpolationTypes[interpolationName]; }
+
 public:
 
     /**
