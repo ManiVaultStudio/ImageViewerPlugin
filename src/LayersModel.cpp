@@ -241,25 +241,10 @@ void LayersModel::addPointsDataset(const QString& datasetName)
 
     auto pointsLayer = new PointsLayer(datasetName, datasetName, datasetName, layerFlags);
 
-    auto largestImageSize = QSize();
-
-    for (auto imageLayerIndex : match(index(0, ult(Layer::Column::Type)), Qt::EditRole, ult(Layer::Type::Points), -1, Qt::MatchExactly | Qt::MatchRecursive)) {
-        const auto imageSize = data(imageLayerIndex.siblingAtColumn(ult(Layer::Column::ImageSize)), Qt::EditRole).toSize();
-
-        if (imageSize.width() > largestImageSize.width() && imageSize.height() > largestImageSize.height())
-            largestImageSize = imageSize;
-    }
-
-    if (largestImageSize.isValid())
-        pointsLayer->matchScaling(largestImageSize);
-
     if (pointsLayer->getImageCollectionType() == ult(ImageData::Type::Stack) && createSelectionLayer) {
         auto selectionLayer = new SelectionLayer(datasetName, selectionName, selectionName, layerFlags);
 
         selectionLayer->setOpacity(0.8f);
-
-        if (largestImageSize.isValid())
-            selectionLayer->matchScaling(largestImageSize);
 
         insertLayer(0, pointsLayer);
         insertLayer(0, selectionLayer);
@@ -271,6 +256,35 @@ void LayersModel::addPointsDataset(const QString& datasetName)
         insertLayer(row, pointsLayer);
         selectRow(row);
     }
+
+	const auto getLargestImageSize = [this]() -> QSize {
+		auto largestImageSize = QSize();
+
+		for (auto imageLayerIndex : match(index(0, ult(Layer::Column::Type)), Qt::EditRole, ult(Layer::Type::Points), -1, Qt::MatchExactly | Qt::MatchRecursive)) {
+			const auto imageSize = data(imageLayerIndex.siblingAtColumn(ult(Layer::Column::ImageSize)), Qt::EditRole).toSize();
+
+			if (imageSize.width() > largestImageSize.width() && imageSize.height() > largestImageSize.height())
+				largestImageSize = imageSize;
+		}
+
+		return largestImageSize;
+	};
+
+	const auto assimilateLayers = [this](const QModelIndexList& imageLayerIndices, const QSize& largestImageSize) {
+		for (auto imageLayerIndex : imageLayerIndices) {
+			const auto imageSize	= data(imageLayerIndex.siblingAtColumn(ult(Layer::Column::ImageSize)), Qt::EditRole).toSize();
+			const auto vScale		= static_cast<float>(largestImageSize.height()) / static_cast<float>(imageSize.height());
+			const auto hScale		= static_cast<float>(largestImageSize.width()) / static_cast<float>(imageSize.width());
+
+			if (imageSize.width() < largestImageSize.width() || imageSize.height() < largestImageSize.height())
+				setData(imageLayerIndex.siblingAtColumn(ult(Layer::Column::Scale)), std::max(vScale, hScale));
+		}
+
+		return largestImageSize;
+	};
+
+	assimilateLayers(match(index(0, ult(Layer::Column::Type)), Qt::EditRole, ult(Layer::Type::Points), -1, Qt::MatchExactly | Qt::MatchRecursive), getLargestImageSize());
+	assimilateLayers(match(index(0, ult(Layer::Column::Type)), Qt::EditRole, ult(Layer::Type::Selection), -1, Qt::MatchExactly | Qt::MatchRecursive), getLargestImageSize());
 }
 
 void LayersModel::selectRow(const std::int32_t& row)

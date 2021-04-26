@@ -132,15 +132,16 @@ QRectF Node::getBoundingRectangle() const
 {
     QRectF bounds;
 
-    for (auto prop : _props.values())
-        bounds |= prop->getBoundingRectangle();
+	for (auto prop : _props.values()) {
+		
+		bounds |= prop->getBoundingRectangle();
+	}
 
-    for (auto child : _children)
-    {
-        bounds |= child->getBoundingRectangle();
-    }
+	for (auto child : _children) {
+		bounds |= child->getBoundingRectangle();
+	}
 
-    return bounds;
+	return bounds;
 }
 
 QVariant Node::getID(const int& role) const
