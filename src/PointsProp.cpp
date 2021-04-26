@@ -63,8 +63,21 @@ PointsProp::PointsProp(PointsLayer* pointsLayer, const QString& name) :
                 texture->setFormat(QOpenGLTexture::R32F);
                 texture->allocateStorage(QOpenGLTexture::Red, QOpenGLTexture::Float32);
                 texture->setWrapMode(QOpenGLTexture::ClampToEdge);
-                texture->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
             }
+
+			switch (pointsLayer->getInterpolationType(Qt::EditRole).toInt())
+			{
+				case static_cast<std::int32_t>(PointsLayer::InterpolationType::Bilinear):
+					texture->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
+					break;
+
+					case static_cast<std::int32_t>(PointsLayer::InterpolationType::NearestNeighbour) :
+						texture->setMinMagFilters(QOpenGLTexture::Nearest, QOpenGLTexture::Nearest);
+						break;
+
+					default:
+						break;
+			}
 
             texture->setData(0, channel->getId(), QOpenGLTexture::PixelFormat::Red, QOpenGLTexture::PixelType::Float32, channel->getElements().data());
 

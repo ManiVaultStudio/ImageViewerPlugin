@@ -26,6 +26,7 @@ PointsLayer::PointsLayer(const QString& pointsDatasetName, const QString& id, co
     _maxNoChannels(0),
     _colorSpace(ColorSpace::RGB),
     _colorMap(),
+	_interpolationType(InterpolationType::Bilinear),
     _useConstantColor(false),
     _constantColor(Qt::green)
 {
@@ -247,7 +248,13 @@ Qt::ItemFlags PointsLayer::getFlags(const QModelIndex& index) const
 
             break;
         }
-            
+		
+		case Column::InterpolationType:
+		{
+			flags |= Qt::ItemIsEditable;
+			break;
+		}
+
         case Column::UseConstantColor:
         {
 			flags |= Qt::ItemIsEditable;
@@ -339,6 +346,9 @@ QVariant PointsLayer::getData(const QModelIndex& index, const int& role) const
 
         case Column::ColorMap:
             return getColorMap(role);
+
+		case Column::InterpolationType:
+			return getInterpolationType(role);
 
         case Column::UseConstantColor:
             return getUseConstantColor(role);
@@ -505,6 +515,12 @@ QModelIndexList PointsLayer::setData(const QModelIndex& index, const QVariant& v
             setColorMap(value.value<QImage>());
             break;
         }
+
+		case Column::InterpolationType:
+		{
+			setInterpolationType(static_cast<InterpolationType>(value.toInt()));
+			break;
+		}
 
         case Column::UseConstantColor:
         {
@@ -892,6 +908,38 @@ void PointsLayer::setColorMap(const QImage& colorMap)
     _colorMap = colorMap;
     
     emit colorMapChanged(_colorMap);
+}
+
+QVariant PointsLayer::getInterpolationType(const int& role) const
+{
+	const auto interpolationTypeString = getInterpolationTypeName(_interpolationType);
+
+	switch (role)
+	{
+	case Qt::DisplayRole:
+		return interpolationTypeString;
+
+	case Qt::EditRole:
+		return static_cast<std::int32_t>(_interpolationType);
+
+	case Qt::ToolTipRole:
+		return QString("Interpolation type: %1").arg(interpolationTypeString);
+
+	default:
+		break;
+	}
+
+	return QVariant();
+}
+
+void PointsLayer::setInterpolationType(const InterpolationType& interpolationType)
+{
+	_interpolationType = interpolationType;
+
+	emit channelChanged(ult(ChannelIndex::Channel1));
+	emit channelChanged(ult(ChannelIndex::Channel2));
+	emit channelChanged(ult(ChannelIndex::Channel3));
+	emit channelChanged(ult(ChannelIndex::Mask));
 }
 
 QVariant PointsLayer::getUseConstantColor(const int& role) const
