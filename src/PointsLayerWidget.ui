@@ -59,20 +59,7 @@
       <string>Points</string>
      </property>
      <layout class="QGridLayout" name="gridLayout">
-      <item row="13" column="0">
-       <widget class="QLabel" name="colormapLabel">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Color map&lt;/span&gt;&lt;br/&gt;1D and 2D color maps&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-        </property>
-        <property name="text">
-         <string>Colormap</string>
-        </property>
-       </widget>
-      </item>
-      <item row="7" column="1">
+      <item row="5" column="1">
        <layout class="QHBoxLayout" name="channel2EditHorizontalLayout">
         <property name="spacing">
          <number>2</number>
@@ -130,72 +117,29 @@
         </item>
        </layout>
       </item>
-      <item row="10" column="1">
-       <widget class="QComboBox" name="colorSpaceComboBox">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Color space selection&lt;/span&gt;&lt;br/&gt;Use the dropdown to pick the desired color space&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-        </property>
-        <item>
-         <property name="text">
-          <string>RGB</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>HSL</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>LAB</string>
-         </property>
-        </item>
-       </widget>
-      </item>
       <item row="5" column="0">
-       <layout class="QHBoxLayout" name="channel1TitleHorizontalLayout">
+       <layout class="QHBoxLayout" name="channel2TitleHorizontalLayout">
         <property name="spacing">
          <number>6</number>
         </property>
-        <property name="leftMargin">
+        <property name="bottomMargin">
          <number>0</number>
         </property>
         <item>
-         <widget class="QLabel" name="channel1Label">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>50</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>50</width>
-            <height>16777215</height>
-           </size>
+         <widget class="QLabel" name="channel2Label">
+          <property name="enabled">
+           <bool>false</bool>
           </property>
           <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Channel 1&lt;br/&gt;&lt;/span&gt;Settings for channel 1&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Channel 2&lt;br/&gt;&lt;/span&gt;Settings for channel 2&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="text">
-           <string>Channel 1</string>
+           <string>Channel 2</string>
           </property>
          </widget>
         </item>
         <item>
-         <spacer name="channel1HorizontalSpacer">
+         <spacer name="channel2HorizontalSpacer">
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
@@ -211,46 +155,28 @@
          </spacer>
         </item>
         <item>
-         <widget class="QCheckBox" name="channel1CheckBox">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
+         <widget class="QCheckBox" name="channel2CheckBox">
           <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Enable channel 1&lt;/span&gt;&lt;br/&gt;Click the checkbox to enable/disable channel 1&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Enable channel 2&lt;/span&gt;&lt;br/&gt;Click the checkbox to enable/disable channel 2&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="text">
            <string/>
-          </property>
-          <property name="checked">
-           <bool>true</bool>
           </property>
          </widget>
         </item>
        </layout>
       </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="pointTypeLabel">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>0</height>
-         </size>
-        </property>
+      <item row="13" column="1">
+       <widget class="QCheckBox" name="constantColorCheckBox">
         <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Point type&lt;/span&gt;&lt;br/&gt;How to interpret the point values&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Constant color&lt;/span&gt;&lt;br/&gt;Click the checkbox to enable/disable constant color&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
-         <string>Point type</string>
+         <string>Constant color</string>
         </property>
        </widget>
       </item>
-      <item row="9" column="1">
+      <item row="7" column="1">
        <layout class="QHBoxLayout" name="channel3EditHorizontalLayout" stretch="0,0,0">
         <property name="spacing">
          <number>2</number>
@@ -308,20 +234,7 @@
         </item>
        </layout>
       </item>
-      <item row="6" column="1">
-       <widget class="QComboBox" name="indexSelectionComboBox">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Selection&lt;/span&gt;&lt;br/&gt;Use the dropdown to pick the dataset for linked index selection&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-        </property>
-       </widget>
-      </item>
-      <item row="9" column="0">
+      <item row="7" column="0">
        <layout class="QHBoxLayout" name="channel3TitleHorizontalLayout">
         <property name="spacing">
          <number>6</number>
@@ -367,46 +280,7 @@
         </item>
        </layout>
       </item>
-      <item row="1" column="1">
-       <widget class="QComboBox" name="pointTypeComboBox">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-          <horstretch>1</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Point type selection&lt;/span&gt;&lt;br/&gt;Use the dropdown to pick the point type&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-        </property>
-        <item>
-         <property name="text">
-          <string>Intensity</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Index</string>
-         </property>
-        </item>
-       </widget>
-      </item>
-      <item row="6" column="0">
-       <widget class="QLabel" name="indexSelectionLabel">
-        <property name="maximumSize">
-         <size>
-          <width>16777215</width>
-          <height>16777215</height>
-         </size>
-        </property>
-        <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Index selection&lt;/span&gt;&lt;br/&gt;Linked points dataset for index selection&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-        </property>
-        <property name="text">
-         <string>Selection</string>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="1">
+      <item row="4" column="1">
        <layout class="QHBoxLayout" name="channel1EditHorizontalLayout" stretch="0,0,0">
         <property name="spacing">
          <number>2</number>
@@ -476,7 +350,74 @@
         </item>
        </layout>
       </item>
-      <item row="13" column="1">
+      <item row="11" column="0">
+       <widget class="QLabel" name="colormapLabel">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Color map&lt;/span&gt;&lt;br/&gt;1D and 2D color maps&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>Colormap</string>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="0">
+       <widget class="QLabel" name="colorSpaceLabel">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Color space&lt;br/&gt;&lt;/span&gt;The type of color space&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>Color space</string>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="1">
+       <widget class="QComboBox" name="colorSpaceComboBox">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Color space selection&lt;/span&gt;&lt;br/&gt;Use the dropdown to pick the desired color space&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <item>
+         <property name="text">
+          <string>RGB</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>HSL</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>LAB</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="12" column="0">
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>100</width>
+          <height>0</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item row="11" column="1">
        <widget class="QStackedWidget" name="colorStackedWidget">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -541,39 +482,44 @@
         </widget>
        </widget>
       </item>
-      <item row="10" column="0">
-       <widget class="QLabel" name="colorSpaceLabel">
-        <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Color space&lt;br/&gt;&lt;/span&gt;The type of color space&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-        </property>
-        <property name="text">
-         <string>Color space</string>
-        </property>
-       </widget>
-      </item>
-      <item row="7" column="0">
-       <layout class="QHBoxLayout" name="channel2TitleHorizontalLayout">
+      <item row="4" column="0">
+       <layout class="QHBoxLayout" name="channel1TitleHorizontalLayout">
         <property name="spacing">
          <number>6</number>
         </property>
-        <property name="bottomMargin">
+        <property name="leftMargin">
          <number>0</number>
         </property>
         <item>
-         <widget class="QLabel" name="channel2Label">
-          <property name="enabled">
-           <bool>false</bool>
+         <widget class="QLabel" name="channel1Label">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>50</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>50</width>
+            <height>16777215</height>
+           </size>
           </property>
           <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Channel 2&lt;br/&gt;&lt;/span&gt;Settings for channel 2&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Channel 1&lt;br/&gt;&lt;/span&gt;Settings for channel 1&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="text">
-           <string>Channel 2</string>
+           <string>Channel 1</string>
           </property>
          </widget>
         </item>
         <item>
-         <spacer name="channel2HorizontalSpacer">
+         <spacer name="channel1HorizontalSpacer">
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
@@ -589,42 +535,22 @@
          </spacer>
         </item>
         <item>
-         <widget class="QCheckBox" name="channel2CheckBox">
+         <widget class="QCheckBox" name="channel1CheckBox">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Enable channel 2&lt;/span&gt;&lt;br/&gt;Click the checkbox to enable/disable channel 2&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Enable channel 1&lt;/span&gt;&lt;br/&gt;Click the checkbox to enable/disable channel 1&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="text">
            <string/>
           </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
          </widget>
         </item>
        </layout>
-      </item>
-      <item row="15" column="1">
-       <widget class="QCheckBox" name="constantColorCheckBox">
-        <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Constant color&lt;/span&gt;&lt;br/&gt;Click the checkbox to enable/disable constant color&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-        </property>
-        <property name="text">
-         <string>Constant color</string>
-        </property>
-       </widget>
-      </item>
-      <item row="14" column="0">
-       <spacer name="horizontalSpacer">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeType">
-         <enum>QSizePolicy::Fixed</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>100</width>
-          <height>0</height>
-         </size>
-        </property>
-       </spacer>
       </item>
      </layout>
     </widget>

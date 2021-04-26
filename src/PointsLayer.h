@@ -30,19 +30,6 @@ public: // Enumerations
         Count = Mask + 1
     };
 
-    /** Pixel type */
-    enum class PixelType {
-        Intensity,      /** Intensity (color images) */
-        Index           /** Index (index images) */
-    };
-
-    /** Maps pixel type name to pixel type enum and vice versa */
-    static QMap<QString, PixelType> const pixelTypes;
-
-    /** Get string/enum representation of pixel type */
-    static QString getPixelTypeName(const PixelType& pixelType) { return pixelTypes.key(pixelType); }
-    static PixelType getPixelTypeEnum(const QString& typeName) { return pixelTypes[typeName]; }
-
     /** Columns */
     enum class Column {
         DimensionNames = ult(Layer::Column::End) + 1,   /** Dimension names */
@@ -69,11 +56,9 @@ public: // Enumerations
         ColorMap,                                       /** Color map image */
         UseConstantColor,                               /** Whether to use constant colors for shading */
         ConstantColor,                                  /** Const color */
-        PixelType,                                      /** Type of point (e.g. intensity, index) */
-        IndexSelectionDatasetName,                      /** Name of the indices dataset */
 
         Start = DimensionNames,                         /** Start column */
-        End = IndexSelectionDatasetName                 /** End column */
+        End = ConstantColor								/** End column */
     };
 
 public:
@@ -324,39 +309,6 @@ public: // Getters/setters
      */
     void setConstantColor(const QColor& constantColor);
 
-    /**
-     * Returns the pixel type
-     * @param role Data role
-     * @return Pixel type in variant form
-     */
-    QVariant getPixelType(const int& role = Qt::DisplayRole) const;
-
-    /**
-     * Sets the pixel type
-     * @param pixelType Type of the pixel
-     */
-    void setPixelType(const PixelType& pointType);
-
-    /**
-     * Returns the name of the index selection dataset
-     * @param role Data role
-     * @return Name of the index selection dataset in variant form
-     */
-    QVariant getIndexSelectionDatasetName(const int& role = Qt::DisplayRole) const;
-
-    /**
-     * Sets the name of the index selection dataset
-     * @param indicesDatasetName Name of the index selection dataset
-     */
-    void setIndexSelectionDatasetName(const QString& indexSelectionDatasetName);
-
-    /**
-     * Returns the selection of the indices dataset
-     * @param role Data role
-     * @return Selection of the indices dataset in variant form
-     */
-    QVariant getIndicesSelection(const int& role = Qt::DisplayRole) const;
-
 public:
 
     /**
@@ -446,7 +398,4 @@ private:
     QImage              _colorMap;                      /** Color map (1D/2D) */
     bool                _useConstantColor;              /** Pixel color is constant and the alpha is modulated by the intensity of the selected channel */
     QColor              _constantColor;                 /** Constant color */
-    PixelType           _pixelType;                     /** Type of pixel (e.g. intensity, index) */
-    QString             _indexSelectionDatasetName;     /** Name of the index selection dataset */
-    Points*             _indexSelectionDataset;         /** Pointer to the index selection dataset */
 };
