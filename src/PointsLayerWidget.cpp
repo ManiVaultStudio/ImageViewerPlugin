@@ -121,6 +121,10 @@ void PointsLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
         _layersModel->setData(_layersModel->getSelectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Channel3DimensionId)), index);
     });
 
+	QObject::connect(_ui->interpolationTypeComboBox, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
+		_layersModel->setData(_layersModel->getSelectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::InterpolationType)), index);
+	});
+
     QObject::connect(_ui->constantColorCheckBox, &QCheckBox::stateChanged, [this](int state) {
         _layersModel->setData(_layersModel->getSelectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::UseConstantColor)), _ui->constantColorCheckBox->isChecked());
     });
@@ -324,6 +328,15 @@ void PointsLayerWidget::updateData(const QModelIndex& begin, const QModelIndex& 
                     break;
             }
         }
+
+		if (column == ult(PointsLayer::Column::InterpolationType)) {
+			const auto interpolationType = begin.siblingAtColumn(ult(PointsLayer::Column::InterpolationType));
+
+			QSignalBlocker blocker(_ui->interpolationTypeComboBox);
+
+			_ui->interpolationTypeComboBox->setEnabled(interpolationType.flags() & Qt::ItemIsEditable);
+			_ui->interpolationTypeComboBox->setCurrentIndex(interpolationType.data(Qt::EditRole).toInt());
+		}
 
         if (column == ult(PointsLayer::Column::UseConstantColor)) {
             const auto useConstantColor = begin.siblingAtColumn(ult(PointsLayer::Column::UseConstantColor));

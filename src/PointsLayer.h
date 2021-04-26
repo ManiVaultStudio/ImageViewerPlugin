@@ -54,12 +54,26 @@ public: // Enumerations
         NoDimensions,                                   /** Number of dimensions in the dataset */
         ColorSpace,                                     /** Color space (e.g. RGB, HSL and LAB) */
         ColorMap,                                       /** Color map image */
+        InterpolationType,                              /** Interpolation type */
         UseConstantColor,                               /** Whether to use constant colors for shading */
         ConstantColor,                                  /** Const color */
 
         Start = DimensionNames,                         /** Start column */
         End = ConstantColor								/** End column */
     };
+
+	/** Interpolation type */
+	enum class InterpolationType {
+		Bilinear,			/** Bilinear interpolation */
+		NearestNeighbour    /** Nearest neighbour interpolation */
+	};
+
+	/** Maps interpolation type name to interpolation type enum and vice versa */
+	static QMap<QString, InterpolationType> const interpolationTypes;
+
+	/** Get string/enum representation of interpolation type */
+	static QString getInterpolationTypeName(const InterpolationType& interpolationType) { return interpolationTypes.key(interpolationType); }
+	static InterpolationType getInterpolationTypeEnum(const QString& interpolationName) { return interpolationTypes[interpolationName]; }
 
 public:
 
@@ -283,6 +297,19 @@ public: // Getters/setters
      */
     void setColorMap(const QImage& colorMap);
 
+	/**
+	* Returns the interpolation type
+	* @param role Data role
+	* @return Interpolation type in variant form
+	*/
+	QVariant getInterpolationType(const int& role) const;
+
+	/**
+	 * Sets the interpolation type
+	 * @param interpolationType Type of interpolation
+	 */
+	void setInterpolationType(const InterpolationType& interpolationType);
+
     /**
      * Returns whether to shade using constant color
      * @param role Data role
@@ -396,6 +423,7 @@ private:
     std::uint32_t       _maxNoChannels;                 /** Maximum number of channels (determined by the number of dimensions) */
     ColorSpace          _colorSpace;                    /** Color space */
     QImage              _colorMap;                      /** Color map (1D/2D) */
+    InterpolationType	_interpolationType;				/** Type of interpolation */
     bool                _useConstantColor;              /** Pixel color is constant and the alpha is modulated by the intensity of the selected channel */
     QColor              _constantColor;                 /** Constant color */
 };
