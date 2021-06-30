@@ -8,6 +8,12 @@ namespace Ui {
     class PointsLayerWidget;
 }
 
+namespace hdps {
+	namespace gui {
+		class DimensionSelectionAction;
+	}
+}
+
 class ImageViewerPlugin;
 class LayersModel;
 
@@ -48,4 +54,7 @@ private:
     ImageViewerPlugin*                      _imageViewerPlugin;     /** Pointer to the image viewer plugin */
     std::unique_ptr<Ui::PointsLayerWidget>  _ui;                    /** User interface as produced by Qt designer */
     LayersModel*                            _layersModel;           /** Pointer to the layers model */
+	hdps::gui::DimensionSelectionAction*	_dimension1Action;
+	hdps::gui::DimensionSelectionAction*	_dimension2Action;
+	hdps::gui::DimensionSelectionAction*	_dimension3Action;
 };

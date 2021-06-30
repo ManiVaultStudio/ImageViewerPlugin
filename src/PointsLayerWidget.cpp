@@ -7,16 +7,22 @@
 #include "ui_PointsLayerWidget.h"
 
 #include "Application.h"
+#include "DimensionSelectionAction.h"
 
 #include <QDebug>
 #include <QStringListModel>
 #include <QWidgetAction>
 #include <QListView>
 
+using namespace hdps::gui;
+
 PointsLayerWidget::PointsLayerWidget(QWidget* parent) :
     QWidget(parent),
     _ui{ std::make_unique<Ui::PointsLayerWidget>() },
-    _layersModel(nullptr)
+    _layersModel(nullptr),
+	_dimension1Action(nullptr),
+	_dimension2Action(nullptr),
+	_dimension3Action(nullptr)
 {
     _ui->setupUi(this);
 }
@@ -26,6 +32,14 @@ void PointsLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
     _imageViewerPlugin = imageViewerPlugin;
     _layersModel = &_imageViewerPlugin->getLayersModel();
     
+	_dimension1Action = new hdps::gui::DimensionSelectionAction(this, _imageViewerPlugin->core(), "Dimension 1");
+	_dimension2Action = new hdps::gui::DimensionSelectionAction(this, _imageViewerPlugin->core(), "Dimension 2");
+	_dimension3Action = new hdps::gui::DimensionSelectionAction(this, _imageViewerPlugin->core(), "Dimension 3");
+
+	_ui->gridLayout_2->addWidget(_dimension1Action->createWidget(this), 0, 2);
+	_ui->gridLayout_2->addWidget(_dimension2Action->createWidget(this), 1, 2);
+	_ui->gridLayout_2->addWidget(_dimension3Action->createWidget(this), 2, 2);
+
     const auto fontAwesome = hdps::Application::getIconFont("FontAwesome").getFont(9);
     
     _ui->channel1WindowLevelPushButton->setFont(fontAwesome);
@@ -101,23 +115,23 @@ void PointsLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 
     QObject::connect(_ui->channel2CheckBox, &QCheckBox::stateChanged, [this](int state) {
         _layersModel->setData(_layersModel->getSelectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Channel2Enabled)), state == Qt::Checked);
-        _layersModel->setData(_layersModel->getSelectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Channel2DimensionId)), _ui->channel2ComboBox->currentIndex());
+        _layersModel->setData(_layersModel->getSelectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Channel2DimensionId)), _dimension2Action->getCurrentDimensionIndex());
     });
 
     QObject::connect(_ui->channel3CheckBox, &QCheckBox::stateChanged, [this](int state) {
         _layersModel->setData(_layersModel->getSelectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Channel3Enabled)), state == Qt::Checked);
-        _layersModel->setData(_layersModel->getSelectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Channel3DimensionId)), _ui->channel3ComboBox->currentIndex());
+        _layersModel->setData(_layersModel->getSelectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Channel3DimensionId)), _dimension3Action->getCurrentDimensionIndex());
     });
 
-    QObject::connect(_ui->channel1ComboBox, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
+    QObject::connect(_dimension1Action, &DimensionSelectionAction::currentDimensionIndexChanged, [this](const std::int32_t& index) {
         _layersModel->setData(_layersModel->getSelectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Channel1DimensionId)), index);
     });
 
-    QObject::connect(_ui->channel2ComboBox, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
+    QObject::connect(_dimension2Action, &DimensionSelectionAction::currentDimensionIndexChanged, [this](const std::int32_t& index) {
         _layersModel->setData(_layersModel->getSelectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Channel2DimensionId)), index);
     });
 
-    QObject::connect(_ui->channel3ComboBox, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
+    QObject::connect(_dimension3Action, &DimensionSelectionAction::currentDimensionIndexChanged, [this](const std::int32_t& index) {
         _layersModel->setData(_layersModel->getSelectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::Channel3DimensionId)), index);
     });
 
@@ -158,6 +172,12 @@ void PointsLayerWidget::updateData(const QModelIndex& begin, const QModelIndex& 
 
     const auto enabled = begin.siblingAtColumn(ult(Layer::Column::Name)).data(Qt::CheckStateRole).toInt() == Qt::Checked;
 
+	const auto datasetName = begin.siblingAtColumn(ult(Layer::Column::DatasetName)).data(Qt::EditRole).toString();
+
+	_dimension1Action->setDatasetName(datasetName);
+	_dimension2Action->setDatasetName(datasetName);
+	_dimension3Action->setDatasetName(datasetName);
+
     for (int column = begin.column(); column <= end.column(); column++) {
         const auto index = begin.siblingAtColumn(column);
 
@@ -173,23 +193,23 @@ void PointsLayerWidget::updateData(const QModelIndex& begin, const QModelIndex& 
 
         _ui->groupBox->setEnabled(enabled);
 
+		/*
         if (column == ult(PointsLayer::Column::DimensionNames)) {
             const auto dimensionNames = begin.siblingAtColumn(ult(PointsLayer::Column::DimensionNames)).data(Qt::EditRole).toStringList();
 
-            auto dimensionNamesModel = new QStringListModel(dimensionNames, this);
+			_dimension1Action->blockSignals(true);
+			_dimension1Action->setDimensionNames(dimensionNames);
+			_dimension1Action->blockSignals(false);
 
-            _ui->channel1ComboBox->blockSignals(true);
-            _ui->channel1ComboBox->setModel(dimensionNamesModel);
-            _ui->channel1ComboBox->blockSignals(false);
+			_dimension2Action->blockSignals(true);
+			_dimension2Action->setDimensionNames(dimensionNames);
+			_dimension2Action->blockSignals(false);
 
-            _ui->channel2ComboBox->blockSignals(true);
-            _ui->channel2ComboBox->setModel(dimensionNamesModel);
-            _ui->channel2ComboBox->blockSignals(false);
-
-            _ui->channel3ComboBox->blockSignals(true);
-            _ui->channel3ComboBox->setModel(dimensionNamesModel);
-            _ui->channel3ComboBox->blockSignals(false);
+			_dimension3Action->blockSignals(true);
+			_dimension3Action->setDimensionNames(dimensionNames);
+			_dimension3Action->blockSignals(false);
         }
+		*/
 
         if (column == ult(PointsLayer::Column::Channel1Name)) {
             const auto channel1Name = begin.siblingAtColumn(ult(PointsLayer::Column::Channel1Name));
@@ -217,10 +237,10 @@ void PointsLayerWidget::updateData(const QModelIndex& begin, const QModelIndex& 
             const auto channelEnabled       = channel1DimensionId.flags() & Qt::ItemIsEditable;
 
             _ui->channel1Label->setEnabled(channelEnabled);
-            _ui->channel1ComboBox->setEnabled(channelEnabled);
-            _ui->channel1ComboBox->blockSignals(true);
-            _ui->channel1ComboBox->setCurrentIndex(channel1DimensionId.data(Qt::EditRole).toInt());
-            _ui->channel1ComboBox->blockSignals(false);
+            _dimension1Action->setEnabled(channelEnabled);
+            _dimension1Action->blockSignals(true);
+            _dimension1Action->setCurrentDimensionIndex(channel1DimensionId.data(Qt::EditRole).toInt());
+            _dimension1Action->blockSignals(false);
             _ui->channel1WindowLevelPushButton->setEnabled(channelEnabled);
             _ui->channel1ProbePushButton->setEnabled(channelEnabled);
         }
@@ -231,10 +251,10 @@ void PointsLayerWidget::updateData(const QModelIndex& begin, const QModelIndex& 
             const auto value = channel2DimensionId.data(Qt::EditRole).toInt();
 
             _ui->channel2Label->setEnabled(channelEnabled);
-            _ui->channel2ComboBox->setEnabled(channelEnabled);
-            _ui->channel2ComboBox->blockSignals(true);
-            _ui->channel2ComboBox->setCurrentIndex(value);
-            _ui->channel2ComboBox->blockSignals(false);
+            _dimension2Action->setEnabled(channelEnabled);
+            _dimension2Action->blockSignals(true);
+            _dimension2Action->setCurrentDimensionIndex(value);
+            _dimension2Action->blockSignals(false);
             _ui->channel2WindowLevelPushButton->setEnabled(channelEnabled);
             _ui->channel2ProbePushButton->setEnabled(channelEnabled);
         }
@@ -244,10 +264,10 @@ void PointsLayerWidget::updateData(const QModelIndex& begin, const QModelIndex& 
             const auto channelEnabled       = channel3DimensionId.flags() & Qt::ItemIsEditable;
 
             _ui->channel3Label->setEnabled(channelEnabled);
-            _ui->channel3ComboBox->setEnabled(channelEnabled);
-            _ui->channel3ComboBox->blockSignals(true);
-            _ui->channel3ComboBox->setCurrentIndex(channel3DimensionId.data(Qt::EditRole).toInt());
-            _ui->channel3ComboBox->blockSignals(false);
+            _dimension3Action->setEnabled(channelEnabled);
+            _dimension3Action->blockSignals(true);
+            _dimension3Action->setCurrentDimensionIndex(channel3DimensionId.data(Qt::EditRole).toInt());
+            _dimension3Action->blockSignals(false);
             _ui->channel3WindowLevelPushButton->setEnabled(channelEnabled);
             _ui->channel3ProbePushButton->setEnabled(channelEnabled);
         }
