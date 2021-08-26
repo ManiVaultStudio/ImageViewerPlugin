@@ -74,8 +74,8 @@ void LayersWidget::dropEvent(QDropEvent* dropEvent)
 }
 */
 
-ImageViewerPlugin::ImageViewerPlugin() :
-    ViewPlugin("Image Viewer"),
+ImageViewerPlugin::ImageViewerPlugin(const PluginFactory* factory) :
+    ViewPlugin(factory),
     _viewerWidget(nullptr),
     _statusbarWidget(nullptr),
     _settingsWidget(nullptr),
@@ -155,5 +155,12 @@ void ImageViewerPlugin::init()
 
 ImageViewerPlugin* ImageViewerPluginFactory::produce()
 {
-    return new ImageViewerPlugin();
+    return new ImageViewerPlugin(this);
+}
+
+hdps::DataTypes ImageViewerPluginFactory::supportedDataTypes() const
+{
+	DataTypes supportedTypes;
+	supportedTypes.append(PointType);
+	return supportedTypes;
 }

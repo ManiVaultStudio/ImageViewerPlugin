@@ -34,7 +34,7 @@ class ImageViewerPlugin : public ViewPlugin
 
 public:
     /** Constructor */
-    ImageViewerPlugin();
+    ImageViewerPlugin(const hdps::plugin::PluginFactory* factory);
 
 public: // Inherited from ViewPlugin
 
@@ -119,4 +119,6 @@ public:
 
     /** Creates an image viewer plugin instance */
     ImageViewerPlugin* produce() override;
+
+	hdps::DataTypes supportedDataTypes() const override;
 };
