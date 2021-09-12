@@ -38,11 +38,6 @@ public:
 
 public: // Inherited from ViewPlugin
 
-    /** Returns the icon of this plugin */
-    QIcon getIcon() const override {
-        return hdps::Application::getIconFont("FontAwesome").getIcon("images");
-    }
-
     /** Initializes the plugin */
     void init() override;
 
@@ -116,6 +111,9 @@ public:
 
     /** Destructor */
     ~ImageViewerPluginFactory() override {}
+
+	/** Returns the plugin icon */
+	QIcon getIcon() const override;
 
     /** Creates an image viewer plugin instance */
     ImageViewerPlugin* produce() override;

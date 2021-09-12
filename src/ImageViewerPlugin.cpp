@@ -153,6 +153,11 @@ void ImageViewerPlugin::init()
     _layersModel.initialize();
 }
 
+QIcon ImageViewerPluginFactory::getIcon() const
+{
+	return hdps::Application::getIconFont("FontAwesome").getIcon("images");
+}
+
 ImageViewerPlugin* ImageViewerPluginFactory::produce()
 {
     return new ImageViewerPlugin(this);
