@@ -30,9 +30,8 @@ set(PLUGIN
 
 file(GLOB MODEL src/*Model.* src/*Layer.* src/*Dataset.* src/*Layer.* src/*Item.* src/Range.* src/*ProxyModel.* src/*Node.* src/*Renderable*.* src/Channel*.*)
 file(GLOB RENDERING src/*Renderer.* src/*Actor.* src/*Prop.* src/*Shape.*)
-file(GLOB WIDGETS src/*Widget.* src/*Color*.*)
+file(GLOB WIDGETS src/*Widget.*)
 file(GLOB ACTIONS src/*Action.*)
-file(GLOB UIS src/*.ui)
 file(GLOB SHADERS src/*.glsl)
 file(GLOB JSON src/*.json)
 file(GLOB QRC src/*.qrc)
@@ -45,7 +44,6 @@ source_group(Model FILES ${MODEL})
 source_group(Rendering FILES ${RENDERING})
 source_group(Widgets FILES ${WIDGETS})
 source_group(Actions FILES ${ACTIONS})
-source_group(UI FILES ${UIS})
 source_group(Shaders FILES ${SHADERS})
 source_group(Aux FILES ${AUX})
 

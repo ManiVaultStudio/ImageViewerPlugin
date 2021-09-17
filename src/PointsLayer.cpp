@@ -53,6 +53,7 @@ PointsLayer::PointsLayer(const QString& pointsDatasetName, const QString& id, co
 
 void PointsLayer::init()
 {
+    /*
     setEventCore(imageViewerPlugin->core());
 
     addProp<PointsProp>(this, "Points");
@@ -82,6 +83,7 @@ void PointsLayer::init()
     const auto& selection = static_cast<Points&>(_pointsDataset->getSelection());
 
     computeChannel(ChannelIndex::Mask);
+    */
 }
 
 void PointsLayer::paint(QPainter* painter)

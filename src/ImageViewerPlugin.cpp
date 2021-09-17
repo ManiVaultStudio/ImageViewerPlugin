@@ -3,10 +3,10 @@
 #include "StatusbarWidget.h"
 #include "Layer.h"
 
-#include <PointData.h>
-#include <ClusterData.h>
-#include <ColorData.h>
-#include <widgets/DropWidget.h>
+#include "ImageData/Images.h"
+#include "ImageData/ImageData.h"
+#include "widgets/DropWidget.h"
+#include "util/DatasetRef.h"
 
 #include <QDebug>
 #include <QSplitter>
@@ -14,58 +14,16 @@
 
 using namespace hdps;
 using namespace hdps::gui;
+using namespace hdps::util;
 
 Q_PLUGIN_METADATA(IID "nl.BioVault.ImageViewerPlugin")
 
-ImageViewerPlugin::ImageViewerPlugin(const PluginFactory* factory) :
+ImageViewerPlugin::ImageViewerPlugin(hdps::plugin::PluginFactory* factory) :
     ViewPlugin(factory),
-    _viewerWidget(nullptr),
-    _statusbarWidget(nullptr),
     _layersModel(this),
-    _pointsDatasets(),
     _dropWidget(nullptr),
     _settingsAction(this)
 {
-    Layer::imageViewerPlugin = this;
-
-    _viewerWidget   = new ViewerWidget(this);
-    _dropWidget     = new DropWidget(_viewerWidget);
-
-    setDockingLocation(hdps::gui::DockableWidget::DockingLocation::Right);
-
-    _dropWidget->setDropIndicatorWidget(new DropWidget::DropIndicatorWidget(this, "No data loaded", "Drag an item from the data hierarchy and drop it here to visualize data..."));
-
-    _dropWidget->initialize([this](const QMimeData* mimeData) -> DropWidget::DropRegions {
-        DropWidget::DropRegions dropRegions;
-
-        const auto mimeText     = mimeData->text();
-        const auto tokens       = mimeText.split("\n");
-        const auto datasetName  = tokens[0];
-        const auto dataType     = DataType(tokens[1]);
-        const auto dataTypes    = DataTypes({ PointType });
-
-        if (!dataTypes.contains(dataType))
-            dropRegions << new DropWidget::DropRegion(this, "Incompatible data", "This type of data is not supported", false);
-
-        if (dataType == PointType) {
-            auto pointsDataset = hdps::DataSet::getSourceData<Points>(_core->requestData<Points>(datasetName));
-
-            if (pointsDataset.getProperty("Type", "").toString() == "Images") {
-                dropRegions << new DropWidget::DropRegion(this, "Images", QString("Add an image layer for %1").arg(datasetName), true, [this, datasetName]() {
-                    _layersModel.addPointsDataset(datasetName);
-                });
-            }
-        }
-
-        return dropRegions;
-    });
-
-    const auto updateDropIndicatorVisibility = [this]() -> void {
-        _dropWidget->setShowDropIndicator(_layersModel.rowCount() == 0);
-    };
-
-    connect(&_layersModel, &QAbstractItemModel::rowsInserted, this, [updateDropIndicatorVisibility]() { updateDropIndicatorVisibility(); });
-    connect(&_layersModel, &QAbstractItemModel::rowsRemoved, this, [updateDropIndicatorVisibility]() { updateDropIndicatorVisibility(); });
 }
 
 void ImageViewerPlugin::init()
@@ -81,7 +39,11 @@ void ImageViewerPlugin::init()
 
     auto viewerLayout = new QVBoxLayout();
 
-    splitter->addWidget(_viewerWidget);
+    auto viewerWidget = new QWidget();
+
+    _dropWidget = new DropWidget(viewerWidget);
+
+    splitter->addWidget(viewerWidget);
     splitter->addWidget(_settingsAction.createWidget(this));
 
     splitter->setStretchFactor(0, 1);
@@ -92,11 +54,45 @@ void ImageViewerPlugin::init()
     layout->addWidget(splitter);
 
     _layersModel.initialize();
+
+    setDockingLocation(hdps::gui::DockableWidget::DockingLocation::Right);
+
+    _dropWidget->setDropIndicatorWidget(new DropWidget::DropIndicatorWidget(this, "No data loaded", "Drag an item from the data hierarchy and drop it here to visualize data..."));
+
+    _dropWidget->initialize([this](const QMimeData* mimeData) -> DropWidget::DropRegions {
+        DropWidget::DropRegions dropRegions;
+
+        const auto mimeText = mimeData->text();
+        const auto tokens = mimeText.split("\n");
+        const auto datasetName = tokens[0];
+        const auto dataType = DataType(tokens[1]);
+        const auto dataTypes = DataTypes({ ImageType });
+
+        if (!dataTypes.contains(dataType))
+            dropRegions << new DropWidget::DropRegion(this, "Incompatible data", "This type of data is not supported", false);
+
+        if (dataType == ImageType) {
+            DatasetRef<Images> imagesDataset(datasetName);
+
+            dropRegions << new DropWidget::DropRegion(this, "Images", QString("Add an image layer for %1").arg(datasetName), true, [this, datasetName]() {
+                //_layersModel.addPointsDataset(datasetName);
+            });
+        }
+
+        return dropRegions;
+    });
+
+    const auto updateDropIndicatorVisibility = [this]() -> void {
+        _dropWidget->setShowDropIndicator(_layersModel.rowCount() == 0);
+    };
+
+    connect(&_layersModel, &QAbstractItemModel::rowsInserted, this, [updateDropIndicatorVisibility]() { updateDropIndicatorVisibility(); });
+    connect(&_layersModel, &QAbstractItemModel::rowsRemoved, this, [updateDropIndicatorVisibility]() { updateDropIndicatorVisibility(); });
 }
 
 QIcon ImageViewerPluginFactory::getIcon() const
 {
-	return hdps::Application::getIconFont("FontAwesome").getIcon("images");
+    return hdps::Application::getIconFont("FontAwesome").getIcon("images");
 }
 
 ImageViewerPlugin* ImageViewerPluginFactory::produce()
@@ -106,7 +102,9 @@ ImageViewerPlugin* ImageViewerPluginFactory::produce()
 
 hdps::DataTypes ImageViewerPluginFactory::supportedDataTypes() const
 {
-	DataTypes supportedTypes;
-	supportedTypes.append(PointType);
-	return supportedTypes;
+    DataTypes supportedTypes;
+
+    supportedTypes.append(ImageType);
+
+    return supportedTypes;
 }

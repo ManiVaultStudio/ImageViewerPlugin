@@ -52,6 +52,7 @@ SelectionLayer::SelectionLayer(const QString& datasetName, const QString& id, co
 
 void SelectionLayer::init()
 {
+    /*
     addProp<SelectionToolProp>(this, "SelectionTool");
     addProp<SelectionProp>(this, "Selection");
 
@@ -91,6 +92,7 @@ void SelectionLayer::init()
     
     updateModelMatrix();
     computeChannel(ChannelIndex::Selection);
+    */
 }
 
 void SelectionLayer::paint(QPainter* painter)
