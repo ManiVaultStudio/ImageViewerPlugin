@@ -5,6 +5,7 @@
 #include "Application.h"
 #include "LayersModel.h"
 #include "ColorMapModel.h"
+#include "SettingsAction.h"
 
 #include <QItemSelectionModel>
 
@@ -14,7 +15,6 @@ using hdps::plugin::ViewPlugin;
 class Images;
 class ViewerWidget;
 class StatusbarWidget;
-class SettingsWidget;
 
 namespace hdps {
     namespace gui {
@@ -57,22 +57,10 @@ public: // Miscellaneous
         return _viewerWidget;
     }
 
-    /** Returns the settings widget */
-    SettingsWidget* getSettingsWidget()
-    {
-        return _settingsWidget;
-    }
-
     /** Returns the layer model */
     LayersModel& getLayersModel()
     {
         return _layersModel;
-    }
-
-    /** Returns the color map model */
-    ColorMapModel& getColorMapModel()
-    {
-        return _colorMapModel;
     }
 
     /** Returns the names of the points datasets in HDPS */
@@ -88,11 +76,11 @@ signals:
 private:
     ViewerWidget*               _viewerWidget;          /** The image viewer widget */
     StatusbarWidget*            _statusbarWidget;       /** The status bar widget */
-    SettingsWidget*             _settingsWidget;        /** Settings widget */
     LayersModel                 _layersModel;           /** Layers model */
-    ColorMapModel               _colorMapModel;         /** Colormap model */
     QStringList                 _pointsDatasets;        /** Point datasets loaded in HDPS */
+    
     hdps::gui::DropWidget*      _dropWidget;            /** Widget for dropping data */
+    SettingsAction              _settingsAction;        /** Settings action */
 };
 
 /**
@@ -103,7 +91,7 @@ class ImageViewerPluginFactory : public ViewPluginFactory
 {
     Q_INTERFACES(hdps::plugin::ViewPluginFactory hdps::plugin::PluginFactory)
         Q_OBJECT
-        Q_PLUGIN_METADATA(IID "nl.tudelft.ImageViewerPlugin" FILE "ImageViewerPlugin.json")
+        Q_PLUGIN_METADATA(IID "nl.BioVault.ImageViewerPlugin" FILE "ImageViewerPlugin.json")
 
 public:
     /** Default constructor */
@@ -112,11 +100,11 @@ public:
     /** Destructor */
     ~ImageViewerPluginFactory() override {}
 
-	/** Returns the plugin icon */
-	QIcon getIcon() const override;
+    /** Returns the plugin icon */
+    QIcon getIcon() const override;
 
     /** Creates an image viewer plugin instance */
     ImageViewerPlugin* produce() override;
 
-	hdps::DataTypes supportedDataTypes() const override;
+    hdps::DataTypes supportedDataTypes() const override;
 };

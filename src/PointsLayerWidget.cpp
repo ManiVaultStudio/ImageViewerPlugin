@@ -133,13 +133,6 @@ void PointsLayerWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
         _layersModel->setData(_layersModel->getSelectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::ColorSpace)), index);
     });
 
-    _ui->colorMapComboBox->setModel(&_imageViewerPlugin->getColorMapModel());
-    _ui->colorMapComboBox->setType(ColorMap::Type::TwoDimensional);
-
-    QObject::connect(_ui->colorMapComboBox, qOverload<int>(&QComboBox::currentIndexChanged), [this](int index) {
-        _layersModel->setData(_layersModel->getSelectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::ColorMap)), _ui->colorMapComboBox->getCurrentImage());
-    });
-
     QObject::connect(_ui->colorPickerPushButton, &ColorPickerPushButton::colorChanged, [this](const QColor& currentColor) {
         _layersModel->setData(_layersModel->getSelectionModel().currentIndex().siblingAtColumn(ult(PointsLayer::Column::ConstantColor)), currentColor);
     });

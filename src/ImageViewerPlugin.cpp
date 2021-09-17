@@ -1,7 +1,6 @@
 #include "ImageViewerPlugin.h"
 #include "ViewerWidget.h"
 #include "StatusbarWidget.h"
-#include "SettingsWidget.h"
 #include "Layer.h"
 
 #include <PointData.h>
@@ -16,78 +15,20 @@
 using namespace hdps;
 using namespace hdps::gui;
 
-Q_PLUGIN_METADATA(IID "nl.tudelft.ImageViewerPlugin")
-
-/*
-void LayersWidget::dragEnterEvent(QDragEnterEvent* dragEnterEvent)
-{
-    const auto items        = dragEnterEvent->mimeData()->text().split("\n");
-    const auto datasetName  = items.at(0);
-    const auto datasetType  = items.at(1);
-
-    if (datasetType == "Points") {
-        auto pointsDataset = _imageViewerPlugin->requestData<Points>(datasetName);
-
-        if (pointsDataset.isDerivedData()) {
-            auto sourcePointsDataset = hdps::DataSet::getSourceData<Points>(pointsDataset);
-
-            if (sourcePointsDataset.getProperty("Type", "").toString() == "Images")
-                dragEnterEvent->acceptProposedAction();
-        }
-        else {
-            if (pointsDataset.getProperty("Type", "").toString() == "Images")
-                dragEnterEvent->acceptProposedAction();
-        }
-    }
-
-    if (datasetType == "Clusters")
-        dragEnterEvent->acceptProposedAction();
-}
-
-void LayersWidget::dropEvent(QDropEvent* dropEvent)
-{
-    const auto items                    = dropEvent->mimeData()->text().split("\n");
-    const auto datasetName              = items.at(0);
-    const auto datasetType              = items.at(1);
-    const auto selectionName            = QString("%1_selection").arg(datasetName);
-    const auto selectionLayerIndices    = getLayersModel().match(getLayersModel().index(0, ult(Layer::Column::ID)), Qt::DisplayRole, selectionName, -1, Qt::MatchExactly);
-    const auto createSelectionLayer     = selectionLayerIndices.isEmpty();
-    const auto layerFlags               = ult(Layer::Flag::Enabled) | ult(Layer::Flag::Renamable);
-
-    auto largestImageSize = QSize();
-
-    for (auto imageLayerIndex : getLayersModel().match(getLayersModel().index(0, ult(Layer::Column::Type)), Qt::EditRole, ult(Layer::Type::Points), -1, Qt::MatchExactly | Qt::MatchRecursive)) {
-        const auto imageSize = getLayersModel().data(imageLayerIndex.siblingAtColumn(ult(Layer::Column::ImageSize)), Qt::EditRole).toSize();
-
-        if (imageSize.width() > largestImageSize.width() && imageSize.height() > largestImageSize.height())
-            largestImageSize = imageSize;
-    }
-
-    if (datasetType == "Points") {
-        
-    }
-
-    if (datasetType == "Clusters") {
-    }
-
-    dropEvent->acceptProposedAction();
-}
-*/
+Q_PLUGIN_METADATA(IID "nl.BioVault.ImageViewerPlugin")
 
 ImageViewerPlugin::ImageViewerPlugin(const PluginFactory* factory) :
     ViewPlugin(factory),
     _viewerWidget(nullptr),
     _statusbarWidget(nullptr),
-    _settingsWidget(nullptr),
     _layersModel(this),
-    _colorMapModel(this, ColorMap::Type::OneDimensional),
     _pointsDatasets(),
-    _dropWidget(nullptr)
+    _dropWidget(nullptr),
+    _settingsAction(this)
 {
     Layer::imageViewerPlugin = this;
 
     _viewerWidget   = new ViewerWidget(this);
-    _settingsWidget = new SettingsWidget(this);
     _dropWidget     = new DropWidget(_viewerWidget);
 
     setDockingLocation(hdps::gui::DockableWidget::DockingLocation::Right);
@@ -141,7 +82,7 @@ void ImageViewerPlugin::init()
     auto viewerLayout = new QVBoxLayout();
 
     splitter->addWidget(_viewerWidget);
-    splitter->addWidget(_settingsWidget);
+    splitter->addWidget(_settingsAction.createWidget(this));
 
     splitter->setStretchFactor(0, 1);
     splitter->setStretchFactor(1, 0);

@@ -62,7 +62,6 @@ void PointsLayer::init()
     setNoPoints(_pointsDataset->getNumPoints());
     setNoDimensions(_pointsDataset->getNumDimensions());
     setMaxNoChannels(std::min(3u, _noDimensions));
-    setColorMap(imageViewerPlugin->getColorMapModel().getColorMap(0)->getImage());
     setUseConstantColor(false);
     setChannelEnabled(ChannelIndex::Channel1, true);
 
