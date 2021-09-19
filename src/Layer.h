@@ -14,11 +14,13 @@ class Layer : public QObject
     Q_OBJECT
 
 public:
-    Layer(const QString& imagesDatasetName);
+    Layer(const QString& datasetName);
+
+    LayerAction& getLayerAction() { return _layerAction; }
 
 protected:
-    DatasetRef<Images>      _images;            /** Reference to images */
-    LayerAction             _layerAction;       /** Layer settings action */
+    DatasetRef<Images>  _images;        /** Reference to images */
+    LayerAction         _layerAction;   /** Layer settings action */
 };
 
 using SharedLayer = QSharedPointer<Layer>;

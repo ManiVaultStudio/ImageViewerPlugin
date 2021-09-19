@@ -1,14 +1,13 @@
 #include "Layer.h"
 
-Layer::Layer(const QString& imagesDatasetName) :
+Layer::Layer(const QString& datasetName) :
     QObject(),
+    _images(datasetName),
     _layerAction(*this)
 {
     if (!_images.isValid())
-        throw std::runtime_error(QString("%1 is not a valid images dataset").arg(imagesDatasetName).toLatin1());
+        throw std::runtime_error("The dataset is not valid");
 }
-
-
 
 
 //#include "ImageViewerPlugin.h"

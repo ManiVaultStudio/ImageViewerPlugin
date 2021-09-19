@@ -1,8 +1,11 @@
 #include "LayersModel.h"
+#include "Application.h"
 
 #include <QMessageBox>
 
 #include <stdexcept>
+
+using namespace hdps;
 
 LayersModel::LayersModel(QObject* parent) :
     QAbstractListModel(parent),
@@ -24,6 +27,11 @@ int LayersModel::columnCount(const QModelIndex& parent /*= QModelIndex()*/) cons
     return Column::Count;
 }
 
+QModelIndex LayersModel::index(int row, int column, const QModelIndex& parent /*= QModelIndex()*/) const
+{
+    return createIndex(row, column, static_cast<void*>(_layers.at(row).get()));
+}
+
 QVariant LayersModel::data(const QModelIndex &index, int role) const
 {
     auto layerAction = _layers[index.row()];
@@ -42,7 +50,7 @@ QVariant LayersModel::data(const QModelIndex &index, int role) const
                     return "512";
 
                 case Column::Scale:
-                    return "1.0";
+                    return "100.0%";
 
                 default:
                     break;
@@ -77,12 +85,71 @@ QVariant LayersModel::data(const QModelIndex &index, int role) const
     return QVariant();
 }
 
+QVariant LayersModel::headerData(int section, Qt::Orientation orientation, int role /*= Qt::DisplayRole*/) const
+{
+    if (orientation == Qt::Horizontal) {
+        switch (role)
+        {
+            case Qt::DisplayRole:
+            {
+                switch (static_cast<Column>(section))
+                {
+                    case Column::Name:
+                        return "Name";
+
+                    case Column::ImageWidth:
+                        return "Width";
+
+                    case Column::ImageHeight:
+                        return "Height";
+
+                    case Column::Scale:
+                        return "Scale";
+
+                    default:
+                        break;
+                }
+
+                break;
+            }
+
+            case Qt::DecorationRole:
+            {
+                switch (static_cast<Column>(section))
+                {
+                    case Column::Name:
+                        break;
+
+                    case Column::ImageWidth:
+                        return Application::getIconFont("FontAwesome").getIcon("ruler-horizontal", QSize(12, 12));
+
+                    case Column::ImageHeight:
+                        return Application::getIconFont("FontAwesome").getIcon("ruler-vertical", QSize(12, 12));
+
+                    case Column::Scale:
+                        return Application::getIconFont("FontAwesome").getIcon("percentage", QSize(12, 12));
+
+                    default:
+                        break;
+                }
+
+                break;
+            }
+
+            default:
+                break;
+        }
+    }
+
+    return QVariant();
+}
+
 void LayersModel::addLayer(const SharedLayer& layer)
 {
     try
     {
         // Insert the layer action at the end
-        beginInsertRows(QModelIndex(), rowCount(), rowCount() + 1);
+        beginInsertRows(QModelIndex(), rowCount(), rowCount());
         {
             // Append the layer action
             _layers << layer;
@@ -95,22 +162,15 @@ void LayersModel::addLayer(const SharedLayer& layer)
     }
 }
 
-void LayersModel::removeLayer(const SharedLayer& layer)
+void LayersModel::removeLayer(const QModelIndex& index)
 {
     try
     {
-        // Except if layer action is not found
-        if (!_layers.contains(layer))
-            throw std::runtime_error(QString("%1 not found").arg(layer->text()).toLatin1());
-
-        // Get the row index of the item that needs to be removed
-        const auto rowIndex = _layers.indexOf(layer);
-
         // Remove the row
-        beginRemoveRows(QModelIndex(), rowCount(), rowCount() + 1);
+        beginRemoveRows(QModelIndex(), index.row(), index.row());
         {
             // Remove the layer action
-            _layers.removeOne(layerAction);
+            _layers.remove(index.row());
         }
         endRemoveRows();
     }

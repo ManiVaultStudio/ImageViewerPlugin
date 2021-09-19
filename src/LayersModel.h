@@ -37,6 +37,15 @@ public:
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
 
     /**
+     * Returns the model index for the given row, column and parent model index
+     * @param row Row
+     * @param column Column
+     * @param parent Parent model index
+     * @return Model index
+     */
+    QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
+
+    /**
      * Returns the data for the given model index and data role
      * @param index Model index
      * @param role Data role
@@ -44,9 +53,18 @@ public:
      */
     QVariant data(const QModelIndex &index, int role) const override;
 
+    /**
+     * Get header data
+     * @param section Section
+     * @param orientation Orientation
+     * @param role Data role
+     * @return Header
+     */
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+
 public: /** Add/remove layer */
     void addLayer(const SharedLayer& layer);
-    void removeLayer(const SharedLayer& layer);
+    void removeLayer(const QModelIndex& index);
 
 protected:
     QVector<SharedLayer>    _layers;        /** Layers data */

@@ -76,7 +76,7 @@ protected: // OpenGL functions
 
 private:
     ImageViewerPlugin*                      _imageViewerPlugin;         /** Pointer to the image viewer plugin */
-    Renderer*                               _renderer;                  /** Pointer to the renderer which is attached to the viewer widget */
+    //Renderer*                               _renderer;                  /** Pointer to the renderer which is attached to the viewer widget */
     std::unique_ptr<QOpenGLDebugLogger>     _openglDebugLogger;         /** OpenGL logger instance for debugging (only enabled in debug mode for performance reasons) */
     QRadialGradient                         _backgroundGradient;        /** Viewport gradient background */
     int                                     _keys;                      /** Currently pressed keyboard keys */

@@ -1,6 +1,5 @@
 #include "ImageViewerPlugin.h"
-#include "ViewerWidget.h"
-#include "StatusbarWidget.h"
+#include "SettingsAction.h"
 #include "Layer.h"
 
 #include "ImageData/Images.h"
@@ -41,9 +40,12 @@ void ImageViewerPlugin::init()
 
     auto viewerWidget = new QWidget();
 
+    viewerWidget->setAcceptDrops(true);
+
     _dropWidget = new DropWidget(viewerWidget);
 
     splitter->addWidget(viewerWidget);
+
     splitter->addWidget(_settingsAction.createWidget(this));
 
     splitter->setStretchFactor(0, 1);
@@ -60,20 +62,25 @@ void ImageViewerPlugin::init()
     _dropWidget->initialize([this](const QMimeData* mimeData) -> DropWidget::DropRegions {
         DropWidget::DropRegions dropRegions;
 
-        const auto mimeText = mimeData->text();
-        const auto tokens = mimeText.split("\n");
-        const auto datasetName = tokens[0];
-        const auto dataType = DataType(tokens[1]);
-        const auto dataTypes = DataTypes({ ImageType });
+        const auto mimeText     = mimeData->text();
+        const auto tokens       = mimeText.split("\n");
+        const auto datasetName  = tokens[0];
+        const auto dataType     = DataType(tokens[1]);
+        const auto dataTypes    = DataTypes({ ImageType });
 
         if (!dataTypes.contains(dataType))
             dropRegions << new DropWidget::DropRegion(this, "Incompatible data", "This type of data is not supported", false);
 
         if (dataType == ImageType) {
-            DatasetRef<Images> imagesDataset(datasetName);
-
             dropRegions << new DropWidget::DropRegion(this, "Images", QString("Add an image layer for %1").arg(datasetName), true, [this, datasetName]() {
-                _layersModel.addLayer();
+                try
+                {
+                    _layersModel.addLayer(SharedLayer::create(datasetName));
+                }
+                catch (std::exception& e)
+                {
+                    QMessageBox::critical(nullptr, QString("Unable to load '%1'").arg(datasetName).toLatin1(), e.what());
+                }
             });
         }
 

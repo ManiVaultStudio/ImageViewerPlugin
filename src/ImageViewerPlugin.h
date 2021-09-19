@@ -12,9 +12,7 @@
 using hdps::plugin::ViewPluginFactory;
 using hdps::plugin::ViewPlugin;
 
-class Images;
-class ViewerWidget;
-class StatusbarWidget;
+class SettingsAction;
 
 namespace hdps {
     namespace gui {
@@ -53,9 +51,9 @@ public: // Miscellaneous
     }
 
 private:
-    LayersModel             _layersModel;           /** Layers model */
-    hdps::gui::DropWidget*  _dropWidget;            /** Widget for dropping data */
-    SettingsAction          _settingsAction;        /** Settings action */
+    LayersModel                 _layersModel;           /** Layers model */
+    hdps::gui::DropWidget*      _dropWidget;            /** Widget for dropping data */
+    SettingsAction              _settingsAction;        /** Settings action */
 };
 
 /**

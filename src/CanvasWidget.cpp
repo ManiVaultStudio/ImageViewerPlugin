@@ -21,14 +21,16 @@ CanvasWidget::CanvasWidget(QWidget* parent) :
     QOpenGLWidget(parent),
     QOpenGLFunctions(),
     _imageViewerPlugin(nullptr),
-    _renderer(new Renderer(this)),
+    //_renderer(new Renderer(this)),
     _openglDebugLogger(std::make_unique<QOpenGLDebugLogger>()),
     _keys()
 {
+    setMouseTracking(true);
 }
 
 void CanvasWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
 {
+    /*
     _imageViewerPlugin = imageViewerPlugin;
 
     Layer::imageViewerPlugin = _imageViewerPlugin;
@@ -74,15 +76,17 @@ void CanvasWidget::initialize(ImageViewerPlugin* imageViewerPlugin)
     _backgroundGradient.setColorAt(0.7, backgroundColor);
 
     this->installEventFilter(this);
+    */
 }
 
 CanvasWidget::~CanvasWidget()
 {
-    _renderer->destroy();
+    //_renderer->destroy();
 }
 
 bool CanvasWidget::eventFilter(QObject* target, QEvent* event)
 {
+    /*
     switch (event->type())
     {
         case QEvent::KeyPress:
@@ -123,87 +127,88 @@ bool CanvasWidget::eventFilter(QObject* target, QEvent* event)
         _renderer->handleEvent(event);
     else
         _imageViewerPlugin->getLayersModel().dispatchEventToSelectedLayer(event);
+        */
 
     return QWidget::eventFilter(target, event);
 }
 
 void CanvasWidget::zoomExtents()
 {
-    auto root = _imageViewerPlugin->getLayersModel().getLayer(QModelIndex());
+    //auto root = _imageViewerPlugin->getLayersModel().getLayer(QModelIndex());
 
-    if (root != nullptr)
-        _renderer->zoomToRectangle(root->getBoundingRectangle());
+    //if (root != nullptr)
+    //    _renderer->zoomToRectangle(root->getBoundingRectangle());
 
-    update();
+    //update();
 }
 
 void CanvasWidget::initializeGL()
 {
-    qDebug() << "Initializing OpenGL";
-
-    initializeOpenGLFunctions();
-
-    makeCurrent();
-    
-#ifdef _DEBUG
-    _openglDebugLogger->initialize();
-#endif
-
-    //_renderer->zoomToRectangle(QRectF(-40, -40, 80, 80));
-
-    doneCurrent();
+//    qDebug() << "Initializing OpenGL";
+//
+//    initializeOpenGLFunctions();
+//
+//    makeCurrent();
+//    
+//#ifdef _DEBUG
+//    _openglDebugLogger->initialize();
+//#endif
+//
+//    //_renderer->zoomToRectangle(QRectF(-40, -40, 80, 80));
+//
+//    doneCurrent();
 }
 
 void CanvasWidget::paintGL()
 {
-    try {
-        auto& layersModel = _imageViewerPlugin->getLayersModel();
-
-        QPainter painter;
-
-        painter.begin(this);
-
-        painter.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
-
-        drawBackground(&painter);
-
-        painter.beginNativePainting();
-
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-        auto root = layersModel.getLayer(QModelIndex());
-
-        if (root)
-            root->render(_renderer->getProjectionMatrix() * _renderer->getViewMatrix());
-
-        painter.endNativePainting();
-
-        layersModel.paint(&painter);
-
-        painter.end();
-    }
-    catch (std::exception& e)
-    {
-        QMessageBox::critical(nullptr, "Rendering failed", e.what());
-    }
-    catch (...) {
-        QMessageBox::critical(nullptr, "Rendering failed", "An unhandled exception occurred");
-    }
-
-#ifdef _DEBUG
-    for (const QOpenGLDebugMessage& message : _openglDebugLogger->loggedMessages())
-        switch (message.severity())
-        {
-            case QOpenGLDebugMessage::HighSeverity:
-                qDebug() << message;
-                break;
-
-            default:
-                break;
-        }
-        
-#endif
+//    try {
+//        auto& layersModel = _imageViewerPlugin->getLayersModel();
+//
+//        QPainter painter;
+//
+//        painter.begin(this);
+//
+//        painter.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
+//
+//        drawBackground(&painter);
+//
+//        painter.beginNativePainting();
+//
+//        glEnable(GL_BLEND);
+//        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//
+//        auto root = layersModel.getLayer(QModelIndex());
+//
+//        if (root)
+//            root->render(_renderer->getProjectionMatrix() * _renderer->getViewMatrix());
+//
+//        painter.endNativePainting();
+//
+//        layersModel.paint(&painter);
+//
+//        painter.end();
+//    }
+//    catch (std::exception& e)
+//    {
+//        QMessageBox::critical(nullptr, "Rendering failed", e.what());
+//    }
+//    catch (...) {
+//        QMessageBox::critical(nullptr, "Rendering failed", "An unhandled exception occurred");
+//    }
+//
+//#ifdef _DEBUG
+//    for (const QOpenGLDebugMessage& message : _openglDebugLogger->loggedMessages())
+//        switch (message.severity())
+//        {
+//            case QOpenGLDebugMessage::HighSeverity:
+//                qDebug() << message;
+//                break;
+//
+//            default:
+//                break;
+//        }
+//        
+//#endif
 }
 
 void CanvasWidget::drawBackground(QPainter* painter)

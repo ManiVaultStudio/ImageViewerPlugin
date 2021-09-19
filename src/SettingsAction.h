@@ -17,11 +17,44 @@ class SettingsAction : public WidgetAction
 {
 public:
 
+    /** Widget class for settings action */
+    class Widget : public WidgetActionWidget
+    {
+    protected:
+
+        /**
+         * Constructor
+         * @param parent Pointer to parent widget
+         * @param settingsAction Pointer to settings action
+         * @param state State of the widget
+         */
+        Widget(QWidget* parent, SettingsAction* settingsAction, const WidgetActionWidget::State& state);
+
+    protected:
+        friend class SettingsAction;
+    };
+
+protected:
+
+    /**
+     * Get widget representation of the settings action
+     * @param parent Pointer to parent widget
+     * @param state Widget state
+     */
+    QWidget* getWidget(QWidget* parent, const WidgetActionWidget::State& state = WidgetActionWidget::State::Standard) override {
+        return new Widget(parent, this, state);
+    };
+
+public:
+
     /** 
      * Constructor
      * @param imageViewerPlugin Pointer to image viewer plugin
      */
     SettingsAction(ImageViewerPlugin* imageViewerPlugin);
+
+    /** Get pointer to the image viewer plugin */
+    ImageViewerPlugin* getImageViewerPlugin() { return _imageViewerPlugin; };
 
 public: /** Action getters */
 
