@@ -1,127 +1,26 @@
 #pragma once
 
-#include "Common.h"
+#include "Layer.h"
 
 #include <QAbstractListModel>
-#include <QAbstractItemView>
 
-class ImageViewerPlugin;
-class Dataset;
-class Layer;
-class RootLayer;
-
-/**
- * Layers model class
- *
- * Provides a hierarchical layer model for image display
- *
- * @author Thomas Kroes
- */
-class LayersModel : public QAbstractItemModel
+class LayersModel : public QAbstractListModel 
 {
-    Q_OBJECT
-
 public:
 
-    /**
-     * Constructor
-     * @param imageViewerPlugin Pointer to parent image viewer plugin
-     */
-    LayersModel(ImageViewerPlugin* imageViewerPlugin);
+    /**  Columns */
+    enum Column {
+        Name,           /** Name of the layer */
+        ImageWidth,     /** Width of the image(s) */
+        ImageHeight,    /** Height of the image(s) */
+        Scale,          /** Layer scale */
 
-    /** Destructor */
-    ~LayersModel() override;
+        Count = Scale + 1
+    };
 
-    /**
-    * Handles paint events
-    * Initiated by calls to the update function
-    * @param paintEvent Pointer to the paint event
-    */
-    void paint(QPainter* painter);
-
-    /**
-     * Dispatches an event to the selected layer (if any)
-     * @param event Event
-     */
-    void dispatchEventToSelectedLayer(QEvent* event);
-
-public: // Inherited MVC
-
-    /**
-     * Returns the data for the given model index and data role
-     * @param index Model index
-     * @param role Data role
-     * @return Data in variant form
-     */
-    QVariant data(const QModelIndex &index, int role) const override;
-    
-    /**
-     * Returns the data for the given model row, column and data role
-     * @param row Model row
-     * @param column Model column
-     * @param role Data role
-     * @return Data in variant form
-     */
-    QVariant data(const int& row, const int& column, const int& role) const;
-
-    /**
-     * Sets the data value for the given model index and data role
-     * @param index Model index
-     * @param value Data value in variant form
-     * @param role Data role
-     * @return Whether the data was properly set or not
-     */
-    bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole) override;
-
-    /**
-     * Sets the data value for the given model row, column and data role
-     * @param row Model row
-     * @param column Model column
-     * @param value Data value in variant form
-     * @param role Data role
-     * @return Whether the data was properly set or not
-     */
-    bool setData(const int& row, const int& column, const QVariant& value, int role = Qt::EditRole);
-
-    /**
-     * Returns the item flags for the given model index
-     * @param index Model index
-     * @return Item flags for the index
-     */
-    Qt::ItemFlags flags(const QModelIndex &index) const override;
-
-    /**
-     * Returns the item flags for the given model row and column
-     * @param row Model row
-     * @param column Model column
-     * @return Item flags for the index
-     */
-    Qt::ItemFlags flags(const int& row, const int& column) const;
-
-    /**
-     * Returns the header data for the given section, orientation and data role
-     * @param section Model section
-     * @param orientation Orientation (e.g. horizontal or vertical)
-     * @param role Data role
-     * @return Header data in variant form
-     */
-    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
-
-    /**
-     * Returns the model index belonging to the given model row and column
-     * @param row Model row
-     * @param column Model column
-     * @param parent Parent model index
-     * @return Model index for the given model row and column
-     */
-    QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
-    
-    /**
-     * Returns the parent model index
-     * @param index Model index
-     * @return Parent model index for the given model index
-     */
-    QModelIndex parent(const QModelIndex& index) const override;
+public:
+    explicit LayersModel(QObject* parent);
+    ~LayersModel();
 
     /**
      * Returns the number of rows in the model given the parent model index
@@ -138,76 +37,17 @@ public: // Inherited MVC
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
 
     /**
-     * Inserts a layer into the model at the specified row give the parent index
-     * @param row Row at which to insert the layer
-     * @param layer Layer to insert
-     * @param parent Parent model index
-     * @return Whether the layer was successfully inserted
+     * Returns the data for the given model index and data role
+     * @param index Model index
+     * @param role Data role
+     * @return Data in variant form
      */
-    bool insertLayer(int row, Layer* layer, const QModelIndex& parent = QModelIndex());
+    QVariant data(const QModelIndex &index, int role) const override;
 
-    /**
-     * Removes one ore more layers at the specified model indices
-     * @param indices Model indices of the layers to remove
-     * @return Whether the layers were successfully removed
-     */
-    bool removeLayers(const QModelIndexList& indices);
+public: /** Add/remove layer */
+    void addLayer(const SharedLayer& layer);
+    void removeLayer(const SharedLayer& layer);
 
-    /**
-     * Determines whether a layer may be moved by delta
-     * @param index Model index to be moved
-     * @param delta Amount to be moved up/down
-     * @return Whether the layer may be moved up/down by delta
-     */
-    bool mayMoveLayer(const QModelIndex& index, const int& delta) const;
-
-    /**
-     * Move layer to a new destination
-     * @param sourceParent The parent model index at the source location
-     * @param sourceRow The row identifier at the source location
-      * @param targetParent The parent model index at the target location
-     * @param targetRow The row identifier at the target location
-     * @return Whether the layer was successfully moved
-     */
-    bool moveLayer(const QModelIndex& sourceParent, const int& sourceRow, const QModelIndex& targetParent, int targetRow);
-    
-    /** Returns which drop actions are supported by the model */
-    Qt::DropActions supportedDropActions() const override
-    {
-        return Qt::MoveAction | Qt::CopyAction;
-    }
-
-public: // Miscellaneous
-
-    /** Performs a one-time startup initialization */
-    void initialize();
-
-    /**
-     * 
-     */
-    void addPointsDataset(const QString& datasetName);
-
-    /**
-     * Select a single row
-     * @param row Row identifier
-     */
-    void selectRow(const std::int32_t& row);
-
-    /** Returns the selected layer (if any) */
-    Layer* getSelectedLayer();
-
-    /** Returns the selection model */
-    QItemSelectionModel& getSelectionModel() { return _selectionModel; }
-
-public:
-    /**
-     * Returns a layer by model index
-     * @param index Model index of the layer to obtain
-     * @return Layer node
-     */
-    Layer* getLayer(const QModelIndex& index) const;
-
-private:
-    QItemSelectionModel     _selectionModel;    /** Selection model */
-    RootLayer*              _root;              /** Root layer */
+protected:
+    QVector<SharedLayer>    _layers;        /** Layers data */
 };

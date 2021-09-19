@@ -1,8 +1,7 @@
 #pragma once
 
-#include "actions/Actions.h"
+#include "LayersAction.h"
 
-class QMenu;
 class ImageViewerPlugin;
 
 using namespace hdps::gui;
@@ -24,13 +23,12 @@ public:
      */
     SettingsAction(ImageViewerPlugin* imageViewerPlugin);
 
-public: // Action getters
+public: /** Action getters */
 
-    //LayersAction& getLayersAction() { return _layersAction; }
+    LayersAction& getLayersAction() { return _layersAction; }
     //LayerAction& getLayerAction() { return _layerAction; }
 
 protected:
     ImageViewerPlugin*  _imageViewerPlugin;     /** Pointer to image viewer plugin */
-    //LayersAction        _layersAction;          /** Layers action */
-    //LayerAction         _layerAction;           /** Layer action */
+    LayersAction        _layersAction;          /** Layers action */
 };

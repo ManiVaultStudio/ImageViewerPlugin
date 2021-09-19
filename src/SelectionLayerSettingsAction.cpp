@@ -1,6 +1,6 @@
 #include "SelectionLayerSettingsAction.h"
 
-SelectionLayerSettingsAction::SelectionLayerSettingsAction(SelectionLayerAction& selectionLayerAction) :
+SelectionLayerSettingsAction::SelectionLayerSettingsAction(LayerSelectionAction& selectionLayerAction) :
     GroupAction(reinterpret_cast<QObject*>(&selectionLayerAction)),
     _selectionLayerAction(selectionLayerAction),
     _images(),

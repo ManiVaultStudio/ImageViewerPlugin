@@ -4,6 +4,7 @@
 using namespace hdps::gui;
 
 SettingsAction::SettingsAction(ImageViewerPlugin* imageViewerPlugin) :
-    WidgetAction(reinterpret_cast<QObject*>(imageViewerPlugin))
+    WidgetAction(reinterpret_cast<QObject*>(imageViewerPlugin)),
+    _layersAction(*this)
 {
 }

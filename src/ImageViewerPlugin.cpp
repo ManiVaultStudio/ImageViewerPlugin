@@ -53,8 +53,6 @@ void ImageViewerPlugin::init()
 
     layout->addWidget(splitter);
 
-    _layersModel.initialize();
-
     setDockingLocation(hdps::gui::DockableWidget::DockingLocation::Right);
 
     _dropWidget->setDropIndicatorWidget(new DropWidget::DropIndicatorWidget(this, "No data loaded", "Drag an item from the data hierarchy and drop it here to visualize data..."));
@@ -75,7 +73,7 @@ void ImageViewerPlugin::init()
             DatasetRef<Images> imagesDataset(datasetName);
 
             dropRegions << new DropWidget::DropRegion(this, "Images", QString("Add an image layer for %1").arg(datasetName), true, [this, datasetName]() {
-                //_layersModel.addPointsDataset(datasetName);
+                _layersModel.addLayer();
             });
         }
 

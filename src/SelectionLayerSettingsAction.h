@@ -10,7 +10,7 @@
 using namespace hdps::util;
 using namespace hdps::gui;
 
-class SelectionLayerAction;
+class LayerSelectionAction;
 
 /**
  * Selection layer settings action class
@@ -27,10 +27,10 @@ public:
      * Constructor
      * @param selectionLayerAction Reference to selection layer action
      */
-    SelectionLayerSettingsAction(SelectionLayerAction& selectionLayerAction);
+    SelectionLayerSettingsAction(LayerSelectionAction& selectionLayerAction);
 
 protected:
-    SelectionLayerAction&   _selectionLayerAction;          /** Reference to selection layer action */
+    LayerSelectionAction&   _selectionLayerAction;          /** Reference to selection layer action */
     DatasetRef<Images>      _images;                        /** Reference to images */
     OptionAction            _selectionTypeAction;           /** Selection type action */
     OptionAction            _selectionModifierAction;       /** Selection modifier action */

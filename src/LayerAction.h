@@ -2,9 +2,13 @@
 
 #include "actions/Actions.h"
 
+#include "LayerCommonAction.h"
+#include "LayerImageAction.h"
+#include "LayerSelectionAction.h"
+
 using namespace hdps::gui;
 
-class LayersAction;
+class Layer;
 
 /**
  * Layer action class
@@ -19,10 +23,13 @@ public:
 
     /** 
      * Constructor
-     * @param layersAction Pointer to layers action
+     * @param layer Reference to layer
      */
-    LayerAction(LayersAction* layersAction);
+    LayerAction(Layer& layer);
 
 protected:
-    LayersAction*   _layersAction;     /** Pointer to layers action */
+    Layer&                  _layer;             /** Reference to layer */
+    LayerCommonAction       _commonAction;      /** Common action */
+    LayerImageAction        _imageAction;       /** Image action */
+    LayerSelectionAction    _selectionAction;   /** Selection action */
 };
