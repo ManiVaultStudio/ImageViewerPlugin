@@ -2,6 +2,7 @@
 
 #include "actions/GroupAction.h"
 #include "actions/StringAction.h"
+#include "actions/DecimalAction.h"
 
 class LayerAction;
 
@@ -27,8 +28,10 @@ public:
 public: /** Action getters */
 
     StringAction& getNameAction() { return _nameAction; }
+    DecimalAction& getScaleAction() { return _scaleAction; }
 
 protected:
-    LayerAction&    _layerAction;   /** Reference to layer action */
-    StringAction    _nameAction;    /** Name action */
+    LayerAction&        _layerAction;       /** Reference to layer action */
+    StringAction        _nameAction;        /** Name action */
+    DecimalAction       _scaleAction;       /** Scale action */
 };
