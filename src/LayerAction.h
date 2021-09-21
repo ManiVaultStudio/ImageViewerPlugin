@@ -27,6 +27,9 @@ public:
      */
     LayerAction(Layer& layer);
 
+    /** Get reference to layer */
+    Layer& getLayer();
+
 public: /** Action getters */
 
     LayerGeneralAction& getGeneralAction() { return _generalAction; }

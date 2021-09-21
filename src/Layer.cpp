@@ -1,14 +1,53 @@
 #include "Layer.h"
+#include "DataHierarchyItem.h"
 
 Layer::Layer(const QString& datasetName) :
     QObject(),
     _images(datasetName),
+    _points(_images->getHierarchyItem().getParent()->getDatasetName()),
     _layerAction(*this)
 {
     if (!_images.isValid())
-        throw std::runtime_error("The dataset is not valid");
+        throw std::runtime_error("The layer images dataset is not valid after initialization");
+
+    if (!_points.isValid())
+        throw std::runtime_error("The layer points dataset is not valid after initialization");
 }
 
+const std::uint32_t Layer::getNumberOfPoints() const
+{
+    if (!_images.isValid() || !_points.isValid())
+        throw std::runtime_error("Unable to retrieve the number of data points from layer; the images/points dataset is not valid");
+
+    return _points->getNumPoints();
+}
+
+const std::uint32_t Layer::getNumberOfDimensions() const
+{
+    if (!_images.isValid() || !_points.isValid())
+        throw std::runtime_error("Unable to retrieve the number of data dimensions from layer; the images/points dataset not valid");
+
+    return _points->getNumDimensions();
+}
+
+const QStringList Layer::getDimensionNames() const
+{
+    if (!_images.isValid() || !_points.isValid())
+        throw std::runtime_error("Unable to retrieve the number of data points from layer; the images/points dataset not valid");
+
+    QStringList dimensionNames;
+
+    if (_points->getDimensionNames().size() == getNumberOfDimensions()) {
+        for (const auto& dimensionName : _points->getDimensionNames())
+            dimensionNames << dimensionName;
+    }
+    else {
+        for (const auto& dimensionName : _points->getDimensionNames())
+            dimensionNames << QString("Dim %1").arg(QString::number(dimensionNames.count()));
+    }
+
+    return dimensionNames;
+}
 
 //#include "ImageViewerPlugin.h"
 //#include "Renderer.h"

@@ -8,3 +8,8 @@ LayerAction::LayerAction(Layer& layer) :
     _selectionAction(*this)
 {
 }
+
+Layer& LayerAction::getLayer()
+{
+    return _layer;
+}

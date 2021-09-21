@@ -1,6 +1,9 @@
 #pragma once
 
+#include "WindowLevelAction.h"
+
 #include "actions/WidgetAction.h"
+#include "actions/ToggleAction.h"
 #include "actions/OptionAction.h"
 
 using namespace hdps::gui;
@@ -16,6 +19,18 @@ class LayerImageAction;
  */
 class ChannelAction : public WidgetAction
 {
+public:
+
+    /** Describes the widget flags */
+    enum WidgetFlag {
+        CheckBox            = 0x00001,  /** The widget includes an enabled check box */
+        ComboBox            = 0x00002,  /** The widget includes a dimension selection combobox */
+        WindowLevelWidget   = 0x00004,  /** The widget includes a window/level settings widget */
+        ResetPushButton     = 0x00008,  /** The widget includes a reset push button */
+
+        All = CheckBox | ComboBox | WindowLevelWidget | ResetPushButton
+    };
+
 public:
 
     /** Widget class for settings action */
@@ -57,9 +72,13 @@ public:
 
 public: /** Action getters */
 
+    ToggleAction& getEnabledAction() { return _enabledAction; }
     OptionAction& getDimensionAction() { return _dimensionAction; }
+    WindowLevelAction& getWindowLevelAction() { return _windowLevelAction; }
 
 protected:
-    LayerImageAction&       _layerImageAction;      /** Reference to layer image action */
-    OptionAction            _dimensionAction;       /** Selected dimension action */
+    LayerImageAction&   _layerImageAction;      /** Reference to layer image action */
+    ToggleAction        _enabledAction;         /** Enabled action */
+    OptionAction        _dimensionAction;       /** Selected dimension action */
+    WindowLevelAction   _windowLevelAction;     /** Window/level action */
 };

@@ -4,6 +4,7 @@
 #include "LayerAction.h"
 
 #include "ImageData/Images.h"
+#include "PointData.h"
 
 #include <QObject>
 
@@ -18,8 +19,15 @@ public:
 
     LayerAction& getLayerAction() { return _layerAction; }
 
+public: // Images input points wrapper functions
+
+    const std::uint32_t getNumberOfPoints() const;
+    const std::uint32_t getNumberOfDimensions() const;
+    const QStringList getDimensionNames() const;
+
 protected:
-    DatasetRef<Images>  _images;        /** Reference to images */
+    DatasetRef<Images>  _images;        /** Reference to images dataset */
+    DatasetRef<Points>  _points;        /** Reference to images input points dataset */
     LayerAction         _layerAction;   /** Layer settings action */
 };
 

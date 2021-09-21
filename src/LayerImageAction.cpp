@@ -1,5 +1,6 @@
 #include "LayerImageAction.h"
 #include "LayerAction.h"
+#include "Layer.h"
 
 using namespace hdps::util;
 
@@ -27,10 +28,20 @@ LayerImageAction::LayerImageAction(LayerAction& layerAction) :
 
     _opacityAction.setSuffix("%");
 
-    _opacityAction.setWidgetFlags(DecimalAction::All);
+    _channel1Action.setWidgetFlags(ChannelAction::All);
+    _channel2Action.setWidgetFlags(ChannelAction::All);
+    _channel3Action.setWidgetFlags(ChannelAction::All);
     _colorSpaceAction.setWidgetFlags(OptionAction::All);
-    _colorMapAction.setWidgetFlags(ColorMapAction::Settings | ColorMapAction::ResetButton);
+    _colorMapAction.setWidgetFlags(ColorMapAction::Settings | ColorMapAction::ResetPushButton);
     _interpolationTypeAction.setWidgetFlags(OptionAction::All);
 
     _colorMapAction.setColorMapType(ColorMap::Type::TwoDimensional);
+
+    _channel1Action.getEnabledAction().setEnabled(false);
+
+    const auto dimensionNames = _layerAction.getLayer().getDimensionNames();
+
+    _channel1Action.getDimensionAction().setOptions(dimensionNames);
+    _channel2Action.getDimensionAction().setOptions(dimensionNames);
+    _channel3Action.getDimensionAction().setOptions(dimensionNames);
 }
