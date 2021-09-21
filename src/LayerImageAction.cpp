@@ -28,6 +28,7 @@ LayerImageAction::LayerImageAction(LayerAction& layerAction) :
 
     _opacityAction.setSuffix("%");
 
+    _opacityAction.setWidgetFlags(ChannelAction::All);
     _channel1Action.setWidgetFlags(ChannelAction::All);
     _channel2Action.setWidgetFlags(ChannelAction::All);
     _channel3Action.setWidgetFlags(ChannelAction::All);

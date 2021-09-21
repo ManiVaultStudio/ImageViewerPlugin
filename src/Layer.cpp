@@ -14,6 +14,16 @@ Layer::Layer(const QString& datasetName) :
         throw std::runtime_error("The layer points dataset is not valid after initialization");
 }
 
+const QString Layer::getImagesDatasetName() const
+{
+    return _images.getDatasetName();
+}
+
+const QSize Layer::getImageSize() const
+{
+    return _images->getImageSize();
+}
+
 const std::uint32_t Layer::getNumberOfPoints() const
 {
     if (!_images.isValid() || !_points.isValid())

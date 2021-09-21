@@ -32,9 +32,11 @@ public:
         Widget(QWidget* parent, LayersAction* layersAction, const WidgetActionWidget::State& state);
 
     protected:
-        TriggerAction   _removeLayerAction;     /** Remove layer action */
-        TriggerAction   _moveLayerUpAction;     /** Move layer up action */
-        TriggerAction   _moveLayerDownAction;   /** Move layer down action */
+        TriggerAction   _removeLayerAction;         /** Remove layer action */
+        TriggerAction   _moveLayerToTopAction;        /** Move layer to top action */
+        TriggerAction   _moveLayerUpAction;         /** Move layer up action */
+        TriggerAction   _moveLayerDownAction;       /** Move layer down action */
+        TriggerAction   _moveLayerToBottomAction;     /** Move layer to bottom action */
 
         friend class LayersAction;
     };

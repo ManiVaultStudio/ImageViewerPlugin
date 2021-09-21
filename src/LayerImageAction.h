@@ -28,7 +28,9 @@ public:
      */
     LayerImageAction(LayerAction& layerAction);
 
-public: /** Action getters */
+public: // Action getters
+
+    DecimalAction& getOpacityAction() { return _opacityAction; }
 
 protected:
     LayerAction&        _layerAction;                   /** Reference to layer action */

@@ -14,8 +14,9 @@ public:
         ImageWidth,     /** Width of the image(s) */
         ImageHeight,    /** Height of the image(s) */
         Scale,          /** Layer scale */
+        Opacity,        /** Layer opacity */
 
-        Count = Scale + 1
+        Count = Opacity + 1
     };
 
 public:
@@ -54,6 +55,15 @@ public:
     QVariant data(const QModelIndex &index, int role) const override;
 
     /**
+     * Sets the data value for the given model index and data role
+     * @param index Model index
+     * @param value Data value in variant form
+     * @param role Data role
+     * @return Whether the data was properly set or not
+     */
+    bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole) override;
+
+    /**
      * Get header data
      * @param section Section
      * @param orientation Orientation
@@ -62,9 +72,18 @@ public:
      */
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
-public: /** Add/remove layer */
+    /**
+     * Get item flags
+     * @param index Model index
+     * @return Item flags
+     */
+    Qt::ItemFlags flags(const QModelIndex& index) const override;
+
+public: // Layer operations
+
     void addLayer(const SharedLayer& layer);
     void removeLayer(const QModelIndex& index);
+    void moveLayer(const QModelIndex& layerModelIndex, const std::int32_t& amount = 1);
 
 protected:
     QVector<SharedLayer>    _layers;        /** Layers data */

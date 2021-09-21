@@ -1,5 +1,6 @@
 #include "LayerGeneralAction.h"
 #include "LayerAction.h"
+#include "Layer.h"
 
 LayerGeneralAction::LayerGeneralAction(LayerAction& layerAction) :
     GroupAction(&layerAction),
@@ -16,4 +17,9 @@ LayerGeneralAction::LayerGeneralAction(LayerAction& layerAction) :
     _scaleAction.setToolTip("Layer scale in percentages");
 
     _scaleAction.setSuffix("%");
+
+    const auto imagesDatasetName = _layerAction.getLayer().getImagesDatasetName();
+
+    _nameAction.setString(imagesDatasetName);
+    _nameAction.setDefaultString(imagesDatasetName);
 }

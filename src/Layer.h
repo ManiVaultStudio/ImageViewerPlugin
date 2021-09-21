@@ -19,7 +19,13 @@ public:
 
     LayerAction& getLayerAction() { return _layerAction; }
 
-public: // Images input points wrapper functions
+    const QString getImagesDatasetName() const;
+
+public: // Images wrapper functions
+
+    const QSize getImageSize() const;
+
+public: // Points wrapper functions
 
     const std::uint32_t getNumberOfPoints() const;
     const std::uint32_t getNumberOfDimensions() const;
