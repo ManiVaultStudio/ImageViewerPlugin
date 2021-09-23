@@ -1,7 +1,5 @@
 #include "ImageViewerWidget.h"
 
-#include "util/PixelSelectionTool.h"
-
 #include <QKeyEvent>
 #include <QPainter>
 #include <QMessageBox>
@@ -11,8 +9,6 @@ ImageViewerWidget::ImageViewerWidget(QWidget* parent) :
     QOpenGLFunctions_3_3_Core(),
     _openGLInitialized(false),
     _pixelSelectionTool(this),
-    _pixelSelectionToolRenderer(_pixelSelectionTool),
-    _backgroundColor(100, 100, 100),
     _openglDebugLogger(std::make_unique<QOpenGLDebugLogger>()),
     _backgroundGradient(),
     _keys()
@@ -62,17 +58,6 @@ ImageViewerWidget::ImageViewerWidget(QWidget* parent) :
     _backgroundGradient.setColorAt(0.7, backgroundColor);
 
     this->installEventFilter(this);
-
-    
-
-    QObject::connect(&_pixelSelectionTool, &PixelSelectionTool::shapeChanged, [this]() {
-        if (!isInitialized())
-            return;
-
-        //makeCurrent();
-        _pixelSelectionToolRenderer.update();
-        update();
-    });
 }
 
 bool ImageViewerWidget::eventFilter(QObject* target, QEvent* event)
@@ -127,8 +112,6 @@ void ImageViewerWidget::initializeGL()
 
     connect(context(), &QOpenGLContext::aboutToBeDestroyed, this, &ImageViewerWidget::cleanup);
 
-    _pixelSelectionToolRenderer.init();
-
     _openGLInitialized = true;
 
 #ifdef _DEBUG
@@ -138,51 +121,35 @@ void ImageViewerWidget::initializeGL()
 
 void ImageViewerWidget::resizeGL(int width, int height)
 {
-    _pixelSelectionToolRenderer.resize(QSize(width, height));
 }
 
 void ImageViewerWidget::paintGL()
 {
     try {
-        // Bind the frame buffer belonging to the widget
-        //glBindFramebuffer(GL_FRAMEBUFFER, defaultFramebufferObject());
-
-        //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        // Reset the blending function
-        //glEnable(GL_BLEND);
-        //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
         QPainter painter;
 
         painter.begin(this);
+        {
+            painter.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
+            painter.setPen(Qt::NoPen);
+            painter.setBrush(_backgroundGradient);
+            painter.drawRect(rect());
+            painter.drawPixmap(rect(), _pixelSelectionTool.getAreaPixmap());
+            painter.drawPixmap(rect(), _pixelSelectionTool.getShapePixmap());
 
-        painter.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
-        painter.setPen(Qt::NoPen);
-        painter.setBrush(_backgroundGradient);
-        painter.drawRect(rect());
-        painter.drawPixmap(rect(), _pixelSelectionTool.getAreaPixmap());
-        painter.drawPixmap(rect(), _pixelSelectionTool.getShapePixmap());
+            painter.beginNativePainting();
+            {
+                // Bind the frame buffer belonging to the widget
+                //glBindFramebuffer(GL_FRAMEBUFFER, defaultFramebufferObject());
 
-        painter.beginNativePainting();
+                //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // Draw the pixel selection tool on top of everything else
-        //_pixelSelectionToolRenderer.render();
-
-        //glEnable(GL_BLEND);
-        //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        /*
-        auto root = layersModel.getLayer(QModelIndex());
-
-        if (root)
-            root->render(_renderer->getProjectionMatrix() * _renderer->getViewMatrix());
-            */
-        painter.endNativePainting();
-
-        //layersModel.paint(&painter);
-
-        
-
+                // Reset the blending function
+                //glEnable(GL_BLEND);
+                //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            }
+            painter.endNativePainting();
+        }
         painter.end();
     }
     catch (std::exception& e)
@@ -215,6 +182,4 @@ void ImageViewerWidget::cleanup()
     _openGLInitialized = false;
 
     makeCurrent();
-
-    _pixelSelectionToolRenderer.destroy();
 }

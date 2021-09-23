@@ -1,15 +1,10 @@
 #pragma once
 
 #include "util/PixelSelectionTool.h"
-#include "renderers/PixelSelectionToolRenderer.h"
 
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions_3_3_Core>
 #include <QOpenGLDebugLogger>
-
-using namespace hdps::gui;
-
-class PixelSelectionTool;
 
 /**
  * 
@@ -36,7 +31,7 @@ public: // Construction
         return _pixelSelectionTool;
     }
 
-protected: // OpenGL functions
+protected: // OpenGL
 
     /** Initializes the OpenGL window */
     void initializeGL() override;
@@ -55,11 +50,9 @@ protected: // OpenGL functions
     void cleanup();
 
 protected:
-    bool                                    _openGLInitialized;             /** Whether OpenGL is initialized or not */
-    PixelSelectionTool                      _pixelSelectionTool;            /** Pixel selection tool */
-    PixelSelectionToolRenderer              _pixelSelectionToolRenderer;    /** Pixel selection tool renderer */
-    QColor                                  _backgroundColor;               /** Viewer background color */
-    std::unique_ptr<QOpenGLDebugLogger>     _openglDebugLogger;             /** OpenGL logger instance for debugging (only enabled in debug mode for performance reasons) */
-    QRadialGradient                         _backgroundGradient;            /** Viewport gradient background */
-    std::int32_t                            _keys;                          /** Currently pressed keyboard keys */
+    bool                                    _openGLInitialized;     /** Whether OpenGL is initialized or not */
+    PixelSelectionTool                      _pixelSelectionTool;    /** Pixel selection tool */
+    std::unique_ptr<QOpenGLDebugLogger>     _openglDebugLogger;     /** OpenGL logger instance for debugging (only enabled in debug mode for performance reasons) */
+    QRadialGradient                         _backgroundGradient;    /** Viewport gradient background */
+    std::int32_t                            _keys;                  /** Currently pressed keyboard keys */
 };
