@@ -7,7 +7,11 @@
 #include <QOpenGLDebugLogger>
 
 /**
+ * Image viewer widget class
+ *
+ * Mixed OpenGL/native rendering class for displaying image layers
  * 
+ * @author Thomas Kroes
  */
 class ImageViewerWidget : public QOpenGLWidget, QOpenGLFunctions_3_3_Core
 {
@@ -50,9 +54,9 @@ protected: // OpenGL
     void cleanup();
 
 protected:
-    bool                                    _openGLInitialized;     /** Whether OpenGL is initialized or not */
-    PixelSelectionTool                      _pixelSelectionTool;    /** Pixel selection tool */
-    std::unique_ptr<QOpenGLDebugLogger>     _openglDebugLogger;     /** OpenGL logger instance for debugging (only enabled in debug mode for performance reasons) */
-    QRadialGradient                         _backgroundGradient;    /** Viewport gradient background */
-    std::int32_t                            _keys;                  /** Currently pressed keyboard keys */
+    bool                                    _openGLInitialized;         /** Whether OpenGL is initialized or not */
+    PixelSelectionTool                      _pixelSelectionTool;        /** Pixel selection tool */
+    std::unique_ptr<QOpenGLDebugLogger>     _openglDebugLogger;         /** OpenGL logger instance for debugging (only enabled in debug mode for performance reasons) */
+    QRadialGradient                         _backgroundGradient;        /** Viewport gradient background */
+    std::int32_t                            _keys;                      /** Currently pressed keyboard keys */
 };

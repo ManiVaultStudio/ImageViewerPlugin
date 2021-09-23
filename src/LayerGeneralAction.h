@@ -37,5 +37,7 @@ protected:
     ColorAction     _colorAction;               /** Color action */
     StringAction    _nameAction;                /** Name action */
     DecimalAction   _scaleAction;               /** Scale action */
+    DecimalAction   _xPositionAction;           /** X-position action */
+    DecimalAction   _yPositionAction;           /** Y-position action */
     TriggerAction   _zoomToExtentsAction;       /** Zoom to extents action */
 };
