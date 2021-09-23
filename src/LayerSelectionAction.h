@@ -1,9 +1,8 @@
 #pragma once
 
-#include "actions/Actions.h"
+#include "actions/GroupAction.h"
+#include "actions/PixelSelectionAction.h"
 #include "util/PixelSelectionTool.h"
-
-#include "PixelSelectionAction.h"
 
 class QWidget;
 
