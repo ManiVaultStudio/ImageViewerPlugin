@@ -21,8 +21,8 @@ ImageViewerPlugin::ImageViewerPlugin(hdps::plugin::PluginFactory* factory) :
     ViewPlugin(factory),
     _layersModel(this),
     _dropWidget(nullptr),
-    _settingsAction(this),
-    _imageViewerWidget(nullptr)
+    _imageViewerWidget(nullptr),
+    _settingsAction(nullptr)
 {
     setFocusPolicy(Qt::ClickFocus);
 }
@@ -36,11 +36,11 @@ void ImageViewerPlugin::init()
 
     setLayout(layout);
 
-    auto splitter = new QSplitter();
+    auto splitter       = new QSplitter();
+    auto viewerLayout   = new QVBoxLayout();
 
-    auto viewerLayout = new QVBoxLayout();
-
-    _imageViewerWidget = new ImageViewerWidget(this);
+    _imageViewerWidget  = new ImageViewerWidget(this);
+    _settingsAction     = new SettingsAction(this);
 
     _imageViewerWidget->setAcceptDrops(true);
 
@@ -48,7 +48,7 @@ void ImageViewerPlugin::init()
 
     splitter->addWidget(_imageViewerWidget);
 
-    splitter->addWidget(_settingsAction.createWidget(this));
+    splitter->addWidget(_settingsAction->createWidget(this));
 
     splitter->setStretchFactor(0, 1);
     splitter->setStretchFactor(1, 0);

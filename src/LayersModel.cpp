@@ -413,36 +413,36 @@ void LayersModel::addLayer(const SharedLayer& layer)
         // Insert the layer action at the beginning
         beginInsertRows(QModelIndex(), 0, 0);
         {
-            // Append the layer action
-            _layers << layer;
+            // Insert the layer at the beginning (layer will be added on top of all other layers)
+            _layers.insert(0, layer);
 
             // Inform views that the layer visibility has changed when it is changed in the action
-            connect(&layer->getLayerAction().getGeneralAction().getVisibleAction(), &ToggleAction::toggled, this, [this](bool toggled) {
-                const auto changedCell = index(rowCount() - 1, Column::Name);
+            connect(&layer->getLayerAction().getGeneralAction().getVisibleAction(), &ToggleAction::toggled, this, [this, layer](bool toggled) {
+                const auto changedCell = index(_layers.indexOf(layer), Column::Name);
                 emit dataChanged(changedCell, changedCell.siblingAtColumn(Column::Last));
             });
 
             // Inform views that the layer color has changed when it is changed in the action
-            connect(&layer->getLayerAction().getGeneralAction().getColorAction(), &ColorAction::colorChanged, this, [this](const QColor& color) {
-                const auto changedCell = index(rowCount() - 1, Column::Color);
+            connect(&layer->getLayerAction().getGeneralAction().getColorAction(), &ColorAction::colorChanged, this, [this, layer](const QColor& color) {
+                const auto changedCell = index(_layers.indexOf(layer), Column::Color);
                 emit dataChanged(changedCell, changedCell);
             });
 
             // Inform views that the layer name has changed when it is changed in the action
-            connect(&layer->getLayerAction().getGeneralAction().getNameAction(), &StringAction::stringChanged, this, [this]() {
-                const auto changedCell = index(rowCount() - 1, Column::Name);
+            connect(&layer->getLayerAction().getGeneralAction().getNameAction(), &StringAction::stringChanged, this, [this, layer]() {
+                const auto changedCell = index(_layers.indexOf(layer), Column::Name);
                 emit dataChanged(changedCell, changedCell);
             });
 
             // Inform views that the layer scale has changed when it is changed in the action
-            connect(&layer->getLayerAction().getGeneralAction().getScaleAction(), &DecimalAction::valueChanged, this, [this](const float& value) {
-                const auto changedCell = index(rowCount() - 1, Column::Scale);
+            connect(&layer->getLayerAction().getGeneralAction().getScaleAction(), &DecimalAction::valueChanged, this, [this, layer](const float& value) {
+                const auto changedCell = index(_layers.indexOf(layer), Column::Scale);
                 emit dataChanged(changedCell, changedCell);
             });
 
             // Inform views that the layer opacity has changed when it is changed in the action
-            connect(&layer->getLayerAction().getImageAction().getOpacityAction(), &DecimalAction::valueChanged, this, [this](const float& value) {
-                const auto changedCell = index(rowCount() - 1, Column::Opacity);
+            connect(&layer->getLayerAction().getImageAction().getOpacityAction(), &DecimalAction::valueChanged, this, [this, layer](const float& value) {
+                const auto changedCell = index(_layers.indexOf(layer), Column::Opacity);
                 emit dataChanged(changedCell, changedCell);
             });
         }

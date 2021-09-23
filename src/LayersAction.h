@@ -2,6 +2,8 @@
 
 #include "actions/Actions.h"
 
+#include "LayerSelectionAction.h"
+
 class QMenu;
 class SettingsAction;
 
@@ -64,8 +66,10 @@ public: // Action getters
 
     SettingsAction& getSettingsAction() { return _settingsAction; }
     GroupsAction& getCurrentLayerAction() { return _currentLayerAction; }
+    LayerSelectionAction& getSelectionAction() { return _selectionAction; }
 
 protected:
-    SettingsAction&     _settingsAction;        /** Reference to settings action */
-    GroupsAction        _currentLayerAction;    /** Current layer action */
+    SettingsAction&         _settingsAction;        /** Reference to settings action */
+    LayerSelectionAction    _selectionAction;       /** Selection action */
+    GroupsAction            _currentLayerAction;    /** Current layer action */
 };

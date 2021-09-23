@@ -55,8 +55,8 @@ public: // Miscellaneous
 private:
     LayersModel             _layersModel;           /** Layers model */
     hdps::gui::DropWidget*  _dropWidget;            /** Widget for dropping data */
-    SettingsAction          _settingsAction;        /** Settings action */
     ImageViewerWidget*      _imageViewerWidget;     /** Pointer to image viewer widget */
+    SettingsAction*         _settingsAction;        /** Pointer to settings action */
 };
 
 /**

@@ -5,14 +5,10 @@ LayerAction::LayerAction(Layer& layer) :
     WidgetAction(reinterpret_cast<QObject*>(&layer)),
     _layer(layer),
     _generalAction(*this),
-    _imageAction(*this),
-    _selectionAction(layer.getImageViewerPlugin(), layer.getImageViewerPlugin()->getImageViewerWidget()->getPixelSelectionTool())
+    _imageAction(*this)
 {
     const auto updateActions = [this]() -> void {
-        const auto layerIsVisible = _generalAction.getVisibleAction().isChecked();
-
-        _imageAction.setEnabled(layerIsVisible);
-        _selectionAction.setEnabled(layerIsVisible);
+        _imageAction.setEnabled(_generalAction.getVisibleAction().isChecked());
     };
 
     connect(&_generalAction.getVisibleAction(), &ToggleAction::toggled, this, [this, updateActions]() {

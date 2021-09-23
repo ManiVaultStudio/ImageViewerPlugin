@@ -2,7 +2,7 @@
 #include "LayersFilterModel.h"
 #include "SettingsAction.h"
 #include "ImageViewerPlugin.h"
-#include "ImageViewerPlugin.h"
+#include "ImageViewerWidget.h"
 
 #include "Application.h"
 
@@ -15,6 +15,7 @@ using namespace hdps::gui;
 LayersAction::LayersAction(SettingsAction& settingsAction) :
     WidgetAction(reinterpret_cast<QObject*>(&settingsAction)),
     _settingsAction(settingsAction),
+    _selectionAction(settingsAction.getImageViewerPlugin(), settingsAction.getImageViewerPlugin()->getImageViewerWidget()->getPixelSelectionTool()),
     _currentLayerAction(this)
 {
 }
@@ -114,7 +115,7 @@ LayersAction::Widget::Widget(QWidget* parent, LayersAction* layersAction, const 
 
             auto& layerAction = layer->getLayerAction();
 
-            groupActions << &layerAction.getGeneralAction() << &layerAction.getImageAction() << &layerAction.getSelectionAction();
+            groupActions << &layerAction.getGeneralAction() << &layerAction.getImageAction() << &layersAction->getSelectionAction();
         }
 
         layersAction->getCurrentLayerAction().set(groupActions);
@@ -139,9 +140,24 @@ LayersAction::Widget::Widget(QWidget* parent, LayersAction* layersAction, const 
 
     connect(treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, modelSelectionChanged);
     connect(treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, updateButtons);
-    connect(treeView->model(), &QAbstractListModel::rowsInserted, updateButtons);
     connect(treeView->model(), &QAbstractListModel::rowsRemoved, updateButtons);
     connect(treeView->model(), &QAbstractListModel::layoutChanged, updateButtons);
+
+    // Select a layer when it is inserted into the model
+    const auto onRowsInserted = [treeView, &layersFilterModel, updateButtons](const QModelIndex& parent, int first, int last) {
+
+        // Get model of inserted layer
+        const auto index = treeView->model()->index(first, 0);
+        
+        // Select the layer if the index is valid
+        if (index.isValid())
+            treeView->selectionModel()->select(index, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
+
+        // Update layer position buttons
+        updateButtons();
+    };
+
+    connect(treeView->model(), &QAbstractListModel::rowsInserted, this, onRowsInserted);
 
     connect(&_removeLayerAction, &TriggerAction::triggered, this, [this, imageViewerPlugin, treeView]() {
         const auto selectedRows = treeView->selectionModel()->selectedRows();
@@ -159,6 +175,7 @@ LayersAction::Widget::Widget(QWidget* parent, LayersAction* layersAction, const 
             imageViewerPlugin->getLayersModel().moveLayer(selectedRows.first(), -1000);
 
     });
+
     connect(&_moveLayerUpAction, &TriggerAction::triggered, this, [this, imageViewerPlugin, treeView]() {
         const auto selectedRows = treeView->selectionModel()->selectedRows();
 
