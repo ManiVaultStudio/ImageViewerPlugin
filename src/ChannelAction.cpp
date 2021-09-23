@@ -11,6 +11,17 @@ ChannelAction::ChannelAction(LayerImageAction& layerImageAction, const QString& 
     _windowLevelAction(*this)
 {
     setText(name);
+
+    const auto enabledChanged = [this]() -> void {
+        const auto isEnabled = _enabledAction.isChecked();
+
+        _dimensionAction.setEnabled(isEnabled);
+        _windowLevelAction.setEnabled(isEnabled);
+    };
+
+    connect(&_enabledAction, &ToggleAction::toggled, this, enabledChanged);
+
+    enabledChanged();
 }
 
 ChannelAction::Widget::Widget(QWidget* parent, ChannelAction* channelAction, const WidgetActionWidget::State& state) :
@@ -18,6 +29,7 @@ ChannelAction::Widget::Widget(QWidget* parent, ChannelAction* channelAction, con
 {
     auto layout = new QHBoxLayout();
 
+    layout->setSpacing(3);
     layout->setMargin(0);
 
     auto checkBox = new QCheckBox();

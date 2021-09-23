@@ -7,6 +7,7 @@
 #include "Application.h"
 
 #include <QTreeView>
+#include <QHeaderView>
 
 using namespace hdps;
 using namespace hdps::gui;
@@ -48,14 +49,44 @@ LayersAction::Widget::Widget(QWidget* parent, LayersAction* layersAction, const 
 
     layersFilterModel->setSourceModel(&imageViewerPlugin->getLayersModel());
 
-    treeView->setFixedHeight(400);
+    treeView->setFixedHeight(200);
     treeView->setModel(layersFilterModel);
     treeView->setRootIsDecorated(false);
+    treeView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    treeView->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    treeView->setSortingEnabled(false);
+
+    // Configure header view
+    auto header = treeView->header();
+
+    header->setStretchLastSection(true);
+
+    const auto minimumSectionSize = 20;
+
+    header->setMinimumSectionSize(minimumSectionSize);
+    header->hideSection(LayersModel::Color);
+
+    header->resizeSection(LayersModel::Visible, minimumSectionSize);
+    header->resizeSection(LayersModel::Color, minimumSectionSize);
+    header->resizeSection(LayersModel::ImageWidth, 50);
+    header->resizeSection(LayersModel::ImageHeight, 50);
+    header->resizeSection(LayersModel::Scale, 50);
+    header->resizeSection(LayersModel::Opacity, 50);
+
+    header->setSectionResizeMode(LayersModel::Visible, QHeaderView::Fixed);
+    header->setSectionResizeMode(LayersModel::Color, QHeaderView::Fixed);
+    header->setSectionResizeMode(LayersModel::Name, QHeaderView::Interactive);
+    header->setSectionResizeMode(LayersModel::ImageWidth, QHeaderView::Fixed);
+    header->setSectionResizeMode(LayersModel::ImageHeight, QHeaderView::Fixed);
+    header->setSectionResizeMode(LayersModel::Scale, QHeaderView::Fixed);
+    header->setSectionResizeMode(LayersModel::Opacity, QHeaderView::Fixed);
 
     layout->setMargin(0);
     layout->addWidget(treeView);
 
     auto toolbarLayout = new QHBoxLayout();
+
+    toolbarLayout->setSpacing(3);
 
     toolbarLayout->addWidget(_removeLayerAction.createWidget(this));
     toolbarLayout->addStretch(1);
@@ -108,10 +139,6 @@ LayersAction::Widget::Widget(QWidget* parent, LayersAction* layersAction, const 
     connect(treeView->model(), &QAbstractListModel::rowsInserted, updateButtons);
     connect(treeView->model(), &QAbstractListModel::rowsRemoved, updateButtons);
     connect(treeView->model(), &QAbstractListModel::layoutChanged, updateButtons);
-    
-    connect(treeView->model(), &QAbstractListModel::dataChanged, this, [treeView](const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles = QVector<int>()) {
-        treeView->update();
-    });
 
     connect(&_removeLayerAction, &TriggerAction::triggered, this, [this, imageViewerPlugin, treeView]() {
         const auto selectedRows = treeView->selectionModel()->selectedRows();

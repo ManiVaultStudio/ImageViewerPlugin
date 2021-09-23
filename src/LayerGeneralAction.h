@@ -1,8 +1,6 @@
 #pragma once
 
-#include "actions/GroupAction.h"
-#include "actions/StringAction.h"
-#include "actions/DecimalAction.h"
+#include "actions/Actions.h"
 
 class LayerAction;
 
@@ -27,11 +25,17 @@ public:
 
 public: /** Action getters */
 
+    ToggleAction& getVisibleAction() { return _visibleAction; }
+    ColorAction& getColorAction() { return _colorAction; }
     StringAction& getNameAction() { return _nameAction; }
     DecimalAction& getScaleAction() { return _scaleAction; }
+    TriggerAction& getZoomToExtentsAction() { return _zoomToExtentsAction; }
 
 protected:
-    LayerAction&        _layerAction;       /** Reference to layer action */
-    StringAction        _nameAction;        /** Name action */
-    DecimalAction       _scaleAction;       /** Scale action */
+    LayerAction&    _layerAction;               /** Reference to layer action */
+    ToggleAction    _visibleAction;             /** Visible action */
+    ColorAction     _colorAction;               /** Color action */
+    StringAction    _nameAction;                /** Name action */
+    DecimalAction   _scaleAction;               /** Scale action */
+    TriggerAction   _zoomToExtentsAction;       /** Zoom to extents action */
 };

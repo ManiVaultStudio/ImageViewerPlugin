@@ -1,22 +1,27 @@
 #pragma once
 
+#include "event/EventListener.h"
+
 #include "Layer.h"
 
 #include <QAbstractListModel>
 
-class LayersModel : public QAbstractListModel 
+class LayersModel : public QAbstractListModel , public hdps::EventListener
 {
 public:
 
     /**  Columns */
     enum Column {
+        Visible,        /** Visibility of the layer */
+        Color,          /** Color of the layer */
         Name,           /** Name of the layer */
         ImageWidth,     /** Width of the image(s) */
         ImageHeight,    /** Height of the image(s) */
         Scale,          /** Layer scale */
         Opacity,        /** Layer opacity */
 
-        Count = Opacity + 1
+        Last    = Opacity,
+        Count   = Last + 1
     };
 
 public:
@@ -52,7 +57,7 @@ public:
      * @param role Data role
      * @return Data in variant form
      */
-    QVariant data(const QModelIndex &index, int role) const override;
+    QVariant data(const QModelIndex& index, int role) const override;
 
     /**
      * Sets the data value for the given model index and data role
@@ -81,9 +86,39 @@ public:
 
 public: // Layer operations
 
+    /**
+     * Add a layer to the model
+     * @param layer Shared pointer to the layer
+     */
     void addLayer(const SharedLayer& layer);
-    void removeLayer(const QModelIndex& index);
+
+    /**
+     * Remove a layer from the model by images dataset name
+     * @param datasetName Name of the images dataset
+     */
+    void removeLayer(const QString& datasetName);
+
+    /**
+     * Remove a layer from the model  by model index
+     * @param layerModelIndex Layer model index
+     */
+    void removeLayer(const QModelIndex& layerModelIndex);
+
+    /**
+     * Move a layer in the model by amount
+     * @param layerModelIndex Layer model index
+     * @param amount Amount of layers to move up/down
+     */
     void moveLayer(const QModelIndex& layerModelIndex, const std::int32_t& amount = 1);
+
+protected:
+    
+    /**
+     * Get color icon for the layer
+     * @param color Input color
+     * @return Icon
+     */
+    QIcon getColorIcon(const QColor& color) const;
 
 protected:
     QVector<SharedLayer>    _layers;        /** Layers data */

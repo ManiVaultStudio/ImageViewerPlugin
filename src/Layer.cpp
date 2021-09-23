@@ -1,8 +1,9 @@
 #include "Layer.h"
 #include "DataHierarchyItem.h"
 
-Layer::Layer(const QString& datasetName) :
+Layer::Layer(ImageViewerPlugin* imageViewerPlugin, const QString& datasetName) :
     QObject(),
+    _imageViewerPlugin(imageViewerPlugin),
     _images(datasetName),
     _points(_images->getHierarchyItem().getParent()->getDatasetName()),
     _layerAction(*this)
@@ -14,13 +15,32 @@ Layer::Layer(const QString& datasetName) :
         throw std::runtime_error("The layer points dataset is not valid after initialization");
 }
 
+ImageViewerPlugin* Layer::getImageViewerPlugin()
+{
+    return _imageViewerPlugin;
+}
+
 const QString Layer::getImagesDatasetName() const
 {
+    if (!_images.isValid())
+        throw std::runtime_error("The images dataset is not valid");
+
     return _images.getDatasetName();
+}
+
+const std::uint32_t Layer::getNumberOfImages() const
+{
+    if (!_images.isValid())
+        throw std::runtime_error("The images dataset is not valid");
+
+    return _images->getNumberOfImages();
 }
 
 const QSize Layer::getImageSize() const
 {
+    if (!_images.isValid())
+        throw std::runtime_error("The images dataset is not valid");
+
     return _images->getImageSize();
 }
 

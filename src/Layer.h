@@ -10,19 +10,27 @@
 
 using namespace hdps::util;
 
+class ImageViewerPlugin;
+
 class Layer : public QObject
 {
     Q_OBJECT
 
 public:
-    Layer(const QString& datasetName);
+    Layer(ImageViewerPlugin* imageViewerPlugin, const QString& datasetName);
+
+    /** Get pointer to image viewer plugin */
+    ImageViewerPlugin* getImageViewerPlugin();
 
     LayerAction& getLayerAction() { return _layerAction; }
+
+    DatasetRef<Images>& getImages() { return _images; }
 
     const QString getImagesDatasetName() const;
 
 public: // Images wrapper functions
 
+    const std::uint32_t getNumberOfImages() const;
     const QSize getImageSize() const;
 
 public: // Points wrapper functions
@@ -32,9 +40,10 @@ public: // Points wrapper functions
     const QStringList getDimensionNames() const;
 
 protected:
-    DatasetRef<Images>  _images;        /** Reference to images dataset */
-    DatasetRef<Points>  _points;        /** Reference to images input points dataset */
-    LayerAction         _layerAction;   /** Layer settings action */
+    ImageViewerPlugin*      _imageViewerPlugin;     /** Pointer to image viewer plugin */
+    DatasetRef<Images>      _images;                /** Reference to images dataset */
+    DatasetRef<Points>      _points;                /** Reference to input points dataset of the images */
+    LayerAction             _layerAction;           /** Layer settings action */
 };
 
 using SharedLayer = QSharedPointer<Layer>;

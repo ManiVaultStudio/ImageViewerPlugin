@@ -21,8 +21,10 @@ ImageViewerPlugin::ImageViewerPlugin(hdps::plugin::PluginFactory* factory) :
     ViewPlugin(factory),
     _layersModel(this),
     _dropWidget(nullptr),
-    _settingsAction(this)
+    _settingsAction(this),
+    _imageViewerWidget(nullptr)
 {
+    setFocusPolicy(Qt::ClickFocus);
 }
 
 void ImageViewerPlugin::init()
@@ -38,13 +40,13 @@ void ImageViewerPlugin::init()
 
     auto viewerLayout = new QVBoxLayout();
 
-    auto viewerWidget = new QWidget();
+    _imageViewerWidget = new ImageViewerWidget(this);
 
-    viewerWidget->setAcceptDrops(true);
+    _imageViewerWidget->setAcceptDrops(true);
 
-    _dropWidget = new DropWidget(viewerWidget);
+    _dropWidget = new DropWidget(_imageViewerWidget);
 
-    splitter->addWidget(viewerWidget);
+    splitter->addWidget(_imageViewerWidget);
 
     splitter->addWidget(_settingsAction.createWidget(this));
 
@@ -75,7 +77,7 @@ void ImageViewerPlugin::init()
             dropRegions << new DropWidget::DropRegion(this, "Images", QString("Add an image layer for %1").arg(datasetName), true, [this, datasetName]() {
                 try
                 {
-                    _layersModel.addLayer(SharedLayer::create(datasetName));
+                    _layersModel.addLayer(SharedLayer::create(this, datasetName));
                 }
                 catch (std::exception& e)
                 {

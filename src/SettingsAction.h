@@ -30,6 +30,11 @@ public:
          */
         Widget(QWidget* parent, SettingsAction* settingsAction, const WidgetActionWidget::State& state);
 
+        /** Return preferred size */
+        QSize sizeHint() const override {
+            return QSize(300, 100);
+        }
+
     protected:
         friend class SettingsAction;
     };

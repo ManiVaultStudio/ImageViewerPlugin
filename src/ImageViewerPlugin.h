@@ -1,11 +1,10 @@
 #pragma once
 
 #include "ViewPlugin.h"
-//#include "PluginFactory.h"
 
-#include "Application.h"
 #include "LayersModel.h"
 #include "SettingsAction.h"
+#include "ImageViewerWidget.h"
 
 #include <QItemSelectionModel>
 
@@ -45,15 +44,19 @@ public: // Inherited from ViewPlugin
 public: // Miscellaneous
 
     /** Returns the layer model */
-    LayersModel& getLayersModel()
-    {
+    LayersModel& getLayersModel() {
         return _layersModel;
     }
 
+    ImageViewerWidget* getImageViewerWidget() {
+        return _imageViewerWidget;
+    }
+
 private:
-    LayersModel                 _layersModel;           /** Layers model */
-    hdps::gui::DropWidget*      _dropWidget;            /** Widget for dropping data */
-    SettingsAction              _settingsAction;        /** Settings action */
+    LayersModel             _layersModel;           /** Layers model */
+    hdps::gui::DropWidget*  _dropWidget;            /** Widget for dropping data */
+    SettingsAction          _settingsAction;        /** Settings action */
+    ImageViewerWidget*      _imageViewerWidget;     /** Pointer to image viewer widget */
 };
 
 /**

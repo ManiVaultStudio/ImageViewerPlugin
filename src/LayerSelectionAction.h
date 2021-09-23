@@ -1,8 +1,11 @@
 #pragma once
 
-#include "actions/GroupAction.h"
+#include "actions/Actions.h"
+#include "util/PixelSelectionTool.h"
 
-class LayerAction;
+#include "PixelSelectionAction.h"
+
+class QWidget;
 
 using namespace hdps::gui;
 
@@ -19,13 +22,15 @@ public:
 
     /**
      * Constructor
-     * @param layerAction Reference to layer action
+     * @param targetWidget Pointer to target widget
+     * @param pixelSelectionTool Reference to pixel selection tool
      */
-    LayerSelectionAction(LayerAction& layerAction);
+    LayerSelectionAction(QWidget* targetWidget, PixelSelectionTool& pixelSelectionTool);
 
 public: /** Action getters */
 
 protected:
-    LayerAction&    _layerAction;       /** Reference to layer action */
-    QImage          _image;             /** Selection image */
+    QWidget*                _targetWidget;              /** Pointer to target widget */
+    PixelSelectionTool&     _pixelSelectionTool;        /** Reference to pixel selection tool */
+    PixelSelectionAction    _pixelSelectionAction;      /** Pixel selection action */
 };
