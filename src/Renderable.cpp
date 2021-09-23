@@ -3,8 +3,6 @@
 //
 //#include <QDebug>
 //
-//Renderer* Renderable::renderer = nullptr;
-//
 //Renderable::Renderable() :
 //    _opacity(1.0f),
 //    _scale(1.0f),
@@ -48,17 +46,17 @@
 //
 //    switch (role)
 //    {
-//        case Qt::DisplayRole:
-//            return opacityString;
+//    case Qt::DisplayRole:
+//        return opacityString;
 //
-//        case Qt::EditRole:
-//            return _opacity;
+//    case Qt::EditRole:
+//        return _opacity;
 //
-//        case Qt::ToolTipRole:
-//            return QString("Opacity: %1").arg(opacityString);
+//    case Qt::ToolTipRole:
+//        return QString("Opacity: %1").arg(opacityString);
 //
-//        default:
-//            break;
+//    default:
+//        break;
 //    }
 //
 //    return QVariant();
@@ -75,17 +73,17 @@
 //
 //    switch (role)
 //    {
-//        case Qt::DisplayRole:
-//            return scaleString;
+//    case Qt::DisplayRole:
+//        return scaleString;
 //
-//        case Qt::EditRole:
-//            return _scale;
+//    case Qt::EditRole:
+//        return _scale;
 //
-//        case Qt::ToolTipRole:
-//            return QString("Scale: %1").arg(scaleString);
+//    case Qt::ToolTipRole:
+//        return QString("Scale: %1").arg(scaleString);
 //
-//        default:
-//            break;
+//    default:
+//        break;
 //    }
 //
 //    return QVariant();

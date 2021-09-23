@@ -148,9 +148,6 @@
 //        return _props;
 //    }
 //
-//public:
-//    static Renderer* renderer;                  /** Static renderer instance */
-//
 //protected:
 //    float                   _opacity;           /** Render opacity */
 //    float                   _scale;             /** Scale */

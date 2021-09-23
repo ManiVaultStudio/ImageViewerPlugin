@@ -118,6 +118,9 @@ LayersAction::Widget::Widget(QWidget* parent, LayersAction* layersAction, const 
         }
 
         layersAction->getCurrentLayerAction().set(groupActions);
+
+        // Enable the pixel selection tool when there is a selection and disable otherwise
+        imageViewerPlugin->getImageViewerWidget()->getPixelSelectionTool().setEnabled(hasSelection);
     };
 
     const auto updateButtons = [this, treeView, layersFilterModel, layout]() -> void {
