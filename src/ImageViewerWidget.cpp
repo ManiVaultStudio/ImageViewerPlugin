@@ -58,6 +58,11 @@ ImageViewerWidget::ImageViewerWidget(QWidget* parent) :
     _backgroundGradient.setColorAt(0.7, backgroundColor);
 
     this->installEventFilter(this);
+
+    QObject::connect(&_pixelSelectionTool, &PixelSelectionTool::shapeChanged, [this]() {
+        if (isInitialized())
+            update();
+    });
 }
 
 bool ImageViewerWidget::eventFilter(QObject* target, QEvent* event)
