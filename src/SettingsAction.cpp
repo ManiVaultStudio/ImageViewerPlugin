@@ -14,7 +14,7 @@ SettingsAction::Widget::Widget(QWidget* parent, SettingsAction* settingsAction, 
     WidgetActionWidget(parent, settingsAction, state)
 {
     setAutoFillBackground(true);
-    setMinimumWidth(250);
+    setMinimumWidth(300);
     
     auto layout = new QVBoxLayout();
 

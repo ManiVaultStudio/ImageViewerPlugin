@@ -35,10 +35,10 @@ public: // Action getters
 protected:
     LayerAction&        _layerAction;                   /** Reference to layer action */
     DecimalAction       _opacityAction;                 /** Opacity action */
+    OptionAction        _colorSpaceAction;              /** Color space action */
     ChannelAction       _channel1Action;                /** Channel 1 action */
     ChannelAction       _channel2Action;                /** Channel 2 action */
     ChannelAction       _channel3Action;                /** Channel 3 action */
-    OptionAction        _colorSpaceAction;              /** Color space action */
     ColorMapAction      _colorMapAction;                /** Color map action */
     OptionAction        _interpolationTypeAction;       /** Interpolation type action */
     ToggleAction        _constantColorAction;           /** Constant color action */

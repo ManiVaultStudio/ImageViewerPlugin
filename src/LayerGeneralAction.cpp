@@ -13,6 +13,8 @@ LayerGeneralAction::LayerGeneralAction(LayerAction& layerAction) :
 {
     setText("General");
 
+    _visibleAction.setWidgetFlags(ToggleAction::CheckBoxAndResetPushButton);
+    _colorAction.setWidgetFlags(ColorAction::All);
     _nameAction.setWidgetFlags(StringAction::WidgetFlag::All);
     _scaleAction.setWidgetFlags(DecimalAction::WidgetFlag::All);
 

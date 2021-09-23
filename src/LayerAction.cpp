@@ -8,6 +8,18 @@ LayerAction::LayerAction(Layer& layer) :
     _imageAction(*this),
     _selectionAction(layer.getImageViewerPlugin(), layer.getImageViewerPlugin()->getImageViewerWidget()->getPixelSelectionTool())
 {
+    const auto updateActions = [this]() -> void {
+        const auto layerIsVisible = _generalAction.getVisibleAction().isChecked();
+
+        _imageAction.setEnabled(layerIsVisible);
+        _selectionAction.setEnabled(layerIsVisible);
+    };
+
+    connect(&_generalAction.getVisibleAction(), &ToggleAction::toggled, this, [this, updateActions]() {
+        updateActions();
+    });
+
+    updateActions();
 }
 
 Layer& LayerAction::getLayer()

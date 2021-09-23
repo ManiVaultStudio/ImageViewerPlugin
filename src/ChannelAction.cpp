@@ -6,22 +6,24 @@
 ChannelAction::ChannelAction(LayerImageAction& layerImageAction, const QString& name) :
     WidgetAction(reinterpret_cast<QObject*>(&layerImageAction)),
     _layerImageAction(layerImageAction),
-    _enabledAction(this, ""),
     _dimensionAction(this, "Dimension"),
     _windowLevelAction(*this)
 {
     setText(name);
 
-    const auto enabledChanged = [this]() -> void {
-        const auto isEnabled = _enabledAction.isChecked();
+    connect(&_dimensionAction, &OptionAction::resettableChanged, this, [this]() {
+        setResettable(isResettable());
+    });
+}
 
-        _dimensionAction.setEnabled(isEnabled);
-        _windowLevelAction.setEnabled(isEnabled);
-    };
+bool ChannelAction::isResettable() const
+{
+    return _dimensionAction.isResettable();
+}
 
-    connect(&_enabledAction, &ToggleAction::toggled, this, enabledChanged);
-
-    enabledChanged();
+void ChannelAction::reset()
+{
+    _dimensionAction.reset();
 }
 
 ChannelAction::Widget::Widget(QWidget* parent, ChannelAction* channelAction, const WidgetActionWidget::State& state) :
@@ -34,9 +36,6 @@ ChannelAction::Widget::Widget(QWidget* parent, ChannelAction* channelAction, con
 
     auto checkBox = new QCheckBox();
 
-    if (channelAction->hasWidgetFlag(ChannelAction::CheckBox))
-        layout->addWidget(channelAction->getEnabledAction().createWidget(this));
-
     if (channelAction->hasWidgetFlag(ChannelAction::ComboBox))
         layout->addWidget(channelAction->getDimensionAction().createWidget(this));
 
@@ -44,7 +43,7 @@ ChannelAction::Widget::Widget(QWidget* parent, ChannelAction* channelAction, con
         layout->addWidget(channelAction->getWindowLevelAction().createCollapsedWidget(this));
 
     if (channelAction->hasWidgetFlag(ChannelAction::ResetPushButton))
-        layout->addWidget(channelAction->getDimensionAction().createResetButton(this));
+        layout->addWidget(channelAction->createResetButton(this));
 
     setLayout(layout);
 }

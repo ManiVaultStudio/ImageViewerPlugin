@@ -32,7 +32,7 @@ public:
 
         /** Return preferred size */
         QSize sizeHint() const override {
-            return QSize(300, 100);
+            return QSize(350, 100);
         }
 
     protected:

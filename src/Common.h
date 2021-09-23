@@ -179,6 +179,8 @@ inline QString abbreviatedStringList(const QStringList& stringList)
  */
 enum class ColorSpace
 {
+    Mono,   /** Single channel */
+    Duo,    /** Double channel */
     RGB,    /** Red Green Blue */
     HSL,    /** Hue Saturation Lightness */
     LAB     /**  */

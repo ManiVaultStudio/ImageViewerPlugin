@@ -15,7 +15,7 @@ using namespace hdps::gui;
  *
  * @author Thomas Kroes
  */
-class LayerSelectionAction : public GroupAction
+class LayerSelectionAction : public PixelSelectionAction
 {
 public:
 
@@ -31,5 +31,4 @@ public: /** Action getters */
 protected:
     QWidget*                _targetWidget;              /** Pointer to target widget */
     PixelSelectionTool&     _pixelSelectionTool;        /** Reference to pixel selection tool */
-    PixelSelectionAction    _pixelSelectionAction;      /** Pixel selection action */
 };

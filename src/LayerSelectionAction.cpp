@@ -8,10 +8,9 @@
 #include "util/PixelSelectionTool.h"
 
 LayerSelectionAction::LayerSelectionAction(QWidget* targetWidget, PixelSelectionTool& pixelSelectionTool) :
-    GroupAction(targetWidget),
+    PixelSelectionAction(targetWidget, pixelSelectionTool),
     _targetWidget(targetWidget),
-    _pixelSelectionTool(pixelSelectionTool),
-    _pixelSelectionAction(targetWidget, pixelSelectionTool)
+    _pixelSelectionTool(pixelSelectionTool)
 {
     setText("Layer selection");
     setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("mouse-pointer"));
