@@ -28,10 +28,7 @@ PixelSelectionAction::PixelSelectionAction(QWidget* targetWidget, PixelSelection
     _targetWidget->addAction(&_brushRadiusAction);
     _targetWidget->addAction(&_notifyDuringSelectionAction);
 
-    
     _notifyDuringSelectionAction.setCheckable(true);
-    
-    
     _notifyDuringSelectionAction.setShortcut(QKeySequence("U"));
 
     _brushRadiusAction.setToolTip("Brush selection tool radius");
