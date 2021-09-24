@@ -129,11 +129,13 @@ private: // Data extraction
 public: /** Action getters */
 
     OptionAction& getDimensionAction() { return _dimensionAction; }
+    ToggleAction& getEnabledAction() { return _enabledAction; }
     WindowLevelAction& getWindowLevelAction() { return _windowLevelAction; }
 
 protected:
     LayerImageAction&       _layerImageAction;      /** Reference to layer image action */
     const ChannelIndex      _index;                 /** Channel index */
+    ToggleAction            _enabledAction;         /** Enabled action */
     OptionAction            _dimensionAction;       /** Selected dimension action */
     WindowLevelAction       _windowLevelAction;     /** Window/level action */
     QVector<float>          _scalarData;            /** Channel scalar data for the specified dimension */

@@ -21,13 +21,25 @@ ChannelAction::ChannelAction(LayerImageAction& layerImageAction, const ChannelIn
     EventListener(),
     _layerImageAction(layerImageAction),
     _index(index),
+    _enabledAction(this, "Enabled"),
     _dimensionAction(this, "Dimension"),
     _windowLevelAction(*this),
     _scalarData()
 {
     setText(name);
-    setEnabled(_index == Channel1);
     setEventCore(Application::core());
+
+    switch (_index)
+    {
+        case Channel1:
+        case Mask:
+        case Selection:
+            _enabledAction.setChecked(true);
+            break;
+
+        default:
+            break;
+    }
 
     connect(&_dimensionAction, &OptionAction::resettableChanged, this, [this]() {
         setResettable(isResettable());
@@ -46,11 +58,12 @@ ChannelAction::ChannelAction(LayerImageAction& layerImageAction, const ChannelIn
     // Allocate space for the scalar data
     _scalarData.resize(getImages()->getNumberOfPixels());
 
+    // Re-compute the selection scalar data when the points selection changes
     registerDataEventByType(PointType, [this](hdps::DataEvent* dataEvent) {
         if (dataEvent->getType() == hdps::EventType::SelectionChanged) {
             auto selectionChangedEvent = static_cast<hdps::SelectionChangedEvent*>(dataEvent);
 
-            if (selectionChangedEvent->dataSetName != getImages()->getName() || _index != Selection)
+            if (selectionChangedEvent->dataSetName != getPoints()->getName() || _index != Selection)
                 return;
 
             computeScalarData();
@@ -88,10 +101,7 @@ void ChannelAction::computeScalarData()
 {
     try
     {
-        if (!isEnabled())
-            return;
-
-        if (_dimensionAction.getCurrentIndex() <= 0)
+        if (!_enabledAction.isChecked())
             return;
 
         if (!getPoints().isValid())
@@ -106,6 +116,9 @@ void ChannelAction::computeScalarData()
             case Channel2:
             case Channel3:
             {
+                if (_dimensionAction.getCurrentIndex() <= 0)
+                    break;
+
                 switch (getImages()->getType())
                 {
                     case ImageData::Sequence:
@@ -174,13 +187,41 @@ void ChannelAction::computeScalarDataForImageSequence()
     });
 }
 
+void ChannelAction::computeScalarDataForImageStack()
+{
+    qDebug() << "Compute scalar data for image stack";
+
+    const auto dimensionId = _dimensionAction.getCurrentIndex();
+
+    if (getPoints()->isDerivedData()) {
+        getPoints()->visitData([this, dimensionId](auto pointData) {
+            auto& sourceData = getPoints()->getSourceData<Points>(*getPoints());
+            
+            if (sourceData.isFull()) {
+                for (std::uint32_t i = 0; i < getPoints()->getNumPoints(); i++)
+                    _scalarData[i] = pointData[i][dimensionId];
+            }
+            else {
+                for (int i = 0; i < sourceData.indices.size(); i++)
+                    _scalarData[sourceData.indices[i]] = pointData[i][dimensionId];
+            }
+        });
+    }
+    else {
+        getPoints()->visitSourceData([this, dimensionId](auto pointData) {
+            for (auto pointView : pointData)
+                _scalarData[pointView.index()] = pointView[dimensionId];
+        });
+    }
+}
+
 void ChannelAction::computeMaskChannel()
 {
     qDebug() << "Compute mask channel";
 
     if (getImages()->getType() != ImageData::Type::Stack)
         return;
-    
+
     if (getPoints()->isDerivedData()) {
         getPoints()->visitData([this](auto pointData) {
             auto& sourceData = getPoints()->getSourceData<Points>(*getPoints());
@@ -206,34 +247,6 @@ void ChannelAction::computeMaskChannel()
 void ChannelAction::computeSelectionChannel()
 {
     qDebug() << "Compute selection channel";
-}
-
-void ChannelAction::computeScalarDataForImageStack()
-{
-    qDebug() << "Compute mask scalar data";
-
-    const auto dimensionId = _dimensionAction.getCurrentIndex();
-
-    if (getPoints()->isDerivedData()) {
-        getPoints()->visitData([this, dimensionId](auto pointData) {
-            auto& sourceData = getPoints()->getSourceData<Points>(*getPoints());
-            
-            if (sourceData.isFull()) {
-                for (std::uint32_t i = 0; i < getPoints()->getNumPoints(); i++)
-                    _scalarData[i] = pointData[i][dimensionId];
-            }
-            else {
-                for (int i = 0; i < sourceData.indices.size(); i++)
-                    _scalarData[sourceData.indices[i]] = pointData[i][dimensionId];
-            }
-        });
-    }
-    else {
-        getPoints()->visitSourceData([this, dimensionId](auto pointData) {
-            for (auto pointView : pointData)
-                _scalarData[pointView.index()] = pointView[dimensionId];
-        });
-    }
 }
 
 ChannelAction::Widget::Widget(QWidget* parent, ChannelAction* channelAction, const WidgetActionWidget::State& state) :

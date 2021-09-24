@@ -3,6 +3,7 @@
 #include "Layer.h"
 
 #include "util/ColorSpace.h"
+#include "util/Interpolation.h"
 
 using namespace hdps;
 using namespace hdps::util;
@@ -18,7 +19,7 @@ LayerImageAction::LayerImageAction(LayerAction& layerAction) :
     _channelMaskAction(*this, ChannelAction::Mask, ChannelAction::channelIndexes.value(ChannelAction::Mask)),
     _channelSelectionAction(*this, ChannelAction::Selection, ChannelAction::channelIndexes.value(ChannelAction::Selection)),
     _colorMapAction(this, "Color map"),
-    _interpolationTypeAction(this, "Interpolate", {"Bilinear", "Nearest neighbor"}, "Bilinear", "Bilinear"),
+    _interpolationTypeAction(this, "Interpolate", interpolationTypes.values(), "Bilinear", "Bilinear"),
     _constantColorAction(this, "Constant color", true, true)
 {
     setText("Image");
@@ -71,9 +72,9 @@ LayerImageAction::LayerImageAction(LayerAction& layerAction) :
         switch (static_cast<ColorSpace>(_colorSpaceAction.getCurrentIndex()))
         {
             case ColorSpace::Mono:
-                _channel1Action.setEnabled(true);
-                _channel2Action.setEnabled(false);
-                _channel3Action.setEnabled(false);
+                _channel1Action.getEnabledAction().setCheckable(true);
+                _channel2Action.getEnabledAction().setCheckable(false);
+                _channel3Action.getEnabledAction().setCheckable(false);
                 _channel1Action.setText("Channel 1");
                 _channel2Action.setText("Channel 2");
                 _channel3Action.setText("Channel 3");
@@ -82,9 +83,9 @@ LayerImageAction::LayerImageAction(LayerAction& layerAction) :
                 break;
 
             case ColorSpace::Duo:
-                _channel1Action.setEnabled(true);
-                _channel2Action.setEnabled(true);
-                _channel3Action.setEnabled(false);
+                _channel1Action.getEnabledAction().setCheckable(true);
+                _channel2Action.getEnabledAction().setCheckable(true);
+                _channel3Action.getEnabledAction().setCheckable(false);
                 _channel1Action.setText("Channel 1");
                 _channel2Action.setText("Channel 2");
                 _channel3Action.setText("Channel 3");
@@ -93,9 +94,9 @@ LayerImageAction::LayerImageAction(LayerAction& layerAction) :
                 break;
 
             case ColorSpace::RGB:
-                _channel1Action.setEnabled(true);
-                _channel2Action.setEnabled(true);
-                _channel3Action.setEnabled(true);
+                _channel1Action.getEnabledAction().setCheckable(true);
+                _channel2Action.getEnabledAction().setCheckable(true);
+                _channel3Action.getEnabledAction().setCheckable(true);
                 _channel1Action.setText("Red");
                 _channel2Action.setText("Green");
                 _channel3Action.setText("Blue");
@@ -103,9 +104,9 @@ LayerImageAction::LayerImageAction(LayerAction& layerAction) :
                 break;
 
             case ColorSpace::HSL:
-                _channel1Action.setEnabled(true);
-                _channel2Action.setEnabled(true);
-                _channel3Action.setEnabled(true);
+                _channel1Action.getEnabledAction().setCheckable(true);
+                _channel2Action.getEnabledAction().setCheckable(true);
+                _channel3Action.getEnabledAction().setCheckable(true);
                 _channel1Action.setText("Hue");
                 _channel2Action.setText("Saturation");
                 _channel3Action.setText("Lightness");
@@ -113,9 +114,9 @@ LayerImageAction::LayerImageAction(LayerAction& layerAction) :
                 break;
 
             case ColorSpace::LAB:
-                _channel1Action.setEnabled(true);
-                _channel2Action.setEnabled(true);
-                _channel3Action.setEnabled(true);
+                _channel1Action.getEnabledAction().setCheckable(true);
+                _channel2Action.getEnabledAction().setCheckable(true);
+                _channel3Action.getEnabledAction().setCheckable(true);
                 _channel1Action.setText("L");
                 _channel2Action.setText("A");
                 _channel3Action.setText("B");
