@@ -92,7 +92,10 @@ bool ImageViewerWidget::eventFilter(QObject* target, QEvent* event)
                     setCursor(Qt::ClosedHandCursor);
 
                     // Disable the pixel selection tool, as we are navigating
-                    _pixelSelectionTool.setEnabled(true);
+                    _pixelSelectionTool.setEnabled(false);
+
+                    // Re-render because the pixel selection tool pixmaps have changed
+                    update();
                 }
             }
 
@@ -160,30 +163,25 @@ void ImageViewerWidget::paintGL()
     try {
         QPainter painter;
 
+        // Begin mixed OpenGL/native painting
         painter.begin(this);
         {
-            painter.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
-            painter.setPen(Qt::NoPen);
+            // Draw the background
             painter.setBrush(_backgroundGradient);
             painter.drawRect(rect());
-            painter.drawPixmap(rect(), _pixelSelectionTool.getAreaPixmap());
-            painter.drawPixmap(rect(), _pixelSelectionTool.getShapePixmap());
 
+            // Draw layers with OpenGL
             painter.beginNativePainting();
             {
-                // Bind the frame buffer belonging to the widget
-                glBindFramebuffer(GL_FRAMEBUFFER, defaultFramebufferObject());
-
-                //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-                // Reset the blending function
-                glEnable(GL_BLEND);
-                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
+                // Draw the image layers
                 for (auto& layer : _layersModel.getLayers())
                     layer->render(_renderer.getProjectionMatrix() * _renderer.getViewMatrix());
             }
             painter.endNativePainting();
+
+            // Draw the pixel selection tool overlays
+            painter.drawPixmap(rect(), _pixelSelectionTool.getAreaPixmap());
+            painter.drawPixmap(rect(), _pixelSelectionTool.getShapePixmap());
         }
         painter.end();
     }
