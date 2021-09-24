@@ -8,6 +8,8 @@
 #include <QOpenGLFunctions_3_3_Core>
 #include <QOpenGLDebugLogger>
 
+class LayersModel;
+
 /**
  * Image viewer widget class
  *
@@ -22,8 +24,9 @@ public: // Construction
     /**
      * Constructor
      * @param parent Pointer to parent widget
+     * @param layersModel Reference to layers model
      */
-    ImageViewerWidget(QWidget* parent);
+    ImageViewerWidget(QWidget* parent, LayersModel& layersModel);
 
     /**
      * Widget event capture
@@ -35,6 +38,11 @@ public: // Construction
     /** Get a reference to the pixel selection tool */
     PixelSelectionTool& getPixelSelectionTool() {
         return _pixelSelectionTool;
+    }
+
+    /** Get a reference to the pixel selection tool */
+    Renderer& getRenderer() {
+        return _renderer;
     }
 
 protected: // OpenGL
@@ -56,10 +64,11 @@ protected: // OpenGL
     void cleanup();
 
 protected:
+    LayersModel&                            _layersModel;               /** Reference to layers model */
     bool                                    _openGLInitialized;         /** Whether OpenGL is initialized or not */
     PixelSelectionTool                      _pixelSelectionTool;        /** Pixel selection tool */
     std::unique_ptr<QOpenGLDebugLogger>     _openglDebugLogger;         /** OpenGL logger instance for debugging (only enabled in debug mode for performance reasons) */
     QRadialGradient                         _backgroundGradient;        /** Viewport gradient background */
     std::int32_t                            _keys;                      /** Currently pressed keyboard keys */
-    Renderer                                _layersRenderer;            /** Layers OpenGL renderer */
+    Renderer                                _renderer;                  /** Layers OpenGL renderer */
 };

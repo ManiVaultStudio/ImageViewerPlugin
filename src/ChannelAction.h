@@ -26,7 +26,6 @@ class LayerImageAction;
  */
 class ChannelAction : public WidgetAction, public hdps::EventListener
 {
-
 public:
 
     /** Channel index enumerations */

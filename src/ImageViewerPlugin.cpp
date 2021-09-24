@@ -39,7 +39,7 @@ void ImageViewerPlugin::init()
     auto splitter       = new QSplitter();
     auto viewerLayout   = new QVBoxLayout();
 
-    _imageViewerWidget  = new ImageViewerWidget(this);
+    _imageViewerWidget  = new ImageViewerWidget(this, _layersModel);
     _settingsAction     = new SettingsAction(this);
 
     _imageViewerWidget->setAcceptDrops(true);

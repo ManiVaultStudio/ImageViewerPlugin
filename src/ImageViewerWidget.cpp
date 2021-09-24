@@ -1,18 +1,21 @@
 #include "ImageViewerWidget.h"
+#include "LayersModel.h"
+#include "Layer.h"
 
 #include <QKeyEvent>
 #include <QPainter>
 #include <QMessageBox>
 
-ImageViewerWidget::ImageViewerWidget(QWidget* parent) :
+ImageViewerWidget::ImageViewerWidget(QWidget* parent, LayersModel& layersModel) :
     QOpenGLWidget(parent),
     QOpenGLFunctions_3_3_Core(),
+    _layersModel(layersModel),
     _openGLInitialized(false),
     _pixelSelectionTool(this),
     _openglDebugLogger(std::make_unique<QOpenGLDebugLogger>()),
     _backgroundGradient(),
     _keys(),
-    _layersRenderer(this)
+    _renderer(this)
 {
     setContextMenuPolicy(Qt::CustomContextMenu);
     setAcceptDrops(true);
@@ -77,7 +80,7 @@ bool ImageViewerWidget::eventFilter(QObject* target, QEvent* event)
             if (!keyEvent->isAutoRepeat()) {
                 if (keyEvent->key() == Qt::Key_Space) {
                     _keys |= Qt::Key_Space;
-                    _layersRenderer.setInteractionMode(Renderer::InteractionMode::Navigation);
+                    _renderer.setInteractionMode(Renderer::InteractionMode::Navigation);
                     setCursor(Qt::ClosedHandCursor);
                 }
             }
@@ -92,7 +95,7 @@ bool ImageViewerWidget::eventFilter(QObject* target, QEvent* event)
             if (!keyEvent->isAutoRepeat()) {
                 if (keyEvent->key() == Qt::Key_Space) {
                     _keys &= ~Qt::Key_Space;
-                    _layersRenderer.setInteractionMode(Renderer::InteractionMode::LayerEditing);
+                    _renderer.setInteractionMode(Renderer::InteractionMode::LayerEditing);
                     setCursor(Qt::ArrowCursor);
                 }
             }
@@ -123,6 +126,8 @@ void ImageViewerWidget::initializeGL()
 #ifdef _DEBUG
     _openglDebugLogger->initialize();
 #endif
+
+    _renderer.zoomToRectangle(QRect(-100.0f, -100.0f, 200.0f, 200.0f));
 }
 
 void ImageViewerWidget::resizeGL(int width, int height)
@@ -146,13 +151,16 @@ void ImageViewerWidget::paintGL()
             painter.beginNativePainting();
             {
                 // Bind the frame buffer belonging to the widget
-                //glBindFramebuffer(GL_FRAMEBUFFER, defaultFramebufferObject());
+                glBindFramebuffer(GL_FRAMEBUFFER, defaultFramebufferObject());
 
                 //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
                 // Reset the blending function
-                //glEnable(GL_BLEND);
-                //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+                glEnable(GL_BLEND);
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+                for (auto& layer : _layersModel.getLayers())
+                    layer->render(_renderer.getProjectionMatrix() * _renderer.getViewMatrix());
             }
             painter.endNativePainting();
         }

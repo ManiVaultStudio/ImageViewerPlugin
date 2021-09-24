@@ -111,6 +111,9 @@ public: // Layer operations
      */
     void moveLayer(const QModelIndex& layerModelIndex, const std::int32_t& amount = 1);
 
+    /** Get the layers data */
+    QVector<SharedLayer>& getLayers();
+
 protected:
     
     /**

@@ -1,4 +1,3 @@
-R"(
 #version 330
 
 uniform sampler2D pixelSelectionTexture;
@@ -154,4 +153,3 @@ void main(void)
         }
     }
 }
-)"

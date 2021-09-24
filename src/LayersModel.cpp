@@ -541,6 +541,11 @@ void LayersModel::moveLayer(const QModelIndex& layerModelIndex, const std::int32
     }
 }
 
+QVector<SharedLayer>& LayersModel::getLayers()
+{
+    return _layers;
+}
+
 QIcon LayersModel::getColorIcon(const QColor& color) const
 {
     QPixmap pixmap(QSize(14, 14));

@@ -1,23 +1,29 @@
 #pragma once
 
-#include "util/DatasetRef.h"
+#include "Renderable.h"
 #include "LayerAction.h"
+
+#include "util/DatasetRef.h"
 
 #include "ImageData/Images.h"
 #include "PointData.h"
-
-#include <QObject>
 
 using namespace hdps::util;
 
 class ImageViewerPlugin;
 
-class Layer : public QObject
+class Layer : public Renderable
 {
     Q_OBJECT
 
 public:
     Layer(ImageViewerPlugin* imageViewerPlugin, const QString& datasetName);
+
+    /**
+     * Renders the props
+     * @param parentMVP Parent model view projection matrix
+     */
+    void render(const QMatrix4x4& parentMVP) override;
 
     /** Get pointer to image viewer plugin */
     ImageViewerPlugin* getImageViewerPlugin();
@@ -39,6 +45,17 @@ public: // Points wrapper functions
     const std::uint32_t getNumberOfPoints() const;
     const std::uint32_t getNumberOfDimensions() const;
     const QStringList getDimensionNames() const;
+
+public: // Selection
+
+    /** Select all pixels in the image(s) */
+    void selectAll();
+
+    /** De-select all pixels in the image(s) */
+    void selectNone();
+
+    /** Invert the pixel selection in the image(s) */
+    void invertSelection();
 
 protected:
     ImageViewerPlugin*      _imageViewerPlugin;     /** Pointer to image viewer plugin */

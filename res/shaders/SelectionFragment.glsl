@@ -1,4 +1,3 @@
-R"(
 #version 330
 
 uniform usampler2DArray channelTextures;    // Integer texture samplers (0: Selection)
@@ -24,4 +23,3 @@ void main(void)
     else 
         fragmentColor= vec4(0);
 }
-)"

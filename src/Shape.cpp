@@ -16,7 +16,7 @@ Shape::Shape(Prop& prop, const QString& name) :
 
 QString Shape::getFullName()
 {
-    return QString("%2::%3").arg(_prop.name(), _name);
+    return QString("%2::%3").arg(_prop.getName(), _name);
 }
 
 void Shape::initialize()

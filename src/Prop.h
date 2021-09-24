@@ -38,7 +38,7 @@ public:
     bool isInitialized() const;
 
     /** Returns the prop name */
-    QString name() const;
+    QString getName() const;
 
     /**
      * Sets the prop name
@@ -112,7 +112,7 @@ protected: // Shape management
     template<typename T>
     void addShape(const QString& name)
     {
-        auto shape = QSharedPointer<T>::create(this, name);
+        auto shape = QSharedPointer<T>::create(*this, name);
 
         _shapes.insert(name, shape);
     }

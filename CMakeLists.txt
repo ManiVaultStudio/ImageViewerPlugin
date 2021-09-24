@@ -31,7 +31,7 @@ file(GLOB MODEL src/*Model.* src/*Layer.* src/*Dataset.* src/*Layer.* src/*Item.
 file(GLOB RENDERING src/*Renderer.* src/*Actor.* src/*Prop.* src/*Shape.*)
 file(GLOB WIDGETS src/*Widget.*)
 file(GLOB ACTIONS src/*Action.*)
-file(GLOB SHADERS src/*.glsl)
+file(GLOB SHADERS res/shaders/*.glsl)
 file(GLOB JSON src/*.json)
 file(GLOB QRC src/*.qrc)
 
@@ -50,6 +50,7 @@ source_group(Aux FILES ${AUX})
 include_directories("${INSTALL_DIR}/$<CONFIGURATION>/include/" src)
 
 QT5_WRAP_UI(UI_HEADERS ${UIS})
+QT5_ADD_RESOURCES(RESOURCE_FILES res/resources.qrc)
 
 add_library(${PROJECT} SHARED ${SOURCES} ${UIS} ${SHADERS} ${AUX})
 

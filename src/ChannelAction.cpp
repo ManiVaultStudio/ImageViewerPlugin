@@ -247,6 +247,20 @@ void ChannelAction::computeMaskChannel()
 void ChannelAction::computeSelectionChannel()
 {
     qDebug() << "Compute selection channel";
+
+    /*
+    auto& selectionChannel = (*getChannel(ult(ChannelIndex::Selection)));
+    
+    selectionChannel.setImageSize(getImageSize());
+    selectionChannel.fill(0);
+    
+    for (auto selectionIndex : getSelectionIndices())
+        selectionChannel[selectionIndex] = 255;
+    
+    selectionChannel.setChanged();
+    
+    emit channelChanged(ult(ChannelIndex::Selection));
+    */
 }
 
 ChannelAction::Widget::Widget(QWidget* parent, ChannelAction* channelAction, const WidgetActionWidget::State& state) :

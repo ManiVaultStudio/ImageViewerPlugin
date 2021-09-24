@@ -1,0 +1,12 @@
+<RCC>
+	<qresource prefix="/Shaders">
+		<file alias="PointsFragment.glsl">shaders/PointsFragment.glsl</file>
+		<file alias="PointsVertex.glsl">shaders/PointsVertex.glsl</file>
+		<file alias="SelectionFragment.glsl">shaders/SelectionFragment.glsl</file>
+		<file alias="SelectionToolFragment.glsl">shaders/SelectionToolFragment.glsl</file>
+		<file alias="SelectionToolOffScreenFragment.glsl">shaders/SelectionToolOffScreenFragment.glsl</file>
+		<file alias="SelectionToolOffScreenVertex.glsl">shaders/SelectionToolOffScreenVertex.glsl</file>
+		<file alias="SelectionToolVertex.glsl">shaders/SelectionToolVertex.glsl</file>
+		<file alias="SelectionVertex.glsl">shaders/SelectionVertex.glsl</file>
+	</qresource>
+</RCC>

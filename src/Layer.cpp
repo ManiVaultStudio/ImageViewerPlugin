@@ -1,8 +1,10 @@
 #include "Layer.h"
+#include "ImageViewerPlugin.h"
 #include "DataHierarchyItem.h"
+#include "LayerImageProp.h"
 
 Layer::Layer(ImageViewerPlugin* imageViewerPlugin, const QString& datasetName) :
-    QObject(),
+    Renderable(imageViewerPlugin->getImageViewerWidget()->getRenderer()),
     _imageViewerPlugin(imageViewerPlugin),
     _images(datasetName),
     _points(_images->getHierarchyItem().getParent()->getDatasetName()),
@@ -13,6 +15,21 @@ Layer::Layer(ImageViewerPlugin* imageViewerPlugin, const QString& datasetName) :
 
     if (!_points.isValid())
         throw std::runtime_error("The layer points dataset is not valid after initialization");
+
+    _props << new LayerImageProp(*this, "LayerImageProp");
+}
+
+void Layer::render(const QMatrix4x4& parentMVP)
+{
+    // qDebug() << "Render" << _id;
+
+    //if (!isEnabled())
+        //return;
+
+    const auto mvp = parentMVP * _modelMatrix;
+
+    for (auto prop : _props)
+        prop->render(mvp, _opacity);
 }
 
 ImageViewerPlugin* Layer::getImageViewerPlugin()
@@ -77,6 +94,58 @@ const QStringList Layer::getDimensionNames() const
     }
 
     return dimensionNames;
+}
+
+void Layer::selectAll()
+{
+    /*
+    auto& selectionIndices = getSelectionIndices();
+
+    selectionIndices.clear();
+    selectionIndices.resize(getNoPixels());
+
+    if (_pointsDataset->isFull()) {
+        std::iota(selectionIndices.begin(), selectionIndices.end(), 0);
+    }
+    else {
+        for (const auto& index : _pointsDataset->indices)
+            selectionIndices.push_back(index);
+    }
+
+    imageViewerPlugin->core()->notifySelectionChanged(_pointsDataset->getName());
+    */
+}
+
+void Layer::selectNone()
+{
+    /*
+    auto& selectionIndices = getSelectionIndices();
+
+    selectionIndices.clear();
+
+    imageViewerPlugin->core()->notifySelectionChanged(_pointsDataset->getName());
+    */
+}
+
+void Layer::invertSelection()
+{
+    /*
+    auto& selectionIndices = getSelectionIndices();
+
+    std::set<std::uint32_t> selectionSet(selectionIndices.begin(), selectionIndices.end());
+
+    const auto noPixels = getNoPixels();
+
+    selectionIndices.clear();
+    selectionIndices.reserve(noPixels - selectionSet.size());
+
+    for (int i = 0; i < noPixels; i++) {
+        if (selectionSet.find(i) == selectionSet.end())
+            selectionIndices.push_back(i);
+    }
+
+    imageViewerPlugin->core()->notifySelectionChanged(_pointsDataset->getName());
+    */
 }
 
 //#include "ImageViewerPlugin.h"

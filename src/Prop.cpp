@@ -85,7 +85,7 @@ bool Prop::isInitialized() const
     return _initialized;
 }
 
-QString Prop::name() const
+QString Prop::getName() const
 {
     return _name;
 }

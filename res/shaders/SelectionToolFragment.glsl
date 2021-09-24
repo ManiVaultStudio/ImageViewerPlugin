@@ -1,4 +1,3 @@
-R"(
 #version 330
 
 uniform sampler2D offScreenTexture;     // Selection image texture
@@ -14,4 +13,3 @@ void main(void)
     else 
         fragmentColor= vec4(0);
 }
-)"

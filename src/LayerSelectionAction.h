@@ -2,6 +2,8 @@
 
 #include "actions/GroupAction.h"
 #include "actions/PixelSelectionAction.h"
+#include "actions/TriggerAction.h"
+
 #include "util/PixelSelectionTool.h"
 
 class QWidget;
@@ -29,6 +31,7 @@ public:
 public: /** Action getters */
 
 protected:
-    QWidget*                _targetWidget;              /** Pointer to target widget */
-    PixelSelectionTool&     _pixelSelectionTool;        /** Reference to pixel selection tool */
+    QWidget*                _targetWidget;                          /** Pointer to target widget */
+    PixelSelectionTool&     _pixelSelectionTool;                    /** Reference to pixel selection tool */
+    TriggerAction           _createSubsetFromSelectionAction;       /** Create subset from selection action */
 };
