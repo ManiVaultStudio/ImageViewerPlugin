@@ -4,6 +4,7 @@
 
 #include "util/ColorSpace.h"
 
+using namespace hdps;
 using namespace hdps::util;
 
 LayerImageAction::LayerImageAction(LayerAction& layerAction) :
@@ -11,19 +12,25 @@ LayerImageAction::LayerImageAction(LayerAction& layerAction) :
     _layerAction(layerAction),
     _opacityAction(this, "Opacity", 0.0f, 100.0f, 100.0f, 100.0f, 1),
     _colorSpaceAction(this, "Color space", colorSpaces.values(), "Mono", "Mono"),
-    _channel1Action(*this, "Channel 1"),
-    _channel2Action(*this, "Channel 2"),
-    _channel3Action(*this, "Channel 3"),
+    _channel1Action(*this, ChannelAction::Channel1, ChannelAction::channelIndexes.value(ChannelAction::Channel1)),
+    _channel2Action(*this, ChannelAction::Channel2, ChannelAction::channelIndexes.value(ChannelAction::Channel2)),
+    _channel3Action(*this, ChannelAction::Channel3, ChannelAction::channelIndexes.value(ChannelAction::Channel3)),
+    _channelMaskAction(*this, ChannelAction::Mask, ChannelAction::channelIndexes.value(ChannelAction::Mask)),
+    _channelSelectionAction(*this, ChannelAction::Selection, ChannelAction::channelIndexes.value(ChannelAction::Selection)),
     _colorMapAction(this, "Color map"),
     _interpolationTypeAction(this, "Interpolate", {"Bilinear", "Nearest neighbor"}, "Bilinear", "Bilinear"),
     _constantColorAction(this, "Constant color", true, true)
 {
     setText("Image");
 
+    _channelMaskAction.setVisible(false);
+    _channelSelectionAction.setVisible(false);
+
     _opacityAction.setToolTip("Image layer opacity");
     _channel1Action.setToolTip("Channel 1");
     _channel2Action.setToolTip("Channel 2");
     _channel3Action.setToolTip("Channel 3");
+    _channelMaskAction.setToolTip("Mask channel");
     _colorSpaceAction.setToolTip("The color space used to shade the image");
     _colorMapAction.setToolTip("Image color map");
     _interpolationTypeAction.setToolTip("The type of two-dimensional image interpolation used");

@@ -2,11 +2,18 @@
 
 #include "WindowLevelAction.h"
 
+#include "event/EventListener.h"
+
 #include "actions/WidgetAction.h"
 #include "actions/ToggleAction.h"
 #include "actions/OptionAction.h"
 
+#include "util/DatasetRef.h"
+
+#include "ImageData/Images.h"
+
 using namespace hdps::gui;
+using namespace hdps::util;
 
 class LayerImageAction;
 
@@ -17,8 +24,25 @@ class LayerImageAction;
  *
  * @author Thomas Kroes
  */
-class ChannelAction : public WidgetAction
+class ChannelAction : public WidgetAction, public hdps::EventListener
 {
+
+public:
+
+    /** Channel index enumerations */
+    enum ChannelIndex {
+        Channel1,       /** Channel 1 */
+        Channel2,       /** Channel 2 */
+        Channel3,       /** Channel 3 */
+        Mask,           /** Mask channel */
+        Selection,      /** Selection channel */
+
+        Count = Selection + 1
+    };
+
+    /** Maps channel index enum to name */
+    static const QMap<ChannelIndex, QString> channelIndexes;
+
 public:
 
     /** Describes the widget flags */
@@ -71,9 +95,36 @@ public:
     /** 
      * Constructor
      * @param layerImageAction Reference to layer image action
+     * @param index Channel index
      * @param name Name of the channel
      */
-    ChannelAction(LayerImageAction& layerImageAction, const QString& name);
+    ChannelAction(LayerImageAction& layerImageAction, const ChannelIndex& index, const QString& name);
+
+private: // Data extraction
+
+    /** Get reference to images dataset */
+    DatasetRef<Images>& getImages();
+
+    /** Get reference to points dataset which contains the actual image data */
+    DatasetRef<Points>& getPoints();
+
+    /** Get selection indices */
+    std::vector<std::uint32_t> getSelectionIndices();
+
+    /** Compute scalar data for image sequence */
+    void computeScalarData();
+
+    /** Compute scalar data for image sequence */
+    void computeScalarDataForImageSequence();
+
+    /** Compute scalar data for image stack */
+    void computeScalarDataForImageStack();
+
+    /** Compute mask channel */
+    void computeMaskChannel();
+
+    /** Compute selection channel */
+    void computeSelectionChannel();
 
 public: /** Action getters */
 
@@ -81,7 +132,9 @@ public: /** Action getters */
     WindowLevelAction& getWindowLevelAction() { return _windowLevelAction; }
 
 protected:
-    LayerImageAction&   _layerImageAction;      /** Reference to layer image action */
-    OptionAction        _dimensionAction;       /** Selected dimension action */
-    WindowLevelAction   _windowLevelAction;     /** Window/level action */
+    LayerImageAction&       _layerImageAction;      /** Reference to layer image action */
+    const ChannelIndex      _index;                 /** Channel index */
+    OptionAction            _dimensionAction;       /** Selected dimension action */
+    WindowLevelAction       _windowLevelAction;     /** Window/level action */
+    QVector<float>          _scalarData;            /** Channel scalar data for the specified dimension */
 };

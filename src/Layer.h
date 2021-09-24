@@ -25,6 +25,7 @@ public:
     LayerAction& getLayerAction() { return _layerAction; }
 
     DatasetRef<Images>& getImages() { return _images; }
+    DatasetRef<Points>& getPoints() { return _points; }
 
     const QString getImagesDatasetName() const;
 

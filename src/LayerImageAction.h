@@ -30,7 +30,17 @@ public:
 
 public: // Action getters
 
+    LayerAction& getLayerAction() { return _layerAction; }
     DecimalAction& getOpacityAction() { return _opacityAction; }
+    OptionAction& getColorSpaceAction() { return _colorSpaceAction; }
+    ChannelAction& getChannel1Action() { return _channel1Action; }
+    ChannelAction& getChannel2Action() { return _channel2Action; }
+    ChannelAction& getChannel3Action() { return _channel3Action; }
+    ChannelAction& getChannelMaskAction() { return _channelMaskAction; }
+    ChannelAction& getChannelSelectionAction() { return _channelSelectionAction; }
+    ColorMapAction& getColorMapAction() { return _colorMapAction; }
+    OptionAction& getInterpolationTypeAction() { return _interpolationTypeAction; }
+    ToggleAction& getConstantColorAction() { return _constantColorAction; }
 
 protected:
     LayerAction&        _layerAction;                   /** Reference to layer action */
@@ -39,6 +49,8 @@ protected:
     ChannelAction       _channel1Action;                /** Channel 1 action */
     ChannelAction       _channel2Action;                /** Channel 2 action */
     ChannelAction       _channel3Action;                /** Channel 3 action */
+    ChannelAction       _channelMaskAction;             /** Mask channel action */
+    ChannelAction       _channelSelectionAction;        /** Selection channel action */
     ColorMapAction      _colorMapAction;                /** Color map action */
     OptionAction        _interpolationTypeAction;       /** Interpolation type action */
     ToggleAction        _constantColorAction;           /** Constant color action */
