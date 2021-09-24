@@ -20,7 +20,8 @@ LayerImageAction::LayerImageAction(LayerAction& layerAction) :
     _channelSelectionAction(*this, ChannelAction::Selection, ChannelAction::channelIndexes.value(ChannelAction::Selection)),
     _colorMapAction(this, "Color map"),
     _interpolationTypeAction(this, "Interpolate", interpolationTypes.values(), "Bilinear", "Bilinear"),
-    _constantColorAction(this, "Constant color", true, true)
+    _useConstantColorAction(this, "Use constant color", true, true),
+    _constantColorAction(this, "Constant color", QColor(Qt::white), QColor(Qt::white))
 {
     setText("Image");
 
@@ -35,6 +36,8 @@ LayerImageAction::LayerImageAction(LayerAction& layerAction) :
     _colorSpaceAction.setToolTip("The color space used to shade the image");
     _colorMapAction.setToolTip("Image color map");
     _interpolationTypeAction.setToolTip("The type of two-dimensional image interpolation used");
+    _useConstantColorAction.setToolTip("Use constant color to shade the image");
+    _constantColorAction.setToolTip("Constant color");
 
     _opacityAction.setSuffix("%");
 
@@ -45,7 +48,8 @@ LayerImageAction::LayerImageAction(LayerAction& layerAction) :
     _colorSpaceAction.setWidgetFlags(OptionAction::All);
     _colorMapAction.setWidgetFlags(ColorMapAction::Settings | ColorMapAction::ResetPushButton);
     _interpolationTypeAction.setWidgetFlags(OptionAction::All);
-    _constantColorAction.setWidgetFlags(ToggleAction::CheckBoxAndResetPushButton);
+    _useConstantColorAction.setWidgetFlags(ToggleAction::CheckBoxAndResetPushButton);
+    _constantColorAction.setWidgetFlags(ColorAction::All);
 
     _colorMapAction.setColorMapType(ColorMap::Type::TwoDimensional);
 
@@ -130,5 +134,34 @@ LayerImageAction::LayerImageAction(LayerAction& layerAction) :
 
     connect(&_colorSpaceAction, &OptionAction::currentIndexChanged, this, updateChannelActions);
 
+    const auto updateConstantColor = [this]() -> void {
+        _constantColorAction.setEnabled(_useConstantColorAction.isChecked());
+    };
+
+    connect(&_useConstantColorAction, &ToggleAction::toggled, this, updateConstantColor);
+
     updateChannelActions();
+    updateConstantColor();
+}
+
+const std::uint32_t LayerImageAction::getNumberOfActiveChannels() const
+{
+    switch (static_cast<ColorSpace>(_colorSpaceAction.getCurrentIndex()))
+    {
+        case ColorSpace::Mono:
+            return 1;
+
+        case ColorSpace::Duo:
+            return 2;
+
+        case ColorSpace::RGB:
+        case ColorSpace::HSL:
+        case ColorSpace::LAB:
+            return 3;
+
+        default:
+            break;
+    }
+
+    return 0;
 }

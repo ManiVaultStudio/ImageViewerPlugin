@@ -4,6 +4,7 @@
 #include "actions/DecimalAction.h"
 #include "actions/ColorMapAction.h"
 #include "actions/ToggleAction.h"
+#include "actions/ColorAction.h"
 
 #include "ChannelAction.h"
 
@@ -28,6 +29,9 @@ public:
      */
     LayerImageAction(LayerAction& layerAction);
 
+    /** Get the number of active channels */
+    const std::uint32_t getNumberOfActiveChannels() const;
+
 public: // Action getters
 
     LayerAction& getLayerAction() { return _layerAction; }
@@ -40,7 +44,8 @@ public: // Action getters
     ChannelAction& getChannelSelectionAction() { return _channelSelectionAction; }
     ColorMapAction& getColorMapAction() { return _colorMapAction; }
     OptionAction& getInterpolationTypeAction() { return _interpolationTypeAction; }
-    ToggleAction& getConstantColorAction() { return _constantColorAction; }
+    ToggleAction& getUseConstantColorAction() { return _useConstantColorAction; }
+    ColorAction& getConstantColorAction() { return _constantColorAction; }
 
 protected:
     LayerAction&        _layerAction;                   /** Reference to layer action */
@@ -53,5 +58,6 @@ protected:
     ChannelAction       _channelSelectionAction;        /** Selection channel action */
     ColorMapAction      _colorMapAction;                /** Color map action */
     OptionAction        _interpolationTypeAction;       /** Interpolation type action */
-    ToggleAction        _constantColorAction;           /** Constant color action */
+    ToggleAction        _useConstantColorAction;        /** Constant color action */
+    ColorAction         _constantColorAction;           /** Color action */
 };

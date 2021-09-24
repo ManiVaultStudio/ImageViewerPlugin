@@ -60,4 +60,7 @@ protected: // Miscellaneous
 
     /** Updates the internal model matrix */
     void updateModelMatrix();
+
+protected:
+    Layer&      _layer;     /** Reference to layer */
 };
