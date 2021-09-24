@@ -11,7 +11,8 @@ ImageViewerWidget::ImageViewerWidget(QWidget* parent) :
     _pixelSelectionTool(this),
     _openglDebugLogger(std::make_unique<QOpenGLDebugLogger>()),
     _backgroundGradient(),
-    _keys()
+    _keys(),
+    _layersRenderer(this)
 {
     setContextMenuPolicy(Qt::CustomContextMenu);
     setAcceptDrops(true);
@@ -76,7 +77,7 @@ bool ImageViewerWidget::eventFilter(QObject* target, QEvent* event)
             if (!keyEvent->isAutoRepeat()) {
                 if (keyEvent->key() == Qt::Key_Space) {
                     _keys |= Qt::Key_Space;
-                    //_renderer->setInteractionMode(InteractionMode::Navigation);
+                    _layersRenderer.setInteractionMode(Renderer::InteractionMode::Navigation);
                     setCursor(Qt::ClosedHandCursor);
                 }
             }
@@ -91,7 +92,7 @@ bool ImageViewerWidget::eventFilter(QObject* target, QEvent* event)
             if (!keyEvent->isAutoRepeat()) {
                 if (keyEvent->key() == Qt::Key_Space) {
                     _keys &= ~Qt::Key_Space;
-                    //_renderer->setInteractionMode(InteractionMode::LayerEditing);
+                    _layersRenderer.setInteractionMode(Renderer::InteractionMode::LayerEditing);
                     setCursor(Qt::ArrowCursor);
                 }
             }

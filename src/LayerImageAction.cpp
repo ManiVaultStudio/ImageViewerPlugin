@@ -1,7 +1,8 @@
 #include "LayerImageAction.h"
 #include "LayerAction.h"
 #include "Layer.h"
-#include "Common.h"
+
+#include "util/ColorSpace.h"
 
 using namespace hdps::util;
 
@@ -9,7 +10,7 @@ LayerImageAction::LayerImageAction(LayerAction& layerAction) :
     GroupAction(&layerAction, true),
     _layerAction(layerAction),
     _opacityAction(this, "Opacity", 0.0f, 100.0f, 100.0f, 100.0f, 1),
-    _colorSpaceAction(this, "Color space", { "Mono", "Duo", "RGB", "HSV", "LAB" }, "Mono", "Mono"),
+    _colorSpaceAction(this, "Color space", colorSpaces.values(), "Mono", "Mono"),
     _channel1Action(*this, "Channel 1"),
     _channel2Action(*this, "Channel 2"),
     _channel3Action(*this, "Channel 3"),

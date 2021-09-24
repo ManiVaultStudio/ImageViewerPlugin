@@ -1,5 +1,7 @@
 #include "Range.h"
 
+#include <algorithm>
+
 Range::Range(const float& min /*= 0.0f*/, const float& max /*= 0.0f*/) :
     _min(std::min(min, max)),
     _max(std::max(min, max))

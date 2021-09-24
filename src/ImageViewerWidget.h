@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Renderer.h"
+
 #include "util/PixelSelectionTool.h"
 
 #include <QOpenGLWidget>
@@ -59,4 +61,5 @@ protected:
     std::unique_ptr<QOpenGLDebugLogger>     _openglDebugLogger;         /** OpenGL logger instance for debugging (only enabled in debug mode for performance reasons) */
     QRadialGradient                         _backgroundGradient;        /** Viewport gradient background */
     std::int32_t                            _keys;                      /** Currently pressed keyboard keys */
+    Renderer                                _layersRenderer;            /** Layers OpenGL renderer */
 };

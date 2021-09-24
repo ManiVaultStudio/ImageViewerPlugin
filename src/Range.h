@@ -1,11 +1,7 @@
 #pragma once
 
-#include "Common.h"
-
 /**
  * Range class
- *
- * Layer that contains child layers
  *
  * @author Thomas Kroes
  */
@@ -54,5 +50,3 @@ private:
     float   _min;   /** Range minimum */
     float   _max;   /** Range maximum */
 };
-
-Q_DECLARE_METATYPE(Range);

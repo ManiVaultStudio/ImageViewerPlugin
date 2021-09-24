@@ -9,7 +9,7 @@
 //#include <QOpenGLTexture>
 //
 //class Renderer;
-//class Node;
+//class Renderable;
 //class Shape;
 //
 ///**
@@ -24,11 +24,12 @@
 //{
 //public: // Construction/destruction
 //
-//    /** Constructor
-//     * @param node Pointer to the associated node
+//    /** 
+//     * Constructor
+//     * @param renderable Reference to renderable object
 //     * @param name Name of the prop
 //     */
-//    Prop(Node* node, const QString& name);
+//    Prop(Renderable& renderable, const QString& name);
 //
 //    /** Destructor */
 //    ~Prop() override;
@@ -163,14 +164,11 @@
 //    */
 //    QSharedPointer<QOpenGLTexture>& getTextureByName(const QString& name);
 //
-//public:
-//    static Renderer* renderer;                                                      /** Static renderer instance */
-//
 //protected:
-//    Node*                                                   _node;                  /** Pointer to parent (if any) */
-//    bool                                                    _initialized;           /** Whether the prop is ready for rendering */
-//    QString                                                 _name;                  /** Name of the prop */
-//    bool                                                    _visible;               /** Whether the prop is visible or not */
+//    Renderable&     _renderable;        /** Reference to renderable object */
+//    bool            _initialized;       /** Whether the prop is ready for rendering */
+//    QString         _name;              /** Name of the prop */
+//    bool            _visible;           /** Whether the prop is visible or not */
 //
 //private:
 //    QMatrix4x4                                              _modelMatrix;           /** Transformation matrix */

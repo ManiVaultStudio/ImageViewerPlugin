@@ -8,11 +8,9 @@
 //#include <QOpenGLFramebufferObject>
 //#include <QDebug>
 //
-//Renderer* Prop::renderer = nullptr;
-//
-//Prop::Prop(Node* node, const QString& name) :
-//    QObject(reinterpret_cast<QObject*>(node)),
-//    _node(node),
+//Prop::Prop(Renderable& renderable, const QString& name) :
+//    QObject(reinterpret_cast<QObject*>(&renderable)),
+//    _renderable(node),
 //    _initialized(false),
 //    _name(name),
 //    _visible(true),
