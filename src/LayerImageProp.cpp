@@ -107,8 +107,8 @@ void LayerImageProp::initialize()
             Prop::initialize();
 
             const auto shaderProgram    = getShaderProgramByName("Quad");
-            const auto vertexShader     = loadFileContents(":PointsVertex.glsl");
-            const auto fragmentShader   = loadFileContents(":PointsFragment.glsl");
+            const auto vertexShader     = loadFileContents(":/Shaders/PointsVertex.glsl");
+            const auto fragmentShader   = loadFileContents(":Shaders/PointsFragment.glsl");
 
             if (!shaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShader))
                 throw std::runtime_error("Unable to compile quad vertex shader");
@@ -157,7 +157,7 @@ void LayerImageProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
 {
     //getRenderer().bindOpenGLContext();
     {
-        getShapeByName<QuadShape>("Quad")->setRectangle(QRectF(0.0f, 0.0f, 10000.0f, 10000.0f));
+        getShapeByName<QuadShape>("Quad")->setRectangle(QRectF(0.0f, 0.0f, 100.0f, 100.0f));
         updateModelMatrix();
     }
     //getRenderer().releaseOpenGLContext();

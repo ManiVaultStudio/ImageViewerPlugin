@@ -20,7 +20,7 @@ ImageViewerWidget::ImageViewerWidget(QWidget* parent, LayersModel& layersModel) 
     setContextMenuPolicy(Qt::CustomContextMenu);
     setAcceptDrops(true);
     setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
-    //setFocusPolicy(Qt::StrongFocus);
+    setFocusPolicy(Qt::StrongFocus);
     setMouseTracking(true);
 
     // Configure pixel selection tool
@@ -75,13 +75,24 @@ bool ImageViewerWidget::eventFilter(QObject* target, QEvent* event)
     {
         case QEvent::KeyPress:
         {
+            // Get key that was pressed
             auto keyEvent = static_cast<QKeyEvent*>(event);
 
+            // Do not handle repeating keys
             if (!keyEvent->isAutoRepeat()) {
+
+                // Start navigating when the space key is pressed
                 if (keyEvent->key() == Qt::Key_Space) {
                     _keys |= Qt::Key_Space;
+
+                    // Set the render interaction mode to navigation
                     _renderer.setInteractionMode(Renderer::InteractionMode::Navigation);
+
+                    // Provide a visual cue for navigation
                     setCursor(Qt::ClosedHandCursor);
+
+                    // Disable the pixel selection tool, as we are navigating
+                    _pixelSelectionTool.setEnabled(true);
                 }
             }
 
@@ -90,13 +101,24 @@ bool ImageViewerWidget::eventFilter(QObject* target, QEvent* event)
 
         case QEvent::KeyRelease:
         {
+            // Get key that was pressed
             auto keyEvent = static_cast<QKeyEvent*>(event);
 
+            // Do not handle repeating keys
             if (!keyEvent->isAutoRepeat()) {
+
+                // Stop navigating and start layer editing when the space key is released
                 if (keyEvent->key() == Qt::Key_Space) {
                     _keys &= ~Qt::Key_Space;
+
+                    // Set the render interaction mode to layer editing
                     _renderer.setInteractionMode(Renderer::InteractionMode::LayerEditing);
+
+                    // Provide a visual cue for layer editing
                     setCursor(Qt::ArrowCursor);
+
+                    // Enable the pixel selection tool again
+                    _pixelSelectionTool.setEnabled(true);
                 }
             }
 
@@ -107,10 +129,9 @@ bool ImageViewerWidget::eventFilter(QObject* target, QEvent* event)
             break;
     }
 
-    //if (_keys & Qt::Key_Space)
-    //    _renderer->handleEvent(event);
-    //else
-    //    _imageViewerPlugin->getLayersModel().dispatchEventToSelectedLayer(event);
+    // Handle navigation in the renderer
+    if (_keys & Qt::Key_Space)
+        _renderer.handleEvent(event);
 
     return QWidget::eventFilter(target, event);
 }

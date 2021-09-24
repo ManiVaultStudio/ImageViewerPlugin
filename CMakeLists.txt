@@ -45,6 +45,7 @@ source_group(Widgets FILES ${WIDGETS})
 source_group(Actions FILES ${ACTIONS})
 source_group(Shaders FILES ${SHADERS})
 source_group(Aux FILES ${AUX})
+source_group(Resources FILES res/resources.qrc)
 
 # Note: src is included for ClustersLayerWidget.h
 include_directories("${INSTALL_DIR}/$<CONFIGURATION>/include/" src)
@@ -52,7 +53,7 @@ include_directories("${INSTALL_DIR}/$<CONFIGURATION>/include/" src)
 QT5_WRAP_UI(UI_HEADERS ${UIS})
 QT5_ADD_RESOURCES(RESOURCE_FILES res/resources.qrc)
 
-add_library(${PROJECT} SHARED ${SOURCES} ${UIS} ${SHADERS} ${AUX})
+add_library(${PROJECT} SHARED ${SOURCES} ${UIS} ${SHADERS} ${AUX} ${RESOURCE_FILES})
 
 target_compile_features(${PROJECT} PRIVATE cxx_std_17)
 
