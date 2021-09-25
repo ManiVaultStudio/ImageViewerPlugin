@@ -18,16 +18,15 @@ const QMap<ChannelAction::ChannelIndex, QString> ChannelAction::channelIndexes =
 
 ChannelAction::ChannelAction(LayerImageAction& layerImageAction, const ChannelIndex& index, const QString& name) :
     WidgetAction(reinterpret_cast<QObject*>(&layerImageAction)),
-    EventListener(),
     _layerImageAction(layerImageAction),
     _index(index),
     _enabledAction(this, "Enabled"),
     _dimensionAction(this, "Dimension"),
     _windowLevelAction(*this),
-    _scalarData()
+    _scalarData(),
+    _scalarDataRange({0.0f, 0.0f})
 {
     setText(name);
-    setEventCore(Application::core());
 
     switch (_index)
     {
@@ -45,30 +44,61 @@ ChannelAction::ChannelAction(LayerImageAction& layerImageAction, const ChannelIn
         setResettable(isResettable());
     });
 
-    connect(&_dimensionAction, &OptionAction::currentIndexChanged, this, [this]() -> void {
+    connect(&_dimensionAction, &OptionAction::currentIndexChanged, this, [this]() {
         computeScalarData();
     });
 
     // Compute scalar data when the action is enabled
     connect(this, &QAction::changed, this, [this]() -> void {
-        if (isEnabled())
-            computeScalarData();
+        computeScalarData();
     });
 
     // Allocate space for the scalar data
     _scalarData.resize(getImages()->getNumberOfPixels());
 
-    // Re-compute the selection scalar data when the points selection changes
-    registerDataEventByType(PointType, [this](hdps::DataEvent* dataEvent) {
-        if (dataEvent->getType() == hdps::EventType::SelectionChanged) {
-            auto selectionChangedEvent = static_cast<hdps::SelectionChangedEvent*>(dataEvent);
+    const auto updateEnabled = [this]() -> void {
+        setEnabled(_enabledAction.isChecked());
+    };
 
-            if (selectionChangedEvent->dataSetName != getPoints()->getName() || _index != Selection)
-                return;
+    connect(&_enabledAction, &ToggleAction::toggled, this, updateEnabled);
 
-            computeScalarData();
-        }
+    // Flag the channel as changed when the window level settings change
+    connect(&_windowLevelAction, &WindowLevelAction::changed, this, [this]() {
+        emit changed(*this);
     });
+
+    updateEnabled();
+}
+
+const ChannelAction::ChannelIndex ChannelAction::getIndex() const
+{
+    return _index;
+}
+
+const std::vector<float>& ChannelAction::getScalarData() const
+{
+    return _scalarData;
+}
+
+const std::pair<float, float>& ChannelAction::getScalarDataRange() const
+{
+    return _scalarDataRange;
+}
+
+std::pair<float, float> ChannelAction::getDisplayRange()
+{
+    std::pair<float, float> displayRange;
+
+    const auto maxWindow        = _scalarDataRange.second - _scalarDataRange.first;
+    const auto windowNormalized = _windowLevelAction.getWindowAction().getValue();
+    const auto levelNormalized  = _windowLevelAction.getLevelAction().getValue();
+    const auto level            = std::clamp(_scalarDataRange.first + (levelNormalized * maxWindow), _scalarDataRange.first, _scalarDataRange.second);
+    const auto window           = std::clamp(windowNormalized * maxWindow, _scalarDataRange.first, _scalarDataRange.second);
+
+    displayRange.first  = std::clamp(level - (window / 2.0f), _scalarDataRange.first, _scalarDataRange.second);
+    displayRange.second = std::clamp(level + (window / 2.0f), _scalarDataRange.first, _scalarDataRange.second);
+
+    return displayRange;
 }
 
 bool ChannelAction::isResettable() const
@@ -151,11 +181,19 @@ void ChannelAction::computeScalarData()
             default:
                 break;
         }
-        
+
+        // Compute the scalar data minimum and maximum
+        computeScalarDataRange();
+
+        // Publish scalar data change
+        emit changed(*this);
     }
     catch (std::exception& e)
     {
         QMessageBox::critical(nullptr, "Unable to compute scalar data", e.what());
+    }
+    catch (...) {
+        QMessageBox::critical(nullptr, "Unable to compute scalar data", "An unhandled exception occurred");
     }
 }
 
@@ -261,6 +299,18 @@ void ChannelAction::computeSelectionChannel()
     
     emit channelChanged(ult(ChannelIndex::Selection));
     */
+}
+
+void ChannelAction::computeScalarDataRange()
+{
+    // Initialize scalar data range
+    _scalarDataRange = { std::numeric_limits<float>::max(), std::numeric_limits<float>::lowest() };
+
+    // Compute the actual scalar data range
+    for (auto& scalar : _scalarData) {
+        _scalarDataRange.first  = std::min(scalar, _scalarDataRange.first);
+        _scalarDataRange.second = std::max(scalar, _scalarDataRange.second);
+    }
 }
 
 ChannelAction::Widget::Widget(QWidget* parent, ChannelAction* channelAction, const WidgetActionWidget::State& state) :

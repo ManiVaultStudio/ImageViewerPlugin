@@ -150,8 +150,6 @@ void ImageViewerWidget::initializeGL()
 #ifdef _DEBUG
     _openglDebugLogger->initialize();
 #endif
-
-    _renderer.zoomToRectangle(QRect(-100.0f, -100.0f, 200.0f, 200.0f));
 }
 
 void ImageViewerWidget::resizeGL(int width, int height)

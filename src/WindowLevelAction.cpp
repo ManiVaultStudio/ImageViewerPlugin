@@ -20,6 +20,13 @@ WindowLevelAction::WindowLevelAction(ChannelAction& channelAction) :
 
     _windowAction.setToolTip("Window");
     _levelAction.setToolTip("Level");
+    
+    const auto windowLevelChanged = [this]() {
+        emit changed(*this);
+    };
+
+    connect(&_windowAction, &DecimalAction::valueChanged, this, windowLevelChanged);
+    connect(&_levelAction, &DecimalAction::valueChanged, this, windowLevelChanged);
 }
 
 WindowLevelAction::Widget::Widget(QWidget* parent, WindowLevelAction* windowLevelAction, const WidgetActionWidget::State& state) :

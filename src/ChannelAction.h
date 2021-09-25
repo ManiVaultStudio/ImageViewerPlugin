@@ -2,8 +2,6 @@
 
 #include "WindowLevelAction.h"
 
-#include "event/EventListener.h"
-
 #include "actions/WidgetAction.h"
 #include "actions/ToggleAction.h"
 #include "actions/OptionAction.h"
@@ -24,8 +22,10 @@ class LayerImageAction;
  *
  * @author Thomas Kroes
  */
-class ChannelAction : public WidgetAction, public hdps::EventListener
+class ChannelAction : public WidgetAction
 {
+    Q_OBJECT
+
 public:
 
     /** Channel index enumerations */
@@ -99,7 +99,21 @@ public:
      */
     ChannelAction(LayerImageAction& layerImageAction, const ChannelIndex& index, const QString& name);
 
-private: // Data extraction
+    /** Get the channel index */
+    const ChannelIndex getIndex() const;
+
+public: // Scalar data
+
+    /** Get scalar data */
+    const std::vector<float>& getScalarData() const;
+
+    /** Get scalar data range */
+    const std::pair<float, float>& getScalarDataRange() const;
+
+    /** Get display range */
+    std::pair<float, float> getDisplayRange();
+
+protected: // Data extraction
 
     /** Get reference to images dataset */
     DatasetRef<Images>& getImages();
@@ -125,6 +139,14 @@ private: // Data extraction
     /** Compute selection channel */
     void computeSelectionChannel();
 
+    /** Compute scalar data range */
+    void computeScalarDataRange();
+
+signals:
+    
+    /** Signals the channel changed */
+    void changed(ChannelAction& channelAction);
+
 public: /** Action getters */
 
     OptionAction& getDimensionAction() { return _dimensionAction; }
@@ -132,10 +154,13 @@ public: /** Action getters */
     WindowLevelAction& getWindowLevelAction() { return _windowLevelAction; }
 
 protected:
-    LayerImageAction&       _layerImageAction;      /** Reference to layer image action */
-    const ChannelIndex      _index;                 /** Channel index */
-    ToggleAction            _enabledAction;         /** Enabled action */
-    OptionAction            _dimensionAction;       /** Selected dimension action */
-    WindowLevelAction       _windowLevelAction;     /** Window/level action */
-    QVector<float>          _scalarData;            /** Channel scalar data for the specified dimension */
+    LayerImageAction&           _layerImageAction;      /** Reference to layer image action */
+    const ChannelIndex          _index;                 /** Channel index */
+    ToggleAction                _enabledAction;         /** Enabled action */
+    OptionAction                _dimensionAction;       /** Selected dimension action */
+    WindowLevelAction           _windowLevelAction;     /** Window/level action */
+    std::vector<float>          _scalarData;            /** Channel scalar data for the specified dimension */
+    std::pair<float, float>     _scalarDataRange;       /** Scalar data range */
+
+    friend class LayerImageAction;
 };

@@ -16,6 +16,8 @@ using namespace hdps::gui;
  */
 class WindowLevelAction : public WidgetAction
 {
+Q_OBJECT
+
 public:
 
     /** Widget class for settings action */
@@ -58,6 +60,11 @@ public: /** Action getters */
 
     DecimalAction& getWindowAction() { return _windowAction; }
     DecimalAction& getLevelAction() { return _levelAction; }
+
+signals:
+
+    /** Signals the window/level changed */
+    void changed(WindowLevelAction& windowLevelAction);
 
 protected:
     ChannelAction&      _channelAction;     /** Reference to channel action */

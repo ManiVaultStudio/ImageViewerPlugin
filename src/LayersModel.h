@@ -99,14 +99,20 @@ public: // Layer operations
     void removeLayer(const QString& datasetName);
 
     /**
-     * Remove a layer from the model  by model index
+     * Remove a layer from the model by model index of the layer to remove
      * @param layerModelIndex Layer model index
      */
     void removeLayer(const QModelIndex& layerModelIndex);
 
     /**
+     * Duplicates a layer  by model index
+     * @param layerModelIndex Layer model index of the layer to duplicate
+     */
+    void duplicateLayer(const QModelIndex& layerModelIndex);
+
+    /**
      * Move a layer in the model by amount
-     * @param layerModelIndex Layer model index
+     * @param layerModelIndex Layer model index of the layer to move
      * @param amount Amount of layers to move up/down
      */
     void moveLayer(const QModelIndex& layerModelIndex, const std::int32_t& amount = 1);

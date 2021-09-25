@@ -16,6 +16,11 @@ class LayerImageProp : public Prop
 {
     Q_OBJECT
 
+public:
+
+    using DisplayRange  = std::pair<float, float>;
+    using DisplayRanges = std::vector<DisplayRange>;
+
 public: // Enumerations
 
     /** Texture identifiers */
@@ -37,7 +42,7 @@ public: // Construction/destruction
     LayerImageProp(Layer& layer, const QString& name);
 
     /** Destructor */
-    ~LayerImageProp() override;
+    ~LayerImageProp() override = default;
 
 public: // Rendering
 
@@ -47,6 +52,22 @@ public: // Rendering
      * @param opacity Render opacity [0-1]
      */
     void render(const QMatrix4x4& nodeMVP, const float& opacity) override;
+
+    void setImageSize(const QSize& imageSize);
+
+    /**
+     * Set the color map image
+     * @param colorMapImage Color map image
+     */
+    void setColorMapImage(const QImage& colorMapImage);
+
+    /**
+     * Set channel scalar data
+     * @param channelIndex Channel index
+     * @param scalarData Scalar data
+     * @param displayRange Display range
+     */
+    void setChannelScalarData(const std::uint32_t& channelIndex, const std::vector<float>& scalarData, const DisplayRange& displayRange);
 
     /** Returns the bounding rectangle of the prop */
     QRectF getBoundingRectangle() const override;
@@ -62,5 +83,6 @@ protected: // Miscellaneous
     void updateModelMatrix();
 
 protected:
-    Layer&      _layer;     /** Reference to layer */
+    Layer&          _layer;             /** Reference to layer */
+    DisplayRanges   _displayRanges;     /** Display ranges */
 };

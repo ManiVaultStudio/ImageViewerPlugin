@@ -10,6 +10,7 @@ using namespace hdps::util;
 
 LayerImageAction::LayerImageAction(LayerAction& layerAction) :
     GroupAction(&layerAction, true),
+    EventListener(),
     _layerAction(layerAction),
     _opacityAction(this, "Opacity", 0.0f, 100.0f, 100.0f, 100.0f, 1),
     _colorSpaceAction(this, "Color space", colorSpaces.values(), "Mono", "Mono"),
@@ -24,6 +25,7 @@ LayerImageAction::LayerImageAction(LayerAction& layerAction) :
     _constantColorAction(this, "Constant color", QColor(Qt::white), QColor(Qt::white))
 {
     setText("Image");
+    setEventCore(Application::core());
 
     _channelMaskAction.setVisible(false);
     _channelSelectionAction.setVisible(false);
@@ -73,12 +75,12 @@ LayerImageAction::LayerImageAction(LayerAction& layerAction) :
     }
 
     const auto updateChannelActions = [this]() -> void {
-        switch (static_cast<ColorSpace>(_colorSpaceAction.getCurrentIndex()))
+        switch (static_cast<ColorSpaceType>(_colorSpaceAction.getCurrentIndex()))
         {
-            case ColorSpace::Mono:
-                _channel1Action.getEnabledAction().setCheckable(true);
-                _channel2Action.getEnabledAction().setCheckable(false);
-                _channel3Action.getEnabledAction().setCheckable(false);
+            case ColorSpaceType::Mono:
+                _channel1Action.getEnabledAction().setChecked(true);
+                _channel2Action.getEnabledAction().setChecked(false);
+                _channel3Action.getEnabledAction().setChecked(false);
                 _channel1Action.setText("Channel 1");
                 _channel2Action.setText("Channel 2");
                 _channel3Action.setText("Channel 3");
@@ -86,10 +88,10 @@ LayerImageAction::LayerImageAction(LayerAction& layerAction) :
                 _colorMapAction.setColorMapType(ColorMap::Type::OneDimensional);
                 break;
 
-            case ColorSpace::Duo:
-                _channel1Action.getEnabledAction().setCheckable(true);
-                _channel2Action.getEnabledAction().setCheckable(true);
-                _channel3Action.getEnabledAction().setCheckable(false);
+            case ColorSpaceType::Duo:
+                _channel1Action.getEnabledAction().setChecked(true);
+                _channel2Action.getEnabledAction().setChecked(true);
+                _channel3Action.getEnabledAction().setChecked(false);
                 _channel1Action.setText("Channel 1");
                 _channel2Action.setText("Channel 2");
                 _channel3Action.setText("Channel 3");
@@ -97,30 +99,30 @@ LayerImageAction::LayerImageAction(LayerAction& layerAction) :
                 _colorMapAction.setColorMapType(ColorMap::Type::TwoDimensional);
                 break;
 
-            case ColorSpace::RGB:
-                _channel1Action.getEnabledAction().setCheckable(true);
-                _channel2Action.getEnabledAction().setCheckable(true);
-                _channel3Action.getEnabledAction().setCheckable(true);
+            case ColorSpaceType::RGB:
+                _channel1Action.getEnabledAction().setChecked(true);
+                _channel2Action.getEnabledAction().setChecked(true);
+                _channel3Action.getEnabledAction().setChecked(true);
                 _channel1Action.setText("Red");
                 _channel2Action.setText("Green");
                 _channel3Action.setText("Blue");
                 _colorMapAction.setEnabled(false);
                 break;
 
-            case ColorSpace::HSL:
-                _channel1Action.getEnabledAction().setCheckable(true);
-                _channel2Action.getEnabledAction().setCheckable(true);
-                _channel3Action.getEnabledAction().setCheckable(true);
+            case ColorSpaceType::HSL:
+                _channel1Action.getEnabledAction().setChecked(true);
+                _channel2Action.getEnabledAction().setChecked(true);
+                _channel3Action.getEnabledAction().setChecked(true);
                 _channel1Action.setText("Hue");
                 _channel2Action.setText("Saturation");
                 _channel3Action.setText("Lightness");
                 _colorMapAction.setEnabled(false);
                 break;
 
-            case ColorSpace::LAB:
-                _channel1Action.getEnabledAction().setCheckable(true);
-                _channel2Action.getEnabledAction().setCheckable(true);
-                _channel3Action.getEnabledAction().setCheckable(true);
+            case ColorSpaceType::LAB:
+                _channel1Action.getEnabledAction().setChecked(true);
+                _channel2Action.getEnabledAction().setChecked(true);
+                _channel3Action.getEnabledAction().setChecked(true);
                 _channel1Action.setText("L");
                 _channel2Action.setText("A");
                 _channel3Action.setText("B");
@@ -140,23 +142,47 @@ LayerImageAction::LayerImageAction(LayerAction& layerAction) :
 
     connect(&_useConstantColorAction, &ToggleAction::toggled, this, updateConstantColor);
 
+    connect(&_channel1Action, &ChannelAction::changed, this, [this]() {
+        emit channelChanged(_channel1Action);
+    });
+    
+    connect(&_channel2Action, &ChannelAction::changed, this, [this]() {
+        emit channelChanged(_channel2Action);
+    });
+
+    connect(&_channel3Action, &ChannelAction::changed, this, [this]() {
+        emit channelChanged(_channel3Action);
+    });
+
+    // Re-compute the selection channel when the selection changes
+    registerDataEventByType(PointType, [this](hdps::DataEvent* dataEvent) {
+        if (dataEvent->getType() == hdps::EventType::SelectionChanged) {
+            auto selectionChangedEvent = static_cast<hdps::SelectionChangedEvent*>(dataEvent);
+
+            if (selectionChangedEvent->dataSetName != _layerAction.getLayer().getPoints()->getName())
+                return;
+
+            _channelSelectionAction.computeScalarData();
+        }
+    });
+
     updateChannelActions();
     updateConstantColor();
 }
 
 const std::uint32_t LayerImageAction::getNumberOfActiveChannels() const
 {
-    switch (static_cast<ColorSpace>(_colorSpaceAction.getCurrentIndex()))
+    switch (static_cast<ColorSpaceType>(_colorSpaceAction.getCurrentIndex()))
     {
-        case ColorSpace::Mono:
+        case ColorSpaceType::Mono:
             return 1;
 
-        case ColorSpace::Duo:
+        case ColorSpaceType::Duo:
             return 2;
 
-        case ColorSpace::RGB:
-        case ColorSpace::HSL:
-        case ColorSpace::LAB:
+        case ColorSpaceType::RGB:
+        case ColorSpaceType::HSL:
+        case ColorSpaceType::LAB:
             return 3;
 
         default:

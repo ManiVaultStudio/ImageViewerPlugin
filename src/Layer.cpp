@@ -16,7 +16,29 @@ Layer::Layer(ImageViewerPlugin* imageViewerPlugin, const QString& datasetName) :
     if (!_points.isValid())
         throw std::runtime_error("The layer points dataset is not valid after initialization");
 
-    _props << new LayerImageProp(*this, "LayerImageProp");
+    auto layerImageProp = new LayerImageProp(*this, "LayerImageProp");
+
+    _props << layerImageProp;
+
+    // Assign color map image to prop when the color map selection changes
+    connect(&_layerAction.getImageAction().getColorMapAction(), &ColorMapAction::imageChanged, this, [this, layerImageProp](const QImage& image) -> void {
+
+        // Set the color map image in the prop
+        layerImageProp->setColorMapImage(image);
+
+        // Render
+        _imageViewerPlugin->getImageViewerWidget()->update();
+    });
+
+    // Assign channel scalar data to prop when the channel scalar data changes
+    connect(&_layerAction.getImageAction(), &LayerImageAction::channelChanged, this, [this, layerImageProp](ChannelAction& channelAction) -> void {
+
+        // Assign the scalar data to the prop
+        layerImageProp->setChannelScalarData(channelAction.getIndex(), channelAction.getScalarData(), channelAction.getDisplayRange());
+
+        // Render
+        _imageViewerPlugin->getImageViewerWidget()->update();
+    });
 }
 
 void Layer::render(const QMatrix4x4& parentMVP)

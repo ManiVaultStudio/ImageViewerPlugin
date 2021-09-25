@@ -6,6 +6,8 @@
 #include "actions/ToggleAction.h"
 #include "actions/ColorAction.h"
 
+#include "event/EventListener.h"
+
 #include "ChannelAction.h"
 
 class LayerAction;
@@ -19,8 +21,10 @@ using namespace hdps::gui;
  *
  * @author Thomas Kroes
  */
-class LayerImageAction : public GroupAction
+class LayerImageAction : public GroupAction, public hdps::EventListener
 {
+Q_OBJECT
+
 public:
 
     /**
@@ -46,6 +50,14 @@ public: // Action getters
     OptionAction& getInterpolationTypeAction() { return _interpolationTypeAction; }
     ToggleAction& getUseConstantColorAction() { return _useConstantColorAction; }
     ColorAction& getConstantColorAction() { return _constantColorAction; }
+
+signals:
+
+    /**
+     * Signals the channel changed
+     * @param channelAction Reference to channel action
+     */
+    void channelChanged(ChannelAction& channelAction);
 
 protected:
     LayerAction&        _layerAction;                   /** Reference to layer action */

@@ -490,6 +490,18 @@ void LayersModel::removeLayer(const QString& datasetName)
     }
 }
 
+void LayersModel::duplicateLayer(const QModelIndex& layerModelIndex)
+{
+    try
+    {
+        throw std::runtime_error("This feature is not yet implemented.");
+    }
+    catch (std::exception& e)
+    {
+        QMessageBox::critical(nullptr, "Unable to duplicate the layer", e.what());
+    }
+}
+
 void LayersModel::moveLayer(const QModelIndex& layerModelIndex, const std::int32_t& amount /*= 1*/)
 {
     try

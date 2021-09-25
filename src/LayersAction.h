@@ -35,6 +35,7 @@ public:
 
     protected:
         TriggerAction   _removeLayerAction;         /** Remove layer action */
+        TriggerAction   _duplicateLayerAction;      /** Duplicate layer action */
         TriggerAction   _moveLayerToTopAction;      /** Move layer to top action */
         TriggerAction   _moveLayerUpAction;         /** Move layer up action */
         TriggerAction   _moveLayerDownAction;       /** Move layer down action */
