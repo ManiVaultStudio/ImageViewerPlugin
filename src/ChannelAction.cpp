@@ -1,6 +1,6 @@
 #include "ChannelAction.h"
 #include "LayerAction.h"
-#include "LayerImageAction.h"
+#include "ImageAction.h"
 #include "Layer.h"
 
 #include <QHBoxLayout>
@@ -16,7 +16,7 @@ const QMap<ChannelAction::ChannelIndex, QString> ChannelAction::channelIndexes =
     { ChannelAction::Selection, "Selection channel" }
 };
 
-ChannelAction::ChannelAction(LayerImageAction& layerImageAction, const ChannelIndex& index, const QString& name) :
+ChannelAction::ChannelAction(ImageAction& layerImageAction, const ChannelIndex& index, const QString& name) :
     WidgetAction(reinterpret_cast<QObject*>(&layerImageAction)),
     _layerImageAction(layerImageAction),
     _index(index),
@@ -219,10 +219,8 @@ void ChannelAction::computeScalarData()
             case Channel2:
             case Channel3:
             case Mask:
-            {
                 computeScalarDataRange();
                 break;
-            }
 
             case Selection:
                 break;

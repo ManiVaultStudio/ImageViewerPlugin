@@ -1,4 +1,4 @@
-#include "LayerImageAction.h"
+#include "ImageAction.h"
 #include "LayerAction.h"
 #include "Layer.h"
 
@@ -8,7 +8,7 @@
 using namespace hdps;
 using namespace hdps::util;
 
-LayerImageAction::LayerImageAction(LayerAction& layerAction) :
+ImageAction::ImageAction(LayerAction& layerAction) :
     GroupAction(&layerAction, true),
     EventListener(),
     _layerAction(layerAction),
@@ -190,7 +190,7 @@ LayerImageAction::LayerImageAction(LayerAction& layerAction) :
     useConstantColorToggled();
 }
 
-const std::uint32_t LayerImageAction::getNumberOfActiveChannels() const
+const std::uint32_t ImageAction::getNumberOfActiveChannels() const
 {
     switch (static_cast<ColorSpaceType>(_colorSpaceAction.getCurrentIndex()))
     {

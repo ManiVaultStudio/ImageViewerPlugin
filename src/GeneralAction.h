@@ -7,13 +7,13 @@ class LayerAction;
 using namespace hdps::gui;
 
 /**
- * Common layer action class
+ * General action class
  *
- * Action class for common layer settings
+ * Action class for general layer settings
  *
  * @author Thomas Kroes
  */
-class LayerGeneralAction : public GroupAction
+class GeneralAction : public GroupAction
 {
 public:
 
@@ -21,7 +21,7 @@ public:
      * Constructor
      * @param layerAction Reference to layer action
      */
-    LayerGeneralAction(LayerAction& layerAction);
+    GeneralAction(LayerAction& layerAction);
 
 public: /** Action getters */
 

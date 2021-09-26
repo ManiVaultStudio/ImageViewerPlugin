@@ -10,13 +10,13 @@ class Layer;
 using namespace hdps::util;
 
 /**
- * Layer image prop class
+ * Image prop class
  *
  * Prop class for rendering layer image
  *
  * @author Thomas Kroes
  */
-class LayerImageProp : public Prop
+class ImageProp : public Prop
 {
     Q_OBJECT
 
@@ -43,10 +43,10 @@ public: // Construction/destruction
      * @param layer Reference to layer in which the prop resides
      * @param name Name of the prop
      */
-    LayerImageProp(Layer& layer, const QString& name);
+    ImageProp(Layer& layer, const QString& name);
 
     /** Destructor */
-    ~LayerImageProp() override = default;
+    ~ImageProp() override = default;
 
 public: // Rendering
 

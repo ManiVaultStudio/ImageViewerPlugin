@@ -13,7 +13,7 @@
 using namespace hdps::gui;
 using namespace hdps::util;
 
-class LayerImageAction;
+class ImageAction;
 
 /**
  * Channel action class
@@ -97,7 +97,7 @@ public:
      * @param index Channel index
      * @param name Name of the channel
      */
-    ChannelAction(LayerImageAction& layerImageAction, const ChannelIndex& index, const QString& name);
+    ChannelAction(ImageAction& layerImageAction, const ChannelIndex& index, const QString& name);
 
     /** Get the channel index */
     const ChannelIndex getIndex() const;
@@ -157,7 +157,7 @@ public: /** Action getters */
     WindowLevelAction& getWindowLevelAction() { return _windowLevelAction; }
 
 protected:
-    LayerImageAction&           _layerImageAction;      /** Reference to layer image action */
+    ImageAction&           _layerImageAction;      /** Reference to layer image action */
     const ChannelIndex          _index;                 /** Channel index */
     ToggleAction                _enabledAction;         /** Enabled action */
     OptionAction                _dimensionAction;       /** Selected dimension action */
@@ -166,5 +166,5 @@ protected:
     std::pair<float, float>     _scalarDataRange;       /** Scalar data range */
     std::vector<std::uint8_t>   _selectionData;         /** Selection data */
 
-    friend class LayerImageAction;
+    friend class ImageAction;
 };

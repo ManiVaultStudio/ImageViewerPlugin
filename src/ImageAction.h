@@ -15,13 +15,13 @@ class LayerAction;
 using namespace hdps::gui;
 
 /**
- * Image layer action class
+ * Image action class
  *
- * Action class for image layer settings
+ * Action class for layer image settings
  *
  * @author Thomas Kroes
  */
-class LayerImageAction : public GroupAction, public hdps::EventListener
+class ImageAction : public GroupAction, public hdps::EventListener
 {
 Q_OBJECT
 
@@ -31,7 +31,7 @@ public:
      * Constructor
      * @param layerAction Reference to layer action
      */
-    LayerImageAction(LayerAction& layerAction);
+    ImageAction(LayerAction& layerAction);
 
     /** Get the number of active channels */
     const std::uint32_t getNumberOfActiveChannels() const;

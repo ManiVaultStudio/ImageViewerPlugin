@@ -1,4 +1,4 @@
-#include "LayerImageProp.h"
+#include "ImageProp.h"
 #include "QuadShape.h"
 #include "Range.h"
 #include "Renderer.h"
@@ -13,7 +13,7 @@
 
 #include <stdexcept>
 
-LayerImageProp::LayerImageProp(Layer& layer, const QString& name) :
+ImageProp::ImageProp(Layer& layer, const QString& name) :
     Prop(layer, name),
     _layer(layer),
     _displayRanges({ {0.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f} })
@@ -30,7 +30,7 @@ LayerImageProp::LayerImageProp(Layer& layer, const QString& name) :
     initialize();
 }
 
-void LayerImageProp::initialize()
+void ImageProp::initialize()
 {
     try
     {
@@ -95,7 +95,7 @@ void LayerImageProp::initialize()
     }
 }
 
-void LayerImageProp::render(const QMatrix4x4& modelViewProjectionMatrix)
+void ImageProp::render(const QMatrix4x4& modelViewProjectionMatrix)
 {
     try {
         if (!canRender())
@@ -165,7 +165,7 @@ void LayerImageProp::render(const QMatrix4x4& modelViewProjectionMatrix)
     }
 }
 
-void LayerImageProp::setImageSize(const QSize& imageSize)
+void ImageProp::setImageSize(const QSize& imageSize)
 {
     try {
         // Compute quad rectangle
@@ -186,7 +186,7 @@ void LayerImageProp::setImageSize(const QSize& imageSize)
     }
 }
 
-void LayerImageProp::setColorMapImage(const QImage& colorMapImage)
+void ImageProp::setColorMapImage(const QImage& colorMapImage)
 {
     try {
         getRenderer().bindOpenGLContext();
@@ -219,7 +219,7 @@ void LayerImageProp::setColorMapImage(const QImage& colorMapImage)
     }
 }
 
-void LayerImageProp::setChannelScalarData(const std::uint32_t& channelIndex, const std::vector<float>& scalarData, const DisplayRange& displayRange)
+void ImageProp::setChannelScalarData(const std::uint32_t& channelIndex, const std::vector<float>& scalarData, const DisplayRange& displayRange)
 {
     try {
         if (channelIndex > 3)
@@ -275,7 +275,7 @@ void LayerImageProp::setChannelScalarData(const std::uint32_t& channelIndex, con
     }
 }
 
-void LayerImageProp::setInterpolationType(const InterpolationType& interpolationType)
+void ImageProp::setInterpolationType(const InterpolationType& interpolationType)
 {
     try {
         // Get channels texture
@@ -309,7 +309,7 @@ void LayerImageProp::setInterpolationType(const InterpolationType& interpolation
     }
 }
 
-QRectF LayerImageProp::getWorldBoundingRectangle() const
+QRectF ImageProp::getWorldBoundingRectangle() const
 {
     // Get quad bounding rectangle
     auto boundingRectangle = getShapeByName<QuadShape>("Quad")->getRectangle();
@@ -324,7 +324,7 @@ QRectF LayerImageProp::getWorldBoundingRectangle() const
     return QRectF(worldTopLeft, worldBottomRight);
 }
 
-void LayerImageProp::updateModelMatrix()
+void ImageProp::updateModelMatrix()
 {
     QMatrix4x4 modelMatrix;
 

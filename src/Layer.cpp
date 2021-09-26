@@ -1,7 +1,7 @@
 #include "Layer.h"
 #include "ImageViewerPlugin.h"
 #include "DataHierarchyItem.h"
-#include "LayerImageProp.h"
+#include "ImageProp.h"
 #include "SelectionProp.h"
 
 #include "util/Exception.h"
@@ -19,14 +19,14 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
     if (!_points.isValid())
         throw std::runtime_error("The layer points dataset is not valid after initialization");
 
-    _props << new LayerImageProp(*this, "LayerImageProp");
+    _props << new ImageProp(*this, "ImageProp");
     _props << new SelectionProp(*this, "SelectionProp");
 
     // Update the color map image in the image prop
     const auto updateColorMap = [this]() {
 
         // Set the color map image in the prop
-        this->getPropByName<LayerImageProp>("LayerImageProp")->setColorMapImage(_layerAction.getImageAction().getColorMapAction().getColorMapImage());
+        this->getPropByName<ImageProp>("ImageProp")->setColorMapImage(_layerAction.getImageAction().getColorMapAction().getColorMapImage());
 
         // Render
         invalidate();
@@ -42,7 +42,7 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
             case ChannelAction::Mask:
             {
                 // Assign the scalar data to the prop
-                this->getPropByName<LayerImageProp>("LayerImageProp")->setChannelScalarData(channelAction.getIndex(), channelAction.getScalarData(), channelAction.getDisplayRange());
+                this->getPropByName<ImageProp>("ImageProp")->setChannelScalarData(channelAction.getIndex(), channelAction.getScalarData(), channelAction.getDisplayRange());
 
                 break;
             }
@@ -67,7 +67,7 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
     const auto updateInterpolationType = [this]() {
 
         // Assign the scalar data to the prop
-        this->getPropByName<LayerImageProp>("LayerImageProp")->setInterpolationType(static_cast<InterpolationType>(_layerAction.getImageAction().getInterpolationTypeAction().getCurrentIndex()));
+        this->getPropByName<ImageProp>("ImageProp")->setInterpolationType(static_cast<InterpolationType>(_layerAction.getImageAction().getInterpolationTypeAction().getCurrentIndex()));
 
         // Render
         invalidate();
@@ -80,7 +80,7 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
 
     connect(&_layerAction.getGeneralAction().getVisibleAction(), &ToggleAction::toggled, this, updateProp);
     connect(&_layerAction.getImageAction().getColorMapAction(), &ColorMapAction::imageChanged, this, updateColorMap);
-    connect(&_layerAction.getImageAction(), &LayerImageAction::channelChanged, this, updateChannelScalarData);
+    connect(&_layerAction.getImageAction(), &ImageAction::channelChanged, this, updateChannelScalarData);
     connect(&_layerAction.getImageAction().getInterpolationTypeAction(), &OptionAction::currentIndexChanged, this, updateInterpolationType);
     
     auto& selectionAction = _imageViewerPlugin.getSettingsAction().getSelectionAction();
@@ -260,7 +260,7 @@ void Layer::zoomToExtents()
     try {
         
         // Get pointer to image layer prop
-        auto layerImageProp = getPropByName<LayerImageProp>("LayerImageProp");
+        auto layerImageProp = getPropByName<ImageProp>("ImageProp");
 
         // Zoom to layer extents
         _imageViewerPlugin.getImageViewerWidget()->getRenderer().zoomToObject(*this);
@@ -279,5 +279,5 @@ void Layer::zoomToExtents()
 
 QRectF Layer::getWorldBoundingRectangle() const
 {
-    return getPropByName<LayerImageProp>("LayerImageProp")->getWorldBoundingRectangle();
+    return getPropByName<ImageProp>("ImageProp")->getWorldBoundingRectangle();
 }

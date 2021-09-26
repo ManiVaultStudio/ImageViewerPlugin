@@ -2,8 +2,8 @@
 
 #include "actions/Actions.h"
 
-#include "LayerGeneralAction.h"
-#include "LayerImageAction.h"
+#include "GeneralAction.h"
+#include "ImageAction.h"
 
 using namespace hdps::gui;
 
@@ -31,12 +31,12 @@ public:
 
 public: /** Action getters */
 
-    LayerGeneralAction& getGeneralAction() { return _generalAction; }
-    LayerImageAction& getImageAction() { return _imageAction; }
+    GeneralAction& getGeneralAction() { return _generalAction; }
+    ImageAction& getImageAction() { return _imageAction; }
 
 protected:
-    Layer&                  _layer;             /** Reference to layer */
-    LayerGeneralAction      _generalAction;     /** General action */
-    LayerImageAction        _imageAction;       /** Image action */
+    Layer&          _layer;             /** Reference to layer */
+    GeneralAction   _generalAction;     /** General action */
+    ImageAction     _imageAction;       /** Image action */
     
 };

@@ -1,8 +1,8 @@
-#include "LayerGeneralAction.h"
+#include "GeneralAction.h"
 #include "LayerAction.h"
 #include "Layer.h"
 
-LayerGeneralAction::LayerGeneralAction(LayerAction& layerAction) :
+GeneralAction::GeneralAction(LayerAction& layerAction) :
     GroupAction(&layerAction, true),
     _layerAction(layerAction),
     _visibleAction(this, "Visible", true, true),
