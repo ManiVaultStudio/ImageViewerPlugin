@@ -54,12 +54,12 @@ public:
 
     /** 
      * Constructor
-     * @param imageViewerPlugin Pointer to image viewer plugin
+     * @param imageViewerPlugin Reference to image viewer plugin
      */
-    SettingsAction(ImageViewerPlugin* imageViewerPlugin);
+    SettingsAction(ImageViewerPlugin& imageViewerPlugin);
 
-    /** Get pointer to the image viewer plugin */
-    ImageViewerPlugin* getImageViewerPlugin() { return _imageViewerPlugin; };
+    /** Get reference to the image viewer plugin */
+    ImageViewerPlugin& getImageViewerPlugin() { return _imageViewerPlugin; };
 
 public: // Action getters
 
@@ -67,7 +67,7 @@ public: // Action getters
     LayerSelectionAction& getSelectionAction() { return _selectionAction; }
 
 protected:
-    ImageViewerPlugin*      _imageViewerPlugin;     /** Pointer to image viewer plugin */
+    ImageViewerPlugin&      _imageViewerPlugin;     /** Reference to image viewer plugin */
     LayersAction            _layersAction;          /** Layers action */
     LayerSelectionAction    _selectionAction;       /** Selection action */
 };

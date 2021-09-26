@@ -1,5 +1,6 @@
 #include "Layer.h"
 #include "ImageViewerPlugin.h"
+#include "SettingsAction.h"
 #include "DataHierarchyItem.h"
 #include "ImageProp.h"
 #include "SelectionProp.h"

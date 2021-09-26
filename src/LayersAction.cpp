@@ -3,6 +3,7 @@
 #include "SettingsAction.h"
 #include "ImageViewerPlugin.h"
 #include "ImageViewerWidget.h"
+#include "SettingsAction.h"
 
 #include "Application.h"
 
@@ -28,7 +29,7 @@ LayersAction::Widget::Widget(QWidget* parent, LayersAction* layersAction, const 
     _moveLayerDownAction(this, ""),
     _moveLayerToBottomAction(this, "")
 {
-    auto imageViewerPlugin = layersAction->getSettingsAction().getImageViewerPlugin();
+    auto& imageViewerPlugin = layersAction->getSettingsAction().getImageViewerPlugin();
 
     _removeLayerAction.setToolTip("Remove the selected layer");
     _duplicateLayerAction.setToolTip("Duplicate the selected layer");
@@ -50,7 +51,7 @@ LayersAction::Widget::Widget(QWidget* parent, LayersAction* layersAction, const 
     auto treeView           = new QTreeView();
     auto layersFilterModel  = new LayersFilterModel(this);
 
-    layersFilterModel->setSourceModel(&imageViewerPlugin->getLayersModel());
+    layersFilterModel->setSourceModel(&imageViewerPlugin.getLayersModel());
 
     treeView->setFixedHeight(200);
     treeView->setModel(layersFilterModel);
@@ -107,7 +108,7 @@ LayersAction::Widget::Widget(QWidget* parent, LayersAction* layersAction, const 
 
     setLayout(layout);
 
-    const auto modelSelectionChanged = [this, layersAction, imageViewerPlugin, treeView, layersFilterModel, layout]() -> void {
+    const auto modelSelectionChanged = [this, layersAction, &imageViewerPlugin, treeView, layersFilterModel, layout]() -> void {
         const auto selectedRows = treeView->selectionModel()->selectedRows();
         const auto hasSelection = !selectedRows.isEmpty();
 
@@ -124,11 +125,11 @@ LayersAction::Widget::Widget(QWidget* parent, LayersAction* layersAction, const 
         layersAction->getCurrentLayerAction().set(groupActions);
 
         // Enable the pixel selection tool when there is a selection and disable otherwise
-        imageViewerPlugin->getImageViewerWidget()->getPixelSelectionTool().setEnabled(hasSelection);
+        imageViewerPlugin.getImageViewerWidget()->getPixelSelectionTool().setEnabled(hasSelection);
     };
 
     // Update various actions when the model is somehow changed (rows added/removed etc.)
-    const auto updateButtons = [this, imageViewerPlugin, treeView, layersFilterModel, layout]() -> void {
+    const auto updateButtons = [this, &imageViewerPlugin, treeView, layersFilterModel, layout]() -> void {
         const auto selectedRows = treeView->selectionModel()->selectedRows();
         const auto hasSelection = !selectedRows.isEmpty();
 
@@ -143,7 +144,7 @@ LayersAction::Widget::Widget(QWidget* parent, LayersAction* layersAction, const 
         _moveLayerToBottomAction.setEnabled(hasSelection && selectedRowIndex < layersFilterModel->rowCount() - 1);
 
         // Render
-        imageViewerPlugin->getImageViewerWidget()->update();
+        imageViewerPlugin.getImageViewerWidget()->update();
     };
 
     connect(treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, modelSelectionChanged);
@@ -169,56 +170,56 @@ LayersAction::Widget::Widget(QWidget* parent, LayersAction* layersAction, const 
     connect(treeView->model(), &QAbstractListModel::rowsInserted, this, onRowsInserted);
 
     // Remove the layer when the corresponding action is triggered
-    connect(&_removeLayerAction, &TriggerAction::triggered, this, [this, imageViewerPlugin, treeView]() {
+    connect(&_removeLayerAction, &TriggerAction::triggered, this, [this, &imageViewerPlugin, treeView]() {
         const auto selectedRows = treeView->selectionModel()->selectedRows();
 
         if (selectedRows.isEmpty())
             return;
 
-        imageViewerPlugin->getLayersModel().removeLayer(selectedRows.first());
+        imageViewerPlugin.getLayersModel().removeLayer(selectedRows.first());
     });
 
     // Duplicate the layer when the corresponding action is triggered
-    connect(&_duplicateLayerAction, &TriggerAction::triggered, this, [this, imageViewerPlugin, treeView]() {
+    connect(&_duplicateLayerAction, &TriggerAction::triggered, this, [this, &imageViewerPlugin, treeView]() {
         const auto selectedRows = treeView->selectionModel()->selectedRows();
 
         if (selectedRows.isEmpty())
             return;
 
-        imageViewerPlugin->getLayersModel().duplicateLayer(selectedRows.first());
+        imageViewerPlugin.getLayersModel().duplicateLayer(selectedRows.first());
     });
 
     // Move the layer to the top when the corresponding action is triggered
-    connect(&_moveLayerToTopAction, &TriggerAction::triggered, this, [this, imageViewerPlugin, treeView]() {
+    connect(&_moveLayerToTopAction, &TriggerAction::triggered, this, [this, &imageViewerPlugin, treeView]() {
         const auto selectedRows = treeView->selectionModel()->selectedRows();
 
         if (!selectedRows.isEmpty())
-            imageViewerPlugin->getLayersModel().moveLayer(selectedRows.first(), -1000);
+            imageViewerPlugin.getLayersModel().moveLayer(selectedRows.first(), -1000);
 
     });
 
     // Move the layer up when the corresponding action is triggered
-    connect(&_moveLayerUpAction, &TriggerAction::triggered, this, [this, imageViewerPlugin, treeView]() {
+    connect(&_moveLayerUpAction, &TriggerAction::triggered, this, [this, &imageViewerPlugin, treeView]() {
         const auto selectedRows = treeView->selectionModel()->selectedRows();
 
         if (!selectedRows.isEmpty())
-            imageViewerPlugin->getLayersModel().moveLayer(selectedRows.first(), -1);
+            imageViewerPlugin.getLayersModel().moveLayer(selectedRows.first(), -1);
     });
 
     // Move the layer down when the corresponding action is triggered
-    connect(&_moveLayerDownAction, &TriggerAction::triggered, this, [this, imageViewerPlugin, treeView]() {
+    connect(&_moveLayerDownAction, &TriggerAction::triggered, this, [this, &imageViewerPlugin, treeView]() {
         const auto selectedRows = treeView->selectionModel()->selectedRows();
 
         if (!selectedRows.isEmpty())
-            imageViewerPlugin->getLayersModel().moveLayer(selectedRows.first(), 1);
+            imageViewerPlugin.getLayersModel().moveLayer(selectedRows.first(), 1);
     });
 
     // Move the layer to the bottom when the corresponding action is triggered
-    connect(&_moveLayerToBottomAction, &TriggerAction::triggered, this, [this, imageViewerPlugin, treeView]() {
+    connect(&_moveLayerToBottomAction, &TriggerAction::triggered, this, [this, &imageViewerPlugin, treeView]() {
         const auto selectedRows = treeView->selectionModel()->selectedRows();
 
         if (!selectedRows.isEmpty())
-            imageViewerPlugin->getLayersModel().moveLayer(selectedRows.first(), 1000);
+            imageViewerPlugin.getLayersModel().moveLayer(selectedRows.first(), 1000);
     });
 
     updateButtons();

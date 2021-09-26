@@ -1,5 +1,6 @@
 #include "ImageViewerPlugin.h"
 #include "SettingsAction.h"
+#include "ToolBarAction.h"
 #include "Layer.h"
 
 #include "ImageData/Images.h"
@@ -21,8 +22,10 @@ ImageViewerPlugin::ImageViewerPlugin(hdps::plugin::PluginFactory* factory) :
     ViewPlugin(factory),
     _layersModel(this),
     _dropWidget(nullptr),
+    _mainWidget(nullptr),
     _imageViewerWidget(nullptr),
-    _settingsAction(nullptr)
+    _settingsAction(nullptr),
+    _toolBarAction(nullptr)
 {
     setFocusPolicy(Qt::ClickFocus);
 }
@@ -39,15 +42,29 @@ void ImageViewerPlugin::init()
     auto splitter       = new QSplitter();
     auto viewerLayout   = new QVBoxLayout();
 
+    _mainWidget         = new QWidget();
     _imageViewerWidget  = new ImageViewerWidget(this, _layersModel);
-    _settingsAction     = new SettingsAction(this);
+    _settingsAction     = new SettingsAction(*this);
+    _toolBarAction      = new ToolBarAction(*this);
 
     _imageViewerWidget->setAcceptDrops(true);
 
     _dropWidget = new DropWidget(_imageViewerWidget);
 
-    splitter->addWidget(_imageViewerWidget);
+    auto mainWidgetLayout = new QVBoxLayout();
 
+    // Configure main layout
+    mainWidgetLayout->setMargin(0);
+    mainWidgetLayout->setSpacing(0);
+
+    // And add the toolbar and image viewer widget
+    mainWidgetLayout->addWidget(_toolBarAction->createWidget(this));
+    mainWidgetLayout->addWidget(_imageViewerWidget, 1);
+
+    // Apply layout to main widget
+    _mainWidget->setLayout(mainWidgetLayout);
+
+    splitter->addWidget(_mainWidget);
     splitter->addWidget(_settingsAction->createWidget(this));
 
     splitter->setStretchFactor(0, 1);

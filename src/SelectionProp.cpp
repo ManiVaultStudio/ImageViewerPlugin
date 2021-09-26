@@ -4,6 +4,7 @@
 #include "Range.h"
 #include "Renderer.h"
 #include "ImageViewerPlugin.h"
+#include "SettingsAction.h"
 
 #include "util/FileUtil.h"
 #include "util/Exception.h"

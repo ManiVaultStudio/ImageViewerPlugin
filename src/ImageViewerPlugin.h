@@ -3,15 +3,13 @@
 #include "ViewPlugin.h"
 
 #include "LayersModel.h"
-#include "SettingsAction.h"
 #include "ImageViewerWidget.h"
-
-#include <QItemSelectionModel>
 
 using hdps::plugin::ViewPluginFactory;
 using hdps::plugin::ViewPlugin;
 
 class SettingsAction;
+class ToolBarAction;
 
 namespace hdps {
     namespace gui {
@@ -59,8 +57,10 @@ public: // Action getters
 private:
     LayersModel             _layersModel;           /** Layers model */
     hdps::gui::DropWidget*  _dropWidget;            /** Widget for dropping data */
+    QWidget*                _mainWidget;            /** Pointer to main widget */
     ImageViewerWidget*      _imageViewerWidget;     /** Pointer to image viewer widget */
     SettingsAction*         _settingsAction;        /** Pointer to settings action */
+    ToolBarAction*          _toolBarAction;         /** Pointer to toolbar action */
 };
 
 /**
