@@ -1,4 +1,5 @@
 #include "Renderer.h"
+#include "Renderable.h"
 
 #include <QtMath>
 #include <QMenu>
@@ -9,6 +10,8 @@
 #include <QVector3D>
 #include <QVector4D>
 #include <QMatrix4x4>
+
+#include <stdexcept>
 
 const QMap<Renderer::InteractionMode, QString> Renderer::interactionModes = {
     { Renderer::None, "No interaction" },
@@ -223,34 +226,39 @@ void Renderer::zoomAround(const QPoint& screenPoint, const float& factor)
     pan(-vPanDelta);
 }
 
-void Renderer::zoomToRectangle(const QRectF& rectangle)
+void Renderer::zoomToWorldRectangle(const QRectF& rectangle, const std::uint32_t& margin /*= 20*/)
 {
     if (!rectangle.isValid())
-        return;
+        throw std::runtime_error("Zoom rectangle is invalid.");
 
     qDebug() << "Zoom to rectangle" << rectangle;
 
-    resetView();
+    // Move to center of the world bounding rectangle
+    _pan = QVector2D(rectangle.center());
 
-    const auto center   = rectangle.center();
-    const auto factorX  = (getParentWidgetSize().width() - 2 * _margin) / static_cast<float>(rectangle.width());
-    const auto factorY  = (getParentWidgetSize().height() - 2 * _margin) / static_cast<float>(rectangle.height());
-    
-    zoomBy(factorX < factorY ? factorX : factorY);
+    // Compute the scale factor
+    const auto objectBoundingRectangle  = rectangle.adjusted(margin, margin, margin, margin);
+    const auto parentWidgetSize         = getParentWidgetSize();
+    const auto factorX                  = parentWidgetSize.width() / static_cast<float>(objectBoundingRectangle.width());
+    const auto factorY                  = parentWidgetSize.height() / static_cast<float>(objectBoundingRectangle.height());
+
+    // Assign the zoom factor
+    _zoom = factorX < factorY ? factorX : factorY;
 }
 
-void Renderer::zoomToSelection()
+void Renderer::zoomToObject(const Renderable& renderable, const std::uint32_t& margin /*= 20*/)
 {
-    /*
-    auto* currentImageDataSet = parentSize().imageViewerPlugin()->currentImages();
+    // Move to center of world bounding rectangle
+    _pan = renderable.getModelMatrix().column(3).toVector2D();
 
-    if (currentImageDataSet == nullptr)
-        return;
+    // Compute the scale factor
+    const auto objectBoundingRectangle  = renderable.getWorldBoundingRectangle().adjusted(margin, margin, margin, margin);
+    const auto parentWidgetSize         = getParentWidgetSize();
+    const auto factorX                  = parentWidgetSize.width() / static_cast<float>(objectBoundingRectangle.width());
+    const auto factorY                  = parentWidgetSize.height() / static_cast<float>(objectBoundingRectangle.height());
 
-    qDebug() << "Zoom to selection";
-
-    zoomToRectangle(QRectF(currentImageDataSet->selectionBounds(true)));
-    */
+    // Assign the zoom factor
+    _zoom = factorX < factorY ? factorX : factorY;
 }
 
 void Renderer::resetView()

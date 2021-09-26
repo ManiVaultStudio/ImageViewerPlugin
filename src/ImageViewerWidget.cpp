@@ -150,6 +150,10 @@ void ImageViewerWidget::initializeGL()
 #ifdef _DEBUG
     _openglDebugLogger->initialize();
 #endif
+
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+
+    glEnable(GL_DEPTH_TEST);
 }
 
 void ImageViewerWidget::resizeGL(int width, int height)
@@ -171,6 +175,19 @@ void ImageViewerWidget::paintGL()
             // Draw layers with OpenGL
             painter.beginNativePainting();
             {
+                
+                // Bind the frame buffer belonging to the widget
+                //glBindFramebuffer(GL_FRAMEBUFFER, defaultFramebufferObject());
+                /*
+                // Configure the blending function
+                glEnable(GL_BLEND);
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+                */
+                //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+                glEnable(GL_BLEND);
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
                 // Draw the image layers
                 for (auto& layer : _layersModel.getLayers())
                     layer->render(_renderer.getProjectionMatrix() * _renderer.getViewMatrix());

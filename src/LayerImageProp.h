@@ -52,10 +52,9 @@ public: // Rendering
 
     /**
      * Renders the prop
-     * @param nodeMVP Node model view projection matrix
-     * @param opacity Render opacity [0-1]
+     * @param modelViewProjectionMatrix Model view projection matrix
      */
-    void render(const QMatrix4x4& nodeMVP, const float& opacity) override;
+    void render(const QMatrix4x4& modelViewProjectionMatrix) override;
 
     void setImageSize(const QSize& imageSize);
 
@@ -80,17 +79,13 @@ public: // Rendering
     void setInterpolationType(const InterpolationType& interpolationType);
 
     /** Returns the bounding rectangle of the prop */
-    QRectF getBoundingRectangle() const override;
-
-protected: // Inherited
-
-    /** Initializes the prop */
-    void initialize() override;
-
-protected: // Miscellaneous
+    QRectF getWorldBoundingRectangle() const override;
 
     /** Updates the internal model matrix */
     void updateModelMatrix();
+
+    /** Initializes the prop */
+    void initialize() override;
 
 protected:
     Layer&          _layer;             /** Reference to layer */

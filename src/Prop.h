@@ -75,13 +75,12 @@ public:
 
     /**
      * Renders the prop
-     * @param nodeMVP Node model view projection matrix
-     * @param opacity Render opacity [0-1]
+     * @param modelViewProjectionMatrix Model view projection matrix
      */
-    virtual void render(const QMatrix4x4& nodeMVP, const float& opacity);
+    virtual void render(const QMatrix4x4& modelViewProjectionMatrix);
 
-    /** Returns the bounding rectangle of the prop */
-    virtual QRectF getBoundingRectangle() const = 0;
+    /** Get the bounding rectangle of the prop in world coordinates */
+    virtual QRectF getWorldBoundingRectangle() const = 0;
 
     /** Get reference to the renderer */
     Renderer& getRenderer();

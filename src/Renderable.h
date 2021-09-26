@@ -36,12 +36,10 @@ public: // Rendering
      * Renders the props
      * @param parentMVP Parent model view projection matrix
      */
-    virtual void render(const QMatrix4x4& parentMVP) = 0;
+    virtual void render(const QMatrix4x4& modelViewProjectionMatrix) = 0;
 
     /** Get reference to the renderer */
     Renderer& getRenderer();
-
-public: // Matrix functions
 
     /** Returns the model matrix */
     QMatrix4x4 getModelMatrix() const;
@@ -58,25 +56,8 @@ public: // Matrix functions
     /** Returns the model-view-projection matrix */
     QMatrix4x4 getModelViewProjectionMatrix() const;
 
-public:
-
-    /** Returns the render opacity */
-    float getOpacity() const;
-
-    /** Sets the render opacity
-     * @param opacity Render opacity
-    */
-    void setOpacity(const float& opacity);
-
-    /** Returns the scale */
-    float getScale() const;
-
-    /** Sets the scale
-     * @param scale Scale
-    */
-    void setScale(const float& scale);
-
-protected: // Prop management
+    /** Get the bounding rectangle of the prop in world coordinates */
+    virtual QRectF getWorldBoundingRectangle() const = 0;
 
     /**
      * Retrieve a prop by name
@@ -108,7 +89,7 @@ protected: // Prop management
         const auto constThis = const_cast<const Renderable*>(this);
         return const_cast<T*>(constThis->getPropByName<T>(name));
     }
-    
+
     /** Returns all props */
     const QVector<Prop*> getProps() const
     {
@@ -116,9 +97,7 @@ protected: // Prop management
     }
 
 protected:
-    Renderer&           _renderer;          /** Reference to the renderer in which the renderable object will reside */
-    float               _opacity;           /** Render opacity */
-    float               _scale;             /** Scale */
-    QMatrix4x4          _modelMatrix;       /** Model matrix */
-    QVector<Prop*>      _props;             /** Props */
+    Renderer&           _renderer;      /** Reference to the renderer in which the renderable object will reside */
+    QMatrix4x4          _modelMatrix;   /** Model matrix */
+    QVector<Prop*>      _props;         /** Props */
 };

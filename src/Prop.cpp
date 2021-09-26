@@ -70,9 +70,9 @@ QSharedPointer<QOpenGLTexture>& Prop::getTextureByName(const QString& name)
     return _textures[name];
 }
 
-void Prop::render(const QMatrix4x4& nodeMVP, const float& opacity)
+void Prop::render(const QMatrix4x4& modelViewProjectionMatrix)
 {
-    //qDebug() << "Render" << fullName();
+    qDebug() << "Render not implemented in prop";
 }
 
 Renderer& Prop::getRenderer()
@@ -134,7 +134,7 @@ QString Prop::getFullName()
 
 QMatrix4x4 Prop::getModelMatrix() const
 {
-    return _renderable.getModelMatrix() * _modelMatrix;
+    return _modelMatrix;
 }
 
 void Prop::setModelMatrix(const QMatrix4x4& modelMatrix)

@@ -26,6 +26,7 @@ public:
     /** Invalidates the prop (triggers a re-render of all layers) */
     void invalidate();
 
+    void updateModelMatrix();
     LayerAction& getLayerAction() { return _layerAction; }
 
     DatasetRef<Images>& getImages() { return _images; }
@@ -55,13 +56,20 @@ public: // Selection
     /** Invert the pixel selection in the image(s) */
     void invertSelection();
 
+public: // View
+
+    void zoomToExtents();
+
+    /** Get the bounding rectangle */
+    QRectF getWorldBoundingRectangle() const override;
+
 protected:
 
     /**
      * Renders the props
      * @param parentMVP Parent model view projection matrix
      */
-    void render(const QMatrix4x4& parentMVP) override;
+    void render(const QMatrix4x4& modelViewProjectionMatrix) override;
 
 protected:
     ImageViewerPlugin*      _imageViewerPlugin;     /** Pointer to image viewer plugin */

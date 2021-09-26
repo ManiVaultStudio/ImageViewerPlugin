@@ -262,6 +262,8 @@ void ChannelAction::computeMaskChannel()
     if (getImages()->getType() != ImageData::Type::Stack)
         return;
 
+    std::fill(_scalarData.begin(), _scalarData.end(), 1.0f);
+
     if (getPoints()->isDerivedData()) {
         getPoints()->visitData([this](auto pointData) {
             auto& sourceData = getPoints()->getSourceData<Points>(*getPoints());

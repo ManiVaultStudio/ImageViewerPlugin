@@ -187,7 +187,4 @@ void main(void)
     } else {
         fragmentColor.a = opacity;
     }
-
-    // Apply mask
-    fragmentColor.a *= texture(channelTextures, vec3(uv, 3)).r;
 }

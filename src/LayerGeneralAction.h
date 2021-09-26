@@ -29,6 +29,8 @@ public: /** Action getters */
     ColorAction& getColorAction() { return _colorAction; }
     StringAction& getNameAction() { return _nameAction; }
     DecimalAction& getScaleAction() { return _scaleAction; }
+    DecimalAction& getXPositionAction() { return _xPositionAction; }
+    DecimalAction& getYPositionAction() { return _yPositionAction; }
     TriggerAction& getZoomToExtentsAction() { return _zoomToExtentsAction; }
 
 protected:

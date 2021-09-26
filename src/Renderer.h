@@ -12,6 +12,8 @@ class QOpenGLWidget;
 class QMenu;
 class QOpenGLWidget;
 
+class Renderable;
+
 /**
  * Renderer class
  *
@@ -146,13 +148,13 @@ public: // Navigation
     void zoomAround(const QPoint& screenPoint, const float& factor);
 
     /**
-     * Zoom to rectangle
-     * @param rectangle Rectangle to zoom to
+     * Zoom to rectangle in world coordinates
+     * @param rectangle Rectangle to zoom to in world coordinates
      */
-    void zoomToRectangle(const QRectF& rectangle);
+    void zoomToWorldRectangle(const QRectF& rectangle, const std::uint32_t& margin /*= 20*/);
 
     /** Zoom to selected pixels */
-    void zoomToSelection();
+    void zoomToObject(const Renderable& renderable, const std::uint32_t& margin = 20);
 
     /** Reset the view */
     void resetView();

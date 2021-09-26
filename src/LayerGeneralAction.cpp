@@ -8,9 +8,9 @@ LayerGeneralAction::LayerGeneralAction(LayerAction& layerAction) :
     _visibleAction(this, "Visible", true, true),
     _colorAction(this, "Color"),
     _nameAction(this, "Name"),
-    _scaleAction(this, "Scale", 0.0f, 100.0f, 100.0f, 100.0f, 1),
-    _xPositionAction(this, "X position", std::numeric_limits<float>::lowest(), std::numeric_limits<float>::max(), 0.0f, 0.0f, 1),
-    _yPositionAction(this, "Y position", std::numeric_limits<float>::lowest(), std::numeric_limits<float>::max(), 0.0f, 0.0f, 1),
+    _scaleAction(this, "Scale", 0.0f, 1000.0f, 100.0f, 100.0f, 1),
+    _xPositionAction(this, "X position", -1000.0f, 1000.0f, 0.0f),
+    _yPositionAction(this, "Y position", -1000.0f, 1000.0f, 0.0f),
     _zoomToExtentsAction(this, "Zoom to extents")
 {
     setText("General");
@@ -19,8 +19,8 @@ LayerGeneralAction::LayerGeneralAction(LayerAction& layerAction) :
     _colorAction.setWidgetFlags(ColorAction::All);
     _nameAction.setWidgetFlags(StringAction::All);
     _scaleAction.setWidgetFlags(DecimalAction::All);
-    _xPositionAction.setWidgetFlags(DecimalAction::SpinBoxAndReset);
-    _yPositionAction.setWidgetFlags(DecimalAction::SpinBoxAndReset);
+    _xPositionAction.setWidgetFlags(DecimalAction::All);
+    _yPositionAction.setWidgetFlags(DecimalAction::All);
 
     _nameAction.setToolTip("Name of the layer");
     _scaleAction.setToolTip("Layer scale in percentages");
@@ -34,4 +34,9 @@ LayerGeneralAction::LayerGeneralAction(LayerAction& layerAction) :
 
     _nameAction.setString(imagesDatasetName);
     _nameAction.setDefaultString(imagesDatasetName);
+
+    // Zoom to extents
+    connect(&_zoomToExtentsAction, &ToggleAction::triggered, this, [this]() {
+        _layerAction.getLayer().zoomToExtents();
+    });
 }

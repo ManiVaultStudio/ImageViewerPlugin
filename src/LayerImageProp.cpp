@@ -94,27 +94,34 @@ void LayerImageProp::initialize()
     }
 }
 
-void LayerImageProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
+void LayerImageProp::render(const QMatrix4x4& modelViewProjectionMatrix)
 {
     try {
         if (!canRender())
             return;
         
-        Prop::render(nodeMVP, opacity);
-
         const auto shape            = getShapeByName<QuadShape>("Quad");
         const auto shaderProgram    = getShaderProgramByName("Quad");
 
+        // Activate and bind color map texture
         if (getTextureByName("ColorMap")->isCreated()) {
             getRenderer().getOpenGLContext()->functions()->glActiveTexture(GL_TEXTURE0);
             getTextureByName("ColorMap")->bind();
         }
+        else {
+            throw std::runtime_error("Color map texture is not created.");
+        }
 
+        // Activate and bind channels texture
         if (getTextureByName("Channels")->isCreated()) {
             getRenderer().getOpenGLContext()->functions()->glActiveTexture(GL_TEXTURE1);
             getTextureByName("Channels")->bind();
         }
+        else {
+            throw std::runtime_error("Channels texture is not created.");
+        }
 
+        // Bind shader program and render
         if (shaderProgram->bind()) {
             auto& imageAction = _layer.getLayerAction().getImageAction();
 
@@ -134,7 +141,7 @@ void LayerImageProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
             shaderProgram->setUniformValue("colorSpace", imageAction.getColorSpaceAction().getCurrentIndex());
             shaderProgram->setUniformValueArray("displayRanges", displayRanges, 3);
             shaderProgram->setUniformValue("opacity", 0.01f * imageAction.getOpacityAction().getValue());
-            shaderProgram->setUniformValue("transform", nodeMVP * getModelMatrix());
+            shaderProgram->setUniformValue("transform", modelViewProjectionMatrix * _renderable.getModelMatrix() * getModelMatrix());
 
             shape->render();
 
@@ -144,11 +151,9 @@ void LayerImageProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
             throw std::runtime_error("Unable to bind quad shader program");
         }
 
-        if (getTextureByName("Channels")->isCreated())
-            getTextureByName("Channels")->release();
-
-        if (getTextureByName("ColorMap")->isCreated())
-            getTextureByName("ColorMap")->release();
+        // Release textures
+        getTextureByName("Channels")->release();
+        getTextureByName("ColorMap")->release();
     }
     catch (std::exception& e)
     {
@@ -303,18 +308,32 @@ void LayerImageProp::setInterpolationType(const InterpolationType& interpolation
     }
 }
 
-QRectF LayerImageProp::getBoundingRectangle() const
+QRectF LayerImageProp::getWorldBoundingRectangle() const
 {
-    return getShapeByName<QuadShape>("Quad")->getRectangle();
+    auto& generalAction = _layer.getLayerAction().getGeneralAction();
+
+    auto boundingRectangle = getShapeByName<QuadShape>("Quad")->getRectangle();
+
+    const auto matrix = _renderable.getModelMatrix() * getModelMatrix();
+
+    const auto worldTopLeft         = matrix * boundingRectangle.topLeft();
+    const auto worldBottomRight     = matrix * boundingRectangle.bottomRight();
+
+    return QRectF(worldTopLeft, worldBottomRight);
 }
 
 void LayerImageProp::updateModelMatrix()
 {
     QMatrix4x4 modelMatrix;
 
+    // Get quad shape
     const auto rectangle = getShapeByName<QuadShape>("Quad")->getRectangle();
 
+    auto& generalAction = _layer.getLayerAction().getGeneralAction();
+
+    // Compute the  model matrix
     modelMatrix.translate(-0.5f * rectangle.width(), -0.5f * rectangle.height(), 0.0f);
 
+    // Assign model matrix
     setModelMatrix(modelMatrix);
 }
