@@ -19,14 +19,12 @@ class Layer : public Renderable
 public:
     Layer(ImageViewerPlugin* imageViewerPlugin, const QString& datasetName);
 
-    /**
-     * Renders the props
-     * @param parentMVP Parent model view projection matrix
-     */
-    void render(const QMatrix4x4& parentMVP) override;
 
     /** Get pointer to image viewer plugin */
     ImageViewerPlugin* getImageViewerPlugin();
+
+    /** Invalidates the prop (triggers a re-render of all layers) */
+    void invalidate();
 
     LayerAction& getLayerAction() { return _layerAction; }
 
@@ -58,10 +56,20 @@ public: // Selection
     void invertSelection();
 
 protected:
+
+    /**
+     * Renders the props
+     * @param parentMVP Parent model view projection matrix
+     */
+    void render(const QMatrix4x4& parentMVP) override;
+
+protected:
     ImageViewerPlugin*      _imageViewerPlugin;     /** Pointer to image viewer plugin */
     DatasetRef<Images>      _images;                /** Reference to images dataset */
     DatasetRef<Points>      _points;                /** Reference to input points dataset of the images */
     LayerAction             _layerAction;           /** Layer settings action */
+
+    friend class ImageViewerWidget;
 };
 
 using SharedLayer = QSharedPointer<Layer>;

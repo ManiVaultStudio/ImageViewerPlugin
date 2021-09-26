@@ -53,6 +53,9 @@ public: // Action getters
 
 signals:
 
+    /** Signals the layer image changed */
+    void changed();
+
     /**
      * Signals the channel changed
      * @param channelAction Reference to channel action

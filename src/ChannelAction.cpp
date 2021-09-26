@@ -62,12 +62,14 @@ ChannelAction::ChannelAction(LayerImageAction& layerImageAction, const ChannelIn
 
     connect(&_enabledAction, &ToggleAction::toggled, this, updateEnabled);
 
-    // Flag the channel as changed when the window level settings change
+    // Flag as changed when the window level settings change
     connect(&_windowLevelAction, &WindowLevelAction::changed, this, [this]() {
         emit changed(*this);
     });
 
     updateEnabled();
+
+    computeScalarData();
 }
 
 const ChannelAction::ChannelIndex ChannelAction::getIndex() const
@@ -146,7 +148,7 @@ void ChannelAction::computeScalarData()
             case Channel2:
             case Channel3:
             {
-                if (_dimensionAction.getCurrentIndex() <= 0)
+                if (_dimensionAction.getCurrentIndex() < 0)
                     break;
 
                 switch (getImages()->getType())
@@ -199,7 +201,7 @@ void ChannelAction::computeScalarData()
 
 void ChannelAction::computeScalarDataForImageSequence()
 {
-    qDebug() << "Compute scalar data for image sequence";
+    qDebug() << "Compute image sequence scalar for channel" << _index;
 
     getPoints()->visitData([this](auto pointData) {
         const auto dimensionId      = _dimensionAction.getCurrentIndex();
@@ -227,7 +229,7 @@ void ChannelAction::computeScalarDataForImageSequence()
 
 void ChannelAction::computeScalarDataForImageStack()
 {
-    qDebug() << "Compute scalar data for image stack";
+    qDebug() << "Compute image stack scalars for channel" << _index;
 
     const auto dimensionId = _dimensionAction.getCurrentIndex();
 
@@ -255,7 +257,7 @@ void ChannelAction::computeScalarDataForImageStack()
 
 void ChannelAction::computeMaskChannel()
 {
-    qDebug() << "Compute mask channel";
+    qDebug() << "Compute mask for channel" << _index;
 
     if (getImages()->getType() != ImageData::Type::Stack)
         return;
@@ -284,7 +286,7 @@ void ChannelAction::computeMaskChannel()
 
 void ChannelAction::computeSelectionChannel()
 {
-    qDebug() << "Compute selection channel";
+    qDebug() << "Compute selection for channel" << _index;
 
     /*
     auto& selectionChannel = (*getChannel(ult(ChannelIndex::Selection)));
@@ -303,6 +305,8 @@ void ChannelAction::computeSelectionChannel()
 
 void ChannelAction::computeScalarDataRange()
 {
+    qDebug() << "Compute scalar range for channel" << _index;
+
     // Initialize scalar data range
     _scalarDataRange = { std::numeric_limits<float>::max(), std::numeric_limits<float>::lowest() };
 

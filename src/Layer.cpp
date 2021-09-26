@@ -20,25 +20,43 @@ Layer::Layer(ImageViewerPlugin* imageViewerPlugin, const QString& datasetName) :
 
     _props << layerImageProp;
 
-    // Assign color map image to prop when the color map selection changes
-    connect(&_layerAction.getImageAction().getColorMapAction(), &ColorMapAction::imageChanged, this, [this, layerImageProp](const QImage& image) -> void {
+    // Update the color map image in the image prop
+    const auto updateColorMap = [this, layerImageProp]() {
 
         // Set the color map image in the prop
-        layerImageProp->setColorMapImage(image);
+        layerImageProp->setColorMapImage(_layerAction.getImageAction().getColorMapAction().getColorMapImage());
 
         // Render
-        _imageViewerPlugin->getImageViewerWidget()->update();
-    });
+        invalidate();
+    };
 
-    // Assign channel scalar data to prop when the channel scalar data changes
-    connect(&_layerAction.getImageAction(), &LayerImageAction::channelChanged, this, [this, layerImageProp](ChannelAction& channelAction) -> void {
+    // Update the color map scalar data in the image prop
+    const auto updateChannelScalarData = [this, layerImageProp](ChannelAction& channelAction) {
 
         // Assign the scalar data to the prop
         layerImageProp->setChannelScalarData(channelAction.getIndex(), channelAction.getScalarData(), channelAction.getDisplayRange());
 
         // Render
-        _imageViewerPlugin->getImageViewerWidget()->update();
-    });
+        invalidate();
+    };
+
+    // Update the interpolation type in the image prop
+    const auto updateInterpolationType = [this, layerImageProp]() {
+
+        // Assign the scalar data to the prop
+        layerImageProp->setInterpolationType(static_cast<InterpolationType>(_layerAction.getImageAction().getInterpolationTypeAction().getCurrentIndex()));
+
+        // Render
+        invalidate();
+    };
+
+    connect(&_layerAction.getImageAction().getColorMapAction(), &ColorMapAction::imageChanged, this, updateColorMap);
+    connect(&_layerAction.getImageAction(), &LayerImageAction::channelChanged, this, updateChannelScalarData);
+    connect(&_layerAction.getImageAction().getInterpolationTypeAction(), &OptionAction::currentIndexChanged, this, updateInterpolationType);
+
+    updateColorMap();
+    updateChannelScalarData(_layerAction.getImageAction().getChannel1Action());
+    updateInterpolationType();
 }
 
 void Layer::render(const QMatrix4x4& parentMVP)
@@ -57,6 +75,11 @@ void Layer::render(const QMatrix4x4& parentMVP)
 ImageViewerPlugin* Layer::getImageViewerPlugin()
 {
     return _imageViewerPlugin;
+}
+
+void Layer::invalidate()
+{
+    _imageViewerPlugin->getImageViewerWidget()->update();
 }
 
 const QString Layer::getImagesDatasetName() const

@@ -6,7 +6,7 @@ uniform vec2 displayRanges[3];				// Display ranges for each channel
 uniform int noChannels;						// Number of active channels
 uniform bool useConstantColor;				// Whether the pixel color is constant and the alpha is modulated by the intensity of the selected channel
 uniform vec4 constantColor;					// Constant color
-uniform int colorSpace;						// Color space (0: RGB, 1: HSL)
+uniform int colorSpace;						// Color space (2: RGB, 3: HSL, 3: LAB)
 uniform float opacity;						// Layer opacity
 in vec2 uv;									// Input texture coordinates
 out vec4 fragmentColor;						// Output fragment
@@ -155,19 +155,19 @@ void main(void)
             channels.b = toneMapChannel(displayRanges[2].x, displayRanges[2].y, texture(channelTextures, vec3(uv, 2)).r);
 
             switch (colorSpace) {
-                case 0:
+                case 2:
                 {
                     fragmentColor.rgb = channels;
                     break;
                 }
 
-                case 1:
+                case 3:
                 {
                     fragmentColor.rgb = hslToRgb(360.0f * channels.r, channels.g, channels.b);
                     break;
                 }
 
-                case 2:
+                case 4:
                 {
                     fragmentColor.rgb = labToRgb(channels);
                     break;
@@ -188,9 +188,6 @@ void main(void)
         fragmentColor.a = opacity;
     }
 
-	
     // Apply mask
     fragmentColor.a *= texture(channelTextures, vec3(uv, 3)).r;
-
-	fragmentColor = vec4(1, 0, 0, 1);
 }

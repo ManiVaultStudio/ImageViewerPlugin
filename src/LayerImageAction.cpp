@@ -21,7 +21,7 @@ LayerImageAction::LayerImageAction(LayerAction& layerAction) :
     _channelSelectionAction(*this, ChannelAction::Selection, ChannelAction::channelIndexes.value(ChannelAction::Selection)),
     _colorMapAction(this, "Color map"),
     _interpolationTypeAction(this, "Interpolate", interpolationTypes.values(), "Bilinear", "Bilinear"),
-    _useConstantColorAction(this, "Use constant color", true, true),
+    _useConstantColorAction(this, "Use constant color", false, false),
     _constantColorAction(this, "Constant color", QColor(Qt::white), QColor(Qt::white))
 {
     setText("Image");
@@ -152,6 +152,26 @@ LayerImageAction::LayerImageAction(LayerAction& layerAction) :
 
     connect(&_channel3Action, &ChannelAction::changed, this, [this]() {
         emit channelChanged(_channel3Action);
+    });
+
+    // Flag as changed when the opacity changes
+    connect(&_opacityAction, &DecimalAction::valueChanged, this, [this]() {
+        _layerAction.getLayer().invalidate();
+    });
+
+    // Flag as changed when the interpolation type changes
+    connect(&_interpolationTypeAction, &OptionAction::currentIndexChanged, this, [this]() {
+        _layerAction.getLayer().invalidate();
+    });
+
+    // Flag as changed when the use constant color toggle changes
+    connect(&_useConstantColorAction, &ToggleAction::toggled, this, [this]() {
+        _layerAction.getLayer().invalidate();
+    });
+
+    // Flag as changed when the constant color changes
+    connect(&_constantColorAction, &ColorAction::colorChanged, this, [this]() {
+        _layerAction.getLayer().invalidate();
     });
 
     // Re-compute the selection channel when the selection changes

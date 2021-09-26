@@ -133,7 +133,7 @@ void LayerImageProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
             shaderProgram->setUniformValue("constantColor", imageAction.getConstantColorAction().getColor());
             shaderProgram->setUniformValue("colorSpace", imageAction.getColorSpaceAction().getCurrentIndex());
             shaderProgram->setUniformValueArray("displayRanges", displayRanges, 3);
-            shaderProgram->setUniformValue("opacity", opacity);
+            shaderProgram->setUniformValue("opacity", 0.01f * imageAction.getOpacityAction().getValue());
             shaderProgram->setUniformValue("transform", nodeMVP * getModelMatrix());
 
             shape->render();
@@ -252,20 +252,8 @@ void LayerImageProp::setChannelScalarData(const std::uint32_t& channelIndex, con
                 texture->setWrapMode(QOpenGLTexture::ClampToEdge);
             }
 
-            // Configure interpolation
-            switch (_layer.getLayerAction().getImageAction().getInterpolationTypeAction().getCurrentIndex())
-            {
-                case static_cast<std::int32_t>(InterpolationType::Bilinear) :
-                    texture->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
-                    break;
-
-                case static_cast<std::int32_t>(InterpolationType::NearestNeighbor) :
-                    texture->setMinMagFilters(QOpenGLTexture::Nearest, QOpenGLTexture::Nearest);
-                    break;
-
-                default:
-                    break;
-            }
+            // Set the interpolation type
+            setInterpolationType(static_cast<InterpolationType>(_layer.getLayerAction().getImageAction().getInterpolationTypeAction().getCurrentIndex()));
 
             // Assign the scalar data to the texture
             texture->setData(0, channelIndex, QOpenGLTexture::PixelFormat::Red, QOpenGLTexture::PixelType::Float32, scalarData.data());
@@ -278,6 +266,40 @@ void LayerImageProp::setChannelScalarData(const std::uint32_t& channelIndex, con
     }
     catch (...) {
         exceptionMessageBox("Unable to set channel scalar data in layer image prop");
+    }
+}
+
+void LayerImageProp::setInterpolationType(const InterpolationType& interpolationType)
+{
+    try {
+        // Get channels texture
+        auto texture = getTextureByName("Channels");
+
+        // Except when texture is not created
+        if (!texture->isCreated())
+            throw std::runtime_error("Channels texture is not created.");
+
+        // Configure interpolation
+        switch (interpolationType)
+        {
+            case InterpolationType::Bilinear :
+                texture->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
+                break;
+
+            case InterpolationType::NearestNeighbor :
+                texture->setMinMagFilters(QOpenGLTexture::Nearest, QOpenGLTexture::Nearest);
+                break;
+
+            default:
+                break;
+        }
+    }
+    catch (std::exception& e)
+    {
+        exceptionMessageBox("Unable to set channel interpolation type in layer image prop", e.what());
+    }
+    catch (...) {
+        exceptionMessageBox("Unable to set channel interpolation type in layer image prop");
     }
 }
 

@@ -3,7 +3,11 @@
 #include "Prop.h"
 #include "Layer.h"
 
+#include "util/Interpolation.h"
+
 class Layer;
+
+using namespace hdps::util;
 
 /**
  * Layer image prop class
@@ -68,6 +72,12 @@ public: // Rendering
      * @param displayRange Display range
      */
     void setChannelScalarData(const std::uint32_t& channelIndex, const std::vector<float>& scalarData, const DisplayRange& displayRange);
+
+    /**
+     * Set image interpolation type
+     * @param interpolationType Interpolation type
+     */
+    void setInterpolationType(const InterpolationType& interpolationType);
 
     /** Returns the bounding rectangle of the prop */
     QRectF getBoundingRectangle() const override;
