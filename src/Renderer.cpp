@@ -163,7 +163,7 @@ QMatrix4x4 Renderer::getNormalizedScreenToScreenMatrix() const
     scale.scale(halfSize.width(), halfSize.height(), 1.0f);
     translate.translate(size.width(), 1, 0.0f);
 
-    return translate * scale;// *;
+    return translate * scale;
 }
 
 QMatrix4x4 Renderer::getViewMatrix() const
@@ -226,7 +226,7 @@ void Renderer::zoomAround(const QPoint& screenPoint, const float& factor)
     pan(-vPanDelta);
 }
 
-void Renderer::zoomToWorldRectangle(const QRectF& rectangle, const std::uint32_t& margin /*= 20*/)
+void Renderer::zoomToWorldRectangle(const QRectF& rectangle, const std::uint32_t& margin /*= 50*/)
 {
     if (!rectangle.isValid())
         throw std::runtime_error("Zoom rectangle is invalid.");
@@ -237,28 +237,18 @@ void Renderer::zoomToWorldRectangle(const QRectF& rectangle, const std::uint32_t
     _pan = QVector2D(rectangle.center());
 
     // Compute the scale factor
-    const auto objectBoundingRectangle  = rectangle.adjusted(margin, margin, margin, margin);
-    const auto parentWidgetSize         = getParentWidgetSize();
-    const auto factorX                  = parentWidgetSize.width() / static_cast<float>(objectBoundingRectangle.width());
-    const auto factorY                  = parentWidgetSize.height() / static_cast<float>(objectBoundingRectangle.height());
+    const auto parentWidgetSize = getParentWidgetSize();
+    const auto totalMargins     = 2 * margin;
+    const auto factorX          = (parentWidgetSize.width() - totalMargins) / static_cast<float>(rectangle.width());
+    const auto factorY          = (parentWidgetSize.height() - totalMargins) / static_cast<float>(rectangle.height());
 
     // Assign the zoom factor
     _zoom = factorX < factorY ? factorX : factorY;
 }
 
-void Renderer::zoomToObject(const Renderable& renderable, const std::uint32_t& margin /*= 20*/)
+void Renderer::zoomToObject(const Renderable& renderable, const std::uint32_t& margin /*= 50*/)
 {
-    // Move to center of world bounding rectangle
-    _pan = renderable.getModelMatrix().column(3).toVector2D();
-
-    // Compute the scale factor
-    const auto objectBoundingRectangle  = renderable.getWorldBoundingRectangle().adjusted(margin, margin, margin, margin);
-    const auto parentWidgetSize         = getParentWidgetSize();
-    const auto factorX                  = parentWidgetSize.width() / static_cast<float>(objectBoundingRectangle.width());
-    const auto factorY                  = parentWidgetSize.height() / static_cast<float>(objectBoundingRectangle.height());
-
-    // Assign the zoom factor
-    _zoom = factorX < factorY ? factorX : factorY;
+    zoomToWorldRectangle(renderable.getWorldBoundingRectangle(), margin);
 }
 
 void Renderer::resetView()

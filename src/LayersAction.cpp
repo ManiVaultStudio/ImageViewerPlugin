@@ -129,7 +129,7 @@ LayersAction::Widget::Widget(QWidget* parent, LayersAction* layersAction, const 
     };
 
     // Update various actions when the model is somehow changed (rows added/removed etc.)
-    const auto updateButtons = [this, treeView, layersFilterModel, layout]() -> void {
+    const auto updateButtons = [this, imageViewerPlugin, treeView, layersFilterModel, layout]() -> void {
         const auto selectedRows = treeView->selectionModel()->selectedRows();
         const auto hasSelection = !selectedRows.isEmpty();
 
@@ -142,6 +142,9 @@ LayersAction::Widget::Widget(QWidget* parent, LayersAction* layersAction, const 
         _moveLayerUpAction.setEnabled(selectedRowIndex > 0 ? selectedRowIndex > 0 : false);
         _moveLayerDownAction.setEnabled(selectedRowIndex >= 0 ? selectedRowIndex < layersFilterModel->rowCount() - 1 : false);
         _moveLayerToBottomAction.setEnabled(hasSelection && selectedRowIndex < layersFilterModel->rowCount() - 1);
+
+        // Render
+        imageViewerPlugin->getImageViewerWidget()->update();
     };
 
     connect(treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, modelSelectionChanged);

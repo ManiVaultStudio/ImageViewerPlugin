@@ -136,11 +136,12 @@ LayerImageAction::LayerImageAction(LayerAction& layerAction) :
 
     connect(&_colorSpaceAction, &OptionAction::currentIndexChanged, this, updateChannelActions);
 
-    const auto updateConstantColor = [this]() -> void {
+    const auto useConstantColorToggled = [this]() {
         _constantColorAction.setEnabled(_useConstantColorAction.isChecked());
+        _layerAction.getLayer().invalidate();
     };
 
-    connect(&_useConstantColorAction, &ToggleAction::toggled, this, updateConstantColor);
+    connect(&_useConstantColorAction, &ToggleAction::toggled, this, useConstantColorToggled);
 
     connect(&_channel1Action, &ChannelAction::changed, this, [this]() {
         emit channelChanged(_channel1Action);
@@ -164,11 +165,6 @@ LayerImageAction::LayerImageAction(LayerAction& layerAction) :
         _layerAction.getLayer().invalidate();
     });
 
-    // Flag as changed when the use constant color toggle changes
-    connect(&_useConstantColorAction, &ToggleAction::toggled, this, [this]() {
-        _layerAction.getLayer().invalidate();
-    });
-
     // Flag as changed when the constant color changes
     connect(&_constantColorAction, &ColorAction::colorChanged, this, [this]() {
         _layerAction.getLayer().invalidate();
@@ -187,7 +183,7 @@ LayerImageAction::LayerImageAction(LayerAction& layerAction) :
     });
 
     updateChannelActions();
-    updateConstantColor();
+    useConstantColorToggled();
 }
 
 const std::uint32_t LayerImageAction::getNumberOfActiveChannels() const

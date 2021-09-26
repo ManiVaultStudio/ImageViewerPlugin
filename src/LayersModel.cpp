@@ -445,6 +445,8 @@ void LayersModel::addLayer(const SharedLayer& layer)
                 const auto changedCell = index(_layers.indexOf(layer), Column::Opacity);
                 emit dataChanged(changedCell, changedCell);
             });
+
+            layer->zoomToExtents();
         }
         endInsertRows();
     }

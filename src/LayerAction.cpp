@@ -11,9 +11,7 @@ LayerAction::LayerAction(Layer& layer) :
         _imageAction.setEnabled(_generalAction.getVisibleAction().isChecked());
     };
 
-    connect(&_generalAction.getVisibleAction(), &ToggleAction::toggled, this, [this, updateActions]() {
-        updateActions();
-    });
+    //connect(&_generalAction.getVisibleAction(), &ToggleAction::toggled, this, updateActions);
 
     updateActions();
 }

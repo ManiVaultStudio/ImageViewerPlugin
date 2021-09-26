@@ -151,10 +151,10 @@ public: // Navigation
      * Zoom to rectangle in world coordinates
      * @param rectangle Rectangle to zoom to in world coordinates
      */
-    void zoomToWorldRectangle(const QRectF& rectangle, const std::uint32_t& margin /*= 20*/);
+    void zoomToWorldRectangle(const QRectF& rectangle, const std::uint32_t& margin = 50);
 
     /** Zoom to selected pixels */
-    void zoomToObject(const Renderable& renderable, const std::uint32_t& margin = 20);
+    void zoomToObject(const Renderable& renderable, const std::uint32_t& margin = 50);
 
     /** Reset the view */
     void resetView();

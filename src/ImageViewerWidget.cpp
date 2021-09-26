@@ -175,21 +175,16 @@ void ImageViewerWidget::paintGL()
             // Draw layers with OpenGL
             painter.beginNativePainting();
             {
-                
-                // Bind the frame buffer belonging to the widget
-                //glBindFramebuffer(GL_FRAMEBUFFER, defaultFramebufferObject());
-                /*
-                // Configure the blending function
                 glEnable(GL_BLEND);
                 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-                */
-                //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-                glEnable(GL_BLEND);
-                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+                auto layersSorted = _layersModel.getLayers();
+
+                // Sort the layers
+                std::reverse(layersSorted.begin(), layersSorted.end());
 
                 // Draw the image layers
-                for (auto& layer : _layersModel.getLayers())
+                for (auto& layer : layersSorted)
                     layer->render(_renderer.getProjectionMatrix() * _renderer.getViewMatrix());
             }
             painter.endNativePainting();
