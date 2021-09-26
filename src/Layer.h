@@ -17,11 +17,16 @@ class Layer : public Renderable
     Q_OBJECT
 
 public:
-    Layer(ImageViewerPlugin* imageViewerPlugin, const QString& datasetName);
 
+    /**
+     * Constructor
+     * @param imageViewerPlugin Reference to image viewer plugin
+     * @param datasetName Name of the images dataset
+     */
+    Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName);
 
-    /** Get pointer to image viewer plugin */
-    ImageViewerPlugin* getImageViewerPlugin();
+    /** Get reference to image viewer plugin */
+    ImageViewerPlugin& getImageViewerPlugin();
 
     /** Invalidates the prop (triggers a re-render of all layers) */
     void invalidate();
@@ -72,7 +77,7 @@ protected:
     void render(const QMatrix4x4& modelViewProjectionMatrix) override;
 
 protected:
-    ImageViewerPlugin*      _imageViewerPlugin;     /** Pointer to image viewer plugin */
+    ImageViewerPlugin&      _imageViewerPlugin;     /** Reference to image viewer plugin */
     DatasetRef<Images>      _images;                /** Reference to images dataset */
     DatasetRef<Points>      _points;                /** Reference to input points dataset of the images */
     LayerAction             _layerAction;           /** Layer settings action */

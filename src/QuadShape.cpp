@@ -1,5 +1,6 @@
 #include "QuadShape.h"
 #include "Prop.h"
+#include "Renderer.h"
 
 #include <QDebug>
 
@@ -18,15 +19,21 @@ void QuadShape::initialize()
 {
     Shape::initialize();
 
-    _vao.bind();
+    auto& renderer = _prop.getRenderer();
+
+    renderer.bindOpenGLContext();
     {
-        _vbo.bind();
+        _vao.bind();
         {
-            _vbo.setUsagePattern(QOpenGLBuffer::DynamicDraw);
-            _vbo.allocate(_vertexData.constData(), _vertexData.count() * sizeof(GLfloat));
+            _vbo.bind();
+            {
+                _vbo.setUsagePattern(QOpenGLBuffer::DynamicDraw);
+                _vbo.allocate(_vertexData.constData(), _vertexData.count() * sizeof(GLfloat));
+            }
+            _vbo.release();
         }
-        _vbo.release();
     }
+    renderer.releaseOpenGLContext();
 }
 
 bool QuadShape::canRender() const
@@ -39,13 +46,16 @@ void QuadShape::render()
     if (!canRender())
         return;
 
-    Shape::render();
+    auto& renderer = _prop.getRenderer();
 
-    _vao.bind();
+    renderer.bindOpenGLContext();
     {
-        glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+        _vao.bind();
+        {
+            glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+        }
+        _vao.release();
     }
-    _vao.release();
 }
 
 QRectF QuadShape::getRectangle() const
@@ -70,10 +80,10 @@ void QuadShape::setRectangle(const QRectF& rectangle)
 
 void QuadShape::createQuad()
 {
-    const auto left = static_cast<float>(_rectangle.left());
-    const auto right = static_cast<float>(_rectangle.right());
-    const auto bottom = static_cast<float>(_rectangle.bottom());
-    const auto top = static_cast<float>(_rectangle.top());
+    const auto left     = static_cast<float>(_rectangle.left());
+    const auto right    = static_cast<float>(_rectangle.right());
+    const auto bottom   = static_cast<float>(_rectangle.bottom());
+    const auto top      = static_cast<float>(_rectangle.top());
 
     const float coordinates[4][3] = {
         { left,     top,    0.0f },
@@ -92,7 +102,12 @@ void QuadShape::createQuad()
         _vertexData[j * 5 + 4] = j == 2 || j == 3;
     }
 
-    _vbo.bind();
-    _vbo.allocate(_vertexData.constData(), _vertexData.count() * sizeof(GLfloat));
-    _vbo.release();
+    auto& renderer = _prop.getRenderer();
+
+    renderer.bindOpenGLContext();
+    {
+        _vbo.bind();
+        _vbo.allocate(_vertexData.constData(), _vertexData.count() * sizeof(GLfloat));
+        _vbo.release();
+    }
 }

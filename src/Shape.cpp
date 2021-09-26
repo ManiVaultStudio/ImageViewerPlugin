@@ -21,30 +21,34 @@ QString Shape::getFullName()
 
 void Shape::initialize()
 {
-    //qDebug() << "Initialize" << fullName();
+    auto& renderer = _prop.getRenderer();
 
-    _prop.getRenderer().bindOpenGLContext();
-
-    _vao.create();
-    _vbo.create();
+    renderer.bindOpenGLContext();
+    {
+        _vao.create();
+        _vbo.create();
+    }
+    renderer.releaseOpenGLContext();
 }
 
 void Shape::destroy()
 {
-    //qDebug() << "Destroy" << fullName();
+    auto& renderer = _prop.getRenderer();
 
-    _prop.getRenderer().bindOpenGLContext();
+    renderer.bindOpenGLContext();
+    {
+        _vao.destroy();
+        _vao.release();
 
-    _vao.destroy();
-    _vao.release();
-
-    _vbo.destroy();
-    _vbo.release();
+        _vbo.destroy();
+        _vbo.release();
+    }
+    renderer.releaseOpenGLContext();
 }
 
 void Shape::render()
 {
-    //qDebug() << "Render" << fullName();
+    qDebug() << "Shape render not implemented";
 }
 
 QString Shape::getName() const

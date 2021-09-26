@@ -67,10 +67,8 @@ public: // Action getters
 
     SettingsAction& getSettingsAction() { return _settingsAction; }
     GroupsAction& getCurrentLayerAction() { return _currentLayerAction; }
-    LayerSelectionAction& getSelectionAction() { return _selectionAction; }
 
 protected:
     SettingsAction&         _settingsAction;        /** Reference to settings action */
-    LayerSelectionAction    _selectionAction;       /** Selection action */
     GroupsAction            _currentLayerAction;    /** Current layer action */
 };

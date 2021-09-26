@@ -52,6 +52,10 @@ public: // Miscellaneous
         return _imageViewerWidget;
     }
 
+public: // Action getters
+
+    SettingsAction& getSettingsAction() { return *_settingsAction; }
+
 private:
     LayersModel             _layersModel;           /** Layers model */
     hdps::gui::DropWidget*  _dropWidget;            /** Widget for dropping data */

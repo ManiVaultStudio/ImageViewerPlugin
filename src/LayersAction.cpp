@@ -15,7 +15,6 @@ using namespace hdps::gui;
 LayersAction::LayersAction(SettingsAction& settingsAction) :
     WidgetAction(reinterpret_cast<QObject*>(&settingsAction)),
     _settingsAction(settingsAction),
-    _selectionAction(settingsAction.getImageViewerPlugin(), settingsAction.getImageViewerPlugin()->getImageViewerWidget()->getPixelSelectionTool()),
     _currentLayerAction(this)
 {
 }
@@ -119,7 +118,7 @@ LayersAction::Widget::Widget(QWidget* parent, LayersAction* layersAction, const 
 
             auto& layerAction = layer->getLayerAction();
 
-            groupActions << &layerAction.getGeneralAction() << &layerAction.getImageAction() << &layersAction->getSelectionAction();
+            groupActions << &layerAction.getGeneralAction() << &layerAction.getImageAction() << &layersAction->getSettingsAction().getSelectionAction();
         }
 
         layersAction->getCurrentLayerAction().set(groupActions);

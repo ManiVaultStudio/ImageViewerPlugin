@@ -24,7 +24,8 @@ ChannelAction::ChannelAction(LayerImageAction& layerImageAction, const ChannelIn
     _dimensionAction(this, "Dimension"),
     _windowLevelAction(*this),
     _scalarData(),
-    _scalarDataRange({0.0f, 0.0f})
+    _scalarDataRange({0.0f, 0.0f}),
+    _selectionData()
 {
     setText(name);
 
@@ -53,8 +54,30 @@ ChannelAction::ChannelAction(LayerImageAction& layerImageAction, const ChannelIn
         computeScalarData();
     });
 
+    // Get number of pixels
+    const auto numberOfPixels = getImages()->getNumberOfPixels();
+
     // Allocate space for the scalar data
-    _scalarData.resize(getImages()->getNumberOfPixels());
+    switch (_index)
+    {
+        case Channel1:
+        case Channel2:
+        case Channel3:
+        case Mask:
+        {
+            _scalarData.resize(numberOfPixels);
+            break;
+        }
+
+        case Selection:
+        {
+            _selectionData.resize(numberOfPixels);
+            break;
+        }
+
+        default:
+            break;
+    }
 
     const auto updateEnabled = [this]() -> void {
         setEnabled(_enabledAction.isChecked());
@@ -101,6 +124,11 @@ std::pair<float, float> ChannelAction::getDisplayRange()
     displayRange.second = std::clamp(level + (window / 2.0f), _scalarDataRange.first, _scalarDataRange.second);
 
     return displayRange;
+}
+
+const std::vector<std::uint8_t>& ChannelAction::getSelectionData() const
+{
+    return _selectionData;
 }
 
 bool ChannelAction::isResettable() const
@@ -184,8 +212,24 @@ void ChannelAction::computeScalarData()
                 break;
         }
 
-        // Compute the scalar data minimum and maximum
-        computeScalarDataRange();
+        // Compute scalar data range for the first three channels
+        switch (_index)
+        {
+            case Channel1:
+            case Channel2:
+            case Channel3:
+            case Mask:
+            {
+                computeScalarDataRange();
+                break;
+            }
+
+            case Selection:
+                break;
+
+            default:
+                break;
+        }
 
         // Publish scalar data change
         emit changed(*this);
@@ -290,19 +334,12 @@ void ChannelAction::computeSelectionChannel()
 {
     qDebug() << "Compute selection for channel" << _index;
 
-    /*
-    auto& selectionChannel = (*getChannel(ult(ChannelIndex::Selection)));
+    // Fill with non-selected
+    std::fill(_selectionData.begin(), _selectionData.end(), 0.0f);
     
-    selectionChannel.setImageSize(getImageSize());
-    selectionChannel.fill(0);
-    
+    // Assign selected pixels
     for (auto selectionIndex : getSelectionIndices())
-        selectionChannel[selectionIndex] = 255;
-    
-    selectionChannel.setChanged();
-    
-    emit channelChanged(ult(ChannelIndex::Selection));
-    */
+        _selectionData[selectionIndex] = 255;
 }
 
 void ChannelAction::computeScalarDataRange()

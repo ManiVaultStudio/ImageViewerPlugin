@@ -1,12 +1,13 @@
 #include "SettingsAction.h"
-#include "Application.h"
+#include "ImageViewerPlugin.h"
 
 using namespace hdps::gui;
 
 SettingsAction::SettingsAction(ImageViewerPlugin* imageViewerPlugin) :
     WidgetAction(reinterpret_cast<QObject*>(imageViewerPlugin)),
     _imageViewerPlugin(imageViewerPlugin),
-    _layersAction(*this)
+    _layersAction(*this),
+    _selectionAction(imageViewerPlugin, imageViewerPlugin->getImageViewerWidget()->getPixelSelectionTool())
 {
 }
 

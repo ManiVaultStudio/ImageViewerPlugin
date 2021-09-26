@@ -24,7 +24,7 @@ public:
     Shape(Prop& prop, const QString& name);
 
     /** Destructor */
-    ~Shape() override = default;
+    ~Shape() = default;
 
 public:
 

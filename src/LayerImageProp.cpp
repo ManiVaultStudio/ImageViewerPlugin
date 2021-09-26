@@ -34,10 +34,10 @@ void LayerImageProp::initialize()
 {
     try
     {
+        Prop::initialize();
+
         getRenderer().bindOpenGLContext();
         {
-            Prop::initialize();
-
             const auto shaderProgram = getShaderProgramByName("Quad");
 
             // Load vertex/fragment shaders from resources
@@ -60,23 +60,24 @@ void LayerImageProp::initialize()
 
             auto shape = getShapeByName<QuadShape>("Quad");
 
-            // Create shader program
-            if (shaderProgram->bind()) {
-                shape->getVAO().bind();
-                shape->getVBO().bind();
-
-                shaderProgram->enableAttributeArray(QuadShape::_vertexAttribute);
-                shaderProgram->enableAttributeArray(QuadShape::_textureAttribute);
-                shaderProgram->setAttributeBuffer(QuadShape::_vertexAttribute, GL_FLOAT, 0, 3, stride);
-                shaderProgram->setAttributeBuffer(QuadShape::_textureAttribute, GL_FLOAT, 3 * sizeof(GLfloat), 2, stride);
-                shaderProgram->release();
-
-                shape->getVAO().release();
-                shape->getVBO().release();
-            }
-            else {
+            // Bind shader program
+            if (!shaderProgram->bind())
                 throw std::runtime_error("Unable to bind quad shader program");
+            
+            shape->getVAO().bind();
+            {
+                shape->getVBO().bind();
+                {
+                    // Configure shader program
+                    shaderProgram->enableAttributeArray(QuadShape::_vertexAttribute);
+                    shaderProgram->enableAttributeArray(QuadShape::_textureAttribute);
+                    shaderProgram->setAttributeBuffer(QuadShape::_vertexAttribute, GL_FLOAT, 0, 3, stride);
+                    shaderProgram->setAttributeBuffer(QuadShape::_textureAttribute, GL_FLOAT, 3 * sizeof(GLfloat), 2, stride);
+                    shaderProgram->release();
+                }
+                shape->getVAO().release();
             }
+            shape->getVBO().release();
 
             // Create quad with image size
             setImageSize(_layer.getImageSize());
@@ -121,35 +122,35 @@ void LayerImageProp::render(const QMatrix4x4& modelViewProjectionMatrix)
             throw std::runtime_error("Channels texture is not created.");
         }
 
-        // Bind shader program and render
-        if (shaderProgram->bind()) {
-            auto& imageAction = _layer.getLayerAction().getImageAction();
-
-            // Convert display ranges
-            const QVector2D displayRanges[3] = {
-                QVector2D(_displayRanges[0].first, _displayRanges[0].second),
-                QVector2D(_displayRanges[1].first, _displayRanges[1].second),
-                QVector2D(_displayRanges[2].first, _displayRanges[2].second)
-            };
-
-            // Configure shared program
-            shaderProgram->setUniformValue("colorMapTexture", 0);
-            shaderProgram->setUniformValue("channelTextures", 1);
-            shaderProgram->setUniformValue("noChannels", imageAction.getNumberOfActiveChannels());
-            shaderProgram->setUniformValue("useConstantColor", imageAction.getUseConstantColorAction().isChecked());
-            shaderProgram->setUniformValue("constantColor", imageAction.getConstantColorAction().getColor());
-            shaderProgram->setUniformValue("colorSpace", imageAction.getColorSpaceAction().getCurrentIndex());
-            shaderProgram->setUniformValueArray("displayRanges", displayRanges, 3);
-            shaderProgram->setUniformValue("opacity", 0.01f * imageAction.getOpacityAction().getValue());
-            shaderProgram->setUniformValue("transform", modelViewProjectionMatrix * _renderable.getModelMatrix() * getModelMatrix());
-
-            shape->render();
-
-            shaderProgram->release();
-        }
-        else {
+        // Bind shader program
+        if (!shaderProgram->bind())
             throw std::runtime_error("Unable to bind quad shader program");
-        }
+
+        auto& imageAction = _layer.getLayerAction().getImageAction();
+
+        // Convert display ranges
+        const QVector2D displayRanges[3] = {
+            QVector2D(_displayRanges[0].first, _displayRanges[0].second),
+            QVector2D(_displayRanges[1].first, _displayRanges[1].second),
+            QVector2D(_displayRanges[2].first, _displayRanges[2].second)
+        };
+
+        // Configure shader program
+        shaderProgram->setUniformValue("colorMapTexture", 0);
+        shaderProgram->setUniformValue("channelTextures", 1);
+        shaderProgram->setUniformValue("noChannels", imageAction.getNumberOfActiveChannels());
+        shaderProgram->setUniformValue("useConstantColor", imageAction.getUseConstantColorAction().isChecked());
+        shaderProgram->setUniformValue("constantColor", imageAction.getConstantColorAction().getColor());
+        shaderProgram->setUniformValue("colorSpace", imageAction.getColorSpaceAction().getCurrentIndex());
+        shaderProgram->setUniformValueArray("displayRanges", displayRanges, 3);
+        shaderProgram->setUniformValue("opacity", 0.01f * imageAction.getOpacityAction().getValue());
+        shaderProgram->setUniformValue("transform", modelViewProjectionMatrix * _renderable.getModelMatrix() * getModelMatrix());
+
+        // Render the quad
+        shape->render();
+
+        // Release the shader program
+        shaderProgram->release();
 
         // Release textures
         getTextureByName("Channels")->release();
@@ -157,7 +158,7 @@ void LayerImageProp::render(const QMatrix4x4& modelViewProjectionMatrix)
     }
     catch (std::exception& e)
     {
-        exceptionMessageBox("Layer image prop rendering failed", e.what());
+        exceptionMessageBox("Layer image prop rendering failed", e);
     }
     catch (...) {
         exceptionMessageBox("Layer image prop rendering failed");
@@ -178,7 +179,7 @@ void LayerImageProp::setImageSize(const QSize& imageSize)
     }
     catch (std::exception& e)
     {
-        exceptionMessageBox("Set layer image prop image size failed", e.what());
+        exceptionMessageBox("Set layer image prop image size failed", e);
     }
     catch (...) {
         exceptionMessageBox("Set layer image prop image size failed");
@@ -211,7 +212,7 @@ void LayerImageProp::setColorMapImage(const QImage& colorMapImage)
     }
     catch (std::exception& e)
     {
-        exceptionMessageBox("Unable to set color map image in layer image prop", e.what());
+        exceptionMessageBox("Unable to set color map image in layer image prop", e);
     }
     catch (...) {
         exceptionMessageBox("Unable to set color map image in layer image prop");
@@ -267,7 +268,7 @@ void LayerImageProp::setChannelScalarData(const std::uint32_t& channelIndex, con
     }
     catch (std::exception& e)
     {
-        exceptionMessageBox("Unable to set channel scalar data in layer image prop", e.what());
+        exceptionMessageBox("Unable to set channel scalar data in layer image prop", e);
     }
     catch (...) {
         exceptionMessageBox("Unable to set channel scalar data in layer image prop");
@@ -310,12 +311,13 @@ void LayerImageProp::setInterpolationType(const InterpolationType& interpolation
 
 QRectF LayerImageProp::getWorldBoundingRectangle() const
 {
-    auto& generalAction = _layer.getLayerAction().getGeneralAction();
-
+    // Get quad bounding rectangle
     auto boundingRectangle = getShapeByName<QuadShape>("Quad")->getRectangle();
 
+    // Compute composite matrix
     const auto matrix = _renderable.getModelMatrix() * getModelMatrix();
 
+    // Compute rectangle extents in world coordinates
     const auto worldTopLeft         = matrix * boundingRectangle.topLeft();
     const auto worldBottomRight     = matrix * boundingRectangle.bottomRight();
 
@@ -328,8 +330,6 @@ void LayerImageProp::updateModelMatrix()
 
     // Get quad shape
     const auto rectangle = getShapeByName<QuadShape>("Quad")->getRectangle();
-
-    auto& generalAction = _layer.getLayerAction().getGeneralAction();
 
     // Compute the  model matrix
     modelMatrix.translate(-0.5f * rectangle.width(), -0.5f * rectangle.height(), 0.0f);

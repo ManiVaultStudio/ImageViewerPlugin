@@ -56,6 +56,10 @@ public: // Rendering
      */
     void render(const QMatrix4x4& modelViewProjectionMatrix) override;
 
+    /**
+     * Set image size
+     * @param imageSize Image size
+     */
     void setImageSize(const QSize& imageSize);
 
     /**

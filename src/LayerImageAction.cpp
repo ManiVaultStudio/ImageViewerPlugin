@@ -155,6 +155,10 @@ LayerImageAction::LayerImageAction(LayerAction& layerAction) :
         emit channelChanged(_channel3Action);
     });
 
+    connect(&_channelSelectionAction, &ChannelAction::changed, this, [this]() {
+        emit channelChanged(_channelSelectionAction);
+    });
+
     // Flag as changed when the opacity changes
     connect(&_opacityAction, &DecimalAction::valueChanged, this, [this]() {
         _layerAction.getLayer().invalidate();

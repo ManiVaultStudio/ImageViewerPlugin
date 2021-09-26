@@ -2,11 +2,12 @@
 #include "ImageViewerPlugin.h"
 #include "DataHierarchyItem.h"
 #include "LayerImageProp.h"
+#include "SelectionProp.h"
 
 #include "util/Exception.h"
 
-Layer::Layer(ImageViewerPlugin* imageViewerPlugin, const QString& datasetName) :
-    Renderable(imageViewerPlugin->getImageViewerWidget()->getRenderer()),
+Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
+    Renderable(imageViewerPlugin.getImageViewerWidget()->getRenderer()),
     _imageViewerPlugin(imageViewerPlugin),
     _images(datasetName),
     _points(_images->getHierarchyItem().getParent()->getDatasetName()),
@@ -19,6 +20,7 @@ Layer::Layer(ImageViewerPlugin* imageViewerPlugin, const QString& datasetName) :
         throw std::runtime_error("The layer points dataset is not valid after initialization");
 
     _props << new LayerImageProp(*this, "LayerImageProp");
+    _props << new SelectionProp(*this, "SelectionProp");
 
     // Update the color map image in the image prop
     const auto updateColorMap = [this]() {
@@ -33,8 +35,29 @@ Layer::Layer(ImageViewerPlugin* imageViewerPlugin, const QString& datasetName) :
     // Update the color map scalar data in the image prop
     const auto updateChannelScalarData = [this](ChannelAction& channelAction) {
 
-        // Assign the scalar data to the prop
-        this->getPropByName<LayerImageProp>("LayerImageProp")->setChannelScalarData(channelAction.getIndex(), channelAction.getScalarData(), channelAction.getDisplayRange());
+        switch (channelAction.getIndex()) {
+            case ChannelAction::Channel1:
+            case ChannelAction::Channel2:
+            case ChannelAction::Channel3:
+            case ChannelAction::Mask:
+            {
+                // Assign the scalar data to the prop
+                this->getPropByName<LayerImageProp>("LayerImageProp")->setChannelScalarData(channelAction.getIndex(), channelAction.getScalarData(), channelAction.getDisplayRange());
+
+                break;
+            }
+
+            case ChannelAction::Selection:
+            {
+                // Get selection channel
+                auto& selectionChannel = _layerAction.getImageAction().getChannelSelectionAction();
+
+                // Assign the scalar data to the prop
+                this->getPropByName<SelectionProp>("SelectionProp")->setSelectionData(selectionChannel.getSelectionData());
+
+                break;
+            }
+        }
 
         // Render
         invalidate();
@@ -59,6 +82,12 @@ Layer::Layer(ImageViewerPlugin* imageViewerPlugin, const QString& datasetName) :
     connect(&_layerAction.getImageAction().getColorMapAction(), &ColorMapAction::imageChanged, this, updateColorMap);
     connect(&_layerAction.getImageAction(), &LayerImageAction::channelChanged, this, updateChannelScalarData);
     connect(&_layerAction.getImageAction().getInterpolationTypeAction(), &OptionAction::currentIndexChanged, this, updateInterpolationType);
+    
+    auto& selectionAction = _imageViewerPlugin.getSettingsAction().getSelectionAction();
+
+    // Update prop when selection overlay color and opacity change
+    connect(&selectionAction.getOverlayColor(), &ColorAction::colorChanged, this, updateProp);
+    connect(&selectionAction.getOverlayOpacity(), &DecimalAction::valueChanged, this, updateProp);
 
     // Update the model matrix and re-render
     const auto updateModelMatrixAndReRender = [this]() {
@@ -75,6 +104,7 @@ Layer::Layer(ImageViewerPlugin* imageViewerPlugin, const QString& datasetName) :
 
     updateColorMap();
     updateChannelScalarData(_layerAction.getImageAction().getChannel1Action());
+    updateChannelScalarData(_layerAction.getImageAction().getChannelSelectionAction());
     updateInterpolationType();
     updateModelMatrixAndReRender();
 }
@@ -90,14 +120,14 @@ void Layer::render(const QMatrix4x4& modelViewProjectionMatrix)
         prop->render(modelViewProjectionMatrix);
 }
 
-ImageViewerPlugin* Layer::getImageViewerPlugin()
+ImageViewerPlugin& Layer::getImageViewerPlugin()
 {
     return _imageViewerPlugin;
 }
 
 void Layer::invalidate()
 {
-    _imageViewerPlugin->getImageViewerWidget()->update();
+    _imageViewerPlugin.getImageViewerWidget()->update();
 }
 
 void Layer::updateModelMatrix()
@@ -233,15 +263,14 @@ void Layer::zoomToExtents()
         auto layerImageProp = getPropByName<LayerImageProp>("LayerImageProp");
 
         // Zoom to layer extents
-        //_imageViewerPlugin->getImageViewerWidget()->getRenderer().zoomToRectangle(layerImageProp->getBoundingRectangle());
-        _imageViewerPlugin->getImageViewerWidget()->getRenderer().zoomToObject(*this);
+        _imageViewerPlugin.getImageViewerWidget()->getRenderer().zoomToObject(*this);
 
         // Trigger render
         invalidate();
     }
     catch (std::exception& e)
     {
-        exceptionMessageBox("Unable to zoom to layer extents", e.what());
+        exceptionMessageBox("Unable to zoom to layer extents", e);
     }
     catch (...) {
         exceptionMessageBox("Unable to zoom to layer extents");

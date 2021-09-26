@@ -77,7 +77,7 @@ void ImageViewerPlugin::init()
             dropRegions << new DropWidget::DropRegion(this, "Images", QString("Add an image layer for %1").arg(datasetName), true, [this, datasetName]() {
                 try
                 {
-                    _layersModel.addLayer(SharedLayer::create(this, datasetName));
+                    _layersModel.addLayer(SharedLayer::create(*this, datasetName));
                 }
                 catch (std::exception& e)
                 {

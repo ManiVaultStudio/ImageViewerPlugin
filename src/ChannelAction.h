@@ -113,6 +113,9 @@ public: // Scalar data
     /** Get display range */
     std::pair<float, float> getDisplayRange();
 
+    /** Get selection data */
+    const std::vector<std::uint8_t>& getSelectionData() const;
+
 protected: // Data extraction
 
     /** Get reference to images dataset */
@@ -161,6 +164,7 @@ protected:
     WindowLevelAction           _windowLevelAction;     /** Window/level action */
     std::vector<float>          _scalarData;            /** Channel scalar data for the specified dimension */
     std::pair<float, float>     _scalarDataRange;       /** Scalar data range */
+    std::vector<std::uint8_t>   _selectionData;         /** Selection data */
 
     friend class LayerImageAction;
 };
