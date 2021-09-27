@@ -4,6 +4,7 @@
 #include "DataHierarchyItem.h"
 #include "ImageProp.h"
 #include "SelectionProp.h"
+#include "SelectionToolProp.h"
 
 #include "util/Exception.h"
 
@@ -20,8 +21,10 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
     if (!_points.isValid())
         throw std::runtime_error("The layer points dataset is not valid after initialization");
 
+    // Create layer render props
     _props << new ImageProp(*this, "ImageProp");
     _props << new SelectionProp(*this, "SelectionProp");
+    _props << new SelectionToolProp(*this, "SelectionToolProp");
 
     // Update the color map image in the image prop
     const auto updateColorMap = [this]() {

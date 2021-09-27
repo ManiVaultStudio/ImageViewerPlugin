@@ -8,6 +8,7 @@
 
 class QWidget;
 
+using namespace hdps::util;
 using namespace hdps::gui;
 
 /**

@@ -1,7 +1,6 @@
 #include "SelectionProp.h"
 #include "QuadShape.h"
 #include "LayersModel.h"
-#include "Range.h"
 #include "Renderer.h"
 #include "ImageViewerPlugin.h"
 #include "SettingsAction.h"
@@ -57,8 +56,10 @@ void SelectionProp::initialize()
             if (!shaderProgram->link())
                 throw std::runtime_error("Unable to link quad shader program");
 
+            // Number of bytes per stride
             const auto stride = 5 * sizeof(GLfloat);
 
+            // Get quad shape
             auto shape = getShapeByName<QuadShape>("Quad");
 
             // Bind shader program
@@ -99,6 +100,7 @@ void SelectionProp::initialize()
 void SelectionProp::render(const QMatrix4x4& modelViewProjectionMatrix)
 {
     try {
+
         if (!canRender())
             return;
 
@@ -140,10 +142,10 @@ void SelectionProp::render(const QMatrix4x4& modelViewProjectionMatrix)
     }
     catch (std::exception& e)
     {
-        exceptionMessageBox("Layer image prop rendering failed", e);
+        exceptionMessageBox("Selection prop rendering failed", e);
     }
     catch (...) {
-        exceptionMessageBox("Layer image prop rendering failed");
+        exceptionMessageBox("Selection prop rendering failed");
     }
 }
 
@@ -161,10 +163,10 @@ void SelectionProp::setImageSize(const QSize& imageSize)
     }
     catch (std::exception& e)
     {
-        exceptionMessageBox("Set selection prop image size failed", e);
+        exceptionMessageBox("Set selection prop set image size failed", e);
     }
     catch (...) {
-        exceptionMessageBox("Set selection prop image size failed");
+        exceptionMessageBox("Set selection prop set image size failed");
     }
 }
 

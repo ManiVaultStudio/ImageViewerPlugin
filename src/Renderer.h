@@ -176,6 +176,11 @@ public: // Miscellaneous
     /** Releases the OpenGL context */
     void releaseOpenGLContext();
 
+public: // Mouse
+
+    /** Get mouse positions */
+    QVector<QPoint> getMousePositions() { return _mousePositions; }
+
 protected:
     QVector<QPoint>     _mousePositions;        /** Recorded mouse positions */
     int                 _mouseButtons;          /** State of the left, middle and right mouse buttons */

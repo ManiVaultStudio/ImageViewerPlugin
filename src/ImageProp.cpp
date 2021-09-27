@@ -1,6 +1,5 @@
 #include "ImageProp.h"
 #include "QuadShape.h"
-#include "Range.h"
 #include "Renderer.h"
 
 #include "util/FileUtil.h"
@@ -98,6 +97,7 @@ void ImageProp::initialize()
 void ImageProp::render(const QMatrix4x4& modelViewProjectionMatrix)
 {
     try {
+
         if (!canRender())
             return;
         

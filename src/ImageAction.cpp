@@ -19,7 +19,7 @@ ImageAction::ImageAction(LayerAction& layerAction) :
     _channel3Action(*this, ChannelAction::Channel3, ChannelAction::channelIndexes.value(ChannelAction::Channel3)),
     _channelMaskAction(*this, ChannelAction::Mask, ChannelAction::channelIndexes.value(ChannelAction::Mask)),
     _channelSelectionAction(*this, ChannelAction::Selection, ChannelAction::channelIndexes.value(ChannelAction::Selection)),
-    _colorMapAction(this, "Color map"),
+    _colorMapAction(this, "Color map", ColorMap::Type::OneDimensional, "Black to white", "Black to white"),
     _interpolationTypeAction(this, "Interpolate", interpolationTypes.values(), "Bilinear", "Bilinear"),
     _useConstantColorAction(this, "Use constant color", false, false),
     _constantColorAction(this, "Constant color", QColor(Qt::white), QColor(Qt::white))

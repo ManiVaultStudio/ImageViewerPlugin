@@ -10,6 +10,8 @@
 
 class LayersModel;
 
+using namespace hdps::util;
+
 /**
  * Image viewer widget class
  *
