@@ -283,12 +283,8 @@ bool ImageViewerWidget::eventFilter(QObject* target, QEvent* event)
 
                         case PixelSelectionType::Brush:
                         {
-                            if (mouseEvent->buttons() & Qt::LeftButton) {
-                                if (mouseEvent->buttons() & Qt::LeftButton && numberOfMousePositions >= 2)
-                                    _mousePositions << mouseEvent->pos();
-                                else
-                                    _mousePositions = { mouseEvent->pos() };
-                            }
+                            if (mouseEvent->buttons() & Qt::LeftButton)
+                                _mousePositions << mouseEvent->pos();
 
                             break;
                         }
