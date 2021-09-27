@@ -192,6 +192,7 @@ void SelectionToolProp::compute()
 
             shaderProgram->setUniformValue("imageSize", fboSize.width(), fboSize.height());
 
+            qDebug() << "Render";
             
             switch (static_cast<PixelSelectionType>(selectionType))
             {

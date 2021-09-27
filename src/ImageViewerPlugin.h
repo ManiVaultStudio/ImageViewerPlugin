@@ -5,6 +5,8 @@
 #include "LayersModel.h"
 #include "ImageViewerWidget.h"
 
+#include <QItemSelectionModel>
+
 using hdps::plugin::ViewPluginFactory;
 using hdps::plugin::ViewPlugin;
 
@@ -41,9 +43,14 @@ public: // Inherited from ViewPlugin
 
 public: // Miscellaneous
 
-    /** Returns the layer model */
-    LayersModel& getLayersModel() {
-        return _layersModel;
+    /** Get the layers model */
+    LayersModel& getModel() {
+        return _model;
+    }
+
+    /** Get the layers selection model */
+    QItemSelectionModel& getSelectionModel() {
+        return _selectionModel;
     }
 
     ImageViewerWidget* getImageViewerWidget() {
@@ -55,7 +62,8 @@ public: // Action getters
     SettingsAction& getSettingsAction() { return *_settingsAction; }
 
 private:
-    LayersModel             _layersModel;           /** Layers model */
+    LayersModel             _model;                 /** Layers model */
+    QItemSelectionModel     _selectionModel;        /** Layers selection model */
     hdps::gui::DropWidget*  _dropWidget;            /** Widget for dropping data */
     QWidget*                _mainWidget;            /** Pointer to main widget */
     ImageViewerWidget*      _imageViewerWidget;     /** Pointer to image viewer widget */

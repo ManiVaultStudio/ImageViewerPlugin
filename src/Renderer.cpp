@@ -30,6 +30,7 @@ Renderer::Renderer(QOpenGLWidget* parent) :
     _margin(25),
     _interactionMode(InteractionMode::LayerEditing)
 {
+    this->installEventFilter(parent);
 }
 
 void Renderer::init()
@@ -55,6 +56,8 @@ void Renderer::handleEvent(QEvent* event)
             if (mouseEvent->buttons() & Qt::LeftButton) {
                 _mousePositions << mouseEvent->pos();
             }
+
+            emit mousePositionChanged(_mousePositions);
 
             break;
         }
@@ -82,6 +85,8 @@ void Renderer::handleEvent(QEvent* event)
                 render();
             }
 
+            emit mousePositionChanged(_mousePositions);
+
             break;
         }
 
@@ -97,6 +102,8 @@ void Renderer::handleEvent(QEvent* event)
             else {
                 zoomAround(zoomCenter, 1.0f + _zoomSensitivity);
             }
+
+            emit mousePositionChanged(_mousePositions);
 
             render();
 

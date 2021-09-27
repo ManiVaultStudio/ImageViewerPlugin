@@ -61,6 +61,9 @@ public: // Selection
     /** Invert the pixel selection in the image(s) */
     void invertSelection();
 
+    /** Publish selection */
+    void publishSelection();
+
 public: // View
 
     void zoomToExtents();

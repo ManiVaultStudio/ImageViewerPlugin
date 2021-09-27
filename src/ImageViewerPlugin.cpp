@@ -20,7 +20,8 @@ Q_PLUGIN_METADATA(IID "nl.BioVault.ImageViewerPlugin")
 
 ImageViewerPlugin::ImageViewerPlugin(hdps::plugin::PluginFactory* factory) :
     ViewPlugin(factory),
-    _layersModel(this),
+    _model(this),
+    _selectionModel(&_model),
     _dropWidget(nullptr),
     _mainWidget(nullptr),
     _imageViewerWidget(nullptr),
@@ -43,7 +44,7 @@ void ImageViewerPlugin::init()
     auto viewerLayout   = new QVBoxLayout();
 
     _mainWidget         = new QWidget();
-    _imageViewerWidget  = new ImageViewerWidget(this, _layersModel);
+    _imageViewerWidget  = new ImageViewerWidget(this, _model);
     _settingsAction     = new SettingsAction(*this);
     _toolBarAction      = new ToolBarAction(*this);
 
@@ -94,7 +95,7 @@ void ImageViewerPlugin::init()
             dropRegions << new DropWidget::DropRegion(this, "Images", QString("Add an image layer for %1").arg(datasetName), true, [this, datasetName]() {
                 try
                 {
-                    _layersModel.addLayer(SharedLayer::create(*this, datasetName));
+                    _model.addLayer(SharedLayer::create(*this, datasetName));
                 }
                 catch (std::exception& e)
                 {
@@ -107,11 +108,11 @@ void ImageViewerPlugin::init()
     });
 
     const auto updateDropIndicatorVisibility = [this]() -> void {
-        _dropWidget->setShowDropIndicator(_layersModel.rowCount() == 0);
+        _dropWidget->setShowDropIndicator(_model.rowCount() == 0);
     };
 
-    connect(&_layersModel, &QAbstractItemModel::rowsInserted, this, [updateDropIndicatorVisibility]() { updateDropIndicatorVisibility(); });
-    connect(&_layersModel, &QAbstractItemModel::rowsRemoved, this, [updateDropIndicatorVisibility]() { updateDropIndicatorVisibility(); });
+    connect(&_model, &QAbstractItemModel::rowsInserted, this, [updateDropIndicatorVisibility]() { updateDropIndicatorVisibility(); });
+    connect(&_model, &QAbstractItemModel::rowsRemoved, this, [updateDropIndicatorVisibility]() { updateDropIndicatorVisibility(); });
 }
 
 QIcon ImageViewerPluginFactory::getIcon() const

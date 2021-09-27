@@ -181,6 +181,14 @@ public: // Mouse
     /** Get mouse positions */
     QVector<QPoint> getMousePositions() { return _mousePositions; }
 
+signals:
+
+    /**
+     * Signals that the mouse positions changed
+     * @param mousePositions Mouse positions
+     */
+    void mousePositionChanged(const QVector<QPoint>& mousePositions);
+
 protected:
     QVector<QPoint>     _mousePositions;        /** Recorded mouse positions */
     int                 _mouseButtons;          /** State of the left, middle and right mouse buttons */

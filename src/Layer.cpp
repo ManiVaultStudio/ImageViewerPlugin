@@ -8,6 +8,8 @@
 
 #include "util/Exception.h"
 
+#include <set>
+
 Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
     Renderable(imageViewerPlugin.getImageViewerWidget()->getRenderer()),
     _imageViewerPlugin(imageViewerPlugin),
@@ -284,4 +286,115 @@ void Layer::zoomToExtents()
 QRectF Layer::getWorldBoundingRectangle() const
 {
     return getPropByName<ImageProp>("ImageProp")->getWorldBoundingRectangle();
+}
+
+void Layer::publishSelection()
+{
+    try {
+        if (!_points.isValid())
+            throw std::runtime_error("The layer points dataset is not valid after initialization");
+
+        // Get reference to points selection indices
+        auto& selectionIndices = _points->getSelection<Points>().indices;
+
+        // Get reference to the pixel selection tool
+        auto& pixelSelectionTool = getImageViewerPlugin().getImageViewerWidget()->getPixelSelectionTool();
+
+        switch (pixelSelectionTool.getType())
+        {
+            case PixelSelectionType::Rectangle:
+            case PixelSelectionType::Brush:
+            case PixelSelectionType::Lasso:
+            case PixelSelectionType::Polygon: {
+
+                // Get current selection image (for add/subtract)
+                const auto selectionImage = getPropByName<SelectionToolProp>("SelectionTool")->getSelectionImage().mirrored(false, true);
+
+                const auto noComponents = 4;
+                const auto width        = static_cast<float>(getImageSize().width());
+                const auto noPixels     = _images->getNumberOfPixels();
+
+                switch (pixelSelectionTool.getModifier())
+                {
+                    case PixelSelectionModifierType::Replace:
+                    {
+                        selectionIndices.clear();
+                        selectionIndices.reserve(noPixels);
+
+                        for (std::uint32_t pixelIndex = 0; pixelIndex < noPixels; ++pixelIndex) {
+                            if (selectionImage.bits()[pixelIndex * noComponents] > 0)
+                                selectionIndices.push_back(pixelIndex);
+                        }
+
+                        break;
+                    }
+
+                    case PixelSelectionModifierType::Add:
+                    {
+                        auto selectionSet = std::set<std::uint32_t>(selectionIndices.begin(), selectionIndices.end());
+
+                        for (std::uint32_t pixelIndex = 0; pixelIndex < noPixels; ++pixelIndex) {
+                            if (selectionImage.bits()[pixelIndex * noComponents] > 0) {
+                                selectionSet.insert(pixelIndex);
+                            }
+                        }
+
+                        selectionIndices = std::vector<std::uint32_t>(selectionSet.begin(), selectionSet.end());
+                        break;
+                    }
+
+                    case PixelSelectionModifierType::Remove:
+                    {
+                        auto selectionSet = std::set<std::uint32_t>(selectionIndices.begin(), selectionIndices.end());
+
+                        for (std::uint32_t pixelIndex = 0; pixelIndex < noPixels; ++pixelIndex) {
+                            if (selectionImage.bits()[pixelIndex * noComponents] > 0) {
+                                selectionSet.erase(pixelIndex);
+                            }
+                        }
+
+                        selectionIndices = std::vector<std::uint32_t>(selectionSet.begin(), selectionSet.end());
+                        break;
+                    }
+
+                    default:
+                        break;
+                }
+
+                break;
+            }
+
+            case PixelSelectionType::Sample: {
+                /*
+                if (isWithin(_mousePositions.last())) {
+                    const auto textureCoordinate    = getTextureCoordinateFromScreenPoint(_mousePositions.last());
+                    const auto imageWidth           = getImageWidth(Qt::EditRole).toInt();
+                    const auto pointIndex           = textureCoordinate.y() * imageWidth + textureCoordinate.x();
+
+                    selectionIndices = std::vector<std::uint32_t>({ static_cast<std::uint32_t>(pointIndex) });
+                    //qDebug() << _mousePositions.last();
+                    //qDebug() << textureCoordinate;
+                }
+                */
+
+                break;
+            }
+
+            default:
+                break;
+        }
+
+        // Notify listeners of the selection change
+        getImageViewerPlugin().core()->notifySelectionChanged(_points->isDerivedData() ? _points->getSourceData<Points>(*_points).getName() : _points->getName());
+
+        // Reset the selection tool prop
+        getPropByName<SelectionToolProp>("SelectionTool")->reset();
+    }
+    catch (std::exception& e)
+    {
+        exceptionMessageBox("Unable to publish selection change", e);
+    }
+    catch (...) {
+        exceptionMessageBox("Unable to publish selection change");
+    }
 }
