@@ -4,7 +4,6 @@
 
 #include <QKeyEvent>
 #include <QPainter>
-#include <QMessageBox>
 
 ImageViewerWidget::ImageViewerWidget(QWidget* parent, LayersModel& layersModel) :
     QOpenGLWidget(parent),
