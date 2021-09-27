@@ -22,15 +22,12 @@ const QMap<Renderer::InteractionMode, QString> Renderer::interactionModes = {
 Renderer::Renderer(QOpenGLWidget* parent) :
     QObject(parent),
     hdps::Renderer(),
-    _mousePositions(),
-    _mouseButtons(),
     _pan(),
     _zoom(1.f),
     _zoomSensitivity(0.1f),
     _margin(25),
     _interactionMode(InteractionMode::LayerEditing)
 {
-    this->installEventFilter(parent);
 }
 
 void Renderer::init()
@@ -42,77 +39,7 @@ void Renderer::render()
     static_cast<QOpenGLWidget*>(parent())->update();
 }
 
-void Renderer::handleEvent(QEvent* event)
-{
-    if (_interactionMode != InteractionMode::Navigation)
-        return;
-
-    switch (event->type())
-    {
-        case QEvent::MouseButtonPress:
-        {
-            auto mouseEvent = static_cast<QMouseEvent*>(event);
-
-            if (mouseEvent->buttons() & Qt::LeftButton) {
-                _mousePositions << mouseEvent->pos();
-            }
-
-            emit mousePositionChanged(_mousePositions);
-
-            break;
-        }
-
-        case QEvent::MouseButtonRelease:
-        {
-            _mousePositions.clear();
-            break;
-        }
-
-        case QEvent::MouseMove:
-        {
-            auto mouseEvent = static_cast<QMouseEvent*>(event);
-
-            _mousePositions << mouseEvent->pos();
-
-            const auto noMousePositions = _mousePositions.size();
-
-            if (mouseEvent->buttons() & Qt::LeftButton && noMousePositions >= 2) {
-                const auto pPrevious    = QVector2D(_mousePositions[noMousePositions - 2]);
-                const auto pCurrent     = QVector2D(_mousePositions[noMousePositions - 1]);
-                const auto vDelta       = (pCurrent - pPrevious) / _zoom;
-
-                pan(vDelta);
-                render();
-            }
-
-            emit mousePositionChanged(_mousePositions);
-
-            break;
-        }
-
-        case QEvent::Wheel:
-        {
-            auto wheelEvent = static_cast<QWheelEvent*>(event);
-
-            const auto zoomCenter = wheelEvent->position().toPoint();
-
-            if (wheelEvent->angleDelta().ry() < 0) {
-                zoomAround(zoomCenter, 1.0f - _zoomSensitivity);
-            }
-            else {
-                zoomAround(zoomCenter, 1.0f + _zoomSensitivity);
-            }
-
-            emit mousePositionChanged(_mousePositions);
-
-            render();
-
-            break;
-        }
-    }
-}
-
-Renderer::InteractionMode Renderer::interactionMode() const
+Renderer::InteractionMode Renderer::getInteractionMode() const
 {
     return _interactionMode;
 }
@@ -202,9 +129,14 @@ void Renderer::pan(const QVector2D& delta)
     _pan.setY(_pan.y() + delta.y());
 }
 
-float Renderer::zoom() const
+float Renderer::getZoom() const
 {
     return _zoom;
+}
+
+float Renderer::getZoomSensitivity() const
+{
+    return _zoomSensitivity;
 }
 
 void Renderer::zoomBy(const float& factor)

@@ -49,8 +49,6 @@ public: // Construction
      */
     Renderer(QOpenGLWidget* parent);
 
-public: // 
-
     /** Initialize the renderer */
     void init() override;
 
@@ -63,16 +61,8 @@ public: //
     /** Resizes the renderer */
     void resize(QSize renderSize) override {};
 
-    /**
-     * Handles events passed on from widgets
-     * @param event Event
-     */
-    void handleEvent(QEvent* event);
-
-public: // Getters/setters
-
     /** Returns the current interaction mode */
-    InteractionMode interactionMode() const;
+    InteractionMode getInteractionMode() const;
 
     /**
      * Sets the current interaction mode
@@ -131,8 +121,11 @@ public: // Navigation
      */
     void pan(const QVector2D& delta);
 
-    /** Return the current zoom level */
-    float zoom() const;
+    /** Get the zoom level */
+    float getZoom() const;
+
+    /** get the zoom level sensitivity */
+    float getZoomSensitivity() const;
 
     /**
      * Zoom the view
@@ -176,22 +169,7 @@ public: // Miscellaneous
     /** Releases the OpenGL context */
     void releaseOpenGLContext();
 
-public: // Mouse
-
-    /** Get mouse positions */
-    QVector<QPoint> getMousePositions() { return _mousePositions; }
-
-signals:
-
-    /**
-     * Signals that the mouse positions changed
-     * @param mousePositions Mouse positions
-     */
-    void mousePositionChanged(const QVector<QPoint>& mousePositions);
-
 protected:
-    QVector<QPoint>     _mousePositions;        /** Recorded mouse positions */
-    int                 _mouseButtons;          /** State of the left, middle and right mouse buttons */
     QVector2D           _pan;                   /** Move view horizontally/vertically */
     float               _zoom;                  /** Zoom view in/out */
     float               _zoomSensitivity;       /** Zoom sensitivity */

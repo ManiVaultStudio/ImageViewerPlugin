@@ -261,10 +261,54 @@ void Layer::invertSelection()
     */
 }
 
+void Layer::startSelection()
+{
+    try {
+
+        qDebug() << "Start the layer pixel selection";
+
+        // Compute the selection in the selection tool prop
+        this->getPropByName<SelectionToolProp>("SelectionToolProp")->resetOffScreenSelectionBuffer();
+
+        // Render
+        invalidate();
+    }
+    catch (std::exception& e)
+    {
+        exceptionMessageBox("Unable to start the layer pixel selection", e);
+    }
+    catch (...) {
+        exceptionMessageBox("Unable to start the layer pixel selection");
+    }
+}
+
+void Layer::computeSelection(const QVector<QPoint>& mousePositions)
+{
+    try {
+
+        qDebug() << "Compute layer selection";
+
+        // Compute the selection in the selection tool prop
+        this->getPropByName<SelectionToolProp>("SelectionToolProp")->compute(mousePositions);
+
+        // Render
+        invalidate();
+    }
+    catch (std::exception& e)
+    {
+        exceptionMessageBox("Unable to compute layer selection", e);
+    }
+    catch (...) {
+        exceptionMessageBox("Unable to compute layer selection");
+    }
+}
+
 void Layer::zoomToExtents()
 {
     try {
-        
+
+        qDebug() << "Zoom to layer extents";
+
         // Get pointer to image layer prop
         auto layerImageProp = getPropByName<ImageProp>("ImageProp");
 
@@ -291,8 +335,16 @@ QRectF Layer::getWorldBoundingRectangle() const
 void Layer::publishSelection()
 {
     try {
+
+        qDebug() << "Publish layer selection";
+
+        // Make sure we have a valid points dataset
         if (!_points.isValid())
             throw std::runtime_error("The layer points dataset is not valid after initialization");
+
+        // Make sure we have a valid images dataset
+        if (!_images.isValid())
+            throw std::runtime_error("The layer images dataset is not valid after initialization");
 
         // Get reference to points selection indices
         auto& selectionIndices = _points->getSelection<Points>().indices;
@@ -308,7 +360,7 @@ void Layer::publishSelection()
             case PixelSelectionType::Polygon: {
 
                 // Get current selection image (for add/subtract)
-                const auto selectionImage = getPropByName<SelectionToolProp>("SelectionTool")->getSelectionImage().mirrored(false, true);
+                const auto selectionImage = getPropByName<SelectionToolProp>("SelectionToolProp")->getSelectionImage().mirrored(false, true);
 
                 const auto noComponents = 4;
                 const auto width        = static_cast<float>(getImageSize().width());
@@ -388,7 +440,10 @@ void Layer::publishSelection()
         getImageViewerPlugin().core()->notifySelectionChanged(_points->isDerivedData() ? _points->getSourceData<Points>(*_points).getName() : _points->getName());
 
         // Reset the selection tool prop
-        getPropByName<SelectionToolProp>("SelectionTool")->reset();
+        getPropByName<SelectionToolProp>("SelectionToolProp")->resetOffScreenSelectionBuffer();
+
+        // Render
+        invalidate();
     }
     catch (std::exception& e)
     {

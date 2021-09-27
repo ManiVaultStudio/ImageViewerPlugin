@@ -12,7 +12,6 @@
 #include <QSplitter>
 #include <QMimeData>
 
-using namespace hdps;
 using namespace hdps::gui;
 using namespace hdps::util;
 
@@ -85,8 +84,8 @@ void ImageViewerPlugin::init()
         const auto mimeText     = mimeData->text();
         const auto tokens       = mimeText.split("\n");
         const auto datasetName  = tokens[0];
-        const auto dataType     = DataType(tokens[1]);
-        const auto dataTypes    = DataTypes({ ImageType });
+        const auto dataType     = hdps::DataType(tokens[1]);
+        const auto dataTypes    = hdps::DataTypes({ ImageType });
 
         if (!dataTypes.contains(dataType))
             dropRegions << new DropWidget::DropRegion(this, "Incompatible data", "This type of data is not supported", false);
@@ -113,6 +112,62 @@ void ImageViewerPlugin::init()
 
     connect(&_model, &QAbstractItemModel::rowsInserted, this, [updateDropIndicatorVisibility]() { updateDropIndicatorVisibility(); });
     connect(&_model, &QAbstractItemModel::rowsRemoved, this, [updateDropIndicatorVisibility]() { updateDropIndicatorVisibility(); });
+
+    connect(_imageViewerWidget, &ImageViewerWidget::pixelSelectionStarted, this, [this]() {
+
+        // Get selected layers model rows
+        const auto selectedRows = _selectionModel.selectedRows();
+
+        // Only compute selection when one layer is selected
+        if (selectedRows.count() != 1)
+            return;
+
+        // Get pointer to layer from the selected model index
+        auto layer = static_cast<Layer*>(selectedRows.first().internalPointer());
+
+        // Publish the selection
+        layer->startSelection();
+    });
+
+    connect(_imageViewerWidget, &ImageViewerWidget::mousePositionsChanged, this, [this](const QVector<QPoint>& mousePositions) {
+
+        // No point in computing selection when there are no mouse positions
+        if (mousePositions.isEmpty())
+            return;
+
+        // Get selected layers model rows
+        const auto selectedRows = _selectionModel.selectedRows();
+
+        // Only compute selection when one layer is selected
+        if (selectedRows.count() != 1)
+            return;
+
+        // Get pointer to layer from the selected model index
+        auto layer = static_cast<Layer*>(selectedRows.first().internalPointer());
+
+        // Compute the layer selection
+        layer->computeSelection(mousePositions);
+
+        // Publish the selection if notifications during selection are turned on
+        if (_settingsAction->getSelectionAction().getNotifyDuringSelectionAction().isChecked())
+            layer->publishSelection();
+    });
+
+    connect(_imageViewerWidget, &ImageViewerWidget::pixelSelectionEnded, this, [this]() {
+
+        // Get selected layers model rows
+        const auto selectedRows = _selectionModel.selectedRows();
+
+        // Only compute selection when one layer is selected
+        if (selectedRows.count() != 1)
+            return;
+
+        // Get pointer to layer from the selected model index
+        auto layer = static_cast<Layer*>(selectedRows.first().internalPointer());
+
+        // Publish the selection
+        layer->publishSelection();
+    });
 }
 
 QIcon ImageViewerPluginFactory::getIcon() const
@@ -127,7 +182,7 @@ ImageViewerPlugin* ImageViewerPluginFactory::produce()
 
 hdps::DataTypes ImageViewerPluginFactory::supportedDataTypes() const
 {
-    DataTypes supportedTypes;
+    hdps::DataTypes supportedTypes;
 
     supportedTypes.append(ImageType);
 

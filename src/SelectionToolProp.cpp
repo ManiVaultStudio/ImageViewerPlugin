@@ -137,7 +137,7 @@ void SelectionToolProp::setImageSize(const QSize& imageSize)
     }
 }
 
-void SelectionToolProp::compute()
+void SelectionToolProp::compute(const QVector<QPoint>& mousePositions)
 {
     // Only render if we have a valid FBO
     if (_fbo.isNull())
@@ -163,7 +163,7 @@ void SelectionToolProp::compute()
 
             // Get quad shape and compute the model-view-matrix
             auto shape              = getShapeByName<QuadShape>("Quad");
-            auto modelViewMatrix    = _renderable.getModelMatrix() * getModelMatrix();
+            auto modelViewMatrix    = _layer.getRenderer().getViewMatrix() * _renderable.getModelMatrix() * getModelMatrix();
 
             // Get shader program for the off-screen rendering
             const auto shaderProgram = getShaderProgramByName("SelectionToolOffScreen");
@@ -172,7 +172,7 @@ void SelectionToolProp::compute()
             shape->getVAO().bind();
 
             // Bind shader program
-            if (shaderProgram->bind())
+            if (!shaderProgram->bind())
                 throw std::runtime_error("Unable to bind off screen shader program");
 
             glBindTexture(GL_TEXTURE_2D, _fbo->texture());
@@ -186,23 +186,20 @@ void SelectionToolProp::compute()
             shaderProgram->setUniformValue("transform", transform);
             shaderProgram->setUniformValue("selectionType", selectionType);
 
-            const auto fboSize          = QSizeF(static_cast<float>(_fbo->size().width()), static_cast<float>(_fbo->size().height()));
-            const auto mouseEvents      = getRenderer().getMousePositions();
-            const auto noMouseEvents    = mouseEvents.size();
+            const auto fboSize                  = QSizeF(static_cast<float>(_fbo->size().width()), static_cast<float>(_fbo->size().height()));
+            const auto numberOfMousePositions    = mousePositions.size();
 
             shaderProgram->setUniformValue("imageSize", fboSize.width(), fboSize.height());
 
-            qDebug() << "Render";
-            
             switch (static_cast<PixelSelectionType>(selectionType))
             {
                 case PixelSelectionType::Rectangle:
                 {
-                    if (noMouseEvents < 2)
+                    if (numberOfMousePositions < 2)
                         break;
 
-                    const auto rectangleTopLeft         = getRenderer().getScreenPointToWorldPosition(modelViewMatrix, mouseEvents.first());
-                    const auto rectangleBottomRight     = getRenderer().getScreenPointToWorldPosition(modelViewMatrix, mouseEvents.last());
+                    const auto rectangleTopLeft         = getRenderer().getScreenPointToWorldPosition(modelViewMatrix, mousePositions.first());
+                    const auto rectangleBottomRight     = getRenderer().getScreenPointToWorldPosition(modelViewMatrix, mousePositions.last());
                     const auto rectangleTopLeftUV       = QVector2D(rectangleTopLeft.x() / fboSize.width(), rectangleTopLeft.y() / fboSize.height());
                     const auto rectangleBottomRightUV   = QVector2D(rectangleBottomRight.x() / fboSize.width(), rectangleBottomRight.y() / fboSize.height());
                     const auto rectangle                = QRectF(QPointF(rectangleTopLeftUV.x(), rectangleTopLeftUV.y()), QPointF(rectangleBottomRightUV.x(), rectangleBottomRightUV.y())).normalized();
@@ -216,7 +213,7 @@ void SelectionToolProp::compute()
 
                 case PixelSelectionType::Brush:
                 {
-                    if (noMouseEvents <= 0)
+                    if (numberOfMousePositions <= 0)
                         break;
 
                     const auto brushCenter      = getRenderer().getScreenPointToWorldPosition(modelViewMatrix, QPoint(0.0f, 0.0f));
@@ -225,16 +222,16 @@ void SelectionToolProp::compute()
 
                     shaderProgram->setUniformValue("brushRadius", brushRadiusWorld);
 
-                    if (noMouseEvents == 1) {
-                        const auto brushCenter = getRenderer().getScreenPointToWorldPosition(modelViewMatrix, mouseEvents.last()).toVector2D();
+                    if (numberOfMousePositions == 1) {
+                        const auto brushCenter = getRenderer().getScreenPointToWorldPosition(modelViewMatrix, mousePositions.last()).toVector2D();
 
                         shaderProgram->setUniformValue("previousBrushCenter", brushCenter);
                         shaderProgram->setUniformValue("currentBrushCenter", brushCenter);
                     }
 
-                    if (noMouseEvents > 1) {
-                        const auto previousBrushCenter  = getRenderer().getScreenPointToWorldPosition(modelViewMatrix, mouseEvents[noMouseEvents - 2]).toVector2D();
-                        const auto currentBrushCenter   = getRenderer().getScreenPointToWorldPosition(modelViewMatrix, mouseEvents.last()).toVector2D();
+                    if (numberOfMousePositions > 1) {
+                        const auto previousBrushCenter  = getRenderer().getScreenPointToWorldPosition(modelViewMatrix, mousePositions[numberOfMousePositions - 2]).toVector2D();
+                        const auto currentBrushCenter   = getRenderer().getScreenPointToWorldPosition(modelViewMatrix, mousePositions.last()).toVector2D();
 
                         shaderProgram->setUniformValue("previousBrushCenter", previousBrushCenter);
                         shaderProgram->setUniformValue("currentBrushCenter", currentBrushCenter);
@@ -247,15 +244,15 @@ void SelectionToolProp::compute()
                 case PixelSelectionType::Lasso:
                 case PixelSelectionType::Polygon:
                 {
-                    if (noMouseEvents < 2)
+                    if (numberOfMousePositions < 2)
                         break;
 
                     QList<QVector2D> points;
 
-                    points.reserve(static_cast<std::int32_t>(noMouseEvents));
+                    points.reserve(static_cast<std::int32_t>(numberOfMousePositions));
 
-                    for (const auto& mouseEvent : mouseEvents)
-                        points.push_back(getRenderer().getScreenPointToWorldPosition(modelViewMatrix, mouseEvent).toVector2D());
+                    for (const auto& mousePosition : mousePositions)
+                        points.push_back(getRenderer().getScreenPointToWorldPosition(modelViewMatrix, mousePosition).toVector2D());
 
                     shaderProgram->setUniformValueArray("points", &points[0], static_cast<std::int32_t>(points.size()));
                     shaderProgram->setUniformValue("noPoints", static_cast<int>(points.size()));
@@ -289,7 +286,7 @@ void SelectionToolProp::compute()
     }
 }
 
-void SelectionToolProp::reset()
+void SelectionToolProp::resetOffScreenSelectionBuffer()
 {
     try {
         getRenderer().bindOpenGLContext();
@@ -338,7 +335,7 @@ QImage SelectionToolProp::getSelectionImage()
 void SelectionToolProp::loadSelectionToolShaderProgram()
 {
     // Load vertex/fragment shaders from resources
-    const auto vertexShader     = loadFileContents(":/Shaders/SelectionToolVertex.glsl");
+    const auto vertexShader     = loadFileContents(":Shaders/SelectionToolVertex.glsl");
     const auto fragmentShader   = loadFileContents(":Shaders/SelectionToolFragment.glsl");
 
     // Get selection tool shader program
@@ -385,7 +382,7 @@ void SelectionToolProp::loadSelectionToolShaderProgram()
 void SelectionToolProp::loadSelectionToolOffScreenShaderProgram()
 {
     // Load vertex/fragment shaders from resources
-    const auto vertexShader     = loadFileContents(":/Shaders/SelectionToolOffScreenVertex.glsl");
+    const auto vertexShader     = loadFileContents(":Shaders/SelectionToolOffScreenVertex.glsl");
     const auto fragmentShader   = loadFileContents(":Shaders/SelectionToolOffScreenFragment.glsl");
 
     // Get selection tool shader program

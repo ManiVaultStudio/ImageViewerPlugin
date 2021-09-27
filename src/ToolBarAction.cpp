@@ -37,6 +37,8 @@ ToolBarAction::ToolBarAction(ImageViewerPlugin& imageViewerPlugin) :
 ToolBarAction::Widget::Widget(QWidget* parent, ToolBarAction* toolBarAction, const WidgetActionWidget::State& state) :
     WidgetActionWidget(parent, toolBarAction, state)
 {
+    setAutoFillBackground(true);
+
     auto layout = new QHBoxLayout();
 
     layout->setSpacing(3);

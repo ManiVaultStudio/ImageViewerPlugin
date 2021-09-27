@@ -15,6 +15,8 @@ ImageViewerWidget::ImageViewerWidget(QWidget* parent, LayersModel& layersModel) 
     _openglDebugLogger(std::make_unique<QOpenGLDebugLogger>()),
     _backgroundGradient(),
     _keys(),
+    _mousePositions(),
+    _mouseButtons(),
     _renderer(this)
 {
     setContextMenuPolicy(Qt::CustomContextMenu);
@@ -71,6 +73,23 @@ ImageViewerWidget::ImageViewerWidget(QWidget* parent, LayersModel& layersModel) 
 
 bool ImageViewerWidget::eventFilter(QObject* target, QEvent* event)
 {
+    // Get number of mouse positions
+    const auto numberOfMousePositions = _mousePositions.size();
+
+    // Notify listeners that unique mouse positions changed
+    const auto notifyMousePositionsChanged = [this]() {
+
+        QList<QPoint> uniqueMousePositions;
+
+        for (auto mousePosition : _mousePositions) {
+            if (!uniqueMousePositions.contains(mousePosition))
+                uniqueMousePositions.append(mousePosition);
+        }
+        
+        // Notify listeners that the mouse positions changed
+        emit mousePositionsChanged(uniqueMousePositions.toVector());
+    };
+
     switch (event->type())
     {
         case QEvent::KeyPress:
@@ -128,13 +147,216 @@ bool ImageViewerWidget::eventFilter(QObject* target, QEvent* event)
             break;
         }
 
+        case QEvent::MouseButtonPress:
+        {
+            auto mouseEvent = static_cast<QMouseEvent*>(event);
+
+            switch (_renderer.getInteractionMode())
+            {
+                case Renderer::Navigation:
+                {
+                    if (mouseEvent->buttons() & Qt::LeftButton) {
+                        _mousePositions << mouseEvent->pos();
+                    }
+
+                    break;
+                }
+
+                case Renderer::LayerEditing:
+                {
+                    switch (_pixelSelectionTool.getType())
+                    {
+                        case PixelSelectionType::Rectangle:
+                        case PixelSelectionType::Brush:
+                        case PixelSelectionType::Lasso:
+                        {
+                            _mousePositions = { mouseEvent->pos() };
+
+                            emit pixelSelectionStarted();
+
+                            break;
+                        }
+
+                        case PixelSelectionType::Polygon:
+                        {
+                            if (mouseEvent->buttons() & Qt::LeftButton) {
+                                _mousePositions << mouseEvent->pos();
+
+                                if (_mousePositions.count() == 1) {
+                                    _mousePositions << mouseEvent->pos();
+
+                                    emit pixelSelectionStarted();
+                                }
+                            }
+
+                            if (mouseEvent->buttons() & Qt::RightButton) {
+                                _mousePositions.clear();
+
+                                emit pixelSelectionEnded();
+                            }
+
+                            break;
+                        }
+
+                        default:
+                            break;
+                    }
+
+                    break;
+                }
+
+                default:
+                    break;
+            }
+
+            notifyMousePositionsChanged();
+
+            break;
+        }
+
+        case QEvent::MouseButtonRelease:
+        {
+            auto mouseEvent = static_cast<QMouseEvent*>(event);
+
+            switch (_pixelSelectionTool.getType())
+            {
+                case PixelSelectionType::Rectangle:
+                case PixelSelectionType::Brush:
+                case PixelSelectionType::Lasso:
+                {
+                    _mousePositions.clear();
+
+                    emit pixelSelectionEnded();
+
+                    break;
+                }
+
+                case PixelSelectionType::Polygon:
+                    break;
+
+                default:
+                    break;
+            }
+
+            notifyMousePositionsChanged();
+
+            break;
+        }
+
+        case QEvent::MouseMove:
+        {
+            auto mouseEvent = static_cast<QMouseEvent*>(event);
+
+            switch (_renderer.getInteractionMode())
+            {
+                case Renderer::Navigation:
+                {
+                    _mousePositions << mouseEvent->pos();
+
+                    if (mouseEvent->buttons() & Qt::LeftButton && numberOfMousePositions >= 2) {
+                        const auto pPrevious    = QVector2D(_mousePositions[numberOfMousePositions - 2]);
+                        const auto pCurrent     = QVector2D(_mousePositions[numberOfMousePositions - 1]);
+                        const auto vDelta       = (pCurrent - pPrevious) / _renderer.getZoom();
+
+                        _renderer.pan(vDelta);
+                        _renderer.render();
+                    }
+
+                    break;
+                }
+
+                case Renderer::LayerEditing:
+                {
+                    switch (_pixelSelectionTool.getType())
+                    {
+                        case PixelSelectionType::Rectangle:
+                        {
+                            if (mouseEvent->buttons() & Qt::LeftButton) {
+                                if (_mousePositions.count() < 2)
+                                    _mousePositions << mouseEvent->pos();
+                                else
+                                    _mousePositions.last() = mouseEvent->pos();
+                            }
+
+                            break;
+                        }
+
+                        case PixelSelectionType::Brush:
+                        {
+                            if (mouseEvent->buttons() & Qt::LeftButton) {
+                                if (mouseEvent->buttons() & Qt::LeftButton && numberOfMousePositions >= 2)
+                                    _mousePositions << mouseEvent->pos();
+                                else
+                                    _mousePositions = { mouseEvent->pos() };
+                            }
+
+                            break;
+                        }
+
+                        case PixelSelectionType::Lasso:
+                        {
+                            if (mouseEvent->buttons() & Qt::LeftButton)
+                                _mousePositions << mouseEvent->pos();
+
+                            break;
+                        }
+
+                        case PixelSelectionType::Polygon:
+                        {
+                            if (numberOfMousePositions > 1)
+                                _mousePositions.last() = mouseEvent->pos();
+
+                            break;
+                        }
+
+                        default:
+                            break;
+                    }
+
+                    break;
+                }
+
+                default:
+                    break;
+            }
+
+            notifyMousePositionsChanged();
+
+            break;
+        }
+
+        case QEvent::Wheel:
+        {
+            auto wheelEvent = static_cast<QWheelEvent*>(event);
+
+            const auto zoomCenter = wheelEvent->position().toPoint();
+
+
+            switch (_renderer.getInteractionMode())
+            {
+                case Renderer::Navigation:
+                {
+                    if (wheelEvent->angleDelta().ry() < 0) {
+                        _renderer.zoomAround(zoomCenter, 1.0f - _renderer.getZoomSensitivity());
+                    }
+                    else {
+                        _renderer.zoomAround(zoomCenter, 1.0f + _renderer.getZoomSensitivity());
+                    }
+
+                    break;
+                }
+            }
+
+            notifyMousePositionsChanged();
+
+            _renderer.render();
+
+            break;
+        }
+
         default:
             break;
     }
-
-    // Handle navigation in the renderer
-    if (_keys & Qt::Key_Space)
-        _renderer.handleEvent(event);
 
     return QWidget::eventFilter(target, event);
 }

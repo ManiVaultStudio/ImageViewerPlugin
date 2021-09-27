@@ -21,6 +21,8 @@ using namespace hdps::util;
  */
 class ImageViewerWidget : public QOpenGLWidget, QOpenGLFunctions_3_3_Core
 {
+Q_OBJECT
+
 public: // Construction
 
     /**
@@ -47,6 +49,9 @@ public: // Construction
         return _renderer;
     }
 
+    /** Get mouse positions */
+    QVector<QPoint> getMousePositions() { return _mousePositions; }
+
 protected: // OpenGL
 
     /** Initializes the OpenGL window */
@@ -65,6 +70,20 @@ protected: // OpenGL
     /** Perform cleanup when viewer widget is destroyed */
     void cleanup();
 
+signals:
+
+    /** Signals that pixel selection process started */
+    void pixelSelectionStarted();
+
+    /**
+     * Signals that the mouse positions changed
+     * @param mousePositions Mouse positions
+     */
+    void mousePositionsChanged(const QVector<QPoint>& mousePositions);
+
+    /** Signals that pixel selection process ended */
+    void pixelSelectionEnded();
+
 protected:
     LayersModel&                            _layersModel;               /** Reference to layers model */
     bool                                    _openGLInitialized;         /** Whether OpenGL is initialized or not */
@@ -72,5 +91,7 @@ protected:
     std::unique_ptr<QOpenGLDebugLogger>     _openglDebugLogger;         /** OpenGL logger instance for debugging (only enabled in debug mode for performance reasons) */
     QRadialGradient                         _backgroundGradient;        /** Viewport gradient background */
     std::int32_t                            _keys;                      /** Currently pressed keyboard keys */
+    QVector<QPoint>                         _mousePositions;            /** Recorded mouse positions */
+    int                                     _mouseButtons;              /** State of the left, middle and right mouse buttons */
     Renderer                                _renderer;                  /** Layers OpenGL renderer */
 };

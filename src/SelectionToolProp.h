@@ -49,11 +49,14 @@ public:
 
 public: // Pixel selection
 
-    /** Computes the pixel selection (based on the tool) and stores the result in an off-screen pixel selection buffer */
-    void compute();
+    /** 
+     * Computes the pixel selection (based on the tool) and stores the result in an off-screen pixel selection buffer
+     * @param mousePositions Mouse positions
+     */
+    void compute(const QVector<QPoint>& mousePositions);
 
     /** Resets the off-screen pixel selection buffer */
-    void reset();
+    void resetOffScreenSelectionBuffer();
 
     /** Returns the pixel selection in image format */
     QImage getSelectionImage();
