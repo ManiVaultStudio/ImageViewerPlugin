@@ -560,16 +560,6 @@ QVector<SharedLayer>& LayersModel::getLayers()
     return _layers;
 }
 
-QRectF LayersModel::getWorldBoundingRectangle() const
-{
-    QRectF worldBoundingRectangle;
-
-    for (const auto& layer : _layers)
-        worldBoundingRectangle |= layer->getWorldBoundingRectangle();
-
-    return worldBoundingRectangle;
-}
-
 QIcon LayersModel::getColorIcon(const QColor& color) const
 {
     QPixmap pixmap(QSize(13, 13));

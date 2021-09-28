@@ -117,8 +117,35 @@ public: // Navigation
      */
     void setZoomLevel(const float& zoom);
 
+    /** Get the zoom percentage */
+    float getZoomPercentage() const;
+
+    /**
+     * Set the zoom percentage
+     * @param zoomPercentage Zoom percentage
+     */
+    void setZoomPercentage(const float& zoomPercentage);
+
     /** get the zoom level sensitivity */
     float getZoomSensitivity() const;
+
+    /** get the zoom margin */
+    float getZoomMargin() const;
+
+    /**
+     * Set zoom margin
+     * @param zoomMargin Zoom margin
+     */
+    void setZoomMargin(const float& zoomMargin);
+
+    /** get the world bounding box of all objects */
+    QRectF getWorldBoundingBox() const;
+
+    /**
+     * Set world bounding box
+     * @param worldBoundingBox World bounding box
+     */
+    void setWorldBoundingRectangle(const QRectF& worldBoundingRectangle);
 
     /**
      * Zoom the view
@@ -133,14 +160,11 @@ public: // Navigation
      */
     void zoomAround(const QPoint& screenPoint, const float& factor);
 
-    /**
-     * Zoom to rectangle in world coordinates
-     * @param rectangle Rectangle to zoom to in world coordinates
-     */
-    void zoomToWorldRectangle(const QRectF& rectangle, const std::uint32_t& margin);
+    /** Zoom to rectangle in world coordinates */
+    void zoomToWorldRectangle(const QRectF& rectangle);
 
     /** Zoom to selected pixels */
-    void zoomToObject(const Renderable& renderable, const std::uint32_t& margin);
+    void zoomToObject(const Renderable& renderable);
 
     /** Reset the view */
     void resetView();
@@ -187,5 +211,6 @@ protected:
     float       _zoomLevel;                 /** Zoom level */
     float       _zoomPercentage;            /** Zoom percentage */
     float       _zoomSensitivity;           /** Zoom sensitivity */
-    QRect       _worldBoundingRectangle;    /** World bounding rectangle */
+    float       _zoomMargin;                /** Zoom margin */
+    QRectF      _worldBoundingRectangle;    /** World bounding rectangle */
 };

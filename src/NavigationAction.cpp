@@ -5,7 +5,7 @@
 
 #include <QHBoxLayout>
 
-const float NavigationAction::zoomAmount = 0.05f;
+const float NavigationAction::zoomDeltaPercentage = 0.1f;
 
 NavigationAction::NavigationAction(ImageViewerWidget& imageViewerWidget) :
     WidgetAction(&imageViewerWidget),
@@ -26,33 +26,35 @@ NavigationAction::NavigationAction(ImageViewerWidget& imageViewerWidget) :
     _zoomExtentsAction.setToolTip("Zoom to the boundaries of all layers");
     _panAction.setToolTip("Move the view");
 
-    _zoomOutAction.setIcon(fontAwesome.getIcon("minus"));
-    _zoomInAction.setIcon(fontAwesome.getIcon("plus"));
+    _zoomOutAction.setIcon(fontAwesome.getIcon("search-minus"));
+    _zoomInAction.setIcon(fontAwesome.getIcon("search-plus"));
     _zoomExtentsAction.setIcon(fontAwesome.getIcon("compress"));
     _panAction.setIcon(fontAwesome.getIcon("arrows-alt"));
 
     _zoomPercentageAction.setSuffix("%");
 
-    const auto zoomByFactor = [this](const float& factor) {
-        _imageViewerWidget.getRenderer().zoomBy(factor);
+    connect(&_zoomOutAction, &TriggerAction::triggered, this, [this]() {
+        _imageViewerWidget.getRenderer().setZoomPercentage(_imageViewerWidget.getRenderer().getZoomPercentage() - zoomDeltaPercentage);
         _imageViewerWidget.update();
-    };
-
-    connect(&_zoomOutAction, &TriggerAction::triggered, this, [zoomByFactor]() {
-        zoomByFactor(1.0f - zoomAmount);
     });
 
-    connect(&_zoomInAction, &TriggerAction::triggered, this, [zoomByFactor]() {
-        zoomByFactor(1.0f + zoomAmount);
+    connect(&_zoomPercentageAction, &DecimalAction::valueChanged, this, [this](const float& value) {
+        _imageViewerWidget.getRenderer().setZoomPercentage(0.01f * value);
+        _imageViewerWidget.update();
+    });
+
+    connect(&_zoomInAction, &TriggerAction::triggered, this, [this]() {
+        _imageViewerWidget.getRenderer().setZoomPercentage(_imageViewerWidget.getRenderer().getZoomPercentage() + zoomDeltaPercentage);
+        _imageViewerWidget.update();
     });
 
     connect(&_zoomExtentsAction, &TriggerAction::triggered, this, [this]() {
 
         // Get world bounding rectangles for all layers
-        const auto worldBoundingRectangle = _imageViewerWidget.getLayersModel().getWorldBoundingRectangle();
+        const auto worldBoundingRectangle = _imageViewerWidget.getWorldBoundingRectangle();
 
         // Zoom to the rectangle and render
-        _imageViewerWidget.getRenderer().zoomToWorldRectangle(worldBoundingRectangle, ImageViewerWidget::getZoomMargin());
+        _imageViewerWidget.getRenderer().zoomToWorldRectangle(worldBoundingRectangle);
         _imageViewerWidget.update();
     });
 
@@ -60,21 +62,15 @@ NavigationAction::NavigationAction(ImageViewerWidget& imageViewerWidget) :
         _imageViewerWidget.setInteractionMode(toggled ? ImageViewerWidget::Navigation : ImageViewerWidget::LayerEditing);
     });
 
-    connect(&_imageViewerWidget.getRenderer(), &Renderer::zoomLevelChanged, this, [this](const float& zoom) {
+    const auto updateZoomPercentage = [this]() {
+        _zoomPercentageAction.setValue(100.0f * _imageViewerWidget.getRenderer().getZoomPercentage());
+    };
 
-        // Get screen bounding rectangles for all layers
-        const auto screenBoundingRectangle   = _imageViewerWidget.getRenderer().getScreenBoundingRectangle(_imageViewerWidget.getLayersModel().getWorldBoundingRectangle());
-
-        const auto viewerSize       = _imageViewerWidget.size();
-        const auto totalMargins     = 2 * ImageViewerWidget::getZoomMargin();
-        const auto factorX          = static_cast<float>(std::abs(screenBoundingRectangle.width())) / (viewerSize.width() - totalMargins);
-        const auto factorY          = static_cast<float>(std::abs(screenBoundingRectangle.height())) / (viewerSize.height() - totalMargins);
-        const auto zoomPercentage   = 100.0f * (factorX > factorY ? factorX : factorY);
-
-        qDebug() << factorX << factorY;
-
-        _zoomPercentageAction.setValue(zoomPercentage);
+    connect(&_imageViewerWidget.getRenderer(), &Renderer::zoomPercentageChanged, this, [this, updateZoomPercentage](const float& zoomPercentage) {
+        updateZoomPercentage();
     });
+
+    updateZoomPercentage();
 }
 
 ImageViewerWidget& NavigationAction::getImageViewerWidget()

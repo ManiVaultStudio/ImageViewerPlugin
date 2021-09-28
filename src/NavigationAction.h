@@ -83,5 +83,5 @@ protected:
     TriggerAction       _zoomExtentsAction;         /** Zoom extents action */
     ToggleAction        _panAction;                 /** Pan action */
 
-    static const float zoomAmount;
+    static const float zoomDeltaPercentage;
 };

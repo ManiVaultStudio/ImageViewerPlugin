@@ -5,8 +5,6 @@
 #include <QKeyEvent>
 #include <QPainter>
 
-const float ImageViewerWidget::zoomMargin = 50.0f;
-
 const QMap<ImageViewerWidget::InteractionMode, QString> ImageViewerWidget::interactionModes = {
     { ImageViewerWidget::None, "No interaction" },
     { ImageViewerWidget::Navigation, "Navigation" },
@@ -507,7 +505,24 @@ void ImageViewerWidget::setInteractionMode(const InteractionMode& interactionMod
     update();
 }
 
-float ImageViewerWidget::getZoomMargin()
+QRectF ImageViewerWidget::getWorldBoundingRectangle() const
 {
-    return zoomMargin;
+    QRectF worldBoundingRectangle;
+
+    for (const auto& layer : _layersModel.getLayers()) {
+        if (layer->getLayerAction().getGeneralAction().getVisibleAction().isChecked())
+            worldBoundingRectangle |= layer->getWorldBoundingRectangle();
+    }
+
+    return worldBoundingRectangle;
+}
+
+void ImageViewerWidget::updateWorldBoundingRectangle()
+{
+    const auto worldBoundingRectangle = getWorldBoundingRectangle();
+
+    if (!worldBoundingRectangle.isValid())
+        return;
+
+    getRenderer().setWorldBoundingRectangle(worldBoundingRectangle);
 }

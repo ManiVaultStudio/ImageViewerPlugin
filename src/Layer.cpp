@@ -313,7 +313,7 @@ void Layer::zoomToExtents()
         auto layerImageProp = getPropByName<ImageProp>("ImageProp");
 
         // Zoom to layer extents
-        _imageViewerPlugin.getImageViewerWidget()->getRenderer().zoomToObject(*this, ImageViewerWidget::getZoomMargin());
+        _imageViewerPlugin.getImageViewerWidget()->getRenderer().zoomToObject(*this);
 
         // Trigger render
         invalidate();

@@ -99,6 +99,9 @@ void ImageViewerPlugin::init()
                 try
                 {
                     _model.addLayer(SharedLayer::create(*this, datasetName));
+
+                    // Update bounds
+                    _imageViewerWidget->updateWorldBoundingRectangle();
                 }
                 catch (std::exception& e)
                 {
@@ -172,6 +175,19 @@ void ImageViewerPlugin::init()
         // Publish the selection
         layer->publishSelection();
     });
+
+    // Enable/disable the navigation action
+    const auto updateNavigationAction = [this]() {
+        _navigationAction->setEnabled(_model.rowCount() == 0 ? false : !_model.match(_model.index(0, LayersModel::Visible), Qt::EditRole, true, -1).isEmpty());
+    };
+
+    // Enable/disable the navigation action when rows are inserted/removed
+    connect(&_model, &LayersModel::rowsInserted, this, updateNavigationAction);
+    connect(&_model, &LayersModel::rowsRemoved, this, updateNavigationAction);
+    connect(&_model, &LayersModel::dataChanged, this, updateNavigationAction);
+
+    // Initially enable/disable the navigation action
+    updateNavigationAction();
 }
 
 QIcon ImageViewerPluginFactory::getIcon() const

@@ -1,6 +1,7 @@
 #include "GeneralAction.h"
 #include "LayerAction.h"
 #include "LayersAction.h"
+#include "ImageViewerPlugin.h"
 #include "Layer.h"
 
 GeneralAction::GeneralAction(LayerAction& layerAction) :
@@ -49,4 +50,15 @@ GeneralAction::GeneralAction(LayerAction& layerAction) :
     connect(&_zoomToExtentsAction, &ToggleAction::triggered, this, [this]() {
         _layerAction.getLayer().zoomToExtents();
     });
+
+    const auto updateBounds = [this]() {
+        _layerAction.getLayer().getImageViewerPlugin().getImageViewerWidget()->updateWorldBoundingRectangle();
+    };
+
+    connect(&_visibleAction, &ToggleAction::toggled, this, updateBounds);
+    connect(&_scaleAction, &DecimalAction::valueChanged, this, updateBounds);
+    connect(&_xPositionAction, &DecimalAction::valueChanged, this, updateBounds);
+    connect(&_yPositionAction, &DecimalAction::valueChanged, this, updateBounds);
+
+    updateBounds();
 }

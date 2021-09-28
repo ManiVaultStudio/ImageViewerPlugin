@@ -102,8 +102,11 @@ public: // Miscellaneous
      */
     void setInteractionMode(const InteractionMode& interactionMode);
 
-    /** Get zoom margin */
-    static float getZoomMargin();
+    /** Get bounding rectangle */
+    QRectF getWorldBoundingRectangle() const;
+
+    /** Update bounding rectangle */
+    void updateWorldBoundingRectangle();
 
 signals:
 
@@ -130,6 +133,4 @@ protected:
     int                                     _mouseButtons;              /** State of the left, middle and right mouse buttons */
     Renderer                                _renderer;                  /** Layers OpenGL renderer */
     InteractionMode                         _interactionMode;           /** Interaction mode e.g. navigation and layer editing */
-
-    static const float zoomMargin;
 };
