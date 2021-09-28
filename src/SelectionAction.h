@@ -12,13 +12,13 @@ using namespace hdps::util;
 using namespace hdps::gui;
 
 /**
- * Selection layer action class
+ * Selection action class
  *
- * Action class for selection layer
+ * Action class for selection
  *
  * @author Thomas Kroes
  */
-class LayerSelectionAction : public PixelSelectionAction
+class SelectionAction : public PixelSelectionAction
 {
 public:
 
@@ -27,7 +27,7 @@ public:
      * @param targetWidget Pointer to target widget
      * @param pixelSelectionTool Reference to pixel selection tool
      */
-    LayerSelectionAction(QWidget* targetWidget, PixelSelectionTool& pixelSelectionTool);
+    SelectionAction(QWidget* targetWidget, PixelSelectionTool& pixelSelectionTool);
 
 public: /** Action getters */
 

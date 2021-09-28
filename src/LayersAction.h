@@ -2,8 +2,6 @@
 
 #include "actions/Actions.h"
 
-#include "LayerSelectionAction.h"
-
 #include <QRandomGenerator>
 
 class QMenu;

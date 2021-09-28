@@ -1,6 +1,7 @@
 #pragma once
 
 #include "LayersAction.h"
+#include "SelectionAction.h"
 
 class ImageViewerPlugin;
 
@@ -64,10 +65,10 @@ public:
 public: // Action getters
 
     LayersAction& getLayersAction() { return _layersAction; }
-    LayerSelectionAction& getSelectionAction() { return _selectionAction; }
+    SelectionAction& getSelectionAction() { return _selectionAction; }
 
 protected:
     ImageViewerPlugin&      _imageViewerPlugin;     /** Reference to image viewer plugin */
     LayersAction            _layersAction;          /** Layers action */
-    LayerSelectionAction    _selectionAction;       /** Selection action */
+    SelectionAction         _selectionAction;       /** Selection action */
 };
