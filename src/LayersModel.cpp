@@ -560,9 +560,19 @@ QVector<SharedLayer>& LayersModel::getLayers()
     return _layers;
 }
 
+QRectF LayersModel::getWorldBoundingRectangle() const
+{
+    QRectF worldBoundingRectangle;
+
+    for (const auto& layer : _layers)
+        worldBoundingRectangle |= layer->getWorldBoundingRectangle();
+
+    return worldBoundingRectangle;
+}
+
 QIcon LayersModel::getColorIcon(const QColor& color) const
 {
-    QPixmap pixmap(QSize(14, 14));
+    QPixmap pixmap(QSize(13, 13));
 
     pixmap.fill(Qt::transparent);
 
@@ -573,7 +583,7 @@ QIcon LayersModel::getColorIcon(const QColor& color) const
     painter.setRenderHint(QPainter::Antialiasing);
     painter.setPen(Qt::NoPen);
     painter.setBrush(QBrush(color));
-    painter.drawRoundedRect(0, 0, 14, 14, radius, radius);
+    painter.drawRoundedRect(0, 0, pixmap.width(), pixmap.height(), radius, radius);
 
     return QIcon(pixmap);
 }

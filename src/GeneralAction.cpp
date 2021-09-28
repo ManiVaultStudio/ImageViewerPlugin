@@ -1,5 +1,6 @@
 #include "GeneralAction.h"
 #include "LayerAction.h"
+#include "LayersAction.h"
 #include "Layer.h"
 
 GeneralAction::GeneralAction(LayerAction& layerAction) :
@@ -28,10 +29,19 @@ GeneralAction::GeneralAction(LayerAction& layerAction) :
     _yPositionAction.setToolTip("Layer y-position");
     _zoomToExtentsAction.setToolTip("Zoom to the extents of the layer");
 
+    // Get initial random layer color
+    const auto layerColor = _layerAction.getLayersAction().getRandomLayerColor();
+
+    // Assign the color and default color
+    _colorAction.initialize(layerColor, layerColor),
+
+    // Set scale suffix
     _scaleAction.setSuffix("%");
 
+    // Get the name of the images dataset
     const auto imagesDatasetName = _layerAction.getLayer().getImagesDatasetName();
 
+    // Set name and default name
     _nameAction.setString(imagesDatasetName);
     _nameAction.setDefaultString(imagesDatasetName);
 

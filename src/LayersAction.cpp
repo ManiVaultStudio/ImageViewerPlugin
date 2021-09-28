@@ -15,8 +15,20 @@ using namespace hdps::gui;
 LayersAction::LayersAction(SettingsAction& settingsAction) :
     WidgetAction(reinterpret_cast<QObject*>(&settingsAction)),
     _settingsAction(settingsAction),
-    _currentLayerAction(this)
+    _currentLayerAction(this),
+    _rng(0)
 {
+}
+
+QColor LayersAction::getRandomLayerColor()
+{
+    // Randomize HSL parameters
+    const auto randomHue        = _rng.bounded(360);
+    const auto randomSaturation = _rng.bounded(150, 255);
+    const auto randomLightness  = _rng.bounded(150, 220);
+
+    // Create random color from hue, saturation and lightness
+    return QColor::fromHsl(randomHue, randomSaturation, randomLightness);
 }
 
 LayersAction::Widget::Widget(QWidget* parent, LayersAction* layersAction, const WidgetActionWidget::State& state) :
@@ -65,7 +77,7 @@ LayersAction::Widget::Widget(QWidget* parent, LayersAction* layersAction, const 
     const auto minimumSectionSize = 20;
 
     header->setMinimumSectionSize(minimumSectionSize);
-    header->hideSection(LayersModel::Color);
+    //header->hideSection(LayersModel::Color);
 
     header->resizeSection(LayersModel::Visible, minimumSectionSize);
     header->resizeSection(LayersModel::Color, minimumSectionSize);

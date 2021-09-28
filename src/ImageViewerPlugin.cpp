@@ -1,6 +1,7 @@
 #include "ImageViewerPlugin.h"
 #include "SettingsAction.h"
 #include "ToolBarAction.h"
+#include "NavigationAction.h"
 #include "Layer.h"
 
 #include "ImageData/Images.h"
@@ -25,7 +26,8 @@ ImageViewerPlugin::ImageViewerPlugin(hdps::plugin::PluginFactory* factory) :
     _mainWidget(nullptr),
     _imageViewerWidget(nullptr),
     _settingsAction(nullptr),
-    _toolBarAction(nullptr)
+    _toolBarAction(nullptr),
+    _navigationAction(nullptr)
 {
     setFocusPolicy(Qt::ClickFocus);
 }
@@ -46,6 +48,7 @@ void ImageViewerPlugin::init()
     _imageViewerWidget  = new ImageViewerWidget(this, _model);
     _settingsAction     = new SettingsAction(*this);
     _toolBarAction      = new ToolBarAction(*this);
+    _navigationAction   = new NavigationAction(*_imageViewerWidget);
 
     _imageViewerWidget->setAcceptDrops(true);
 
@@ -57,9 +60,10 @@ void ImageViewerPlugin::init()
     mainWidgetLayout->setMargin(0);
     mainWidgetLayout->setSpacing(0);
 
-    // And add the toolbar and image viewer widget
+    // And add the toolbar, image viewer widget
     mainWidgetLayout->addWidget(_toolBarAction->createWidget(this));
     mainWidgetLayout->addWidget(_imageViewerWidget, 1);
+    mainWidgetLayout->addWidget(_navigationAction->createWidget(this));
 
     // Apply layout to main widget
     _mainWidget->setLayout(mainWidgetLayout);

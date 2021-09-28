@@ -4,6 +4,8 @@
 
 #include "LayerSelectionAction.h"
 
+#include <QRandomGenerator>
+
 class QMenu;
 class SettingsAction;
 
@@ -63,12 +65,16 @@ public:
      */
     LayersAction(SettingsAction& settingsAction);
 
+    /** Get pseudo-random layer color */
+    QColor getRandomLayerColor();
+
 public: // Action getters
 
     SettingsAction& getSettingsAction() { return _settingsAction; }
     GroupsAction& getCurrentLayerAction() { return _currentLayerAction; }
 
 protected:
-    SettingsAction&         _settingsAction;        /** Reference to settings action */
-    GroupsAction            _currentLayerAction;    /** Current layer action */
+    SettingsAction&     _settingsAction;        /** Reference to settings action */
+    GroupsAction        _currentLayerAction;    /** Current layer action */
+    QRandomGenerator    _rng;                   /** Random number generator for pseudo-random colors */
 };

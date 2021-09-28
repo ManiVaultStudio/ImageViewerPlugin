@@ -25,22 +25,6 @@ class Renderer : public QObject, public hdps::Renderer
 {
     Q_OBJECT
 
-public:
-
-    /**
-     * Interaction mode
-     * Defines interaction modes that are possible in the image viewer widget
-    */
-    enum InteractionMode
-    {
-        None,               /** No interaction takes place */
-        Navigation,         /** The image view position and zoom are manipulated */
-        LayerEditing        /** Layer editing interaction */
-    };
-
-    /** Maps interaction mode enum to name */
-    static const QMap<InteractionMode, QString> interactionModes;
-
 public: // Construction
 
     /**
@@ -60,15 +44,6 @@ public: // Construction
 
     /** Resizes the renderer */
     void resize(QSize renderSize) override {};
-
-    /** Returns the current interaction mode */
-    InteractionMode getInteractionMode() const;
-
-    /**
-     * Sets the current interaction mode
-     * @param interactionMode The interaction mode
-     */
-    void setInteractionMode(const InteractionMode& interactionMode);
 
 public: // Coordinate conversions
 
@@ -113,16 +88,34 @@ public: // Coordinate conversions
     /** Returns the projection matrix */
     QMatrix4x4 getProjectionMatrix() const;
 
+    /**
+     * Get screen bounding rectangle from world bounding rectangle
+     * @param worldBoundingRectangle World bounding rectangle
+     */
+    virtual QRect getScreenBoundingRectangle(const QRectF& worldBoundingRectangle) const final;
+
 public: // Navigation
 
     /**
      * Move the view horizontally/vertically
      * @param delta Amount to move
      */
-    void pan(const QVector2D& delta);
+    void panBy(const QVector2D& delta);
+
+    /**
+     * Set pan
+     * @param pan Pan
+     */
+    void setPan(const QVector2D& pan);
 
     /** Get the zoom level */
-    float getZoom() const;
+    float getZoomLevel() const;
+
+    /**
+     * Set the zoom level
+     * @param zoom Zoom level
+     */
+    void setZoomLevel(const float& zoom);
 
     /** get the zoom level sensitivity */
     float getZoomSensitivity() const;
@@ -144,10 +137,10 @@ public: // Navigation
      * Zoom to rectangle in world coordinates
      * @param rectangle Rectangle to zoom to in world coordinates
      */
-    void zoomToWorldRectangle(const QRectF& rectangle, const std::uint32_t& margin = 50);
+    void zoomToWorldRectangle(const QRectF& rectangle, const std::uint32_t& margin);
 
     /** Zoom to selected pixels */
-    void zoomToObject(const Renderable& renderable, const std::uint32_t& margin = 50);
+    void zoomToObject(const Renderable& renderable, const std::uint32_t& margin);
 
     /** Reset the view */
     void resetView();
@@ -169,10 +162,30 @@ public: // Miscellaneous
     /** Releases the OpenGL context */
     void releaseOpenGLContext();
 
+signals:
+
+    /**
+     * Signals that the zoom level changed
+     * @param zoomLevel Zoom level
+     */
+    void zoomLevelChanged(const float& zoomLevel);
+
+    /**
+     * Signals that the zoom percentage changed
+     * @param zoomPercentage Zoom percentage
+     */
+    void zoomPercentageChanged(const float& zoomPercentage);
+
+    /**
+     * Signals that the pan changed
+     * @param pan Pan
+     */
+    void panChanged(const QVector2D& pan);
+
 protected:
-    QVector2D           _pan;                   /** Move view horizontally/vertically */
-    float               _zoom;                  /** Zoom view in/out */
-    float               _zoomSensitivity;       /** Zoom sensitivity */
-    int                 _margin;                /** Margin between image and viewer widget boundaries */
-    InteractionMode     _interactionMode;       /** Interaction mode e.g. navigation and layer editing */
+    QVector2D   _pan;                       /** Move view horizontally/vertically */
+    float       _zoomLevel;                 /** Zoom level */
+    float       _zoomPercentage;            /** Zoom percentage */
+    float       _zoomSensitivity;           /** Zoom sensitivity */
+    QRect       _worldBoundingRectangle;    /** World bounding rectangle */
 };

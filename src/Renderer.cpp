@@ -13,20 +13,13 @@
 
 #include <stdexcept>
 
-const QMap<Renderer::InteractionMode, QString> Renderer::interactionModes = {
-    { Renderer::None, "No interaction" },
-    { Renderer::Navigation, "Navigation" },
-    { Renderer::LayerEditing, "Layer editing" }
-};
-
 Renderer::Renderer(QOpenGLWidget* parent) :
     QObject(parent),
     hdps::Renderer(),
     _pan(),
-    _zoom(1.f),
-    _zoomSensitivity(0.1f),
-    _margin(25),
-    _interactionMode(InteractionMode::LayerEditing)
+    _zoomLevel(1.f),
+    _zoomPercentage(1.0f),
+    _zoomSensitivity(0.1f)
 {
 }
 
@@ -37,18 +30,6 @@ void Renderer::init()
 void Renderer::render()
 {
     static_cast<QOpenGLWidget*>(parent())->update();
-}
-
-Renderer::InteractionMode Renderer::getInteractionMode() const
-{
-    return _interactionMode;
-}
-
-void Renderer::setInteractionMode(const InteractionMode& interactionMode)
-{
-    qDebug() << "Set interaction mode to" << interactionModes.value(interactionMode);
-
-    _interactionMode = interactionMode;
 }
 
 QVector3D Renderer::getScreenPointToWorldPosition(const QMatrix4x4& modelViewMatrix, const QPoint& screenPoint) const
@@ -105,7 +86,7 @@ QMatrix4x4 Renderer::getViewMatrix() const
     QMatrix4x4 lookAt, scale;
 
     lookAt.lookAt(QVector3D(_pan.x(), _pan.y(), -1), QVector3D(_pan.x(), _pan.y(), 0), QVector3D(0, 1, 0));
-    scale.scale(_zoom);
+    scale.scale(_zoomLevel);
 
     return scale * lookAt;
 }
@@ -121,17 +102,43 @@ QMatrix4x4 Renderer::getProjectionMatrix() const
     return matrix;
 }
 
-void Renderer::pan(const QVector2D& delta)
+QRect Renderer::getScreenBoundingRectangle(const QRectF& worldBoundingRectangle) const
+{
+    // Get extremes in world coordinates
+    const auto worldTopLeft         = QVector3D(worldBoundingRectangle.topLeft().toPoint());
+    const auto worldBottomRight     = QVector3D(worldBoundingRectangle.bottomRight().toPoint());
+
+    // Get extremes in screen coordinates
+    const auto screenTopLeft        = getWorldPositionToScreenPoint(worldTopLeft);
+    const auto screenBottomRight    = getWorldPositionToScreenPoint(worldBottomRight);
+
+    return QRect(screenTopLeft, screenBottomRight);
+}
+
+void Renderer::panBy(const QVector2D& delta)
 {
     qDebug() << "Pan by" << delta;
 
-    _pan.setX(_pan.x() + delta.x());
-    _pan.setY(_pan.y() + delta.y());
+    setPan(QVector2D(_pan.x() + delta.x(), _pan.y() + delta.y()));
 }
 
-float Renderer::getZoom() const
+void Renderer::setPan(const QVector2D& pan)
 {
-    return _zoom;
+    _pan = pan;
+
+    emit panChanged(_pan);
+}
+
+float Renderer::getZoomLevel() const
+{
+    return _zoomLevel;
+}
+
+void Renderer::setZoomLevel(const float& zoom)
+{
+    _zoomLevel = zoom;
+
+    emit zoomLevelChanged(_zoomLevel);
 }
 
 float Renderer::getZoomSensitivity() const
@@ -144,9 +151,9 @@ void Renderer::zoomBy(const float& factor)
     if (factor == 0.f)
         return;
 
-    qDebug() << "Zoom by" << factor << "to" << _zoom;
+    qDebug() << "Zoom by" << factor << "to" << _zoomLevel;
 
-    _zoom *= factor;
+    setZoomLevel(_zoomLevel * factor);
 }
 
 void Renderer::zoomAround(const QPoint& screenPoint, const float& factor)
@@ -162,10 +169,10 @@ void Renderer::zoomAround(const QPoint& screenPoint, const float& factor)
     const auto vPanNew      = factor * vPanOld;
     const auto vPanDelta    = vPanNew - vPanOld;
 
-    pan(-vPanDelta);
+    panBy(-vPanDelta);
 }
 
-void Renderer::zoomToWorldRectangle(const QRectF& rectangle, const std::uint32_t& margin /*= 50*/)
+void Renderer::zoomToWorldRectangle(const QRectF& rectangle, const std::uint32_t& margin)
 {
     if (!rectangle.isValid())
         throw std::runtime_error("Zoom rectangle is invalid.");
@@ -173,7 +180,7 @@ void Renderer::zoomToWorldRectangle(const QRectF& rectangle, const std::uint32_t
     qDebug() << "Zoom to rectangle" << rectangle;
 
     // Move to center of the world bounding rectangle
-    _pan = QVector2D(rectangle.center());
+    setPan(QVector2D(rectangle.center()));
 
     // Compute the scale factor
     const auto parentWidgetSize = getParentWidgetSize();
@@ -182,10 +189,10 @@ void Renderer::zoomToWorldRectangle(const QRectF& rectangle, const std::uint32_t
     const auto factorY          = (parentWidgetSize.height() - totalMargins) / static_cast<float>(rectangle.height());
 
     // Assign the zoom factor
-    _zoom = factorX < factorY ? factorX : factorY;
+    setZoomLevel(factorX < factorY ? factorX : factorY);
 }
 
-void Renderer::zoomToObject(const Renderable& renderable, const std::uint32_t& margin /*= 50*/)
+void Renderer::zoomToObject(const Renderable& renderable, const std::uint32_t& margin)
 {
     zoomToWorldRectangle(renderable.getWorldBoundingRectangle(), margin);
 }
@@ -194,10 +201,8 @@ void Renderer::resetView()
 {
     qDebug() << "Reset view";
 
-    _pan.setX(0);
-    _pan.setY(0);
-
-    _zoom = 1.f;
+    setPan(QVector2D());
+    setZoomLevel(0.0f);
 }
 
 void Renderer::bindOpenGLContext()

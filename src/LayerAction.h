@@ -8,6 +8,7 @@
 using namespace hdps::gui;
 
 class Layer;
+class LayersAction;
 
 /**
  * Layer action class
@@ -24,18 +25,20 @@ public:
      * Constructor
      * @param layer Reference to layer
      */
-    LayerAction(Layer& layer);
+    LayerAction(Layer& layer, LayersAction& layersAction);
 
     /** Get reference to layer */
     Layer& getLayer();
 
 public: /** Action getters */
 
+    LayersAction& getLayersAction() { return _layersAction; }
     GeneralAction& getGeneralAction() { return _generalAction; }
     ImageAction& getImageAction() { return _imageAction; }
 
 protected:
     Layer&          _layer;             /** Reference to layer */
+    LayersAction&   _layersAction;      /** Reference to layers action */
     GeneralAction   _generalAction;     /** General action */
     ImageAction     _imageAction;       /** Image action */
     

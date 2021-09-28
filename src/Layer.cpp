@@ -15,7 +15,7 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
     _imageViewerPlugin(imageViewerPlugin),
     _images(datasetName),
     _points(_images->getHierarchyItem().getParent()->getDatasetName()),
-    _layerAction(*this)
+    _layerAction(*this, imageViewerPlugin.getSettingsAction().getLayersAction())
 {
     if (!_images.isValid())
         throw std::runtime_error("The layer images dataset is not valid after initialization");
@@ -313,7 +313,7 @@ void Layer::zoomToExtents()
         auto layerImageProp = getPropByName<ImageProp>("ImageProp");
 
         // Zoom to layer extents
-        _imageViewerPlugin.getImageViewerWidget()->getRenderer().zoomToObject(*this);
+        _imageViewerPlugin.getImageViewerWidget()->getRenderer().zoomToObject(*this, ImageViewerWidget::getZoomMargin());
 
         // Trigger render
         invalidate();

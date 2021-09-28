@@ -12,6 +12,7 @@ using hdps::plugin::ViewPlugin;
 
 class SettingsAction;
 class ToolBarAction;
+class NavigationAction;
 
 namespace hdps {
     namespace gui {
@@ -69,6 +70,7 @@ private:
     ImageViewerWidget*      _imageViewerWidget;     /** Pointer to image viewer widget */
     SettingsAction*         _settingsAction;        /** Pointer to settings action */
     ToolBarAction*          _toolBarAction;         /** Pointer to toolbar action */
+    NavigationAction*       _navigationAction;      /** Pointer to navigation action */
 };
 
 /**

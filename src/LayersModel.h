@@ -120,6 +120,11 @@ public: // Layer operations
     /** Get the layers data */
     QVector<SharedLayer>& getLayers();
 
+public:
+
+    /** Get bounding rectangle */
+    QRectF getWorldBoundingRectangle() const;
+
 protected:
     
     /**

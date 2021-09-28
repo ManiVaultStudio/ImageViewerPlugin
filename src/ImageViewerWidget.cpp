@@ -5,6 +5,14 @@
 #include <QKeyEvent>
 #include <QPainter>
 
+const float ImageViewerWidget::zoomMargin = 50.0f;
+
+const QMap<ImageViewerWidget::InteractionMode, QString> ImageViewerWidget::interactionModes = {
+    { ImageViewerWidget::None, "No interaction" },
+    { ImageViewerWidget::Navigation, "Navigation" },
+    { ImageViewerWidget::LayerEditing, "Layer editing" }
+};
+
 ImageViewerWidget::ImageViewerWidget(QWidget* parent, LayersModel& layersModel) :
     QOpenGLWidget(parent),
     QOpenGLFunctions_3_3_Core(),
@@ -16,7 +24,8 @@ ImageViewerWidget::ImageViewerWidget(QWidget* parent, LayersModel& layersModel) 
     _keys(),
     _mousePositions(),
     _mouseButtons(),
-    _renderer(this)
+    _renderer(this),
+    _interactionMode(InteractionMode::LayerEditing)
 {
     setContextMenuPolicy(Qt::CustomContextMenu);
     setAcceptDrops(true);
@@ -78,15 +87,21 @@ bool ImageViewerWidget::eventFilter(QObject* target, QEvent* event)
     // Notify listeners that unique mouse positions changed
     const auto notifyMousePositionsChanged = [this]() {
 
+        // Only notify in layer editing mode
+        if (_interactionMode != LayerEditing)
+            return;
+
         QList<QPoint> uniqueMousePositions;
 
+        // Get unique mouse positions
         for (auto mousePosition : _mousePositions) {
             if (!uniqueMousePositions.contains(mousePosition))
                 uniqueMousePositions.append(mousePosition);
         }
         
         // Notify listeners that the mouse positions changed
-        emit mousePositionsChanged(uniqueMousePositions.toVector());
+        if (!uniqueMousePositions.isEmpty())
+            emit mousePositionsChanged(uniqueMousePositions.toVector());
     };
 
     switch (event->type())
@@ -104,10 +119,7 @@ bool ImageViewerWidget::eventFilter(QObject* target, QEvent* event)
                     _keys |= Qt::Key_Space;
 
                     // Set the render interaction mode to navigation
-                    _renderer.setInteractionMode(Renderer::InteractionMode::Navigation);
-
-                    // Provide a visual cue for navigation
-                    setCursor(Qt::ClosedHandCursor);
+                    setInteractionMode(InteractionMode::Navigation);
 
                     // Disable the pixel selection tool, as we are navigating
                     _pixelSelectionTool.setEnabled(false);
@@ -133,10 +145,10 @@ bool ImageViewerWidget::eventFilter(QObject* target, QEvent* event)
                     _keys &= ~Qt::Key_Space;
 
                     // Set the render interaction mode to layer editing
-                    _renderer.setInteractionMode(Renderer::InteractionMode::LayerEditing);
+                    setInteractionMode(InteractionMode::LayerEditing);
 
-                    // Provide a visual cue for layer editing
-                    setCursor(Qt::ArrowCursor);
+                    // Reset mouse positions
+                    _mousePositions.clear();
 
                     // Enable the pixel selection tool again
                     _pixelSelectionTool.setEnabled(true);
@@ -150,18 +162,20 @@ bool ImageViewerWidget::eventFilter(QObject* target, QEvent* event)
         {
             auto mouseEvent = static_cast<QMouseEvent*>(event);
 
-            switch (_renderer.getInteractionMode())
+            switch (_interactionMode)
             {
-                case Renderer::Navigation:
+                case Navigation:
                 {
                     if (mouseEvent->buttons() & Qt::LeftButton) {
                         _mousePositions << mouseEvent->pos();
                     }
 
+                    setCursor(Qt::ClosedHandCursor);
+
                     break;
                 }
 
-                case Renderer::LayerEditing:
+                case LayerEditing:
                 {
                     switch (_pixelSelectionTool.getType())
                     {
@@ -215,29 +229,48 @@ bool ImageViewerWidget::eventFilter(QObject* target, QEvent* event)
 
         case QEvent::MouseButtonRelease:
         {
-            auto mouseEvent = static_cast<QMouseEvent*>(event);
 
-            switch (_pixelSelectionTool.getType())
+            switch (_interactionMode)
             {
-                case PixelSelectionType::Rectangle:
-                case PixelSelectionType::Brush:
-                case PixelSelectionType::Lasso:
+                case Navigation:
                 {
-                    _mousePositions.clear();
-
-                    emit pixelSelectionEnded();
+                    setCursor(Qt::OpenHandCursor);
 
                     break;
                 }
 
-                case PixelSelectionType::Polygon:
+                case LayerEditing:
+                {
+                    auto mouseEvent = static_cast<QMouseEvent*>(event);
+
+                    switch (_pixelSelectionTool.getType())
+                    {
+                    case PixelSelectionType::Rectangle:
+                    case PixelSelectionType::Brush:
+                    case PixelSelectionType::Lasso:
+                    {
+                        _mousePositions.clear();
+
+                        emit pixelSelectionEnded();
+
+                        break;
+                    }
+
+                    case PixelSelectionType::Polygon:
+                        break;
+
+                    default:
+                        break;
+                    }
+
+                    notifyMousePositionsChanged();
+
                     break;
+                }
 
                 default:
                     break;
             }
-
-            notifyMousePositionsChanged();
 
             break;
         }
@@ -246,25 +279,25 @@ bool ImageViewerWidget::eventFilter(QObject* target, QEvent* event)
         {
             auto mouseEvent = static_cast<QMouseEvent*>(event);
 
-            switch (_renderer.getInteractionMode())
+            switch (_interactionMode)
             {
-                case Renderer::Navigation:
+                case Navigation:
                 {
                     _mousePositions << mouseEvent->pos();
 
                     if (mouseEvent->buttons() & Qt::LeftButton && numberOfMousePositions >= 2) {
                         const auto pPrevious    = QVector2D(_mousePositions[numberOfMousePositions - 2]);
                         const auto pCurrent     = QVector2D(_mousePositions[numberOfMousePositions - 1]);
-                        const auto vDelta       = (pCurrent - pPrevious) / _renderer.getZoom();
+                        const auto vDelta       = (pCurrent - pPrevious) / _renderer.getZoomLevel();
 
-                        _renderer.pan(vDelta);
+                        _renderer.panBy(vDelta);
                         _renderer.render();
                     }
 
                     break;
                 }
 
-                case Renderer::LayerEditing:
+                case LayerEditing:
                 {
                     switch (_pixelSelectionTool.getType())
                     {
@@ -275,6 +308,8 @@ bool ImageViewerWidget::eventFilter(QObject* target, QEvent* event)
                                     _mousePositions << mouseEvent->pos();
                                 else
                                     _mousePositions.last() = mouseEvent->pos();
+
+                                notifyMousePositionsChanged();
                             }
 
                             break;
@@ -282,24 +317,33 @@ bool ImageViewerWidget::eventFilter(QObject* target, QEvent* event)
 
                         case PixelSelectionType::Brush:
                         {
-                            if (mouseEvent->buttons() & Qt::LeftButton)
+                            if (mouseEvent->buttons() & Qt::LeftButton) {
                                 _mousePositions << mouseEvent->pos();
+                                
+                                notifyMousePositionsChanged();
+                            }
 
                             break;
                         }
 
                         case PixelSelectionType::Lasso:
                         {
-                            if (mouseEvent->buttons() & Qt::LeftButton)
+                            if (mouseEvent->buttons() & Qt::LeftButton) {
                                 _mousePositions << mouseEvent->pos();
+
+                                notifyMousePositionsChanged();
+                            }
 
                             break;
                         }
 
                         case PixelSelectionType::Polygon:
                         {
-                            if (numberOfMousePositions > 1)
+                            if (numberOfMousePositions > 1) {
                                 _mousePositions.last() = mouseEvent->pos();
+
+                                notifyMousePositionsChanged();
+                            }
 
                             break;
                         }
@@ -315,8 +359,6 @@ bool ImageViewerWidget::eventFilter(QObject* target, QEvent* event)
                     break;
             }
 
-            notifyMousePositionsChanged();
-
             break;
         }
 
@@ -327,9 +369,9 @@ bool ImageViewerWidget::eventFilter(QObject* target, QEvent* event)
             const auto zoomCenter = wheelEvent->position().toPoint();
 
 
-            switch (_renderer.getInteractionMode())
+            switch (_interactionMode)
             {
-                case Renderer::Navigation:
+                case Navigation:
                 {
                     if (wheelEvent->angleDelta().ry() < 0) {
                         _renderer.zoomAround(zoomCenter, 1.0f - _renderer.getZoomSensitivity());
@@ -442,4 +484,30 @@ void ImageViewerWidget::cleanup()
     _openGLInitialized = false;
 
     makeCurrent();
+}
+
+ImageViewerWidget::InteractionMode ImageViewerWidget::getInteractionMode() const
+{
+    return _interactionMode;
+}
+
+void ImageViewerWidget::setInteractionMode(const InteractionMode& interactionMode)
+{
+    qDebug() << "Set interaction mode to" << interactionModes.value(interactionMode);
+
+    _interactionMode = interactionMode;
+
+    // Enable/disable the pixel selection tool depending on the interaction mode
+    _pixelSelectionTool.setEnabled(_interactionMode == LayerEditing);
+
+    // Provide a visual cursor cue
+    setCursor(_interactionMode == LayerEditing ? Qt::ArrowCursor : Qt::OpenHandCursor);
+
+    // Render
+    update();
+}
+
+float ImageViewerWidget::getZoomMargin()
+{
+    return zoomMargin;
 }

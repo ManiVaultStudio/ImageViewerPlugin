@@ -23,6 +23,22 @@ class ImageViewerWidget : public QOpenGLWidget, QOpenGLFunctions_3_3_Core
 {
 Q_OBJECT
 
+public:
+
+    /**
+     * Interaction mode
+     * Defines interaction modes that are possible in the image viewer widget
+    */
+    enum InteractionMode
+    {
+        None,               /** No interaction takes place */
+        Navigation,         /** The image view position and zoom are manipulated */
+        LayerEditing        /** Layer editing interaction */
+    };
+
+    /** Maps interaction mode enum to name */
+    static const QMap<InteractionMode, QString> interactionModes;
+
 public: // Construction
 
     /**
@@ -38,6 +54,11 @@ public: // Construction
      *@param event Event that occurred
      */
     bool eventFilter(QObject* target, QEvent* event) override;
+
+    /** Get a reference to the layers model */
+    LayersModel& getLayersModel() {
+        return _layersModel;
+    }
 
     /** Get a reference to the pixel selection tool */
     PixelSelectionTool& getPixelSelectionTool() {
@@ -70,6 +91,20 @@ protected: // OpenGL
     /** Perform cleanup when viewer widget is destroyed */
     void cleanup();
 
+public: // Miscellaneous
+
+    /** Returns the current interaction mode */
+    InteractionMode getInteractionMode() const;
+
+    /**
+     * Sets the current interaction mode
+     * @param interactionMode The interaction mode
+     */
+    void setInteractionMode(const InteractionMode& interactionMode);
+
+    /** Get zoom margin */
+    static float getZoomMargin();
+
 signals:
 
     /** Signals that pixel selection process started */
@@ -94,4 +129,7 @@ protected:
     QVector<QPoint>                         _mousePositions;            /** Recorded mouse positions */
     int                                     _mouseButtons;              /** State of the left, middle and right mouse buttons */
     Renderer                                _renderer;                  /** Layers OpenGL renderer */
+    InteractionMode                         _interactionMode;           /** Interaction mode e.g. navigation and layer editing */
+
+    static const float zoomMargin;
 };
