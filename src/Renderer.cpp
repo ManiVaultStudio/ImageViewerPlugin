@@ -168,13 +168,16 @@ void Renderer::setZoomPercentage(const float& zoomPercentage)
 
     _zoomPercentage = zoomPercentage;
 
-    // Compute zoom level
-    const auto parentWidgetSize = getParentWidgetSize();
-    const auto totalMargins     = 2 * _zoomMargin;
-    const auto factorX          = (parentWidgetSize.width() - totalMargins) / static_cast<float>(_worldBoundingRectangle.width() / _zoomPercentage);
-    const auto factorY          = (parentWidgetSize.height() - totalMargins) / static_cast<float>(_worldBoundingRectangle.height() / _zoomPercentage);
-    
-    _zoomLevel = factorX < factorY ? factorX : factorY;
+    // Compute zoom level if the world bounding box is valid
+    if (_worldBoundingRectangle.isValid()) {
+        
+        const auto parentWidgetSize = getParentWidgetSize();
+        const auto totalMargins     = 2 * _zoomMargin;
+        const auto factorX          = (parentWidgetSize.width() - totalMargins) / static_cast<float>(_worldBoundingRectangle.width() / _zoomPercentage);
+        const auto factorY          = (parentWidgetSize.height() - totalMargins) / static_cast<float>(_worldBoundingRectangle.height() / _zoomPercentage);
+
+        _zoomLevel = factorX < factorY ? factorX : factorY;
+    }
 
     emit zoomLevelChanged(_zoomLevel);
     emit zoomPercentageChanged(_zoomPercentage);
