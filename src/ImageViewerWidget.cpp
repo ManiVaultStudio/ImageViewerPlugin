@@ -2,6 +2,8 @@
 #include "LayersModel.h"
 #include "Layer.h"
 
+#include "util/Exception.h"
+
 #include <QKeyEvent>
 #include <QPainter>
 
@@ -38,7 +40,6 @@ ImageViewerWidget::ImageViewerWidget(QWidget* parent, LayersModel& layersModel) 
     QSurfaceFormat surfaceFormat;
 
     surfaceFormat.setRenderableType(QSurfaceFormat::OpenGL);
-    surfaceFormat.setSamples(4);
 
 #ifdef __APPLE__
     // Ask for an OpenGL 3.3 Core Context as the default
@@ -423,41 +424,45 @@ void ImageViewerWidget::paintGL()
         QPainter painter;
 
         // Begin mixed OpenGL/native painting
-        painter.begin(this);
+        if (!painter.begin(this))
+            throw std::runtime_error("Unable to begin painting");
+
+        // Draw the background
+        painter.setBrush(_backgroundGradient);
+        painter.drawRect(rect());
+
+        // Draw layers with OpenGL
+        painter.beginNativePainting();
         {
-            // Draw the background
-            painter.setBrush(_backgroundGradient);
-            painter.drawRect(rect());
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-            // Draw layers with OpenGL
-            painter.beginNativePainting();
-            {
-                glEnable(GL_BLEND);
-                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            auto layersSorted = _layersModel.getLayers();
 
-                auto layersSorted = _layersModel.getLayers();
+            // Sort the layers
+            std::reverse(layersSorted.begin(), layersSorted.end());
 
-                // Sort the layers
-                std::reverse(layersSorted.begin(), layersSorted.end());
+            // Draw the image layers
+            for (auto& layer : layersSorted)
+                layer->render(_renderer.getProjectionMatrix() * _renderer.getViewMatrix());
+        }
+        painter.endNativePainting();
 
-                // Draw the image layers
-                for (auto& layer : layersSorted)
-                    layer->render(_renderer.getProjectionMatrix() * _renderer.getViewMatrix());
-            }
-            painter.endNativePainting();
-
-            // Draw the pixel selection tool overlays
+        // Draw the pixel selection tool overlays if the pixel selection tool is enabled
+        if (_pixelSelectionTool.isEnabled()) {
             painter.drawPixmap(rect(), _pixelSelectionTool.getAreaPixmap());
             painter.drawPixmap(rect(), _pixelSelectionTool.getShapePixmap());
         }
+        
+        // End mixed OpenGL/native painting
         painter.end();
     }
     catch (std::exception& e)
     {
-        QMessageBox::critical(nullptr, "Rendering failed", e.what());
+        exceptionMessageBox("Rendering failed", e);
     }
     catch (...) {
-        QMessageBox::critical(nullptr, "Rendering failed", "An unhandled exception occurred");
+        exceptionMessageBox("Rendering failed");
     }
 
 #ifdef _DEBUG

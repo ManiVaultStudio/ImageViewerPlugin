@@ -178,7 +178,7 @@ void SelectionToolProp::compute(const QVector<QPoint>& mousePositions)
             glBindTexture(GL_TEXTURE_2D, _fbo->texture());
 
             // Get selection type and brush radius
-            const auto selectionType    = selectionAction.getPixelSelectionTypeAction().getTypeAction().getCurrentIndex();
+            const auto selectionType    = selectionAction.getTypeAction().getCurrentIndex();
             const auto brushRadius      = selectionAction.getBrushRadiusAction().getValue();
 
             // Configure shader program

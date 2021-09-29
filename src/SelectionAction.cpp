@@ -23,5 +23,5 @@ SelectionAction::SelectionAction(QWidget* targetWidget, PixelSelectionTool& pixe
     // Add 'sample 'pixel selection type
     allowedPixelSelectionTypes << PixelSelectionType::Sample;
 
-    getPixelSelectionTypeAction().setAllowedTypes(allowedPixelSelectionTypes);
+    setAllowedTypes(allowedPixelSelectionTypes);
 }
