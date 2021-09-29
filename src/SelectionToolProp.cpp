@@ -207,7 +207,9 @@ void SelectionToolProp::compute(const QVector<QPoint>& mousePositions)
                     shaderProgram->setUniformValue("rectangleTopLeft", rectangle.topLeft());
                     shaderProgram->setUniformValue("rectangleBottomRight", rectangle.bottomRight());
 
+                    // Draw off-screen 
                     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
                     break;
                 }
 
@@ -237,7 +239,9 @@ void SelectionToolProp::compute(const QVector<QPoint>& mousePositions)
                         shaderProgram->setUniformValue("currentBrushCenter", currentBrushCenter);
                     }
 
+                    // Draw off-screen 
                     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
                     break;
                 }
 
@@ -257,23 +261,41 @@ void SelectionToolProp::compute(const QVector<QPoint>& mousePositions)
                     shaderProgram->setUniformValueArray("points", &points[0], static_cast<std::int32_t>(points.size()));
                     shaderProgram->setUniformValue("noPoints", static_cast<int>(points.size()));
 
+                    // Draw off-screen 
                     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
                     break;
                 }
 
                 case PixelSelectionType::Sample:
+                {
+                    if (numberOfMousePositions <= 0)
+                        break;
+
+                    // Convert sample 2D screen position to world position
+                    QList<QVector2D> points{ getRenderer().getScreenPointToWorldPosition(modelViewMatrix, mousePositions.first()).toVector2D() };
+
+                    // Assign sample point to shader
+                    shaderProgram->setUniformValueArray("points", &points[0], static_cast<std::int32_t>(points.size()));
+
+                    // Draw off-screen 
+                    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
                     break;
+                }
 
                 default:
                     break;
             }
 
+            // Release the shader program
             shaderProgram->release();
 
+            // And shape VAO
             shape->getVAO().release();
 
+            // Release the FBO
             _fbo->release();
-            /**/
         }
         getRenderer().releaseOpenGLContext();
     }

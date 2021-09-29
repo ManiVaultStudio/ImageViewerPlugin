@@ -151,5 +151,11 @@ void main(void)
             fragmentColor = isInside(P) ? vec4(1) : vec4(vec3(0), 1);
             break;
         }
+
+        case 4:
+        {
+            fragmentColor = floor(P) == floor(points[0]) ? vec4(1) : vec4(vec3(0), 1);
+            break;
+        }
     }
 }
