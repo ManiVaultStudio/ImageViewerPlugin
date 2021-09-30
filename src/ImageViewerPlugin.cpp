@@ -155,11 +155,9 @@ void ImageViewerPlugin::init()
         // Compute the layer selection
         layer->computeSelection(mousePositions);
 
-        if (_settingsAction->getSelectionAction().getTypeAction().getCurrentIndex() == static_cast<std::int32_t>(PixelSelectionType::Sample))
+        // Publish the selection if notifications during selection are turned on or the selection type is sample selection
+        if (_settingsAction->getSelectionAction().getNotifyDuringSelectionAction().isChecked() || _settingsAction->getSelectionAction().getTypeAction().getCurrentIndex() == static_cast<std::int32_t>(PixelSelectionType::Sample))
             layer->publishSelection();
-        // Publish the selection if notifications during selection are turned on
-        //if (_settingsAction->getSelectionAction().getNotifyDuringSelectionAction().isChecked())
-            //layer->publishSelection();
     });
 
     connect(_imageViewerWidget, &ImageViewerWidget::pixelSelectionEnded, this, [this]() {

@@ -357,8 +357,9 @@ void Layer::publishSelection()
             case PixelSelectionType::Rectangle:
             case PixelSelectionType::Brush:
             case PixelSelectionType::Lasso:
-            case PixelSelectionType::Polygon: {
-
+            case PixelSelectionType::Polygon:
+            case PixelSelectionType::Sample:
+            {
                 // Get current selection image (for add/subtract)
                 const auto selectionImage = getPropByName<SelectionToolProp>("SelectionToolProp")->getSelectionImage().mirrored(false, true);
 
@@ -412,22 +413,6 @@ void Layer::publishSelection()
                     default:
                         break;
                 }
-
-                break;
-            }
-
-            case PixelSelectionType::Sample: {
-                /*
-                if (isWithin(_mousePositions.last())) {
-                    const auto textureCoordinate    = getTextureCoordinateFromScreenPoint(_mousePositions.last());
-                    const auto imageWidth           = getImageWidth(Qt::EditRole).toInt();
-                    const auto pointIndex           = textureCoordinate.y() * imageWidth + textureCoordinate.x();
-
-                    selectionIndices = std::vector<std::uint32_t>({ static_cast<std::uint32_t>(pointIndex) });
-                    //qDebug() << _mousePositions.last();
-                    //qDebug() << textureCoordinate;
-                }
-                */
 
                 break;
             }
