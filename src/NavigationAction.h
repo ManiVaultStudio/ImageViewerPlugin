@@ -40,11 +40,12 @@ public:
 protected:
 
     /**
-     * Get widget representation of the navigation action
+     * Get widget representation of the channel action
      * @param parent Pointer to parent widget
-     * @param state Widget state
+     * @param widgetFlags Widget flags for the configuration of the widget (type)
+     * @param state State of the widget (for stateful widgets)
      */
-    QWidget* getWidget(QWidget* parent, const WidgetActionWidget::State& state = WidgetActionWidget::State::Standard) override {
+    QWidget* getWidget(QWidget* parent, const std::int32_t& widgetFlags, const WidgetActionWidget::State& state = WidgetActionWidget::State::Standard) override {
         return new Widget(parent, this, state);
     };
 

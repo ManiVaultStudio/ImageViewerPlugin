@@ -42,46 +42,24 @@ public:
     /** Maps channel index enum to name */
     static const QMap<ChannelIndex, QString> channelIndexes;
 
-public:
-
     /** Describes the widget flags */
     enum WidgetFlag {
-        ComboBox            = 0x00002,  /** The widget includes a dimension selection combobox */
-        WindowLevelWidget   = 0x00004,  /** The widget includes a window/level settings widget */
-        ResetPushButton     = 0x00008,  /** The widget includes a reset push button */
+        ComboBox            = 0x00001,  /** The widget includes a dimension selection combobox */
+        WindowLevelWidget   = 0x00002,  /** The widget includes a window/level settings widget */
+        ResetPushButton     = 0x00004,  /** The widget includes a reset push button */
 
         All = ComboBox | WindowLevelWidget | ResetPushButton
-    };
-
-public:
-
-    /** Widget class for settings action */
-    class Widget : public WidgetActionWidget
-    {
-    protected:
-
-        /**
-         * Constructor
-         * @param parent Pointer to parent widget
-         * @param channelAction Pointer to channel action
-         * @param state State of the widget
-         */
-        Widget(QWidget* parent, ChannelAction* channelAction, const WidgetActionWidget::State& state);
-
-    protected:
-        friend class ChannelAction;
     };
 
 protected:
 
     /**
-     * Get widget representation of the settings action
+     * Get widget representation of the channel action
      * @param parent Pointer to parent widget
-     * @param state Widget state
+     * @param widgetFlags Widget flags for the configuration of the widget (type)
+     * @param state State of the widget (for stateful widgets)
      */
-    QWidget* getWidget(QWidget* parent, const WidgetActionWidget::State& state = WidgetActionWidget::State::Standard) override {
-        return new Widget(parent, this, state);
-    };
+    QWidget* getWidget(QWidget* parent, const std::int32_t& widgetFlags, const WidgetActionWidget::State& state = WidgetActionWidget::State::Standard) override;;
 
     /** Determines whether the current color can be reset to its default */
     bool isResettable() const override;

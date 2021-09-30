@@ -19,18 +19,6 @@ class ToolBarAction : public WidgetAction
 {
 public:
 
-    /** Describes the widget flags */
-    enum WidgetFlag {
-        ComboBox        = 0x00001,      /** The widget includes a combobox */
-        PushButtonGroup = 0x00002,      /** The widget includes push buttons in a group */
-        ResetPushButton = 0x00004,      /** The widget includes a reset push button */
-
-        Basic   = ComboBox,
-        All     = ComboBox | PushButtonGroup | ResetPushButton
-    };
-
-public:
-
     /** Widget class for pixel selection type action */
     class Widget : public WidgetActionWidget
     {
@@ -51,11 +39,12 @@ public:
 protected:
 
     /**
-     * Get widget representation of the pixel selection type action
+     * Get widget representation of the toolbar action
      * @param parent Pointer to parent widget
-     * @param state Widget state
+     * @param widgetFlags Widget flags for the configuration of the widget (type)
+     * @param state State of the widget (for stateful widgets)
      */
-    QWidget* getWidget(QWidget* parent, const WidgetActionWidget::State& state = WidgetActionWidget::State::Standard) override {
+    QWidget* getWidget(QWidget* parent, const std::int32_t& widgetFlags, const WidgetActionWidget::State& state = WidgetActionWidget::State::Standard) override {
         return new Widget(parent, this, state);
     };
 

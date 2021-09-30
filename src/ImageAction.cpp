@@ -43,15 +43,17 @@ ImageAction::ImageAction(LayerAction& layerAction) :
 
     _opacityAction.setSuffix("%");
 
-    _opacityAction.setWidgetFlags(DecimalAction::All);
-    _channel1Action.setWidgetFlags(ChannelAction::All);
-    _channel2Action.setWidgetFlags(ChannelAction::All);
-    _channel3Action.setWidgetFlags(ChannelAction::All);
-    _colorSpaceAction.setWidgetFlags(OptionAction::All);
-    _colorMapAction.setWidgetFlags(ColorMapAction::Settings | ColorMapAction::ResetPushButton);
-    _interpolationTypeAction.setWidgetFlags(OptionAction::All);
-    _useConstantColorAction.setWidgetFlags(ToggleAction::CheckBoxAndResetPushButton);
-    _constantColorAction.setWidgetFlags(ColorAction::All);
+    /*
+    _opacityAction.setDefaultWidgetFlags(DecimalAction::All);
+    _channel1Action.setDefaultWidgetFlags(ChannelAction::All);
+    _channel2Action.setDefaultWidgetFlags(ChannelAction::All);
+    _channel3Action.setDefaultWidgetFlags(ChannelAction::All);
+    _colorSpaceAction.setDefaultWidgetFlags(OptionAction::All);
+    _colorMapAction.setDefaultWidgetFlags(ColorMapAction::Settings | ColorMapAction::ResetPushButton);
+    _interpolationTypeAction.setDefaultWidgetFlags(OptionAction::All);
+    _useConstantColorAction.setDefaultWidgetFlags(ToggleAction::CheckBoxAndResetPushButton);
+    _constantColorAction.setDefaultWidgetFlags(ColorAction::All);
+    */
 
     _colorMapAction.setColorMapType(ColorMap::Type::TwoDimensional);
 

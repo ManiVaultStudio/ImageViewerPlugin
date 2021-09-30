@@ -173,7 +173,10 @@ void ImageViewerPlugin::init()
         auto layer = static_cast<Layer*>(selectedRows.first().internalPointer());
 
         // Publish the selection
-        layer->publishSelection();
+        //layer->publishSelection();
+
+        if (!_settingsAction->getSelectionAction().getNotifyDuringSelectionAction().isChecked())
+            layer->publishSelection();
     });
 
     // Enable/disable the navigation action

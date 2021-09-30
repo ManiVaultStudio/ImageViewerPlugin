@@ -28,6 +28,7 @@ ChannelAction::ChannelAction(ImageAction& layerImageAction, const ChannelIndex& 
     _selectionData()
 {
     setText(name);
+    setDefaultWidgetFlags(ChannelAction::ComboBox | ChannelAction::WindowLevelWidget);
 
     switch (_index)
     {
@@ -354,25 +355,24 @@ void ChannelAction::computeScalarDataRange()
     }
 }
 
-ChannelAction::Widget::Widget(QWidget* parent, ChannelAction* channelAction, const WidgetActionWidget::State& state) :
-    WidgetActionWidget(parent, channelAction, state)
+QWidget* ChannelAction::getWidget(QWidget* parent, const std::int32_t& widgetFlags, const WidgetActionWidget::State& state /*= WidgetActionWidget::State::Standard*/)
 {
+    auto widget = new WidgetActionWidget(parent, this, state);
     auto layout = new QHBoxLayout();
 
-    layout->setSpacing(3);
     layout->setMargin(0);
+    layout->setSpacing(3);
 
-    auto checkBox = new QCheckBox();
+    if (widgetFlags & ChannelAction::ComboBox)
+        layout->addWidget(_dimensionAction.createWidget(widget));
 
-    if (channelAction->hasWidgetFlag(ChannelAction::ComboBox))
-        layout->addWidget(channelAction->getDimensionAction().createWidget(this));
+    if (widgetFlags & WidgetFlag::WindowLevelWidget)
+        layout->addWidget(_windowLevelAction.createCollapsedWidget(widget));
 
-    if (channelAction->hasWidgetFlag(WidgetFlag::WindowLevelWidget))
-        layout->addWidget(channelAction->getWindowLevelAction().createCollapsedWidget(this));
+    if (widgetFlags & ChannelAction::ResetPushButton)
+        layout->addWidget(createResetButton(widget));
 
-    if (channelAction->hasWidgetFlag(ChannelAction::ResetPushButton))
-        layout->addWidget(channelAction->createResetButton(this));
+    widget->setLayout(layout);
 
-    setLayout(layout);
+    return widget;
 }
-

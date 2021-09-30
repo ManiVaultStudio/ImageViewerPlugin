@@ -15,8 +15,10 @@ WindowLevelAction::WindowLevelAction(ChannelAction& channelAction) :
     setText("Window/level Settings");
     setIcon(Application::getIconFont("FontAwesome").getIcon("adjust"));
 
-    _windowAction.setWidgetFlags(DecimalAction::All);
-    _levelAction.setWidgetFlags(DecimalAction::All);
+    /*
+    _windowAction.setDefaultWidgetFlags(DecimalAction::All);
+    _levelAction.setDefaultWidgetFlags(DecimalAction::All);
+    */
 
     _windowAction.setToolTip("Window");
     _levelAction.setToolTip("Level");
