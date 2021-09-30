@@ -128,7 +128,7 @@ LayersAction::Widget::Widget(QWidget* parent, LayersAction* layersAction, const 
 
             auto& layerAction = layer->getLayerAction();
 
-            groupActions << &layerAction.getGeneralAction() << &layerAction.getImageAction() << &layersAction->getSettingsAction().getSelectionAction();
+            groupActions << &layerAction.getGeneralAction() << &layerAction.getImageAction();
         }
 
         layersAction->getCurrentLayerAction().set(groupActions);

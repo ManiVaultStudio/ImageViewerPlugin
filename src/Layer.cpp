@@ -89,7 +89,7 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
     connect(&_layerAction.getImageAction(), &ImageAction::channelChanged, this, updateChannelScalarData);
     connect(&_layerAction.getImageAction().getInterpolationTypeAction(), &OptionAction::currentIndexChanged, this, updateInterpolationType);
     
-    auto& selectionAction = _imageViewerPlugin.getSettingsAction().getSelectionAction();
+    auto& selectionAction = _imageViewerPlugin.getSelectionAction();
 
     // Update prop when selection overlay color and opacity change
     connect(&selectionAction.getOverlayColor(), &ColorAction::colorChanged, this, updateProp);

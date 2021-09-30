@@ -92,7 +92,7 @@ NavigationAction::Widget::Widget(QWidget* parent, NavigationAction* navigationAc
     layout->addWidget(navigationAction->getZoomPercentageAction().createWidget(this));
     layout->addWidget(navigationAction->getZoomInAction().createWidget(this));
     layout->addWidget(navigationAction->getZoomExtentsAction().createWidget(this));
-    layout->addWidget(navigationAction->getPanAction().createPushButtonWidget(this));
+    layout->addWidget(navigationAction->getPanAction().createWidget(this, ToggleAction::PushButtonIcon));
     layout->addStretch(1);
 
     setLayout(layout);

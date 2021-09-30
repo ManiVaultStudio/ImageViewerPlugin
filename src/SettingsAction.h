@@ -66,10 +66,8 @@ public:
 public: // Action getters
 
     LayersAction& getLayersAction() { return _layersAction; }
-    SelectionAction& getSelectionAction() { return _selectionAction; }
 
 protected:
     ImageViewerPlugin&      _imageViewerPlugin;     /** Reference to image viewer plugin */
     LayersAction            _layersAction;          /** Layers action */
-    SelectionAction         _selectionAction;       /** Selection action */
 };

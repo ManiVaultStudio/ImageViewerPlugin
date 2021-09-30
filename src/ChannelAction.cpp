@@ -28,6 +28,7 @@ ChannelAction::ChannelAction(ImageAction& layerImageAction, const ChannelIndex& 
     _selectionData()
 {
     setText(name);
+    setMayReset(true);
     setDefaultWidgetFlags(ChannelAction::ComboBox | ChannelAction::WindowLevelWidget);
 
     switch (_index)

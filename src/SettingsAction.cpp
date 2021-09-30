@@ -6,8 +6,7 @@ using namespace hdps::gui;
 SettingsAction::SettingsAction(ImageViewerPlugin& imageViewerPlugin) :
     WidgetAction(&imageViewerPlugin),
     _imageViewerPlugin(imageViewerPlugin),
-    _layersAction(*this),
-    _selectionAction(&imageViewerPlugin, imageViewerPlugin.getImageViewerWidget()->getPixelSelectionTool())
+    _layersAction(*this)
 {
 }
 

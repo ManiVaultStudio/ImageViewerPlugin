@@ -1,6 +1,6 @@
 #include "ImageViewerPlugin.h"
+#include "SelectionAction.h"
 #include "SettingsAction.h"
-#include "ToolBarAction.h"
 #include "NavigationAction.h"
 #include "Layer.h"
 
@@ -25,8 +25,8 @@ ImageViewerPlugin::ImageViewerPlugin(hdps::plugin::PluginFactory* factory) :
     _dropWidget(nullptr),
     _mainWidget(nullptr),
     _imageViewerWidget(nullptr),
+    _selectionAction(nullptr),
     _settingsAction(nullptr),
-    _toolBarAction(nullptr),
     _navigationAction(nullptr)
 {
     setFocusPolicy(Qt::ClickFocus);
@@ -46,8 +46,8 @@ void ImageViewerPlugin::init()
 
     _mainWidget         = new QWidget();
     _imageViewerWidget  = new ImageViewerWidget(this, _model);
+    _selectionAction    = new SelectionAction(this, _imageViewerWidget->getPixelSelectionTool());
     _settingsAction     = new SettingsAction(*this);
-    _toolBarAction      = new ToolBarAction(*this);
     _navigationAction   = new NavigationAction(*_imageViewerWidget);
 
     _imageViewerWidget->setAcceptDrops(true);
@@ -61,7 +61,7 @@ void ImageViewerPlugin::init()
     mainWidgetLayout->setSpacing(0);
 
     // And add the toolbar, image viewer widget
-    mainWidgetLayout->addWidget(_toolBarAction->createWidget(this));
+    mainWidgetLayout->addWidget(_selectionAction->createWidget(this));
     mainWidgetLayout->addWidget(_imageViewerWidget, 1);
     mainWidgetLayout->addWidget(_navigationAction->createWidget(this));
 
@@ -113,13 +113,6 @@ void ImageViewerPlugin::init()
         return dropRegions;
     });
 
-    const auto updateDropIndicatorVisibility = [this]() -> void {
-        _dropWidget->setShowDropIndicator(_model.rowCount() == 0);
-    };
-
-    connect(&_model, &QAbstractItemModel::rowsInserted, this, [updateDropIndicatorVisibility]() { updateDropIndicatorVisibility(); });
-    connect(&_model, &QAbstractItemModel::rowsRemoved, this, [updateDropIndicatorVisibility]() { updateDropIndicatorVisibility(); });
-
     connect(_imageViewerWidget, &ImageViewerWidget::pixelSelectionStarted, this, [this]() {
 
         // Get selected layers model rows
@@ -156,7 +149,7 @@ void ImageViewerPlugin::init()
         layer->computeSelection(mousePositions);
 
         // Publish the selection if notifications during selection are turned on or the selection type is sample selection
-        if (_settingsAction->getSelectionAction().getNotifyDuringSelectionAction().isChecked() || _settingsAction->getSelectionAction().getTypeAction().getCurrentIndex() == static_cast<std::int32_t>(PixelSelectionType::Sample))
+        if (_selectionAction->getNotifyDuringSelectionAction().isChecked() || _selectionAction->getTypeAction().getCurrentIndex() == static_cast<std::int32_t>(PixelSelectionType::Sample))
             layer->publishSelection();
     });
 
@@ -172,25 +165,29 @@ void ImageViewerPlugin::init()
         // Get pointer to layer from the selected model index
         auto layer = static_cast<Layer*>(selectedRows.first().internalPointer());
 
-        // Publish the selection
-        //layer->publishSelection();
-
-        if (!_settingsAction->getSelectionAction().getNotifyDuringSelectionAction().isChecked())
+        // Publish the selection if notifications during selection are turned on
+        if (!_selectionAction->getNotifyDuringSelectionAction().isChecked())
             layer->publishSelection();
     });
 
-    // Enable/disable the navigation action
-    const auto updateNavigationAction = [this]() {
-        _navigationAction->setEnabled(_model.rowCount() == 0 ? false : !_model.match(_model.index(0, LayersModel::Visible), Qt::EditRole, true, -1).isEmpty());
+    const auto layersInsertedRemovedChanged = [this]() {
+        _dropWidget->setShowDropIndicator(_model.rowCount() == 0);
+
+        // Establish the number of visible layers
+        const auto hasVisibleLayers = _model.rowCount() == 0 ? false : !_model.match(_model.index(0, LayersModel::Visible), Qt::EditRole, true, -1).isEmpty();
+
+        // Enabled/disable tool bars
+        _selectionAction->setEnabled(hasVisibleLayers);
+        _navigationAction->setEnabled(hasVisibleLayers);
     };
 
     // Enable/disable the navigation action when rows are inserted/removed
-    connect(&_model, &LayersModel::rowsInserted, this, updateNavigationAction);
-    connect(&_model, &LayersModel::rowsRemoved, this, updateNavigationAction);
-    connect(&_model, &LayersModel::dataChanged, this, updateNavigationAction);
+    connect(&_model, &LayersModel::rowsInserted, this, layersInsertedRemovedChanged);
+    connect(&_model, &LayersModel::rowsRemoved, this, layersInsertedRemovedChanged);
+    connect(&_model, &LayersModel::dataChanged, this, layersInsertedRemovedChanged);
 
     // Initially enable/disable the navigation action
-    updateNavigationAction();
+    layersInsertedRemovedChanged();
 }
 
 QIcon ImageViewerPluginFactory::getIcon() const
