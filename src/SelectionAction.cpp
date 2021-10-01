@@ -9,13 +9,13 @@
 
 using namespace hdps::util;
 
-SelectionAction::SelectionAction(QWidget* targetWidget, PixelSelectionTool& pixelSelectionTool) :
-    PixelSelectionAction(targetWidget, pixelSelectionTool),
+SelectionAction::SelectionAction(LayerAction& layerAction, QWidget* targetWidget, PixelSelectionTool& pixelSelectionTool) :
+    PixelSelectionAction(&layerAction, targetWidget, pixelSelectionTool),
+    _layerAction(layerAction),
     _targetWidget(targetWidget),
     _pixelSelectionTool(pixelSelectionTool),
-    _createSubsetFromSelectionAction(this, "Create subset")
+    _groupAction(this, true)
 {
-    setText("Layer selection");
     setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("mouse-pointer"));
 
     auto allowedPixelSelectionTypes = defaultPixelSelectionTypes;
@@ -23,7 +23,25 @@ SelectionAction::SelectionAction(QWidget* targetWidget, PixelSelectionTool& pixe
     // Add 'sample 'pixel selection type
     allowedPixelSelectionTypes << PixelSelectionType::Sample;
 
+    // Assign allowed types
     setAllowedTypes(allowedPixelSelectionTypes);
+
+    _groupAction.setText("Selection");
+
+    // Populate group action
+    _groupAction << _typeAction;
+    _groupAction << _brushRadiusAction;
+    _groupAction << _overlayColor;
+    _groupAction << _overlayOpacity;
+    _groupAction << _notifyDuringSelectionAction;
+
+    const auto render = [this]() {
+        _layerAction.getLayer().invalidate();
+    };
+
+    // Re-render when the overlay color or opacity changes
+    connect(&_overlayColor, &ColorAction::colorChanged, this, render);
+    connect(&_overlayOpacity, &DecimalAction::valueChanged, this, render);
 }
 
 SelectionAction::Widget::Widget(QWidget* parent, SelectionAction* selectionAction, const WidgetActionWidget::State& state) :
@@ -57,7 +75,6 @@ SelectionAction::Widget::Widget(QWidget* parent, SelectionAction* selectionActio
     layout->addWidget(selectionAction->getModifierSubtractAction().createWidget(this));
     layout->addWidget(getVerticalDivider());
     layout->addWidget(selectionAction->getOverlayOpacity().createWidget(this));
-    layout->addWidget(selectionAction->getOverlayColor().createWidget(this));
     layout->addWidget(getVerticalDivider());
     layout->addWidget(selectionAction->getSelectAllAction().createWidget(this));
     layout->addWidget(selectionAction->getClearSelectionAction().createWidget(this));

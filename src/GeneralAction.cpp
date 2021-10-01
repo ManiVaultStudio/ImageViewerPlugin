@@ -17,15 +17,6 @@ GeneralAction::GeneralAction(LayerAction& layerAction) :
 {
     setText("General");
 
-    /*
-    _visibleAction.setDefaultWidgetFlags(ToggleAction::CheckBoxAndResetPushButton);
-    _colorAction.setDefaultWidgetFlags(ColorAction::All);
-    _nameAction.setDefaultWidgetFlags(StringAction::All);
-    _scaleAction.setDefaultWidgetFlags(DecimalAction::All);
-    _xPositionAction.setDefaultWidgetFlags(DecimalAction::All);
-    _yPositionAction.setDefaultWidgetFlags(DecimalAction::All);
-    */
-
     _nameAction.setToolTip("Name of the layer");
     _scaleAction.setToolTip("Layer scale in percentages");
     _xPositionAction.setToolTip("Layer x-position");

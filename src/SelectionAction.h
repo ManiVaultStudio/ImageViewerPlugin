@@ -1,11 +1,14 @@
 #pragma once
 
+#include "actions/GroupAction.h"
 #include "actions/PixelSelectionAction.h"
 #include "actions/TriggerAction.h"
 
 #include "util/PixelSelectionTool.h"
 
 class QWidget;
+
+class LayerAction;
 
 using namespace hdps::util;
 using namespace hdps::gui;
@@ -54,15 +57,19 @@ public:
 
     /**
      * Constructor
+     * @param layerAction Reference to layer action
      * @param targetWidget Pointer to target widget
      * @param pixelSelectionTool Reference to pixel selection tool
      */
-    SelectionAction(QWidget* targetWidget, PixelSelectionTool& pixelSelectionTool);
+    SelectionAction(LayerAction& layerAction, QWidget* targetWidget, PixelSelectionTool& pixelSelectionTool);
 
 public: /** Action getters */
 
+    GroupAction& getGroupAction() { return _groupAction; }
+
 protected:
-    QWidget*                _targetWidget;                          /** Pointer to target widget */
-    PixelSelectionTool&     _pixelSelectionTool;                    /** Reference to pixel selection tool */
-    TriggerAction           _createSubsetFromSelectionAction;       /** Create subset from selection action */
+    LayerAction&            _layerAction;           /** Reference to layer action */
+    QWidget*                _targetWidget;          /** Pointer to target widget */
+    PixelSelectionTool&     _pixelSelectionTool;    /** Reference to pixel selection tool */
+    GroupAction             _groupAction;           /** Create subset from selection action */
 };

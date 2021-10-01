@@ -165,9 +165,8 @@ bool ImageViewerWidget::eventFilter(QObject* target, QEvent* event)
             {
                 case Navigation:
                 {
-                    if (mouseEvent->buttons() & Qt::LeftButton) {
+                    if (mouseEvent->buttons() & Qt::LeftButton)
                         _mousePositions << mouseEvent->pos();
-                    }
 
                     setCursor(Qt::ClosedHandCursor);
 
@@ -182,9 +181,10 @@ bool ImageViewerWidget::eventFilter(QObject* target, QEvent* event)
                         case PixelSelectionType::Brush:
                         case PixelSelectionType::Lasso:
                         {
-                            _mousePositions = { mouseEvent->pos() };
-
-                            emit pixelSelectionStarted();
+                            if (mouseEvent->buttons() & Qt::LeftButton) {
+                                _mousePositions = { mouseEvent->pos() };
+                                emit pixelSelectionStarted();
+                            }
 
                             break;
                         }
@@ -228,7 +228,6 @@ bool ImageViewerWidget::eventFilter(QObject* target, QEvent* event)
 
         case QEvent::MouseButtonRelease:
         {
-
             switch (_interactionMode)
             {
                 case Navigation:
@@ -244,25 +243,24 @@ bool ImageViewerWidget::eventFilter(QObject* target, QEvent* event)
 
                     switch (_pixelSelectionTool.getType())
                     {
-                    case PixelSelectionType::Rectangle:
-                    case PixelSelectionType::Brush:
-                    case PixelSelectionType::Lasso:
-                    {
-                        _mousePositions.clear();
+                        case PixelSelectionType::Rectangle:
+                        case PixelSelectionType::Brush:
+                        case PixelSelectionType::Lasso:
+                        {
+                            if (mouseEvent->button() == Qt::LeftButton) {
+                                _mousePositions.clear();
+                                emit pixelSelectionEnded();
+                            }
 
-                        emit pixelSelectionEnded();
+                            break;
+                        }
 
-                        break;
+                        case PixelSelectionType::Polygon:
+                            break;
+
+                        default:
+                            break;
                     }
-
-                    case PixelSelectionType::Polygon:
-                        break;
-
-                    default:
-                        break;
-                    }
-
-                    notifyMousePositionsChanged();
 
                     break;
                 }

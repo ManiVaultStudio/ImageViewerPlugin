@@ -10,7 +10,6 @@
 using hdps::plugin::ViewPluginFactory;
 using hdps::plugin::ViewPlugin;
 
-class SelectionAction;
 class SettingsAction;
 class NavigationAction;
 
@@ -60,7 +59,6 @@ public: // Miscellaneous
 
 public: // Action getters
 
-    SelectionAction& getSelectionAction() { return *_selectionAction; }
     SettingsAction& getSettingsAction() { return *_settingsAction; }
 
 private:
@@ -69,7 +67,6 @@ private:
     hdps::gui::DropWidget*  _dropWidget;            /** Widget for dropping data */
     QWidget*                _mainWidget;            /** Pointer to main widget */
     ImageViewerWidget*      _imageViewerWidget;     /** Pointer to image viewer widget */
-    SelectionAction*        _selectionAction;       /** Pointer to selection action */
     SettingsAction*         _settingsAction;        /** Pointer to settings action */
     NavigationAction*       _navigationAction;      /** Pointer to navigation action */
 };

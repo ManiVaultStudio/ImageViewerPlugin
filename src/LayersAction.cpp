@@ -128,7 +128,7 @@ LayersAction::Widget::Widget(QWidget* parent, LayersAction* layersAction, const 
 
             auto& layerAction = layer->getLayerAction();
 
-            groupActions << &layerAction.getGeneralAction() << &layerAction.getImageAction();
+            groupActions << &layerAction.getGeneralAction() << &layerAction.getImageAction() << &layerAction.getSelectionAction().getGroupAction();
         }
 
         layersAction->getCurrentLayerAction().set(groupActions);
@@ -152,7 +152,7 @@ LayersAction::Widget::Widget(QWidget* parent, LayersAction* layersAction, const 
         _moveLayerDownAction.setEnabled(selectedRowIndex >= 0 ? selectedRowIndex < treeView->model()->rowCount() - 1 : false);
         _moveLayerToBottomAction.setEnabled(hasSelection && selectedRowIndex < treeView->model()->rowCount() - 1);
 
-        // Render
+        // Rend
         imageViewerPlugin.getImageViewerWidget()->update();
     };
 

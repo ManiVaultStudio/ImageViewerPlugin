@@ -88,6 +88,7 @@ NavigationAction::Widget::Widget(QWidget* parent, NavigationAction* navigationAc
     layout->setSpacing(3);
     layout->setMargin(4);
 
+    layout->addStretch(1);
     layout->addWidget(navigationAction->getZoomOutAction().createWidget(this));
     layout->addWidget(navigationAction->getZoomPercentageAction().createWidget(this));
     layout->addWidget(navigationAction->getZoomInAction().createWidget(this));

@@ -122,7 +122,7 @@ void SelectionProp::render(const QMatrix4x4& modelViewProjectionMatrix)
             throw std::runtime_error("Unable to bind shader program");
 
         // Get reference to selection action
-        auto& selectionAction = _layer.getImageViewerPlugin().getSelectionAction();
+        auto& selectionAction = _layer.getLayerAction().getSelectionAction();
 
         // Configure shader program
         shaderProgram->setUniformValue("channelTextures", 0);

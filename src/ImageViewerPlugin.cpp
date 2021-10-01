@@ -25,7 +25,6 @@ ImageViewerPlugin::ImageViewerPlugin(hdps::plugin::PluginFactory* factory) :
     _dropWidget(nullptr),
     _mainWidget(nullptr),
     _imageViewerWidget(nullptr),
-    _selectionAction(nullptr),
     _settingsAction(nullptr),
     _navigationAction(nullptr)
 {
@@ -46,7 +45,6 @@ void ImageViewerPlugin::init()
 
     _mainWidget         = new QWidget();
     _imageViewerWidget  = new ImageViewerWidget(this, _model);
-    _selectionAction    = new SelectionAction(this, _imageViewerWidget->getPixelSelectionTool());
     _settingsAction     = new SettingsAction(*this);
     _navigationAction   = new NavigationAction(*_imageViewerWidget);
 
@@ -61,7 +59,6 @@ void ImageViewerPlugin::init()
     mainWidgetLayout->setSpacing(0);
 
     // And add the toolbar, image viewer widget
-    mainWidgetLayout->addWidget(_selectionAction->createWidget(this));
     mainWidgetLayout->addWidget(_imageViewerWidget, 1);
     mainWidgetLayout->addWidget(_navigationAction->createWidget(this));
 
@@ -135,6 +132,8 @@ void ImageViewerPlugin::init()
         if (mousePositions.isEmpty())
             return;
 
+        qDebug() << mousePositions;
+
         // Get selected layers model rows
         const auto selectedRows = _selectionModel.selectedRows();
 
@@ -148,9 +147,19 @@ void ImageViewerPlugin::init()
         // Compute the layer selection
         layer->computeSelection(mousePositions);
 
-        // Publish the selection if notifications during selection are turned on or the selection type is sample selection
-        if (_selectionAction->getNotifyDuringSelectionAction().isChecked() || _selectionAction->getTypeAction().getCurrentIndex() == static_cast<std::int32_t>(PixelSelectionType::Sample))
+        // Get reference to the selection action
+        auto& selectionAction = layer->getLayerAction().getSelectionAction();
+
+        // Establish whether the selection type is sample
+        const auto isSampleSelection = layer->getLayerAction().getSelectionAction().getTypeAction().getCurrentIndex() == static_cast<std::int32_t>(PixelSelectionType::Sample);
+
+        // Publish the selection
+        if (selectionAction.getNotifyDuringSelectionAction().isChecked() || isSampleSelection)
             layer->publishSelection();
+
+        // Reset the off-screen selection buffer in the case of sample selection
+        if (isSampleSelection)
+            layer->resetSelectionBuffer();
     });
 
     connect(_imageViewerWidget, &ImageViewerWidget::pixelSelectionEnded, this, [this]() {
@@ -166,8 +175,10 @@ void ImageViewerPlugin::init()
         auto layer = static_cast<Layer*>(selectedRows.first().internalPointer());
 
         // Publish the selection if notifications during selection are turned on
-        if (!_selectionAction->getNotifyDuringSelectionAction().isChecked())
-            layer->publishSelection();
+        layer->publishSelection();
+
+        // Reset the off-screen selection buffer
+        layer->resetSelectionBuffer();
     });
 
     const auto layersInsertedRemovedChanged = [this]() {
@@ -176,8 +187,7 @@ void ImageViewerPlugin::init()
         // Establish the number of visible layers
         const auto hasVisibleLayers = _model.rowCount() == 0 ? false : !_model.match(_model.index(0, LayersModel::Visible), Qt::EditRole, true, -1).isEmpty();
 
-        // Enabled/disable tool bars
-        _selectionAction->setEnabled(hasVisibleLayers);
+        // Enabled/disable navigation tool bar
         _navigationAction->setEnabled(hasVisibleLayers);
     };
 

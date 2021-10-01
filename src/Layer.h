@@ -59,10 +59,16 @@ public: // Selection
     void selectNone();
 
     /** Invert the pixel selection in the image(s) */
-    void invertSelection();
+    void selectInvert();
 
     /** Start the selection */
     void startSelection();
+
+    /**
+     * Reset off-screen selection buffer
+     * @param mousePositions Mouse positions
+     */
+    void resetSelectionBuffer();
 
     /**
      * Compute selection

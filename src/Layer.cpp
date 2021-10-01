@@ -89,7 +89,7 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
     connect(&_layerAction.getImageAction(), &ImageAction::channelChanged, this, updateChannelScalarData);
     connect(&_layerAction.getImageAction().getInterpolationTypeAction(), &OptionAction::currentIndexChanged, this, updateInterpolationType);
     
-    auto& selectionAction = _imageViewerPlugin.getSelectionAction();
+    auto& selectionAction = _layerAction.getSelectionAction();
 
     // Update prop when selection overlay color and opacity change
     connect(&selectionAction.getOverlayColor(), &ColorAction::colorChanged, this, updateProp);
@@ -211,54 +211,17 @@ const QStringList Layer::getDimensionNames() const
 
 void Layer::selectAll()
 {
-    /*
-    auto& selectionIndices = getSelectionIndices();
-
-    selectionIndices.clear();
-    selectionIndices.resize(getNoPixels());
-
-    if (_pointsDataset->isFull()) {
-        std::iota(selectionIndices.begin(), selectionIndices.end(), 0);
-    }
-    else {
-        for (const auto& index : _pointsDataset->indices)
-            selectionIndices.push_back(index);
-    }
-
-    imageViewerPlugin->core()->notifySelectionChanged(_pointsDataset->getName());
-    */
+    _points->selectAll();
 }
 
 void Layer::selectNone()
 {
-    /*
-    auto& selectionIndices = getSelectionIndices();
-
-    selectionIndices.clear();
-
-    imageViewerPlugin->core()->notifySelectionChanged(_pointsDataset->getName());
-    */
+    _points->selectNone();
 }
 
-void Layer::invertSelection()
+void Layer::selectInvert()
 {
-    /*
-    auto& selectionIndices = getSelectionIndices();
-
-    std::set<std::uint32_t> selectionSet(selectionIndices.begin(), selectionIndices.end());
-
-    const auto noPixels = getNoPixels();
-
-    selectionIndices.clear();
-    selectionIndices.reserve(noPixels - selectionSet.size());
-
-    for (int i = 0; i < noPixels; i++) {
-        if (selectionSet.find(i) == selectionSet.end())
-            selectionIndices.push_back(i);
-    }
-
-    imageViewerPlugin->core()->notifySelectionChanged(_pointsDataset->getName());
-    */
+    _points->selectInvert();
 }
 
 void Layer::startSelection()
@@ -303,33 +266,22 @@ void Layer::computeSelection(const QVector<QPoint>& mousePositions)
     }
 }
 
-void Layer::zoomToExtents()
+void Layer::resetSelectionBuffer()
 {
     try {
 
-        qDebug() << "Zoom to layer extents";
-
-        // Get pointer to image layer prop
-        auto layerImageProp = getPropByName<ImageProp>("ImageProp");
-
-        // Zoom to layer extents
-        _imageViewerPlugin.getImageViewerWidget()->getRenderer().zoomToObject(*this);
+        getPropByName<SelectionToolProp>("SelectionToolProp")->resetOffScreenSelectionBuffer();
 
         // Trigger render
         invalidate();
     }
     catch (std::exception& e)
     {
-        exceptionMessageBox("Unable to zoom to layer extents", e);
+        exceptionMessageBox("Unable to reset the off-screen selection buffer", e);
     }
     catch (...) {
-        exceptionMessageBox("Unable to zoom to layer extents");
+        exceptionMessageBox("Unable to reset the off-screen selection buffer");
     }
-}
-
-QRectF Layer::getWorldBoundingRectangle() const
-{
-    return getPropByName<ImageProp>("ImageProp")->getWorldBoundingRectangle();
 }
 
 void Layer::publishSelection()
@@ -424,9 +376,6 @@ void Layer::publishSelection()
         // Notify listeners of the selection change
         getImageViewerPlugin().core()->notifySelectionChanged(_points->isDerivedData() ? _points->getSourceData<Points>(*_points).getName() : _points->getName());
 
-        // Reset the selection tool prop
-        getPropByName<SelectionToolProp>("SelectionToolProp")->resetOffScreenSelectionBuffer();
-
         // Render
         invalidate();
     }
@@ -437,4 +386,33 @@ void Layer::publishSelection()
     catch (...) {
         exceptionMessageBox("Unable to publish selection change");
     }
+}
+
+void Layer::zoomToExtents()
+{
+    try {
+
+        qDebug() << "Zoom to layer extents";
+
+        // Get pointer to image layer prop
+        auto layerImageProp = getPropByName<ImageProp>("ImageProp");
+
+        // Zoom to layer extents
+        _imageViewerPlugin.getImageViewerWidget()->getRenderer().zoomToObject(*this);
+
+        // Trigger render
+        invalidate();
+    }
+    catch (std::exception& e)
+    {
+        exceptionMessageBox("Unable to zoom to layer extents", e);
+    }
+    catch (...) {
+        exceptionMessageBox("Unable to zoom to layer extents");
+    }
+}
+
+QRectF Layer::getWorldBoundingRectangle() const
+{
+    return getPropByName<ImageProp>("ImageProp")->getWorldBoundingRectangle();
 }
