@@ -20,7 +20,7 @@ Renderer::Renderer(QOpenGLWidget* parent) :
     _zoomLevel(1.f),
     _zoomPercentage(1.0f),
     _zoomSensitivity(0.1f),
-    _zoomMargin(0.0f),
+    _zoomMargin(10.0f),
     _worldBoundingRectangle()
 {
 }
@@ -146,9 +146,9 @@ void Renderer::setZoomLevel(const float& zoom)
     // Compute zoom percentage
     const auto screenBoundingRectangle  = getScreenBoundingRectangle(_worldBoundingRectangle);
     const auto viewerSize               = getParentWidgetSize();
-    const auto totalMargins             = _zoomMargin;
-    const auto factorX                  = static_cast<float>(std::abs(screenBoundingRectangle.width())) / (viewerSize.width() - totalMargins);
-    const auto factorY                  = static_cast<float>(std::abs(screenBoundingRectangle.height())) / (viewerSize.height() - totalMargins);
+    const auto totalMargins             = 2 *_zoomMargin;
+    const auto factorX                  = static_cast<float>(std::abs(screenBoundingRectangle.width() - 1)) / static_cast<float>(viewerSize.width() - totalMargins);
+    const auto factorY                  = static_cast<float>(std::abs(screenBoundingRectangle.height() - 1)) / static_cast<float>(viewerSize.height() - totalMargins);
     
     _zoomPercentage = factorX > factorY ? factorX : factorY;
 

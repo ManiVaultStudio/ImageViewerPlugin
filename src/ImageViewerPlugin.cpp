@@ -132,8 +132,6 @@ void ImageViewerPlugin::init()
         if (mousePositions.isEmpty())
             return;
 
-        qDebug() << mousePositions;
-
         // Get selected layers model rows
         const auto selectedRows = _selectionModel.selectedRows();
 

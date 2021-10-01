@@ -52,6 +52,7 @@ GeneralAction::GeneralAction(LayerAction& layerAction) :
     connect(&_scaleAction, &DecimalAction::valueChanged, this, updateBounds);
     connect(&_xPositionAction, &DecimalAction::valueChanged, this, updateBounds);
     connect(&_yPositionAction, &DecimalAction::valueChanged, this, updateBounds);
+    connect(&_colorAction, &ColorAction::colorChanged, this, updateBounds);
 
     updateBounds();
 }
