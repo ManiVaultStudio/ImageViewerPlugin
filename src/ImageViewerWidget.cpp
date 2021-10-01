@@ -10,7 +10,7 @@
 const QMap<ImageViewerWidget::InteractionMode, QString> ImageViewerWidget::interactionModes = {
     { ImageViewerWidget::None, "No interaction" },
     { ImageViewerWidget::Navigation, "Navigation" },
-    { ImageViewerWidget::LayerEditing, "Layer editing" }
+    { ImageViewerWidget::Selection, "Layer editing" }
 };
 
 ImageViewerWidget::ImageViewerWidget(QWidget* parent, LayersModel& layersModel) :
@@ -25,7 +25,7 @@ ImageViewerWidget::ImageViewerWidget(QWidget* parent, LayersModel& layersModel) 
     _mousePositions(),
     _mouseButtons(),
     _renderer(this),
-    _interactionMode(InteractionMode::LayerEditing)
+    _interactionMode(InteractionMode::Selection)
 {
     setContextMenuPolicy(Qt::CustomContextMenu);
     setAcceptDrops(true);
@@ -87,7 +87,7 @@ bool ImageViewerWidget::eventFilter(QObject* target, QEvent* event)
     const auto notifyMousePositionsChanged = [this]() {
 
         // Only notify in layer editing mode
-        if (_interactionMode != LayerEditing)
+        if (_interactionMode != Selection)
             return;
 
         QList<QPoint> uniqueMousePositions;
@@ -144,7 +144,7 @@ bool ImageViewerWidget::eventFilter(QObject* target, QEvent* event)
                     _keys &= ~Qt::Key_Space;
 
                     // Set the render interaction mode to layer editing
-                    setInteractionMode(InteractionMode::LayerEditing);
+                    setInteractionMode(InteractionMode::Selection);
 
                     // Reset mouse positions
                     _mousePositions.clear();
@@ -173,7 +173,7 @@ bool ImageViewerWidget::eventFilter(QObject* target, QEvent* event)
                     break;
                 }
 
-                case LayerEditing:
+                case Selection:
                 {
                     switch (_pixelSelectionTool.getType())
                     {
@@ -237,7 +237,7 @@ bool ImageViewerWidget::eventFilter(QObject* target, QEvent* event)
                     break;
                 }
 
-                case LayerEditing:
+                case Selection:
                 {
                     auto mouseEvent = static_cast<QMouseEvent*>(event);
 
@@ -294,7 +294,7 @@ bool ImageViewerWidget::eventFilter(QObject* target, QEvent* event)
                     break;
                 }
 
-                case LayerEditing:
+                case Selection:
                 {
                     switch (_pixelSelectionTool.getType())
                     {
@@ -509,13 +509,16 @@ void ImageViewerWidget::setInteractionMode(const InteractionMode& interactionMod
     _interactionMode = interactionMode;
 
     // Enable/disable the pixel selection tool depending on the interaction mode
-    _pixelSelectionTool.setEnabled(_interactionMode == LayerEditing);
+    _pixelSelectionTool.setEnabled(_interactionMode == Selection);
 
     // Provide a visual cursor cue
-    setCursor(_interactionMode == LayerEditing ? Qt::ArrowCursor : Qt::OpenHandCursor);
+    setCursor(_interactionMode == Selection ? Qt::ArrowCursor : Qt::OpenHandCursor);
 
     // Render
     update();
+
+    // Notify others that the interaction mode changed
+    emit interactionModeChanged(_interactionMode);
 }
 
 QRectF ImageViewerWidget::getWorldBoundingRectangle() const

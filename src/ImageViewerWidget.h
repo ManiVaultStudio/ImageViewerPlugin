@@ -33,7 +33,7 @@ public:
     {
         None,               /** No interaction takes place */
         Navigation,         /** The image view position and zoom are manipulated */
-        LayerEditing        /** Layer editing interaction */
+        Selection        /** Layer editing interaction */
     };
 
     /** Maps interaction mode enum to name */
@@ -121,6 +121,12 @@ signals:
 
     /** Signals that pixel selection process ended */
     void pixelSelectionEnded();
+
+    /**
+     * Signals that the interaction mode changed
+     * @param interactionMode Interaction mode
+     */
+    void interactionModeChanged(const InteractionMode& interactionMode);
 
 protected:
     LayersModel&                            _layersModel;               /** Reference to layers model */

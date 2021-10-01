@@ -20,7 +20,7 @@ Renderer::Renderer(QOpenGLWidget* parent) :
     _zoomLevel(1.f),
     _zoomPercentage(1.0f),
     _zoomSensitivity(0.1f),
-    _zoomMargin(10.0f),
+    _zoomMargin(25.0f),
     _worldBoundingRectangle()
 {
 }

@@ -70,19 +70,22 @@ public:
 
 public: // Action getters
 
+    ToggleAction& getPanAction() { return _panAction; }
+    ToggleAction& getSelectAction() { return _selectAction; }
     TriggerAction& getZoomOutAction() { return _zoomOutAction; }
     DecimalAction& getZoomPercentageAction() { return _zoomPercentageAction; }
     TriggerAction& getZoomInAction() { return _zoomInAction; }
     TriggerAction& getZoomExtentsAction() { return _zoomExtentsAction; }
-    ToggleAction& getPanAction() { return _panAction; }
 
 protected:
-    ImageViewerWidget&  _imageViewerWidget;         /** Reference to image viewer widget */
-    TriggerAction       _zoomOutAction;             /** Zoom out action */
-    DecimalAction       _zoomPercentageAction;                /** Zoom action */
-    TriggerAction       _zoomInAction;              /** Zoom in action */
-    TriggerAction       _zoomExtentsAction;         /** Zoom extents action */
-    ToggleAction        _panAction;                 /** Pan action */
+    ImageViewerWidget&  _imageViewerWidget;             /** Reference to image viewer widget */
+    TriggerAction       _zoomOutAction;                 /** Zoom out action */
+    DecimalAction       _zoomPercentageAction;          /** Zoom action */
+    TriggerAction       _zoomInAction;                  /** Zoom in action */
+    TriggerAction       _zoomExtentsAction;             /** Zoom extents action */
+    ToggleAction        _panAction;                     /** Pan interaction mode action */
+    ToggleAction        _selectAction;                  /** Select interaction mode action */
+    QActionGroup        _interactionModeActionGroup;    /** Interaction mode action group */
 
     static const float zoomDeltaPercentage;
 };
