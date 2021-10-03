@@ -2,7 +2,6 @@
 #include "LayerAction.h"
 #include "Layer.h"
 
-#include "actions/PixelSelectionTypeAction.h"
 #include "util/PixelSelectionTool.h"
 
 #include "Application.h"
