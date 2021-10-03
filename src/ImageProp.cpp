@@ -78,9 +78,6 @@ void ImageProp::initialize()
             }
             shape->getVBO().release();
 
-            // Create quad with image size
-            setImageSize(_layer.getImageSize());
-
             _initialized = true;
         }
         getRenderer().releaseOpenGLContext();
@@ -165,27 +162,6 @@ void ImageProp::render(const QMatrix4x4& modelViewProjectionMatrix)
     }
 }
 
-void ImageProp::setImageSize(const QSize& imageSize)
-{
-    try {
-        // Compute quad rectangle
-        const auto quadShapeRectangle = QRectF(QPointF(0.f, 0.f), QSizeF(imageSize));
-
-        // Assign the rectangle to the quad shape
-        getShapeByName<QuadShape>("Quad")->setRectangle(quadShapeRectangle);
-
-        // Update the model matrix
-        updateModelMatrix();
-    }
-    catch (std::exception& e)
-    {
-        exceptionMessageBox("Set layer image prop image size failed", e);
-    }
-    catch (...) {
-        exceptionMessageBox("Set layer image prop image size failed");
-    }
-}
-
 void ImageProp::setColorMapImage(const QImage& colorMapImage)
 {
     try {
@@ -219,7 +195,7 @@ void ImageProp::setColorMapImage(const QImage& colorMapImage)
     }
 }
 
-void ImageProp::setChannelScalarData(const std::uint32_t& channelIndex, const std::vector<float>& scalarData, const DisplayRange& displayRange)
+void ImageProp::setChannelScalarData(const std::uint32_t& channelIndex, const QRect& sourceImageRectangle, const QRect& targetImageRectangle, const QSize& imageSize, const QVector<float>& scalarData, const DisplayRange& displayRange)
 {
     try {
         if (channelIndex > 3)
@@ -227,9 +203,6 @@ void ImageProp::setChannelScalarData(const std::uint32_t& channelIndex, const st
 
         getRenderer().bindOpenGLContext();
         {
-            // Get image size from quad shape
-            const auto imageSize = getShapeByName<QuadShape>("Quad")->getImageSize();
-
             // Only proceed if the image size is valid (non-zero in x/y)
             if (!imageSize.isValid())
                 return;
@@ -263,6 +236,23 @@ void ImageProp::setChannelScalarData(const std::uint32_t& channelIndex, const st
 
             // Assign the scalar data to the texture
             texture->setData(0, channelIndex, QOpenGLTexture::PixelFormat::Red, QOpenGLTexture::PixelType::Float32, scalarData.data());
+
+            // Compute quad rectangle
+
+            // Assign the rectangle to the quad shape
+            getShapeByName<QuadShape>("Quad")->setRectangle(targetImageRectangle);
+
+            // Update the model matrix
+            QMatrix4x4 modelMatrix;
+
+            // Get quad shape
+            const auto rectangle = getShapeByName<QuadShape>("Quad")->getRectangle();
+
+            // Compute the  model matrix
+            modelMatrix.translate(-sourceImageRectangle.center().x(), -sourceImageRectangle.center().y(), 0.0f);
+
+            // Assign model matrix
+            setModelMatrix(modelMatrix);
         }
         getRenderer().releaseOpenGLContext();
     }
@@ -322,18 +312,4 @@ QRectF ImageProp::getWorldBoundingRectangle() const
     const auto worldBottomRight     = matrix * boundingRectangle.bottomRight();
 
     return QRectF(worldTopLeft, worldBottomRight);
-}
-
-void ImageProp::updateModelMatrix()
-{
-    QMatrix4x4 modelMatrix;
-
-    // Get quad shape
-    const auto rectangle = getShapeByName<QuadShape>("Quad")->getRectangle();
-
-    // Compute the  model matrix
-    modelMatrix.translate(-0.5f * rectangle.width(), -0.5f * rectangle.height(), 0.0f);
-
-    // Assign model matrix
-    setModelMatrix(modelMatrix);
 }

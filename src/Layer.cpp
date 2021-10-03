@@ -48,7 +48,7 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
             case ChannelAction::Mask:
             {
                 // Assign the scalar data to the prop
-                this->getPropByName<ImageProp>("ImageProp")->setChannelScalarData(channelAction.getIndex(), channelAction.getScalarData(), channelAction.getDisplayRange());
+                this->getPropByName<ImageProp>("ImageProp")->setChannelScalarData(channelAction.getIndex(), _images->getSourceRectangle(), _images->getTargetRectangle(), channelAction.getImageSize(), channelAction.getScalarData(), channelAction.getDisplayRange());
 
                 break;
             }

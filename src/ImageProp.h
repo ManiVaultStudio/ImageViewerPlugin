@@ -22,8 +22,8 @@ class ImageProp : public Prop
 
 public:
 
-    using DisplayRange  = std::pair<float, float>;
-    using DisplayRanges = std::vector<DisplayRange>;
+    using DisplayRange  = QPair<float, float>;
+    using DisplayRanges = QVector<DisplayRange>;
 
 public: // Enumerations
 
@@ -57,12 +57,6 @@ public: // Rendering
     void render(const QMatrix4x4& modelViewProjectionMatrix) override;
 
     /**
-     * Set image size
-     * @param imageSize Image size
-     */
-    void setImageSize(const QSize& imageSize);
-
-    /**
      * Set the color map image
      * @param colorMapImage Color map image
      */
@@ -71,10 +65,13 @@ public: // Rendering
     /**
      * Set channel scalar data
      * @param channelIndex Channel index
+     * @param sourceImageRectangle Source image rectangle
+     * @param targetImageRectangle Target image rectangle
+     * @param imageSize Image size
      * @param scalarData Scalar data
      * @param displayRange Display range
      */
-    void setChannelScalarData(const std::uint32_t& channelIndex, const std::vector<float>& scalarData, const DisplayRange& displayRange);
+    void setChannelScalarData(const std::uint32_t& channelIndex, const QRect& sourceImageRectangle, const QRect& targetImageRectangle, const QSize& imageSize, const QVector<float>& scalarData, const DisplayRange& displayRange);
 
     /**
      * Set image interpolation type
@@ -84,9 +81,6 @@ public: // Rendering
 
     /** Returns the bounding rectangle of the prop */
     QRectF getWorldBoundingRectangle() const override;
-
-    /** Updates the internal model matrix */
-    void updateModelMatrix();
 
     /** Initializes the prop */
     void initialize() override;

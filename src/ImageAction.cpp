@@ -13,6 +13,7 @@ ImageAction::ImageAction(LayerAction& layerAction) :
     EventListener(),
     _layerAction(layerAction),
     _opacityAction(this, "Opacity", 0.0f, 100.0f, 100.0f, 100.0f, 1),
+    _subsampleFactorAction(this, "Subsample factor", 1, 8, 1, 1),
     _colorSpaceAction(this, "Color space", colorSpaces.values(), "Mono", "Mono"),
     _channel1Action(*this, ChannelAction::Channel1, ChannelAction::channelIndexes.value(ChannelAction::Channel1)),
     _channel2Action(*this, ChannelAction::Channel2, ChannelAction::channelIndexes.value(ChannelAction::Channel2)),
@@ -31,6 +32,7 @@ ImageAction::ImageAction(LayerAction& layerAction) :
     _channelSelectionAction.setVisible(false);
 
     _opacityAction.setToolTip("Image layer opacity");
+    _subsampleFactorAction.setToolTip("Subsampling factor");
     _channel1Action.setToolTip("Channel 1");
     _channel2Action.setToolTip("Channel 2");
     _channel3Action.setToolTip("Channel 3");
@@ -42,18 +44,6 @@ ImageAction::ImageAction(LayerAction& layerAction) :
     _constantColorAction.setToolTip("Constant color");
 
     _opacityAction.setSuffix("%");
-
-    /*
-    _opacityAction.setDefaultWidgetFlags(DecimalAction::All);
-    _channel1Action.setDefaultWidgetFlags(ChannelAction::All);
-    _channel2Action.setDefaultWidgetFlags(ChannelAction::All);
-    _channel3Action.setDefaultWidgetFlags(ChannelAction::All);
-    _colorSpaceAction.setDefaultWidgetFlags(OptionAction::All);
-    _colorMapAction.setDefaultWidgetFlags(ColorMapAction::Settings | ColorMapAction::ResetPushButton);
-    _interpolationTypeAction.setDefaultWidgetFlags(OptionAction::All);
-    _useConstantColorAction.setDefaultWidgetFlags(ToggleAction::CheckBoxAndResetPushButton);
-    _constantColorAction.setDefaultWidgetFlags(ColorAction::All);
-    */
 
     _colorMapAction.setColorMapType(ColorMap::Type::TwoDimensional);
 
@@ -161,20 +151,14 @@ ImageAction::ImageAction(LayerAction& layerAction) :
         emit channelChanged(_channelSelectionAction);
     });
 
-    // Flag as changed when the opacity changes
-    connect(&_opacityAction, &DecimalAction::valueChanged, this, [this]() {
+    const auto render = [this]() {
         _layerAction.getLayer().invalidate();
-    });
+    };
 
-    // Flag as changed when the interpolation type changes
-    connect(&_interpolationTypeAction, &OptionAction::currentIndexChanged, this, [this]() {
-        _layerAction.getLayer().invalidate();
-    });
-
-    // Flag as changed when the constant color changes
-    connect(&_constantColorAction, &ColorAction::colorChanged, this, [this]() {
-        _layerAction.getLayer().invalidate();
-    });
+    connect(&_opacityAction, &DecimalAction::valueChanged, this, render);
+    connect(&_subsampleFactorAction, &IntegralAction::valueChanged, this, render);
+    connect(&_interpolationTypeAction, &OptionAction::currentIndexChanged, this, render);
+    connect(&_constantColorAction, &ColorAction::colorChanged, this, render);
 
     // Re-compute the selection channel when the selection changes
     registerDataEventByType(PointType, [this](hdps::DataEvent* dataEvent) {

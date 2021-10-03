@@ -40,6 +40,7 @@ public: // Action getters
 
     LayerAction& getLayerAction() { return _layerAction; }
     DecimalAction& getOpacityAction() { return _opacityAction; }
+    IntegralAction& getSubsampleFactorAction() { return _subsampleFactorAction; }
     OptionAction& getColorSpaceAction() { return _colorSpaceAction; }
     ChannelAction& getChannel1Action() { return _channel1Action; }
     ChannelAction& getChannel2Action() { return _channel2Action; }
@@ -65,6 +66,7 @@ signals:
 protected:
     LayerAction&        _layerAction;                   /** Reference to layer action */
     DecimalAction       _opacityAction;                 /** Opacity action */
+    IntegralAction      _subsampleFactorAction;         /** Subsample factor action */
     OptionAction        _colorSpaceAction;              /** Color space action */
     ChannelAction       _channel1Action;                /** Channel 1 action */
     ChannelAction       _channel2Action;                /** Channel 2 action */

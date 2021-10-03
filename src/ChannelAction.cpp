@@ -3,6 +3,8 @@
 #include "ImageAction.h"
 #include "Layer.h"
 
+#include "util//Exception.h"
+
 #include <QHBoxLayout>
 #include <QCheckBox>
 
@@ -22,7 +24,7 @@ ChannelAction::ChannelAction(ImageAction& layerImageAction, const ChannelIndex& 
     _index(index),
     _enabledAction(this, "Enabled"),
     _dimensionAction(this, "Dimension"),
-    _windowLevelAction(*this),
+    _windowLevelAction(this),
     _scalarData(),
     _scalarDataRange({0.0f, 0.0f}),
     _selectionData()
@@ -51,35 +53,42 @@ ChannelAction::ChannelAction(ImageAction& layerImageAction, const ChannelIndex& 
         computeScalarData();
     });
 
+    connect(&_layerImageAction.getSubsampleFactorAction(), &IntegralAction::valueChanged, this, [this]() {
+        computeScalarData();
+    });
+
     // Compute scalar data when the action is enabled
     connect(this, &QAction::changed, this, [this]() -> void {
         computeScalarData();
     });
 
-    // Get number of pixels
-    const auto numberOfPixels = getImages()->getNumberOfPixels();
+    const auto resizeScalars = [this]() {
 
-    // Allocate space for the scalar data
-    switch (_index)
-    {
-        case Channel1:
-        case Channel2:
-        case Channel3:
-        case Mask:
+        // Get number of pixels
+        const auto numberOfPixels = getImages()->getNumberOfPixels();
+
+        // Allocate space for the scalar data
+        switch (_index)
         {
-            _scalarData.resize(numberOfPixels);
-            break;
-        }
+            case Channel1:
+            case Channel2:
+            case Channel3:
+            case Mask:
+            {
+                _scalarData.resize(numberOfPixels);
+                break;
+            }
 
-        case Selection:
-        {
-            _selectionData.resize(numberOfPixels);
-            break;
-        }
+            case Selection:
+            {
+                _selectionData.resize(getImages()->getNumberOfPixels());
+                break;
+            }
 
-        default:
-            break;
-    }
+            default:
+                break;
+        }
+    };
 
     const auto updateEnabled = [this]() -> void {
         setEnabled(_enabledAction.isChecked());
@@ -92,7 +101,11 @@ ChannelAction::ChannelAction(ImageAction& layerImageAction, const ChannelIndex& 
         emit changed(*this);
     });
 
+    // Flag as changed when the window level settings change
+    connect(&_layerImageAction.getSubsampleFactorAction(), &IntegralAction::valueChanged, this, resizeScalars);
+
     updateEnabled();
+    resizeScalars();
 
     computeScalarData();
 }
@@ -102,19 +115,27 @@ const ChannelAction::ChannelIndex ChannelAction::getIndex() const
     return _index;
 }
 
-const std::vector<float>& ChannelAction::getScalarData() const
+QSize ChannelAction::getImageSize()
+{
+    const auto imageSize        = getImages()->getImageSize();
+    const auto subsampleFactor  = _layerImageAction.getSubsampleFactorAction().getValue();
+    
+    return QSize(static_cast<int>(floorf(imageSize.width() / subsampleFactor)), static_cast<int>(floorf(imageSize.width() / subsampleFactor)));
+}
+
+const QVector<float>& ChannelAction::getScalarData() const
 {
     return _scalarData;
 }
 
-const std::pair<float, float>& ChannelAction::getScalarDataRange() const
+const QPair<float, float>& ChannelAction::getScalarDataRange() const
 {
     return _scalarDataRange;
 }
 
-std::pair<float, float> ChannelAction::getDisplayRange()
+QPair<float, float> ChannelAction::getDisplayRange()
 {
-    std::pair<float, float> displayRange;
+    QPair<float, float> displayRange;
 
     const auto maxWindow        = _scalarDataRange.second - _scalarDataRange.first;
     const auto windowNormalized = _windowLevelAction.getWindowAction().getValue();
@@ -181,19 +202,7 @@ void ChannelAction::computeScalarData()
                 if (_dimensionAction.getCurrentIndex() < 0)
                     break;
 
-                switch (getImages()->getType())
-                {
-                    case ImageData::Sequence:
-                        computeScalarDataForImageSequence();
-                        break;
-
-                    case ImageData::Stack:
-                        computeScalarDataForImageStack();
-                        break;
-
-                    default:
-                        break;
-                }
+                getImages()->getScalarData(_dimensionAction.getCurrentIndex(), _scalarData, _scalarDataRange, _layerImageAction.getSubsampleFactorAction().getValue());
 
                 break;
             }
@@ -214,88 +223,15 @@ void ChannelAction::computeScalarData()
                 break;
         }
 
-        // Compute scalar data range for the first three channels
-        switch (_index)
-        {
-            case Channel1:
-            case Channel2:
-            case Channel3:
-            case Mask:
-                computeScalarDataRange();
-                break;
-
-            case Selection:
-                break;
-
-            default:
-                break;
-        }
-
         // Publish scalar data change
         emit changed(*this);
     }
     catch (std::exception& e)
     {
-        QMessageBox::critical(nullptr, "Unable to compute scalar data", e.what());
+        exceptionMessageBox("Unable to compute scalar data", e);
     }
     catch (...) {
-        QMessageBox::critical(nullptr, "Unable to compute scalar data", "An unhandled exception occurred");
-    }
-}
-
-void ChannelAction::computeScalarDataForImageSequence()
-{
-    qDebug() << "Compute image sequence scalar for channel" << _index;
-
-    getPoints()->visitData([this](auto pointData) {
-        const auto dimensionId      = _dimensionAction.getCurrentIndex();
-        const auto imageSize        = _layerImageAction.getLayerAction().getLayer().getImageSize();
-        const auto noPixels         = getImages()->getNumberOfPixels();
-        const auto selectionIndices = getSelectionIndices();
-        const auto selectionSize    = selectionIndices.size();
-
-        if (!selectionIndices.empty()) {
-            for (std::uint32_t p = 0; p < noPixels; p++) {
-                auto sum = 0.0f;
-
-                for (auto selectionIndex : selectionIndices)
-                    sum += pointData[selectionIndex][p];
-
-                _scalarData[p] = static_cast<float>(sum / selectionSize);
-            }
-        }
-        else {
-            for (std::uint32_t p = 0; p < noPixels; p++)
-                _scalarData[p] = pointData[dimensionId][p];
-        }
-    });
-}
-
-void ChannelAction::computeScalarDataForImageStack()
-{
-    qDebug() << "Compute image stack scalars for channel" << _index;
-
-    const auto dimensionId = _dimensionAction.getCurrentIndex();
-
-    if (getPoints()->isDerivedData()) {
-        getPoints()->visitData([this, dimensionId](auto pointData) {
-            auto& sourceData = getPoints()->getSourceData<Points>(*getPoints());
-            
-            if (sourceData.isFull()) {
-                for (std::uint32_t i = 0; i < getPoints()->getNumPoints(); i++)
-                    _scalarData[i] = pointData[i][dimensionId];
-            }
-            else {
-                for (int i = 0; i < sourceData.indices.size(); i++)
-                    _scalarData[sourceData.indices[i]] = pointData[i][dimensionId];
-            }
-        });
-    }
-    else {
-        getPoints()->visitSourceData([this, dimensionId](auto pointData) {
-            for (auto pointView : pointData)
-                _scalarData[pointView.index()] = pointView[dimensionId];
-        });
+        exceptionMessageBox("Unable to compute scalar data");
     }
 }
 
@@ -340,20 +276,6 @@ void ChannelAction::computeSelectionChannel()
     // Assign selected pixels
     for (auto selectionIndex : getSelectionIndices())
         _selectionData[selectionIndex] = 255;
-}
-
-void ChannelAction::computeScalarDataRange()
-{
-    qDebug() << "Compute scalar range for channel" << _index;
-
-    // Initialize scalar data range
-    _scalarDataRange = { std::numeric_limits<float>::max(), std::numeric_limits<float>::lowest() };
-
-    // Compute the actual scalar data range
-    for (auto& scalar : _scalarData) {
-        _scalarDataRange.first  = std::min(scalar, _scalarDataRange.first);
-        _scalarDataRange.second = std::max(scalar, _scalarDataRange.second);
-    }
 }
 
 QWidget* ChannelAction::getWidget(QWidget* parent, const std::int32_t& widgetFlags, const WidgetActionWidget::State& state /*= WidgetActionWidget::State::Standard*/)

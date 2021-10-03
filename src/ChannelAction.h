@@ -1,10 +1,9 @@
 #pragma once
 
-#include "WindowLevelAction.h"
-
 #include "actions/WidgetAction.h"
 #include "actions/ToggleAction.h"
 #include "actions/OptionAction.h"
+#include "actions/WindowLevelAction.h"
 
 #include "util/DatasetRef.h"
 
@@ -80,16 +79,19 @@ public:
     /** Get the channel index */
     const ChannelIndex getIndex() const;
 
+    /** Get image size */
+    QSize getImageSize();
+
 public: // Scalar data
 
     /** Get scalar data */
-    const std::vector<float>& getScalarData() const;
+    const QVector<float>& getScalarData() const;
 
     /** Get scalar data range */
-    const std::pair<float, float>& getScalarDataRange() const;
+    const QPair<float, float>& getScalarDataRange() const;
 
     /** Get display range */
-    std::pair<float, float> getDisplayRange();
+    QPair<float, float> getDisplayRange();
 
     /** Get selection data */
     const std::vector<std::uint8_t>& getSelectionData() const;
@@ -108,20 +110,11 @@ protected: // Data extraction
     /** Compute scalar data for image sequence */
     void computeScalarData();
 
-    /** Compute scalar data for image sequence */
-    void computeScalarDataForImageSequence();
-
-    /** Compute scalar data for image stack */
-    void computeScalarDataForImageStack();
-
     /** Compute mask channel */
     void computeMaskChannel();
 
     /** Compute selection channel */
     void computeSelectionChannel();
-
-    /** Compute scalar data range */
-    void computeScalarDataRange();
 
 signals:
     
@@ -135,13 +128,13 @@ public: /** Action getters */
     WindowLevelAction& getWindowLevelAction() { return _windowLevelAction; }
 
 protected:
-    ImageAction&           _layerImageAction;      /** Reference to layer image action */
+    ImageAction&                _layerImageAction;      /** Reference to layer image action */
     const ChannelIndex          _index;                 /** Channel index */
     ToggleAction                _enabledAction;         /** Enabled action */
     OptionAction                _dimensionAction;       /** Selected dimension action */
     WindowLevelAction           _windowLevelAction;     /** Window/level action */
-    std::vector<float>          _scalarData;            /** Channel scalar data for the specified dimension */
-    std::pair<float, float>     _scalarDataRange;       /** Scalar data range */
+    QVector<float>              _scalarData;            /** Channel scalar data for the specified dimension */
+    QPair<float, float>         _scalarDataRange;       /** Scalar data range */
     std::vector<std::uint8_t>   _selectionData;         /** Selection data */
 
     friend class ImageAction;
