@@ -31,6 +31,9 @@ public:
 
 public:
 
+    /** Initializes the prop */
+    void initialize() override;
+
     /**
      * Renders the prop
      * @param modelViewProjectionMatrix Model view projection matrix
@@ -61,12 +64,6 @@ public: // Pixel selection
 
     /** Returns the pixel selection in image format */
     QImage getSelectionImage();
-
-
-protected: // Inherited
-
-    /** Initializes the prop */
-    void initialize() override;
 
 private: // Shader programs
 

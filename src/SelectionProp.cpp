@@ -163,7 +163,25 @@ QRectF SelectionProp::getWorldBoundingRectangle() const
     return QRectF(worldTopLeft, worldBottomRight);
 }
 
-void SelectionProp::setSelectionData(const QRect& sourceImageRectangle, const QRect& targetImageRectangle, const QSize& imageSize, const std::vector<std::uint8_t>& selectionData)
+void SelectionProp::setGeometry(const QRect& sourceImageRectangle, const QRect& targetImageRectangle, const QSize& imageSize)
+{
+    // Assign the rectangle to the quad shape
+    getShapeByName<QuadShape>("Quad")->setRectangle(targetImageRectangle);
+
+    // Update the model matrix
+    QMatrix4x4 modelMatrix;
+
+    // Get quad shape
+    const auto rectangle = getShapeByName<QuadShape>("Quad")->getRectangle();
+
+    // Compute the  model matrix
+    modelMatrix.translate(-sourceImageRectangle.center().x(), -sourceImageRectangle.center().y(), 0.0f);
+
+    // Assign model matrix
+    setModelMatrix(modelMatrix);
+}
+
+void SelectionProp::setSelectionData(const std::vector<std::uint8_t>& selectionData)
 {
     try {
         getRenderer().bindOpenGLContext();
@@ -200,21 +218,6 @@ void SelectionProp::setSelectionData(const QRect& sourceImageRectangle, const QR
 
             // Assign texture data
             texture->setData(0, 0, QOpenGLTexture::PixelFormat::Red, QOpenGLTexture::PixelType::UInt8, selectionData.data(), &options);
-
-            // Assign the rectangle to the quad shape
-            getShapeByName<QuadShape>("Quad")->setRectangle(targetImageRectangle);
-
-            // Update the model matrix
-            QMatrix4x4 modelMatrix;
-
-            // Get quad shape
-            const auto rectangle = getShapeByName<QuadShape>("Quad")->getRectangle();
-
-            // Compute the  model matrix
-            modelMatrix.translate(-sourceImageRectangle.center().x(), -sourceImageRectangle.center().y(), 0.0f);
-
-            // Assign model matrix
-            setModelMatrix(modelMatrix);
         }
         getRenderer().releaseOpenGLContext();
     }

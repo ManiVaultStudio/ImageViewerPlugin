@@ -27,6 +27,9 @@ public:
     /** Destructor */
     ~SelectionProp() = default;
 
+    /** Initializes the prop */
+    void initialize() override;
+
     /**
      * Renders the prop
      * @param modelViewProjectionMatrix Model view projection matrix
@@ -36,17 +39,19 @@ public:
     /** Get the bounding rectangle of the prop in world coordinates */
     QRectF getWorldBoundingRectangle() const override;
 
-    /** Initializes the prop */
-    void initialize() override;
-
     /**
-     * Set selection data
+     * Set the geometry
      * @param sourceImageRectangle Source image rectangle
      * @param targetImageRectangle Target image rectangle
      * @param imageSize Image size
+     */
+    void setGeometry(const QRect& sourceImageRectangle, const QRect& targetImageRectangle, const QSize& imageSize);
+
+    /**
+     * Set selection data
      * @param selectionData Selection data
      */
-    void setSelectionData(const QRect& sourceImageRectangle, const QRect& targetImageRectangle, const QSize& imageSize, const std::vector<std::uint8_t>& selectionData);
+    void setSelectionData(const std::vector<std::uint8_t>& selectionData);
 
 protected:
     Layer&      _layer;     /** Reference to layer */

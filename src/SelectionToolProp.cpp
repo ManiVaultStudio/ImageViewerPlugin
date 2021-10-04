@@ -98,6 +98,49 @@ void SelectionToolProp::render(const QMatrix4x4& modelViewProjectionMatrix)
     }
 }
 
+QRectF SelectionToolProp::getWorldBoundingRectangle() const
+{
+    return getShapeByName<QuadShape>("Quad")->getRectangle();
+}
+
+void SelectionToolProp::setGeometry(const QRect& sourceImageRectangle, const QRect& targetImageRectangle, const QSize& imageSize)
+{
+    try {
+        getRenderer().bindOpenGLContext();
+        {
+            // Assign the rectangle to the quad shape
+            getShapeByName<QuadShape>("Quad")->setRectangle(targetImageRectangle);
+
+            // Update the model matrix
+            QMatrix4x4 modelMatrix;
+
+            // Compute the  model matrix
+            modelMatrix.translate(-sourceImageRectangle.center().x(), -sourceImageRectangle.center().y(), 0.0f);
+
+            // Assign model matrix
+            setModelMatrix(modelMatrix);
+
+            // Create FBO when none exists
+            if (_fbo.isNull()) {
+
+                // Except if image size is invalid
+                if (!imageSize.isValid())
+                    throw std::runtime_error("Image size not valid");
+
+                _fbo.reset(new QOpenGLFramebufferObject(imageSize.width(), imageSize.height()));
+            }
+        }
+        getRenderer().releaseOpenGLContext();
+    }
+    catch (std::exception& e)
+    {
+        exceptionMessageBox("Selection prop set geometry failed", e);
+    }
+    catch (...) {
+        exceptionMessageBox("Selection prop set geometry failed");
+    }
+}
+
 void SelectionToolProp::compute(const QVector<QPoint>& mousePositions)
 {
     try {
@@ -291,49 +334,6 @@ void SelectionToolProp::resetOffScreenSelectionBuffer()
     }
     catch (...) {
         exceptionMessageBox("Selection prop off-screen image buffer reset failed");
-    }
-}
-
-QRectF SelectionToolProp::getWorldBoundingRectangle() const
-{
-    return getShapeByName<QuadShape>("Quad")->getRectangle();
-}
-
-void SelectionToolProp::setGeometry(const QRect& sourceImageRectangle, const QRect& targetImageRectangle, const QSize& imageSize)
-{
-    try {
-        getRenderer().bindOpenGLContext();
-        {
-            // Assign the rectangle to the quad shape
-            getShapeByName<QuadShape>("Quad")->setRectangle(targetImageRectangle);
-
-            // Update the model matrix
-            QMatrix4x4 modelMatrix;
-
-            // Compute the  model matrix
-            modelMatrix.translate(-sourceImageRectangle.center().x(), -sourceImageRectangle.center().y(), 0.0f);
-
-            // Assign model matrix
-            setModelMatrix(modelMatrix);
-
-            // Create FBO when none exists
-            if (_fbo.isNull()) {
-
-                // Except if image size is invalid
-                if (!imageSize.isValid())
-                    throw std::runtime_error("Image size not valid");
-
-                _fbo.reset(new QOpenGLFramebufferObject(imageSize.width(), imageSize.height()));
-            }
-        }
-        getRenderer().releaseOpenGLContext();
-    }
-    catch (std::exception& e)
-    {
-        exceptionMessageBox("Selection prop set geometry failed", e);
-    }
-    catch (...) {
-        exceptionMessageBox("Selection prop set geometry failed");
     }
 }
 
