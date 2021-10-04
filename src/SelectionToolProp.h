@@ -49,7 +49,7 @@ public:
      * @param targetImageRectangle Target image rectangle
      * @param imageSize Image size
      */
-    void setGeometry(const QRect& sourceImageRectangle, const QRect& targetImageRectangle, const QSize& imageSize);
+    void setGeometry(const QRect& sourceImageRectangle, const QRect& targetImageRectangle);
 
 public: // Pixel selection
 

@@ -103,7 +103,7 @@ QRectF SelectionToolProp::getWorldBoundingRectangle() const
     return getShapeByName<QuadShape>("Quad")->getRectangle();
 }
 
-void SelectionToolProp::setGeometry(const QRect& sourceImageRectangle, const QRect& targetImageRectangle, const QSize& imageSize)
+void SelectionToolProp::setGeometry(const QRect& sourceImageRectangle, const QRect& targetImageRectangle)
 {
     try {
         getRenderer().bindOpenGLContext();
@@ -123,11 +123,8 @@ void SelectionToolProp::setGeometry(const QRect& sourceImageRectangle, const QRe
             // Create FBO when none exists
             if (_fbo.isNull()) {
 
-                // Except if image size is invalid
-                if (!imageSize.isValid())
-                    throw std::runtime_error("Image size not valid");
-
-                _fbo.reset(new QOpenGLFramebufferObject(imageSize.width(), imageSize.height()));
+                // Create the FBO
+                _fbo.reset(new QOpenGLFramebufferObject(targetImageRectangle.width(), targetImageRectangle.height()));
             }
         }
         getRenderer().releaseOpenGLContext();
@@ -146,6 +143,14 @@ void SelectionToolProp::compute(const QVector<QPoint>& mousePositions)
     try {
         getRenderer().bindOpenGLContext();
         {
+            // Check if FBO is created
+            if (_fbo.isNull())
+                throw std::runtime_error("FBO not created");
+
+            // Check if FBO is valid
+            if (!_fbo->isValid())
+                throw std::runtime_error("FBO not valid");
+
             // Bind FBO for off-screen rendering
             if (!_fbo->bind())
                 throw std::runtime_error("Unable to bind FBO");

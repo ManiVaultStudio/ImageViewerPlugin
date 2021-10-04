@@ -50,11 +50,24 @@ public: // Construction/destruction
 
 public: // Rendering
 
+    /** Initializes the prop */
+    void initialize() override;
+
     /**
      * Renders the prop
      * @param modelViewProjectionMatrix Model view projection matrix
      */
     void render(const QMatrix4x4& modelViewProjectionMatrix) override;
+
+    /** Returns the bounding rectangle of the prop */
+    QRectF getWorldBoundingRectangle() const override;
+
+    /**
+     * Set the geometry
+     * @param sourceImageRectangle Source image rectangle
+     * @param targetImageRectangle Target image rectangle
+     */
+    void setGeometry(const QRect& sourceImageRectangle, const QRect& targetImageRectangle);
 
     /**
      * Set the color map image
@@ -65,25 +78,17 @@ public: // Rendering
     /**
      * Set channel scalar data
      * @param channelIndex Channel index
-     * @param sourceImageRectangle Source image rectangle
-     * @param targetImageRectangle Target image rectangle
      * @param imageSize Image size
      * @param scalarData Scalar data
      * @param displayRange Display range
      */
-    void setChannelScalarData(const std::uint32_t& channelIndex, const QRect& sourceImageRectangle, const QRect& targetImageRectangle, const QSize& imageSize, const QVector<float>& scalarData, const DisplayRange& displayRange);
+    void setChannelScalarData(const std::uint32_t& channelIndex, const QSize& imageSize, const QVector<float>& scalarData, const DisplayRange& displayRange);
 
     /**
      * Set image interpolation type
      * @param interpolationType Interpolation type
      */
-    void setInterpolationType(const InterpolationType& interpolationType);
-
-    /** Returns the bounding rectangle of the prop */
-    QRectF getWorldBoundingRectangle() const override;
-
-    /** Initializes the prop */
-    void initialize() override;
+    void setInterpolationType(const InterpolationType& interpolationType);    
 
 protected:
     Layer&          _layer;             /** Reference to layer */

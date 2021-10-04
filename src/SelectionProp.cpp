@@ -163,7 +163,7 @@ QRectF SelectionProp::getWorldBoundingRectangle() const
     return QRectF(worldTopLeft, worldBottomRight);
 }
 
-void SelectionProp::setGeometry(const QRect& sourceImageRectangle, const QRect& targetImageRectangle, const QSize& imageSize)
+void SelectionProp::setGeometry(const QRect& sourceImageRectangle, const QRect& targetImageRectangle)
 {
     // Assign the rectangle to the quad shape
     getShapeByName<QuadShape>("Quad")->setRectangle(targetImageRectangle);
@@ -181,7 +181,7 @@ void SelectionProp::setGeometry(const QRect& sourceImageRectangle, const QRect& 
     setModelMatrix(modelMatrix);
 }
 
-void SelectionProp::setSelectionData(const std::vector<std::uint8_t>& selectionData)
+void SelectionProp::setSelectionData(const QSize& imageSize, const std::vector<std::uint8_t>& selectionData)
 {
     try {
         getRenderer().bindOpenGLContext();

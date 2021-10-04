@@ -298,8 +298,13 @@ void ChannelAction::computeSelectionChannel()
         auto pixelCoordinate = QPoint(selectionIndex % getImageSize().width(), static_cast<int>(floorf(selectionIndex / width)));
 
         // And intersect with existing boundaries
-        _selectionBoundaries |= QRect(pixelCoordinate, QSize());
+        _selectionBoundaries.setLeft(std::min(_selectionBoundaries.left(), pixelCoordinate.x()));
+        _selectionBoundaries.setRight(std::max(_selectionBoundaries.right(), pixelCoordinate.x()));
+        _selectionBoundaries.setTop(std::min(_selectionBoundaries.top(), pixelCoordinate.y()));
+        _selectionBoundaries.setBottom(std::max(_selectionBoundaries.bottom(), pixelCoordinate.y()));
     }
+
+    //_selectionBoundaries.adjust(2, 2, 0, 0);
 }
 
 QWidget* ChannelAction::getWidget(QWidget* parent, const std::int32_t& widgetFlags, const WidgetActionWidget::State& state /*= WidgetActionWidget::State::Standard*/)

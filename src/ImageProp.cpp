@@ -162,6 +162,36 @@ void ImageProp::render(const QMatrix4x4& modelViewProjectionMatrix)
     }
 }
 
+QRectF ImageProp::getWorldBoundingRectangle() const
+{
+    // Get quad bounding rectangle
+    auto boundingRectangle = getShapeByName<QuadShape>("Quad")->getRectangle();
+
+    // Compute composite matrix
+    const auto matrix = _renderable.getModelMatrix() * getModelMatrix();
+
+    // Compute rectangle extents in world coordinates
+    const auto worldTopLeft = matrix * boundingRectangle.topLeft();
+    const auto worldBottomRight = matrix * boundingRectangle.bottomRight();
+
+    return QRectF(worldTopLeft, worldBottomRight);
+}
+
+void ImageProp::setGeometry(const QRect& sourceImageRectangle, const QRect& targetImageRectangle)
+{
+    // Assign the rectangle to the quad shape
+    getShapeByName<QuadShape>("Quad")->setRectangle(targetImageRectangle);
+
+    // Update the model matrix
+    QMatrix4x4 modelMatrix;
+
+    // Compute the  model matrix
+    modelMatrix.translate(-sourceImageRectangle.center().x(), -sourceImageRectangle.center().y(), 0.0f);
+
+    // Assign model matrix
+    setModelMatrix(modelMatrix);
+}
+
 void ImageProp::setColorMapImage(const QImage& colorMapImage)
 {
     try {
@@ -195,7 +225,7 @@ void ImageProp::setColorMapImage(const QImage& colorMapImage)
     }
 }
 
-void ImageProp::setChannelScalarData(const std::uint32_t& channelIndex, const QRect& sourceImageRectangle, const QRect& targetImageRectangle, const QSize& imageSize, const QVector<float>& scalarData, const DisplayRange& displayRange)
+void ImageProp::setChannelScalarData(const std::uint32_t& channelIndex, const QSize& imageSize, const QVector<float>& scalarData, const DisplayRange& displayRange)
 {
     try {
         if (channelIndex > 3)
@@ -236,18 +266,6 @@ void ImageProp::setChannelScalarData(const std::uint32_t& channelIndex, const QR
 
             // Assign the scalar data to the texture
             texture->setData(0, channelIndex, QOpenGLTexture::PixelFormat::Red, QOpenGLTexture::PixelType::Float32, scalarData.data());
-
-            // Assign the rectangle to the quad shape
-            getShapeByName<QuadShape>("Quad")->setRectangle(targetImageRectangle);
-
-            // Update the model matrix
-            QMatrix4x4 modelMatrix;
-
-            // Compute the  model matrix
-            modelMatrix.translate(-sourceImageRectangle.center().x(), -sourceImageRectangle.center().y(), 0.0f);
-
-            // Assign model matrix
-            setModelMatrix(modelMatrix);
         }
         getRenderer().releaseOpenGLContext();
     }
@@ -292,19 +310,4 @@ void ImageProp::setInterpolationType(const InterpolationType& interpolationType)
     catch (...) {
         exceptionMessageBox("Unable to set channel interpolation type in layer image prop");
     }
-}
-
-QRectF ImageProp::getWorldBoundingRectangle() const
-{
-    // Get quad bounding rectangle
-    auto boundingRectangle = getShapeByName<QuadShape>("Quad")->getRectangle();
-
-    // Compute composite matrix
-    const auto matrix = _renderable.getModelMatrix() * getModelMatrix();
-
-    // Compute rectangle extents in world coordinates
-    const auto worldTopLeft         = matrix * boundingRectangle.topLeft();
-    const auto worldBottomRight     = matrix * boundingRectangle.bottomRight();
-
-    return QRectF(worldTopLeft, worldBottomRight);
 }

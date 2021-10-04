@@ -19,7 +19,7 @@ void main(void)
     vec2 texelUv = (uv - vec2(0.001f)) * textureSize;
 
     // Within selection boundaries
-    //if (texelUv.x >= topLeft.x && texelUv.x < bottomRight.x && texelUv.y >= topLeft.y && texelUv.y <= bottomRight.y) {
+    if (texelUv.x > topLeft.x && texelUv.x < bottomRight.x && texelUv.y >= topLeft.y && texelUv.y <= bottomRight.y) {
 
         // Determine whether the pixel is selected
         bool selected = texelFetch(channelTextures, ivec3(texelUv, 0), 0).r > 0u ? true : false;
@@ -28,7 +28,7 @@ void main(void)
             fragmentColor= vec4(overlayColor.rgb, opacity);
         else
             fragmentColor = vec4(overlayColor.rgb, 0.4f * opacity);
-    //} else {
-    //    fragmentColor = vec4(0);
-    //}
+    } else {
+        fragmentColor = vec4(0);
+    }
 }

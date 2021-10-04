@@ -43,15 +43,15 @@ public:
      * Set the geometry
      * @param sourceImageRectangle Source image rectangle
      * @param targetImageRectangle Target image rectangle
-     * @param imageSize Image size
      */
-    void setGeometry(const QRect& sourceImageRectangle, const QRect& targetImageRectangle, const QSize& imageSize);
+    void setGeometry(const QRect& sourceImageRectangle, const QRect& targetImageRectangle);
 
     /**
      * Set selection data
+     * @param imageSize Image size
      * @param selectionData Selection data
      */
-    void setSelectionData(const std::vector<std::uint8_t>& selectionData);
+    void setSelectionData(const QSize& imageSize, const std::vector<std::uint8_t>& selectionData);
 
 protected:
     Layer&      _layer;     /** Reference to layer */

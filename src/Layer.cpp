@@ -28,8 +28,9 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
     _props << new SelectionProp(*this, "SelectionProp");
     _props << new SelectionToolProp(*this, "SelectionToolProp");
 
-    this->getPropByName<SelectionProp>("SelectionProp")->setGeometry(_images->getSourceRectangle(), _images->getTargetRectangle(), _layerAction.getImageAction().getChannel1Action().getImageSize());
-    this->getPropByName<SelectionToolProp>("SelectionToolProp")->setGeometry(_images->getSourceRectangle(), _images->getTargetRectangle(), getImageSize());
+    this->getPropByName<ImageProp>("ImageProp")->setGeometry(_images->getSourceRectangle(), _images->getTargetRectangle());
+    this->getPropByName<SelectionProp>("SelectionProp")->setGeometry(_images->getSourceRectangle(), _images->getTargetRectangle());
+    this->getPropByName<SelectionToolProp>("SelectionToolProp")->setGeometry(_images->getSourceRectangle(), _images->getTargetRectangle());
 
     // Update the color map image in the image prop
     const auto updateColorMap = [this]() {
@@ -51,7 +52,7 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
             case ChannelAction::Mask:
             {
                 // Assign the scalar data to the prop
-                this->getPropByName<ImageProp>("ImageProp")->setChannelScalarData(channelAction.getIndex(), _images->getSourceRectangle(), _images->getTargetRectangle(), channelAction.getImageSize(), channelAction.getScalarData(), channelAction.getDisplayRange());
+                this->getPropByName<ImageProp>("ImageProp")->setChannelScalarData(channelAction.getIndex(), channelAction.getImageSize(), channelAction.getScalarData(), channelAction.getDisplayRange());
 
                 break;
             }
@@ -62,7 +63,7 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
                 auto& selectionChannel = _layerAction.getImageAction().getChannelSelectionAction();
 
                 // Assign the scalar data to the prop
-                this->getPropByName<SelectionProp>("SelectionProp")->setSelectionData(selectionChannel.getSelectionData());
+                this->getPropByName<SelectionProp>("SelectionProp")->setSelectionData(channelAction.getImageSize(), selectionChannel.getSelectionData());
 
                 break;
             }
