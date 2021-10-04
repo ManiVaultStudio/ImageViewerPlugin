@@ -6,6 +6,7 @@ uniform vec4 overlayColor;                  // Selection overlay color
 uniform float opacity;                      // Render opacity of the layer
 uniform vec2 topLeft;                       // Selection boundaries top-left
 uniform vec2 bottomRight;                   // Selection boundaries bottom-right
+uniform bool showRegion;                    // Show selection region on/off
 in vec2 uv;                                 // Input texture coordinates
 out vec4 fragmentColor;                     // Output fragment
 
@@ -27,7 +28,7 @@ void main(void)
         if (texture(channelTextures, vec3(uv, 0)).r > 0u)
             fragmentColor= vec4(overlayColor.rgb, opacity);
         else
-            fragmentColor = vec4(overlayColor.rgb, 0.4f * opacity);
+            fragmentColor = vec4(overlayColor.rgb, showRegion ? 0.4f * opacity : 0.0f);
     } else {
         fragmentColor = vec4(0);
     }

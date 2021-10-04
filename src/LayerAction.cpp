@@ -18,7 +18,7 @@ LayerAction::LayerAction(Layer& layer, LayersAction& layersAction) :
 
         // Enable/disable image and selection groups
         _imageAction.setEnabled(layerIsVisible);
-        _selectionAction.setEnabled(layerIsVisible);
+        _selectionAction.getGroupAction().setEnabled(layerIsVisible);
     };
 
     connect(&_generalAction.getVisibleAction(), &ToggleAction::toggled, this, updateActions);

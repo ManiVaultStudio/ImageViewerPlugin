@@ -1,5 +1,6 @@
 #pragma once
 
+#include "actions/ToggleAction.h"
 #include "actions/GroupAction.h"
 #include "actions/PixelSelectionAction.h"
 #include "actions/TriggerAction.h"
@@ -37,11 +38,13 @@ public:
 
 public: /** Action getters */
 
+    ToggleAction& getShowRegionAction() { return _showRegionAction; }
     GroupAction& getGroupAction() { return _groupAction; }
 
 protected:
     LayerAction&            _layerAction;           /** Reference to layer action */
     QWidget*                _targetWidget;          /** Pointer to target widget */
     PixelSelectionTool&     _pixelSelectionTool;    /** Reference to pixel selection tool */
-    GroupAction             _groupAction;           /** Create subset from selection action */
+    ToggleAction            _showRegionAction;      /** Show region action */
+    GroupAction             _groupAction;           /** Group action */
 };
