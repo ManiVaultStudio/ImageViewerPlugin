@@ -40,8 +40,8 @@ void ImageProp::initialize()
             const auto shaderProgram = getShaderProgramByName("Quad");
 
             // Load vertex/fragment shaders from resources
-            const auto vertexShader     = loadFileContents(":Shaders/PointsVertex.glsl");
-            const auto fragmentShader   = loadFileContents(":Shaders/PointsFragment.glsl");
+            const auto vertexShader     = loadFileContents(":Shaders/ImageVertex.glsl");
+            const auto fragmentShader   = loadFileContents(":Shaders/ImageFragment.glsl");
 
             // Assign vertex shader to shader program
             if (!shaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShader))
