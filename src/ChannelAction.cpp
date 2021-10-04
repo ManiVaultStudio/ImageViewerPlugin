@@ -300,8 +300,6 @@ void ChannelAction::computeSelectionChannel()
         // And intersect with existing boundaries
         _selectionBoundaries |= QRect(pixelCoordinate, QSize());
     }
-
-    //_selectionBoundaries.adjust(2, 2, -1, -1);
 }
 
 QWidget* ChannelAction::getWidget(QWidget* parent, const std::int32_t& widgetFlags, const WidgetActionWidget::State& state /*= WidgetActionWidget::State::Standard*/)

@@ -41,9 +41,6 @@ void SelectionToolProp::initialize()
             loadSelectionToolShaderProgram();
             loadSelectionToolOffScreenShaderProgram();
 
-            // Update image size
-            setImageSize(_layer.getImageSize());
-
             _initialized = true;
         }
         getRenderer().releaseOpenGLContext();
@@ -66,6 +63,10 @@ void SelectionToolProp::render(const QMatrix4x4& modelViewProjectionMatrix)
 
         const auto shape            = getShapeByName<QuadShape>("Quad");
         const auto shaderProgram    = getShaderProgramByName("SelectionTool");
+
+        // Bind shader program
+        if (_fbo.isNull())
+            throw std::runtime_error("FBO not initialized");
 
         // Bind shader program
         if (!shaderProgram->bind())
@@ -97,52 +98,8 @@ void SelectionToolProp::render(const QMatrix4x4& modelViewProjectionMatrix)
     }
 }
 
-void SelectionToolProp::setImageSize(const QSize& imageSize)
-{
-    try {
-        getRenderer().bindOpenGLContext();
-        {
-            // Except if image size is invalid
-            if (!imageSize.isValid())
-                throw std::runtime_error("Image size not valid");
-
-            auto createFbo = false;
-
-            // Create FBO when none exists
-            if (_fbo.isNull()) {
-                createFbo = true;
-            } else {
-                if (imageSize != QSize(_fbo->width(), _fbo->height()))
-                    createFbo = true;
-            }
-
-            // Create FBO when needed
-            if (createFbo)
-                _fbo.reset(new QOpenGLFramebufferObject(imageSize.width(), imageSize.height()));
-
-            // Set rectangle
-            this->getShapeByName<QuadShape>("Quad")->setRectangle(QRectF(QPointF(0.f, 0.f), QSizeF(imageSize)));
-
-            // Update the model matrix
-            updateModelMatrix();
-        }
-        getRenderer().releaseOpenGLContext();
-    }
-    catch (std::exception& e)
-    {
-        exceptionMessageBox("Set selection prop set image size failed", e);
-    }
-    catch (...) {
-        exceptionMessageBox("Set selection prop set image size failed");
-    }
-}
-
 void SelectionToolProp::compute(const QVector<QPoint>& mousePositions)
 {
-    // Only render if we have a valid FBO
-    if (_fbo.isNull())
-        return;
-
     try {
         getRenderer().bindOpenGLContext();
         {
@@ -342,6 +299,44 @@ QRectF SelectionToolProp::getWorldBoundingRectangle() const
     return getShapeByName<QuadShape>("Quad")->getRectangle();
 }
 
+void SelectionToolProp::setGeometry(const QRect& sourceImageRectangle, const QRect& targetImageRectangle, const QSize& imageSize)
+{
+    try {
+        getRenderer().bindOpenGLContext();
+        {
+            // Assign the rectangle to the quad shape
+            getShapeByName<QuadShape>("Quad")->setRectangle(targetImageRectangle);
+
+            // Update the model matrix
+            QMatrix4x4 modelMatrix;
+
+            // Compute the  model matrix
+            modelMatrix.translate(-sourceImageRectangle.center().x(), -sourceImageRectangle.center().y(), 0.0f);
+
+            // Assign model matrix
+            setModelMatrix(modelMatrix);
+
+            // Create FBO when none exists
+            if (_fbo.isNull()) {
+
+                // Except if image size is invalid
+                if (!imageSize.isValid())
+                    throw std::runtime_error("Image size not valid");
+
+                _fbo.reset(new QOpenGLFramebufferObject(imageSize.width(), imageSize.height()));
+            }
+        }
+        getRenderer().releaseOpenGLContext();
+    }
+    catch (std::exception& e)
+    {
+        exceptionMessageBox("Selection prop set geometry failed", e);
+    }
+    catch (...) {
+        exceptionMessageBox("Selection prop set geometry failed");
+    }
+}
+
 QImage SelectionToolProp::getSelectionImage()
 {
     // Return empty image when the FBO is invalid
@@ -446,18 +441,4 @@ void SelectionToolProp::loadSelectionToolOffScreenShaderProgram()
         shape->getVAO().release();
     }
     shape->getVBO().release();
-}
-
-void SelectionToolProp::updateModelMatrix()
-{
-    QMatrix4x4 modelMatrix;
-
-    // Get quad shape
-    const auto rectangle = getShapeByName<QuadShape>("Quad")->getRectangle();
-
-    // Compute the  model matrix
-    modelMatrix.translate(-0.5f * rectangle.width(), -0.5f * rectangle.height(), 0.0f);
-
-    // Assign model matrix
-    setModelMatrix(modelMatrix);
 }

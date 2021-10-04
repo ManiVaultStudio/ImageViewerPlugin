@@ -28,6 +28,8 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
     _props << new SelectionProp(*this, "SelectionProp");
     _props << new SelectionToolProp(*this, "SelectionToolProp");
 
+    this->getPropByName<SelectionToolProp>("SelectionToolProp")->setGeometry(_images->getSourceRectangle(), _images->getTargetRectangle(), getImageSize());
+
     // Update the color map image in the image prop
     const auto updateColorMap = [this]() {
 
@@ -59,7 +61,7 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
                 auto& selectionChannel = _layerAction.getImageAction().getChannelSelectionAction();
 
                 // Assign the scalar data to the prop
-                this->getPropByName<SelectionProp>("SelectionProp")->setSelectionData(selectionChannel.getSelectionData());
+                this->getPropByName<SelectionProp>("SelectionProp")->setSelectionData(_images->getSourceRectangle(), _images->getSourceRectangle(), channelAction.getImageSize(), selectionChannel.getSelectionData());
 
                 break;
             }

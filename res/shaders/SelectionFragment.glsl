@@ -17,11 +17,9 @@ void main(void)
 
     // Compute texel UV position in absolute texture coordinates
     vec2 texelUv = (uv - vec2(0.001f)) * textureSize;
-    
-    texelUv -= vec2(1);
 
     // Within selection boundaries
-    //if (texelUv.x >= topLeft.x && texelUv.x < bottomRight.x && texelUv.y >= topLeft.y && texelUv.y < bottomRight.y) {
+    //if (texelUv.x >= topLeft.x && texelUv.x < bottomRight.x && texelUv.y >= topLeft.y && texelUv.y <= bottomRight.y) {
 
         // Determine whether the pixel is selected
         bool selected = texelFetch(channelTextures, ivec3(texelUv, 0), 0).r > 0u ? true : false;

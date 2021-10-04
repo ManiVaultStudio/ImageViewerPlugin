@@ -2,7 +2,6 @@
 
 #include "Prop.h"
 
-#include <QScopedPointer>
 #include <QOpenGLFramebufferObject>
 
 class Layer;
@@ -38,14 +37,16 @@ public:
      */
     void render(const QMatrix4x4& modelViewProjectionMatrix) override;
 
-    /**
-     * Set image size
-     * @param imageSize Image size
-     */
-    void setImageSize(const QSize& imageSize);
-
     /** Returns the bounding rectangle of the prop */
     QRectF getWorldBoundingRectangle() const override;
+
+    /**
+     * Set the geometry
+     * @param sourceImageRectangle Source image rectangle
+     * @param targetImageRectangle Target image rectangle
+     * @param imageSize Image size
+     */
+    void setGeometry(const QRect& sourceImageRectangle, const QRect& targetImageRectangle, const QSize& imageSize);
 
 public: // Pixel selection
 
@@ -61,15 +62,11 @@ public: // Pixel selection
     /** Returns the pixel selection in image format */
     QImage getSelectionImage();
 
+
 protected: // Inherited
 
     /** Initializes the prop */
     void initialize() override;
-
-protected: // Miscellaneous
-
-	/** Updates the internal model matrix */
-	void updateModelMatrix();
 
 private: // Shader programs
 

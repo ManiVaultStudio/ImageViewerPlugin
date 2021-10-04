@@ -237,16 +237,11 @@ void ImageProp::setChannelScalarData(const std::uint32_t& channelIndex, const QR
             // Assign the scalar data to the texture
             texture->setData(0, channelIndex, QOpenGLTexture::PixelFormat::Red, QOpenGLTexture::PixelType::Float32, scalarData.data());
 
-            // Compute quad rectangle
-
             // Assign the rectangle to the quad shape
             getShapeByName<QuadShape>("Quad")->setRectangle(targetImageRectangle);
 
             // Update the model matrix
             QMatrix4x4 modelMatrix;
-
-            // Get quad shape
-            const auto rectangle = getShapeByName<QuadShape>("Quad")->getRectangle();
 
             // Compute the  model matrix
             modelMatrix.translate(-sourceImageRectangle.center().x(), -sourceImageRectangle.center().y(), 0.0f);

@@ -33,26 +33,20 @@ public:
      */
     void render(const QMatrix4x4& modelViewProjectionMatrix) override;
 
-    /**
-     * Set image size
-     * @param imageSize Image size
-     */
-    void setImageSize(const QSize& imageSize);
-
     /** Get the bounding rectangle of the prop in world coordinates */
     QRectF getWorldBoundingRectangle() const override;
 
     /** Initializes the prop */
     void initialize() override;
 
-    /** Updates the internal model matrix */
-    void updateModelMatrix();
-
     /**
      * Set selection data
+     * @param sourceImageRectangle Source image rectangle
+     * @param targetImageRectangle Target image rectangle
+     * @param imageSize Image size
      * @param selectionData Selection data
      */
-    void setSelectionData(const std::vector<std::uint8_t>& selectionData);
+    void setSelectionData(const QRect& sourceImageRectangle, const QRect& targetImageRectangle, const QSize& imageSize, const std::vector<std::uint8_t>& selectionData);
 
 protected:
     Layer&      _layer;     /** Reference to layer */
