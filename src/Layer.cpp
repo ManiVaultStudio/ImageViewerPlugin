@@ -174,22 +174,6 @@ const QSize Layer::getImageSize() const
     return _images->getImageSize();
 }
 
-const std::uint32_t Layer::getNumberOfPoints() const
-{
-    if (!_images.isValid() || !_points.isValid())
-        throw std::runtime_error("Unable to retrieve the number of data points from layer; the images/points dataset is not valid");
-
-    return _points->getNumPoints();
-}
-
-const std::uint32_t Layer::getNumberOfDimensions() const
-{
-    if (!_images.isValid() || !_points.isValid())
-        throw std::runtime_error("Unable to retrieve the number of data dimensions from layer; the images/points dataset not valid");
-
-    return _points->getNumDimensions();
-}
-
 const QStringList Layer::getDimensionNames() const
 {
     if (!_images.isValid() || !_points.isValid())
@@ -197,7 +181,7 @@ const QStringList Layer::getDimensionNames() const
 
     QStringList dimensionNames;
 
-    if (_points->getDimensionNames().size() == getNumberOfDimensions()) {
+    if (_points->getDimensionNames().size() == _points->getNumDimensions()) {
         for (const auto& dimensionName : _points->getDimensionNames())
             dimensionNames << dimensionName;
     }

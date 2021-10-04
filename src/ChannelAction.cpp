@@ -27,7 +27,8 @@ ChannelAction::ChannelAction(ImageAction& layerImageAction, const ChannelIndex& 
     _windowLevelAction(this),
     _scalarData(),
     _scalarDataRange({0.0f, 0.0f}),
-    _selectionData()
+    _selectionData(),
+    _selectionBoundaries()
 {
     setText(name);
     setMayReset(true);
@@ -154,6 +155,11 @@ const std::vector<std::uint8_t>& ChannelAction::getSelectionData() const
     return _selectionData;
 }
 
+QRect ChannelAction::getSelectionBoundaries() const
+{
+    return _selectionBoundaries;
+}
+
 bool ChannelAction::isResettable() const
 {
     return _dimensionAction.isResettable();
@@ -272,10 +278,30 @@ void ChannelAction::computeSelectionChannel()
 
     // Fill with non-selected
     std::fill(_selectionData.begin(), _selectionData.end(), 0.0f);
-    
+
+    // Initialize selection boundaries with numeric extremes
+    _selectionBoundaries.setTop(std::numeric_limits<int>::max());
+    _selectionBoundaries.setBottom(std::numeric_limits<int>::lowest());
+    _selectionBoundaries.setLeft(std::numeric_limits<int>::max());
+    _selectionBoundaries.setRight(std::numeric_limits<int>::lowest());
+
+    // Convert image width to floating point for division later
+    const auto width = static_cast<float>(getImageSize().width());
+
     // Assign selected pixels
-    for (auto selectionIndex : getSelectionIndices())
+    for (auto selectionIndex : getSelectionIndices()) {
+
+        // Assign selected pixel
         _selectionData[selectionIndex] = 255;
+
+        // Deduce pixel coordinate
+        auto pixelCoordinate = QPoint(selectionIndex % getImageSize().width(), static_cast<int>(floorf(selectionIndex / width)));
+
+        // And intersect with existing boundaries
+        _selectionBoundaries |= QRect(pixelCoordinate, QSize());
+    }
+
+    //_selectionBoundaries.adjust(2, 2, -1, -1);
 }
 
 QWidget* ChannelAction::getWidget(QWidget* parent, const std::int32_t& widgetFlags, const WidgetActionWidget::State& state /*= WidgetActionWidget::State::Standard*/)

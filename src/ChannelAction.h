@@ -82,7 +82,7 @@ public:
     /** Get image size */
     QSize getImageSize();
 
-public: // Scalar data
+public: // Channel data
 
     /** Get scalar data */
     const QVector<float>& getScalarData() const;
@@ -95,6 +95,9 @@ public: // Scalar data
 
     /** Get selection data */
     const std::vector<std::uint8_t>& getSelectionData() const;
+
+    /** Get selection boundaries */
+    QRect getSelectionBoundaries() const;
 
 protected: // Data extraction
 
@@ -128,14 +131,15 @@ public: /** Action getters */
     WindowLevelAction& getWindowLevelAction() { return _windowLevelAction; }
 
 protected:
-    ImageAction&                _layerImageAction;      /** Reference to layer image action */
-    const ChannelIndex          _index;                 /** Channel index */
-    ToggleAction                _enabledAction;         /** Enabled action */
-    OptionAction                _dimensionAction;       /** Selected dimension action */
-    WindowLevelAction           _windowLevelAction;     /** Window/level action */
-    QVector<float>              _scalarData;            /** Channel scalar data for the specified dimension */
-    QPair<float, float>         _scalarDataRange;       /** Scalar data range */
-    std::vector<std::uint8_t>   _selectionData;         /** Selection data */
+    ImageAction&                _layerImageAction;          /** Reference to layer image action */
+    const ChannelIndex          _index;                     /** Channel index */
+    ToggleAction                _enabledAction;             /** Enabled action */
+    OptionAction                _dimensionAction;           /** Selected dimension action */
+    WindowLevelAction           _windowLevelAction;         /** Window/level action */
+    QVector<float>              _scalarData;                /** Channel scalar data for the specified dimension */
+    QPair<float, float>         _scalarDataRange;           /** Scalar data range */
+    std::vector<std::uint8_t>   _selectionData;             /** Selection data */
+    QRect                       _selectionBoundaries;       /** Selection boundaries */
 
     friend class ImageAction;
 };

@@ -129,6 +129,8 @@ void SelectionProp::render(const QMatrix4x4& modelViewProjectionMatrix)
         shaderProgram->setUniformValue("textureSize", shape->getImageSize());
         shaderProgram->setUniformValue("overlayColor", selectionAction.getOverlayColor().getColor());
         shaderProgram->setUniformValue("opacity", 0.01f * selectionAction.getOverlayOpacity().getValue());
+        shaderProgram->setUniformValue("topLeft", selectionAction.getSelectionBoundaries().topLeft());
+        shaderProgram->setUniformValue("bottomRight", selectionAction.getSelectionBoundaries().bottomRight());
         shaderProgram->setUniformValue("transform", modelViewProjectionMatrix * _renderable.getModelMatrix() * getModelMatrix());
 
         // Render the quad

@@ -30,10 +30,6 @@ LayersModel::LayersModel(QObject* parent) :
     });
 }
 
-LayersModel::~LayersModel()
-{
-}
-
 int LayersModel::rowCount(const QModelIndex& parent /*= QModelIndex()*/) const
 {
     return _layers.count();

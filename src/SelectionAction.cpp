@@ -42,3 +42,8 @@ SelectionAction::SelectionAction(LayerAction& layerAction, QWidget* targetWidget
     connect(&_overlayColor, &ColorAction::colorChanged, this, render);
     connect(&_overlayOpacity, &DecimalAction::valueChanged, this, render);
 }
+
+QRect SelectionAction::getSelectionBoundaries() const
+{
+    return _layerAction.getImageAction().getChannelSelectionAction().getSelectionBoundaries();
+}

@@ -46,8 +46,6 @@ public: // Images wrapper functions
 
 public: // Points wrapper functions
 
-    const std::uint32_t getNumberOfPoints() const;
-    const std::uint32_t getNumberOfDimensions() const;
     const QStringList getDimensionNames() const;
 
 public: // Selection

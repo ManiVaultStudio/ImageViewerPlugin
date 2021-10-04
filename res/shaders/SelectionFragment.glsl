@@ -4,6 +4,8 @@ uniform usampler2DArray channelTextures;    // Integer texture samplers (0: Sele
 uniform vec2 textureSize;                   // Size of the textures in pixels
 uniform vec4 overlayColor;                  // Selection overlay color
 uniform float opacity;                      // Render opacity of the layer
+uniform vec2 topLeft;                       // Selection boundaries top-left
+uniform vec2 bottomRight;                   // Selection boundaries bottom-right
 in vec2 uv;                                 // Input texture coordinates
 out vec4 fragmentColor;                     // Output fragment
 
@@ -15,12 +17,20 @@ void main(void)
 
     // Compute texel UV position in absolute texture coordinates
     vec2 texelUv = (uv - vec2(0.001f)) * textureSize;
+    
+    texelUv -= vec2(1);
 
-    // Determine whether the pixel is selected
-    bool selected = texelFetch(channelTextures, ivec3(texelUv, 0), 0).r > 0u ? true : false;
+    // Within selection boundaries
+    //if (texelUv.x >= topLeft.x && texelUv.x < bottomRight.x && texelUv.y >= topLeft.y && texelUv.y < bottomRight.y) {
 
-    if (texture(channelTextures, vec3(uv, 0)).r > 0u)
-        fragmentColor= vec4(overlayColor.rgb, opacity);
-    else 
-        fragmentColor = vec4(0);
+        // Determine whether the pixel is selected
+        bool selected = texelFetch(channelTextures, ivec3(texelUv, 0), 0).r > 0u ? true : false;
+
+        if (texture(channelTextures, vec3(uv, 0)).r > 0u)
+            fragmentColor= vec4(overlayColor.rgb, opacity);
+        else
+            fragmentColor = vec4(overlayColor.rgb, 0.4f * opacity);
+    //} else {
+    //    fragmentColor = vec4(0);
+    //}
 }

@@ -8,3 +8,8 @@ indent_style = space
 # Cpp files
 [*.{h,cpp}]
 indent_size = 4
+
+# GLSL files
+[*.glsl]
+indent_style = space
+indent_size = 4

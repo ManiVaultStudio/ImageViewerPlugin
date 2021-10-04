@@ -25,8 +25,15 @@ public:
     };
 
 public:
+
+    /**
+     * Constructor
+     * @param parent Pointer to parent object
+     */
     explicit LayersModel(QObject* parent);
-    ~LayersModel();
+    
+    /** Destructor */
+    ~LayersModel() = default;
 
     /**
      * Returns the number of rows in the model given the parent model index

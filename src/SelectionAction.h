@@ -32,6 +32,9 @@ public:
      */
     SelectionAction(LayerAction& layerAction, QWidget* targetWidget, PixelSelectionTool& pixelSelectionTool);
 
+    /** Get selection boundaries */
+    QRect getSelectionBoundaries() const;
+
 public: /** Action getters */
 
     GroupAction& getGroupAction() { return _groupAction; }
