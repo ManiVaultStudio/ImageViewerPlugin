@@ -101,13 +101,13 @@ LayersAction::Widget::Widget(QWidget* parent, LayersAction* layersAction, const 
 
     toolbarLayout->setSpacing(3);
 
-    toolbarLayout->addWidget(_removeLayerAction.createWidget(this));
-    toolbarLayout->addWidget(_duplicateLayerAction.createWidget(this));
+    toolbarLayout->addWidget(_removeLayerAction.createWidget(this, TriggerAction::Icon));
+    //toolbarLayout->addWidget(_duplicateLayerAction.createWidget(this, TriggerAction::Icon));
     toolbarLayout->addStretch(1);
-    toolbarLayout->addWidget(_moveLayerToTopAction.createWidget(this));
-    toolbarLayout->addWidget(_moveLayerUpAction.createWidget(this));
-    toolbarLayout->addWidget(_moveLayerDownAction.createWidget(this));
-    toolbarLayout->addWidget(_moveLayerToBottomAction.createWidget(this));
+    toolbarLayout->addWidget(_moveLayerToTopAction.createWidget(this, TriggerAction::Icon));
+    toolbarLayout->addWidget(_moveLayerUpAction.createWidget(this, TriggerAction::Icon));
+    toolbarLayout->addWidget(_moveLayerDownAction.createWidget(this, TriggerAction::Icon));
+    toolbarLayout->addWidget(_moveLayerToBottomAction.createWidget(this, TriggerAction::Icon));
 
     layout->addLayout(toolbarLayout);
 

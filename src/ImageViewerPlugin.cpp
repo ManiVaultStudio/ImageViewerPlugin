@@ -24,6 +24,7 @@ ImageViewerPlugin::ImageViewerPlugin(hdps::plugin::PluginFactory* factory) :
     _selectionModel(&_model),
     _dropWidget(nullptr),
     _mainWidget(nullptr),
+    _splitter(new QSplitter()),
     _imageViewerWidget(nullptr),
     _settingsAction(nullptr),
     _navigationAction(nullptr)
@@ -40,13 +41,12 @@ void ImageViewerPlugin::init()
 
     setLayout(layout);
 
-    auto splitter       = new QSplitter();
     auto viewerLayout   = new QVBoxLayout();
 
     _mainWidget         = new QWidget();
     _imageViewerWidget  = new ImageViewerWidget(this, _model);
     _settingsAction     = new SettingsAction(*this);
-    _navigationAction   = new NavigationAction(*_imageViewerWidget);
+    _navigationAction   = new NavigationAction(*this);
 
     _imageViewerWidget->setAcceptDrops(true);
 
@@ -65,15 +65,16 @@ void ImageViewerPlugin::init()
     // Apply layout to main widget
     _mainWidget->setLayout(mainWidgetLayout);
 
-    splitter->addWidget(_mainWidget);
-    splitter->addWidget(_settingsAction->createWidget(this));
+    // Add viewer widget and settings panel to the splitter
+    _splitter->addWidget(_mainWidget);
+    _splitter->addWidget(_settingsAction->createWidget(this));
 
-    splitter->setStretchFactor(0, 1);
-    splitter->setStretchFactor(1, 0);
+    // Configure splitter
+    _splitter->setStretchFactor(0, 1);
+    _splitter->setStretchFactor(1, 0);
+    _splitter->setCollapsible(1, true);
 
-    splitter->setCollapsible(1, true);
-
-    layout->addWidget(splitter);
+    layout->addWidget(_splitter);
 
     setDockingLocation(hdps::gui::DockableWidget::DockingLocation::Right);
 
@@ -196,6 +197,19 @@ void ImageViewerPlugin::init()
 
     // Initially enable/disable the navigation action
     layersInsertedRemovedChanged();
+
+    // Notify others of the settings visibility
+    const auto notifySettingsVisibility = [this](const bool& visible) {
+        emit settingsVisibilityChanged(visible);
+    };
+
+    // Send signal when the settings panel is expanded or collapsed
+    connect(_splitter, &QSplitter::splitterMoved, this, [this, notifySettingsVisibility](int pos, int index) {
+        notifySettingsVisibility(_splitter->widget(1)->visibleRegion().isEmpty());
+    });
+
+    // Initial notification of settings visibility
+    notifySettingsVisibility(true);
 }
 
 QIcon ImageViewerPluginFactory::getIcon() const

@@ -19,6 +19,8 @@ namespace hdps {
     }
 }
 
+class QSplitter;
+
 /**
  * Image viewer plugin class
  * This HDPS view plugin class provides functionality to view/interact with high-dimensional image data
@@ -61,11 +63,20 @@ public: // Action getters
 
     SettingsAction& getSettingsAction() { return *_settingsAction; }
 
+signals:
+
+    /**
+     * Signals that the visibility of the settings panel changed
+     * @param visible Whether the settings panel is visible
+     */
+    void settingsVisibilityChanged(const bool& visible);
+
 private:
     LayersModel             _model;                 /** Layers model */
     QItemSelectionModel     _selectionModel;        /** Layers selection model */
     hdps::gui::DropWidget*  _dropWidget;            /** Widget for dropping data */
     QWidget*                _mainWidget;            /** Pointer to main widget */
+    QSplitter*              _splitter;              /** Pointer to splitter */
     ImageViewerWidget*      _imageViewerWidget;     /** Pointer to image viewer widget */
     SettingsAction*         _settingsAction;        /** Pointer to settings action */
     NavigationAction*       _navigationAction;      /** Pointer to navigation action */

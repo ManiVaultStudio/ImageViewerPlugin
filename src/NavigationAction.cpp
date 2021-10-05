@@ -1,4 +1,5 @@
 #include "NavigationAction.h"
+#include "ImageViewerPlugin.h"
 #include "ImageViewerWidget.h"
 #include "LayersModel.h"
 #include "Application.h"
@@ -7,16 +8,17 @@
 
 const float NavigationAction::zoomDeltaPercentage = 0.1f;
 
-NavigationAction::NavigationAction(ImageViewerWidget& imageViewerWidget) :
-    WidgetAction(&imageViewerWidget),
-    _imageViewerWidget(imageViewerWidget),
+NavigationAction::NavigationAction(ImageViewerPlugin& imageViewerPlugin) :
+    WidgetAction(&imageViewerPlugin),
+    _imageViewerPlugin(imageViewerPlugin),
     _zoomOutAction(this, ""),
     _zoomPercentageAction(this, "Zoom percentage", 0.0f, 500.0f, 100.0f, 100.0f, 1),
     _zoomInAction(this, ""),
     _zoomExtentsAction(this, ""),
     _panAction(this, ""),
     _selectAction(this, ""),
-    _interactionModeActionGroup(this)
+    _interactionModeActionGroup(this),
+    _settingsToggleAction(this, "")
 {
     setText("Navigation");
 
@@ -28,12 +30,28 @@ NavigationAction::NavigationAction(ImageViewerWidget& imageViewerWidget) :
     _zoomExtentsAction.setToolTip("Zoom to the boundaries of all layers (z)");
     _panAction.setToolTip("Move the view");
     _selectAction.setToolTip("Select pixels");
+    _settingsToggleAction.setToolTip("Collapse/expand the settings panel");
 
     _zoomOutAction.setIcon(fontAwesome.getIcon("search-minus"));
     _zoomInAction.setIcon(fontAwesome.getIcon("search-plus"));
     _zoomExtentsAction.setIcon(fontAwesome.getIcon("compress"));
     _panAction.setIcon(fontAwesome.getIcon("arrows-alt"));
     _selectAction.setIcon(fontAwesome.getIcon("mouse-pointer"));
+    
+    const auto updateSettingsToggleIcon = [this, &fontAwesome]() {
+        _settingsToggleAction.setIcon(_settingsToggleAction.isChecked() ? fontAwesome.getIcon("chevron-right") : fontAwesome.getIcon("chevron-left"));
+    };
+
+    // Update the settings toggle icon when toggled
+    connect(&_settingsToggleAction, &ToggleAction::toggled, this, updateSettingsToggleIcon);
+    
+    // Update the settings toggle action when the settings panel is expanded or collapsed with the splitter
+    connect(&_imageViewerPlugin, &ImageViewerPlugin::settingsVisibilityChanged, this, [this](const bool& visible) {
+        _settingsToggleAction.setChecked(visible);
+    });
+
+    // Initial settings toggle icon
+    updateSettingsToggleIcon();
 
     _zoomOutAction.setShortcut(QKeySequence("-"));
     _zoomInAction.setShortcut(QKeySequence("+"));
@@ -46,54 +64,54 @@ NavigationAction::NavigationAction(ImageViewerWidget& imageViewerWidget) :
     _interactionModeActionGroup.addAction(&_panAction);
     _interactionModeActionGroup.addAction(&_selectAction);
 
-    imageViewerWidget.addAction(&_zoomOutAction);
-    imageViewerWidget.addAction(&_zoomInAction);
-    imageViewerWidget.addAction(&_zoomExtentsAction);
-    imageViewerWidget.addAction(&_panAction);
-    imageViewerWidget.addAction(&_selectAction);
+    getImageViewerWidget().addAction(&_zoomOutAction);
+    getImageViewerWidget().addAction(&_zoomInAction);
+    getImageViewerWidget().addAction(&_zoomExtentsAction);
+    getImageViewerWidget().addAction(&_panAction);
+    getImageViewerWidget().addAction(&_selectAction);
 
     connect(&_zoomOutAction, &TriggerAction::triggered, this, [this]() {
-        _imageViewerWidget.getRenderer().setZoomPercentage(_imageViewerWidget.getRenderer().getZoomPercentage() - zoomDeltaPercentage);
-        _imageViewerWidget.update();
+        getImageViewerWidget().getRenderer().setZoomPercentage(getImageViewerWidget().getRenderer().getZoomPercentage() - zoomDeltaPercentage);
+        getImageViewerWidget().update();
     });
 
     connect(&_zoomPercentageAction, &DecimalAction::valueChanged, this, [this](const float& value) {
-        _imageViewerWidget.getRenderer().setZoomPercentage(0.01f * value);
-        _imageViewerWidget.update();
+        getImageViewerWidget().getRenderer().setZoomPercentage(0.01f * value);
+        getImageViewerWidget().update();
     });
 
     connect(&_zoomInAction, &TriggerAction::triggered, this, [this]() {
-        _imageViewerWidget.getRenderer().setZoomPercentage(_imageViewerWidget.getRenderer().getZoomPercentage() + zoomDeltaPercentage);
-        _imageViewerWidget.update();
+        getImageViewerWidget().getRenderer().setZoomPercentage(getImageViewerWidget().getRenderer().getZoomPercentage() + zoomDeltaPercentage);
+        getImageViewerWidget().update();
     });
 
     connect(&_zoomExtentsAction, &TriggerAction::triggered, this, [this]() {
 
         // Get world bounding rectangles for all layers
-        const auto worldBoundingRectangle = _imageViewerWidget.getWorldBoundingRectangle();
+        const auto worldBoundingRectangle = getImageViewerWidget().getWorldBoundingRectangle();
 
         // Zoom to the rectangle and render
-        _imageViewerWidget.getRenderer().zoomToWorldRectangle(worldBoundingRectangle);
-        _imageViewerWidget.update();
+        getImageViewerWidget().getRenderer().zoomToWorldRectangle(worldBoundingRectangle);
+        getImageViewerWidget().update();
     });
 
     connect(&_panAction, &ToggleAction::toggled, this, [this](bool toggled) {
-        _imageViewerWidget.setInteractionMode(toggled ? ImageViewerWidget::Navigation : ImageViewerWidget::Selection);
+        getImageViewerWidget().setInteractionMode(toggled ? ImageViewerWidget::Navigation : ImageViewerWidget::Selection);
     });
 
     connect(&_selectAction, &ToggleAction::toggled, this, [this](bool toggled) {
-        _imageViewerWidget.setInteractionMode(toggled ? ImageViewerWidget::Selection : ImageViewerWidget::Navigation);
+        getImageViewerWidget().setInteractionMode(toggled ? ImageViewerWidget::Selection : ImageViewerWidget::Navigation);
     });
 
     const auto updateZoomPercentage = [this]() {
-        _zoomPercentageAction.setValue(100.0f * _imageViewerWidget.getRenderer().getZoomPercentage());
+        _zoomPercentageAction.setValue(100.0f * getImageViewerWidget().getRenderer().getZoomPercentage());
     };
 
-    connect(&_imageViewerWidget.getRenderer(), &Renderer::zoomPercentageChanged, this, [this, updateZoomPercentage](const float& zoomPercentage) {
+    connect(&getImageViewerWidget().getRenderer(), &Renderer::zoomPercentageChanged, this, [this, updateZoomPercentage](const float& zoomPercentage) {
         updateZoomPercentage();
     });
 
-    connect(&_imageViewerWidget, &ImageViewerWidget::interactionModeChanged, this, [this](const ImageViewerWidget::InteractionMode& interactionMode) {
+    connect(&getImageViewerWidget(), &ImageViewerWidget::interactionModeChanged, this, [this](const ImageViewerWidget::InteractionMode& interactionMode) {
         _panAction.setChecked(interactionMode == ImageViewerWidget::InteractionMode::Navigation);
         _selectAction.setChecked(interactionMode == ImageViewerWidget::InteractionMode::Selection);
     });
@@ -103,7 +121,7 @@ NavigationAction::NavigationAction(ImageViewerWidget& imageViewerWidget) :
 
 ImageViewerWidget& NavigationAction::getImageViewerWidget()
 {
-    return _imageViewerWidget;
+    return *_imageViewerPlugin.getImageViewerWidget();
 }
 
 NavigationAction::Widget::Widget(QWidget* parent, NavigationAction* navigationAction, const WidgetActionWidget::State& state) :
@@ -129,10 +147,10 @@ NavigationAction::Widget::Widget(QWidget* parent, NavigationAction* navigationAc
     layout->addWidget(navigationAction->getPanAction().createWidget(this, ToggleAction::PushButtonIcon));
     layout->addWidget(navigationAction->getSelectAction().createWidget(this, ToggleAction::PushButtonIcon));
     layout->addWidget(getDivider());
-    layout->addWidget(navigationAction->getZoomOutAction().createWidget(this));
-    layout->addWidget(navigationAction->getZoomPercentageAction().createWidget(this));
-    layout->addWidget(navigationAction->getZoomInAction().createWidget(this));
-    layout->addWidget(navigationAction->getZoomExtentsAction().createWidget(this));
+    layout->addWidget(navigationAction->getZoomOutAction().createWidget(this, TriggerAction::Icon));
+    layout->addWidget(navigationAction->getZoomPercentageAction().createWidget(this, TriggerAction::Icon));
+    layout->addWidget(navigationAction->getZoomInAction().createWidget(this, TriggerAction::Icon));
+    layout->addWidget(navigationAction->getZoomExtentsAction().createWidget(this, TriggerAction::Icon));
     layout->addStretch(1);
 
     setLayout(layout);

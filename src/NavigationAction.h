@@ -5,6 +5,7 @@
 #include "actions/DecimalAction.h"
 #include "actions/ToggleAction.h"
 
+class ImageViewerPlugin;
 class ImageViewerWidget;
 
 using namespace hdps::gui;
@@ -53,9 +54,9 @@ public:
 
     /** 
      * Constructor
-     * @param imageViewerWidget Reference to image viewer widget
+     * @param imageViewerWidget Reference to image viewer plugin
      */
-    NavigationAction(ImageViewerWidget& imageViewerWidget);
+    NavigationAction(ImageViewerPlugin& imageViewerPlugin);
 
     /** Determines whether the current value can be reset to its default */
     bool isResettable() const override {
@@ -76,9 +77,10 @@ public: // Action getters
     DecimalAction& getZoomPercentageAction() { return _zoomPercentageAction; }
     TriggerAction& getZoomInAction() { return _zoomInAction; }
     TriggerAction& getZoomExtentsAction() { return _zoomExtentsAction; }
+    ToggleAction& getSettingsToggleAction() { return _settingsToggleAction; }
 
 protected:
-    ImageViewerWidget&  _imageViewerWidget;             /** Reference to image viewer widget */
+    ImageViewerPlugin&  _imageViewerPlugin;             /** Reference to image viewer plugin */
     TriggerAction       _zoomOutAction;                 /** Zoom out action */
     DecimalAction       _zoomPercentageAction;          /** Zoom action */
     TriggerAction       _zoomInAction;                  /** Zoom in action */
@@ -86,6 +88,7 @@ protected:
     ToggleAction        _panAction;                     /** Pan interaction mode action */
     ToggleAction        _selectAction;                  /** Select interaction mode action */
     QActionGroup        _interactionModeActionGroup;    /** Interaction mode action group */
+    ToggleAction        _settingsToggleAction;          /** Settings toggle (expand/collapse) action */
 
     static const float zoomDeltaPercentage;
 };
