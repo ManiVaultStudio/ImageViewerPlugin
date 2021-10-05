@@ -13,7 +13,7 @@ ImageAction::ImageAction(LayerAction& layerAction) :
     EventListener(),
     _layerAction(layerAction),
     _opacityAction(this, "Opacity", 0.0f, 100.0f, 100.0f, 100.0f, 1),
-    _subsampleFactorAction(this, "Subsample factor", 1, 8, 1, 1),
+    _subsampleFactorAction(this, "Subsample", 1, 8, 1, 1),
     _colorSpaceAction(this, "Color space", colorSpaces.values(), "Mono", "Mono"),
     _channel1Action(*this, ChannelAction::Channel1, ChannelAction::channelIndexes.value(ChannelAction::Channel1)),
     _channel2Action(*this, ChannelAction::Channel2, ChannelAction::channelIndexes.value(ChannelAction::Channel2)),
@@ -165,10 +165,10 @@ ImageAction::ImageAction(LayerAction& layerAction) :
         if (dataEvent->getType() == hdps::EventType::SelectionChanged) {
             auto selectionChangedEvent = static_cast<hdps::SelectionChangedEvent*>(dataEvent);
 
-            if (selectionChangedEvent->dataSetName != _layerAction.getLayer().getPoints()->getName())
-                return;
+            DatasetRef<Points> points(selectionChangedEvent->dataSetName);
 
-            _channelSelectionAction.computeScalarData();
+            if (DataSet::getSourceData<Points&>(*points).getName() == _layerAction.getLayer().getPoints()->getName())
+                _channelSelectionAction.computeScalarData();
         }
     });
 

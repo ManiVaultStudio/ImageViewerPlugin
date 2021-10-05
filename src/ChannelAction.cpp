@@ -180,12 +180,6 @@ hdps::util::DatasetRef<Points>& ChannelAction::getPoints()
     return _layerImageAction.getLayerAction().getLayer().getPoints();
 }
 
-std::vector<std::uint32_t> ChannelAction::getSelectionIndices()
-{
-    auto& selection = dynamic_cast<Points&>(getPoints()->getSelection());
-    return selection.indices;
-}
-
 void ChannelAction::computeScalarData()
 {
     try
@@ -277,7 +271,7 @@ void ChannelAction::computeSelectionChannel()
     qDebug() << "Compute selection for channel" << _index;
 
     // Fill with non-selected
-    std::fill(_selectionData.begin(), _selectionData.end(), 0.0f);
+    std::fill(_selectionData.begin(), _selectionData.end(), 0);
 
     // Initialize selection boundaries with numeric extremes
     _selectionBoundaries.setTop(std::numeric_limits<int>::max());
@@ -288,14 +282,18 @@ void ChannelAction::computeSelectionChannel()
     // Convert image width to floating point for division later
     const auto width = static_cast<float>(getImageSize().width());
 
+    //qDebug() << _layerImageAction.getLayerAction().getLayer().getSelectionIndices();
+
     // Assign selected pixels
-    for (auto selectionIndex : getSelectionIndices()) {
+    for (auto selectionIndex : _layerImageAction.getLayerAction().getLayer().getSelectionIndices()) {
 
         // Assign selected pixel
         _selectionData[selectionIndex] = 255;
 
         // Deduce pixel coordinate
         auto pixelCoordinate = QPoint(selectionIndex % getImageSize().width(), static_cast<int>(floorf(selectionIndex / width)));
+
+        //qDebug() << pixelCoordinate;
 
         // And intersect with existing boundaries
         _selectionBoundaries.setLeft(std::min(_selectionBoundaries.left(), pixelCoordinate.x()));
@@ -304,6 +302,8 @@ void ChannelAction::computeSelectionChannel()
         _selectionBoundaries.setBottom(std::max(_selectionBoundaries.bottom(), pixelCoordinate.y()));
     }
 
+    //qDebug() << _selectionBoundaries;
+    //_selectionBoundaries = QRect(QPoint(), getImageSize());
     //_selectionBoundaries.adjust(2, 2, 0, 0);
 }
 

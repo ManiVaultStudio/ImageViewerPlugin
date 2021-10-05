@@ -107,9 +107,6 @@ protected: // Data extraction
     /** Get reference to points dataset which contains the actual image data */
     DatasetRef<Points>& getPoints();
 
-    /** Get selection indices */
-    std::vector<std::uint32_t> getSelectionIndices();
-
     /** Compute scalar data for image sequence */
     void computeScalarData();
 

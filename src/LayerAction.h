@@ -5,6 +5,7 @@
 #include "GeneralAction.h"
 #include "ImageAction.h"
 #include "SelectionAction.h"
+#include "SubsetAction.h"
 
 using namespace hdps::gui;
 
@@ -37,6 +38,7 @@ public: /** Action getters */
     GeneralAction& getGeneralAction() { return _generalAction; }
     ImageAction& getImageAction() { return _imageAction; }
     SelectionAction& getSelectionAction() { return _selectionAction; }
+    SubsetAction& getSubsetAction() { return _subsetAction; }
 
 protected:
     Layer&              _layer;                 /** Reference to layer */
@@ -44,4 +46,5 @@ protected:
     GeneralAction       _generalAction;         /** General action */
     ImageAction         _imageAction;           /** Image action */
     SelectionAction     _selectionAction;       /** Selection action */
+    SubsetAction        _subsetAction;          /** Subset action */
 };

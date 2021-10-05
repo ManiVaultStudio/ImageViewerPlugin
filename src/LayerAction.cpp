@@ -9,7 +9,8 @@ LayerAction::LayerAction(Layer& layer, LayersAction& layersAction) :
     _layersAction(layersAction),
     _generalAction(*this),
     _imageAction(*this),
-    _selectionAction(*this, layer.getImageViewerPlugin().getImageViewerWidget(), layer.getImageViewerPlugin().getImageViewerWidget()->getPixelSelectionTool())
+    _selectionAction(*this, layer.getImageViewerPlugin().getImageViewerWidget(), layer.getImageViewerPlugin().getImageViewerWidget()->getPixelSelectionTool()),
+    _subsetAction(*this)
 {
     const auto updateActions = [this]() -> void {
 
@@ -19,6 +20,7 @@ LayerAction::LayerAction(Layer& layer, LayersAction& layersAction) :
         // Enable/disable image and selection groups
         _imageAction.setEnabled(layerIsVisible);
         _selectionAction.getGroupAction().setEnabled(layerIsVisible);
+        _subsetAction.setEnabled(layerIsVisible);
     };
 
     connect(&_generalAction.getVisibleAction(), &ToggleAction::toggled, this, updateActions);

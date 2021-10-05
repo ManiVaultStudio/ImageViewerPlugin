@@ -162,6 +162,19 @@ const QString Layer::getImagesDatasetName() const
     return _images.getDatasetName();
 }
 
+std::vector<std::uint32_t>& Layer::getSelectionIndices()
+{
+    if (!_points.isValid())
+        throw std::runtime_error("The points dataset is not valid");
+
+    return dynamic_cast<Points&>(getPoints().getSourceData().getSelection()).indices;
+}
+
+const std::vector<std::uint32_t>& Layer::getSelectionIndices() const
+{
+    return const_cast<Layer*>(this)->getSelectionIndices();
+}
+
 const std::uint32_t Layer::getNumberOfImages() const
 {
     if (!_images.isValid())
@@ -362,7 +375,7 @@ void Layer::publishSelection()
         }
 
         // Notify listeners of the selection change
-        getImageViewerPlugin().core()->notifySelectionChanged(_points->isDerivedData() ? _points->getSourceData<Points>(*_points).getName() : _points->getName());
+        getImageViewerPlugin().core()->notifySelectionChanged(_points.getSourceData().getName());
 
         // Render
         invalidate();

@@ -39,6 +39,12 @@ public:
 
     const QString getImagesDatasetName() const;
 
+    /** Get selection indices */
+    std::vector<std::uint32_t>& getSelectionIndices();
+
+    /** Get selection indices */
+    const std::vector<std::uint32_t>& getSelectionIndices() const;
+
 public: // Images wrapper functions
 
     const std::uint32_t getNumberOfImages() const;

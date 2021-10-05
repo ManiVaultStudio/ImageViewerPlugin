@@ -424,6 +424,8 @@ void ImageViewerWidget::initializeGL()
 
 void ImageViewerWidget::resizeGL(int width, int height)
 {
+    // Update bounds
+    updateWorldBoundingRectangle();
 }
 
 void ImageViewerWidget::paintGL()
