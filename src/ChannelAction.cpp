@@ -18,9 +18,9 @@ const QMap<ChannelAction::ChannelIndex, QString> ChannelAction::channelIndexes =
     { ChannelAction::Selection, "Selection channel" }
 };
 
-ChannelAction::ChannelAction(ImageAction& layerImageAction, const ChannelIndex& index, const QString& name) :
-    WidgetAction(reinterpret_cast<QObject*>(&layerImageAction)),
-    _layerImageAction(layerImageAction),
+ChannelAction::ChannelAction(ImageAction& imageAction, const ChannelIndex& index, const QString& name) :
+    WidgetAction(reinterpret_cast<QObject*>(&imageAction)),
+    _imageAction(imageAction),
     _index(index),
     _enabledAction(this, "Enabled"),
     _dimensionAction(this, "Dimension"),
@@ -54,7 +54,7 @@ ChannelAction::ChannelAction(ImageAction& layerImageAction, const ChannelIndex& 
         computeScalarData();
     });
 
-    connect(&_layerImageAction.getSubsampleFactorAction(), &IntegralAction::valueChanged, this, [this]() {
+    connect(&_imageAction.getSubsampleFactorAction(), &IntegralAction::valueChanged, this, [this]() {
         computeScalarData();
     });
 
@@ -103,7 +103,7 @@ ChannelAction::ChannelAction(ImageAction& layerImageAction, const ChannelIndex& 
     });
 
     // Flag as changed when the window level settings change
-    connect(&_layerImageAction.getSubsampleFactorAction(), &IntegralAction::valueChanged, this, resizeScalars);
+    connect(&_imageAction.getSubsampleFactorAction(), &IntegralAction::valueChanged, this, resizeScalars);
 
     updateEnabled();
     resizeScalars();
@@ -119,7 +119,7 @@ const ChannelAction::ChannelIndex ChannelAction::getIndex() const
 QSize ChannelAction::getImageSize()
 {
     const auto imageSize        = getImages()->getImageSize();
-    const auto subsampleFactor  = _layerImageAction.getSubsampleFactorAction().getValue();
+    const auto subsampleFactor  = _imageAction.getSubsampleFactorAction().getValue();
     
     return QSize(static_cast<int>(floorf(imageSize.width() / subsampleFactor)), static_cast<int>(floorf(imageSize.width() / subsampleFactor)));
 }
@@ -172,12 +172,12 @@ void ChannelAction::reset()
 
 hdps::util::DatasetRef<Images>& ChannelAction::getImages()
 {
-    return _layerImageAction.getLayerAction().getLayer().getImages();
+    return _imageAction.getLayerAction().getLayer().getImages();
 }
 
 hdps::util::DatasetRef<Points>& ChannelAction::getPoints()
 {
-    return _layerImageAction.getLayerAction().getLayer().getPoints();
+    return _imageAction.getLayerAction().getLayer().getPoints();
 }
 
 void ChannelAction::computeScalarData()
@@ -202,7 +202,7 @@ void ChannelAction::computeScalarData()
                 if (_dimensionAction.getCurrentIndex() < 0)
                     break;
 
-                getImages()->getScalarData(_dimensionAction.getCurrentIndex(), _scalarData, _scalarDataRange, _layerImageAction.getSubsampleFactorAction().getValue());
+                getImages()->getScalarData(_dimensionAction.getCurrentIndex(), _scalarData, _scalarDataRange, _imageAction.getSubsampleFactorAction().getValue());
 
                 break;
             }
@@ -239,31 +239,8 @@ void ChannelAction::computeMaskChannel()
 {
     qDebug() << "Compute mask for channel" << _index;
 
-    if (getImages()->getType() != ImageData::Type::Stack)
-        return;
-
+    // Future implementations can use external masks, for now just leave opaque
     std::fill(_scalarData.begin(), _scalarData.end(), 1.0f);
-
-    if (getPoints()->isDerivedData()) {
-        getPoints()->visitData([this](auto pointData) {
-            auto& sourceData = getPoints()->getSourceData<Points>(*getPoints());
-
-            if (sourceData.isFull()) {
-                for (std::uint32_t i = 0; i < getPoints()->getNumPoints(); i++)
-                    _scalarData[i] = 1.0f;
-            }
-            else {
-                for (std::uint32_t i = 0; i < sourceData.indices.size(); i++)
-                    _scalarData[sourceData.indices[i]] = 1.0f;
-            }
-        });
-    }
-    else {
-        getPoints()->visitData([this](auto pointData) {
-            for (auto pointView : pointData)
-                _scalarData[pointView.index()] = 1.0f;
-        });
-    }
 }
 
 void ChannelAction::computeSelectionChannel()
@@ -285,7 +262,7 @@ void ChannelAction::computeSelectionChannel()
     //qDebug() << _layerImageAction.getLayerAction().getLayer().getSelectionIndices();
 
     // Assign selected pixels
-    for (auto selectionIndex : _layerImageAction.getLayerAction().getLayer().getSelectionIndices()) {
+    for (auto selectionIndex : _imageAction.getLayerAction().getLayer().getSelectedPixels()) {
 
         // Assign selected pixel
         _selectionData[selectionIndex] = 255;

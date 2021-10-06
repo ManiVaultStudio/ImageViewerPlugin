@@ -13,7 +13,7 @@ GeneralAction::GeneralAction(LayerAction& layerAction) :
     _scaleAction(this, "Scale", 0.0f, 1000.0f, 100.0f, 100.0f, 1),
     _xPositionAction(this, "X position", -1000.0f, 1000.0f, 0.0f),
     _yPositionAction(this, "Y position", -1000.0f, 1000.0f, 0.0f),
-    _zoomToExtentsAction(this, "Zoom to extents")
+    _zoomAction(*this)
 {
     setText("General");
 
@@ -21,7 +21,6 @@ GeneralAction::GeneralAction(LayerAction& layerAction) :
     _scaleAction.setToolTip("Layer scale in percentages");
     _xPositionAction.setToolTip("Layer x-position");
     _yPositionAction.setToolTip("Layer y-position");
-    _zoomToExtentsAction.setToolTip("Zoom to the extents of the layer");
 
     // Get initial random layer color
     const auto layerColor = _layerAction.getLayersAction().getRandomLayerColor();
@@ -40,7 +39,7 @@ GeneralAction::GeneralAction(LayerAction& layerAction) :
     _nameAction.setDefaultString(imagesDatasetName);
 
     // Zoom to extents
-    connect(&_zoomToExtentsAction, &ToggleAction::triggered, this, [this]() {
+    connect(&_zoomAction, &ToggleAction::triggered, this, [this]() {
         _layerAction.getLayer().zoomToExtents();
     });
 

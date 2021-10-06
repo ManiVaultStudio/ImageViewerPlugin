@@ -182,7 +182,7 @@ void SelectionProp::setGeometry(const QRect& sourceImageRectangle, const QRect& 
     setModelMatrix(modelMatrix);
 }
 
-void SelectionProp::setSelectionData(const QSize& imageSize, const std::vector<std::uint8_t>& selectionData)
+void SelectionProp::setSelectionData(const std::vector<std::uint8_t>& selectionData)
 {
     try {
         getRenderer().bindOpenGLContext();

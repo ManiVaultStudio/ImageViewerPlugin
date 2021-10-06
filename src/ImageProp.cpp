@@ -171,10 +171,21 @@ QRectF ImageProp::getWorldBoundingRectangle() const
     const auto matrix = _renderable.getModelMatrix() * getModelMatrix();
 
     // Compute rectangle extents in world coordinates
-    const auto worldTopLeft = matrix * boundingRectangle.topLeft();
+    const auto worldTopLeft     = matrix * boundingRectangle.topLeft();
     const auto worldBottomRight = matrix * boundingRectangle.bottomRight();
 
-    return QRectF(worldTopLeft, worldBottomRight);
+    const auto rectangleFromPoints = [](const QPointF& first, const QPointF& second) -> QRectF {
+        QRectF rectangle;
+
+        rectangle.setLeft(std::min(first.x(), second.x()));
+        rectangle.setRight(std::max(first.x(), second.x()));
+        rectangle.setTop(std::min(first.y(), second.y()));
+        rectangle.setBottom(std::max(first.y(), second.y()));
+
+        return rectangle;
+    };
+
+    return rectangleFromPoints(worldTopLeft, worldBottomRight);
 }
 
 void ImageProp::setGeometry(const QRect& sourceImageRectangle, const QRect& targetImageRectangle)
@@ -225,7 +236,7 @@ void ImageProp::setColorMapImage(const QImage& colorMapImage)
     }
 }
 
-void ImageProp::setChannelScalarData(const std::uint32_t& channelIndex, const QSize& imageSize, const QVector<float>& scalarData, const DisplayRange& displayRange)
+void ImageProp::setChannelScalarData(const std::uint32_t& channelIndex, const QVector<float>& scalarData, const DisplayRange& displayRange)
 {
     try {
         if (channelIndex > 3)
@@ -233,6 +244,9 @@ void ImageProp::setChannelScalarData(const std::uint32_t& channelIndex, const QS
 
         getRenderer().bindOpenGLContext();
         {
+            // Get image size from quad
+            const auto imageSize = getShapeByName<QuadShape>("Quad")->getRectangle().size();
+
             // Only proceed if the image size is valid (non-zero in x/y)
             if (!imageSize.isValid())
                 return;

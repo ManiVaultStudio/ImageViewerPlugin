@@ -24,7 +24,7 @@ SubsetAction::SubsetAction(LayerAction& layerAction) :
     
     // Update actions states
     const auto updateActionStates = [this]() {
-        _createAction.setEnabled(!_layerAction.getLayer().getSelectionIndices().empty() && !_nameAction.getString().isEmpty());
+        _createAction.setEnabled(!_layerAction.getLayer().getSelectedPixels().empty() && !_nameAction.getString().isEmpty());
     };
 
     // Update action state(s) when the subset name changes
@@ -56,7 +56,7 @@ SubsetAction::SubsetAction(LayerAction& layerAction) :
                 const auto imageSize = _layerAction.getLayer().getImageSize();
 
                 // Cache the selection indices
-                auto cachedSelectionIndices = _layerAction.getLayer().getSelectionIndices();
+                auto cachedSelectionIndices = _layerAction.getLayer().getSelectedPixels();
 
                 // Get the selection boundaries
                 const auto selectionBoundaries = _layerAction.getSelectionAction().getSelectionBoundaries();
@@ -65,7 +65,7 @@ SubsetAction::SubsetAction(LayerAction& layerAction) :
                 const auto numberOfPixelsInRegion = selectionBoundaries.width() * selectionBoundaries.height();
 
                 // Get reference to selection indices
-                auto& modifySelectionIndices = _layerAction.getLayer().getSelectionIndices();
+                auto& modifySelectionIndices = _layerAction.getLayer().getSelectedPixels();
 
                 // Allocate space for indices
                 modifySelectionIndices.clear();
@@ -94,7 +94,7 @@ SubsetAction::SubsetAction(LayerAction& layerAction) :
 
                 imagesSubset->setType(images->getType());
                 imagesSubset->setNumberOfImages(images->getNumberOfImages());
-                imagesSubset->setImageSize(selectionBoundaries.size());
+                imagesSubset->setImageGeometry(imageSize, selectionBoundaries.size(), selectionBoundaries.topLeft());
                 imagesSubset->setNumberOfComponentsPerPixel(images->getNumberOfComponentsPerPixel());
                 //imagesSubset->setImageFilePaths(images->getImag);
                 imagesSubset->setDimensionNames(images->getDimensionNames());

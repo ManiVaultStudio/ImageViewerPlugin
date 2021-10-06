@@ -18,6 +18,29 @@ LayersAction::LayersAction(SettingsAction& settingsAction) :
     _currentLayerAction(this),
     _rng(0)
 {
+    // Activate selected layer and deactivate any layer that was selected
+    connect(&_settingsAction.getImageViewerPlugin().getSelectionModel(), &QItemSelectionModel::selectionChanged, this, [](const QItemSelection& selected, const QItemSelection& deselected) {
+
+        // Deactivate deselected layers
+        if (!deselected.indexes().isEmpty()) {
+
+            // Get pointer to layer that was deselected
+            auto layer = static_cast<Layer*>(deselected.indexes().first().internalPointer());
+
+            // Deactivate the layer
+            layer->deactivate();
+        }
+
+        // Activate selected layers
+        if (!selected.indexes().isEmpty()) {
+
+            // Get pointer to layer that was deselected
+            auto layer = static_cast<Layer*>(selected.indexes().first().internalPointer());
+
+            // Activate the layer
+            layer->activate();
+        }
+    });
 }
 
 QColor LayersAction::getRandomLayerColor()
@@ -152,7 +175,7 @@ LayersAction::Widget::Widget(QWidget* parent, LayersAction* layersAction, const 
         _moveLayerDownAction.setEnabled(selectedRowIndex >= 0 ? selectedRowIndex < treeView->model()->rowCount() - 1 : false);
         _moveLayerToBottomAction.setEnabled(hasSelection && selectedRowIndex < treeView->model()->rowCount() - 1);
 
-        // Rend
+        // Render
         imageViewerPlugin.getImageViewerWidget()->update();
     };
 

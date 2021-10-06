@@ -78,11 +78,10 @@ public: // Rendering
     /**
      * Set channel scalar data
      * @param channelIndex Channel index
-     * @param imageSize Image size
      * @param scalarData Scalar data
      * @param displayRange Display range
      */
-    void setChannelScalarData(const std::uint32_t& channelIndex, const QSize& imageSize, const QVector<float>& scalarData, const DisplayRange& displayRange);
+    void setChannelScalarData(const std::uint32_t& channelIndex, const QVector<float>& scalarData, const DisplayRange& displayRange);
 
     /**
      * Set image interpolation type

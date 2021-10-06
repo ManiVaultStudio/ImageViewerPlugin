@@ -287,6 +287,7 @@ bool ImageViewerWidget::eventFilter(QObject* target, QEvent* event)
                         const auto pCurrent     = QVector2D(_mousePositions[numberOfMousePositions - 1]);
                         const auto vDelta       = (pCurrent - pPrevious) / _renderer.getZoomLevel();
 
+                        qDebug() << pPrevious << pCurrent;
                         _renderer.panBy(vDelta);
                         _renderer.render();
                     }

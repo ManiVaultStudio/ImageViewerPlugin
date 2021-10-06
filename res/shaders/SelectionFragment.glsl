@@ -17,7 +17,7 @@ void main(void)
     vec2 offset = vec2(1.0f) / (2.0f * textureSize);
 
     // Compute texel UV position in absolute texture coordinates
-    vec2 texelUv = (uv - vec2(0.001f)) * textureSize;
+    vec2 texelUv = (uv - vec2(0.00001f)) * textureSize;
 
     texelUv.x = floor(texelUv.x);
     texelUv.y = floor(texelUv.y);

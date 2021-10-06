@@ -18,9 +18,9 @@ LayerAction::LayerAction(Layer& layer, LayersAction& layersAction) :
         const auto layerIsVisible = _generalAction.getVisibleAction().isChecked();
 
         // Enable/disable image and selection groups
-        _imageAction.setEnabled(layerIsVisible);
-        _selectionAction.getGroupAction().setEnabled(layerIsVisible);
-        _subsetAction.setEnabled(layerIsVisible);
+        //_imageAction.setEnabled(layerIsVisible);
+        //_selectionAction.getGroupAction().setEnabled(layerIsVisible);
+        //_subsetAction.setEnabled(layerIsVisible);
     };
 
     connect(&_generalAction.getVisibleAction(), &ToggleAction::toggled, this, updateActions);

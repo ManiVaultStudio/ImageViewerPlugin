@@ -460,6 +460,7 @@ void LayersModel::removeLayer(const QModelIndex& layerModelIndex)
         beginRemoveRows(QModelIndex(), layerModelIndex.row(), layerModelIndex.row());
         {
             // Remove the layer action
+            _layers[layerModelIndex.row()].clear();
             _layers.remove(layerModelIndex.row());
         }
         endRemoveRows();

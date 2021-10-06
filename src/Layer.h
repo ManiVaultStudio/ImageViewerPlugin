@@ -3,6 +3,7 @@
 #include "Renderable.h"
 #include "LayerAction.h"
 
+#include "event/EventListener.h"
 #include "util/DatasetRef.h"
 
 #include "ImageData/Images.h"
@@ -12,7 +13,7 @@ using namespace hdps::util;
 
 class ImageViewerPlugin;
 
-class Layer : public Renderable
+class Layer : public Renderable, public hdps::EventListener
 {
     Q_OBJECT
 
@@ -25,8 +26,17 @@ public:
      */
     Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName);
 
+    /** Destructor */
+    virtual ~Layer();
+
     /** Get reference to image viewer plugin */
     ImageViewerPlugin& getImageViewerPlugin();
+
+    /** Activate the layer */
+    void activate();
+
+    /** De-activate the layer */
+    void deactivate();
 
     /** Invalidates the prop (triggers a re-render of all layers) */
     void invalidate();
@@ -39,11 +49,11 @@ public:
 
     const QString getImagesDatasetName() const;
 
-    /** Get selection indices */
-    std::vector<std::uint32_t>& getSelectionIndices();
+    /** Get indices of the selected pixels */
+    std::vector<std::uint32_t>& getSelectedPixels();
 
-    /** Get selection indices */
-    const std::vector<std::uint32_t>& getSelectionIndices() const;
+    /** Get indices of the selected pixels */
+    const std::vector<std::uint32_t>& getSelectedPixels() const;
 
 public: // Images wrapper functions
 
@@ -85,7 +95,11 @@ public: // Selection
 
 public: // View
 
+    // Zoom to layer extents
     void zoomToExtents();
+
+    // Zoom to layer selection
+    void zoomToSelection();
 
     /** Get the bounding rectangle */
     QRectF getWorldBoundingRectangle() const override;
@@ -94,15 +108,16 @@ protected:
 
     /**
      * Renders the props
-     * @param parentMVP Parent model view projection matrix
+     * @param modelViewProjectionMatrix Model view projection matrix
      */
     void render(const QMatrix4x4& modelViewProjectionMatrix) override;
 
 protected:
-    ImageViewerPlugin&      _imageViewerPlugin;     /** Reference to image viewer plugin */
-    DatasetRef<Images>      _images;                /** Reference to images dataset */
-    DatasetRef<Points>      _points;                /** Reference to input points dataset of the images */
-    LayerAction             _layerAction;           /** Layer settings action */
+    ImageViewerPlugin&              _imageViewerPlugin;     /** Reference to image viewer plugin */
+    DatasetRef<Images>              _images;                /** Reference to images dataset */
+    DatasetRef<Points>              _points;                /** Reference to input points dataset of the images */
+    LayerAction                     _layerAction;           /** Layer settings action */
+    std::vector<std::uint32_t>      _selectedPixels;        /** Indices of selected pixels */
 
     friend class ImageViewerWidget;
 };

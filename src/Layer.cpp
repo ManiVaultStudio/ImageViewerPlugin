@@ -12,11 +12,15 @@
 
 Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
     Renderable(imageViewerPlugin.getImageViewerWidget()->getRenderer()),
+    hdps::EventListener(),
     _imageViewerPlugin(imageViewerPlugin),
     _images(datasetName),
     _points(_images->getHierarchyItem().getParent()->getDatasetName()),
-    _layerAction(*this, imageViewerPlugin.getSettingsAction().getLayersAction())
+    _layerAction(*this, imageViewerPlugin.getSettingsAction().getLayersAction()),
+    _selectedPixels()
 {
+    setEventCore(hdps::Application::core());
+
     if (!_images.isValid())
         throw std::runtime_error("The layer images dataset is not valid after initialization");
 
@@ -52,7 +56,7 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
             case ChannelAction::Mask:
             {
                 // Assign the scalar data to the prop
-                this->getPropByName<ImageProp>("ImageProp")->setChannelScalarData(channelAction.getIndex(), channelAction.getImageSize(), channelAction.getScalarData(), channelAction.getDisplayRange());
+                this->getPropByName<ImageProp>("ImageProp")->setChannelScalarData(channelAction.getIndex(), channelAction.getScalarData(), channelAction.getDisplayRange());
 
                 break;
             }
@@ -63,7 +67,7 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
                 auto& selectionChannel = _layerAction.getImageAction().getChannelSelectionAction();
 
                 // Assign the scalar data to the prop
-                this->getPropByName<SelectionProp>("SelectionProp")->setSelectionData(channelAction.getImageSize(), selectionChannel.getSelectionData());
+                this->getPropByName<SelectionProp>("SelectionProp")->setSelectionData(selectionChannel.getSelectionData());
 
                 break;
             }
@@ -117,6 +121,51 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
     updateChannelScalarData(_layerAction.getImageAction().getChannelSelectionAction());
     updateInterpolationType();
     updateModelMatrixAndReRender();
+
+    // Update selected pixels
+    const auto updateSelectedPixels = [this]() {
+        auto& selectionIndices = dynamic_cast<Points&>(getPoints().getSourceData().getSelection()).indices;
+
+        if (getPoints()->isFull()) {
+            _selectedPixels = selectionIndices;
+        }
+        else {
+            QSet<std::uint32_t> indicesSet(getPoints()->indices.begin(), getPoints()->indices.end());
+
+            _selectedPixels.clear();
+            _selectedPixels.reserve(_images->getNumberOfPixels());
+
+            // Cache source image width
+            const auto sourceImageWidth = _images->getSourceRectangle().width();
+            const auto targetImageWidth = _images->getImageSize().width();
+
+            for (const auto& selectionIndex : selectionIndices) {
+                if (indicesSet.contains(selectionIndex)) {
+                   
+                    // Convert global selection index to local pixel coordinate
+                    const auto localPixelX = selectionIndex % sourceImageWidth;
+                    const auto localPixelY = static_cast<std::int32_t>(floorf(selectionIndex / static_cast<float>(sourceImageWidth)));
+
+                    _selectedPixels.push_back(localPixelY * targetImageWidth + localPixelX);
+                }
+            }
+        }
+    };
+
+    // Update selected pixels when the selection changes
+    registerDataEventByType(PointType, [this, updateSelectedPixels](hdps::DataEvent* dataEvent) {
+        if (dataEvent->getType() == hdps::EventType::SelectionChanged) {
+            auto selectionChangedEvent = static_cast<hdps::SelectionChangedEvent*>(dataEvent);
+
+            if (selectionChangedEvent->dataSetName == _layerAction.getLayer().getPoints().getSourceData().getName())
+                updateSelectedPixels();
+        }
+    });
+}
+
+Layer::~Layer()
+{
+
 }
 
 void Layer::render(const QMatrix4x4& modelViewProjectionMatrix)
@@ -135,6 +184,43 @@ ImageViewerPlugin& Layer::getImageViewerPlugin()
     return _imageViewerPlugin;
 }
 
+void Layer::activate()
+{
+    try {
+
+        qDebug() << "Activate layer" << _layerAction.getGeneralAction().getNameAction().getString();
+
+        // Enable shortcuts for the layer
+        _layerAction.getSelectionAction().setShortcutsEnabled(true);
+    }
+    catch (std::exception& e)
+    {
+        exceptionMessageBox(QString("Unable to activate layer %1").arg(_layerAction.getGeneralAction().getNameAction().getString()), e);
+    }
+    catch (...) {
+        exceptionMessageBox(QString("Unable to activate layer %1").arg(_layerAction.getGeneralAction().getNameAction().getString()));
+    }
+    
+}
+
+void Layer::deactivate()
+{
+    try {
+
+        qDebug() << "Deactivate layer" << _layerAction.getGeneralAction().getNameAction().getString();
+
+        // Disable shortcuts for the layer
+        _layerAction.getSelectionAction().setShortcutsEnabled(false);
+    }
+    catch (std::exception& e)
+    {
+        exceptionMessageBox(QString("Unable to deactivate layer %1").arg(_layerAction.getGeneralAction().getNameAction().getString()), e);
+    }
+    catch (...) {
+        exceptionMessageBox(QString("Unable to deactivate layer %1").arg(_layerAction.getGeneralAction().getNameAction().getString()));
+    }
+}
+
 void Layer::invalidate()
 {
     _imageViewerPlugin.getImageViewerWidget()->update();
@@ -142,16 +228,25 @@ void Layer::invalidate()
 
 void Layer::updateModelMatrix()
 {
-    QMatrix4x4 translateMatrix, scaleMatrix;
+    QMatrix4x4 translateMatrix, scaleMatrix, invertMatrix;
     
     auto& generalAction = _layerAction.getGeneralAction();
 
     // Compute the scale and translate matrices
-    translateMatrix.translate(-generalAction.getXPositionAction().getValue(), generalAction.getYPositionAction().getValue(), 0.0f);
-    scaleMatrix.scale(0.01f * generalAction.getScaleAction().getValue());
+    translateMatrix.translate(generalAction.getXPositionAction().getValue(), generalAction.getYPositionAction().getValue(), 0.0f);
+
+    const auto scaleFactor = 0.01f * generalAction.getScaleAction().getValue();
+
+    invertMatrix.scale(-1.0f, 1.0f, 1.0f);
+
+    scaleMatrix.scale(scaleFactor, scaleFactor, scaleFactor);
 
     // Assign model matrix
-    setModelMatrix(translateMatrix * scaleMatrix);
+    setModelMatrix(invertMatrix * translateMatrix * scaleMatrix);
+    //setModelMatrix(translateMatrix * scaleMatrix);
+
+    //_modelMatrix.setToIdentity();
+    //_modelMatrix.scale(QVector3D(-1.0f, 1.0f, 1.0f));
 }
 
 const QString Layer::getImagesDatasetName() const
@@ -162,17 +257,17 @@ const QString Layer::getImagesDatasetName() const
     return _images.getDatasetName();
 }
 
-std::vector<std::uint32_t>& Layer::getSelectionIndices()
+std::vector<std::uint32_t>& Layer::getSelectedPixels()
 {
     if (!_points.isValid())
         throw std::runtime_error("The points dataset is not valid");
 
-    return dynamic_cast<Points&>(getPoints().getSourceData().getSelection()).indices;
+    return _selectedPixels;
 }
 
-const std::vector<std::uint32_t>& Layer::getSelectionIndices() const
+const std::vector<std::uint32_t>& Layer::getSelectedPixels() const
 {
-    return const_cast<Layer*>(this)->getSelectionIndices();
+    return const_cast<Layer*>(this)->getSelectedPixels();
 }
 
 const std::uint32_t Layer::getNumberOfImages() const
@@ -395,7 +490,7 @@ void Layer::zoomToExtents()
 
         qDebug() << "Zoom to layer extents";
 
-        // Get pointer to image layer prop
+        // Get pointer to image prop
         auto layerImageProp = getPropByName<ImageProp>("ImageProp");
 
         // Zoom to layer extents
@@ -410,6 +505,56 @@ void Layer::zoomToExtents()
     }
     catch (...) {
         exceptionMessageBox("Unable to zoom to layer extents");
+    }
+}
+
+void Layer::zoomToSelection()
+{
+    try {
+
+        qDebug() << "Zoom to layer selection";
+
+        // Get pointer to image prop
+        auto layerImageProp = getPropByName<ImageProp>("ImageProp");
+
+        // Get selection boundaries
+        const auto selectionBoundingRectangle = QRectF(_layerAction.getImageAction().getChannelSelectionAction().getSelectionBoundaries());
+
+        if (!selectionBoundingRectangle.isValid())
+            throw std::runtime_error("Selection boundaries are invalid");
+
+        auto rectangle = layerImageProp->getWorldBoundingRectangle();
+
+        // Compute composite matrix
+        const auto matrix = getModelMatrix() * layerImageProp->getModelMatrix();
+
+        // Compute rectangle extents in world coordinates
+        const auto worldTopLeft     = matrix * selectionBoundingRectangle.topLeft();
+        const auto worldBottomRight = matrix * selectionBoundingRectangle.bottomRight();
+
+        const auto rectangleFromPoints = [](const QPointF& first, const QPointF& second) -> QRectF {
+            QRectF rectangle;
+
+            rectangle.setLeft(std::min(first.x(), second.x()));
+            rectangle.setRight(std::max(first.x(), second.x()));
+            rectangle.setTop(std::min(first.y(), second.y()));
+            rectangle.setBottom(std::max(first.y(), second.y()));
+
+            return rectangle;
+        };
+
+        // Zoom to layer selection
+        _imageViewerPlugin.getImageViewerWidget()->getRenderer().zoomToWorldRectangle(rectangleFromPoints(worldTopLeft, worldBottomRight));
+
+        // Trigger render
+        invalidate();
+    }
+    catch (std::exception& e)
+    {
+        exceptionMessageBox("Unable to zoom to layer selection", e);
+    }
+    catch (...) {
+        exceptionMessageBox("Unable to zoom to layer selection");
     }
 }
 

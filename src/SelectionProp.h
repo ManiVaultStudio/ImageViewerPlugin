@@ -48,10 +48,9 @@ public:
 
     /**
      * Set selection data
-     * @param imageSize Image size
      * @param selectionData Selection data
      */
-    void setSelectionData(const QSize& imageSize, const std::vector<std::uint8_t>& selectionData);
+    void setSelectionData(const std::vector<std::uint8_t>& selectionData);
 
 protected:
     Layer&      _layer;     /** Reference to layer */

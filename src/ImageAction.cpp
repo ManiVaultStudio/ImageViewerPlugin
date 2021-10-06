@@ -165,9 +165,7 @@ ImageAction::ImageAction(LayerAction& layerAction) :
         if (dataEvent->getType() == hdps::EventType::SelectionChanged) {
             auto selectionChangedEvent = static_cast<hdps::SelectionChangedEvent*>(dataEvent);
 
-            DatasetRef<Points> points(selectionChangedEvent->dataSetName);
-
-            if (DataSet::getSourceData<Points&>(*points).getName() == _layerAction.getLayer().getPoints()->getName())
+            if (selectionChangedEvent->dataSetName == _layerAction.getLayer().getPoints().getSourceData().getName())
                 _channelSelectionAction.computeScalarData();
         }
     });

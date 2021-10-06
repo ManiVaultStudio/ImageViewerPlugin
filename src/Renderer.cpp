@@ -87,7 +87,12 @@ QMatrix4x4 Renderer::getViewMatrix() const
 {
     QMatrix4x4 lookAt, scale;
 
-    lookAt.lookAt(QVector3D(_pan.x(), _pan.y(), -1), QVector3D(_pan.x(), _pan.y(), 0), QVector3D(0, 1, 0));
+    // Construct look-at parameters
+    const auto eye      = QVector3D(_pan.x(), _pan.y(), -1);
+    const auto center   = QVector3D(_pan.x(), _pan.y(), 0);
+    const auto up       = QVector3D(0, 1, 0);
+
+    lookAt.lookAt(eye, center, up);
     scale.scale(_zoomLevel);
 
     return scale * lookAt;
@@ -126,6 +131,8 @@ void Renderer::panBy(const QVector2D& delta)
 
 void Renderer::setPan(const QVector2D& pan)
 {
+    qDebug() << "Set pan" << pan;
+
     _pan = pan;
 
     emit panChanged(_pan);
@@ -238,13 +245,17 @@ void Renderer::zoomAround(const QPoint& screenPoint, const float& factor)
 
 void Renderer::zoomToWorldRectangle(const QRectF& rectangle)
 {
-    if (!rectangle.isValid())
-        throw std::runtime_error("Zoom rectangle is invalid.");
+    qDebug() << "Zoom to rectangle" << rectangle << rectangle.topLeft() << rectangle.bottomRight();
 
-    qDebug() << "Zoom to rectangle" << rectangle;
+    //if (!rectangle.isValid())
+        //throw std::runtime_error("Zoom rectangle is invalid.");
+
+    // Get center of zoom rectangle
+    const auto rectangleCenter = QVector3D(rectangle.center());
 
     // Move to center of the world bounding rectangle
-    setPan(QVector2D(rectangle.center()));
+    setPan(QVector2D(rectangleCenter));
+    //panBy(QVector2D(-10.0f, 0.0f));
 
     // Compute the scale factor
     const auto parentWidgetSize = getParentWidgetSize();

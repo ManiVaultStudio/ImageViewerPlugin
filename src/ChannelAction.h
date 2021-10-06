@@ -70,11 +70,11 @@ public:
 
     /** 
      * Constructor
-     * @param layerImageAction Reference to layer image action
+     * @param imageAction Reference to layer image action
      * @param index Channel index
      * @param name Name of the channel
      */
-    ChannelAction(ImageAction& layerImageAction, const ChannelIndex& index, const QString& name);
+    ChannelAction(ImageAction& imageAction, const ChannelIndex& index, const QString& name);
 
     /** Get the channel index */
     const ChannelIndex getIndex() const;
@@ -128,7 +128,7 @@ public: /** Action getters */
     WindowLevelAction& getWindowLevelAction() { return _windowLevelAction; }
 
 protected:
-    ImageAction&                _layerImageAction;          /** Reference to layer image action */
+    ImageAction&                _imageAction;               /** Reference to image action */
     const ChannelIndex          _index;                     /** Channel index */
     ToggleAction                _enabledAction;             /** Enabled action */
     OptionAction                _dimensionAction;           /** Selected dimension action */
