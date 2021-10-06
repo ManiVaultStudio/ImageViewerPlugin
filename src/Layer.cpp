@@ -200,7 +200,7 @@ void Layer::activate()
 {
     try {
 
-        qDebug() << "Activate layer" << _layerAction.getGeneralAction().getNameAction().getString();
+        qDebug() << "Activate layer:" << _layerAction.getGeneralAction().getNameAction().getString();
 
         // Enable shortcuts for the layer
         _layerAction.getSelectionAction().setShortcutsEnabled(true);
@@ -218,7 +218,7 @@ void Layer::deactivate()
 {
     try {
 
-        qDebug() << "Deactivate layer" << _layerAction.getGeneralAction().getNameAction().getString();
+        qDebug() << "Deactivate layer:" << _layerAction.getGeneralAction().getNameAction().getString();
 
         // Disable shortcuts for the layer
         _layerAction.getSelectionAction().setShortcutsEnabled(false);
@@ -239,25 +239,37 @@ void Layer::invalidate()
 
 void Layer::updateModelMatrix()
 {
-    // Get reference to general action for getting the layer position and scale
-    auto& generalAction = _layerAction.getGeneralAction();
+    qDebug() << "Update model matrix for layer:" << _layerAction.getGeneralAction().getNameAction().getString();
 
-    QMatrix4x4 invertMatrix, translateMatrix, scaleMatrix;
+    try {
 
-    // Invert along the x-axis
-    invertMatrix.scale(-1.0f, 1.0f, 1.0f);
+        // Get reference to general action for getting the layer position and scale
+        auto& generalAction = _layerAction.getGeneralAction();
 
-    // Compute the translation matrix
-    translateMatrix.translate(generalAction.getXPositionAction().getValue(), generalAction.getYPositionAction().getValue(), 0.0f);
+        QMatrix4x4 invertMatrix, translateMatrix, scaleMatrix;
 
-    // Get the scale factor
-    const auto scaleFactor = 0.01f * generalAction.getScaleAction().getValue();
+        // Invert along the x-axis
+        invertMatrix.scale(-1.0f, 1.0f, 1.0f);
 
-    // And compute the scale factor
-    scaleMatrix.scale(scaleFactor, scaleFactor, scaleFactor);
+        // Compute the translation matrix
+        translateMatrix.translate(generalAction.getXPositionAction().getValue(), generalAction.getYPositionAction().getValue(), 0.0f);
 
-    // Assign model matrix
-    setModelMatrix(invertMatrix * translateMatrix * scaleMatrix);
+        // Get the scale factor
+        const auto scaleFactor = 0.01f * generalAction.getScaleAction().getValue();
+
+        // And compute the scale factor
+        scaleMatrix.scale(scaleFactor, scaleFactor, scaleFactor);
+
+        // Assign model matrix
+        setModelMatrix(invertMatrix * translateMatrix * scaleMatrix);
+    }
+    catch (std::exception& e)
+    {
+        exceptionMessageBox(QString("Unable to update the model matrix for layer: %1").arg(_layerAction.getGeneralAction().getNameAction().getString()), e);
+    }
+    catch (...) {
+        exceptionMessageBox(QString("Unable to update the model matrix for layer: %1").arg(_layerAction.getGeneralAction().getNameAction().getString()));
+    }
 }
 
 const QString Layer::getImagesDatasetName() const
@@ -335,7 +347,7 @@ void Layer::startSelection()
 {
     try {
 
-        qDebug() << "Start the layer pixel selection";
+        qDebug() << "Start the pixel selection for layer:" << _layerAction.getGeneralAction().getNameAction().getString();;
 
         // Compute the selection in the selection tool prop
         this->getPropByName<SelectionToolProp>("SelectionToolProp")->resetOffScreenSelectionBuffer();
@@ -356,7 +368,7 @@ void Layer::computeSelection(const QVector<QPoint>& mousePositions)
 {
     try {
 
-        qDebug() << "Compute layer selection";
+        qDebug() << "Compute the pixel selection for layer:" << _layerAction.getGeneralAction().getNameAction().getString();;
 
         // Compute the selection in the selection tool prop
         this->getPropByName<SelectionToolProp>("SelectionToolProp")->compute(mousePositions);
@@ -377,6 +389,9 @@ void Layer::resetSelectionBuffer()
 {
     try {
 
+        qDebug() << "Reset the selection buffer for layer:" << _layerAction.getGeneralAction().getNameAction().getString();
+
+        // Reset the off-screen selection buffer
         getPropByName<SelectionToolProp>("SelectionToolProp")->resetOffScreenSelectionBuffer();
 
         // Trigger render
@@ -395,7 +410,7 @@ void Layer::publishSelection()
 {
     try {
 
-        qDebug() << "Publish layer selection";
+        qDebug() << "Publish pixel selection for layer:" << _layerAction.getGeneralAction().getNameAction().getString();;
 
         // Make sure we have a valid points dataset
         if (!_points.isValid())
@@ -499,7 +514,7 @@ void Layer::zoomToExtents()
 {
     try {
 
-        qDebug() << "Zoom to layer extents";
+        qDebug() << "Zoom to the extents of layer:" << _layerAction.getGeneralAction().getNameAction().getString();
 
         // Get pointer to image prop
         auto layerImageProp = getPropByName<ImageProp>("ImageProp");
@@ -523,7 +538,7 @@ void Layer::zoomToSelection()
 {
     try {
 
-        qDebug() << "Zoom to layer selection";
+        qDebug() << "Zoom to the pixel selection of layer:" << _layerAction.getGeneralAction().getNameAction().getString();;
 
         // Get pointer to image prop
         auto layerImageProp = getPropByName<ImageProp>("ImageProp");
@@ -562,10 +577,10 @@ void Layer::zoomToSelection()
     }
     catch (std::exception& e)
     {
-        exceptionMessageBox(QString("Unable to zoom to selection for layer: %1").arg(_layerAction.getGeneralAction().getNameAction().getString()), e);
+        exceptionMessageBox(QString("Unable to zoom to the pixel selection for layer: %1").arg(_layerAction.getGeneralAction().getNameAction().getString()), e);
     }
     catch (...) {
-        exceptionMessageBox(QString("Unable to zoom to selection for layer: %1").arg(_layerAction.getGeneralAction().getNameAction().getString()));
+        exceptionMessageBox(QString("Unable to zoom to the pixel selection for layer: %1").arg(_layerAction.getGeneralAction().getNameAction().getString()));
     }
 }
 
