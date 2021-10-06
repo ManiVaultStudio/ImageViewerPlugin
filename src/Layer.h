@@ -112,8 +112,12 @@ protected:
      */
     void render(const QMatrix4x4& modelViewProjectionMatrix) override;
 
+    /** Update the view plugin window title when activated or when the layer name changes */
+    void updateWindowTitle();
+
 protected:
     ImageViewerPlugin&              _imageViewerPlugin;     /** Reference to image viewer plugin */
+    bool                            _active;                /** Whether the layer is active (editable) */
     DatasetRef<Images>              _images;                /** Reference to images dataset */
     DatasetRef<Points>              _points;                /** Reference to input points dataset of the images */
     LayerAction                     _layerAction;           /** Layer settings action */

@@ -165,6 +165,7 @@ void ImageViewerPlugin::init()
             layer->resetSelectionBuffer();
     });
 
+    // 
     connect(_imageViewerWidget, &ImageViewerWidget::pixelSelectionEnded, this, [this]() {
 
         // Get selected layers model rows
@@ -202,18 +203,47 @@ void ImageViewerPlugin::init()
     // Initially enable/disable the navigation action
     layersInsertedRemovedChanged();
 
-    // Notify others of the settings visibility
-    const auto notifySettingsVisibility = [this](const bool& visible) {
-        emit settingsVisibilityChanged(visible);
+    // Update the window title
+    const auto updateWindowTitle = [this]() {
+        
+        // Get selected row and establish whether there is a valid selection
+        const auto selectedRows = _selectionModel.selectedRows();
+        const auto hasSelection = !selectedRows.isEmpty();
+
+        // Name of the currently selected layer
+        QString currentLayerName = "";
+
+        // Update current layer name when there is a valid selection
+        if (hasSelection) {
+
+            // Get pointer to layer that was selected
+            auto layer = static_cast<Layer*>(selectedRows.first().internalPointer());
+
+            // A layer is selected so change the current layer name
+            currentLayerName = layer->getLayerAction().getGeneralAction().getNameAction().getString();
+        }
+
+        // Update the window title
+        setWindowTitle(QString("%1%2").arg(getGuiName(), currentLayerName.isEmpty() ? "" : QString(": %1").arg(currentLayerName)));
     };
 
-    // Send signal when the settings panel is expanded or collapsed
-    connect(_splitter, &QSplitter::splitterMoved, this, [this, notifySettingsVisibility](int pos, int index) {
-        notifySettingsVisibility(_splitter->widget(1)->visibleRegion().isEmpty());
-    });
+    // Change the window title when the layer selection or layer name changes
+    connect(&_selectionModel, &QItemSelectionModel::selectionChanged, this, updateWindowTitle);
 
-    // Initial notification of settings visibility
-    notifySettingsVisibility(true);
+
+
+    //// Notify others of the settings visibility
+    //const auto notifySettingsVisibility = [this](const bool& visible) {
+    //    emit settingsVisibilityChanged(visible);
+    //};
+
+    //// Send signal when the settings panel is expanded or collapsed
+    //connect(_splitter, &QSplitter::splitterMoved, this, [this, notifySettingsVisibility](int pos, int index) {
+    //    notifySettingsVisibility(_splitter->widget(1)->visibleRegion().isEmpty());
+    //});
+
+    //// Initial notification of settings visibility
+    //notifySettingsVisibility(true);
 }
 
 QIcon ImageViewerPluginFactory::getIcon() const

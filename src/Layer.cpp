@@ -14,6 +14,7 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
     Renderable(imageViewerPlugin.getImageViewerWidget()->getRenderer()),
     hdps::EventListener(),
     _imageViewerPlugin(imageViewerPlugin),
+    _active(false),
     _images(datasetName),
     _points(_images->getHierarchyItem().getParent()->getDatasetName()),
     _layerAction(*this, imageViewerPlugin.getSettingsAction().getLayersAction()),
@@ -161,6 +162,9 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
                 updateSelectedPixels();
         }
     });
+
+    // Update the window title when the layer name changes
+    connect(&_layerAction.getGeneralAction().getNameAction(), &StringAction::stringChanged, this, &Layer::updateWindowTitle);
 }
 
 Layer::~Layer()
@@ -187,8 +191,27 @@ void Layer::render(const QMatrix4x4& modelViewProjectionMatrix)
     catch (...) {
         exceptionMessageBox(QString("Unable to render layer: %1").arg(_layerAction.getGeneralAction().getNameAction().getString()));
     }
+}
 
-    
+void Layer::updateWindowTitle()
+{
+    try {
+
+        qDebug() << "Update the window title for layer:" << _layerAction.getGeneralAction().getNameAction().getString();
+
+        // Get layer name
+        const auto name = getLayerAction().getGeneralAction().getNameAction().getString();
+
+        // Update the window title
+        _imageViewerPlugin.setWindowTitle(QString("%1%2").arg(_imageViewerPlugin.getGuiName(), _active ? QString(": %1").arg(name) : ""));
+    }
+    catch (std::exception& e)
+    {
+        exceptionMessageBox(QString("Unable to update the window title for layer: %1").arg(_layerAction.getGeneralAction().getNameAction().getString()), e);
+    }
+    catch (...) {
+        exceptionMessageBox(QString("Unable to update the window title for layer: %1").arg(_layerAction.getGeneralAction().getNameAction().getString()));
+    }
 }
 
 ImageViewerPlugin& Layer::getImageViewerPlugin()
@@ -202,8 +225,14 @@ void Layer::activate()
 
         qDebug() << "Activate layer:" << _layerAction.getGeneralAction().getNameAction().getString();
 
+        // Set active
+        _active = true;
+
         // Enable shortcuts for the layer
         _layerAction.getSelectionAction().setShortcutsEnabled(true);
+
+        // Update the view plugin window tile
+        updateWindowTitle();
     }
     catch (std::exception& e)
     {
@@ -220,8 +249,14 @@ void Layer::deactivate()
 
         qDebug() << "Deactivate layer:" << _layerAction.getGeneralAction().getNameAction().getString();
 
+        // Set active
+        _active = false;
+
         // Disable shortcuts for the layer
         _layerAction.getSelectionAction().setShortcutsEnabled(false);
+
+        // Update the view plugin window tile
+        updateWindowTitle();
     }
     catch (std::exception& e)
     {

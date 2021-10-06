@@ -34,7 +34,7 @@ LayersAction::LayersAction(SettingsAction& settingsAction) :
         // Activate selected layers
         if (!selected.indexes().isEmpty()) {
 
-            // Get pointer to layer that was deselected
+            // Get pointer to layer that was selected
             auto layer = static_cast<Layer*>(selected.indexes().first().internalPointer());
 
             // Activate the layer
