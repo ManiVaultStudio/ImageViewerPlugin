@@ -49,8 +49,7 @@ QModelIndex LayersModel::index(int row, int column, const QModelIndex& parent /*
 
 QVariant LayersModel::data(const QModelIndex& index, int role) const
 {
-    auto layer          = static_cast<Layer*>(index.internalPointer());
-    auto& layerAction   = layer->getLayerAction();
+    auto layer = static_cast<Layer*>(index.internalPointer());
 
     switch (role) {
         case Qt::DisplayRole:
@@ -86,13 +85,13 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
         {
             switch (static_cast<Column>(index.column())) {
                 case Column::Visible:
-                    return layerAction.getGeneralAction().getVisibleAction().isChecked();
+                    return layer->getGeneralAction().getVisibleAction().isChecked();
 
                 case Column::Color:
-                    return layerAction.getGeneralAction().getColorAction().getColor();
+                    return layer->getGeneralAction().getColorAction().getColor();
 
                 case Column::Name:
-                    return layerAction.getGeneralAction().getNameAction().getString();
+                    return layer->getGeneralAction().getNameAction().getString();
 
                 case Column::ImageWidth:
                     return layer->getImageSize().width();
@@ -101,10 +100,10 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
                     return layer->getImageSize().height();
 
                 case Column::Scale:
-                    return layerAction.getGeneralAction().getScaleAction().getValue();
+                    return layer->getGeneralAction().getScaleAction().getValue();
 
                 case Column::Opacity:
-                    return layerAction.getImageAction().getOpacityAction().getValue();
+                    return layer->getImageAction().getOpacityAction().getValue();
 
                 default:
                     break;
@@ -117,7 +116,7 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
         {
             switch (static_cast<Column>(index.column())) {
                 case Column::Visible:
-                    return layerAction.getGeneralAction().getVisibleAction().isChecked() ? Qt::Checked : Qt::Unchecked;
+                    return layer->getGeneralAction().getVisibleAction().isChecked() ? Qt::Checked : Qt::Unchecked;
 
                 case Column::Color:
                 case Column::Name:
@@ -142,10 +141,10 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
 
                 case Column::Color:
                 {
-                    if (layerAction.getGeneralAction().getVisibleAction().isChecked()) {
-                        return getColorIcon(layerAction.getGeneralAction().getColorAction().getColor());
+                    if (layer->getGeneralAction().getVisibleAction().isChecked()) {
+                        return getColorIcon(layer->getGeneralAction().getColorAction().getColor());
                     } else {
-                        const auto color = layerAction.getGeneralAction().getColorAction().getColor();
+                        const auto color = layer->getGeneralAction().getColorAction().getColor();
                         return getColorIcon(QColor::fromHsl(color.hue(), 0, color.lightness()));
                     }
                 }
@@ -174,7 +173,7 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
                 case Column::ImageHeight:
                 case Column::Scale:
                 case Column::Opacity:
-                    return QColor(layerAction.getGeneralAction().getVisibleAction().isChecked() ? QApplication::palette().color(QPalette::Text) : QApplication::palette().color(QPalette::Disabled, QPalette::Text));
+                    return QColor(layer->getGeneralAction().getVisibleAction().isChecked() ? QApplication::palette().color(QPalette::Text) : QApplication::palette().color(QPalette::Disabled, QPalette::Text));
 
                 default:
                     break;
@@ -201,13 +200,13 @@ bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int r
 
                 case Column::Color:
                 {
-                    layer->getLayerAction().getGeneralAction().getColorAction().setColor(value.value<QColor>());
+                    layer->getGeneralAction().getColorAction().setColor(value.value<QColor>());
                     break;
                 }
 
                 case Column::Name:
                 {
-                    layer->getLayerAction().getGeneralAction().getNameAction().setString(value.toString());
+                    layer->getGeneralAction().getNameAction().setString(value.toString());
                     break;
                 }
 
@@ -229,7 +228,7 @@ bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int r
             switch (static_cast<Column>(index.column())) {
                 case Column::Visible:
                 {
-                    layer->getLayerAction().getGeneralAction().getVisibleAction().setChecked(value.toBool());
+                    layer->getGeneralAction().getVisibleAction().setChecked(value.toBool());
                     break;
                 }
 
@@ -415,31 +414,31 @@ void LayersModel::addLayer(const SharedLayer& layer)
             _layers.insert(0, layer);
 
             // Inform views that the layer visibility has changed when it is changed in the action
-            connect(&layer->getLayerAction().getGeneralAction().getVisibleAction(), &ToggleAction::toggled, this, [this, layer](bool toggled) {
+            connect(&layer->getGeneralAction().getVisibleAction(), &ToggleAction::toggled, this, [this, layer](bool toggled) {
                 const auto changedCell = index(_layers.indexOf(layer), Column::Name);
                 emit dataChanged(changedCell, changedCell.siblingAtColumn(Column::Last));
             });
 
             // Inform views that the layer color has changed when it is changed in the action
-            connect(&layer->getLayerAction().getGeneralAction().getColorAction(), &ColorAction::colorChanged, this, [this, layer](const QColor& color) {
+            connect(&layer->getGeneralAction().getColorAction(), &ColorAction::colorChanged, this, [this, layer](const QColor& color) {
                 const auto changedCell = index(_layers.indexOf(layer), Column::Color);
                 emit dataChanged(changedCell, changedCell);
             });
 
             // Inform views that the layer name has changed when it is changed in the action
-            connect(&layer->getLayerAction().getGeneralAction().getNameAction(), &StringAction::stringChanged, this, [this, layer]() {
+            connect(&layer->getGeneralAction().getNameAction(), &StringAction::stringChanged, this, [this, layer]() {
                 const auto changedCell = index(_layers.indexOf(layer), Column::Name);
                 emit dataChanged(changedCell, changedCell);
             });
 
             // Inform views that the layer scale has changed when it is changed in the action
-            connect(&layer->getLayerAction().getGeneralAction().getScaleAction(), &DecimalAction::valueChanged, this, [this, layer](const float& value) {
+            connect(&layer->getGeneralAction().getScaleAction(), &DecimalAction::valueChanged, this, [this, layer](const float& value) {
                 const auto changedCell = index(_layers.indexOf(layer), Column::Scale);
                 emit dataChanged(changedCell, changedCell);
             });
 
             // Inform views that the layer opacity has changed when it is changed in the action
-            connect(&layer->getLayerAction().getImageAction().getOpacityAction(), &DecimalAction::valueChanged, this, [this, layer](const float& value) {
+            connect(&layer->getImageAction().getOpacityAction(), &DecimalAction::valueChanged, this, [this, layer](const float& value) {
                 const auto changedCell = index(_layers.indexOf(layer), Column::Opacity);
                 emit dataChanged(changedCell, changedCell);
             });

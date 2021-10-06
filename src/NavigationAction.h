@@ -77,7 +77,6 @@ public: // Action getters
     DecimalAction& getZoomPercentageAction() { return _zoomPercentageAction; }
     TriggerAction& getZoomInAction() { return _zoomInAction; }
     TriggerAction& getZoomExtentsAction() { return _zoomExtentsAction; }
-    ToggleAction& getSettingsToggleAction() { return _settingsToggleAction; }
 
 protected:
     ImageViewerPlugin&  _imageViewerPlugin;             /** Reference to image viewer plugin */
@@ -88,7 +87,6 @@ protected:
     ToggleAction        _panAction;                     /** Pan interaction mode action */
     ToggleAction        _selectAction;                  /** Select interaction mode action */
     QActionGroup        _interactionModeActionGroup;    /** Interaction mode action group */
-    ToggleAction        _settingsToggleAction;          /** Settings toggle (expand/collapse) action */
 
     static const float zoomDeltaPercentage;
 };

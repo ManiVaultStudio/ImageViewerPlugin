@@ -1,5 +1,4 @@
 #include "ChannelAction.h"
-#include "LayerAction.h"
 #include "ImageAction.h"
 #include "Layer.h"
 
@@ -172,12 +171,12 @@ void ChannelAction::reset()
 
 hdps::util::DatasetRef<Images>& ChannelAction::getImages()
 {
-    return _imageAction.getLayerAction().getLayer().getImages();
+    return _imageAction.getLayer().getImages();
 }
 
 hdps::util::DatasetRef<Points>& ChannelAction::getPoints()
 {
-    return _imageAction.getLayerAction().getLayer().getPoints();
+    return _imageAction.getLayer().getPoints();
 }
 
 void ChannelAction::computeScalarData()
@@ -262,7 +261,7 @@ void ChannelAction::computeSelectionChannel()
     //qDebug() << _layerImageAction.getLayerAction().getLayer().getSelectionIndices();
 
     // Assign selected pixels
-    for (auto selectionIndex : _imageAction.getLayerAction().getLayer().getSelectedPixels()) {
+    for (auto selectionIndex : _imageAction.getLayer().getSelectedPixels()) {
 
         // Assign selected pixel
         _selectionData[selectionIndex] = 255;

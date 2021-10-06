@@ -17,8 +17,11 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
     _active(false),
     _images(datasetName),
     _points(_images->getHierarchyItem().getParent()->getDatasetName()),
-    _layerAction(*this, imageViewerPlugin.getSettingsAction().getLayersAction()),
-    _selectedPixels()
+    _selectedPixels(),
+    _generalAction(*this),
+    _imageAction(*this),
+    _selectionAction(*this, _imageViewerPlugin.getImageViewerWidget(), _imageViewerPlugin.getImageViewerWidget()->getPixelSelectionTool()),
+    _subsetAction(*this)
 {
     setEventCore(hdps::Application::core());
 
@@ -41,7 +44,7 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
     const auto updateColorMap = [this]() {
 
         // Set the color map image in the prop
-        this->getPropByName<ImageProp>("ImageProp")->setColorMapImage(_layerAction.getImageAction().getColorMapAction().getColorMapImage());
+        this->getPropByName<ImageProp>("ImageProp")->setColorMapImage(_imageAction.getColorMapAction().getColorMapImage());
 
         // Render
         invalidate();
@@ -65,7 +68,7 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
             case ChannelAction::Selection:
             {
                 // Get selection channel
-                auto& selectionChannel = _layerAction.getImageAction().getChannelSelectionAction();
+                auto& selectionChannel = _imageAction.getChannelSelectionAction();
 
                 // Assign the scalar data to the prop
                 this->getPropByName<SelectionProp>("SelectionProp")->setSelectionData(selectionChannel.getSelectionData());
@@ -82,7 +85,7 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
     const auto updateInterpolationType = [this]() {
 
         // Assign the scalar data to the prop
-        this->getPropByName<ImageProp>("ImageProp")->setInterpolationType(static_cast<InterpolationType>(_layerAction.getImageAction().getInterpolationTypeAction().getCurrentIndex()));
+        this->getPropByName<ImageProp>("ImageProp")->setInterpolationType(static_cast<InterpolationType>(_imageAction.getInterpolationTypeAction().getCurrentIndex()));
 
         // Render
         invalidate();
@@ -93,16 +96,14 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
         invalidate();
     };
 
-    connect(&_layerAction.getGeneralAction().getVisibleAction(), &ToggleAction::toggled, this, updateProp);
-    connect(&_layerAction.getImageAction().getColorMapAction(), &ColorMapAction::imageChanged, this, updateColorMap);
-    connect(&_layerAction.getImageAction(), &ImageAction::channelChanged, this, updateChannelScalarData);
-    connect(&_layerAction.getImageAction().getInterpolationTypeAction(), &OptionAction::currentIndexChanged, this, updateInterpolationType);
+    connect(&_generalAction.getVisibleAction(), &ToggleAction::toggled, this, updateProp);
+    connect(&_imageAction.getColorMapAction(), &ColorMapAction::imageChanged, this, updateColorMap);
+    connect(&_imageAction, &ImageAction::channelChanged, this, updateChannelScalarData);
+    connect(&_imageAction.getInterpolationTypeAction(), &OptionAction::currentIndexChanged, this, updateInterpolationType);
     
-    auto& selectionAction = _layerAction.getSelectionAction();
-
     // Update prop when selection overlay color and opacity change
-    connect(&selectionAction.getOverlayColor(), &ColorAction::colorChanged, this, updateProp);
-    connect(&selectionAction.getOverlayOpacity(), &DecimalAction::valueChanged, this, updateProp);
+    connect(&_selectionAction.getOverlayColor(), &ColorAction::colorChanged, this, updateProp);
+    connect(&_selectionAction.getOverlayOpacity(), &DecimalAction::valueChanged, this, updateProp);
 
     // Update the model matrix and re-render
     const auto updateModelMatrixAndReRender = [this]() {
@@ -111,15 +112,15 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
     };
 
     // Update model matrix when layer scale changes
-    connect(&_layerAction.getGeneralAction().getScaleAction(), &DecimalAction::valueChanged, this, updateModelMatrixAndReRender);
+    connect(&_generalAction.getScaleAction(), &DecimalAction::valueChanged, this, updateModelMatrixAndReRender);
 
     // Update model matrix when layer position changes
-    connect(&_layerAction.getGeneralAction().getXPositionAction(), &DecimalAction::valueChanged, this, updateModelMatrixAndReRender);
-    connect(&_layerAction.getGeneralAction().getYPositionAction(), &DecimalAction::valueChanged, this, updateModelMatrixAndReRender);
+    connect(&_generalAction.getXPositionAction(), &DecimalAction::valueChanged, this, updateModelMatrixAndReRender);
+    connect(&_generalAction.getYPositionAction(), &DecimalAction::valueChanged, this, updateModelMatrixAndReRender);
 
     updateColorMap();
-    updateChannelScalarData(_layerAction.getImageAction().getChannel1Action());
-    updateChannelScalarData(_layerAction.getImageAction().getChannelSelectionAction());
+    updateChannelScalarData(_imageAction.getChannel1Action());
+    updateChannelScalarData(_imageAction.getChannelSelectionAction());
     updateInterpolationType();
     updateModelMatrixAndReRender();
 
@@ -158,18 +159,18 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
         if (dataEvent->getType() == hdps::EventType::SelectionChanged) {
             auto selectionChangedEvent = static_cast<hdps::SelectionChangedEvent*>(dataEvent);
 
-            if (selectionChangedEvent->dataSetName == _layerAction.getLayer().getPoints().getSourceData().getName())
+            if (selectionChangedEvent->dataSetName == getPoints().getSourceData().getName())
                 updateSelectedPixels();
         }
     });
 
     // Update the window title when the layer name changes
-    connect(&_layerAction.getGeneralAction().getNameAction(), &StringAction::stringChanged, this, &Layer::updateWindowTitle);
+    connect(&_generalAction.getNameAction(), &StringAction::stringChanged, this, &Layer::updateWindowTitle);
 }
 
 Layer::~Layer()
 {
-    qDebug() << "Delete" << _layerAction.getGeneralAction().getNameAction().getString();
+    qDebug() << "Delete" << _generalAction.getNameAction().getString();
 }
 
 void Layer::render(const QMatrix4x4& modelViewProjectionMatrix)
@@ -177,7 +178,7 @@ void Layer::render(const QMatrix4x4& modelViewProjectionMatrix)
     try {
 
         // Don't render if invisible
-        if (!_layerAction.getGeneralAction().getVisibleAction().isChecked())
+        if (!_generalAction.getVisibleAction().isChecked())
             return;
 
         // Render props
@@ -186,10 +187,10 @@ void Layer::render(const QMatrix4x4& modelViewProjectionMatrix)
     }
     catch (std::exception& e)
     {
-        exceptionMessageBox(QString("Unable to render layer: %1").arg(_layerAction.getGeneralAction().getNameAction().getString()), e);
+        exceptionMessageBox(QString("Unable to render layer: %1").arg(_generalAction.getNameAction().getString()), e);
     }
     catch (...) {
-        exceptionMessageBox(QString("Unable to render layer: %1").arg(_layerAction.getGeneralAction().getNameAction().getString()));
+        exceptionMessageBox(QString("Unable to render layer: %1").arg(_generalAction.getNameAction().getString()));
     }
 }
 
@@ -197,21 +198,26 @@ void Layer::updateWindowTitle()
 {
     try {
 
-        qDebug() << "Update the window title for layer:" << _layerAction.getGeneralAction().getNameAction().getString();
+        qDebug() << "Update the window title for layer:" << _generalAction.getNameAction().getString();
 
         // Get layer name
-        const auto name = getLayerAction().getGeneralAction().getNameAction().getString();
+        const auto name = _generalAction.getNameAction().getString();
 
         // Update the window title
         _imageViewerPlugin.setWindowTitle(QString("%1%2").arg(_imageViewerPlugin.getGuiName(), _active ? QString(": %1").arg(name) : ""));
     }
     catch (std::exception& e)
     {
-        exceptionMessageBox(QString("Unable to update the window title for layer: %1").arg(_layerAction.getGeneralAction().getNameAction().getString()), e);
+        exceptionMessageBox(QString("Unable to update the window title for layer: %1").arg(_generalAction.getNameAction().getString()), e);
     }
     catch (...) {
-        exceptionMessageBox(QString("Unable to update the window title for layer: %1").arg(_layerAction.getGeneralAction().getNameAction().getString()));
+        exceptionMessageBox(QString("Unable to update the window title for layer: %1").arg(_generalAction.getNameAction().getString()));
     }
+}
+
+LayersAction& Layer::getLayersAction()
+{
+    return _imageViewerPlugin.getSettingsAction().getLayersAction();
 }
 
 ImageViewerPlugin& Layer::getImageViewerPlugin()
@@ -223,23 +229,26 @@ void Layer::activate()
 {
     try {
 
-        qDebug() << "Activate layer:" << _layerAction.getGeneralAction().getNameAction().getString();
+        qDebug() << "Activate layer:" << _generalAction.getNameAction().getString();
 
         // Set active
         _active = true;
 
         // Enable shortcuts for the layer
-        _layerAction.getSelectionAction().setShortcutsEnabled(true);
+        _selectionAction.setShortcutsEnabled(true);
+
+        // Enable the pixel selection tool
+        _selectionAction.getPixelSelectionTool().setEnabled(true);
 
         // Update the view plugin window tile
         updateWindowTitle();
     }
     catch (std::exception& e)
     {
-        exceptionMessageBox(QString("Unable to activate layer: %1").arg(_layerAction.getGeneralAction().getNameAction().getString()), e);
+        exceptionMessageBox(QString("Unable to activate layer: %1").arg(_generalAction.getNameAction().getString()), e);
     }
     catch (...) {
-        exceptionMessageBox(QString("Unable to activate layer: %1").arg(_layerAction.getGeneralAction().getNameAction().getString()));
+        exceptionMessageBox(QString("Unable to activate layer: %1").arg(_generalAction.getNameAction().getString()));
     }
 }
 
@@ -247,23 +256,26 @@ void Layer::deactivate()
 {
     try {
 
-        qDebug() << "Deactivate layer:" << _layerAction.getGeneralAction().getNameAction().getString();
+        qDebug() << "Deactivate layer:" << _generalAction.getNameAction().getString();
 
         // Set active
         _active = false;
 
         // Disable shortcuts for the layer
-        _layerAction.getSelectionAction().setShortcutsEnabled(false);
+        _selectionAction.setShortcutsEnabled(false);
+
+        // Disable the pixel selection tool
+        _selectionAction.getPixelSelectionTool().setEnabled(false);
 
         // Update the view plugin window tile
         updateWindowTitle();
     }
     catch (std::exception& e)
     {
-        exceptionMessageBox(QString("Unable to deactivate layer: %1").arg(_layerAction.getGeneralAction().getNameAction().getString()), e);
+        exceptionMessageBox(QString("Unable to deactivate layer: %1").arg(_generalAction.getNameAction().getString()), e);
     }
     catch (...) {
-        exceptionMessageBox(QString("Unable to deactivate layer: %1").arg(_layerAction.getGeneralAction().getNameAction().getString()));
+        exceptionMessageBox(QString("Unable to deactivate layer: %1").arg(_generalAction.getNameAction().getString()));
     }
 }
 
@@ -274,12 +286,12 @@ void Layer::invalidate()
 
 void Layer::updateModelMatrix()
 {
-    qDebug() << "Update model matrix for layer:" << _layerAction.getGeneralAction().getNameAction().getString();
+    qDebug() << "Update model matrix for layer:" << _generalAction.getNameAction().getString();
 
     try {
 
         // Get reference to general action for getting the layer position and scale
-        auto& generalAction = _layerAction.getGeneralAction();
+        auto& generalAction = _generalAction;
 
         QMatrix4x4 invertMatrix, translateMatrix, scaleMatrix;
 
@@ -300,10 +312,10 @@ void Layer::updateModelMatrix()
     }
     catch (std::exception& e)
     {
-        exceptionMessageBox(QString("Unable to update the model matrix for layer: %1").arg(_layerAction.getGeneralAction().getNameAction().getString()), e);
+        exceptionMessageBox(QString("Unable to update the model matrix for layer: %1").arg(_generalAction.getNameAction().getString()), e);
     }
     catch (...) {
-        exceptionMessageBox(QString("Unable to update the model matrix for layer: %1").arg(_layerAction.getGeneralAction().getNameAction().getString()));
+        exceptionMessageBox(QString("Unable to update the model matrix for layer: %1").arg(_generalAction.getNameAction().getString()));
     }
 }
 
@@ -382,7 +394,7 @@ void Layer::startSelection()
 {
     try {
 
-        qDebug() << "Start the pixel selection for layer:" << _layerAction.getGeneralAction().getNameAction().getString();;
+        qDebug() << "Start the pixel selection for layer:" << _generalAction.getNameAction().getString();;
 
         // Compute the selection in the selection tool prop
         this->getPropByName<SelectionToolProp>("SelectionToolProp")->resetOffScreenSelectionBuffer();
@@ -392,10 +404,10 @@ void Layer::startSelection()
     }
     catch (std::exception& e)
     {
-        exceptionMessageBox(QString("Unable to start the layer pixel selection for layer: %1").arg(_layerAction.getGeneralAction().getNameAction().getString()), e);
+        exceptionMessageBox(QString("Unable to start the layer pixel selection for layer: %1").arg(_generalAction.getNameAction().getString()), e);
     }
     catch (...) {
-        exceptionMessageBox(QString("Unable to start the layer pixel selection for layer: %1").arg(_layerAction.getGeneralAction().getNameAction().getString()));
+        exceptionMessageBox(QString("Unable to start the layer pixel selection for layer: %1").arg(_generalAction.getNameAction().getString()));
     }
 }
 
@@ -403,7 +415,7 @@ void Layer::computeSelection(const QVector<QPoint>& mousePositions)
 {
     try {
 
-        qDebug() << "Compute the pixel selection for layer:" << _layerAction.getGeneralAction().getNameAction().getString();;
+        qDebug() << "Compute the pixel selection for layer:" << _generalAction.getNameAction().getString();;
 
         // Compute the selection in the selection tool prop
         this->getPropByName<SelectionToolProp>("SelectionToolProp")->compute(mousePositions);
@@ -413,10 +425,10 @@ void Layer::computeSelection(const QVector<QPoint>& mousePositions)
     }
     catch (std::exception& e)
     {
-        exceptionMessageBox(QString("Unable to compute layer selection for layer: %1").arg(_layerAction.getGeneralAction().getNameAction().getString()), e);
+        exceptionMessageBox(QString("Unable to compute layer selection for layer: %1").arg(_generalAction.getNameAction().getString()), e);
     }
     catch (...) {
-        exceptionMessageBox(QString("Unable to compute layer selection for layer: %1").arg(_layerAction.getGeneralAction().getNameAction().getString()));
+        exceptionMessageBox(QString("Unable to compute layer selection for layer: %1").arg(_generalAction.getNameAction().getString()));
     }
 }
 
@@ -424,7 +436,7 @@ void Layer::resetSelectionBuffer()
 {
     try {
 
-        qDebug() << "Reset the selection buffer for layer:" << _layerAction.getGeneralAction().getNameAction().getString();
+        qDebug() << "Reset the selection buffer for layer:" << _generalAction.getNameAction().getString();
 
         // Reset the off-screen selection buffer
         getPropByName<SelectionToolProp>("SelectionToolProp")->resetOffScreenSelectionBuffer();
@@ -434,10 +446,10 @@ void Layer::resetSelectionBuffer()
     }
     catch (std::exception& e)
     {
-        exceptionMessageBox(QString("Unable to reset the off-screen selection buffer for layer: %1").arg(_layerAction.getGeneralAction().getNameAction().getString()), e);
+        exceptionMessageBox(QString("Unable to reset the off-screen selection buffer for layer: %1").arg(_generalAction.getNameAction().getString()), e);
     }
     catch (...) {
-        exceptionMessageBox(QString("Unable to reset the off-screen selection buffer for layer: %1").arg(_layerAction.getGeneralAction().getNameAction().getString()));
+        exceptionMessageBox(QString("Unable to reset the off-screen selection buffer for layer: %1").arg(_generalAction.getNameAction().getString()));
     }
 }
 
@@ -445,7 +457,7 @@ void Layer::publishSelection()
 {
     try {
 
-        qDebug() << "Publish pixel selection for layer:" << _layerAction.getGeneralAction().getNameAction().getString();;
+        //qDebug() << "Publish pixel selection for layer:" << _generalAction.getNameAction().getString();;
 
         // Make sure we have a valid points dataset
         if (!_points.isValid())
@@ -538,10 +550,10 @@ void Layer::publishSelection()
     }
     catch (std::exception& e)
     {
-        exceptionMessageBox(QString("Unable to publish selection change for layer: %1").arg(_layerAction.getGeneralAction().getNameAction().getString()), e);
+        exceptionMessageBox(QString("Unable to publish selection change for layer: %1").arg(_generalAction.getNameAction().getString()), e);
     }
     catch (...) {
-        exceptionMessageBox(QString("Unable to publish selection change for layer: %1").arg(_layerAction.getGeneralAction().getNameAction().getString()));
+        exceptionMessageBox(QString("Unable to publish selection change for layer: %1").arg(_generalAction.getNameAction().getString()));
     }
 }
 
@@ -549,7 +561,7 @@ void Layer::zoomToExtents()
 {
     try {
 
-        qDebug() << "Zoom to the extents of layer:" << _layerAction.getGeneralAction().getNameAction().getString();
+        qDebug() << "Zoom to the extents of layer:" << _generalAction.getNameAction().getString();
 
         // Get pointer to image prop
         auto layerImageProp = getPropByName<ImageProp>("ImageProp");
@@ -562,10 +574,10 @@ void Layer::zoomToExtents()
     }
     catch (std::exception& e)
     {
-        exceptionMessageBox(QString("Unable to zoom to extents of layer: %1").arg(_layerAction.getGeneralAction().getNameAction().getString()), e);
+        exceptionMessageBox(QString("Unable to zoom to extents of layer: %1").arg(_generalAction.getNameAction().getString()), e);
     }
     catch (...) {
-        exceptionMessageBox(QString("Unable to zoom to extents of layer: %1").arg(_layerAction.getGeneralAction().getNameAction().getString()));
+        exceptionMessageBox(QString("Unable to zoom to extents of layer: %1").arg(_generalAction.getNameAction().getString()));
     }
 }
 
@@ -573,13 +585,13 @@ void Layer::zoomToSelection()
 {
     try {
 
-        qDebug() << "Zoom to the pixel selection of layer:" << _layerAction.getGeneralAction().getNameAction().getString();;
+        qDebug() << "Zoom to the pixel selection of layer:" << _generalAction.getNameAction().getString();;
 
         // Get pointer to image prop
         auto layerImageProp = getPropByName<ImageProp>("ImageProp");
 
         // Get selection boundaries
-        const auto selectionBoundingRectangle = QRectF(_layerAction.getImageAction().getChannelSelectionAction().getSelectionBoundaries());
+        const auto selectionBoundingRectangle = QRectF(_imageAction.getChannelSelectionAction().getSelectionBoundaries());
 
         if (!selectionBoundingRectangle.isValid())
             throw std::runtime_error("Selection boundaries are invalid");
@@ -612,10 +624,10 @@ void Layer::zoomToSelection()
     }
     catch (std::exception& e)
     {
-        exceptionMessageBox(QString("Unable to zoom to the pixel selection for layer: %1").arg(_layerAction.getGeneralAction().getNameAction().getString()), e);
+        exceptionMessageBox(QString("Unable to zoom to the pixel selection for layer: %1").arg(_generalAction.getNameAction().getString()), e);
     }
     catch (...) {
-        exceptionMessageBox(QString("Unable to zoom to the pixel selection for layer: %1").arg(_layerAction.getGeneralAction().getNameAction().getString()));
+        exceptionMessageBox(QString("Unable to zoom to the pixel selection for layer: %1").arg(_generalAction.getNameAction().getString()));
     }
 }
 

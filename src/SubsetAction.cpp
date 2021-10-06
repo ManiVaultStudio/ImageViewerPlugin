@@ -1,5 +1,4 @@
 #include "SubsetAction.h"
-#include "LayerAction.h"
 #include "ImageViewerPlugin.h"
 #include "Layer.h"
 
@@ -7,10 +6,10 @@
 
 using namespace hdps;
 
-SubsetAction::SubsetAction(LayerAction& layerAction) :
-    GroupAction(&layerAction, true),
+SubsetAction::SubsetAction(Layer& layer) :
+    GroupAction(&layer, true),
     hdps::EventListener(),
-    _layerAction(layerAction),
+    _layer(layer),
     _fromRegionAction(this, "From region", true, true),
     _nameAction(this, "Name"),
     _createAction(this, "Create")
@@ -26,7 +25,7 @@ SubsetAction::SubsetAction(LayerAction& layerAction) :
     const auto updateActionStates = [this]() {
         
         // Establish whether there is a valid selection 
-        const auto hasSelection = !_layerAction.getLayer().getSelectedPixels().empty();
+        const auto hasSelection = !_layer.getSelectedPixels().empty();
 
         // Enable/disable actions
         _nameAction.setEnabled(hasSelection);
@@ -41,7 +40,7 @@ SubsetAction::SubsetAction(LayerAction& layerAction) :
         if (dataEvent->getType() == hdps::EventType::SelectionChanged) {
             auto selectionChangedEvent = static_cast<hdps::SelectionChangedEvent*>(dataEvent);
 
-            if (DatasetRef<Points>(selectionChangedEvent->dataSetName).getSourceData().getName() == _layerAction.getLayer().getPoints()->getName())
+            if (DatasetRef<Points>(selectionChangedEvent->dataSetName).getSourceData().getName() == _layer.getPoints()->getName())
                 updateActionStates();
         }
     });
@@ -53,25 +52,25 @@ SubsetAction::SubsetAction(LayerAction& layerAction) :
     connect(&_createAction, &TriggerAction::triggered, this, [this]() {
         try {
 
-            auto& points = _layerAction.getLayer().getPoints();
-            auto& images = _layerAction.getLayer().getImages();
+            auto& points = _layer.getPoints();
+            auto& images = _layer.getImages();
 
             if (_fromRegionAction.isChecked()) {
 
                 // Get the image size
-                const auto imageSize = _layerAction.getLayer().getImageSize();
+                const auto imageSize = _layer.getImageSize();
 
                 // Cache the selection indices
-                auto cachedSelectionIndices = _layerAction.getLayer().getSelectedPixels();
+                auto cachedSelectionIndices = _layer.getSelectedPixels();
 
                 // Get the selection boundaries
-                const auto selectionBoundaries = _layerAction.getSelectionAction().getSelectionBoundaries();
+                const auto selectionBoundaries = _layer.getSelectionAction().getSelectionBoundaries();
 
                 // Compute the number of pixels in the region
                 const auto numberOfPixelsInRegion = selectionBoundaries.width() * selectionBoundaries.height();
 
                 // Get reference to selection indices
-                auto& modifySelectionIndices = _layerAction.getLayer().getSelectedPixels();
+                auto& modifySelectionIndices = _layer.getSelectedPixels();
 
                 // Allocate space for indices
                 modifySelectionIndices.clear();

@@ -1,7 +1,12 @@
 #pragma once
 
 #include "Renderable.h"
-#include "LayerAction.h"
+
+#include "LayersAction.h"
+#include "GeneralAction.h"
+#include "ImageAction.h"
+#include "SelectionAction.h"
+#include "SubsetAction.h"
 
 #include "event/EventListener.h"
 #include "util/DatasetRef.h"
@@ -42,7 +47,6 @@ public:
     void invalidate();
 
     void updateModelMatrix();
-    LayerAction& getLayerAction() { return _layerAction; }
 
     DatasetRef<Images>& getImages() { return _images; }
     DatasetRef<Points>& getPoints() { return _points; }
@@ -115,13 +119,24 @@ protected:
     /** Update the view plugin window title when activated or when the layer name changes */
     void updateWindowTitle();
 
+public: /** Action getters */
+
+    LayersAction& getLayersAction();
+    GeneralAction& getGeneralAction() { return _generalAction; }
+    ImageAction& getImageAction() { return _imageAction; }
+    SelectionAction& getSelectionAction() { return _selectionAction; }
+    SubsetAction& getSubsetAction() { return _subsetAction; }
+
 protected:
     ImageViewerPlugin&              _imageViewerPlugin;     /** Reference to image viewer plugin */
     bool                            _active;                /** Whether the layer is active (editable) */
     DatasetRef<Images>              _images;                /** Reference to images dataset */
     DatasetRef<Points>              _points;                /** Reference to input points dataset of the images */
-    LayerAction                     _layerAction;           /** Layer settings action */
     std::vector<std::uint32_t>      _selectedPixels;        /** Indices of selected pixels */
+    GeneralAction                   _generalAction;         /** General action */
+    ImageAction                     _imageAction;           /** Image action */
+    SelectionAction                 _selectionAction;       /** Selection action */
+    SubsetAction                    _subsetAction;          /** Subset action */
 
     friend class ImageViewerWidget;
 };

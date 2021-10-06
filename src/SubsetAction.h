@@ -7,7 +7,7 @@
 
 #include "event/EventListener.h"
 
-class LayerAction;
+class Layer;
 
 using namespace hdps::gui;
 
@@ -24,9 +24,12 @@ public:
 
     /** 
      * Constructor
-     * @param layerAction Reference to layer action
+     * @param layer Reference to layer
      */
-    SubsetAction(LayerAction& layerAction);
+    SubsetAction(Layer& layer);
+
+    /** Get reference to parent layer */
+    Layer& getLayer() { return _layer; }
 
 public: /** Action getters */
 
@@ -35,7 +38,7 @@ public: /** Action getters */
     TriggerAction& getCreateAction() { return _createAction; }
 
 protected:
-    LayerAction&    _layerAction;           /** Reference to layer action */
+    Layer&          _layer;                 /** Reference to layer */
     ToggleAction    _fromRegionAction;      /** Whether to create an image set from the selected region of pixels */
     StringAction    _nameAction;            /** Subset name action */
     TriggerAction   _createAction;          /** Create the subset action */

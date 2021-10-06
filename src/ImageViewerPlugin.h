@@ -63,14 +63,6 @@ public: // Action getters
 
     SettingsAction& getSettingsAction() { return *_settingsAction; }
 
-signals:
-
-    /**
-     * Signals that the visibility of the settings panel changed
-     * @param visible Whether the settings panel is visible
-     */
-    void settingsVisibilityChanged(const bool& visible);
-
 private:
     LayersModel             _model;                 /** Layers model */
     QItemSelectionModel     _selectionModel;        /** Layers selection model */

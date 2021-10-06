@@ -4,7 +4,7 @@
 
 #include "ZoomAction.h"
 
-class LayerAction;
+class Layer;
 
 using namespace hdps::gui;
 
@@ -21,13 +21,15 @@ public:
 
     /** 
      * Constructor
-     * @param layerAction Reference to layer action
+     * @param layer Reference to layer
      */
-    GeneralAction(LayerAction& layerAction);
+    GeneralAction(Layer& layer);
+
+    /** Get reference to parent layer */
+    Layer& getLayer() { return _layer; }
 
 public: /** Action getters */
 
-    LayerAction& getLayerAction() { return _layerAction; }
     ToggleAction& getVisibleAction() { return _visibleAction; }
     ColorAction& getColorAction() { return _colorAction; }
     StringAction& getNameAction() { return _nameAction; }
@@ -37,7 +39,7 @@ public: /** Action getters */
     ZoomAction& getZoomAction() { return _zoomAction; }
 
 protected:
-    LayerAction&    _layerAction;           /** Reference to layer action */
+    Layer&          _layer;                 /** Reference to layer */
     ToggleAction    _visibleAction;         /** Visible action */
     ColorAction     _colorAction;           /** Color action */
     StringAction    _nameAction;            /** Name action */

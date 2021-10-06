@@ -10,7 +10,7 @@
 
 #include "ChannelAction.h"
 
-class LayerAction;
+class Layer;
 
 using namespace hdps::gui;
 
@@ -29,16 +29,18 @@ public:
 
     /**
      * Constructor
-     * @param layerAction Reference to layer action
+     * @param layer Reference to layer
      */
-    ImageAction(LayerAction& layerAction);
+    ImageAction(Layer& layer);
+
+    /** Get reference to parent layer */
+    Layer& getLayer() { return _layer; }
 
     /** Get the number of active channels */
     const std::uint32_t getNumberOfActiveChannels() const;
 
 public: // Action getters
 
-    LayerAction& getLayerAction() { return _layerAction; }
     DecimalAction& getOpacityAction() { return _opacityAction; }
     IntegralAction& getSubsampleFactorAction() { return _subsampleFactorAction; }
     OptionAction& getColorSpaceAction() { return _colorSpaceAction; }
@@ -64,7 +66,7 @@ signals:
     void channelChanged(ChannelAction& channelAction);
 
 protected:
-    LayerAction&        _layerAction;                   /** Reference to layer action */
+    Layer&              _layer;                         /** Reference to layer */
     DecimalAction       _opacityAction;                 /** Opacity action */
     IntegralAction      _subsampleFactorAction;         /** Subsample factor action */
     OptionAction        _colorSpaceAction;              /** Color space action */

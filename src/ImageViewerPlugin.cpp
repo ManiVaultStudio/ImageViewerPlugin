@@ -151,10 +151,10 @@ void ImageViewerPlugin::init()
         layer->computeSelection(mousePositions);
 
         // Get reference to the selection action
-        auto& selectionAction = layer->getLayerAction().getSelectionAction();
+        auto& selectionAction = layer->getSelectionAction();
 
         // Establish whether the selection type is sample
-        const auto isSampleSelection = layer->getLayerAction().getSelectionAction().getTypeAction().getCurrentIndex() == static_cast<std::int32_t>(PixelSelectionType::Sample);
+        const auto isSampleSelection = layer->getSelectionAction().getTypeAction().getCurrentIndex() == static_cast<std::int32_t>(PixelSelectionType::Sample);
 
         // Publish the selection
         if (selectionAction.getNotifyDuringSelectionAction().isChecked() || isSampleSelection)
@@ -220,7 +220,7 @@ void ImageViewerPlugin::init()
             auto layer = static_cast<Layer*>(selectedRows.first().internalPointer());
 
             // A layer is selected so change the current layer name
-            currentLayerName = layer->getLayerAction().getGeneralAction().getNameAction().getString();
+            currentLayerName = layer->getGeneralAction().getNameAction().getString();
         }
 
         // Update the window title
@@ -229,21 +229,6 @@ void ImageViewerPlugin::init()
 
     // Change the window title when the layer selection or layer name changes
     connect(&_selectionModel, &QItemSelectionModel::selectionChanged, this, updateWindowTitle);
-
-
-
-    //// Notify others of the settings visibility
-    //const auto notifySettingsVisibility = [this](const bool& visible) {
-    //    emit settingsVisibilityChanged(visible);
-    //};
-
-    //// Send signal when the settings panel is expanded or collapsed
-    //connect(_splitter, &QSplitter::splitterMoved, this, [this, notifySettingsVisibility](int pos, int index) {
-    //    notifySettingsVisibility(_splitter->widget(1)->visibleRegion().isEmpty());
-    //});
-
-    //// Initial notification of settings visibility
-    //notifySettingsVisibility(true);
 }
 
 QIcon ImageViewerPluginFactory::getIcon() const

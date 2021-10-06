@@ -1,5 +1,4 @@
 #include "SelectionAction.h"
-#include "LayerAction.h"
 #include "Layer.h"
 
 #include "util/PixelSelectionTool.h"
@@ -8,9 +7,9 @@
 
 using namespace hdps::util;
 
-SelectionAction::SelectionAction(LayerAction& layerAction, QWidget* targetWidget, PixelSelectionTool& pixelSelectionTool) :
-    PixelSelectionAction(&layerAction, targetWidget, pixelSelectionTool),
-    _layerAction(layerAction),
+SelectionAction::SelectionAction(Layer& layer, QWidget* targetWidget, PixelSelectionTool& pixelSelectionTool) :
+    PixelSelectionAction(&layer, targetWidget, pixelSelectionTool),
+    _layer(layer),
     _targetWidget(targetWidget),
     _pixelSelectionTool(pixelSelectionTool),
     _showRegionAction(this, "Show selected region", true, true),
@@ -38,7 +37,7 @@ SelectionAction::SelectionAction(LayerAction& layerAction, QWidget* targetWidget
 
     // Re-render
     const auto render = [this]() {
-        _layerAction.getLayer().invalidate();
+        _layer.invalidate();
     };
 
     // Re-render when the overlay color, overlay opacity or show region changes
@@ -49,5 +48,5 @@ SelectionAction::SelectionAction(LayerAction& layerAction, QWidget* targetWidget
 
 QRect SelectionAction::getSelectionBoundaries() const
 {
-    return _layerAction.getImageAction().getChannelSelectionAction().getSelectionBoundaries();
+    return _layer.getImageAction().getChannelSelectionAction().getSelectionBoundaries();
 }

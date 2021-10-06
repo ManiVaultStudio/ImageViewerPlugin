@@ -287,7 +287,6 @@ bool ImageViewerWidget::eventFilter(QObject* target, QEvent* event)
                         const auto pCurrent     = QVector2D(_mousePositions[numberOfMousePositions - 1]);
                         const auto vDelta       = (pCurrent - pPrevious) / _renderer.getZoomLevel();
 
-                        qDebug() << pPrevious << pCurrent;
                         _renderer.panBy(vDelta);
                         _renderer.render();
                     }
@@ -529,7 +528,7 @@ QRectF ImageViewerWidget::getWorldBoundingRectangle() const
     QRectF worldBoundingRectangle;
 
     for (const auto& layer : _layersModel.getLayers()) {
-        if (layer->getLayerAction().getGeneralAction().getVisibleAction().isChecked())
+        if (layer->getGeneralAction().getVisibleAction().isChecked())
             worldBoundingRectangle |= layer->getWorldBoundingRectangle();
     }
 

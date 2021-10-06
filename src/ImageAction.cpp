@@ -1,5 +1,4 @@
 #include "ImageAction.h"
-#include "LayerAction.h"
 #include "Layer.h"
 
 #include "util/ColorSpace.h"
@@ -8,10 +7,10 @@
 using namespace hdps;
 using namespace hdps::util;
 
-ImageAction::ImageAction(LayerAction& layerAction) :
-    GroupAction(&layerAction, true),
+ImageAction::ImageAction(Layer& layer) :
+    GroupAction(&layer, true),
     EventListener(),
-    _layerAction(layerAction),
+    _layer(layer),
     _opacityAction(this, "Opacity", 0.0f, 100.0f, 100.0f, 100.0f, 1),
     _subsampleFactorAction(this, "Subsample", 1, 8, 1, 1),
     _colorSpaceAction(this, "Color space", colorSpaces.values(), "Mono", "Mono"),
@@ -47,7 +46,7 @@ ImageAction::ImageAction(LayerAction& layerAction) :
 
     _colorMapAction.setColorMapType(ColorMap::Type::TwoDimensional);
 
-    const auto dimensionNames = _layerAction.getLayer().getDimensionNames();
+    const auto dimensionNames = _layer.getDimensionNames();
 
     _channel1Action.getDimensionAction().setOptions(dimensionNames);
     _channel2Action.getDimensionAction().setOptions(dimensionNames);
@@ -56,12 +55,12 @@ ImageAction::ImageAction(LayerAction& layerAction) :
     _channel1Action.getDimensionAction().setCurrentIndex(0);
     _channel1Action.getDimensionAction().setDefaultIndex(0);
 
-    if (_layerAction.getLayer().getNumberOfImages() >= 2) {
+    if (_layer.getNumberOfImages() >= 2) {
         _channel2Action.getDimensionAction().setCurrentIndex(1);
         _channel2Action.getDimensionAction().setDefaultIndex(1);
     }
 
-    if (_layerAction.getLayer().getNumberOfImages() >= 3) {
+    if (_layer.getNumberOfImages() >= 3) {
         _channel3Action.getDimensionAction().setCurrentIndex(2);
         _channel3Action.getDimensionAction().setDefaultIndex(2);
     }
@@ -130,7 +129,7 @@ ImageAction::ImageAction(LayerAction& layerAction) :
 
     const auto useConstantColorToggled = [this]() {
         _constantColorAction.setEnabled(_useConstantColorAction.isChecked());
-        _layerAction.getLayer().invalidate();
+        _layer.invalidate();
     };
 
     connect(&_useConstantColorAction, &ToggleAction::toggled, this, useConstantColorToggled);
@@ -152,7 +151,7 @@ ImageAction::ImageAction(LayerAction& layerAction) :
     });
 
     const auto render = [this]() {
-        _layerAction.getLayer().invalidate();
+        _layer.invalidate();
     };
 
     connect(&_opacityAction, &DecimalAction::valueChanged, this, render);
@@ -165,7 +164,7 @@ ImageAction::ImageAction(LayerAction& layerAction) :
         if (dataEvent->getType() == hdps::EventType::SelectionChanged) {
             auto selectionChangedEvent = static_cast<hdps::SelectionChangedEvent*>(dataEvent);
 
-            if (selectionChangedEvent->dataSetName == _layerAction.getLayer().getPoints().getSourceData().getName())
+            if (selectionChangedEvent->dataSetName == _layer.getPoints().getSourceData().getName())
                 _channelSelectionAction.computeScalarData();
         }
     });

@@ -1,12 +1,11 @@
 #include "GeneralAction.h"
-#include "LayerAction.h"
+#include "Layer.h"
 #include "LayersAction.h"
 #include "ImageViewerPlugin.h"
-#include "Layer.h"
 
-GeneralAction::GeneralAction(LayerAction& layerAction) :
-    GroupAction(&layerAction, true),
-    _layerAction(layerAction),
+GeneralAction::GeneralAction(Layer& layer) :
+    GroupAction(&layer, true),
+    _layer(layer),
     _visibleAction(this, "Visible", true, true),
     _colorAction(this, "Color"),
     _nameAction(this, "Name"),
@@ -23,7 +22,7 @@ GeneralAction::GeneralAction(LayerAction& layerAction) :
     _yPositionAction.setToolTip("Layer y-position");
 
     // Get initial random layer color
-    const auto layerColor = _layerAction.getLayersAction().getRandomLayerColor();
+    const auto layerColor = _layer.getLayersAction().getRandomLayerColor();
 
     // Assign the color and default color
     _colorAction.initialize(layerColor, layerColor),
@@ -32,7 +31,7 @@ GeneralAction::GeneralAction(LayerAction& layerAction) :
     _scaleAction.setSuffix("%");
 
     // Get the name of the images dataset
-    const auto imagesDatasetName = _layerAction.getLayer().getImagesDatasetName();
+    const auto imagesDatasetName = _layer.getImagesDatasetName();
 
     // Set name and default name
     _nameAction.setString(imagesDatasetName);
@@ -40,11 +39,11 @@ GeneralAction::GeneralAction(LayerAction& layerAction) :
 
     // Zoom to extents
     connect(&_zoomAction, &ToggleAction::triggered, this, [this]() {
-        _layerAction.getLayer().zoomToExtents();
+        _layer.zoomToExtents();
     });
 
     const auto updateBounds = [this]() {
-        _layerAction.getLayer().getImageViewerPlugin().getImageViewerWidget()->updateWorldBoundingRectangle();
+        _layer.getImageViewerPlugin().getImageViewerWidget()->updateWorldBoundingRectangle();
     };
 
     connect(&_visibleAction, &ToggleAction::toggled, this, updateBounds);

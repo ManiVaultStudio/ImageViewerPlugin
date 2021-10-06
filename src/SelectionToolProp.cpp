@@ -75,7 +75,7 @@ void SelectionToolProp::render(const QMatrix4x4& modelViewProjectionMatrix)
         glBindTexture(GL_TEXTURE_2D, _fbo->texture());
 
         // Get reference to selection action
-        auto& selectionAction = _layer.getLayerAction().getSelectionAction();
+        auto& selectionAction = _layer.getSelectionAction();
 
         // Configure shader program
         shaderProgram->setUniformValue("offScreenTexture", 0);
@@ -164,7 +164,7 @@ void SelectionToolProp::compute(const QVector<QPoint>& mousePositions)
             transform.ortho(0.0f, _fbo->width(), 0.0f, _fbo->height(), -1.0f, +1.0f);
 
             // Get reference to selection action
-            auto& selectionAction = _layer.getLayerAction().getSelectionAction();
+            auto& selectionAction = _layer.getSelectionAction();
 
             // Get quad shape and compute the model-view-matrix
             auto shape              = getShapeByName<QuadShape>("Quad");
@@ -192,7 +192,7 @@ void SelectionToolProp::compute(const QVector<QPoint>& mousePositions)
             shaderProgram->setUniformValue("selectionType", selectionType);
 
             const auto fboSize                  = QSizeF(static_cast<float>(_fbo->size().width()), static_cast<float>(_fbo->size().height()));
-            const auto numberOfMousePositions    = mousePositions.size();
+            const auto numberOfMousePositions   = mousePositions.size();
 
             shaderProgram->setUniformValue("imageSize", fboSize.width(), fboSize.height());
 

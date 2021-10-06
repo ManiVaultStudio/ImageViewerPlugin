@@ -17,12 +17,12 @@ ZoomAction::ZoomAction(GeneralAction& generalAction) :
 
     // Zoom to layer extents
     connect(&_zoomExtentsAction, &TriggerAction::triggered, this, [this]() {
-        _generalAction.getLayerAction().getLayer().zoomToExtents();
+        _generalAction.getLayer().zoomToExtents();
     });
 
     // Zoom to selection
     connect(&_zoomSelectionAction, &TriggerAction::triggered, this, [this]() {
-        _generalAction.getLayerAction().getLayer().zoomToSelection();
+        _generalAction.getLayer().zoomToSelection();
     });
 }
 

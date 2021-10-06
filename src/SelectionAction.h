@@ -9,7 +9,7 @@
 
 class QWidget;
 
-class LayerAction;
+class Layer;
 
 using namespace hdps::util;
 using namespace hdps::gui;
@@ -27,11 +27,14 @@ public:
 
     /**
      * Constructor
-     * @param layerAction Reference to layer action
+     * @param layer Reference to layer
      * @param targetWidget Pointer to target widget
      * @param pixelSelectionTool Reference to pixel selection tool
      */
-    SelectionAction(LayerAction& layerAction, QWidget* targetWidget, PixelSelectionTool& pixelSelectionTool);
+    SelectionAction(Layer& layer, QWidget* targetWidget, PixelSelectionTool& pixelSelectionTool);
+
+    /** Get reference to parent layer */
+    Layer& getLayer() { return _layer; }
 
     /** Get selection boundaries */
     QRect getSelectionBoundaries() const;
@@ -42,7 +45,7 @@ public: /** Action getters */
     GroupAction& getGroupAction() { return _groupAction; }
 
 protected:
-    LayerAction&            _layerAction;           /** Reference to layer action */
+    Layer&                  _layer;                 /** Reference to layer */
     QWidget*                _targetWidget;          /** Pointer to target widget */
     PixelSelectionTool&     _pixelSelectionTool;    /** Reference to pixel selection tool */
     ToggleAction            _showRegionAction;      /** Show region action */

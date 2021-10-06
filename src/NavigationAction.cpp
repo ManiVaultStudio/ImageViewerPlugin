@@ -17,8 +17,7 @@ NavigationAction::NavigationAction(ImageViewerPlugin& imageViewerPlugin) :
     _zoomExtentsAction(this, ""),
     _panAction(this, ""),
     _selectAction(this, ""),
-    _interactionModeActionGroup(this),
-    _settingsToggleAction(this, "")
+    _interactionModeActionGroup(this)
 {
     setText("Navigation");
 
@@ -30,7 +29,6 @@ NavigationAction::NavigationAction(ImageViewerPlugin& imageViewerPlugin) :
     _zoomExtentsAction.setToolTip("Zoom to the boundaries of all layers (z)");
     _panAction.setToolTip("Move the view");
     _selectAction.setToolTip("Select pixels");
-    _settingsToggleAction.setToolTip("Collapse/expand the settings panel");
 
     _zoomOutAction.setIcon(fontAwesome.getIcon("search-minus"));
     _zoomInAction.setIcon(fontAwesome.getIcon("search-plus"));
@@ -38,21 +36,6 @@ NavigationAction::NavigationAction(ImageViewerPlugin& imageViewerPlugin) :
     _panAction.setIcon(fontAwesome.getIcon("arrows-alt"));
     _selectAction.setIcon(fontAwesome.getIcon("mouse-pointer"));
     
-    const auto updateSettingsToggleIcon = [this, &fontAwesome]() {
-        _settingsToggleAction.setIcon(_settingsToggleAction.isChecked() ? fontAwesome.getIcon("chevron-right") : fontAwesome.getIcon("chevron-left"));
-    };
-
-    // Update the settings toggle icon when toggled
-    connect(&_settingsToggleAction, &ToggleAction::toggled, this, updateSettingsToggleIcon);
-    
-    // Update the settings toggle action when the settings panel is expanded or collapsed with the splitter
-    connect(&_imageViewerPlugin, &ImageViewerPlugin::settingsVisibilityChanged, this, [this](const bool& visible) {
-        _settingsToggleAction.setChecked(visible);
-    });
-
-    // Initial settings toggle icon
-    updateSettingsToggleIcon();
-
     _zoomOutAction.setShortcut(QKeySequence("-"));
     _zoomInAction.setShortcut(QKeySequence("+"));
     _zoomExtentsAction.setShortcut(QKeySequence("z"));
