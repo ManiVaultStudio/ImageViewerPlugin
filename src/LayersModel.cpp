@@ -1,6 +1,8 @@
 #include "LayersModel.h"
 #include "Application.h"
 
+#include "util/Exception.h"
+
 #include <QMessageBox>
 #include <QPainter>
 
@@ -448,7 +450,10 @@ void LayersModel::addLayer(const SharedLayer& layer)
     }
     catch (std::exception& e)
     {
-        QMessageBox::critical(nullptr, "Unable to add layer to the layers model", e.what());
+        exceptionMessageBox("Unable to add layer to the layers model", e);
+    }
+    catch (...) {
+        exceptionMessageBox("Unable to add layer to the layers model");
     }
 }
 
@@ -460,14 +465,17 @@ void LayersModel::removeLayer(const QModelIndex& layerModelIndex)
         beginRemoveRows(QModelIndex(), layerModelIndex.row(), layerModelIndex.row());
         {
             // Remove the layer action
-            _layers[layerModelIndex.row()].clear();
+            _layers[layerModelIndex.row()].reset(nullptr);
             _layers.remove(layerModelIndex.row());
         }
         endRemoveRows();
     }
     catch (std::exception& e)
     {
-        QMessageBox::critical(nullptr, "Unable to remove layer from the layers model", e.what());
+        exceptionMessageBox("Unable to remove layer from the layers model", e);
+    }
+    catch (...) {
+        exceptionMessageBox("Unable to remove layer from the layers model");
     }
 }
 
@@ -485,7 +493,10 @@ void LayersModel::removeLayer(const QString& datasetName)
     }
     catch (std::exception& e)
     {
-        QMessageBox::critical(nullptr, "Unable to remove layer from the layers model", e.what());
+        exceptionMessageBox("Unable to remove layer from the layers model", e);
+    }
+    catch (...) {
+        exceptionMessageBox("Unable to remove layer from the layers model");
     }
 }
 
@@ -497,7 +508,10 @@ void LayersModel::duplicateLayer(const QModelIndex& layerModelIndex)
     }
     catch (std::exception& e)
     {
-        QMessageBox::critical(nullptr, "Unable to duplicate the layer", e.what());
+        exceptionMessageBox("Unable to duplicate the layer", e);
+    }
+    catch (...) {
+        exceptionMessageBox("Unable to duplicate the layer");
     }
 }
 
@@ -548,7 +562,10 @@ void LayersModel::moveLayer(const QModelIndex& layerModelIndex, const std::int32
     }
     catch (std::exception& e)
     {
-        QMessageBox::critical(nullptr, "Unable to move layer in the layers model", e.what());
+        exceptionMessageBox("Unable to move layer in the layers model", e);
+    }
+    catch (...) {
+        exceptionMessageBox("Unable to move layer in the layers model");
     }
 }
 

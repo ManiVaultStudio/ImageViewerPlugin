@@ -165,18 +165,30 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
 
 Layer::~Layer()
 {
-
+    qDebug() << "Delete" << _layerAction.getGeneralAction().getNameAction().getString();
 }
 
 void Layer::render(const QMatrix4x4& modelViewProjectionMatrix)
 {
-    // Don't render if invisible
-    if (!_layerAction.getGeneralAction().getVisibleAction().isChecked())
-        return;
+    try {
 
-    // Render props
-    for (auto prop : _props)
-        prop->render(modelViewProjectionMatrix);
+        // Don't render if invisible
+        if (!_layerAction.getGeneralAction().getVisibleAction().isChecked())
+            return;
+
+        // Render props
+        for (auto prop : _props)
+            prop->render(modelViewProjectionMatrix);
+    }
+    catch (std::exception& e)
+    {
+        exceptionMessageBox(QString("Unable to render layer: %1").arg(_layerAction.getGeneralAction().getNameAction().getString()), e);
+    }
+    catch (...) {
+        exceptionMessageBox(QString("Unable to render layer: %1").arg(_layerAction.getGeneralAction().getNameAction().getString()));
+    }
+
+    
 }
 
 ImageViewerPlugin& Layer::getImageViewerPlugin()
@@ -195,12 +207,11 @@ void Layer::activate()
     }
     catch (std::exception& e)
     {
-        exceptionMessageBox(QString("Unable to activate layer %1").arg(_layerAction.getGeneralAction().getNameAction().getString()), e);
+        exceptionMessageBox(QString("Unable to activate layer: %1").arg(_layerAction.getGeneralAction().getNameAction().getString()), e);
     }
     catch (...) {
-        exceptionMessageBox(QString("Unable to activate layer %1").arg(_layerAction.getGeneralAction().getNameAction().getString()));
+        exceptionMessageBox(QString("Unable to activate layer: %1").arg(_layerAction.getGeneralAction().getNameAction().getString()));
     }
-    
 }
 
 void Layer::deactivate()
@@ -214,10 +225,10 @@ void Layer::deactivate()
     }
     catch (std::exception& e)
     {
-        exceptionMessageBox(QString("Unable to deactivate layer %1").arg(_layerAction.getGeneralAction().getNameAction().getString()), e);
+        exceptionMessageBox(QString("Unable to deactivate layer: %1").arg(_layerAction.getGeneralAction().getNameAction().getString()), e);
     }
     catch (...) {
-        exceptionMessageBox(QString("Unable to deactivate layer %1").arg(_layerAction.getGeneralAction().getNameAction().getString()));
+        exceptionMessageBox(QString("Unable to deactivate layer: %1").arg(_layerAction.getGeneralAction().getNameAction().getString()));
     }
 }
 
@@ -228,25 +239,25 @@ void Layer::invalidate()
 
 void Layer::updateModelMatrix()
 {
-    QMatrix4x4 translateMatrix, scaleMatrix, invertMatrix;
-    
+    // Get reference to general action for getting the layer position and scale
     auto& generalAction = _layerAction.getGeneralAction();
 
-    // Compute the scale and translate matrices
-    translateMatrix.translate(generalAction.getXPositionAction().getValue(), generalAction.getYPositionAction().getValue(), 0.0f);
+    QMatrix4x4 invertMatrix, translateMatrix, scaleMatrix;
 
-    const auto scaleFactor = 0.01f * generalAction.getScaleAction().getValue();
-
+    // Invert along the x-axis
     invertMatrix.scale(-1.0f, 1.0f, 1.0f);
 
+    // Compute the translation matrix
+    translateMatrix.translate(generalAction.getXPositionAction().getValue(), generalAction.getYPositionAction().getValue(), 0.0f);
+
+    // Get the scale factor
+    const auto scaleFactor = 0.01f * generalAction.getScaleAction().getValue();
+
+    // And compute the scale factor
     scaleMatrix.scale(scaleFactor, scaleFactor, scaleFactor);
 
     // Assign model matrix
     setModelMatrix(invertMatrix * translateMatrix * scaleMatrix);
-    //setModelMatrix(translateMatrix * scaleMatrix);
-
-    //_modelMatrix.setToIdentity();
-    //_modelMatrix.scale(QVector3D(-1.0f, 1.0f, 1.0f));
 }
 
 const QString Layer::getImagesDatasetName() const
@@ -334,10 +345,10 @@ void Layer::startSelection()
     }
     catch (std::exception& e)
     {
-        exceptionMessageBox("Unable to start the layer pixel selection", e);
+        exceptionMessageBox(QString("Unable to start the layer pixel selection for layer: %1").arg(_layerAction.getGeneralAction().getNameAction().getString()), e);
     }
     catch (...) {
-        exceptionMessageBox("Unable to start the layer pixel selection");
+        exceptionMessageBox(QString("Unable to start the layer pixel selection for layer: %1").arg(_layerAction.getGeneralAction().getNameAction().getString()));
     }
 }
 
@@ -355,10 +366,10 @@ void Layer::computeSelection(const QVector<QPoint>& mousePositions)
     }
     catch (std::exception& e)
     {
-        exceptionMessageBox("Unable to compute layer selection", e);
+        exceptionMessageBox(QString("Unable to compute layer selection for layer: %1").arg(_layerAction.getGeneralAction().getNameAction().getString()), e);
     }
     catch (...) {
-        exceptionMessageBox("Unable to compute layer selection");
+        exceptionMessageBox(QString("Unable to compute layer selection for layer: %1").arg(_layerAction.getGeneralAction().getNameAction().getString()));
     }
 }
 
@@ -373,10 +384,10 @@ void Layer::resetSelectionBuffer()
     }
     catch (std::exception& e)
     {
-        exceptionMessageBox("Unable to reset the off-screen selection buffer", e);
+        exceptionMessageBox(QString("Unable to reset the off-screen selection buffer for layer: %1").arg(_layerAction.getGeneralAction().getNameAction().getString()), e);
     }
     catch (...) {
-        exceptionMessageBox("Unable to reset the off-screen selection buffer");
+        exceptionMessageBox(QString("Unable to reset the off-screen selection buffer for layer: %1").arg(_layerAction.getGeneralAction().getNameAction().getString()));
     }
 }
 
@@ -477,10 +488,10 @@ void Layer::publishSelection()
     }
     catch (std::exception& e)
     {
-        exceptionMessageBox("Unable to publish selection change", e);
+        exceptionMessageBox(QString("Unable to publish selection change for layer: %1").arg(_layerAction.getGeneralAction().getNameAction().getString()), e);
     }
     catch (...) {
-        exceptionMessageBox("Unable to publish selection change");
+        exceptionMessageBox(QString("Unable to publish selection change for layer: %1").arg(_layerAction.getGeneralAction().getNameAction().getString()));
     }
 }
 
@@ -501,10 +512,10 @@ void Layer::zoomToExtents()
     }
     catch (std::exception& e)
     {
-        exceptionMessageBox("Unable to zoom to layer extents", e);
+        exceptionMessageBox(QString("Unable to zoom to extents of layer: %1").arg(_layerAction.getGeneralAction().getNameAction().getString()), e);
     }
     catch (...) {
-        exceptionMessageBox("Unable to zoom to layer extents");
+        exceptionMessageBox(QString("Unable to zoom to extents of layer: %1").arg(_layerAction.getGeneralAction().getNameAction().getString()));
     }
 }
 
@@ -551,10 +562,10 @@ void Layer::zoomToSelection()
     }
     catch (std::exception& e)
     {
-        exceptionMessageBox("Unable to zoom to layer selection", e);
+        exceptionMessageBox(QString("Unable to zoom to selection for layer: %1").arg(_layerAction.getGeneralAction().getNameAction().getString()), e);
     }
     catch (...) {
-        exceptionMessageBox("Unable to zoom to layer selection");
+        exceptionMessageBox(QString("Unable to zoom to selection for layer: %1").arg(_layerAction.getGeneralAction().getNameAction().getString()));
     }
 }
 

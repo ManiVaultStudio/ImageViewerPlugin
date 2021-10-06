@@ -24,7 +24,13 @@ SubsetAction::SubsetAction(LayerAction& layerAction) :
     
     // Update actions states
     const auto updateActionStates = [this]() {
-        _createAction.setEnabled(!_layerAction.getLayer().getSelectedPixels().empty() && !_nameAction.getString().isEmpty());
+        
+        // Establish whether there is a valid selection 
+        const auto hasSelection = !_layerAction.getLayer().getSelectedPixels().empty();
+
+        // Enable/disable actions
+        _nameAction.setEnabled(hasSelection);
+        _createAction.setEnabled(hasSelection && !_nameAction.getString().isEmpty());
     };
 
     // Update action state(s) when the subset name changes

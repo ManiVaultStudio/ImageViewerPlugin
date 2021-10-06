@@ -8,6 +8,7 @@
 #include "ImageData/ImageData.h"
 #include "widgets/DropWidget.h"
 #include "util/DatasetRef.h"
+#include "util/Exception.h"
 
 #include <QDebug>
 #include <QSplitter>
@@ -103,7 +104,10 @@ void ImageViewerPlugin::init()
                 }
                 catch (std::exception& e)
                 {
-                    QMessageBox::critical(nullptr, QString("Unable to load '%1'").arg(datasetName).toLatin1(), e.what());
+                    exceptionMessageBox(QString("Unable to load '%1'").arg(datasetName), e);
+                }
+                catch (...) {
+                    exceptionMessageBox(QString("Unable to load '%1'").arg(datasetName));
                 }
             });
         }
