@@ -3,6 +3,7 @@
 #include "SettingsAction.h"
 #include "NavigationAction.h"
 #include "Layer.h"
+#include "PointsToImagesDialog.h"
 
 #include "ImageData/Images.h"
 #include "ImageData/ImageData.h"
@@ -88,7 +89,7 @@ void ImageViewerPlugin::init()
         const auto tokens       = mimeText.split("\n");
         const auto datasetName  = tokens[0];
         const auto dataType     = hdps::DataType(tokens[1]);
-        const auto dataTypes    = hdps::DataTypes({ ImageType });
+        const auto dataTypes    = hdps::DataTypes({ ImageType, PointType });
 
         if (!dataTypes.contains(dataType))
             dropRegions << new DropWidget::DropRegion(this, "Incompatible data", "This type of data is not supported", false);
@@ -99,6 +100,43 @@ void ImageViewerPlugin::init()
                 {
                     _model.addLayer(SharedLayer::create(*this, datasetName));
 
+                    // Update bounds
+                    _imageViewerWidget->updateWorldBoundingRectangle();
+                }
+                catch (std::exception& e)
+                {
+                    exceptionMessageBox(QString("Unable to load '%1'").arg(datasetName), e);
+                }
+                catch (...) {
+                    exceptionMessageBox(QString("Unable to load '%1'").arg(datasetName));
+                }
+            });
+        }
+
+        if (dataType == PointType) {
+            dropRegions << new DropWidget::DropRegion(this, "Points", QString("Add an image layer for %1").arg(datasetName), true, [this, datasetName]() {
+                try
+                {
+                    // Create conversion dialog
+                    PointsToImagesDialog pointsToImagesDialog(datasetName, this);
+
+                    // Show the dialog and catch the result
+                    const auto result = pointsToImagesDialog.exec();
+
+                    if (result == 1) {
+                        DatasetRef<Images> images(_core->addData("Images", "images", datasetName));
+
+                        if (!images.isValid())
+                            throw std::runtime_error("Unable to create images dataset");
+
+                        images->setType(ImageData::Type::Stack);
+                        images->setNumberOfImages(pointsToImagesDialog.getNumberOfImagesAction().getValue());
+                        images->setImageGeometry(pointsToImagesDialog.getImageSize());
+                        images->setNumberOfComponentsPerPixel(1);
+
+                        _core->notifyDataAdded(images->getName());
+                    }
+                    
                     // Update bounds
                     _imageViewerWidget->updateWorldBoundingRectangle();
                 }
