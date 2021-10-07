@@ -368,8 +368,8 @@ const QStringList Layer::getDimensionNames() const
             dimensionNames << dimensionName;
     }
     else {
-        for (const auto& dimensionName : _points->getDimensionNames())
-            dimensionNames << QString("Dim %1").arg(QString::number(dimensionNames.count()));
+        for (std::uint32_t dimensionIndex = 0; dimensionIndex < _points->getNumDimensions(); dimensionIndex++)
+            dimensionNames << QString("Dim %1").arg(QString::number(dimensionIndex));
     }
 
     return dimensionNames;

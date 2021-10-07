@@ -98,6 +98,7 @@ void ImageViewerPlugin::init()
             dropRegions << new DropWidget::DropRegion(this, "Images", QString("Add an image layer for %1").arg(datasetName), true, [this, datasetName]() {
                 try
                 {
+                    // Add new layer to the model
                     _model.addLayer(SharedLayer::create(*this, datasetName));
 
                     // Update bounds
@@ -137,24 +138,15 @@ void ImageViewerPlugin::init()
                         images->setImageGeometry(pointsToImagesDialog.getImageSize());
                         images->setNumberOfComponentsPerPixel(1);
 
-                        QStringList dimensionNames;
-
-                        if (points->getDimensionNames().size() == points->getNumDimensions()) {
-                            for (const auto& dimensionName : points->getDimensionNames())
-                                dimensionNames << dimensionName;
-                        }
-                        else {
-                            for (const auto& dimensionName : points->getDimensionNames())
-                                dimensionNames << QString("Dim %1").arg(QString::number(dimensionNames.count()));
-                        }
-
-                        images->setDimensionNames(dimensionNames);
-
+                        // Notify others that an images dataset was added
                         _core->notifyDataAdded(images->getName());
+
+                        // Add new layer to the model
+                        _model.addLayer(SharedLayer::create(*this, images.getDatasetName()));
+
+                        // Update bounds
+                        _imageViewerWidget->updateWorldBoundingRectangle();
                     }
-                    
-                    // Update bounds
-                    _imageViewerWidget->updateWorldBoundingRectangle();
                 }
                 catch (std::exception& e)
                 {

@@ -102,7 +102,6 @@ SubsetAction::SubsetAction(Layer& layer) :
                 imagesSubset->setImageGeometry(imageSize, selectionBoundaries.size(), selectionBoundaries.topLeft());
                 imagesSubset->setNumberOfComponentsPerPixel(images->getNumberOfComponentsPerPixel());
                 //imagesSubset->setImageFilePaths(images->getImag);
-                imagesSubset->setDimensionNames(images->getDimensionNames());
 
                 Application::core()->notifyDataAdded(imagesSubset.getDatasetName());
             }

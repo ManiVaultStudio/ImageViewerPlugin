@@ -226,6 +226,8 @@ LayersAction::Widget::Widget(QWidget* parent, LayersAction* layersAction, const 
         if (!selectedRows.isEmpty())
             imageViewerPlugin.getModel().moveLayer(selectedRows.first(), -1000);
 
+        // Render
+        imageViewerPlugin.getImageViewerWidget()->update();
     });
 
     // Move the layer up when the corresponding action is triggered
@@ -234,6 +236,9 @@ LayersAction::Widget::Widget(QWidget* parent, LayersAction* layersAction, const 
 
         if (!selectedRows.isEmpty())
             imageViewerPlugin.getModel().moveLayer(selectedRows.first(), -1);
+
+        // Render
+        imageViewerPlugin.getImageViewerWidget()->update();
     });
 
     // Move the layer down when the corresponding action is triggered
@@ -242,6 +247,9 @@ LayersAction::Widget::Widget(QWidget* parent, LayersAction* layersAction, const 
 
         if (!selectedRows.isEmpty())
             imageViewerPlugin.getModel().moveLayer(selectedRows.first(), 1);
+
+        // Render
+        imageViewerPlugin.getImageViewerWidget()->update();
     });
 
     // Move the layer to the bottom when the corresponding action is triggered

@@ -46,8 +46,22 @@ ImageAction::ImageAction(Layer& layer) :
 
     _colorMapAction.setColorMapType(ColorMap::Type::TwoDimensional);
 
+    // Get the dimension names of the points dataset
     const auto dimensionNames = _layer.getDimensionNames();
 
+    // Set color space to mono in case of one dimension
+    if (dimensionNames.count() == 1)
+        _colorSpaceAction.setCurrentIndex(0);
+    
+    // Set color space to duo in case of two dimensions
+    if (dimensionNames.count() == 2)
+        _colorSpaceAction.setCurrentIndex(1);
+
+    // Set color space to rgb in case of three (or more) dimensions
+    if (dimensionNames.count() >= 3)
+        _colorSpaceAction.setCurrentIndex(0);
+
+    // Set channel dimension names
     _channel1Action.getDimensionAction().setOptions(dimensionNames);
     _channel2Action.getDimensionAction().setOptions(dimensionNames);
     _channel3Action.getDimensionAction().setOptions(dimensionNames);
@@ -161,11 +175,36 @@ ImageAction::ImageAction(Layer& layer) :
 
     // Re-compute the selection channel when the selection changes
     registerDataEventByType(PointType, [this](hdps::DataEvent* dataEvent) {
-        if (dataEvent->getType() == hdps::EventType::SelectionChanged) {
-            auto selectionChangedEvent = static_cast<hdps::SelectionChangedEvent*>(dataEvent);
+        switch (dataEvent->getType())
+        {
+            case EventType::DataChanged:
+            {
+                // Only compute scalar data when the name of the dataset matches
+                if (dataEvent->dataSetName != _layer.getPoints()->getName())
+                    break;
 
-            if (selectionChangedEvent->dataSetName == _layer.getPoints().getSourceData().getName())
+                // Compute the scalar data
+                _channel1Action.computeScalarData();
+                _channel2Action.computeScalarData();
+                _channel3Action.computeScalarData();
+
+                break;
+            }
+
+            case EventType::SelectionChanged:
+            {
+                // Only compute scalar data when the name of the dataset matches
+                if (dataEvent->dataSetName != _layer.getPoints().getSourceData().getName())
+                    break;
+
+                // Compute the scalar data
                 _channelSelectionAction.computeScalarData();
+
+                break;
+            }
+
+            default:
+                break;
         }
     });
 
