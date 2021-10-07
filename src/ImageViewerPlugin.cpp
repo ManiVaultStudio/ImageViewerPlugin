@@ -124,7 +124,10 @@ void ImageViewerPlugin::init()
                     const auto result = pointsToImagesDialog.exec();
 
                     if (result == 1) {
+
+                        // Get references to input points and create images dataset
                         DatasetRef<Images> images(_core->addData("Images", "images", datasetName));
+                        DatasetRef<Points> points(datasetName);
 
                         if (!images.isValid())
                             throw std::runtime_error("Unable to create images dataset");
@@ -133,6 +136,19 @@ void ImageViewerPlugin::init()
                         images->setNumberOfImages(pointsToImagesDialog.getNumberOfImagesAction().getValue());
                         images->setImageGeometry(pointsToImagesDialog.getImageSize());
                         images->setNumberOfComponentsPerPixel(1);
+
+                        QStringList dimensionNames;
+
+                        if (points->getDimensionNames().size() == points->getNumDimensions()) {
+                            for (const auto& dimensionName : points->getDimensionNames())
+                                dimensionNames << dimensionName;
+                        }
+                        else {
+                            for (const auto& dimensionName : points->getDimensionNames())
+                                dimensionNames << QString("Dim %1").arg(QString::number(dimensionNames.count()));
+                        }
+
+                        images->setDimensionNames(dimensionNames);
 
                         _core->notifyDataAdded(images->getName());
                     }

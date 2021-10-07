@@ -1,5 +1,8 @@
 #include "PointsToImagesDialog.h"
 #include "Application.h"
+#include "DataHierarchyItem.h"
+
+#include "ImageData/Images.h"
 
 #include <QDebug>
 #include <QVBoxLayout>
@@ -18,6 +21,39 @@ PointsToImagesDialog::PointsToImagesDialog(const QString& datasetName, QWidget* 
 {
     setWindowTitle("Convert points dataset to images");
     setWindowIcon(hdps::Application::getIconFont("FontAwesome").getIcon("database"));
+
+    _imageWidthAction.setDefaultWidgetFlags(IntegralAction::SpinBox);
+    _imageHeightAction.setDefaultWidgetFlags(IntegralAction::SpinBox);
+
+    // Try to guess the image dimensions if the points dataset is derived
+    if (_points->isDerivedData()) {
+
+        // Get the source points dataset
+        auto pointsParentHierarchyItem = _points->getHierarchyItem().getParent();
+
+        // Iterate over each child of the source dataset
+        for (auto childHierarchyItem : pointsParentHierarchyItem->getChildren()) {
+
+            // Get image dimensions in case of an images dataset
+            if (childHierarchyItem->getDataType() == ImageType) {
+
+                // Get reference to images dataset
+                auto& images = childHierarchyItem->getDataset<Images>();
+
+                // Get image size
+                const auto imageSize = images.getImageSize();
+
+                // Set 
+                _imageWidthAction.initialize(0, 10000, imageSize.width(), imageSize.width());
+                _imageHeightAction.initialize(0, 10000, imageSize.height(), imageSize.height());
+            }
+        }
+    }
+
+    _numberOfImagesAction.setDefaultWidgetFlags(IntegralAction::LineEdit);
+    _numberOfImagesAction.setMayReset(false);
+    _numberOfImagesAction.setEnabled(false);
+    _numberOfImagesAction.setValue(_points->getNumDimensions());
 
     _numberOfPixelsAction.setMayReset(false);
     _notesAction.setMayReset(false);
@@ -75,6 +111,8 @@ PointsToImagesDialog::PointsToImagesDialog(const QString& datasetName, QWidget* 
 
     // Compute initial number of pixels
     updateNumberOfPixels();
+
+
 }
 
 QSize PointsToImagesDialog::getImageSize() const
