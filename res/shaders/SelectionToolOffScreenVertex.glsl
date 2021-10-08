@@ -10,5 +10,7 @@ uniform mat4 transform;
 void main(void)
 {
     gl_Position = transform * vertex;
-    uv = texCoord;
+
+    // Flip the uv x-axis
+    uv = vec2(1.0f - texCoord.x, texCoord.y);
 }

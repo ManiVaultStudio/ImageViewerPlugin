@@ -296,7 +296,7 @@ void Layer::updateModelMatrix()
         QMatrix4x4 invertMatrix, translateMatrix, scaleMatrix;
 
         // Invert along the x-axis
-        invertMatrix.scale(-1.0f, 1.0f, 1.0f);
+        //invertMatrix.scale(-1.0f, 1.0f, 1.0f);
 
         // Compute the translation matrix
         translateMatrix.translate(generalAction.getXPositionAction().getValue(), generalAction.getYPositionAction().getValue(), 0.0f);
@@ -593,6 +593,7 @@ void Layer::zoomToSelection()
         // Get selection boundaries
         const auto selectionBoundingRectangle = QRectF(_imageAction.getChannelSelectionAction().getSelectionBoundaries());
 
+        // Ensure selection boundaries are valid
         if (!selectionBoundingRectangle.isValid())
             throw std::runtime_error("Selection boundaries are invalid");
 
@@ -616,8 +617,11 @@ void Layer::zoomToSelection()
             return rectangle;
         };
 
+        // Compute the zoom rectangle in world coordinates
+        const auto zoomRectangleWorld = rectangleFromPoints(worldTopLeft, worldBottomRight);
+
         // Zoom to layer selection
-        _imageViewerPlugin.getImageViewerWidget()->getRenderer().zoomToWorldRectangle(rectangleFromPoints(worldTopLeft, worldBottomRight));
+        _imageViewerPlugin.getImageViewerWidget()->getRenderer().zoomToWorldRectangle(zoomRectangleWorld);
 
         // Trigger render
         invalidate();

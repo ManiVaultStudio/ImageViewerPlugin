@@ -12,7 +12,7 @@ NavigationAction::NavigationAction(ImageViewerPlugin& imageViewerPlugin) :
     WidgetAction(&imageViewerPlugin),
     _imageViewerPlugin(imageViewerPlugin),
     _zoomOutAction(this, ""),
-    _zoomPercentageAction(this, "Zoom percentage", 1.0f, 500.0f, 100.0f, 100.0f, 1),
+    _zoomPercentageAction(this, "Zoom percentage", 1.0f, 1000.0f, 100.0f, 100.0f, 1),
     _zoomInAction(this, ""),
     _zoomExtentsAction(this, ""),
     _panAction(this, ""),

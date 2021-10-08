@@ -136,7 +136,7 @@ protected:
     QVector<float>              _scalarData;                /** Channel scalar data for the specified dimension */
     QPair<float, float>         _scalarDataRange;           /** Scalar data range */
     std::vector<std::uint8_t>   _selectionData;             /** Selection data */
-    QRect                       _selectionBoundaries;       /** Selection boundaries */
+    QRect                       _selectionBoundaries;       /** Selection boundaries in pixel coordinates */
 
     friend class ImageAction;
 };

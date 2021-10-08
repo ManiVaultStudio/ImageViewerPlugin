@@ -88,22 +88,28 @@ QMatrix4x4 Renderer::getViewMatrix() const
     QMatrix4x4 lookAt, scale;
 
     // Construct look-at parameters
-    const auto eye      = QVector3D(_pan.x(), _pan.y(), -1);
+    const auto eye      = QVector3D(_pan.x(), _pan.y(), 1);
     const auto center   = QVector3D(_pan.x(), _pan.y(), 0);
     const auto up       = QVector3D(0, 1, 0);
 
+    // Create look-at transformation matrix
     lookAt.lookAt(eye, center, up);
-    scale.scale(_zoomLevel);
 
+    // Create scale matrix
+    scale.scale(_zoomLevel, _zoomLevel, _zoomLevel);
+
+    // Return composite matrix of scale and look-at transformation matrix
     return scale * lookAt;
 }
 
 QMatrix4x4 Renderer::getProjectionMatrix() const
 {
+    // Compute half of the widget size
     const auto halfSize = getParentWidgetSize() / 2;
 
     QMatrix4x4 matrix;
 
+    // Create an orthogonal transformation matrix
     matrix.ortho(-halfSize.width(), halfSize.width(), -halfSize.height(), halfSize.height(), -1000.0f, +1000.0f);
 
     return matrix;

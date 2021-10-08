@@ -258,9 +258,7 @@ void ChannelAction::computeSelectionChannel()
     // Convert image width to floating point for division later
     const auto width = static_cast<float>(getImageSize().width());
 
-    //qDebug() << _layerImageAction.getLayerAction().getLayer().getSelectionIndices();
-
-    // Assign selected pixels
+    // Establish selected pixel boundaries
     for (auto selectionIndex : _imageAction.getLayer().getSelectedPixels()) {
 
         // Assign selected pixel
@@ -269,18 +267,15 @@ void ChannelAction::computeSelectionChannel()
         // Deduce pixel coordinate
         auto pixelCoordinate = QPoint(selectionIndex % getImageSize().width(), static_cast<int>(floorf(selectionIndex / width)));
 
-        //qDebug() << pixelCoordinate;
+        // Correct for x-axis flipped image
+        //pixelCoordinate.setX(getImageSize().width() - pixelCoordinate.x());
 
-        // And intersect with existing boundaries
+        // Add pixel pixel coordinate and possibly inflate the selection boundaries
         _selectionBoundaries.setLeft(std::min(_selectionBoundaries.left(), pixelCoordinate.x()));
         _selectionBoundaries.setRight(std::max(_selectionBoundaries.right(), pixelCoordinate.x()));
         _selectionBoundaries.setTop(std::min(_selectionBoundaries.top(), pixelCoordinate.y()));
         _selectionBoundaries.setBottom(std::max(_selectionBoundaries.bottom(), pixelCoordinate.y()));
     }
-
-    //qDebug() << _selectionBoundaries;
-    //_selectionBoundaries = QRect(QPoint(), getImageSize());
-    //_selectionBoundaries.adjust(2, 2, 0, 0);
 }
 
 QWidget* ChannelAction::getWidget(QWidget* parent, const std::int32_t& widgetFlags, const WidgetActionWidget::State& state /*= WidgetActionWidget::State::Standard*/)
