@@ -10,8 +10,8 @@ SettingsAction::SettingsAction(ImageViewerPlugin& imageViewerPlugin) :
 {
 }
 
-SettingsAction::Widget::Widget(QWidget* parent, SettingsAction* settingsAction, const WidgetActionWidget::State& state) :
-    WidgetActionWidget(parent, settingsAction, state)
+SettingsAction::Widget::Widget(QWidget* parent, SettingsAction* settingsAction) :
+    WidgetActionWidget(parent, settingsAction)
 {
     setAutoFillBackground(true);
     setFixedWidth(350);

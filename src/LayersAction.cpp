@@ -54,8 +54,8 @@ QColor LayersAction::getRandomLayerColor()
     return QColor::fromHsl(randomHue, randomSaturation, randomLightness);
 }
 
-LayersAction::Widget::Widget(QWidget* parent, LayersAction* layersAction, const WidgetActionWidget::State& state) :
-    WidgetActionWidget(parent, layersAction, state),
+LayersAction::Widget::Widget(QWidget* parent, LayersAction* layersAction) :
+    WidgetActionWidget(parent, layersAction),
     _removeLayerAction(this, ""),
     _duplicateLayerAction(this, ""),
     _moveLayerToTopAction(this, ""),

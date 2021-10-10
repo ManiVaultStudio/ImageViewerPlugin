@@ -107,8 +107,8 @@ ImageViewerWidget& NavigationAction::getImageViewerWidget()
     return *_imageViewerPlugin.getImageViewerWidget();
 }
 
-NavigationAction::Widget::Widget(QWidget* parent, NavigationAction* navigationAction, const WidgetActionWidget::State& state) :
-    WidgetActionWidget(parent, navigationAction, state)
+NavigationAction::Widget::Widget(QWidget* parent, NavigationAction* navigationAction) :
+    WidgetActionWidget(parent, navigationAction)
 {
     setAutoFillBackground(true);
 
