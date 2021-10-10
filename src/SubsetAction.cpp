@@ -25,7 +25,7 @@ SubsetAction::SubsetAction(Layer& layer) :
     const auto updateActionStates = [this]() {
         
         // Establish whether there is a valid selection 
-        const auto hasSelection = !_layer.getSelectedPixels().empty();
+        const auto hasSelection = !_layer.getSelectedIndices().empty();
 
         // Enable/disable actions
         _nameAction.setEnabled(hasSelection);
@@ -61,7 +61,7 @@ SubsetAction::SubsetAction(Layer& layer) :
                 const auto imageSize = _layer.getImageSize();
 
                 // Cache the selection indices
-                auto cachedSelectionIndices = _layer.getSelectedPixels();
+                auto cachedSelectionIndices = _layer.getSelectedIndices();
 
                 // Get the selection boundaries
                 const auto selectionBoundaries = _layer.getSelectionAction().getSelectionBoundaries();
@@ -70,7 +70,7 @@ SubsetAction::SubsetAction(Layer& layer) :
                 const auto numberOfPixelsInRegion = selectionBoundaries.width() * selectionBoundaries.height();
 
                 // Get reference to selection indices
-                auto& modifySelectionIndices = _layer.getSelectedPixels();
+                auto& modifySelectionIndices = _layer.getSelectedIndices();
 
                 // Allocate space for indices
                 modifySelectionIndices.clear();

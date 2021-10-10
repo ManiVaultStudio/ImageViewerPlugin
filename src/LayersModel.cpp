@@ -32,6 +32,13 @@ LayersModel::LayersModel(QObject* parent) :
     });
 }
 
+LayersModel::~LayersModel()
+{
+    // Remove all layers
+    for (std::int32_t row = 0; rowCount(); row++)
+        removeLayer(row);
+}
+
 int LayersModel::rowCount(const QModelIndex& parent /*= QModelIndex()*/) const
 {
     return _layers.count();
@@ -44,7 +51,7 @@ int LayersModel::columnCount(const QModelIndex& parent /*= QModelIndex()*/) cons
 
 QModelIndex LayersModel::index(int row, int column, const QModelIndex& parent /*= QModelIndex()*/) const
 {
-    return createIndex(row, column, static_cast<void*>(_layers.at(row).get()));
+    return createIndex(row, column, static_cast<void*>(_layers.at(row)));
 }
 
 QVariant LayersModel::data(const QModelIndex& index, int role) const
@@ -403,7 +410,7 @@ Qt::ItemFlags LayersModel::flags(const QModelIndex& index) const
     return itemFlags;
 }
 
-void LayersModel::addLayer(const SharedLayer& layer)
+void LayersModel::addLayer(Layer* layer)
 {
     try
     {
@@ -456,16 +463,23 @@ void LayersModel::addLayer(const SharedLayer& layer)
     }
 }
 
-void LayersModel::removeLayer(const QModelIndex& layerModelIndex)
+void LayersModel::removeLayer(const std::uint32_t& row)
 {
     try
     {
-        // Remove the row
-        beginRemoveRows(QModelIndex(), layerModelIndex.row(), layerModelIndex.row());
+        // Get pointer to layer which needs to be removed
+        auto removeLayer = _layers[row];
+
+        Application::core()->unregisterEventListener(removeLayer);
+
+        // Remove the row from the model
+        beginRemoveRows(QModelIndex(), row, row);
         {
-            // Remove the layer action
-            _layers[layerModelIndex.row()].reset(nullptr);
-            _layers.remove(layerModelIndex.row());
+            // Remove the layer from the list
+            _layers.removeAt(row);
+
+            // Remove the layer physically
+            delete removeLayer;
         }
         endRemoveRows();
     }
@@ -478,6 +492,11 @@ void LayersModel::removeLayer(const QModelIndex& layerModelIndex)
     }
 }
 
+void LayersModel::removeLayer(const QModelIndex& layerModelIndex)
+{
+    removeLayer(layerModelIndex.row());
+}
+
 void LayersModel::removeLayer(const QString& datasetName)
 {
     try
@@ -487,7 +506,7 @@ void LayersModel::removeLayer(const QString& datasetName)
 
         for (const auto& layer : _layers) {
             if (datasetName == layer->getImagesDatasetName())
-                removeLayer(index(_layers.indexOf(layer), 0));
+                removeLayer(_layers.indexOf(layer));
         }
     }
     catch (std::exception& e)
@@ -568,7 +587,7 @@ void LayersModel::moveLayer(const QModelIndex& layerModelIndex, const std::int32
     }
 }
 
-QVector<SharedLayer>& LayersModel::getLayers()
+QVector<Layer*>& LayersModel::getLayers()
 {
     return _layers;
 }

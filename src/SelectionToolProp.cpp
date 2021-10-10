@@ -61,15 +61,15 @@ void SelectionToolProp::render(const QMatrix4x4& modelViewProjectionMatrix)
         if (!canRender())
             return;
 
-        const auto shape            = getShapeByName<QuadShape>("Quad");
-        const auto shaderProgram    = getShaderProgramByName("SelectionTool");
+        const auto shape                        = getShapeByName<QuadShape>("Quad");
+        const auto selectionToolShaderProgram   = getShaderProgramByName("SelectionTool");
 
         // Bind shader program
         if (_fbo.isNull())
             throw std::runtime_error("FBO not initialized");
 
         // Bind shader program
-        if (!shaderProgram->bind())
+        if (!selectionToolShaderProgram->bind())
             throw std::runtime_error("Unable to bind quad shader program");
 
         glBindTexture(GL_TEXTURE_2D, _fbo->texture());
@@ -78,16 +78,16 @@ void SelectionToolProp::render(const QMatrix4x4& modelViewProjectionMatrix)
         auto& selectionAction = _layer.getSelectionAction();
 
         // Configure shader program
-        shaderProgram->setUniformValue("offScreenTexture", 0);
-        shaderProgram->setUniformValue("color", selectionAction.getOverlayColor().getColor());
-        shaderProgram->setUniformValue("opacity", selectionAction.getOverlayOpacity().getValue());
-        shaderProgram->setUniformValue("transform", modelViewProjectionMatrix * _renderable.getModelMatrix() * getModelMatrix());
+        selectionToolShaderProgram->setUniformValue("offScreenTexture", 0);
+        selectionToolShaderProgram->setUniformValue("color", selectionAction.getOverlayColor().getColor());
+        selectionToolShaderProgram->setUniformValue("opacity", selectionAction.getOverlayOpacity().getValue());
+        selectionToolShaderProgram->setUniformValue("transform", modelViewProjectionMatrix * _renderable.getModelMatrix() * getModelMatrix());
 
         // Render the quad
         shape->render();
 
         // Release the shader program
-        shaderProgram->release();
+        selectionToolShaderProgram->release();
     }
     catch (std::exception& e)
     {
@@ -106,6 +106,8 @@ QRectF SelectionToolProp::getWorldBoundingRectangle() const
 void SelectionToolProp::setGeometry(const QRect& sourceImageRectangle, const QRect& targetImageRectangle)
 {
     try {
+        qDebug() << "Set selection tool prop geometry:" << sourceImageRectangle << targetImageRectangle;
+
         getRenderer().bindOpenGLContext();
         {
             // Assign the rectangle to the quad shape
@@ -114,18 +116,15 @@ void SelectionToolProp::setGeometry(const QRect& sourceImageRectangle, const QRe
             // Update the model matrix
             QMatrix4x4 modelMatrix;
 
-            // Compute the  model matrix
+            // Compute the model matrix
             modelMatrix.translate(-sourceImageRectangle.center().x(), -sourceImageRectangle.center().y(), 0.0f);
 
             // Assign model matrix
             setModelMatrix(modelMatrix);
 
             // Create FBO when none exists
-            if (_fbo.isNull()) {
-
-                // Create the FBO
+            if (_fbo.isNull())
                 _fbo.reset(new QOpenGLFramebufferObject(targetImageRectangle.width(), targetImageRectangle.height()));
-            }
         }
         getRenderer().releaseOpenGLContext();
     }
@@ -155,46 +154,52 @@ void SelectionToolProp::compute(const QVector<QPoint>& mousePositions)
             if (!_fbo->bind())
                 throw std::runtime_error("Unable to bind FBO");
 
-            // Create viewport with the same size as the FBO
-            glViewport(0, 0, _fbo->width(), _fbo->height());
+            // Get quad shape and compute the model-view-matrix
+            auto quad               = getShapeByName<QuadShape>("Quad");
+            auto quadRectangle      = quad->getRectangle();
+            auto modelViewMatrix    = _layer.getRenderer().getViewMatrix() * _renderable.getModelMatrix() * getModelMatrix();
+
+            qDebug() << quadRectangle << _fbo->width(), _fbo->height();
+
+            // Create viewport with the same size as the FBO a
+            glViewport(quadRectangle.x(), quadRectangle.y(), _fbo->width(), _fbo->height());
 
             QMatrix4x4 transform;
 
             // Create orthogonal transformation matrix
-            transform.ortho(0.0f, _fbo->width(), 0.0f, _fbo->height(), -1.0f, +1.0f);
+            transform.ortho(0, _fbo->width(), 0, _fbo->height(), -1.0f, +1.0f);
 
             // Get reference to selection action
             auto& selectionAction = _layer.getSelectionAction();
 
-            // Get quad shape and compute the model-view-matrix
-            auto shape              = getShapeByName<QuadShape>("Quad");
-            auto modelViewMatrix    = _layer.getRenderer().getViewMatrix() * _renderable.getModelMatrix() * getModelMatrix();
-
             // Get shader program for the off-screen rendering
-            const auto shaderProgram = getShaderProgramByName("SelectionToolOffScreen");
+            const auto selectionToolOffScreenShaderProgram = getShaderProgramByName("SelectionToolOffScreen");
 
             // Bind the quad vertex array object buffer
-            shape->getVAO().bind();
+            quad->getVAO().bind();
 
             // Bind shader program
-            if (!shaderProgram->bind())
+            if (!selectionToolOffScreenShaderProgram->bind())
                 throw std::runtime_error("Unable to bind off screen shader program");
 
+            // Bind the FBO texture for off-screen rendering
             glBindTexture(GL_TEXTURE_2D, _fbo->texture());
 
             // Get selection type and brush radius
             const auto selectionType    = selectionAction.getTypeAction().getCurrentIndex();
             const auto brushRadius      = selectionAction.getBrushRadiusAction().getValue();
 
+            // Get the FBO size in floating point
+            const auto fboSize = QSizeF(static_cast<float>(_fbo->size().width()), static_cast<float>(_fbo->size().height()));
+
             // Configure shader program
-            shaderProgram->setUniformValue("pixelSelectionTexture", 0);
-            shaderProgram->setUniformValue("transform", transform);
-            shaderProgram->setUniformValue("selectionType", selectionType);
-
-            const auto fboSize                  = QSizeF(static_cast<float>(_fbo->size().width()), static_cast<float>(_fbo->size().height()));
-            const auto numberOfMousePositions   = mousePositions.size();
-
-            shaderProgram->setUniformValue("imageSize", fboSize.width(), fboSize.height());
+            selectionToolOffScreenShaderProgram->setUniformValue("pixelSelectionTexture", 0);
+            selectionToolOffScreenShaderProgram->setUniformValue("transform", transform);
+            selectionToolOffScreenShaderProgram->setUniformValue("selectionType", selectionType);
+            selectionToolOffScreenShaderProgram->setUniformValue("imageSize", fboSize.width(), fboSize.height());
+            
+            // Get number of mouse positions
+            const auto numberOfMousePositions = mousePositions.size();
 
             switch (static_cast<PixelSelectionType>(selectionType))
             {
@@ -209,8 +214,8 @@ void SelectionToolProp::compute(const QVector<QPoint>& mousePositions)
                     const auto rectangleBottomRightUV   = QVector2D(rectangleBottomRight.x() / fboSize.width(), rectangleBottomRight.y() / fboSize.height());
                     const auto rectangle                = QRectF(QPointF(rectangleTopLeftUV.x(), rectangleTopLeftUV.y()), QPointF(rectangleBottomRightUV.x(), rectangleBottomRightUV.y())).normalized();
 
-                    shaderProgram->setUniformValue("rectangleTopLeft", rectangle.topLeft());
-                    shaderProgram->setUniformValue("rectangleBottomRight", rectangle.bottomRight());
+                    selectionToolOffScreenShaderProgram->setUniformValue("rectangleTopLeft", rectangle.topLeft());
+                    selectionToolOffScreenShaderProgram->setUniformValue("rectangleBottomRight", rectangle.bottomRight());
 
                     // Draw off-screen 
                     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
@@ -227,21 +232,21 @@ void SelectionToolProp::compute(const QVector<QPoint>& mousePositions)
                     const auto brushPerimeter   = getRenderer().getScreenPointToWorldPosition(modelViewMatrix, QPoint(brushRadius, 0.0f));
                     const auto brushRadiusWorld = (brushPerimeter - brushCenter).length();
 
-                    shaderProgram->setUniformValue("brushRadius", brushRadiusWorld);
+                    selectionToolOffScreenShaderProgram->setUniformValue("brushRadius", brushRadiusWorld);
 
                     if (numberOfMousePositions == 1) {
                         const auto brushCenter = getRenderer().getScreenPointToWorldPosition(modelViewMatrix, mousePositions.last()).toVector2D();
 
-                        shaderProgram->setUniformValue("previousBrushCenter", brushCenter);
-                        shaderProgram->setUniformValue("currentBrushCenter", brushCenter);
+                        selectionToolOffScreenShaderProgram->setUniformValue("previousBrushCenter", brushCenter);
+                        selectionToolOffScreenShaderProgram->setUniformValue("currentBrushCenter", brushCenter);
                     }
 
                     if (numberOfMousePositions > 1) {
                         const auto previousBrushCenter  = getRenderer().getScreenPointToWorldPosition(modelViewMatrix, mousePositions[numberOfMousePositions - 2]).toVector2D();
                         const auto currentBrushCenter   = getRenderer().getScreenPointToWorldPosition(modelViewMatrix, mousePositions.last()).toVector2D();
 
-                        shaderProgram->setUniformValue("previousBrushCenter", previousBrushCenter);
-                        shaderProgram->setUniformValue("currentBrushCenter", currentBrushCenter);
+                        selectionToolOffScreenShaderProgram->setUniformValue("previousBrushCenter", previousBrushCenter);
+                        selectionToolOffScreenShaderProgram->setUniformValue("currentBrushCenter", currentBrushCenter);
                     }
 
                     // Draw off-screen 
@@ -263,8 +268,8 @@ void SelectionToolProp::compute(const QVector<QPoint>& mousePositions)
                     for (const auto& mousePosition : mousePositions)
                         points.push_back(getRenderer().getScreenPointToWorldPosition(modelViewMatrix, mousePosition).toVector2D());
 
-                    shaderProgram->setUniformValueArray("points", &points[0], static_cast<std::int32_t>(points.size()));
-                    shaderProgram->setUniformValue("noPoints", static_cast<int>(points.size()));
+                    selectionToolOffScreenShaderProgram->setUniformValueArray("points", &points[0], static_cast<std::int32_t>(points.size()));
+                    selectionToolOffScreenShaderProgram->setUniformValue("noPoints", static_cast<int>(points.size()));
 
                     // Draw off-screen 
                     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
@@ -281,7 +286,7 @@ void SelectionToolProp::compute(const QVector<QPoint>& mousePositions)
                     QList<QVector2D> points{ getRenderer().getScreenPointToWorldPosition(modelViewMatrix, mousePositions.first()).toVector2D() };
 
                     // Assign sample point to shader
-                    shaderProgram->setUniformValueArray("points", &points[0], static_cast<std::int32_t>(points.size()));
+                    selectionToolOffScreenShaderProgram->setUniformValueArray("points", &points[0], static_cast<std::int32_t>(points.size()));
 
                     // Draw off-screen 
                     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
@@ -294,10 +299,10 @@ void SelectionToolProp::compute(const QVector<QPoint>& mousePositions)
             }
 
             // Release the shader program
-            shaderProgram->release();
+            selectionToolOffScreenShaderProgram->release();
 
             // And shape VAO
-            shape->getVAO().release();
+            quad->getVAO().release();
 
             // Release the FBO
             _fbo->release();
@@ -361,18 +366,18 @@ void SelectionToolProp::loadSelectionToolShaderProgram()
     const auto fragmentShader   = loadFileContents(":Shaders/SelectionToolFragment.glsl");
 
     // Get selection tool shader program
-    const auto shaderProgram = getShaderProgramByName("SelectionTool");
+    const auto selectionToolShaderProgram = getShaderProgramByName("SelectionTool");
 
     // Assign vertex shader to shader program
-    if (!shaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShader))
+    if (!selectionToolShaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShader))
         throw std::runtime_error("Unable to compile selection tool prop vertex shader");
 
     // Assign fragment shader to shader program
-    if (!shaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShader))
+    if (!selectionToolShaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShader))
         throw std::runtime_error("Unable to compile selection tool prop fragment shader");
 
     // Link the shader program
-    if (!shaderProgram->link())
+    if (!selectionToolShaderProgram->link())
         throw std::runtime_error("Unable to link selection tool prop shader program");
 
     // Number of bytes per stride
@@ -382,7 +387,7 @@ void SelectionToolProp::loadSelectionToolShaderProgram()
     auto shape = getShapeByName<QuadShape>("Quad");
 
     // Bind the shader program
-    if (!shaderProgram->bind())
+    if (!selectionToolShaderProgram->bind())
         throw std::runtime_error("Unable to bind selection tool shader program");
 
     shape->getVAO().bind();
@@ -390,11 +395,11 @@ void SelectionToolProp::loadSelectionToolShaderProgram()
         shape->getVBO().bind();
         {
             // Configure shader program
-            shaderProgram->enableAttributeArray(QuadShape::_vertexAttribute);
-            shaderProgram->enableAttributeArray(QuadShape::_textureAttribute);
-            shaderProgram->setAttributeBuffer(QuadShape::_vertexAttribute, GL_FLOAT, 0, 3, stride);
-            shaderProgram->setAttributeBuffer(QuadShape::_textureAttribute, GL_FLOAT, 3 * sizeof(GLfloat), 2, stride);
-            shaderProgram->release();
+            selectionToolShaderProgram->enableAttributeArray(QuadShape::_vertexAttribute);
+            selectionToolShaderProgram->enableAttributeArray(QuadShape::_textureAttribute);
+            selectionToolShaderProgram->setAttributeBuffer(QuadShape::_vertexAttribute, GL_FLOAT, 0, 3, stride);
+            selectionToolShaderProgram->setAttributeBuffer(QuadShape::_textureAttribute, GL_FLOAT, 3 * sizeof(GLfloat), 2, stride);
+            selectionToolShaderProgram->release();
         }
         shape->getVAO().release();
     }
@@ -407,19 +412,19 @@ void SelectionToolProp::loadSelectionToolOffScreenShaderProgram()
     const auto vertexShader     = loadFileContents(":Shaders/SelectionToolOffScreenVertex.glsl");
     const auto fragmentShader   = loadFileContents(":Shaders/SelectionToolOffScreenFragment.glsl");
 
-    // Get selection tool shader program
-    const auto shaderProgram = getShaderProgramByName("SelectionToolOffScreen");
+    // Get selection tool off-screen shader program
+    const auto selectionToolOffScreenShaderProgram = getShaderProgramByName("SelectionToolOffScreen");
 
     // Assign vertex shader to shader program
-    if (!shaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShader))
+    if (!selectionToolOffScreenShaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShader))
         throw std::runtime_error("Unable to compile selection tool off-screen vertex shader");
 
     // Assign fragment shader to shader program
-    if (!shaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShader))
+    if (!selectionToolOffScreenShaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShader))
         throw std::runtime_error("Unable to compile selection tool off-screen fragment shader");
 
     // Link the shader program
-    if (!shaderProgram->link())
+    if (!selectionToolOffScreenShaderProgram->link())
         throw std::runtime_error("Unable to link selection tool off-screen shader program");
 
     // Number of bytes per stride
@@ -429,7 +434,7 @@ void SelectionToolProp::loadSelectionToolOffScreenShaderProgram()
     auto shape = getShapeByName<QuadShape>("Quad");
 
     // Bind the shader program
-    if (!shaderProgram->bind())
+    if (!selectionToolOffScreenShaderProgram->bind())
         throw std::runtime_error("Unable to bind selection tool off-screen shader program");
 
     shape->getVAO().bind();
@@ -437,11 +442,11 @@ void SelectionToolProp::loadSelectionToolOffScreenShaderProgram()
         shape->getVBO().bind();
         {
             // Configure shader program
-            shaderProgram->enableAttributeArray(QuadShape::_vertexAttribute);
-            shaderProgram->enableAttributeArray(QuadShape::_textureAttribute);
-            shaderProgram->setAttributeBuffer(QuadShape::_vertexAttribute, GL_FLOAT, 0, 3, stride);
-            shaderProgram->setAttributeBuffer(QuadShape::_textureAttribute, GL_FLOAT, 3 * sizeof(GLfloat), 2, stride);
-            shaderProgram->release();
+            selectionToolOffScreenShaderProgram->enableAttributeArray(QuadShape::_vertexAttribute);
+            selectionToolOffScreenShaderProgram->enableAttributeArray(QuadShape::_textureAttribute);
+            selectionToolOffScreenShaderProgram->setAttributeBuffer(QuadShape::_vertexAttribute, GL_FLOAT, 0, 3, stride);
+            selectionToolOffScreenShaderProgram->setAttributeBuffer(QuadShape::_textureAttribute, GL_FLOAT, 3 * sizeof(GLfloat), 2, stride);
+            selectionToolOffScreenShaderProgram->release();
         }
         shape->getVAO().release();
     }

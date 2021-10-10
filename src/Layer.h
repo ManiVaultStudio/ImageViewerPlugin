@@ -53,12 +53,6 @@ public:
 
     const QString getImagesDatasetName() const;
 
-    /** Get indices of the selected pixels */
-    std::vector<std::uint32_t>& getSelectedPixels();
-
-    /** Get indices of the selected pixels */
-    const std::vector<std::uint32_t>& getSelectedPixels() const;
-
 public: // Images wrapper functions
 
     const std::uint32_t getNumberOfImages() const;
@@ -97,6 +91,15 @@ public: // Selection
     /** Publish selection */
     void publishSelection();
 
+    /** Compute the selected indices */
+    void computeSelectedIndices();
+
+    /** Get indices of the selected pixels */
+    std::vector<std::uint32_t>& getSelectedIndices();
+
+    /** Get indices of the selected pixel indices */
+    const std::vector<std::uint32_t>& getSelectedIndices() const;
+
 public: // View
 
     // Zoom to layer extents
@@ -132,7 +135,7 @@ protected:
     bool                            _active;                /** Whether the layer is active (editable) */
     DatasetRef<Images>              _images;                /** Reference to images dataset */
     DatasetRef<Points>              _points;                /** Reference to input points dataset of the images */
-    std::vector<std::uint32_t>      _selectedPixels;        /** Indices of selected pixels */
+    std::vector<std::uint32_t>      _selectedIndices;       /** Indices of the selected pixels */
     GeneralAction                   _generalAction;         /** General action */
     ImageAction                     _imageAction;           /** Image action */
     SelectionAction                 _selectionAction;       /** Selection action */
@@ -140,5 +143,3 @@ protected:
 
     friend class ImageViewerWidget;
 };
-
-using SharedLayer = QSharedPointer<Layer>;

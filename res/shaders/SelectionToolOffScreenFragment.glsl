@@ -141,7 +141,7 @@ void main(void)
             }
 
             fragmentColor = (inBrush || prevInBrush) ? vec4(1) : vec4(vec3(0), 1);
-
+            fragmentColor = vec4(1);
             break;
         }
 

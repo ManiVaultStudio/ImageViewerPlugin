@@ -99,22 +99,22 @@ public: // Channel data
     /** Get selection boundaries */
     QRect getSelectionBoundaries() const;
 
-protected: // Data extraction
-
-    /** Get reference to images dataset */
-    DatasetRef<Images>& getImages();
-
-    /** Get reference to points dataset which contains the actual image data */
-    DatasetRef<Points>& getPoints();
-
     /** Compute scalar data for image sequence */
     void computeScalarData();
+
+protected:
 
     /** Compute mask channel */
     void computeMaskChannel();
 
     /** Compute selection channel */
     void computeSelectionChannel();
+
+    /** Get reference to images dataset */
+    DatasetRef<Images>& getImages();
+
+    /** Get reference to points dataset which contains the actual image data */
+    DatasetRef<Points>& getPoints();
 
 signals:
     

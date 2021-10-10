@@ -99,7 +99,7 @@ void ImageViewerPlugin::init()
                 try
                 {
                     // Add new layer to the model
-                    _model.addLayer(SharedLayer::create(*this, datasetName));
+                    _model.addLayer(new Layer(*this, datasetName));
 
                     // Update bounds
                     _imageViewerWidget->updateWorldBoundingRectangle();
@@ -142,7 +142,7 @@ void ImageViewerPlugin::init()
                         _core->notifyDataAdded(images->getName());
 
                         // Add new layer to the model
-                        _model.addLayer(SharedLayer::create(*this, images.getDatasetName()));
+                        _model.addLayer(new Layer(*this, images.getDatasetName()));
 
                         // Update bounds
                         _imageViewerWidget->updateWorldBoundingRectangle();

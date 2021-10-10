@@ -13,5 +13,4 @@ void main(void)
         fragmentColor= color;
     else 
         fragmentColor= vec4(0);
-
 }

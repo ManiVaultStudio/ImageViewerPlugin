@@ -17,7 +17,7 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
     _active(false),
     _images(datasetName),
     _points(_images->getHierarchyItem().getParent()->getDatasetName()),
-    _selectedPixels(),
+    _selectedIndices(),
     _generalAction(*this),
     _imageAction(*this),
     _selectionAction(*this, _imageViewerPlugin.getImageViewerWidget(), _imageViewerPlugin.getImageViewerWidget()->getPixelSelectionTool()),
@@ -40,6 +40,9 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
     this->getPropByName<SelectionProp>("SelectionProp")->setGeometry(_images->getSourceRectangle(), _images->getTargetRectangle());
     this->getPropByName<SelectionToolProp>("SelectionToolProp")->setGeometry(_images->getSourceRectangle(), _images->getTargetRectangle());
 
+    // Do an initial computation of the selected indices
+    computeSelectedIndices();
+
     // Update the color map image in the image prop
     const auto updateColorMap = [this]() {
 
@@ -61,17 +64,6 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
             {
                 // Assign the scalar data to the prop
                 this->getPropByName<ImageProp>("ImageProp")->setChannelScalarData(channelAction.getIndex(), channelAction.getScalarData(), channelAction.getDisplayRange());
-
-                break;
-            }
-
-            case ChannelAction::Selection:
-            {
-                // Get selection channel
-                auto& selectionChannel = _imageAction.getChannelSelectionAction();
-
-                // Assign the scalar data to the prop
-                this->getPropByName<SelectionProp>("SelectionProp")->setSelectionData(selectionChannel.getSelectionData());
 
                 break;
             }
@@ -124,43 +116,13 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
     updateInterpolationType();
     updateModelMatrixAndReRender();
 
-    // Update selected pixels
-    const auto updateSelectedPixels = [this]() {
-        auto& selectionIndices = dynamic_cast<Points&>(getPoints().getSourceData().getSelection()).indices;
-
-        if (getPoints()->isFull()) {
-            _selectedPixels = selectionIndices;
-        }
-        else {
-            QSet<std::uint32_t> indicesSet(getPoints()->indices.begin(), getPoints()->indices.end());
-
-            _selectedPixels.clear();
-            _selectedPixels.reserve(_images->getNumberOfPixels());
-
-            // Cache source image width
-            const auto sourceImageWidth = _images->getSourceRectangle().width();
-            const auto targetImageWidth = _images->getImageSize().width();
-
-            for (const auto& selectionIndex : selectionIndices) {
-                if (indicesSet.contains(selectionIndex)) {
-                   
-                    // Convert global selection index to local pixel coordinate
-                    const auto localPixelX = selectionIndex % sourceImageWidth;
-                    const auto localPixelY = static_cast<std::int32_t>(floorf(selectionIndex / static_cast<float>(sourceImageWidth)));
-
-                    _selectedPixels.push_back(localPixelY * targetImageWidth + localPixelX);
-                }
-            }
-        }
-    };
-
     // Update selected pixels when the selection changes
-    registerDataEventByType(PointType, [this, updateSelectedPixels](hdps::DataEvent* dataEvent) {
+    registerDataEventByType(PointType, [this](hdps::DataEvent* dataEvent) {
         if (dataEvent->getType() == hdps::EventType::SelectionChanged) {
             auto selectionChangedEvent = static_cast<hdps::SelectionChangedEvent*>(dataEvent);
 
             if (selectionChangedEvent->dataSetName == getPoints().getSourceData().getName())
-                updateSelectedPixels();
+                computeSelectedIndices();
         }
     });
 
@@ -293,10 +255,7 @@ void Layer::updateModelMatrix()
         // Get reference to general action for getting the layer position and scale
         auto& generalAction = _generalAction;
 
-        QMatrix4x4 invertMatrix, translateMatrix, scaleMatrix;
-
-        // Invert along the x-axis
-        //invertMatrix.scale(-1.0f, 1.0f, 1.0f);
+        QMatrix4x4 translateMatrix, scaleMatrix;
 
         // Compute the translation matrix
         translateMatrix.translate(generalAction.getXPositionAction().getValue(), generalAction.getYPositionAction().getValue(), 0.0f);
@@ -308,7 +267,7 @@ void Layer::updateModelMatrix()
         scaleMatrix.scale(scaleFactor, scaleFactor, scaleFactor);
 
         // Assign model matrix
-        setModelMatrix(invertMatrix * translateMatrix * scaleMatrix);
+        setModelMatrix(translateMatrix * scaleMatrix);
     }
     catch (std::exception& e)
     {
@@ -325,19 +284,6 @@ const QString Layer::getImagesDatasetName() const
         throw std::runtime_error("The images dataset is not valid");
 
     return _images.getDatasetName();
-}
-
-std::vector<std::uint32_t>& Layer::getSelectedPixels()
-{
-    if (!_points.isValid())
-        throw std::runtime_error("The points dataset is not valid");
-
-    return _selectedPixels;
-}
-
-const std::vector<std::uint32_t>& Layer::getSelectedPixels() const
-{
-    return const_cast<Layer*>(this)->getSelectedPixels();
 }
 
 const std::uint32_t Layer::getNumberOfImages() const
@@ -481,15 +427,17 @@ void Layer::publishSelection()
             case PixelSelectionType::Polygon:
             case PixelSelectionType::Sample:
             {
-                // Get current selection image (for add/subtract)
-                const auto selectionImage = getPropByName<SelectionToolProp>("SelectionToolProp")->getSelectionImage().mirrored(false, true);
+                // Get current selection image
+                const auto selectionImage   = getPropByName<SelectionToolProp>("SelectionToolProp")->getSelectionImage().mirrored(false, true);
+                const auto noComponents     = 4;
+                const auto width            = static_cast<float>(getImageSize().width());
+                const auto noPixels         = _images->getNumberOfPixels();
 
-                const auto noComponents = 4;
-                const auto width        = static_cast<float>(getImageSize().width());
-                const auto noPixels     = _images->getNumberOfPixels();
+                selectionImage.save("test.jpg");
 
                 switch (pixelSelectionTool.getModifier())
                 {
+                    // Replace pixels with new selection
                     case PixelSelectionModifierType::Replace:
                     {
                         selectionIndices.clear();
@@ -503,6 +451,7 @@ void Layer::publishSelection()
                         break;
                     }
 
+                    // Add pixels to current selection
                     case PixelSelectionModifierType::Add:
                     {
                         auto selectionSet = std::set<std::uint32_t>(selectionIndices.begin(), selectionIndices.end());
@@ -517,6 +466,7 @@ void Layer::publishSelection()
                         break;
                     }
 
+                    // Remove pixels from current selection
                     case PixelSelectionModifierType::Remove:
                     {
                         auto selectionSet = std::set<std::uint32_t>(selectionIndices.begin(), selectionIndices.end());
@@ -555,6 +505,84 @@ void Layer::publishSelection()
     catch (...) {
         exceptionMessageBox(QString("Unable to publish selection change for layer: %1").arg(_generalAction.getNameAction().getString()));
     }
+}
+
+void Layer::computeSelectedIndices()
+{
+    try {
+
+        // Get selection indices from points dataset
+        auto& selectionIndices = dynamic_cast<Points&>(getPoints().getSourceData().getSelection()).indices;
+
+        if (getPoints()->isFull()) {
+
+            // Since the dataset is full, we can copy the indices without any intermediate steps
+            _selectedIndices = selectionIndices;
+        }
+        else {
+
+            // Clear the selected
+            _selectedIndices.clear();
+            _selectedIndices.reserve(_images->getNumberOfPixels());
+
+            const auto sourceImageWidth = _images->getSourceRectangle().width();
+            const auto targetImageWidth = _images->getTargetRectangle().width();
+
+            // Iterate over all candidate selection indices
+            for (const auto& selectionIndex : selectionIndices) {
+
+                // Compute source pixel coordinate
+                const auto sourcePixelCoordinate = QPoint(selectionIndex % sourceImageWidth, static_cast<std::int32_t>(floorf(selectionIndex / static_cast<float>(sourceImageWidth))));
+
+                // Move to next selection index if the the selected pixel is beyond the target boundaries
+                if (!_images->getTargetRectangle().contains(sourcePixelCoordinate))
+                    continue;
+
+                // The selection index is valid so we can compute the target pixel coordinate and index
+                const auto targetPixelCoordinate    = sourcePixelCoordinate - _images->getTargetRectangle().topLeft();
+                const auto targetPixelIndex         = targetPixelCoordinate.y() * targetImageWidth + targetPixelCoordinate.x();
+
+                // Except in case of invalid target pixel index
+                if (static_cast<std::uint32_t>(targetPixelIndex) >= _images->getNumberOfPixels())
+                    throw std::runtime_error("Invalid pixel index");
+
+                // And add the target pixel index to the list of selected pixels
+                _selectedIndices.push_back(targetPixelIndex);
+            }
+        }
+
+        // Get selection channel
+        auto& selectionChannel = _imageAction.getChannelSelectionAction();
+
+        // Recompute the scalar data of the selection channel
+        _imageAction.getChannelSelectionAction().computeScalarData();
+
+        // Assign the scalar data to the prop
+        this->getPropByName<SelectionProp>("SelectionProp")->setSelectionData(selectionChannel.getSelectionData());
+
+        // Render layer
+        invalidate();
+    }
+    catch (std::exception& e)
+    {
+        qDebug() << QString("Unable to compute selected pixels for layer %1: %2").arg(_generalAction.getNameAction().getString(), e.what());
+    }
+    catch (...) {
+        qDebug() << QString("Unable to compute selected pixels for layer %1 due to an unhandled exception").arg(_generalAction.getNameAction().getString());
+    }
+}
+
+std::vector<std::uint32_t>& Layer::getSelectedIndices()
+{
+    if (!_points.isValid())
+        throw std::runtime_error("The points dataset is not valid");
+
+    return _selectedIndices;
+}
+
+const std::vector<std::uint32_t>& Layer::getSelectedIndices() const
+{
+    return const_cast<Layer*>(this)->getSelectedIndices();
 }
 
 void Layer::zoomToExtents()

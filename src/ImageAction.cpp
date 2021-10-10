@@ -191,18 +191,6 @@ ImageAction::ImageAction(Layer& layer) :
                 break;
             }
 
-            case EventType::SelectionChanged:
-            {
-                // Only compute scalar data when the name of the dataset matches
-                if (dataEvent->dataSetName != _layer.getPoints().getSourceData().getName())
-                    break;
-
-                // Compute the scalar data
-                _channelSelectionAction.computeScalarData();
-
-                break;
-            }
-
             default:
                 break;
         }

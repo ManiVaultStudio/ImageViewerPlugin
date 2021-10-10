@@ -169,16 +169,6 @@ void ChannelAction::reset()
     _dimensionAction.reset();
 }
 
-hdps::util::DatasetRef<Images>& ChannelAction::getImages()
-{
-    return _imageAction.getLayer().getImages();
-}
-
-hdps::util::DatasetRef<Points>& ChannelAction::getPoints()
-{
-    return _imageAction.getLayer().getPoints();
-}
-
 void ChannelAction::computeScalarData()
 {
     try
@@ -236,7 +226,7 @@ void ChannelAction::computeScalarData()
 
 void ChannelAction::computeMaskChannel()
 {
-    qDebug() << "Compute mask for channel" << _index;
+    qDebug() << "Compute mask for channel" << _index << QString("(%1)").arg(_imageAction.getLayer().getGeneralAction().getNameAction().getString());
 
     // Future implementations can use external masks, for now just leave opaque
     std::fill(_scalarData.begin(), _scalarData.end(), 1.0f);
@@ -244,7 +234,7 @@ void ChannelAction::computeMaskChannel()
 
 void ChannelAction::computeSelectionChannel()
 {
-    qDebug() << "Compute selection for channel" << _index;
+    qDebug() << "Compute selection for channel" << _index << QString("(%1)").arg(_imageAction.getLayer().getGeneralAction().getNameAction().getString());
 
     // Fill with non-selected
     std::fill(_selectionData.begin(), _selectionData.end(), 0);
@@ -259,7 +249,7 @@ void ChannelAction::computeSelectionChannel()
     const auto width = static_cast<float>(getImageSize().width());
 
     // Establish selected pixel boundaries
-    for (auto selectionIndex : _imageAction.getLayer().getSelectedPixels()) {
+    for (auto selectionIndex : _imageAction.getLayer().getSelectedIndices()) {
 
         // Assign selected pixel
         _selectionData[selectionIndex] = 255;
@@ -267,15 +257,22 @@ void ChannelAction::computeSelectionChannel()
         // Deduce pixel coordinate
         auto pixelCoordinate = QPoint(selectionIndex % getImageSize().width(), static_cast<int>(floorf(selectionIndex / width)));
 
-        // Correct for x-axis flipped image
-        //pixelCoordinate.setX(getImageSize().width() - pixelCoordinate.x());
-
         // Add pixel pixel coordinate and possibly inflate the selection boundaries
         _selectionBoundaries.setLeft(std::min(_selectionBoundaries.left(), pixelCoordinate.x()));
         _selectionBoundaries.setRight(std::max(_selectionBoundaries.right(), pixelCoordinate.x()));
         _selectionBoundaries.setTop(std::min(_selectionBoundaries.top(), pixelCoordinate.y()));
         _selectionBoundaries.setBottom(std::max(_selectionBoundaries.bottom(), pixelCoordinate.y()));
     }
+}
+
+hdps::util::DatasetRef<Images>& ChannelAction::getImages()
+{
+    return _imageAction.getLayer().getImages();
+}
+
+hdps::util::DatasetRef<Points>& ChannelAction::getPoints()
+{
+    return _imageAction.getLayer().getPoints();
 }
 
 QWidget* ChannelAction::getWidget(QWidget* parent, const std::int32_t& widgetFlags, const WidgetActionWidget::State& state /*= WidgetActionWidget::State::Standard*/)

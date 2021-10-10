@@ -33,7 +33,7 @@ public:
     explicit LayersModel(QObject* parent);
     
     /** Destructor */
-    ~LayersModel() = default;
+    ~LayersModel();
 
     /**
      * Returns the number of rows in the model given the parent model index
@@ -95,9 +95,15 @@ public: // Layer operations
 
     /**
      * Add a layer to the model
-     * @param layer Shared pointer to the layer
+     * @param layer Pointer to layer
      */
-    void addLayer(const SharedLayer& layer);
+    void addLayer(Layer* layer);
+
+    /**
+     * Remove a layer from the model by row index
+     * @param row Row index of the layer
+     */
+    void removeLayer(const std::uint32_t& row);
 
     /**
      * Remove a layer from the model by images dataset name
@@ -125,7 +131,7 @@ public: // Layer operations
     void moveLayer(const QModelIndex& layerModelIndex, const std::int32_t& amount = 1);
 
     /** Get the layers data */
-    QVector<SharedLayer>& getLayers();
+    QVector<Layer*>& getLayers();
 
 protected:
     
@@ -137,5 +143,5 @@ protected:
     QIcon getColorIcon(const QColor& color) const;
 
 protected:
-    QVector<SharedLayer>    _layers;        /** Layers data */
+    QVector<Layer*>    _layers;        /** Layers data */
 };
