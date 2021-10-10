@@ -8,21 +8,19 @@ using namespace hdps;
 
 SubsetAction::SubsetAction(Layer& layer) :
     GroupAction(&layer, true),
-    hdps::EventListener(),
     _layer(layer),
     _fromRegionAction(this, "From region", true, true),
     _nameAction(this, "Name"),
     _createAction(this, "Create")
 {
     setText("Subset");
-    setEventCore(Application::core());
 
     _fromRegionAction.setToolTip("Create subset from rectangular region");
     _nameAction.setToolTip("Name of the layer");
     _createAction.setToolTip("Create the subset");
     
-    // Update actions states
-    const auto updateActionStates = [this]() {
+    // Update actions states when the selection changed
+    const auto selectionChanged = [this]() {
         
         // Establish whether there is a valid selection 
         const auto hasSelection = !_layer.getSelectedIndices().empty();
@@ -33,20 +31,13 @@ SubsetAction::SubsetAction(Layer& layer) :
     };
 
     // Update action state(s) when the subset name changes
-    connect(&_nameAction, &StringAction::stringChanged, this, updateActionStates);
+    connect(&_nameAction, &StringAction::stringChanged, this, selectionChanged);
 
     // Update action state(s) when the selection changes
-    registerDataEventByType(PointType, [this, updateActionStates](hdps::DataEvent* dataEvent) {
-        if (dataEvent->getType() == hdps::EventType::SelectionChanged) {
-            auto selectionChangedEvent = static_cast<hdps::SelectionChangedEvent*>(dataEvent);
-
-            if (DatasetRef<Points>(selectionChangedEvent->dataSetName).getSourceData().getName() == _layer.getPoints()->getName())
-                updateActionStates();
-        }
-    });
+    connect(&_layer, &Layer::selectionChanged, this, selectionChanged);
 
     // Perform an initial update of the actions
-    updateActionStates();
+    selectionChanged();
 
     // Create the subset
     connect(&_createAction, &TriggerAction::triggered, this, [this]() {

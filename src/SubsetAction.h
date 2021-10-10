@@ -5,8 +5,6 @@
 #include "actions/StringAction.h"
 #include "actions/TriggerAction.h"
 
-#include "event/EventListener.h"
-
 class Layer;
 
 using namespace hdps::gui;
@@ -18,7 +16,7 @@ using namespace hdps::gui;
  *
  * @author Thomas Kroes
  */
-class SubsetAction : public GroupAction, public hdps::EventListener
+class SubsetAction : public GroupAction
 {
 public:
 

@@ -58,6 +58,13 @@ public:
      */
     SettingsAction(ImageViewerPlugin& imageViewerPlugin);
 
+    /**
+     * Get the context menu for the action
+     * @param parent Parent widget
+     * @return Context menu
+     */
+    QMenu* getContextMenu(QWidget* parent = nullptr) override;
+
     /** Get reference to the image viewer plugin */
     ImageViewerPlugin& getImageViewerPlugin() { return _imageViewerPlugin; };
 

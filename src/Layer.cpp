@@ -10,9 +10,11 @@
 
 #include <set>
 
+using namespace hdps;
+
 Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
+    QObject(&imageViewerPlugin),
     Renderable(imageViewerPlugin.getImageViewerWidget()->getRenderer()),
-    hdps::EventListener(),
     _imageViewerPlugin(imageViewerPlugin),
     _active(false),
     _images(datasetName),
@@ -23,8 +25,6 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
     _selectionAction(*this, _imageViewerPlugin.getImageViewerWidget(), _imageViewerPlugin.getImageViewerWidget()->getPixelSelectionTool()),
     _subsetAction(*this)
 {
-    setEventCore(hdps::Application::core());
-
     if (!_images.isValid())
         throw std::runtime_error("The layer images dataset is not valid after initialization");
 
@@ -41,7 +41,7 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
     this->getPropByName<SelectionToolProp>("SelectionToolProp")->setGeometry(_images->getSourceRectangle(), _images->getTargetRectangle());
 
     // Do an initial computation of the selected indices
-    computeSelectedIndices();
+    computeSelectionIndices();
 
     // Update the color map image in the image prop
     const auto updateColorMap = [this]() {
@@ -116,23 +116,13 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
     updateInterpolationType();
     updateModelMatrixAndReRender();
 
-    // Update selected pixels when the selection changes
-    registerDataEventByType(PointType, [this](hdps::DataEvent* dataEvent) {
-        if (dataEvent->getType() == hdps::EventType::SelectionChanged) {
-            auto selectionChangedEvent = static_cast<hdps::SelectionChangedEvent*>(dataEvent);
-
-            if (selectionChangedEvent->dataSetName == getPoints().getSourceData().getName())
-                computeSelectedIndices();
-        }
-    });
-
     // Update the window title when the layer name changes
     connect(&_generalAction.getNameAction(), &StringAction::stringChanged, this, &Layer::updateWindowTitle);
 }
 
 Layer::~Layer()
 {
-    qDebug() << "Delete" << _generalAction.getNameAction().getString();
+    qDebug() << "Delete layer" << _generalAction.getNameAction().getString();
 }
 
 void Layer::render(const QMatrix4x4& modelViewProjectionMatrix)
@@ -185,6 +175,16 @@ LayersAction& Layer::getLayersAction()
 ImageViewerPlugin& Layer::getImageViewerPlugin()
 {
     return _imageViewerPlugin;
+}
+
+QMenu* Layer::getContextMenu(QWidget* parent /*= nullptr*/)
+{
+    auto menu = new QMenu(_generalAction.getNameAction().getString(), parent);
+
+    menu->addAction(&_generalAction.getVisibleAction());
+    menu->addAction(&_imageAction.getOpacityAction());
+
+    return menu;
 }
 
 void Layer::activate()
@@ -281,7 +281,7 @@ void Layer::updateModelMatrix()
 const QString Layer::getImagesDatasetName() const
 {
     if (!_images.isValid())
-        throw std::runtime_error("The images dataset is not valid");
+        return "";
 
     return _images.getDatasetName();
 }
@@ -289,7 +289,7 @@ const QString Layer::getImagesDatasetName() const
 const std::uint32_t Layer::getNumberOfImages() const
 {
     if (!_images.isValid())
-        throw std::runtime_error("The images dataset is not valid");
+        return 0;
 
     return _images->getNumberOfImages();
 }
@@ -297,7 +297,7 @@ const std::uint32_t Layer::getNumberOfImages() const
 const QSize Layer::getImageSize() const
 {
     if (!_images.isValid())
-        throw std::runtime_error("The images dataset is not valid");
+        return QSize();
 
     return _images->getImageSize();
 }
@@ -305,7 +305,7 @@ const QSize Layer::getImageSize() const
 const QStringList Layer::getDimensionNames() const
 {
     if (!_images.isValid() || !_points.isValid())
-        throw std::runtime_error("Unable to retrieve the number of data points from layer; the images/points dataset not valid");
+        return QStringList();
 
     QStringList dimensionNames;
 
@@ -433,8 +433,6 @@ void Layer::publishSelection()
                 const auto width            = static_cast<float>(getImageSize().width());
                 const auto noPixels         = _images->getNumberOfPixels();
 
-                selectionImage.save("test.jpg");
-
                 switch (pixelSelectionTool.getModifier())
                 {
                     // Replace pixels with new selection
@@ -493,7 +491,7 @@ void Layer::publishSelection()
         }
 
         // Notify listeners of the selection change
-        getImageViewerPlugin().core()->notifySelectionChanged(_points.getSourceData().getName());
+        Application::core()->notifySelectionChanged(_points.getSourceData().getName());
 
         // Render
         invalidate();
@@ -507,7 +505,7 @@ void Layer::publishSelection()
     }
 }
 
-void Layer::computeSelectedIndices()
+void Layer::computeSelectionIndices()
 {
     try {
 
@@ -559,6 +557,9 @@ void Layer::computeSelectedIndices()
 
         // Assign the scalar data to the prop
         this->getPropByName<SelectionProp>("SelectionProp")->setSelectionData(selectionChannel.getSelectionData());
+
+        // Notify others that the selection changed
+        emit selectionChanged(_selectedIndices);
 
         // Render layer
         invalidate();

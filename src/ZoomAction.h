@@ -3,7 +3,6 @@
 #include "actions/WidgetAction.h"
 #include "actions/TriggerAction.h"
 
-#include "event/EventListener.h"
 #include "util/DatasetRef.h"
 
 #include "ImageData/Images.h"
@@ -20,7 +19,7 @@ class GeneralAction;
  *
  * @author Thomas Kroes
  */
-class ZoomAction : public WidgetAction, public hdps::EventListener
+class ZoomAction : public WidgetAction
 {
     Q_OBJECT
 

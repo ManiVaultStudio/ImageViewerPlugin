@@ -133,6 +133,12 @@ public: // Layer operations
     /** Get the layers data */
     QVector<Layer*>& getLayers();
 
+    /**
+     * Get pointer to layer by dataset name
+     * @param datasetName Name of the images dataset which the layer references
+     */
+    Layer* getLayerByDatasetName(const QString& datasetName);
+
 protected:
     
     /**

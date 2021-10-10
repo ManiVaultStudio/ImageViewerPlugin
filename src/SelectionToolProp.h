@@ -15,8 +15,6 @@ class Layer;
  */
 class SelectionToolProp : public Prop
 {
-    Q_OBJECT
-
 public:
 
     /**

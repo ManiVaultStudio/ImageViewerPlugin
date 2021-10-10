@@ -12,17 +12,30 @@ using namespace hdps;
 
 LayersModel::LayersModel(QObject* parent) :
     QAbstractListModel(parent),
-    hdps::EventListener(),
+    EventListener(),
     _layers()
 {
     setEventCore(Application::core());
 
     registerDataEventByType(ImageType, [this](DataEvent* dataEvent) {
+
         switch (dataEvent->getType())
         {
-            case EventType::DataAboutToBeRemoved:
+            case EventType::DataRemoved:
             {
                 removeLayer(dataEvent->dataSetName);
+                break;
+            }
+
+            case EventType::DataChanged:
+            {
+                emit getLayerByDatasetName(dataEvent->dataSetName)->pointsDataChanged();
+                break;
+            }
+
+            case EventType::SelectionChanged:
+            {
+                getLayerByDatasetName(dataEvent->dataSetName)->computeSelectionIndices();
                 break;
             }
 
@@ -470,8 +483,6 @@ void LayersModel::removeLayer(const std::uint32_t& row)
         // Get pointer to layer which needs to be removed
         auto removeLayer = _layers[row];
 
-        Application::core()->unregisterEventListener(removeLayer);
-
         // Remove the row from the model
         beginRemoveRows(QModelIndex(), row, row);
         {
@@ -502,7 +513,7 @@ void LayersModel::removeLayer(const QString& datasetName)
     try
     {
         if (datasetName.isEmpty())
-            throw std::runtime_error("Cannot remove layer with empty name");
+            throw std::runtime_error("Dataset name is empty");
 
         for (const auto& layer : _layers) {
             if (datasetName == layer->getImagesDatasetName())
@@ -590,6 +601,29 @@ void LayersModel::moveLayer(const QModelIndex& layerModelIndex, const std::int32
 QVector<Layer*>& LayersModel::getLayers()
 {
     return _layers;
+}
+
+Layer* LayersModel::getLayerByDatasetName(const QString& datasetName)
+{
+    try
+    {
+        if (datasetName.isEmpty())
+            throw std::runtime_error("Dataset name is empty");
+
+        for (const auto& layer : _layers) {
+            if (datasetName == layer->getImagesDatasetName())
+                return layer;
+        }
+    }
+    catch (std::exception& e)
+    {
+        exceptionMessageBox("Unable to get layer from the layers model", e);
+    }
+    catch (...) {
+        exceptionMessageBox("Unable to get layer from the layers model");
+    }
+
+    return nullptr;
 }
 
 QIcon LayersModel::getColorIcon(const QColor& color) const

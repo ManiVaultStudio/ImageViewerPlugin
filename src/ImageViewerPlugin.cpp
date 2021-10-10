@@ -31,6 +31,7 @@ ImageViewerPlugin::ImageViewerPlugin(hdps::plugin::PluginFactory* factory) :
     _settingsAction(nullptr),
     _navigationAction(nullptr)
 {
+    setContextMenuPolicy(Qt::CustomContextMenu);
     setFocusPolicy(Qt::ClickFocus);
 }
 
@@ -249,32 +250,45 @@ void ImageViewerPlugin::init()
     // Initially enable/disable the navigation action
     layersInsertedRemovedChanged();
 
-    // Update the window title
-    const auto updateWindowTitle = [this]() {
-        
-        // Get selected row and establish whether there is a valid selection
-        const auto selectedRows = _selectionModel.selectedRows();
-        const auto hasSelection = !selectedRows.isEmpty();
-
-        // Name of the currently selected layer
-        QString currentLayerName = "";
-
-        // Update current layer name when there is a valid selection
-        if (hasSelection) {
-
-            // Get pointer to layer that was selected
-            auto layer = static_cast<Layer*>(selectedRows.first().internalPointer());
-
-            // A layer is selected so change the current layer name
-            currentLayerName = layer->getGeneralAction().getNameAction().getString();
-        }
-
-        // Update the window title
-        setWindowTitle(QString("%1%2").arg(getGuiName(), currentLayerName.isEmpty() ? "" : QString(": %1").arg(currentLayerName)));
-    };
-
     // Change the window title when the layer selection or layer name changes
-    connect(&_selectionModel, &QItemSelectionModel::selectionChanged, this, updateWindowTitle);
+    connect(&_selectionModel, &QItemSelectionModel::selectionChanged, this, &ImageViewerPlugin::updateWindowTitle);
+
+    // Do an initial update of the window title
+    updateWindowTitle();
+
+    // Routine to show the context menu
+    connect(_imageViewerWidget, &ImageViewerWidget::customContextMenuRequested, this, [this](const QPoint& point) {
+
+        // Only show a context menu when there is data loaded
+        if (_model.rowCount() <= 0)
+            return;
+
+        // Show the context menu
+        _settingsAction->getContextMenu()->exec(mapToGlobal(point));
+    });
+}
+
+void ImageViewerPlugin::updateWindowTitle()
+{
+    // Get selected row and establish whether there is a valid selection
+    const auto selectedRows = _selectionModel.selectedRows();
+    const auto hasSelection = !selectedRows.isEmpty();
+
+    // Name of the currently selected layer
+    QString currentLayerName = "";
+
+    // Update current layer name when there is a valid selection
+    if (hasSelection) {
+
+        // Get pointer to layer that was selected
+        auto layer = static_cast<Layer*>(selectedRows.first().internalPointer());
+
+        // A layer is selected so change the current layer name
+        currentLayerName = layer->getGeneralAction().getNameAction().getString();
+    }
+
+    // Update the window title
+    setWindowTitle(QString("%1%2").arg(getGuiName(), currentLayerName.isEmpty() ? "" : QString(": %1").arg(currentLayerName)));
 }
 
 QIcon ImageViewerPluginFactory::getIcon() const

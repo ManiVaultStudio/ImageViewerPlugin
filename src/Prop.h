@@ -18,11 +18,11 @@ class Shape;
  *
  * @author Thomas Kroes
  */
-class Prop : public QObject
+class Prop
 {
 public: // Construction/destruction
 
-    /** 
+    /**
      * Constructor
      * @param renderable Reference to renderable object
      * @param name Name of the prop
@@ -30,7 +30,7 @@ public: // Construction/destruction
     Prop(Renderable& renderable, const QString& name);
 
     /** Destructor */
-    ~Prop() override;
+    virtual ~Prop() {};
 
 public:
 

@@ -40,9 +40,6 @@ public: // Inherited from ViewPlugin
     /** Initializes the plugin */
     void init() override;
 
-    /** Returns a pointer to the core interface */
-    hdps::CoreInterface* core() { return _core; }
-
 public: // Miscellaneous
 
     /** Get the layers model */
@@ -59,9 +56,15 @@ public: // Miscellaneous
         return _imageViewerWidget;
     }
 
+protected:
+
+    /** Update the window title */
+    void updateWindowTitle();
+
 public: // Action getters
 
     SettingsAction& getSettingsAction() { return *_settingsAction; }
+    NavigationAction& getNavigationAction() { return *_navigationAction; }
 
 private:
     LayersModel             _model;                 /** Layers model */

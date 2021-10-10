@@ -1,14 +1,12 @@
 #pragma once
 
 #include "Renderable.h"
-
 #include "LayersAction.h"
 #include "GeneralAction.h"
 #include "ImageAction.h"
 #include "SelectionAction.h"
 #include "SubsetAction.h"
 
-#include "event/EventListener.h"
 #include "util/DatasetRef.h"
 
 #include "ImageData/Images.h"
@@ -18,7 +16,7 @@ using namespace hdps::util;
 
 class ImageViewerPlugin;
 
-class Layer : public Renderable, public hdps::EventListener
+class Layer : public QObject, public Renderable
 {
     Q_OBJECT
 
@@ -36,6 +34,13 @@ public:
 
     /** Get reference to image viewer plugin */
     ImageViewerPlugin& getImageViewerPlugin();
+
+    /**
+     * Get the context menu
+     * @param parent Parent widget
+     * @return Context menu
+     */
+    QMenu* getContextMenu(QWidget* parent = nullptr);
 
     /** Activate the layer */
     void activate();
@@ -92,7 +97,7 @@ public: // Selection
     void publishSelection();
 
     /** Compute the selected indices */
-    void computeSelectedIndices();
+    void computeSelectionIndices();
 
     /** Get indices of the selected pixels */
     std::vector<std::uint32_t>& getSelectedIndices();
@@ -121,6 +126,17 @@ protected:
 
     /** Update the view plugin window title when activated or when the layer name changes */
     void updateWindowTitle();
+
+signals:
+
+    /**
+     * Signals that the selection changed
+     * @param selectedIndices Selected pixel indices
+     */
+    void selectionChanged(const std::vector<std::uint32_t>& selectedIndices);
+
+    /** Signals that the points data changed */
+    void pointsDataChanged();
 
 public: /** Action getters */
 

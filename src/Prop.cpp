@@ -9,7 +9,6 @@
 #include <QDebug>
 
 Prop::Prop(Renderable& renderable, const QString& name) :
-    QObject(reinterpret_cast<QObject*>(&renderable)),
     _renderable(renderable),
     _initialized(false),
     _name(name),
@@ -20,8 +19,6 @@ Prop::Prop(Renderable& renderable, const QString& name) :
     _shapes()
 {
 }
-
-Prop::~Prop() = default;
 
 void Prop::initialize()
 {

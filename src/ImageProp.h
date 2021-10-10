@@ -18,8 +18,6 @@ using namespace hdps::util;
  */
 class ImageProp : public Prop
 {
-    Q_OBJECT
-
 public:
 
     using DisplayRange  = QPair<float, float>;

@@ -16,7 +16,7 @@ using namespace hdps::util;
 /**
  * Points to images dialog class
  *
-  * @author Thomas Kroes
+ * @author Thomas Kroes
  */
 class PointsToImagesDialog : public QDialog
 {

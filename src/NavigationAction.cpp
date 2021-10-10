@@ -14,9 +14,10 @@ NavigationAction::NavigationAction(ImageViewerPlugin& imageViewerPlugin) :
     _zoomOutAction(this, ""),
     _zoomPercentageAction(this, "Zoom percentage", 1.0f, 1000.0f, 100.0f, 100.0f, 1),
     _zoomInAction(this, ""),
-    _zoomExtentsAction(this, ""),
-    _panAction(this, ""),
-    _selectAction(this, ""),
+    _zoomExtentsAction(this, "Zoom all"),
+    _panAction(this, "Pan"),
+    _selectAction(this, "Select pixels"),
+    _exportToImageAction(this, ""),
     _interactionModeActionGroup(this)
 {
     setText("Navigation");
@@ -29,16 +30,19 @@ NavigationAction::NavigationAction(ImageViewerPlugin& imageViewerPlugin) :
     _zoomExtentsAction.setToolTip("Zoom to the boundaries of all layers (z)");
     _panAction.setToolTip("Move the view");
     _selectAction.setToolTip("Select pixels");
+    _exportToImageAction.setToolTip("Export to image pixels");
 
     _zoomOutAction.setIcon(fontAwesome.getIcon("search-minus"));
     _zoomInAction.setIcon(fontAwesome.getIcon("search-plus"));
     _zoomExtentsAction.setIcon(fontAwesome.getIcon("compress"));
     _panAction.setIcon(fontAwesome.getIcon("arrows-alt"));
     _selectAction.setIcon(fontAwesome.getIcon("mouse-pointer"));
+    _exportToImageAction.setIcon(fontAwesome.getIcon("camera"));
     
     _zoomOutAction.setShortcut(QKeySequence("-"));
     _zoomInAction.setShortcut(QKeySequence("+"));
     _zoomExtentsAction.setShortcut(QKeySequence("z"));
+    _exportToImageAction.setShortcut(QKeySequence("e"));
     //_panAction.setShortcut(QKeySequence("R"));
     //_selectAction.setShortcut(QKeySequence("R"));
 
@@ -52,6 +56,7 @@ NavigationAction::NavigationAction(ImageViewerPlugin& imageViewerPlugin) :
     getImageViewerWidget().addAction(&_zoomExtentsAction);
     getImageViewerWidget().addAction(&_panAction);
     getImageViewerWidget().addAction(&_selectAction);
+    getImageViewerWidget().addAction(&_exportToImageAction);
 
     connect(&_zoomOutAction, &TriggerAction::triggered, this, [this]() {
         getImageViewerWidget().getRenderer().setZoomPercentage(getImageViewerWidget().getRenderer().getZoomPercentage() - zoomDeltaPercentage);
@@ -84,6 +89,10 @@ NavigationAction::NavigationAction(ImageViewerPlugin& imageViewerPlugin) :
 
     connect(&_selectAction, &ToggleAction::toggled, this, [this](bool toggled) {
         getImageViewerWidget().setInteractionMode(toggled ? ImageViewerWidget::Selection : ImageViewerWidget::Navigation);
+    });
+
+    connect(&_exportToImageAction, &TriggerAction::triggered, this, [this]() {
+        getImageViewerWidget().exportToImage();
     });
 
     const auto updateZoomPercentage = [this]() {
@@ -134,6 +143,8 @@ NavigationAction::Widget::Widget(QWidget* parent, NavigationAction* navigationAc
     layout->addWidget(navigationAction->getZoomPercentageAction().createWidget(this, TriggerAction::Icon));
     layout->addWidget(navigationAction->getZoomInAction().createWidget(this, TriggerAction::Icon));
     layout->addWidget(navigationAction->getZoomExtentsAction().createWidget(this, TriggerAction::Icon));
+    //layout->addWidget(getDivider());
+    //layout->addWidget(navigationAction->getExportToImageAction().createWidget(this, ToggleAction::PushButtonIcon));
     layout->addStretch(1);
 
     setLayout(layout);

@@ -9,7 +9,6 @@ using namespace hdps::util;
 
 ImageAction::ImageAction(Layer& layer) :
     GroupAction(&layer, true),
-    EventListener(),
     _layer(layer),
     _opacityAction(this, "Opacity", 0.0f, 100.0f, 100.0f, 100.0f, 1),
     _subsampleFactorAction(this, "Subsample", 1, 8, 1, 1),
@@ -25,7 +24,6 @@ ImageAction::ImageAction(Layer& layer) :
     _constantColorAction(this, "Constant color", QColor(Qt::white), QColor(Qt::white))
 {
     setText("Image");
-    setEventCore(Application::core());
 
     _channelMaskAction.setVisible(false);
     _channelSelectionAction.setVisible(false);
@@ -173,27 +171,11 @@ ImageAction::ImageAction(Layer& layer) :
     connect(&_interpolationTypeAction, &OptionAction::currentIndexChanged, this, render);
     connect(&_constantColorAction, &ColorAction::colorChanged, this, render);
 
-    // Re-compute the selection channel when the selection changes
-    registerDataEventByType(PointType, [this](hdps::DataEvent* dataEvent) {
-        switch (dataEvent->getType())
-        {
-            case EventType::DataChanged:
-            {
-                // Only compute scalar data when the name of the dataset matches
-                if (dataEvent->dataSetName != _layer.getPoints()->getName())
-                    break;
-
-                // Compute the scalar data
-                _channel1Action.computeScalarData();
-                _channel2Action.computeScalarData();
-                _channel3Action.computeScalarData();
-
-                break;
-            }
-
-            default:
-                break;
-        }
+    // Re-compute the scalar data when the points data changed
+    connect(&_layer, &Layer::pointsDataChanged, this, [this]() {
+        _channel1Action.computeScalarData();
+        _channel2Action.computeScalarData();
+        _channel3Action.computeScalarData();
     });
 
     updateChannelActions();

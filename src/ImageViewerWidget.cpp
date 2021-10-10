@@ -1,11 +1,14 @@
 #include "ImageViewerWidget.h"
 #include "LayersModel.h"
 #include "Layer.h"
+#include "ExportToImageDialog.h"
 
 #include "util/Exception.h"
 
 #include <QKeyEvent>
 #include <QPainter>
+#include <QOpenGLFramebufferObject>
+#include <QOffscreenSurface>
 
 const QMap<ImageViewerWidget::InteractionMode, QString> ImageViewerWidget::interactionModes = {
     { ImageViewerWidget::None, "No interaction" },
@@ -408,6 +411,102 @@ bool ImageViewerWidget::eventFilter(QObject* target, QEvent* event)
     return QWidget::eventFilter(target, event);
 }
 
+void ImageViewerWidget::exportToImage()
+{
+    try {
+
+        qDebug() << "Export layers to image";
+
+        // Create export to image dialog
+        ExportToImageDialog exportToImageDialog(this);
+
+        // Show the dialog and catch the result
+        const auto result = exportToImageDialog.exec();
+
+        if (result == 1) {
+            makeCurrent();
+            {
+                initializeGL();
+
+                // Get the world bounding box
+                const auto worldBoundingBox = _renderer.getWorldBoundingBox();
+
+                // Establish the off-screen FBO size
+                const auto fboSize = exportToImageDialog.getImageScaleFactorAction().getValue() * worldBoundingBox.size();
+
+                // Create off-screen FBO
+                QScopedPointer<QOpenGLFramebufferObject> fbo(new QOpenGLFramebufferObject(size(), QOpenGLFramebufferObject::NoAttachment, GL_TEXTURE_2D));
+
+                //glBindFramebuffer(GL_FRAMEBUFFER, );
+                if (!fbo->bind())
+                    throw std::runtime_error("Unable to bind FBO");
+
+                if (!fbo->isValid())
+                    throw std::runtime_error("FBO is not valid");
+
+                
+                paintGL();
+                /*
+                initializeOpenGLFunctions();
+
+                glViewport(0, 0, fbo->width(), fbo->height());
+
+                glEnable(GL_BLEND);
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+                //glEnable(GL_DEPTH_TEST);
+                //glClearColor(0.1, 0.1, 0.1, 0.5);
+                //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+                //glBindTexture(GL_TEXTURE_2D, fbo->texture());
+                auto layersSorted = _layersModel.getLayers();
+
+                // Sort the layers
+                std::reverse(layersSorted.begin(), layersSorted.end());
+
+                // Draw the image layers
+                for (auto& layer : layersSorted)
+                    layer->render(_renderer.getProjectionMatrix() * _renderer.getViewMatrix());
+                    */
+
+                Sleep(1000);
+
+                fbo->toImage().save("export.jpg");
+
+                // Release the FBO
+                fbo->release();
+
+            }
+            doneCurrent();
+
+            /*
+            // Compute half of the FBO size
+            const auto halfSize = QSizeF(fbo->size()) / 2;
+
+            QMatrix4x4 projectionMatrix;
+
+            // Compute the orthogonal projection matrix
+            projectionMatrix.ortho(-halfSize.width(), halfSize.width(), -halfSize.height(), halfSize.height(), -1000.0f, +1000.0f);
+
+            QMatrix4x4 viewMatrix;
+
+            // Construct look-at parameters
+            const auto eye = QVector3D(worldBoundingBox.center().x(), worldBoundingBox.center().y(), 1);
+            const auto center = QVector3D(worldBoundingBox.center().x(), worldBoundingBox.center().y(), 0);
+            const auto up = QVector3D(0, 1, 0);
+
+            // Compute view matrix
+            viewMatrix.lookAt(eye, center, up);
+            */
+        }
+    }
+    catch (std::exception& e)
+    {
+        exceptionMessageBox("Unable to export layer(s) to image: %1", e);
+    }
+    catch (...) {
+        exceptionMessageBox("Unable to export layer(s) to image: %1");
+    }
+}
+
 void ImageViewerWidget::initializeGL()
 {
     initializeOpenGLFunctions();
@@ -419,8 +518,6 @@ void ImageViewerWidget::initializeGL()
 #ifdef _DEBUG
     _openglDebugLogger->initialize();
 #endif
-
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
     glEnable(GL_DEPTH_TEST);
 }

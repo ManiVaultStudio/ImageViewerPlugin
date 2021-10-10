@@ -39,7 +39,7 @@ public:
     /** Maps interaction mode enum to name */
     static const QMap<InteractionMode, QString> interactionModes;
 
-public: // Construction
+public:
 
     /**
      * Constructor
@@ -72,6 +72,9 @@ public: // Construction
 
     /** Get mouse positions */
     QVector<QPoint> getMousePositions() { return _mousePositions; }
+
+    /** Export layers to image */
+    void exportToImage();
 
 protected: // OpenGL
 

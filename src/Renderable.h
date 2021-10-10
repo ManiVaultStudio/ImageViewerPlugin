@@ -17,7 +17,7 @@ class Renderer;
  *
  * @author Thomas Kroes
  */
-class Renderable : public QObject
+class Renderable
 {
 public: // Construction/destruction
 

@@ -48,7 +48,7 @@ protected:
     /**
      * Get widget representation of the layers action
      * @param parent Pointer to parent widget
-     * @param widgetFlags Widget flags for the configuration of the widget (type)
+     * @param widgetFlags Widget flags for the configuration of the widget
      */
     QWidget* getWidget(QWidget* parent, const std::int32_t& widgetFlags) override {
         return new Widget(parent, this);

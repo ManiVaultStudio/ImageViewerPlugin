@@ -6,8 +6,6 @@
 #include "actions/ToggleAction.h"
 #include "actions/ColorAction.h"
 
-#include "event/EventListener.h"
-
 #include "ChannelAction.h"
 
 class Layer;
@@ -21,7 +19,7 @@ using namespace hdps::gui;
  *
  * @author Thomas Kroes
  */
-class ImageAction : public GroupAction, public hdps::EventListener
+class ImageAction : public GroupAction
 {
 Q_OBJECT
 

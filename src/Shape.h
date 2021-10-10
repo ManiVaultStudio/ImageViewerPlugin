@@ -13,7 +13,7 @@ class Renderer;
  *
  * @author Thomas Kroes
  */
-class Shape : public QObject
+class Shape
 {
 public:
 
