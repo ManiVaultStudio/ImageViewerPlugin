@@ -9,6 +9,7 @@ using namespace hdps::util;
 
 ImageAction::ImageAction(Layer& layer) :
     GroupAction(&layer, true),
+    EventListener(),
     _layer(layer),
     _opacityAction(this, "Opacity", 0.0f, 100.0f, 100.0f, 100.0f, 1),
     _subsampleFactorAction(this, "Subsample", 1, 8, 1, 1),
@@ -24,6 +25,7 @@ ImageAction::ImageAction(Layer& layer) :
     _constantColorAction(this, "Constant color", QColor(Qt::white), QColor(Qt::white))
 {
     setText("Image");
+    setEventCore(Application::core());
 
     _channelMaskAction.setVisible(false);
     _channelSelectionAction.setVisible(false);
@@ -171,15 +173,57 @@ ImageAction::ImageAction(Layer& layer) :
     connect(&_interpolationTypeAction, &OptionAction::currentIndexChanged, this, render);
     connect(&_constantColorAction, &ColorAction::colorChanged, this, render);
 
-    // Re-compute the scalar data when the points data changed
-    connect(&_layer, &Layer::pointsDataChanged, this, [this]() {
-        _channel1Action.computeScalarData();
-        _channel2Action.computeScalarData();
-        _channel3Action.computeScalarData();
-    });
-
     updateChannelActions();
     useConstantColorToggled();
+
+    // Register for events for images datasets
+    registerDataEventByType(ImageType, [this](DataEvent* dataEvent) {
+
+        switch (dataEvent->getType())
+        {
+        case EventType::DataAboutToBeRemoved:
+        {
+            Application::core()->unregisterEventListener(this);
+            break;
+        }
+
+        default:
+            break;
+        }
+    });
+
+    // Register for events for points datasets
+    registerDataEventByType(PointType, [this](DataEvent* dataEvent) {
+
+        // The points dataset might have been deleted so check first if it is valid
+        if (!_layer.getPoints().isValid())
+            return;
+
+        // Only process points dataset that is referenced by us
+        if (dataEvent->dataSetName != _layer.getPoints()->getName())
+            return;
+
+        switch (dataEvent->getType())
+        {
+            case EventType::DataChanged:
+            {
+                _channel1Action.computeScalarData();
+                _channel2Action.computeScalarData();
+                _channel3Action.computeScalarData();
+
+                break;
+            }
+
+            case EventType::SelectionChanged:
+            {
+                _layer.computeSelectionIndices();
+                break;
+            }
+
+            default:
+                break;
+        }
+    });
 }
 
 const std::uint32_t ImageAction::getNumberOfActiveChannels() const

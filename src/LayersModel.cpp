@@ -17,6 +17,7 @@ LayersModel::LayersModel(QObject* parent) :
 {
     setEventCore(Application::core());
 
+    // Register for events for images datasets
     registerDataEventByType(ImageType, [this](DataEvent* dataEvent) {
 
         switch (dataEvent->getType())
@@ -24,18 +25,6 @@ LayersModel::LayersModel(QObject* parent) :
             case EventType::DataRemoved:
             {
                 removeLayer(dataEvent->dataSetName);
-                break;
-            }
-
-            case EventType::DataChanged:
-            {
-                emit getLayerByDatasetName(dataEvent->dataSetName)->pointsDataChanged();
-                break;
-            }
-
-            case EventType::SelectionChanged:
-            {
-                getLayerByDatasetName(dataEvent->dataSetName)->computeSelectionIndices();
                 break;
             }
 

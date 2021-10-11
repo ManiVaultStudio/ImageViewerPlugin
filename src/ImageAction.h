@@ -1,5 +1,7 @@
 #pragma once
 
+#include "event/EventListener.h"
+
 #include "actions/GroupAction.h"
 #include "actions/DecimalAction.h"
 #include "actions/ColorMapAction.h"
@@ -19,7 +21,7 @@ using namespace hdps::gui;
  *
  * @author Thomas Kroes
  */
-class ImageAction : public GroupAction
+class ImageAction : public GroupAction, public hdps::EventListener
 {
 Q_OBJECT
 

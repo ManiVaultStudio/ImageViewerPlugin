@@ -6,7 +6,7 @@
 
 #include <QAbstractListModel>
 
-class LayersModel : public QAbstractListModel , public hdps::EventListener
+class LayersModel : public QAbstractListModel, public hdps::EventListener
 {
 public:
 

@@ -135,9 +135,6 @@ signals:
      */
     void selectionChanged(const std::vector<std::uint32_t>& selectedIndices);
 
-    /** Signals that the points data changed */
-    void pointsDataChanged();
-
 public: /** Action getters */
 
     LayersAction& getLayersAction();
