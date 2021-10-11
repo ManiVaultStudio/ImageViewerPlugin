@@ -114,13 +114,14 @@ void SelectionToolProp::setGeometry(const QRect& sourceImageRectangle, const QRe
             getShapeByName<QuadShape>("Quad")->setRectangle(targetImageRectangle);
 
             // Update the model matrix
-            QMatrix4x4 modelMatrix;
+            QMatrix4x4 sourceImageModelMatrix, targetImageModelMatrix;
 
-            // Compute the model matrix
-            modelMatrix.translate(-sourceImageRectangle.center().x(), -sourceImageRectangle.center().y(), 0.0f);
+            // Compute the source and target model matrix
+            sourceImageModelMatrix.translate(-sourceImageRectangle.center().x(), -sourceImageRectangle.center().y(), 0.0f);
+            targetImageModelMatrix.translate(targetImageRectangle.x(), targetImageRectangle.y(), 0.0f);
 
             // Assign model matrix
-            setModelMatrix(modelMatrix);
+            setModelMatrix(sourceImageModelMatrix);// *targetImageModelMatrix);
 
             // Create FBO when none exists
             if (_fbo.isNull())
@@ -159,15 +160,13 @@ void SelectionToolProp::compute(const QVector<QPoint>& mousePositions)
             auto quadRectangle      = quad->getRectangle();
             auto modelViewMatrix    = _layer.getRenderer().getViewMatrix() * _renderable.getModelMatrix() * getModelMatrix();
 
-            qDebug() << quadRectangle << _fbo->width(), _fbo->height();
-
             // Create viewport with the same size as the FBO a
-            glViewport(quadRectangle.x(), quadRectangle.y(), _fbo->width(), _fbo->height());
+            glViewport(0.0f, 0.0f, _fbo->width(), _fbo->height());
 
             QMatrix4x4 transform;
 
             // Create orthogonal transformation matrix
-            transform.ortho(0, _fbo->width(), 0, _fbo->height(), -1.0f, +1.0f);
+            transform.ortho(0.0f, _fbo->width(), 0.0f, _fbo->height(), -1.0f, +1.0f);
 
             // Get reference to selection action
             auto& selectionAction = _layer.getSelectionAction();
@@ -249,6 +248,7 @@ void SelectionToolProp::compute(const QVector<QPoint>& mousePositions)
                         selectionToolOffScreenShaderProgram->setUniformValue("currentBrushCenter", currentBrushCenter);
                     }
 
+                    qDebug() << "glDrawArrays";
                     // Draw off-screen 
                     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 

@@ -45,7 +45,6 @@ public:
      * Set the geometry
      * @param sourceImageRectangle Source image rectangle
      * @param targetImageRectangle Target image rectangle
-     * @param imageSize Image size
      */
     void setGeometry(const QRect& sourceImageRectangle, const QRect& targetImageRectangle);
 

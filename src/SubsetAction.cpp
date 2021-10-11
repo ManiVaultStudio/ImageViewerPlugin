@@ -61,19 +61,19 @@ SubsetAction::SubsetAction(Layer& layer) :
                 const auto numberOfPixelsInRegion = selectionBoundaries.width() * selectionBoundaries.height();
 
                 // Get reference to selection indices
-                auto& modifySelectionIndices = _layer.getSelectedIndices();
+                auto& selectionIndices = dynamic_cast<Points&>(points.getSourceData().getSelection()).indices;
 
                 // Allocate space for indices
-                modifySelectionIndices.clear();
-                modifySelectionIndices.reserve(numberOfPixelsInRegion);
+                selectionIndices.clear();
+                selectionIndices.reserve(numberOfPixelsInRegion);
 
                 // Populate new selection indices
-                for (std::int32_t roiPixelX = selectionBoundaries.left(); roiPixelX <= selectionBoundaries.right(); roiPixelX++)
-                    for (std::int32_t roiPixelY = selectionBoundaries.top(); roiPixelY <= selectionBoundaries.bottom(); roiPixelY++)
-                        modifySelectionIndices.push_back(roiPixelY * imageSize.width() + roiPixelX);
+                for (std::int32_t roiPixelY = selectionBoundaries.top(); roiPixelY <= selectionBoundaries.bottom(); roiPixelY++)
+                    for (std::int32_t roiPixelX = selectionBoundaries.left(); roiPixelX <= selectionBoundaries.right(); roiPixelX++)
+                        selectionIndices.push_back(roiPixelY * imageSize.width() + roiPixelX);
 
                 // Except when selection set is empty
-                if (modifySelectionIndices.empty())
+                if (selectionIndices.empty())
                     throw std::runtime_error("Selection is empty");
 
                 // Create the points subset
@@ -82,8 +82,8 @@ SubsetAction::SubsetAction(Layer& layer) :
                 // Notify that the points set was added
                 Application::core()->notifyDataAdded(pointsSubset.getDatasetName());
 
-                // And re-instate the cached selection
-                modifySelectionIndices = cachedSelectionIndices;
+                // Reset selected indices
+                selectionIndices = cachedSelectionIndices;
 
                 // Create a new image dataset which is a subset of the original image
                 DatasetRef<Images> imagesSubset(Application::core()->addData("Images", _nameAction.getString(), pointsSubset.getDatasetName()));

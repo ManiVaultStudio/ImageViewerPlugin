@@ -134,14 +134,13 @@ void main(void)
 
                 if (dotBA > 0 && dotBA < length(A)) {
                     vec2 C = previousBrushCenter + dotBA * AN;
-                    
+
                     if (length(P - C) < brushRadius)
                         inBrush = true;
                 }
             }
 
             fragmentColor = (inBrush || prevInBrush) ? vec4(1) : vec4(vec3(0), 1);
-            fragmentColor = vec4(1);
             break;
         }
 

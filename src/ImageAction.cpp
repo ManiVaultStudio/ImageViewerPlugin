@@ -27,6 +27,7 @@ ImageAction::ImageAction(Layer& layer) :
     setText("Image");
     setEventCore(Application::core());
 
+    _subsampleFactorAction.setVisible(false);
     _channelMaskAction.setVisible(false);
     _channelSelectionAction.setVisible(false);
 
@@ -142,6 +143,7 @@ ImageAction::ImageAction(Layer& layer) :
     connect(&_colorSpaceAction, &OptionAction::currentIndexChanged, this, updateChannelActions);
 
     const auto useConstantColorToggled = [this]() {
+        _colorMapAction.setEnabled(!_useConstantColorAction.isChecked());
         _constantColorAction.setEnabled(_useConstantColorAction.isChecked());
         _layer.invalidate();
     };
