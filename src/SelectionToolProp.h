@@ -71,6 +71,8 @@ private: // Shader programs
     void loadSelectionToolOffScreenShaderProgram();
 
 private:
-    Layer&                                      _layer;     /** Reference to layer */
-    QScopedPointer<QOpenGLFramebufferObject>    _fbo;       /** Frame Buffer Object for off screen pixel selection tools */
+    Layer&                                      _layer;                     /** Reference to layer */
+    QScopedPointer<QOpenGLFramebufferObject>    _fbo;                       /** Frame Buffer Object for off screen pixel selection tools */
+    QRect                                       _sourceImageRectangle;      /** Source image rectangle */
+    QRect                                       _targetImageRectangle;      /** Target image rectangle */
 };

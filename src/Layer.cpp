@@ -401,9 +401,10 @@ void Layer::resetSelectionBuffer()
 
 void Layer::publishSelection()
 {
+    //return;
     try {
 
-        //qDebug() << "Publish pixel selection for layer:" << _generalAction.getNameAction().getString();;
+        //qDebug() << "Publish pixel selection for layer:" << _generalAction.getNameAction().getString();
 
         // Make sure we have a valid points dataset
         if (!_points.isValid())

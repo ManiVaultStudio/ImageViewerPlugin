@@ -20,7 +20,9 @@ using namespace hdps::util;
 SelectionToolProp::SelectionToolProp(Layer& layer, const QString& name) :
     Prop(layer, name),
     _layer(layer),
-    _fbo()
+    _fbo(),
+    _sourceImageRectangle(),
+    _targetImageRectangle()
 {
     addShape<QuadShape>("Quad");
 
@@ -77,6 +79,12 @@ void SelectionToolProp::render(const QMatrix4x4& modelViewProjectionMatrix)
         // Get reference to selection action
         auto& selectionAction = _layer.getSelectionAction();
 
+        // Update the model matrix
+        QMatrix4x4 modelMatrix;
+
+        // Compute the source and target model matrix
+        modelMatrix.translate(-_targetImageRectangle.left(), -_targetImageRectangle.top(), 0.0f);
+
         // Configure shader program
         selectionToolShaderProgram->setUniformValue("offScreenTexture", 0);
         selectionToolShaderProgram->setUniformValue("color", selectionAction.getOverlayColor().getColor());
@@ -108,16 +116,20 @@ void SelectionToolProp::setGeometry(const QRect& sourceImageRectangle, const QRe
     try {
         qDebug() << "Set selection tool prop geometry:" << sourceImageRectangle << targetImageRectangle;
 
+        _sourceImageRectangle = sourceImageRectangle;
+        _targetImageRectangle = targetImageRectangle;
+
+        
         getRenderer().bindOpenGLContext();
         {
             // Assign the rectangle to the quad shape
-            getShapeByName<QuadShape>("Quad")->setRectangle(targetImageRectangle);
+            getShapeByName<QuadShape>("Quad")->setRectangle(QRect(QPoint(), targetImageRectangle.size()));
 
             // Update the model matrix
             QMatrix4x4 modelMatrix;
 
-            // Compute the source and target model matrix
-            modelMatrix.translate(-sourceImageRectangle.center().x(), -sourceImageRectangle.center().y(), 0.0f);
+            // Compute the model matrix
+            modelMatrix.translate(-sourceImageRectangle.center().x() + targetImageRectangle.left(), -sourceImageRectangle.center().y() + targetImageRectangle.top(), 0.0f);
 
             // Assign model matrix
             setModelMatrix(modelMatrix);
@@ -247,7 +259,6 @@ void SelectionToolProp::compute(const QVector<QPoint>& mousePositions)
                         selectionToolOffScreenShaderProgram->setUniformValue("currentBrushCenter", currentBrushCenter);
                     }
 
-                    qDebug() << "glDrawArrays";
                     // Draw off-screen 
                     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
