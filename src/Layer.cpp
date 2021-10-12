@@ -630,7 +630,11 @@ void Layer::zoomToSelection()
         auto layerImageProp = getPropByName<ImageProp>("ImageProp");
 
         // Get selection boundaries
-        const auto selectionBoundingRectangle = QRectF(_imageAction.getChannelSelectionAction().getSelectionBoundaries());
+        auto selectionBoundingRectangle = QRectF(_imageAction.getChannelSelectionAction().getSelectionBoundaries());
+
+        const auto targetRectangle = _images->getTargetRectangle();
+
+        selectionBoundingRectangle.translate(targetRectangle.topLeft());
 
         // Ensure selection boundaries are valid
         if (!selectionBoundingRectangle.isValid())
