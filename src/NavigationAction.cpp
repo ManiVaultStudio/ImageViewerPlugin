@@ -83,7 +83,7 @@ NavigationAction::NavigationAction(ImageViewerPlugin& imageViewerPlugin) :
         const auto worldBoundingRectangle = getImageViewerWidget().getWorldBoundingRectangle();
 
         // Zoom to the rectangle and render
-        getImageViewerWidget().getRenderer().zoomToWorldRectangle(worldBoundingRectangle);
+        getImageViewerWidget().getRenderer().setZoomRectangle(worldBoundingRectangle);
         getImageViewerWidget().update();
     });
 
@@ -103,7 +103,7 @@ NavigationAction::NavigationAction(ImageViewerPlugin& imageViewerPlugin) :
         _zoomPercentageAction.setValue(100.0f * getImageViewerWidget().getRenderer().getZoomPercentage());
     };
 
-    connect(&getImageViewerWidget().getRenderer(), &Renderer::zoomPercentageChanged, this, [this, updateZoomPercentage](const float& zoomPercentage) {
+    connect(&getImageViewerWidget().getRenderer(), &Renderer::zoomRectangleChanged, this, [this, updateZoomPercentage]() {
         updateZoomPercentage();
     });
 

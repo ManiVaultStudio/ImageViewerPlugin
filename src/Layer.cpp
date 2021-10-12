@@ -605,7 +605,7 @@ void Layer::zoomToExtents()
         auto layerImageProp = getPropByName<ImageProp>("ImageProp");
 
         // Zoom to layer extents
-        _imageViewerPlugin.getImageViewerWidget()->getRenderer().zoomToObject(*this);
+        _imageViewerPlugin.getImageViewerWidget()->getRenderer().setZoomRectangle(getWorldBoundingRectangle());
 
         // Trigger render
         invalidate();
@@ -665,7 +665,7 @@ void Layer::zoomToSelection()
         const auto zoomRectangleWorld = rectangleFromPoints(worldTopLeft, worldBottomRight);
 
         // Zoom to layer selection
-        _imageViewerPlugin.getImageViewerWidget()->getRenderer().zoomToWorldRectangle(zoomRectangleWorld);
+        _imageViewerPlugin.getImageViewerWidget()->getRenderer().setZoomRectangle(zoomRectangleWorld);
 
         // Trigger render
         invalidate();

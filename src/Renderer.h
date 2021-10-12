@@ -2,9 +2,9 @@
 
 #include "renderers/Renderer.h"
 
-#include <QWidget>
-#include <QColor>
 #include <QVector2D>
+#include <QPropertyAnimation>
+#include <QRectF>
 
 class QMouseEvent;
 class QWheelEvent;
@@ -24,6 +24,8 @@ class Renderable;
 class Renderer : public QObject, public hdps::Renderer
 {
     Q_OBJECT
+
+    Q_PROPERTY(QRectF zoomRectangle MEMBER _zoomRectangle NOTIFY zoomRectangleChanged)
 
 public: // Construction
 
@@ -92,7 +94,7 @@ public: // Coordinate conversions
      * Get screen bounding rectangle from world bounding rectangle
      * @param worldBoundingRectangle World bounding rectangle
      */
-    virtual QRect getScreenBoundingRectangle(const QRectF& worldBoundingRectangle) const final;
+    virtual QRect getScreenRectangleFromWorldRectangle(const QRectF& worldBoundingRectangle) const final;
 
 public: // Navigation
 
@@ -100,22 +102,7 @@ public: // Navigation
      * Move the view horizontally/vertically
      * @param delta Amount to move
      */
-    void panBy(const QVector2D& delta);
-
-    /**
-     * Set pan
-     * @param pan Pan
-     */
-    void setPan(const QVector2D& pan);
-
-    /** Get the zoom level */
-    float getZoomLevel() const;
-
-    /**
-     * Set the zoom level
-     * @param zoom Zoom level
-     */
-    void setZoomLevel(const float& zoom);
+    void panBy(const QPointF& delta);
 
     /** Get the zoom percentage */
     float getZoomPercentage() const;
@@ -148,12 +135,6 @@ public: // Navigation
     void setWorldBoundingRectangle(const QRectF& worldBoundingRectangle);
 
     /**
-     * Zoom the view
-     * @param factor Factor to zoom by
-     */
-    void zoomBy(const float& factor);
-
-    /**
      * Zoom around screen point
      * @param screenPoint Point in screen coordinates
      * @param factor Factor to zoom by
@@ -161,13 +142,7 @@ public: // Navigation
     void zoomAround(const QPoint& screenPoint, const float& factor);
 
     /** Zoom to rectangle in world coordinates */
-    void zoomToWorldRectangle(const QRectF& rectangle);
-
-    /** Zoom to selected pixels */
-    void zoomToObject(const Renderable& renderable);
-
-    /** Reset the view */
-    void resetView();
+    void setZoomRectangle(const QRectF& zoomRectangle);
 
 public: // Miscellaneous
 
@@ -188,29 +163,13 @@ public: // Miscellaneous
 
 signals:
 
-    /**
-     * Signals that the zoom level changed
-     * @param zoomLevel Zoom level
-     */
-    void zoomLevelChanged(const float& zoomLevel);
-
-    /**
-     * Signals that the zoom percentage changed
-     * @param zoomPercentage Zoom percentage
-     */
-    void zoomPercentageChanged(const float& zoomPercentage);
-
-    /**
-     * Signals that the pan changed
-     * @param pan Pan
-     */
-    void panChanged(const QVector2D& pan);
+    /** Signals that the zoom rectangle changed */
+    void zoomRectangleChanged();
 
 protected:
-    QVector2D   _pan;                       /** Move view horizontally/vertically */
-    float       _zoomLevel;                 /** Zoom level */
-    float       _zoomPercentage;            /** Zoom percentage */
-    float       _zoomSensitivity;           /** Zoom sensitivity */
-    float       _zoomMargin;                /** Zoom margin */
-    QRectF      _worldBoundingRectangle;    /** World bounding rectangle */
+    float                   _zoomSensitivity;           /** Zoom sensitivity */
+    float                   _zoomMargin;                /** Zoom margin */
+    QRectF                  _worldBoundingRectangle;    /** World bounding rectangle */
+    QRectF                  _zoomRectangle;             /** Zoom rectangle in world coordinates */
+    QPropertyAnimation      _zoomAnimation;             /** Zoom rectangle property animation */
 };

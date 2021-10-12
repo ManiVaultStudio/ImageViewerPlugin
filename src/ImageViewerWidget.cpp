@@ -288,12 +288,12 @@ bool ImageViewerWidget::eventFilter(QObject* target, QEvent* event)
                     if (mouseEvent->buttons() & Qt::LeftButton && numberOfMousePositions >= 2) {
 
                         // Compute the translation between the two last mouse positions and compute the (zoom level corrected) delta
-                        const auto previousMousePosition    = QVector2D(_mousePositions[numberOfMousePositions - 2]);
-                        const auto currentMousePosition     = QVector2D(_mousePositions[numberOfMousePositions - 1]);
-                        const auto panVector                = (currentMousePosition - previousMousePosition) / _renderer.getZoomLevel();
+                        const auto previousMousePosition    = _mousePositions[numberOfMousePositions - 2];
+                        const auto currentMousePosition     = _mousePositions[numberOfMousePositions - 1];
+                        const auto panVector                = currentMousePosition - previousMousePosition;
 
                         // Pan the view and render
-                        _renderer.panBy(panVector * QVector2D(-1.0f, 1.0f));
+                        _renderer.panBy(QPoint(-panVector.x(), panVector.y()));
                         _renderer.render();
                     }
 

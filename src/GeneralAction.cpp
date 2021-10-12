@@ -10,16 +10,21 @@ GeneralAction::GeneralAction(Layer& layer) :
     _colorAction(this, "Color"),
     _nameAction(this, "Name"),
     _scaleAction(this, "Scale", 0.0f, 1000.0f, 100.0f, 100.0f, 1),
-    _xPositionAction(this, "X position", -1000.0f, 1000.0f, 0.0f),
-    _yPositionAction(this, "Y position", -1000.0f, 1000.0f, 0.0f),
+    _xPositionAction(this, "X position", -100000.0f, 100000.0f, 0.0f, 0.0f),
+    _yPositionAction(this, "Y position", -100000.0f, 100000.0f, 0.0f, 0.0f),
     _zoomAction(*this)
 {
     setText("General");
-
+    
+    // Set tooltips
     _nameAction.setToolTip("Name of the layer");
     _scaleAction.setToolTip("Layer scale in percentages");
     _xPositionAction.setToolTip("Layer x-position");
     _yPositionAction.setToolTip("Layer y-position");
+
+    // Configure position widgets
+    _xPositionAction.setDefaultWidgetFlags(DecimalAction::SpinBox);
+    _yPositionAction.setDefaultWidgetFlags(DecimalAction::SpinBox);
 
     // Get initial random layer color
     const auto layerColor = _layer.getLayersAction().getRandomLayerColor();
