@@ -12,5 +12,5 @@ void main(void)
     gl_Position = transform * vertex;
 
     // Flip the uv x-axis
-    uv = vec2(1.0f - texCoord.x, texCoord.y);
+    uv = vec2(texCoord.x, texCoord.y);
 }

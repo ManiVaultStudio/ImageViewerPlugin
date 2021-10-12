@@ -428,7 +428,7 @@ void Layer::publishSelection()
             case PixelSelectionType::Sample:
             {
                 // Get current selection image
-                const auto selectionImage   = getPropByName<SelectionToolProp>("SelectionToolProp")->getSelectionImage().mirrored(false, true);
+                const auto selectionImage   = getPropByName<SelectionToolProp>("SelectionToolProp")->getSelectionImage().mirrored(true, true);
                 const auto noComponents     = 4;
                 const auto width            = static_cast<float>(getImageSize().width());
                 const auto noPixels         = _images->getNumberOfPixels();
@@ -436,12 +436,12 @@ void Layer::publishSelection()
                 const auto targetRectangle  = _images->getTargetRectangle();
 
                 // Get source pixel index from two-dimensional pixel coordinates
-                const auto getSourcePixelIndex = [sourceRectangle] (std::int32_t pixelX, std::int32_t pixelY) -> std::int32_t {
+                const auto getSourcePixelIndex = [sourceRectangle] (const std::int32_t& pixelX, const std::int32_t& pixelY) -> std::int32_t {
                     return pixelY * sourceRectangle.width() + pixelX;
                 };
 
-                // Get source pixel index from two-dimensional pixel coordinates
-                const auto getTargetPixelIndex = [targetRectangle] (std::int32_t pixelX, std::int32_t pixelY) -> std::int32_t {
+                // Get target pixel index from two-dimensional pixel coordinates
+                const auto getTargetPixelIndex = [targetRectangle] (const std::int32_t& pixelX, const std::int32_t& pixelY) -> std::int32_t {
                     return (pixelY - targetRectangle.top()) * targetRectangle.width() + (pixelX - targetRectangle.left());
                 };
 

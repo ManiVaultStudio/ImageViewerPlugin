@@ -114,14 +114,13 @@ void SelectionToolProp::setGeometry(const QRect& sourceImageRectangle, const QRe
             getShapeByName<QuadShape>("Quad")->setRectangle(targetImageRectangle);
 
             // Update the model matrix
-            QMatrix4x4 sourceImageModelMatrix, targetImageModelMatrix;
+            QMatrix4x4 modelMatrix;
 
             // Compute the source and target model matrix
-            sourceImageModelMatrix.translate(-sourceImageRectangle.center().x(), -sourceImageRectangle.center().y(), 0.0f);
-            targetImageModelMatrix.translate(targetImageRectangle.x(), targetImageRectangle.y(), 0.0f);
+            modelMatrix.translate(-sourceImageRectangle.center().x(), -sourceImageRectangle.center().y(), 0.0f);
 
             // Assign model matrix
-            setModelMatrix(sourceImageModelMatrix);// *targetImageModelMatrix);
+            setModelMatrix(modelMatrix);
 
             // Create FBO when none exists
             if (_fbo.isNull())
