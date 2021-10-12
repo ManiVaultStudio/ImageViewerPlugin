@@ -30,7 +30,7 @@ public:
 
     /** Get preferred size */
     QSize sizeHint() const override {
-        return QSize(250, 200);
+        return QSize(230, 10);
     }
 
 public: // Action getters
@@ -40,7 +40,6 @@ public: // Action getters
 
 protected:
     ImageViewerPlugin&  _imageViewerPlugin;     /** Reference to image viewer plugin */
-    ToggleAction        _fromRegionAction;      /** Whether to create an image set from the selected region of pixels */
     StringAction        _nameAction;            /** Subset name action */
-    GroupAction         _groupAction;           /** Group action */
+    ToggleAction        _fromRegionAction;      /** Whether to create an image set from the selected region of pixels */
 };

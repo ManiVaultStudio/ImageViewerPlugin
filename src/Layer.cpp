@@ -548,11 +548,11 @@ void Layer::computeSelectionIndices()
 
             const auto globalPixelCoordinate    = QPoint(globalSelectionIndex % sourceImageWidth, static_cast<std::int32_t>(floorf(globalSelectionIndex / static_cast<float>(sourceImageWidth))));
             const auto localPixelCoordinate     = globalPixelCoordinate - _images->getTargetRectangle().topLeft();
-            const auto localPixelIndex          = static_cast<std::uint32_t>(localPixelCoordinate.y() * targetImageWidth + localPixelCoordinate.x());
+            const auto localPixelIndex          = localPixelCoordinate.y() * targetImageWidth + localPixelCoordinate.x();
 
             // Except in case of invalid target pixel index
-            if (localPixelIndex >= _images->getNumberOfPixels())
-                throw std::runtime_error("Invalid local pixel index");
+            if (localPixelIndex < 0 || static_cast<std::uint32_t>(localPixelIndex) >= _images->getNumberOfPixels())
+                continue;
 
             // And add the target pixel index to the list of selected pixels
             _selectedIndices.push_back(localPixelIndex);
@@ -575,10 +575,10 @@ void Layer::computeSelectionIndices()
     }
     catch (std::exception& e)
     {
-        qDebug() << QString("Unable to compute selected pixels for layer %1: %2").arg(_generalAction.getNameAction().getString(), e.what());
+        qDebug() << QString("Unable to compute selected indices for layer %1: %2").arg(_generalAction.getNameAction().getString(), e.what());
     }
     catch (...) {
-        qDebug() << QString("Unable to compute selected pixels for layer %1 due to an unhandled exception").arg(_generalAction.getNameAction().getString());
+        qDebug() << QString("Unable to compute selected indices for layer %1 due to an unhandled exception").arg(_generalAction.getNameAction().getString());
     }
 }
 

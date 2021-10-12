@@ -5,7 +5,7 @@
 #include "ImageData/Images.h"
 
 #include <QDebug>
-#include <QVBoxLayout>
+#include <QGridLayout>
 #include <QDialogButtonBox>
 #include <QPushButton>
 
@@ -16,32 +16,26 @@ using namespace hdps;
 CreateSubsetDialog::CreateSubsetDialog(ImageViewerPlugin& imageViewerPlugin) :
     QDialog(&imageViewerPlugin),
     _imageViewerPlugin(imageViewerPlugin),
-    _fromRegionAction(this, "From region", true, true),
     _nameAction(this, "Name"),
-    _groupAction(this)
+    _fromRegionAction(this, "From region", true, true)
 {
     // Update window title and icon
-    setWindowTitle("Create subset from selection");
+    setWindowTitle("Create subset");
     setWindowIcon(Application::getIconFont("FontAwesome").getIcon("crop"));
+
+    _nameAction.setToolTip("Name of the subset");
+    _fromRegionAction.setToolTip("Create an image from the selected region");
 
     // Actions may not be reset
     _fromRegionAction.setMayReset(false);
     _nameAction.setMayReset(false);
 
-    // Add actions to the group
-    _groupAction << _fromRegionAction;
-    _groupAction << _nameAction;
-
-    // Create group action widget
-    auto groupActionWidget = _groupAction.createWidget(this);
-
-    // Adjust margins of group action widget
-    groupActionWidget->layout()->setMargin(0);
-
-    auto layout = new QVBoxLayout();
+    auto layout = new QGridLayout();
 
     // Add the widget to the layout
-    layout->addWidget(groupActionWidget);
+    layout->addWidget(_nameAction.createLabelWidget(this), 0, 0);
+    layout->addWidget(_nameAction.createWidget(this), 0, 1);
+    layout->addWidget(_fromRegionAction.createWidget(this), 1, 1);
 
     setLayout(layout);
 
@@ -52,8 +46,7 @@ CreateSubsetDialog::CreateSubsetDialog(ImageViewerPlugin& imageViewerPlugin) :
     dialogButtonBox->button(QDialogButtonBox::Cancel)->setText("C&ancel");
 
     // Add buttons to the layout
-    layout->addStretch(1);
-    layout->addWidget(dialogButtonBox);
+    layout->addWidget(dialogButtonBox, 2, 0, 1, 2);
 
     // Update the state of the create button
     const auto updateCreateButton = [this, dialogButtonBox]() {

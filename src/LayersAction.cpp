@@ -180,6 +180,7 @@ LayersAction::Widget::Widget(QWidget* parent, LayersAction* layersAction) :
     connect(&imageViewerPlugin.getSelectionModel(), &QItemSelectionModel::selectionChanged, this, modelSelectionChanged);
     connect(&imageViewerPlugin.getSelectionModel(), &QItemSelectionModel::selectionChanged, this, updateButtons);
     connect(treeView->model(), &QAbstractListModel::rowsRemoved, updateButtons);
+    connect(treeView->model(), &QAbstractListModel::rowsMoved, updateButtons);
     connect(treeView->model(), &QAbstractListModel::layoutChanged, updateButtons);
 
     // Select a layer when it is inserted into the model

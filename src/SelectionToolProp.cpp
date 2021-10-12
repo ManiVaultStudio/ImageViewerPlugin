@@ -79,7 +79,7 @@ void SelectionToolProp::render(const QMatrix4x4& modelViewProjectionMatrix)
 
         // Configure shader program
         selectionToolShaderProgram->setUniformValue("offScreenTexture", 0);
-        selectionToolShaderProgram->setUniformValue("color", selectionAction.getOverlayColor().getColor());
+        selectionToolShaderProgram->setUniformValue("color", QColor(255, 156, 50, 100));
         selectionToolShaderProgram->setUniformValue("opacity", selectionAction.getOverlayOpacity().getValue());
         selectionToolShaderProgram->setUniformValue("transform", modelViewProjectionMatrix * _renderable.getModelMatrix() * getModelMatrix());
 
