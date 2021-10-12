@@ -22,8 +22,7 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
     _selectedIndices(),
     _generalAction(*this),
     _imageAction(*this),
-    _selectionAction(*this, _imageViewerPlugin.getImageViewerWidget(), _imageViewerPlugin.getImageViewerWidget()->getPixelSelectionTool()),
-    _subsetAction(*this)
+    _selectionAction(*this, _imageViewerPlugin.getImageViewerWidget(), _imageViewerPlugin.getImageViewerWidget()->getPixelSelectionTool())
 {
     if (!_images.isValid())
         throw std::runtime_error("The layer images dataset is not valid after initialization");
@@ -549,7 +548,7 @@ void Layer::computeSelectionIndices()
 
             const auto globalPixelCoordinate    = QPoint(globalSelectionIndex % sourceImageWidth, static_cast<std::int32_t>(floorf(globalSelectionIndex / static_cast<float>(sourceImageWidth))));
             const auto localPixelCoordinate     = globalPixelCoordinate - _images->getTargetRectangle().topLeft();
-            const auto localPixelIndex          = static_cast<std::int32_t>(localPixelCoordinate.y() * targetImageWidth + localPixelCoordinate.x());
+            const auto localPixelIndex          = static_cast<std::uint32_t>(localPixelCoordinate.y() * targetImageWidth + localPixelCoordinate.x());
 
             // Except in case of invalid target pixel index
             if (localPixelIndex >= _images->getNumberOfPixels())

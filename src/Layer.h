@@ -5,7 +5,6 @@
 #include "GeneralAction.h"
 #include "ImageAction.h"
 #include "SelectionAction.h"
-#include "SubsetAction.h"
 
 #include "util/DatasetRef.h"
 
@@ -141,7 +140,6 @@ public: /** Action getters */
     GeneralAction& getGeneralAction() { return _generalAction; }
     ImageAction& getImageAction() { return _imageAction; }
     SelectionAction& getSelectionAction() { return _selectionAction; }
-    SubsetAction& getSubsetAction() { return _subsetAction; }
 
 protected:
     ImageViewerPlugin&              _imageViewerPlugin;     /** Reference to image viewer plugin */
@@ -152,7 +150,6 @@ protected:
     GeneralAction                   _generalAction;         /** General action */
     ImageAction                     _imageAction;           /** Image action */
     SelectionAction                 _selectionAction;       /** Selection action */
-    SubsetAction                    _subsetAction;          /** Subset action */
 
     friend class ImageViewerWidget;
 };

@@ -17,6 +17,7 @@ NavigationAction::NavigationAction(ImageViewerPlugin& imageViewerPlugin) :
     _zoomExtentsAction(this, "Zoom all"),
     _panAction(this, "Pan"),
     _selectAction(this, "Select pixels"),
+    _subsetAction(imageViewerPlugin),
     _exportToImageAction(this, ""),
     _interactionModeActionGroup(this)
 {
@@ -30,6 +31,7 @@ NavigationAction::NavigationAction(ImageViewerPlugin& imageViewerPlugin) :
     _zoomExtentsAction.setToolTip("Zoom to the boundaries of all layers (z)");
     _panAction.setToolTip("Move the view");
     _selectAction.setToolTip("Select pixels");
+    _subsetAction.setToolTip("Create subset from selection");
     _exportToImageAction.setToolTip("Export to image pixels");
 
     _zoomOutAction.setIcon(fontAwesome.getIcon("search-minus"));
@@ -45,6 +47,7 @@ NavigationAction::NavigationAction(ImageViewerPlugin& imageViewerPlugin) :
     _exportToImageAction.setShortcut(QKeySequence("e"));
     //_panAction.setShortcut(QKeySequence("R"));
     //_selectAction.setShortcut(QKeySequence("R"));
+    _subsetAction.setShortcut(QKeySequence("S"));
 
     _zoomPercentageAction.setSuffix("%");
 
@@ -57,6 +60,7 @@ NavigationAction::NavigationAction(ImageViewerPlugin& imageViewerPlugin) :
     getImageViewerWidget().addAction(&_panAction);
     getImageViewerWidget().addAction(&_selectAction);
     getImageViewerWidget().addAction(&_exportToImageAction);
+    getImageViewerWidget().addAction(&_subsetAction);
 
     connect(&_zoomOutAction, &TriggerAction::triggered, this, [this]() {
         getImageViewerWidget().getRenderer().setZoomPercentage(getImageViewerWidget().getRenderer().getZoomPercentage() - zoomDeltaPercentage);
@@ -143,7 +147,8 @@ NavigationAction::Widget::Widget(QWidget* parent, NavigationAction* navigationAc
     layout->addWidget(navigationAction->getZoomPercentageAction().createWidget(this, TriggerAction::Icon));
     layout->addWidget(navigationAction->getZoomInAction().createWidget(this, TriggerAction::Icon));
     layout->addWidget(navigationAction->getZoomExtentsAction().createWidget(this, TriggerAction::Icon));
-    //layout->addWidget(getDivider());
+    layout->addWidget(getDivider());
+    layout->addWidget(navigationAction->getSubsetAction().createWidget(this, ToggleAction::PushButtonIcon));
     //layout->addWidget(navigationAction->getExportToImageAction().createWidget(this, ToggleAction::PushButtonIcon));
     layout->addStretch(1);
 

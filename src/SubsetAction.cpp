@@ -1,115 +1,59 @@
 #include "SubsetAction.h"
 #include "ImageViewerPlugin.h"
 #include "Layer.h"
+#include "CreateSubsetDialog.h"
 
 #include "util/Exception.h"
 
 using namespace hdps;
 
-SubsetAction::SubsetAction(Layer& layer) :
-    GroupAction(&layer, true),
-    _layer(layer),
-    _fromRegionAction(this, "From region", true, true),
-    _nameAction(this, "Name"),
-    _createAction(this, "Create")
+SubsetAction::SubsetAction(ImageViewerPlugin& imageViewerPlugin) :
+    TriggerAction(&imageViewerPlugin),
+    _imageViewerPlugin(imageViewerPlugin)
 {
     setText("Subset");
+    setIcon(Application::getIconFont("FontAwesome").getIcon("crop"));
 
-    _fromRegionAction.setToolTip("Create subset from rectangular region");
-    _nameAction.setToolTip("Name of the layer");
-    _createAction.setToolTip("Create the subset");
-    
-    // Update actions states when the selection changed
-    const auto selectionChanged = [this]() {
+    connect(&_imageViewerPlugin.getSelectionModel(), &QItemSelectionModel::selectionChanged, this, [this](const QItemSelection& newSelection, const QItemSelection& oldSelection) {
         
-        // Establish whether there is a valid selection 
-        const auto hasSelection = !_layer.getSelectedIndices().empty();
+        // Deactivate deselected layers
+        if (!oldSelection.indexes().isEmpty()) {
 
-        // Enable/disable actions
-        _nameAction.setEnabled(hasSelection);
-        _createAction.setEnabled(hasSelection && !_nameAction.getString().isEmpty());
-    };
+            // Get pointer to layer that was deselected
+            auto layer = static_cast<Layer*>(oldSelection.indexes().first().internalPointer());
 
-    // Update action state(s) when the subset name changes
-    connect(&_nameAction, &StringAction::stringChanged, this, selectionChanged);
-
-    // Update action state(s) when the selection changes
-    connect(&_layer, &Layer::selectionChanged, this, selectionChanged);
-
-    // Perform an initial update of the actions
-    selectionChanged();
-
-    // Create the subset
-    connect(&_createAction, &TriggerAction::triggered, this, [this]() {
-        try {
-
-            auto& points = _layer.getPoints();
-            auto& images = _layer.getImages();
-
-            if (_fromRegionAction.isChecked()) {
-
-                // Get the image size
-                const auto imageSize = _layer.getImageSize();
-
-                // Cache the selection indices
-                auto cachedSelectionIndices = _layer.getSelectedIndices();
-
-                // Get the selection boundaries
-                const auto selectionBoundaries = _layer.getSelectionAction().getSelectionBoundaries();
-
-                // Compute the number of pixels in the region
-                const auto numberOfPixelsInRegion = selectionBoundaries.width() * selectionBoundaries.height();
-
-                // Get reference to selection indices
-                auto& selectionIndices = dynamic_cast<Points&>(points.getSourceData().getSelection()).indices;
-
-                // Allocate space for indices
-                selectionIndices.clear();
-                selectionIndices.reserve(numberOfPixelsInRegion);
-
-                // Populate new selection indices
-                for (std::int32_t roiPixelY = selectionBoundaries.top(); roiPixelY <= selectionBoundaries.bottom(); roiPixelY++)
-                    for (std::int32_t roiPixelX = selectionBoundaries.left(); roiPixelX <= selectionBoundaries.right(); roiPixelX++)
-                        selectionIndices.push_back(roiPixelY * imageSize.width() + roiPixelX);
-
-                // Except when selection set is empty
-                if (selectionIndices.empty())
-                    throw std::runtime_error("Selection is empty");
-
-                // Create the points subset
-                DatasetRef<Points> pointsSubset(points.getSourceData().createSubset(_nameAction.getString(), points->getName()));
-
-                // Notify that the points set was added
-                Application::core()->notifyDataAdded(pointsSubset.getDatasetName());
-
-                // Reset selected indices
-                selectionIndices = cachedSelectionIndices;
-
-                // Create a new image dataset which is a subset of the original image
-                DatasetRef<Images> imagesSubset(Application::core()->addData("Images", _nameAction.getString(), pointsSubset.getDatasetName()));
-
-                imagesSubset->setType(images->getType());
-                imagesSubset->setNumberOfImages(images->getNumberOfImages());
-                imagesSubset->setImageGeometry(images->getSourceRectangle().size(), selectionBoundaries.size(), selectionBoundaries.topLeft());
-                imagesSubset->setNumberOfComponentsPerPixel(images->getNumberOfComponentsPerPixel());
-                //imagesSubset->setImageFilePaths(images->getImag);
-
-                Application::core()->notifyDataAdded(imagesSubset.getDatasetName());
-            }
-            else {
-                // Create the points subset
-                DatasetRef<Points> pointsSubset(points.getSourceData().createSubset(_nameAction.getString(), points->getName()));
-
-                // Notify that the points set was added
-                Application::core()->notifyDataAdded(pointsSubset.getDatasetName());
-            }
+            // Disconnect previously selected layer
+            disconnect(layer, &Layer::selectionChanged, this, nullptr);
         }
-        catch (std::exception& e)
-        {
-            exceptionMessageBox("Unable to set create subset", e);
+
+        // Activate selected layers
+        if (!newSelection.indexes().isEmpty()) {
+
+            // Get pointer to layer that was selected
+            auto layer = static_cast<Layer*>(newSelection.indexes().first().internalPointer());
+
+            // Enable/disable
+            const auto updateEnabled = [this, layer]() -> void {
+                setEnabled(!layer->getSelectedIndices().empty());
+            };
+
+            // Enable/disable when the layer selection changes
+            connect(layer, &Layer::selectionChanged, this, [this](const std::vector<std::uint32_t>& selectedIndices) {
+                setEnabled(!selectedIndices.empty());
+            });
+
+            // Do an initial update when the layer is selected
+            updateEnabled();
         }
-        catch (...) {
-            exceptionMessageBox("Unable to set create subset");
-        }
+    });
+
+    // Show the create subset dialog when clicked
+    connect(this, &TriggerAction::triggered, this, [this]() {
+
+        // Create subset dialog
+        CreateSubsetDialog createSubsetDialog(_imageViewerPlugin);
+
+        // Show the dialog
+        createSubsetDialog.exec();
     });
 }
