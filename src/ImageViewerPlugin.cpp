@@ -120,34 +120,10 @@ void ImageViewerPlugin::init()
                 try
                 {
                     // Create conversion dialog
-                    PointsToImagesDialog pointsToImagesDialog(datasetName, this);
+                    PointsToImagesDialog pointsToImagesDialog(*this, datasetName);
 
-                    // Show the dialog and catch the result
-                    const auto result = pointsToImagesDialog.exec();
-
-                    if (result == 1) {
-
-                        // Get references to input points and create images dataset
-                        DatasetRef<Images> images(_core->addData("Images", "images", datasetName));
-                        DatasetRef<Points> points(datasetName);
-
-                        if (!images.isValid())
-                            throw std::runtime_error("Unable to create images dataset");
-
-                        images->setType(ImageData::Type::Stack);
-                        images->setNumberOfImages(pointsToImagesDialog.getNumberOfImagesAction().getValue());
-                        images->setImageGeometry(pointsToImagesDialog.getImageSize());
-                        images->setNumberOfComponentsPerPixel(1);
-
-                        // Notify others that an images dataset was added
-                        _core->notifyDataAdded(images->getName());
-
-                        // Add new layer to the model
-                        _model.addLayer(new Layer(*this, images.getDatasetName()));
-
-                        // Update bounds
-                        _imageViewerWidget->updateWorldBoundingRectangle();
-                    }
+                    // Show the dialog
+                    pointsToImagesDialog.exec();
                 }
                 catch (std::exception& e)
                 {

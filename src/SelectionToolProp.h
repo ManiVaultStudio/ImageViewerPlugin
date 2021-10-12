@@ -73,6 +73,4 @@ private: // Shader programs
 private:
     Layer&                                      _layer;                     /** Reference to layer */
     QScopedPointer<QOpenGLFramebufferObject>    _fbo;                       /** Frame Buffer Object for off screen pixel selection tools */
-    QRect                                       _sourceImageRectangle;      /** Source image rectangle */
-    QRect                                       _targetImageRectangle;      /** Target image rectangle */
 };

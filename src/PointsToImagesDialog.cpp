@@ -1,4 +1,5 @@
 #include "PointsToImagesDialog.h"
+#include "ImageViewerPlugin.h"
 #include "Application.h"
 #include "DataHierarchyItem.h"
 
@@ -11,9 +12,13 @@
 
 #include <stdexcept>
 
-PointsToImagesDialog::PointsToImagesDialog(const QString& datasetName, QWidget* parent /*= nullptr*/) :
-    QDialog(parent),
+using namespace hdps;
+
+PointsToImagesDialog::PointsToImagesDialog(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
+    QDialog(&imageViewerPlugin),
+    _imageViewerPlugin(imageViewerPlugin),
     _points(datasetName),
+    _images(),
     _imageWidthAction(this, "Image width", 1, 10000, 100, 100),
     _imageHeightAction(this, "Image height", 1, 10000, 100, 100),
     _numberOfImagesAction(this, "Number of images", 1, 10000, 10, 10),
@@ -46,10 +51,10 @@ PointsToImagesDialog::PointsToImagesDialog(const QString& datasetName, QWidget* 
             if (childHierarchyItem->getDataType() == ImageType) {
 
                 // Get reference to images dataset
-                auto& images = childHierarchyItem->getDataset<Images>();
+                _images.setDatasetName(childHierarchyItem->getDatasetName());
 
                 // Get image size
-                const auto imageSize = images.getImageSize();
+                const auto imageSize = _images->getImageSize();
 
                 // Set image resolution
                 _imageWidthAction.initialize(0, 10000, imageSize.width(), imageSize.width());
@@ -104,8 +109,39 @@ PointsToImagesDialog::PointsToImagesDialog(const QString& datasetName, QWidget* 
     layout->addStretch(1);
     layout->addWidget(dialogButtonBox);
 
-    // Handle when accepted and rejected buttons are clicked
-    connect(dialogButtonBox, &QDialogButtonBox::accepted, this, &PointsToImagesDialog::accept);
+    // Handle when accepted
+    connect(dialogButtonBox, &QDialogButtonBox::accepted, this, [this, datasetName]() {
+
+        // Get references to input points and create images dataset
+        DatasetRef<Images> images(Application::core()->addData("Images", "images", datasetName));
+        DatasetRef<Points> points(datasetName);
+
+        if (!images.isValid())
+            throw std::runtime_error("Unable to create images dataset");
+
+        const auto sourceImageSize   = _images.isValid() ? _images->getSourceRectangle().size() : QSize(_imageWidthAction.getValue(), _imageHeightAction.getValue());
+        const auto targetImageSize   = _images.isValid() ? _images->getTargetRectangle().size() : QSize(_imageWidthAction.getValue(), _imageHeightAction.getValue());
+        const auto imageOffset       = _images.isValid() ? _images->getTargetRectangle().topLeft() : QPoint();
+
+        images->setType(ImageData::Type::Stack);
+        images->setNumberOfImages(_numberOfImagesAction.getValue());
+        images->setImageGeometry(sourceImageSize, targetImageSize, imageOffset);
+        images->setNumberOfComponentsPerPixel(1);
+
+        // Notify others that an images dataset was added
+        Application::core()->notifyDataAdded(images->getName());
+
+        // Add new layer to the model
+        _imageViewerPlugin.getModel().addLayer(new Layer(_imageViewerPlugin, images.getDatasetName()));
+
+        // Update bounds
+        _imageViewerPlugin.getImageViewerWidget()->updateWorldBoundingRectangle();
+
+        // Exit the dialog
+        accept();
+    });
+
+    // Handle when rejected
     connect(dialogButtonBox, &QDialogButtonBox::rejected, this, &PointsToImagesDialog::reject);
 
     // Update the number of pixels and note action

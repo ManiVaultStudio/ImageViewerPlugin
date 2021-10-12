@@ -12,5 +12,5 @@ void main(void)
     if (texture(offScreenTexture, uv).r > 0)
         fragmentColor= color;
     else 
-        fragmentColor= vec4(1, 0, 0, 0.1);
+        fragmentColor= vec4(0);
 }

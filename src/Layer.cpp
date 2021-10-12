@@ -535,43 +535,28 @@ void Layer::computeSelectionIndices()
     try {
 
         // Get selection indices from points dataset
-        auto& selectionIndices = dynamic_cast<Points&>(getPoints().getSourceData().getSelection()).indices;
+        auto& globalSelectionIndices = dynamic_cast<Points&>(getPoints().getSourceData().getSelection()).indices;
 
-        if (getPoints()->isFull()) {
+        // Clear the selected
+        _selectedIndices.clear();
+        _selectedIndices.reserve(_images->getNumberOfPixels());
 
-            // Since the dataset is full, we can copy the indices without any intermediate steps
-            _selectedIndices = selectionIndices;
-        }
-        else {
+        const auto sourceImageWidth = _images->getSourceRectangle().width();
+        const auto targetImageWidth = _images->getTargetRectangle().width();
 
-            // Clear the selected
-            _selectedIndices.clear();
-            _selectedIndices.reserve(_images->getNumberOfPixels());
+        // Iterate over all global selection indices
+        for (const auto& globalSelectionIndex : globalSelectionIndices) {
 
-            const auto sourceImageWidth = _images->getSourceRectangle().width();
-            const auto targetImageWidth = _images->getTargetRectangle().width();
+            const auto globalPixelCoordinate    = QPoint(globalSelectionIndex % sourceImageWidth, static_cast<std::int32_t>(floorf(globalSelectionIndex / static_cast<float>(sourceImageWidth))));
+            const auto localPixelCoordinate     = globalPixelCoordinate - _images->getTargetRectangle().topLeft();
+            const auto localPixelIndex          = static_cast<std::int32_t>(localPixelCoordinate.y() * targetImageWidth + localPixelCoordinate.x());
 
-            // Iterate over all candidate selection indices
-            for (const auto& selectionIndex : selectionIndices) {
+            // Except in case of invalid target pixel index
+            if (localPixelIndex >= _images->getNumberOfPixels())
+                throw std::runtime_error("Invalid local pixel index");
 
-                // Compute source pixel coordinate
-                const auto sourcePixelCoordinate = QPoint(selectionIndex % sourceImageWidth, static_cast<std::int32_t>(floorf(selectionIndex / static_cast<float>(sourceImageWidth))));
-
-                // Move to next selection index if the the selected pixel is beyond the target boundaries
-                if (!_images->getTargetRectangle().contains(sourcePixelCoordinate))
-                    continue;
-
-                // The selection index is valid so we can compute the target pixel coordinate and index
-                const auto targetPixelCoordinate    = sourcePixelCoordinate - _images->getTargetRectangle().topLeft();
-                const auto targetPixelIndex         = targetPixelCoordinate.y() * targetImageWidth + targetPixelCoordinate.x();
-
-                // Except in case of invalid target pixel index
-                if (static_cast<std::uint32_t>(targetPixelIndex) >= _images->getNumberOfPixels())
-                    throw std::runtime_error("Invalid pixel index");
-
-                // And add the target pixel index to the list of selected pixels
-                _selectedIndices.push_back(targetPixelIndex);
-            }
+            // And add the target pixel index to the list of selected pixels
+            _selectedIndices.push_back(localPixelIndex);
         }
 
         // Get selection channel

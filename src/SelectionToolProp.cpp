@@ -20,9 +20,7 @@ using namespace hdps::util;
 SelectionToolProp::SelectionToolProp(Layer& layer, const QString& name) :
     Prop(layer, name),
     _layer(layer),
-    _fbo(),
-    _sourceImageRectangle(),
-    _targetImageRectangle()
+    _fbo()
 {
     addShape<QuadShape>("Quad");
 
@@ -79,12 +77,6 @@ void SelectionToolProp::render(const QMatrix4x4& modelViewProjectionMatrix)
         // Get reference to selection action
         auto& selectionAction = _layer.getSelectionAction();
 
-        // Update the model matrix
-        QMatrix4x4 modelMatrix;
-
-        // Compute the source and target model matrix
-        modelMatrix.translate(-_targetImageRectangle.left(), -_targetImageRectangle.top(), 0.0f);
-
         // Configure shader program
         selectionToolShaderProgram->setUniformValue("offScreenTexture", 0);
         selectionToolShaderProgram->setUniformValue("color", selectionAction.getOverlayColor().getColor());
@@ -116,10 +108,6 @@ void SelectionToolProp::setGeometry(const QRect& sourceImageRectangle, const QRe
     try {
         qDebug() << "Set selection tool prop geometry:" << sourceImageRectangle << targetImageRectangle;
 
-        _sourceImageRectangle = sourceImageRectangle;
-        _targetImageRectangle = targetImageRectangle;
-
-        
         getRenderer().bindOpenGLContext();
         {
             // Assign the rectangle to the quad shape
@@ -167,9 +155,9 @@ void SelectionToolProp::compute(const QVector<QPoint>& mousePositions)
                 throw std::runtime_error("Unable to bind FBO");
 
             // Get quad shape and compute the model-view-matrix
-            auto quad               = getShapeByName<QuadShape>("Quad");
-            auto quadRectangle      = quad->getRectangle();
-            auto modelViewMatrix    = _layer.getRenderer().getViewMatrix() * _renderable.getModelMatrix() * getModelMatrix();
+            const auto quadShape        = getShapeByName<QuadShape>("Quad");
+            const auto quadRectangle    = quadShape->getRectangle();
+            const auto modelViewMatrix  = _layer.getRenderer().getViewMatrix() * _renderable.getModelMatrix() * getModelMatrix();
 
             // Create viewport with the same size as the FBO a
             glViewport(0.0f, 0.0f, _fbo->width(), _fbo->height());
@@ -186,7 +174,7 @@ void SelectionToolProp::compute(const QVector<QPoint>& mousePositions)
             const auto selectionToolOffScreenShaderProgram = getShaderProgramByName("SelectionToolOffScreen");
 
             // Bind the quad vertex array object buffer
-            quad->getVAO().bind();
+            quadShape->getVAO().bind();
 
             // Bind shader program
             if (!selectionToolOffScreenShaderProgram->bind())
@@ -312,7 +300,7 @@ void SelectionToolProp::compute(const QVector<QPoint>& mousePositions)
             selectionToolOffScreenShaderProgram->release();
 
             // And shape VAO
-            quad->getVAO().release();
+            quadShape->getVAO().release();
 
             // Release the FBO
             _fbo->release();

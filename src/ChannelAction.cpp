@@ -234,34 +234,46 @@ void ChannelAction::computeMaskChannel()
 
 void ChannelAction::computeSelectionChannel()
 {
-    qDebug() << "Compute selection for channel" << _index << QString("(%1)").arg(_imageAction.getLayer().getGeneralAction().getNameAction().getString());
+    try {
+        qDebug() << "Compute selection for channel" << _index << QString("(%1)").arg(_imageAction.getLayer().getGeneralAction().getNameAction().getString());
 
-    // Fill with non-selected
-    std::fill(_selectionData.begin(), _selectionData.end(), 0);
+        // Fill with non-selected
+        std::fill(_selectionData.begin(), _selectionData.end(), 0);
 
-    // Initialize selection boundaries with numeric extremes
-    _selectionBoundaries.setTop(std::numeric_limits<int>::max());
-    _selectionBoundaries.setBottom(std::numeric_limits<int>::lowest());
-    _selectionBoundaries.setLeft(std::numeric_limits<int>::max());
-    _selectionBoundaries.setRight(std::numeric_limits<int>::lowest());
+        // Initialize selection boundaries with numeric extremes
+        _selectionBoundaries.setTop(std::numeric_limits<int>::max());
+        _selectionBoundaries.setBottom(std::numeric_limits<int>::lowest());
+        _selectionBoundaries.setLeft(std::numeric_limits<int>::max());
+        _selectionBoundaries.setRight(std::numeric_limits<int>::lowest());
 
-    // Convert image width to floating point for division later
-    const auto width = static_cast<float>(getImageSize().width());
+        // Convert image width to floating point for division later
+        const auto width = static_cast<float>(getImageSize().width());
 
-    // Establish selected pixel boundaries
-    for (auto selectionIndex : _imageAction.getLayer().getSelectedIndices()) {
+        // Establish selected pixel boundaries
+        for (auto selectionIndex : _imageAction.getLayer().getSelectedIndices()) {
 
-        // Assign selected pixel
-        _selectionData[selectionIndex] = 255;
+            if (selectionIndex < 0 || selectionIndex >= _selectionData.size())
+                throw std::runtime_error("Selection index out of range");
 
-        // Deduce pixel coordinate
-        auto pixelCoordinate = QPoint(selectionIndex % getImageSize().width(), static_cast<int>(floorf(selectionIndex / width)));
+            // Assign selected pixel
+            _selectionData[selectionIndex] = 255;
 
-        // Add pixel pixel coordinate and possibly inflate the selection boundaries
-        _selectionBoundaries.setLeft(std::min(_selectionBoundaries.left(), pixelCoordinate.x()));
-        _selectionBoundaries.setRight(std::max(_selectionBoundaries.right(), pixelCoordinate.x()));
-        _selectionBoundaries.setTop(std::min(_selectionBoundaries.top(), pixelCoordinate.y()));
-        _selectionBoundaries.setBottom(std::max(_selectionBoundaries.bottom(), pixelCoordinate.y()));
+            // Deduce pixel coordinate
+            auto pixelCoordinate = QPoint(selectionIndex % getImageSize().width(), static_cast<int>(floorf(selectionIndex / width)));
+
+            // Add pixel pixel coordinate and possibly inflate the selection boundaries
+            _selectionBoundaries.setLeft(std::min(_selectionBoundaries.left(), pixelCoordinate.x()));
+            _selectionBoundaries.setRight(std::max(_selectionBoundaries.right(), pixelCoordinate.x()));
+            _selectionBoundaries.setTop(std::min(_selectionBoundaries.top(), pixelCoordinate.y()));
+            _selectionBoundaries.setBottom(std::max(_selectionBoundaries.bottom(), pixelCoordinate.y()));
+        }
+    }
+    catch (std::exception& e)
+    {
+        exceptionMessageBox("Unable to compute the selection channel", e);
+    }
+    catch (...) {
+        exceptionMessageBox("Unable to compute the selection channel");
     }
 }
 

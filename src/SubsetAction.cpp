@@ -90,7 +90,7 @@ SubsetAction::SubsetAction(Layer& layer) :
 
                 imagesSubset->setType(images->getType());
                 imagesSubset->setNumberOfImages(images->getNumberOfImages());
-                imagesSubset->setImageGeometry(imageSize, selectionBoundaries.size(), selectionBoundaries.topLeft());
+                imagesSubset->setImageGeometry(images->getSourceRectangle().size(), selectionBoundaries.size(), selectionBoundaries.topLeft());
                 imagesSubset->setNumberOfComponentsPerPixel(images->getNumberOfComponentsPerPixel());
                 //imagesSubset->setImageFilePaths(images->getImag);
 
