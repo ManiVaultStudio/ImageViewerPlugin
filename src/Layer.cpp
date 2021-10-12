@@ -632,8 +632,10 @@ void Layer::zoomToSelection()
         // Get selection boundaries
         auto selectionBoundingRectangle = QRectF(_imageAction.getChannelSelectionAction().getSelectionBoundaries());
 
+        // Get target rectangle (needed for image offset)
         const auto targetRectangle = _images->getTargetRectangle();
 
+        // Add the target image offset
         selectionBoundingRectangle.translate(targetRectangle.topLeft());
 
         // Ensure selection boundaries are valid
