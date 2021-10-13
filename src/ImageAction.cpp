@@ -18,7 +18,6 @@ ImageAction::ImageAction(Layer& layer) :
     _channel2Action(*this, ChannelAction::Channel2, ChannelAction::channelIndexes.value(ChannelAction::Channel2)),
     _channel3Action(*this, ChannelAction::Channel3, ChannelAction::channelIndexes.value(ChannelAction::Channel3)),
     _channelMaskAction(*this, ChannelAction::Mask, ChannelAction::channelIndexes.value(ChannelAction::Mask)),
-    _channelSelectionAction(*this, ChannelAction::Selection, ChannelAction::channelIndexes.value(ChannelAction::Selection)),
     _colorMapAction(this, "Color map", ColorMap::Type::OneDimensional, "Black to white", "Black to white"),
     _interpolationTypeAction(this, "Interpolate", interpolationTypes.values(), "Bilinear", "Bilinear"),
     _useConstantColorAction(this, "Use constant color", false, false),
@@ -29,7 +28,6 @@ ImageAction::ImageAction(Layer& layer) :
 
     _subsampleFactorAction.setVisible(false);
     _channelMaskAction.setVisible(false);
-    _channelSelectionAction.setVisible(false);
 
     _opacityAction.setToolTip("Image layer opacity");
     _subsampleFactorAction.setToolTip("Subsampling factor");
@@ -160,10 +158,6 @@ ImageAction::ImageAction(Layer& layer) :
 
     connect(&_channel3Action, &ChannelAction::changed, this, [this]() {
         emit channelChanged(_channel3Action);
-    });
-
-    connect(&_channelSelectionAction, &ChannelAction::changed, this, [this]() {
-        emit channelChanged(_channelSelectionAction);
     });
 
     const auto render = [this]() {

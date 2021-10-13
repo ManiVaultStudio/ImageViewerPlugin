@@ -48,7 +48,6 @@ public: // Action getters
     ChannelAction& getChannel2Action() { return _channel2Action; }
     ChannelAction& getChannel3Action() { return _channel3Action; }
     ChannelAction& getChannelMaskAction() { return _channelMaskAction; }
-    ChannelAction& getChannelSelectionAction() { return _channelSelectionAction; }
     ColorMapAction& getColorMapAction() { return _colorMapAction; }
     OptionAction& getInterpolationTypeAction() { return _interpolationTypeAction; }
     ToggleAction& getUseConstantColorAction() { return _useConstantColorAction; }
@@ -74,7 +73,6 @@ protected:
     ChannelAction       _channel2Action;                /** Channel 2 action */
     ChannelAction       _channel3Action;                /** Channel 3 action */
     ChannelAction       _channelMaskAction;             /** Mask channel action */
-    ChannelAction       _channelSelectionAction;        /** Selection channel action */
     ColorMapAction      _colorMapAction;                /** Color map action */
     OptionAction        _interpolationTypeAction;       /** Interpolation type action */
     ToggleAction        _useConstantColorAction;        /** Constant color action */

@@ -13,8 +13,7 @@ const QMap<ChannelAction::ChannelIndex, QString> ChannelAction::channelIndexes =
     { ChannelAction::Channel1, "Channel 1" },
     { ChannelAction::Channel2, "Channel 2" },
     { ChannelAction::Channel3, "Channel 3" },
-    { ChannelAction::Mask, "Mask channel" },
-    { ChannelAction::Selection, "Selection channel" }
+    { ChannelAction::Mask, "Mask channel" }
 };
 
 ChannelAction::ChannelAction(ImageAction& imageAction, const ChannelIndex& index, const QString& name) :
@@ -25,9 +24,7 @@ ChannelAction::ChannelAction(ImageAction& imageAction, const ChannelIndex& index
     _dimensionAction(this, "Dimension"),
     _windowLevelAction(this),
     _scalarData(),
-    _scalarDataRange({0.0f, 0.0f}),
-    _selectionData(),
-    _selectionBoundaries()
+    _scalarDataRange({0.0f, 0.0f})
 {
     setText(name);
     setMayReset(true);
@@ -37,7 +34,6 @@ ChannelAction::ChannelAction(ImageAction& imageAction, const ChannelIndex& index
     {
         case Channel1:
         case Mask:
-        case Selection:
             _enabledAction.setChecked(true);
             break;
 
@@ -76,12 +72,6 @@ ChannelAction::ChannelAction(ImageAction& imageAction, const ChannelIndex& index
             case Mask:
             {
                 _scalarData.resize(numberOfPixels);
-                break;
-            }
-
-            case Selection:
-            {
-                _selectionData.resize(getImages()->getNumberOfPixels());
                 break;
             }
 
@@ -149,16 +139,6 @@ QPair<float, float> ChannelAction::getDisplayRange()
     return displayRange;
 }
 
-const std::vector<std::uint8_t>& ChannelAction::getSelectionData() const
-{
-    return _selectionData;
-}
-
-QRect ChannelAction::getSelectionBoundaries() const
-{
-    return _selectionBoundaries;
-}
-
 bool ChannelAction::isResettable() const
 {
     return _dimensionAction.isResettable();
@@ -202,12 +182,6 @@ void ChannelAction::computeScalarData()
                 break;
             }
 
-            case Selection:
-            {
-                computeSelectionChannel();
-                break;
-            }
-
             default:
                 break;
         }
@@ -230,51 +204,6 @@ void ChannelAction::computeMaskChannel()
 
     // Future implementations can use external masks, for now just leave opaque
     std::fill(_scalarData.begin(), _scalarData.end(), 1.0f);
-}
-
-void ChannelAction::computeSelectionChannel()
-{
-    try {
-        qDebug() << "Compute selection for channel" << _index << QString("(%1)").arg(_imageAction.getLayer().getGeneralAction().getNameAction().getString());
-
-        // Fill with non-selected
-        std::fill(_selectionData.begin(), _selectionData.end(), 0);
-
-        // Initialize selection boundaries with numeric extremes
-        _selectionBoundaries.setTop(std::numeric_limits<int>::max());
-        _selectionBoundaries.setBottom(std::numeric_limits<int>::lowest());
-        _selectionBoundaries.setLeft(std::numeric_limits<int>::max());
-        _selectionBoundaries.setRight(std::numeric_limits<int>::lowest());
-
-        // Convert image width to floating point for division later
-        const auto width = static_cast<float>(getImageSize().width());
-
-        // Establish selected pixel boundaries
-        for (auto selectionIndex : _imageAction.getLayer().getSelectedIndices()) {
-
-            if (selectionIndex < 0 || selectionIndex >= _selectionData.size())
-                throw std::runtime_error("Selection index out of range");
-
-            // Assign selected pixel
-            _selectionData[selectionIndex] = 255;
-
-            // Deduce pixel coordinate
-            auto pixelCoordinate = QPoint(selectionIndex % getImageSize().width(), static_cast<int>(floorf(selectionIndex / width)));
-
-            // Add pixel pixel coordinate and possibly inflate the selection boundaries
-            _selectionBoundaries.setLeft(std::min(_selectionBoundaries.left(), pixelCoordinate.x()));
-            _selectionBoundaries.setRight(std::max(_selectionBoundaries.right(), pixelCoordinate.x()));
-            _selectionBoundaries.setTop(std::min(_selectionBoundaries.top(), pixelCoordinate.y()));
-            _selectionBoundaries.setBottom(std::max(_selectionBoundaries.bottom(), pixelCoordinate.y()));
-        }
-    }
-    catch (std::exception& e)
-    {
-        exceptionMessageBox("Unable to compute the selection channel", e);
-    }
-    catch (...) {
-        exceptionMessageBox("Unable to compute the selection channel");
-    }
 }
 
 hdps::util::DatasetRef<Images>& ChannelAction::getImages()

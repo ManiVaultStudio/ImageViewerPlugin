@@ -19,6 +19,7 @@ PointsToImagesDialog::PointsToImagesDialog(ImageViewerPlugin& imageViewerPlugin,
     _imageViewerPlugin(imageViewerPlugin),
     _points(datasetName),
     _images(),
+    _datasetNameAction(this, "Dataset name"),
     _imageWidthAction(this, "Image width", 1, 10000, 100, 100),
     _imageHeightAction(this, "Image height", 1, 10000, 100, 100),
     _numberOfImagesAction(this, "Number of images", 1, 10000, 10, 10),
@@ -63,6 +64,11 @@ PointsToImagesDialog::PointsToImagesDialog(ImageViewerPlugin& imageViewerPlugin,
         }
     }
 
+    const auto defaultDatasetName = QString("%1_img").arg(datasetName);
+
+    // Configure name action
+    _datasetNameAction.initialize(defaultDatasetName, defaultDatasetName);
+
     // Configure number of images action
     _numberOfImagesAction.setDefaultWidgetFlags(IntegralAction::LineEdit);
     _numberOfImagesAction.setMayReset(false);
@@ -82,6 +88,7 @@ PointsToImagesDialog::PointsToImagesDialog(ImageViewerPlugin& imageViewerPlugin,
     auto layout = new QVBoxLayout();
 
     // Add actions to the group
+    _groupAction << _datasetNameAction;
     _groupAction << _imageWidthAction;
     _groupAction << _imageHeightAction;
     _groupAction << _numberOfImagesAction;
@@ -113,7 +120,7 @@ PointsToImagesDialog::PointsToImagesDialog(ImageViewerPlugin& imageViewerPlugin,
     connect(dialogButtonBox, &QDialogButtonBox::accepted, this, [this, datasetName]() {
 
         // Get references to input points and create images dataset
-        DatasetRef<Images> images(Application::core()->addData("Images", "images", datasetName));
+        DatasetRef<Images> images(Application::core()->addData("Images", _datasetNameAction.getString(), datasetName));
         DatasetRef<Points> points(datasetName);
 
         if (!images.isValid())
@@ -145,7 +152,10 @@ PointsToImagesDialog::PointsToImagesDialog(ImageViewerPlugin& imageViewerPlugin,
     connect(dialogButtonBox, &QDialogButtonBox::rejected, this, &PointsToImagesDialog::reject);
 
     // Update the number of pixels and note action
-    const auto updateActions = [this]() {
+    const auto updateActions = [this, dialogButtonBox]() {
+
+        // Update state of the dataset name action
+        dialogButtonBox->button(QDialogButtonBox::Ok)->setEnabled(!_datasetNameAction.getString().isEmpty());
 
         // Compute the number of pixels
         const auto numberOfPixels = _imageWidthAction.getValue() * _imageHeightAction.getValue();
@@ -160,7 +170,7 @@ PointsToImagesDialog::PointsToImagesDialog(ImageViewerPlugin& imageViewerPlugin,
         _notesAction.setString(numberOfElementsMatch ? "" : "Incorrect number of pixels");
     };
 
-    // Compute the number of pixels when the image width or height changes
+    connect(&_datasetNameAction, &StringAction::stringChanged, this, updateActions);
     connect(&_imageWidthAction, &IntegralAction::valueChanged, this, updateActions);
     connect(&_imageHeightAction, &IntegralAction::valueChanged, this, updateActions);
 

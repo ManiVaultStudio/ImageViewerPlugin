@@ -22,13 +22,18 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
     _selectedIndices(),
     _generalAction(*this),
     _imageAction(*this),
-    _selectionAction(*this, &_imageViewerPlugin.getImageViewerWidget(), _imageViewerPlugin.getImageViewerWidget().getPixelSelectionTool())
+    _selectionAction(*this, &_imageViewerPlugin.getImageViewerWidget(), _imageViewerPlugin.getImageViewerWidget().getPixelSelectionTool()),
+    _selectionData(),
+    _selectionBoundaries()
 {
     if (!_images.isValid())
         throw std::runtime_error("The layer images dataset is not valid after initialization");
 
     if (!_points.isValid())
         throw std::runtime_error("The layer points dataset is not valid after initialization");
+
+    // Resize selection data with number of pixels
+    _selectionData.resize(_images->getNumberOfPixels());
 
     // Create layer render props
     _props << new ImageProp(*this, "ImageProp");
@@ -111,7 +116,6 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
 
     updateColorMap();
     updateChannelScalarData(_imageAction.getChannel1Action());
-    updateChannelScalarData(_imageAction.getChannelSelectionAction());
     updateInterpolationType();
     updateModelMatrixAndReRender();
 
@@ -533,36 +537,52 @@ void Layer::computeSelectionIndices()
         // Get selection indices from points dataset
         auto& globalSelectionIndices = dynamic_cast<Points&>(getPoints().getSourceData().getSelection()).indices;
 
-        // Clear the selected
+        // Clear the selected indices
         _selectedIndices.clear();
         _selectedIndices.reserve(_images->getNumberOfPixels());
 
         const auto sourceImageWidth = _images->getSourceRectangle().width();
         const auto targetImageWidth = _images->getTargetRectangle().width();
 
+        // Fill selection data with non-selected
+        std::fill(_selectionData.begin(), _selectionData.end(), 0);
+
+        // Initialize selection boundaries with numeric extremes
+        _selectionBoundaries.setTop(std::numeric_limits<int>::max());
+        _selectionBoundaries.setBottom(std::numeric_limits<int>::lowest());
+        _selectionBoundaries.setLeft(std::numeric_limits<int>::max());
+        _selectionBoundaries.setRight(std::numeric_limits<int>::lowest());
+
         // Iterate over all global selection indices
         for (const auto& globalSelectionIndex : globalSelectionIndices) {
 
-            const auto globalPixelCoordinate    = QPoint(globalSelectionIndex % sourceImageWidth, static_cast<std::int32_t>(floorf(globalSelectionIndex / static_cast<float>(sourceImageWidth))));
-            const auto localPixelCoordinate     = globalPixelCoordinate - _images->getTargetRectangle().topLeft();
-            const auto localPixelIndex          = localPixelCoordinate.y() * targetImageWidth + localPixelCoordinate.x();
+            // Compute global pixel coordinate
+            const auto globalPixelCoordinate = QPoint(globalSelectionIndex % sourceImageWidth, static_cast<std::int32_t>(floorf(globalSelectionIndex / static_cast<float>(sourceImageWidth))));
 
-            // Except in case of invalid target pixel index
-            if (localPixelIndex < 0 || static_cast<std::uint32_t>(localPixelIndex) >= _images->getNumberOfPixels())
+            // Only proceed if the pixel is located within the source image rectangle
+            if (!_images->getTargetRectangle().contains(globalPixelCoordinate))
                 continue;
 
+            // Compute local pixel coordinate and index
+            const auto localPixelCoordinate = globalPixelCoordinate - _images->getTargetRectangle().topLeft();
+            const auto localPixelIndex      = localPixelCoordinate.y() * targetImageWidth + localPixelCoordinate.x();
+
             // And add the target pixel index to the list of selected pixels
-            _selectedIndices.push_back(localPixelIndex);
+            if (localPixelIndex < _images->getNumberOfPixels())
+                _selectedIndices.push_back(localPixelIndex);
+
+            // Assign selected pixel
+            _selectionData[localPixelIndex] = 255;
+
+            // Add pixel pixel coordinate and possibly inflate the selection boundaries
+            _selectionBoundaries.setLeft(std::min(_selectionBoundaries.left(), localPixelCoordinate.x()));
+            _selectionBoundaries.setRight(std::max(_selectionBoundaries.right(), localPixelCoordinate.x()));
+            _selectionBoundaries.setTop(std::min(_selectionBoundaries.top(), localPixelCoordinate.y()));
+            _selectionBoundaries.setBottom(std::max(_selectionBoundaries.bottom(), localPixelCoordinate.y()));
         }
 
-        // Get selection channel
-        auto& selectionChannel = _imageAction.getChannelSelectionAction();
-
-        // Recompute the scalar data of the selection channel
-        _imageAction.getChannelSelectionAction().computeScalarData();
-
         // Assign the scalar data to the prop
-        this->getPropByName<SelectionProp>("SelectionProp")->setSelectionData(selectionChannel.getSelectionData());
+        this->getPropByName<SelectionProp>("SelectionProp")->setSelectionData(_selectionData);
 
         // Notify others that the selection changed
         emit selectionChanged(_selectedIndices);
@@ -590,6 +610,11 @@ std::vector<std::uint32_t>& Layer::getSelectedIndices()
 const std::vector<std::uint32_t>& Layer::getSelectedIndices() const
 {
     return const_cast<Layer*>(this)->getSelectedIndices();
+}
+
+QRect Layer::getSelectionBoundaries() const
+{
+    return _selectionBoundaries;
 }
 
 void Layer::zoomToExtents()
@@ -625,17 +650,14 @@ void Layer::zoomToSelection()
         // Get pointer to image prop
         auto layerImageProp = getPropByName<ImageProp>("ImageProp");
 
-        // Get selection boundaries
-        auto selectionBoundingRectangle = QRectF(_imageAction.getChannelSelectionAction().getSelectionBoundaries());
-
         // Get target rectangle (needed for image offset)
         const auto targetRectangle = _images->getTargetRectangle();
 
         // Add the target image offset
-        selectionBoundingRectangle.translate(targetRectangle.topLeft());
+        _selectionBoundaries.translate(targetRectangle.topLeft());
 
         // Ensure selection boundaries are valid
-        if (!selectionBoundingRectangle.isValid())
+        if (!_selectionBoundaries.isValid())
             throw std::runtime_error("Selection boundaries are invalid");
 
         auto rectangle = layerImageProp->getWorldBoundingRectangle();
@@ -644,8 +666,8 @@ void Layer::zoomToSelection()
         const auto matrix = getModelMatrix() * layerImageProp->getModelMatrix();
 
         // Compute rectangle extents in world coordinates
-        const auto worldTopLeft     = matrix * selectionBoundingRectangle.topLeft();
-        const auto worldBottomRight = matrix * selectionBoundingRectangle.bottomRight();
+        const auto worldTopLeft     = matrix * _selectionBoundaries.topLeft();
+        const auto worldBottomRight = matrix * _selectionBoundaries.bottomRight();
 
         const auto rectangleFromPoints = [](const QPointF& first, const QPointF& second) -> QRectF {
             QRectF rectangle;

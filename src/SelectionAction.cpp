@@ -48,5 +48,5 @@ SelectionAction::SelectionAction(Layer& layer, QWidget* targetWidget, PixelSelec
 
 QRect SelectionAction::getSelectionBoundaries() const
 {
-    return _layer.getImageAction().getChannelSelectionAction().getSelectionBoundaries();
+    return _layer.getSelectionBoundaries();
 }

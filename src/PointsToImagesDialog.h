@@ -41,6 +41,11 @@ public:
         return QSize(400, 200);
     }
 
+    /** Get minimum size hint*/
+    QSize minimumSizeHint() const override {
+        return sizeHint();
+    }
+
     /** Get image size */
     QSize getImageSize() const;
 
@@ -54,6 +59,7 @@ protected:
     ImageViewerPlugin&  _imageViewerPlugin;         /** Reference to image viewer plugin */
     DatasetRef<Points>  _points;                    /** Reference to points dataset */
     DatasetRef<Images>  _images;                    /** Reference to images dataset */
+    StringAction        _datasetNameAction;         /** Images dataset name action */
     IntegralAction      _imageWidthAction;          /** Image width action */
     IntegralAction      _imageHeightAction;         /** Image height action */
     IntegralAction      _numberOfImagesAction;      /** Number of images action */

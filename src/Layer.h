@@ -104,6 +104,9 @@ public: // Selection
     /** Get indices of the selected pixel indices */
     const std::vector<std::uint32_t>& getSelectedIndices() const;
 
+    /** Get selection boundaries */
+    QRect getSelectionBoundaries() const;
+
 public: // View
 
     // Zoom to layer extents
@@ -142,14 +145,16 @@ public: /** Action getters */
     SelectionAction& getSelectionAction() { return _selectionAction; }
 
 protected:
-    ImageViewerPlugin&              _imageViewerPlugin;     /** Reference to image viewer plugin */
-    bool                            _active;                /** Whether the layer is active (editable) */
-    DatasetRef<Images>              _images;                /** Reference to images dataset */
-    DatasetRef<Points>              _points;                /** Reference to input points dataset of the images */
-    std::vector<std::uint32_t>      _selectedIndices;       /** Indices of the selected pixels */
-    GeneralAction                   _generalAction;         /** General action */
-    ImageAction                     _imageAction;           /** Image action */
-    SelectionAction                 _selectionAction;       /** Selection action */
+    ImageViewerPlugin&              _imageViewerPlugin;         /** Reference to image viewer plugin */
+    bool                            _active;                    /** Whether the layer is active (editable) */
+    DatasetRef<Images>              _images;                    /** Reference to images dataset */
+    DatasetRef<Points>              _points;                    /** Reference to input points dataset of the images */
+    std::vector<std::uint32_t>      _selectedIndices;           /** Indices of the selected pixels */
+    GeneralAction                   _generalAction;             /** General action */
+    ImageAction                     _imageAction;               /** Image action */
+    SelectionAction                 _selectionAction;           /** Selection action */
+    std::vector<std::uint8_t>       _selectionData;             /** Selection data for selection prop */
+    QRect                           _selectionBoundaries;       /** Selection boundaries in pixel coordinates */
 
     friend class ImageViewerWidget;
 };
