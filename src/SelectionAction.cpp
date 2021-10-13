@@ -13,7 +13,7 @@ SelectionAction::SelectionAction(Layer& layer, QWidget* targetWidget, PixelSelec
     _targetWidget(targetWidget),
     _pixelSelectionTool(pixelSelectionTool),
     _showRegionAction(this, "Show selected region", true, true),
-    _groupAction(this, true)
+    _groupAction(this, false)
 {
     setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("mouse-pointer"));
 

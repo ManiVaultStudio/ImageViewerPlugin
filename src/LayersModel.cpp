@@ -17,6 +17,22 @@ LayersModel::LayersModel(QObject* parent) :
 {
     setEventCore(Application::core());
 
+    // Register for events for points datasets
+    registerDataEventByType(PointType, [this](DataEvent* dataEvent) {
+
+        switch (dataEvent->getType())
+        {
+            case EventType::DataRemoved:
+            {
+                removeLayer(dataEvent->dataSetName);
+                break;
+            }
+
+            default:
+                break;
+        }
+    });
+
     // Register for events for images datasets
     registerDataEventByType(ImageType, [this](DataEvent* dataEvent) {
 
@@ -471,6 +487,8 @@ void LayersModel::removeLayer(const std::uint32_t& row)
     {
         // Get pointer to layer which needs to be removed
         auto removeLayer = _layers[row];
+
+        qDebug() << "Remove layer:" << removeLayer->getGeneralAction().getNameAction().getString();
 
         // Remove the row from the model
         beginRemoveRows(QModelIndex(), row, row);

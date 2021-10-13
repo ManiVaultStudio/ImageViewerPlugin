@@ -4,7 +4,7 @@
 #include "ImageViewerPlugin.h"
 
 GeneralAction::GeneralAction(Layer& layer) :
-    GroupAction(&layer, true),
+    GroupAction(&layer, false),
     _layer(layer),
     _visibleAction(this, "Visible", true, true),
     _colorAction(this, "Color"),

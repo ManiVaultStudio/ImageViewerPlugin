@@ -279,9 +279,6 @@ void Layer::updateModelMatrix()
 
 const QString Layer::getImagesDatasetName() const
 {
-    if (!_images.isValid())
-        return "";
-
     return _images.getDatasetName();
 }
 

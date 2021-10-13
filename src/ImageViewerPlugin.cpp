@@ -1,8 +1,5 @@
 #include "ImageViewerPlugin.h"
 #include "SelectionAction.h"
-#include "SettingsAction.h"
-#include "MainToolbarAction.h"
-#include "NavigationAction.h"
 #include "Layer.h"
 #include "PointsToImagesDialog.h"
 
@@ -25,13 +22,12 @@ ImageViewerPlugin::ImageViewerPlugin(hdps::plugin::PluginFactory* factory) :
     ViewPlugin(factory),
     _model(this),
     _selectionModel(&_model),
-    _mainWidget(nullptr),
-    _splitter(new QSplitter()),
+    _splitter(Qt::Horizontal, this),
     _imageViewerWidget(this, _model),
     _dropWidget(&_imageViewerWidget),
-    _settingsAction(nullptr),
-    _mainToolbarAction(nullptr),
-    _navigationAction(nullptr)
+    _mainToolbarAction(*this),
+    _navigationAction(*this),
+    _settingsAction(*this)
 {
     setContextMenuPolicy(Qt::CustomContextMenu);
     setFocusPolicy(Qt::ClickFocus);
@@ -39,22 +35,18 @@ ImageViewerPlugin::ImageViewerPlugin(hdps::plugin::PluginFactory* factory) :
 
 void ImageViewerPlugin::init()
 {
-    auto layout = new QHBoxLayout();
+    // Create main layout for view and editing
+    auto mainLayout = new QHBoxLayout();
 
-    layout->setMargin(0);
-    layout->setSpacing(0);
+    mainLayout->setMargin(0);
+    mainLayout->setSpacing(0);
 
-    setLayout(layout);
+    setLayout(mainLayout);
 
-    auto viewerLayout   = new QVBoxLayout();
+    // Create main left widget
+    auto mainWidget = new QWidget();
 
-    _mainWidget         = new QWidget();
-    _settingsAction     = new SettingsAction(*this);
-    _mainToolbarAction  = new MainToolbarAction(*this);
-    _navigationAction   = new NavigationAction(*this);
-
-    _imageViewerWidget.setAcceptDrops(true);
-
+    // Create main widget layout
     auto mainWidgetLayout = new QVBoxLayout();
 
     // Configure main layout
@@ -62,28 +54,29 @@ void ImageViewerPlugin::init()
     mainWidgetLayout->setSpacing(0);
 
     // And add the toolbar, image viewer widget
-    //mainWidgetLayout->addWidget(_mainToolbarAction->createWidget(this));
+    mainWidgetLayout->addWidget(_mainToolbarAction.createWidget(this));
     mainWidgetLayout->addWidget(&_imageViewerWidget, 1);
-    mainWidgetLayout->addWidget(_navigationAction->createWidget(this));
+    mainWidgetLayout->addWidget(_navigationAction.createWidget(this));
 
     // Apply layout to main widget
-    _mainWidget->setLayout(mainWidgetLayout);
+    mainWidget->setLayout(mainWidgetLayout);
 
     // Add viewer widget and settings panel to the splitter
-    _splitter->addWidget(_mainWidget);
-    _splitter->addWidget(_settingsAction->createWidget(this));
+    _splitter.addWidget(mainWidget);
+    _splitter.addWidget(_settingsAction.createWidget(this));
 
     // Configure splitter
-    _splitter->setStretchFactor(0, 1);
-    _splitter->setStretchFactor(1, 0);
-    _splitter->setCollapsible(1, true);
+    _splitter.setStretchFactor(0, 1);
+    _splitter.setStretchFactor(1, 0);
+    _splitter.setCollapsible(1, true);
 
-    layout->addWidget(_splitter);
+    // Add splitter to the main layout
+    mainLayout->addWidget(&_splitter);
 
-    setDockingLocation(hdps::gui::DockableWidget::DockingLocation::Right);
-
+    // Provide a hint on how to load data
     _dropWidget.setDropIndicatorWidget(new DropWidget::DropIndicatorWidget(this, "No data loaded", "Drag an item from the data hierarchy and drop it here to visualize data..."));
 
+    // Establish droppable regions
     _dropWidget.initialize([this](const QMimeData* mimeData) -> DropWidget::DropRegions {
         DropWidget::DropRegions dropRegions;
 
@@ -215,8 +208,8 @@ void ImageViewerPlugin::init()
         const auto hasVisibleLayers = _model.rowCount() == 0 ? false : !_model.match(_model.index(0, LayersModel::Visible), Qt::EditRole, true, -1).isEmpty();
 
         // Enabled/disable navigation tool bar
-        _mainToolbarAction->setEnabled(hasVisibleLayers);
-        _navigationAction->setEnabled(hasVisibleLayers);
+        _mainToolbarAction.setEnabled(hasVisibleLayers);
+        _navigationAction.setEnabled(hasVisibleLayers);
     };
 
     // Enable/disable the navigation action when rows are inserted/removed
@@ -241,7 +234,7 @@ void ImageViewerPlugin::init()
             return;
 
         // Show the context menu
-        _settingsAction->getContextMenu()->exec(mapToGlobal(point));
+        _settingsAction.getContextMenu()->exec(mapToGlobal(point));
     });
 }
 

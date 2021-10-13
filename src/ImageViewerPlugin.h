@@ -3,20 +3,18 @@
 #include "ViewPlugin.h"
 
 #include "LayersModel.h"
+#include "MainToolbarAction.h"
 #include "ImageViewerWidget.h"
+#include "NavigationAction.h"
+#include "SettingsAction.h"
 
 #include "widgets/DropWidget.h"
 
 #include <QItemSelectionModel>
+#include <QSplitter>
 
 using hdps::plugin::ViewPluginFactory;
 using hdps::plugin::ViewPlugin;
-
-class SettingsAction;
-class MainToolbarAction;
-class NavigationAction;
-
-class QSplitter;
 
 /**
  * Image viewer plugin class
@@ -61,20 +59,19 @@ protected:
 
 public: // Action getters
 
-    SettingsAction& getSettingsAction() { return *_settingsAction; }
-    MainToolbarAction& getMainToolbarAction() { return *_mainToolbarAction; }
-    NavigationAction& getNavigationAction() { return *_navigationAction; }
+    MainToolbarAction& getMainToolbarAction() { return _mainToolbarAction; }
+    NavigationAction& getNavigationAction() { return _navigationAction; }
+    SettingsAction& getSettingsAction() { return _settingsAction; }
 
 private:
     LayersModel             _model;                 /** Layers model */
     QItemSelectionModel     _selectionModel;        /** Layers selection model */
-    QWidget*                _mainWidget;            /** Pointer to main widget */
-    QSplitter*              _splitter;              /** Pointer to splitter */
+    QSplitter               _splitter;              /** Splitter which divides the layers view and editor */
     ImageViewerWidget       _imageViewerWidget;     /** Image viewer widget */
     DropWidget              _dropWidget;            /** Widget for dropping data */
-    SettingsAction*         _settingsAction;        /** Pointer to settings action */
-    MainToolbarAction*      _mainToolbarAction;     /** Pointer to main toolbar action */
-    NavigationAction*       _navigationAction;      /** Pointer to navigation action */
+    MainToolbarAction       _mainToolbarAction;     /** Main toolbar action */
+    NavigationAction        _navigationAction;      /** Zoom toolbar action */
+    SettingsAction          _settingsAction;        /** Layers settings action */
 };
 
 /**
