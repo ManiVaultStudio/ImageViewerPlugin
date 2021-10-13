@@ -38,7 +38,7 @@ public:
 
     /** Get preferred size */
     QSize sizeHint() const override {
-        return QSize(350, 200);
+        return QSize(400, 200);
     }
 
     /** Get image size */

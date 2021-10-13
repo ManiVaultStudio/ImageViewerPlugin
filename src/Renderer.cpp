@@ -17,20 +17,22 @@ Renderer::Renderer(QOpenGLWidget* parent) :
     QObject(parent),
     hdps::Renderer(),
     _zoomSensitivity(0.1f),
-    _zoomMargin(25.0f),
+    _zoomMargin(50.0f),
     _worldBoundingRectangle(),
     _zoomAnimation(this, "zoomRectangle")
 {
     // Set duration of zoom animation
-    _zoomAnimation.setDuration(1000);
+    _zoomAnimation.setDuration(500);
 
+    /*
     QEasingCurve easingCurve;
 
     // Set type of easing
-    easingCurve.setType(QEasingCurve::InOutCubic);
+    easingCurve.setType(QEasingCurve::InSine);
 
     // Apply the easing curve
     _zoomAnimation.setEasingCurve(easingCurve);
+    */
 
     // Re-render when the zoom rectangle changes
     connect(this, &Renderer::zoomRectangleChanged, this, [this]() {
@@ -89,7 +91,6 @@ QMatrix4x4 Renderer::getNormalizedScreenToScreenMatrix() const
     const auto size     = QSizeF(getParentWidgetSize());
     const auto halfSize = 0.5f * size;
 
-    
     scale.scale(halfSize.width(), halfSize.height(), 1.0f);
     translate.translate(size.width(), 1, 0.0f);
 
@@ -151,30 +152,45 @@ void Renderer::panBy(const QPointF& delta)
 {
     qDebug() << "Pan by" << delta;
 
-    const auto viewerSize   = getParentWidgetSize();
-    const auto totalMargins = 2 * _zoomMargin;
-    const auto factorX      = static_cast<float>(viewerSize.width() - totalMargins) / static_cast<float>(_worldBoundingRectangle.width() - 1);
-    const auto factorY      = static_cast<float>(viewerSize.height() - totalMargins) / static_cast<float>(_worldBoundingRectangle.height() - 1);
-    const auto scaleFactor  = factorX < factorY ? factorX : factorY;
+    const auto p1 = getScreenPointToWorldPosition(getViewMatrix(), QPoint()).toPointF() ;
+    const auto p2 = getScreenPointToWorldPosition(getViewMatrix(), delta.toPoint()).toPointF() ;
 
-    _zoomRectangle.moveCenter(_zoomRectangle.center() + (delta / scaleFactor));
+    _zoomRectangle = QRectF(_zoomRectangle.topLeft() + (p2 - p1), _zoomRectangle.size());
 
     emit zoomRectangleChanged();
 }
 
 float Renderer::getZoomPercentage() const
 {
-    const auto viewerSize           = getParentWidgetSize();
-    const auto totalMargins         = 2 * _zoomMargin;
-    const auto factorX              = static_cast<float>(_worldBoundingRectangle.width()) / static_cast<float>(_zoomRectangle.width());
-    const auto factorY              = static_cast<float>(_worldBoundingRectangle.height()) / static_cast<float>(_zoomRectangle.height());
-    const auto scaleFactor          = factorX < factorY ? factorX : factorY;
+    if (!_worldBoundingRectangle.isValid() || !_zoomRectangle.isValid())
+        return 1.0f;
+
+    const auto viewerSize       = getParentWidgetSize();
+    const auto totalMargins     = 2 * _zoomMargin;
+    const auto factorX          = static_cast<float>(_worldBoundingRectangle.width()) / static_cast<float>(_zoomRectangle.width());
+    const auto factorY          = static_cast<float>(_worldBoundingRectangle.height()) / static_cast<float>(_zoomRectangle.height());
+    const auto scaleFactor      = factorX < factorY ? factorX : factorY;
 
     return scaleFactor;
 }
 
 void Renderer::setZoomPercentage(const float& zoomPercentage)
 {
+    if (zoomPercentage < 0.05f)
+        return;
+
+    qDebug() << "Set zoom percentage" << zoomPercentage;
+
+    const auto viewerSize       = getParentWidgetSize();
+    const auto viewerCenter     = getScreenPointToWorldPosition(getViewMatrix(), QPoint(viewerSize.width(), viewerSize.height()) / 2).toPointF();
+    const auto totalMargins     = 2 * _zoomMargin;
+    const auto factorX          = static_cast<float>(_worldBoundingRectangle.width()) / static_cast<float>(zoomPercentage * _zoomRectangle.width());
+    const auto factorY          = static_cast<float>(_worldBoundingRectangle.height()) / static_cast<float>(zoomPercentage * _zoomRectangle.height());
+    const auto scaleFactor      = factorX < factorY ? factorX : factorY;
+
+    _zoomRectangle = QRectF(viewerCenter - QPoint(0.5f * scaleFactor * _zoomRectangle.width(), 0.5f * scaleFactor * _zoomRectangle.height()), _zoomRectangle.size() * scaleFactor);
+
+    emit zoomRectangleChanged();
 }
 
 float Renderer::getZoomSensitivity() const
@@ -200,8 +216,6 @@ QRectF Renderer::getWorldBoundingBox() const
 void Renderer::setWorldBoundingRectangle(const QRectF& worldBoundingRectangle)
 {
     _worldBoundingRectangle = worldBoundingRectangle;
-
-    //setZoomLevel(_zoomLevel);
 }
 
 void Renderer::zoomAround(const QPoint& screenPoint, const float& factor)

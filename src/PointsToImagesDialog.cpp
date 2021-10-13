@@ -157,7 +157,7 @@ PointsToImagesDialog::PointsToImagesDialog(ImageViewerPlugin& imageViewerPlugin,
         const auto numberOfElementsMatch = numberOfPixels == _points->getNumPoints();
 
         // Update the notes action
-        _notesAction.setString(numberOfElementsMatch ? "" : "Inconsistent number of pixels");
+        _notesAction.setString(numberOfElementsMatch ? "" : "Incorrect number of pixels");
     };
 
     // Compute the number of pixels when the image width or height changes

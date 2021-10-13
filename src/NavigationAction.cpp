@@ -12,7 +12,7 @@ NavigationAction::NavigationAction(ImageViewerPlugin& imageViewerPlugin) :
     WidgetAction(&imageViewerPlugin),
     _imageViewerPlugin(imageViewerPlugin),
     _zoomOutAction(this, ""),
-    _zoomPercentageAction(this, "Zoom percentage", 1.0f, 1000.0f, 100.0f, 100.0f, 1),
+    _zoomPercentageAction(this, "Zoom percentage", 10.0f, 1000.0f, 100.0f, 100.0f, 1),
     _zoomInAction(this, ""),
     _zoomExtentsAction(this, "Zoom all"),
     _panAction(this, "Pan"),
@@ -68,7 +68,7 @@ NavigationAction::NavigationAction(ImageViewerPlugin& imageViewerPlugin) :
     });
 
     connect(&_zoomPercentageAction, &DecimalAction::valueChanged, this, [this](const float& value) {
-        getImageViewerWidget().getRenderer().setZoomPercentage(0.01f * value);
+        //getImageViewerWidget().getRenderer().setZoomPercentage(0.01f * value);
         getImageViewerWidget().update();
     });
 
@@ -100,7 +100,11 @@ NavigationAction::NavigationAction(ImageViewerPlugin& imageViewerPlugin) :
     });
 
     const auto updateZoomPercentage = [this]() {
-        _zoomPercentageAction.setValue(100.0f * getImageViewerWidget().getRenderer().getZoomPercentage());
+        const auto zoomPercentage = 100.0f * getImageViewerWidget().getRenderer().getZoomPercentage();
+
+        _zoomOutAction.setEnabled(zoomPercentage > _zoomPercentageAction.getMinimum());
+        _zoomPercentageAction.setValue(zoomPercentage);
+        _zoomInAction.setEnabled(zoomPercentage < _zoomPercentageAction.getMaximum());
     };
 
     connect(&getImageViewerWidget().getRenderer(), &Renderer::zoomRectangleChanged, this, [this, updateZoomPercentage]() {
@@ -148,7 +152,7 @@ NavigationAction::Widget::Widget(QWidget* parent, NavigationAction* navigationAc
     layout->addWidget(navigationAction->getZoomInAction().createWidget(this, TriggerAction::Icon));
     layout->addWidget(navigationAction->getZoomExtentsAction().createWidget(this, TriggerAction::Icon));
     layout->addWidget(getDivider());
-    layout->addWidget(navigationAction->getSubsetAction().createWidget(this, ToggleAction::PushButtonIcon));
+    layout->addWidget(navigationAction->getSubsetAction().createCollapsedWidget(this));
     //layout->addWidget(navigationAction->getExportToImageAction().createWidget(this, ToggleAction::PushButtonIcon));
     layout->addStretch(1);
 

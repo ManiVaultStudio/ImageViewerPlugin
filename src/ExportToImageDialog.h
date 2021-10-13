@@ -30,7 +30,7 @@ public:
 
     /** Get preferred size hint */
     QSize sizeHint() const override {
-        return QSize(350, 100);
+        return QSize(400, 100);
     }
 
     /** Get minimum size hint*/

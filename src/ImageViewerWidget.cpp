@@ -293,7 +293,7 @@ bool ImageViewerWidget::eventFilter(QObject* target, QEvent* event)
                         const auto panVector                = currentMousePosition - previousMousePosition;
 
                         // Pan the view and render
-                        _renderer.panBy(QPoint(-panVector.x(), panVector.y()));
+                        _renderer.panBy(QPoint(-panVector.x(), -panVector.y()));
                         _renderer.render();
                     }
 
