@@ -1,4 +1,4 @@
-#include "NavigationAction.h"
+#include "ZoomToolbarAction.h"
 #include "ImageViewerPlugin.h"
 #include "ImageViewerWidget.h"
 #include "LayersModel.h"
@@ -10,9 +10,9 @@
 
 using namespace hdps::util;
 
-const float NavigationAction::zoomDeltaPercentage = 0.1f;
+const float ZoomToolbarAction::zoomDeltaPercentage = 0.1f;
 
-NavigationAction::NavigationAction(ImageViewerPlugin& imageViewerPlugin) :
+ZoomToolbarAction::ZoomToolbarAction(ImageViewerPlugin& imageViewerPlugin) :
     WidgetAction(&imageViewerPlugin),
     _imageViewerPlugin(imageViewerPlugin),
     _zoomOutAction(this, ""),
@@ -92,13 +92,13 @@ NavigationAction::NavigationAction(ImageViewerPlugin& imageViewerPlugin) :
     updateZoomPercentage();
 }
 
-ImageViewerWidget& NavigationAction::getImageViewerWidget()
+ImageViewerWidget& ZoomToolbarAction::getImageViewerWidget()
 {
     return _imageViewerPlugin.getImageViewerWidget();
 }
 
-NavigationAction::Widget::Widget(QWidget* parent, NavigationAction* navigationAction) :
-    WidgetActionWidget(parent, navigationAction)
+ZoomToolbarAction::Widget::Widget(QWidget* parent, ZoomToolbarAction* zoomToolbarAction) :
+    WidgetActionWidget(parent, zoomToolbarAction)
 {
     setAutoFillBackground(true);
 
@@ -117,10 +117,10 @@ NavigationAction::Widget::Widget(QWidget* parent, NavigationAction* navigationAc
     layout->setMargin(4);
 
     layout->addStretch(1);
-    layout->addWidget(navigationAction->getZoomOutAction().createWidget(this, TriggerAction::Icon));
-    layout->addWidget(navigationAction->getZoomPercentageAction().createWidget(this, TriggerAction::Icon));
-    layout->addWidget(navigationAction->getZoomInAction().createWidget(this, TriggerAction::Icon));
-    layout->addWidget(navigationAction->getZoomExtentsAction().createWidget(this, TriggerAction::Icon));
+    layout->addWidget(zoomToolbarAction->getZoomOutAction().createWidget(this, TriggerAction::Icon));
+    layout->addWidget(zoomToolbarAction->getZoomPercentageAction().createWidget(this, TriggerAction::Icon));
+    layout->addWidget(zoomToolbarAction->getZoomInAction().createWidget(this, TriggerAction::Icon));
+    layout->addWidget(zoomToolbarAction->getZoomExtentsAction().createWidget(this, TriggerAction::Icon));
     //layout->addWidget(navigationAction->getExportToImageAction().createWidget(this, ToggleAction::PushButtonIcon));
     layout->addStretch(1);
 

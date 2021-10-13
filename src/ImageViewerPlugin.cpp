@@ -26,7 +26,7 @@ ImageViewerPlugin::ImageViewerPlugin(hdps::plugin::PluginFactory* factory) :
     _imageViewerWidget(this, _model),
     _dropWidget(&_imageViewerWidget),
     _mainToolbarAction(*this),
-    _navigationAction(*this),
+    _zoomToolbarAction(*this),
     _settingsAction(*this)
 {
     setContextMenuPolicy(Qt::CustomContextMenu);
@@ -56,7 +56,7 @@ void ImageViewerPlugin::init()
     // And add the toolbar, image viewer widget
     mainWidgetLayout->addWidget(_mainToolbarAction.createWidget(this));
     mainWidgetLayout->addWidget(&_imageViewerWidget, 1);
-    mainWidgetLayout->addWidget(_navigationAction.createWidget(this));
+    mainWidgetLayout->addWidget(_zoomToolbarAction.createWidget(this));
 
     // Apply layout to main widget
     mainWidget->setLayout(mainWidgetLayout);
@@ -209,7 +209,7 @@ void ImageViewerPlugin::init()
 
         // Enabled/disable navigation tool bar
         _mainToolbarAction.setEnabled(hasVisibleLayers);
-        _navigationAction.setEnabled(hasVisibleLayers);
+        _zoomToolbarAction.setEnabled(hasVisibleLayers);
     };
 
     // Enable/disable the navigation action when rows are inserted/removed

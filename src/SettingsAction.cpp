@@ -1,7 +1,7 @@
 #include "SettingsAction.h"
 #include "ImageViewerPlugin.h"
 #include "MainToolbarAction.h"
-#include "NavigationAction.h"
+#include "ZoomToolbarAction.h"
 
 using namespace hdps::gui;
 
@@ -87,7 +87,7 @@ QMenu* SettingsAction::getContextMenu(QWidget* parent /*= nullptr*/)
 
     menu->addAction(&_imageViewerPlugin.getMainToolbarAction().getPanAction());
     menu->addAction(&_imageViewerPlugin.getMainToolbarAction().getSelectAction());
-    menu->addAction(&_imageViewerPlugin.getNavigationAction().getZoomExtentsAction());
+    menu->addAction(&_imageViewerPlugin.getZoomToolbarAction().getZoomExtentsAction());
 
     return menu;
 }

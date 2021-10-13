@@ -3,9 +3,9 @@
 #include "ViewPlugin.h"
 
 #include "LayersModel.h"
-#include "MainToolbarAction.h"
 #include "ImageViewerWidget.h"
-#include "NavigationAction.h"
+#include "MainToolbarAction.h"
+#include "ZoomToolbarAction.h"
 #include "SettingsAction.h"
 
 #include "widgets/DropWidget.h"
@@ -60,7 +60,7 @@ protected:
 public: // Action getters
 
     MainToolbarAction& getMainToolbarAction() { return _mainToolbarAction; }
-    NavigationAction& getNavigationAction() { return _navigationAction; }
+    ZoomToolbarAction& getZoomToolbarAction() { return _zoomToolbarAction; }
     SettingsAction& getSettingsAction() { return _settingsAction; }
 
 private:
@@ -70,7 +70,7 @@ private:
     ImageViewerWidget       _imageViewerWidget;     /** Image viewer widget */
     DropWidget              _dropWidget;            /** Widget for dropping data */
     MainToolbarAction       _mainToolbarAction;     /** Main toolbar action */
-    NavigationAction        _navigationAction;      /** Zoom toolbar action */
+    ZoomToolbarAction       _zoomToolbarAction;     /** Zoom toolbar action */
     SettingsAction          _settingsAction;        /** Layers settings action */
 };
 

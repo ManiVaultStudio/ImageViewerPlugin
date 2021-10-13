@@ -13,17 +13,17 @@ class ImageViewerWidget;
 using namespace hdps::gui;
 
 /**
- * Navigation action class
+ * Zoom toolbar action class
  *
- * Action class for navigation
+ * Action class for zooming
  *
  * @author Thomas Kroes
  */
-class NavigationAction : public WidgetAction
+class ZoomToolbarAction : public WidgetAction
 {
 public:
 
-    /** Widget class for pixel selection type action */
+    /** Widget class for zoom toolbar action */
     class Widget : public WidgetActionWidget
     {
     protected:
@@ -31,18 +31,18 @@ public:
         /**
          * Constructor
          * @param parent Pointer to parent widget
-         * @param navigationAction Pointer to navigation action
+         * @param zoomToolbarAction Pointer to zoom toolbar action
          */
-        Widget(QWidget* parent, NavigationAction* navigationAction);
+        Widget(QWidget* parent, ZoomToolbarAction* zoomToolbarAction);
 
     protected:
-        friend class NavigationAction;
+        friend class ZoomToolbarAction;
     };
 
 protected:
 
     /**
-     * Get widget representation of the navigation action
+     * Get widget representation of the zoom toolbar action
      * @param parent Pointer to parent widget
      * @param widgetFlags Widget flags for the configuration of the widget (type)
      */
@@ -56,7 +56,7 @@ public:
      * Constructor
      * @param imageViewerWidget Reference to image viewer plugin
      */
-    NavigationAction(ImageViewerPlugin& imageViewerPlugin);
+    ZoomToolbarAction(ImageViewerPlugin& imageViewerPlugin);
 
     /** Determines whether the current value can be reset to its default */
     bool isResettable() const override {
@@ -78,12 +78,12 @@ public: // Action getters
     TriggerAction& getExportToImageAction() { return _exportToImageAction; }
 
 protected:
-    ImageViewerPlugin&  _imageViewerPlugin;             /** Reference to image viewer plugin */
-    TriggerAction       _zoomOutAction;                 /** Zoom out action */
-    DecimalAction       _zoomPercentageAction;          /** Zoom action */
-    TriggerAction       _zoomInAction;                  /** Zoom in action */
-    TriggerAction       _zoomExtentsAction;             /** Zoom extents action */
-    TriggerAction       _exportToImageAction;           /** Export to image action */
+    ImageViewerPlugin&  _imageViewerPlugin;         /** Reference to image viewer plugin */
+    TriggerAction       _zoomOutAction;             /** Zoom out action */
+    DecimalAction       _zoomPercentageAction;      /** Zoom action */
+    TriggerAction       _zoomInAction;              /** Zoom in action */
+    TriggerAction       _zoomExtentsAction;         /** Zoom extents action */
+    TriggerAction       _exportToImageAction;       /** Export to image action */
 
     static const float zoomDeltaPercentage;
 };
