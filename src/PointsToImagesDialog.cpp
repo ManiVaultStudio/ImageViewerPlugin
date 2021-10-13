@@ -135,7 +135,7 @@ PointsToImagesDialog::PointsToImagesDialog(ImageViewerPlugin& imageViewerPlugin,
         _imageViewerPlugin.getModel().addLayer(new Layer(_imageViewerPlugin, images.getDatasetName()));
 
         // Update bounds
-        _imageViewerPlugin.getImageViewerWidget()->updateWorldBoundingRectangle();
+        _imageViewerPlugin.getImageViewerWidget().updateWorldBoundingRectangle();
 
         // Exit the dialog
         accept();

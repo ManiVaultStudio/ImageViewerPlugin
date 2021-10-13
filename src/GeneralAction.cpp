@@ -48,7 +48,7 @@ GeneralAction::GeneralAction(Layer& layer) :
     });
 
     const auto updateBounds = [this]() {
-        _layer.getImageViewerPlugin().getImageViewerWidget()->updateWorldBoundingRectangle();
+        _layer.getImageViewerPlugin().getImageViewerWidget().updateWorldBoundingRectangle();
     };
 
     connect(&_visibleAction, &ToggleAction::toggled, this, updateBounds);

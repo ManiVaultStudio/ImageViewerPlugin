@@ -71,26 +71,19 @@ public:
 
 public: // Action getters
 
-    ToggleAction& getPanAction() { return _panAction; }
-    ToggleAction& getSelectAction() { return _selectAction; }
     TriggerAction& getZoomOutAction() { return _zoomOutAction; }
     DecimalAction& getZoomPercentageAction() { return _zoomPercentageAction; }
     TriggerAction& getZoomInAction() { return _zoomInAction; }
     TriggerAction& getZoomExtentsAction() { return _zoomExtentsAction; }
-    SubsetAction& getSubsetAction() { return _subsetAction; }
     TriggerAction& getExportToImageAction() { return _exportToImageAction; }
 
 protected:
     ImageViewerPlugin&  _imageViewerPlugin;             /** Reference to image viewer plugin */
-    ToggleAction        _panAction;                     /** Pan interaction mode action */
-    ToggleAction        _selectAction;                  /** Select interaction mode action */
     TriggerAction       _zoomOutAction;                 /** Zoom out action */
     DecimalAction       _zoomPercentageAction;          /** Zoom action */
     TriggerAction       _zoomInAction;                  /** Zoom in action */
     TriggerAction       _zoomExtentsAction;             /** Zoom extents action */
-    SubsetAction        _subsetAction;                  /** Subset action */
     TriggerAction       _exportToImageAction;           /** Export to image action */
-    QActionGroup        _interactionModeActionGroup;    /** Interaction mode action group */
 
     static const float zoomDeltaPercentage;
 };

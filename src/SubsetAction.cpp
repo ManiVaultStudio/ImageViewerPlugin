@@ -13,7 +13,7 @@ SubsetAction::SubsetAction(ImageViewerPlugin& imageViewerPlugin) :
     _fromRegionAction(this, "From region", true, true),
     _createAction(this, "Create")
 {
-    setText("Subset");
+    setText("Create subset");
     setIcon(Application::getIconFont("FontAwesome").getIcon("crop"));
 
     _nameAction.setToolTip("Name of the subset");
@@ -48,9 +48,7 @@ SubsetAction::SubsetAction(ImageViewerPlugin& imageViewerPlugin) :
             };
 
             // Enable/disable when the layer selection changes
-            connect(layer, &Layer::selectionChanged, this, [this](const std::vector<std::uint32_t>& selectedIndices) {
-                setEnabled(!selectedIndices.empty());
-            });
+            connect(layer, &Layer::selectionChanged, this, updateEnabled);
 
             // Do an initial update when the layer is selected
             updateEnabled();

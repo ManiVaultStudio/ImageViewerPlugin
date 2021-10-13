@@ -1,6 +1,7 @@
 #include "ImageViewerPlugin.h"
 #include "SelectionAction.h"
 #include "SettingsAction.h"
+#include "MainToolbarAction.h"
 #include "NavigationAction.h"
 #include "Layer.h"
 #include "PointsToImagesDialog.h"
@@ -24,11 +25,12 @@ ImageViewerPlugin::ImageViewerPlugin(hdps::plugin::PluginFactory* factory) :
     ViewPlugin(factory),
     _model(this),
     _selectionModel(&_model),
-    _dropWidget(nullptr),
     _mainWidget(nullptr),
     _splitter(new QSplitter()),
-    _imageViewerWidget(nullptr),
+    _imageViewerWidget(this, _model),
+    _dropWidget(&_imageViewerWidget),
     _settingsAction(nullptr),
+    _mainToolbarAction(nullptr),
     _navigationAction(nullptr)
 {
     setContextMenuPolicy(Qt::CustomContextMenu);
@@ -47,13 +49,11 @@ void ImageViewerPlugin::init()
     auto viewerLayout   = new QVBoxLayout();
 
     _mainWidget         = new QWidget();
-    _imageViewerWidget  = new ImageViewerWidget(this, _model);
     _settingsAction     = new SettingsAction(*this);
+    _mainToolbarAction  = new MainToolbarAction(*this);
     _navigationAction   = new NavigationAction(*this);
 
-    _imageViewerWidget->setAcceptDrops(true);
-
-    _dropWidget = new DropWidget(_imageViewerWidget);
+    _imageViewerWidget.setAcceptDrops(true);
 
     auto mainWidgetLayout = new QVBoxLayout();
 
@@ -62,7 +62,8 @@ void ImageViewerPlugin::init()
     mainWidgetLayout->setSpacing(0);
 
     // And add the toolbar, image viewer widget
-    mainWidgetLayout->addWidget(_imageViewerWidget, 1);
+    //mainWidgetLayout->addWidget(_mainToolbarAction->createWidget(this));
+    mainWidgetLayout->addWidget(&_imageViewerWidget, 1);
     mainWidgetLayout->addWidget(_navigationAction->createWidget(this));
 
     // Apply layout to main widget
@@ -81,9 +82,9 @@ void ImageViewerPlugin::init()
 
     setDockingLocation(hdps::gui::DockableWidget::DockingLocation::Right);
 
-    _dropWidget->setDropIndicatorWidget(new DropWidget::DropIndicatorWidget(this, "No data loaded", "Drag an item from the data hierarchy and drop it here to visualize data..."));
+    _dropWidget.setDropIndicatorWidget(new DropWidget::DropIndicatorWidget(this, "No data loaded", "Drag an item from the data hierarchy and drop it here to visualize data..."));
 
-    _dropWidget->initialize([this](const QMimeData* mimeData) -> DropWidget::DropRegions {
+    _dropWidget.initialize([this](const QMimeData* mimeData) -> DropWidget::DropRegions {
         DropWidget::DropRegions dropRegions;
 
         const auto mimeText     = mimeData->text();
@@ -103,7 +104,7 @@ void ImageViewerPlugin::init()
                     _model.addLayer(new Layer(*this, datasetName));
 
                     // Update bounds
-                    _imageViewerWidget->updateWorldBoundingRectangle();
+                    _imageViewerWidget.updateWorldBoundingRectangle();
                 }
                 catch (std::exception& e)
                 {
@@ -138,7 +139,7 @@ void ImageViewerPlugin::init()
         return dropRegions;
     });
 
-    connect(_imageViewerWidget, &ImageViewerWidget::pixelSelectionStarted, this, [this]() {
+    connect(&_imageViewerWidget, &ImageViewerWidget::pixelSelectionStarted, this, [this]() {
 
         // Get selected layers model rows
         const auto selectedRows = _selectionModel.selectedRows();
@@ -154,7 +155,7 @@ void ImageViewerPlugin::init()
         layer->startSelection();
     });
 
-    connect(_imageViewerWidget, &ImageViewerWidget::mousePositionsChanged, this, [this](const QVector<QPoint>& mousePositions) {
+    connect(&_imageViewerWidget, &ImageViewerWidget::mousePositionsChanged, this, [this](const QVector<QPoint>& mousePositions) {
 
         // No point in computing selection when there are no mouse positions
         if (mousePositions.count() <= 1)
@@ -188,8 +189,7 @@ void ImageViewerPlugin::init()
             layer->resetSelectionBuffer();
     });
 
-    // 
-    connect(_imageViewerWidget, &ImageViewerWidget::pixelSelectionEnded, this, [this]() {
+    connect(&_imageViewerWidget, &ImageViewerWidget::pixelSelectionEnded, this, [this]() {
 
         // Get selected layers model rows
         const auto selectedRows = _selectionModel.selectedRows();
@@ -209,12 +209,13 @@ void ImageViewerPlugin::init()
     });
 
     const auto layersInsertedRemovedChanged = [this]() {
-        _dropWidget->setShowDropIndicator(_model.rowCount() == 0);
+        _dropWidget.setShowDropIndicator(_model.rowCount() == 0);
 
         // Establish the number of visible layers
         const auto hasVisibleLayers = _model.rowCount() == 0 ? false : !_model.match(_model.index(0, LayersModel::Visible), Qt::EditRole, true, -1).isEmpty();
 
         // Enabled/disable navigation tool bar
+        _mainToolbarAction->setEnabled(hasVisibleLayers);
         _navigationAction->setEnabled(hasVisibleLayers);
     };
 
@@ -233,7 +234,7 @@ void ImageViewerPlugin::init()
     updateWindowTitle();
 
     // Routine to show the context menu
-    connect(_imageViewerWidget, &ImageViewerWidget::customContextMenuRequested, this, [this](const QPoint& point) {
+    connect(&_imageViewerWidget, &ImageViewerWidget::customContextMenuRequested, this, [this](const QPoint& point) {
 
         // Only show a context menu when there is data loaded
         if (_model.rowCount() <= 0)

@@ -1,5 +1,6 @@
 #include "SettingsAction.h"
 #include "ImageViewerPlugin.h"
+#include "MainToolbarAction.h"
 #include "NavigationAction.h"
 
 using namespace hdps::gui;
@@ -55,7 +56,7 @@ QMenu* SettingsAction::getContextMenu(QWidget* parent /*= nullptr*/)
         selectionTypeWidgetAction->setDefaultWidget(selectionTypesWidget);
 
         // Enabled if the layer is visible
-        selectionTypeWidgetAction->setEnabled(layer->getGeneralAction().getVisibleAction().isChecked() && _imageViewerPlugin.getImageViewerWidget()->getInteractionMode() == ImageViewerWidget::Selection);
+        selectionTypeWidgetAction->setEnabled(layer->getGeneralAction().getVisibleAction().isChecked() && _imageViewerPlugin.getImageViewerWidget().getInteractionMode() == ImageViewerWidget::Selection);
 
         // Add widget action to the menu
         menu->addAction(selectionTypeWidgetAction);
@@ -84,8 +85,8 @@ QMenu* SettingsAction::getContextMenu(QWidget* parent /*= nullptr*/)
 
     menu->addSeparator();
 
-    menu->addAction(&_imageViewerPlugin.getNavigationAction().getPanAction());
-    menu->addAction(&_imageViewerPlugin.getNavigationAction().getSelectAction());
+    menu->addAction(&_imageViewerPlugin.getMainToolbarAction().getPanAction());
+    menu->addAction(&_imageViewerPlugin.getMainToolbarAction().getSelectAction());
     menu->addAction(&_imageViewerPlugin.getNavigationAction().getZoomExtentsAction());
 
     return menu;

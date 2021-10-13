@@ -14,7 +14,7 @@ using namespace hdps;
 
 Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
     QObject(&imageViewerPlugin),
-    Renderable(imageViewerPlugin.getImageViewerWidget()->getRenderer()),
+    Renderable(imageViewerPlugin.getImageViewerWidget().getRenderer()),
     _imageViewerPlugin(imageViewerPlugin),
     _active(false),
     _images(datasetName),
@@ -22,7 +22,7 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
     _selectedIndices(),
     _generalAction(*this),
     _imageAction(*this),
-    _selectionAction(*this, _imageViewerPlugin.getImageViewerWidget(), _imageViewerPlugin.getImageViewerWidget()->getPixelSelectionTool())
+    _selectionAction(*this, &_imageViewerPlugin.getImageViewerWidget(), _imageViewerPlugin.getImageViewerWidget().getPixelSelectionTool())
 {
     if (!_images.isValid())
         throw std::runtime_error("The layer images dataset is not valid after initialization");
@@ -242,7 +242,7 @@ void Layer::deactivate()
 
 void Layer::invalidate()
 {
-    _imageViewerPlugin.getImageViewerWidget()->update();
+    _imageViewerPlugin.getImageViewerWidget().update();
 }
 
 void Layer::updateModelMatrix()
@@ -417,7 +417,7 @@ void Layer::publishSelection()
         auto& selectionIndices = _points->getSelection<Points>().indices;
 
         // Get reference to the pixel selection tool
-        auto& pixelSelectionTool = getImageViewerPlugin().getImageViewerWidget()->getPixelSelectionTool();
+        auto& pixelSelectionTool = getImageViewerPlugin().getImageViewerWidget().getPixelSelectionTool();
 
         switch (pixelSelectionTool.getType())
         {
@@ -605,7 +605,7 @@ void Layer::zoomToExtents()
         auto layerImageProp = getPropByName<ImageProp>("ImageProp");
 
         // Zoom to layer extents
-        _imageViewerPlugin.getImageViewerWidget()->getRenderer().setZoomRectangle(getWorldBoundingRectangle());
+        _imageViewerPlugin.getImageViewerWidget().getRenderer().setZoomRectangle(getWorldBoundingRectangle());
 
         // Trigger render
         invalidate();
@@ -665,7 +665,7 @@ void Layer::zoomToSelection()
         const auto zoomRectangleWorld = rectangleFromPoints(worldTopLeft, worldBottomRight);
 
         // Zoom to layer selection
-        _imageViewerPlugin.getImageViewerWidget()->getRenderer().setZoomRectangle(zoomRectangleWorld);
+        _imageViewerPlugin.getImageViewerWidget().getRenderer().setZoomRectangle(zoomRectangleWorld);
 
         // Trigger render
         invalidate();

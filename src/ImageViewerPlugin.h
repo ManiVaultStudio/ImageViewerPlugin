@@ -5,19 +5,16 @@
 #include "LayersModel.h"
 #include "ImageViewerWidget.h"
 
+#include "widgets/DropWidget.h"
+
 #include <QItemSelectionModel>
 
 using hdps::plugin::ViewPluginFactory;
 using hdps::plugin::ViewPlugin;
 
 class SettingsAction;
+class MainToolbarAction;
 class NavigationAction;
-
-namespace hdps {
-    namespace gui {
-        class DropWidget;
-    }
-}
 
 class QSplitter;
 
@@ -52,7 +49,8 @@ public: // Miscellaneous
         return _selectionModel;
     }
 
-    ImageViewerWidget* getImageViewerWidget() {
+    /** Get reference to the image viewer widget */
+    ImageViewerWidget& getImageViewerWidget() {
         return _imageViewerWidget;
     }
 
@@ -64,16 +62,18 @@ protected:
 public: // Action getters
 
     SettingsAction& getSettingsAction() { return *_settingsAction; }
+    MainToolbarAction& getMainToolbarAction() { return *_mainToolbarAction; }
     NavigationAction& getNavigationAction() { return *_navigationAction; }
 
 private:
     LayersModel             _model;                 /** Layers model */
     QItemSelectionModel     _selectionModel;        /** Layers selection model */
-    hdps::gui::DropWidget*  _dropWidget;            /** Widget for dropping data */
     QWidget*                _mainWidget;            /** Pointer to main widget */
     QSplitter*              _splitter;              /** Pointer to splitter */
-    ImageViewerWidget*      _imageViewerWidget;     /** Pointer to image viewer widget */
+    ImageViewerWidget       _imageViewerWidget;     /** Image viewer widget */
+    DropWidget              _dropWidget;            /** Widget for dropping data */
     SettingsAction*         _settingsAction;        /** Pointer to settings action */
+    MainToolbarAction*      _mainToolbarAction;     /** Pointer to main toolbar action */
     NavigationAction*       _navigationAction;      /** Pointer to navigation action */
 };
 

@@ -155,7 +155,7 @@ LayersAction::Widget::Widget(QWidget* parent, LayersAction* layersAction) :
         layersAction->getCurrentLayerAction().set(groupActions);
 
         // Enable the pixel selection tool when there is a selection and disable otherwise
-        imageViewerPlugin.getImageViewerWidget()->getPixelSelectionTool().setEnabled(hasSelection);
+        imageViewerPlugin.getImageViewerWidget().getPixelSelectionTool().setEnabled(hasSelection);
     };
 
     // Update various actions when the model is somehow changed (rows added/removed etc.)
@@ -174,7 +174,7 @@ LayersAction::Widget::Widget(QWidget* parent, LayersAction* layersAction) :
         _moveLayerToBottomAction.setEnabled(hasSelection && selectedRowIndex < treeView->model()->rowCount() - 1);
 
         // Render
-        imageViewerPlugin.getImageViewerWidget()->update();
+        imageViewerPlugin.getImageViewerWidget().update();
     };
 
     connect(&imageViewerPlugin.getSelectionModel(), &QItemSelectionModel::selectionChanged, this, modelSelectionChanged);
@@ -228,7 +228,7 @@ LayersAction::Widget::Widget(QWidget* parent, LayersAction* layersAction) :
             imageViewerPlugin.getModel().moveLayer(selectedRows.first(), -1000);
 
         // Render
-        imageViewerPlugin.getImageViewerWidget()->update();
+        imageViewerPlugin.getImageViewerWidget().update();
     });
 
     // Move the layer up when the corresponding action is triggered
@@ -239,7 +239,7 @@ LayersAction::Widget::Widget(QWidget* parent, LayersAction* layersAction) :
             imageViewerPlugin.getModel().moveLayer(selectedRows.first(), -1);
 
         // Render
-        imageViewerPlugin.getImageViewerWidget()->update();
+        imageViewerPlugin.getImageViewerWidget().update();
     });
 
     // Move the layer down when the corresponding action is triggered
@@ -250,7 +250,7 @@ LayersAction::Widget::Widget(QWidget* parent, LayersAction* layersAction) :
             imageViewerPlugin.getModel().moveLayer(selectedRows.first(), 1);
 
         // Render
-        imageViewerPlugin.getImageViewerWidget()->update();
+        imageViewerPlugin.getImageViewerWidget().update();
     });
 
     // Move the layer to the bottom when the corresponding action is triggered
