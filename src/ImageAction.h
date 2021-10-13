@@ -8,7 +8,7 @@
 #include "actions/ToggleAction.h"
 #include "actions/ColorAction.h"
 
-#include "ChannelAction.h"
+#include "ScalarChannelAction.h"
 
 class Layer;
 
@@ -36,18 +36,18 @@ public:
     /** Get reference to parent layer */
     Layer& getLayer() { return _layer; }
 
-    /** Get the number of active channels */
-    const std::uint32_t getNumberOfActiveChannels() const;
+    /** Get the number of active scalar channels */
+    const std::uint32_t getNumberOfActiveScalarChannels() const;
 
 public: // Action getters
 
     DecimalAction& getOpacityAction() { return _opacityAction; }
     IntegralAction& getSubsampleFactorAction() { return _subsampleFactorAction; }
     OptionAction& getColorSpaceAction() { return _colorSpaceAction; }
-    ChannelAction& getChannel1Action() { return _channel1Action; }
-    ChannelAction& getChannel2Action() { return _channel2Action; }
-    ChannelAction& getChannel3Action() { return _channel3Action; }
-    ChannelAction& getChannelMaskAction() { return _channelMaskAction; }
+    ScalarChannelAction& getScalarChannel1Action() { return _scalarChannel1Action; }
+    ScalarChannelAction& getScalarChannel2Action() { return _scalarChannel2Action; }
+    ScalarChannelAction& getScalarChannel3Action() { return _scalarChannel3Action; }
+    ScalarChannelAction& getScalarChannelMaskAction() { return _scalarChannelMaskAction; }
     ColorMapAction& getColorMapAction() { return _colorMapAction; }
     OptionAction& getInterpolationTypeAction() { return _interpolationTypeAction; }
     ToggleAction& getUseConstantColorAction() { return _useConstantColorAction; }
@@ -59,22 +59,22 @@ signals:
     void changed();
 
     /**
-     * Signals the channel changed
-     * @param channelAction Reference to channel action
+     * Signals the scalar channel changed
+     * @param scalarChannelAction Reference to scalar channel action that changed
      */
-    void channelChanged(ChannelAction& channelAction);
+    void channelChanged(ScalarChannelAction& scalarChannelAction);
 
 protected:
-    Layer&              _layer;                         /** Reference to layer */
-    DecimalAction       _opacityAction;                 /** Opacity action */
-    IntegralAction      _subsampleFactorAction;         /** Subsample factor action */
-    OptionAction        _colorSpaceAction;              /** Color space action */
-    ChannelAction       _channel1Action;                /** Channel 1 action */
-    ChannelAction       _channel2Action;                /** Channel 2 action */
-    ChannelAction       _channel3Action;                /** Channel 3 action */
-    ChannelAction       _channelMaskAction;             /** Mask channel action */
-    ColorMapAction      _colorMapAction;                /** Color map action */
-    OptionAction        _interpolationTypeAction;       /** Interpolation type action */
-    ToggleAction        _useConstantColorAction;        /** Constant color action */
-    ColorAction         _constantColorAction;           /** Color action */
+    Layer&                  _layer;                         /** Reference to layer */
+    DecimalAction           _opacityAction;                 /** Opacity action */
+    IntegralAction          _subsampleFactorAction;         /** Subsample factor action */
+    OptionAction            _colorSpaceAction;              /** Color space action */
+    ScalarChannelAction     _scalarChannel1Action;          /** Scalar channel 1 action */
+    ScalarChannelAction     _scalarChannel2Action;          /** Scalar channel 2 action */
+    ScalarChannelAction     _scalarChannel3Action;          /** Scalar channel 3 action */
+    ScalarChannelAction     _scalarChannelMaskAction;       /** Mask channel action */
+    ColorMapAction          _colorMapAction;                /** Color map action */
+    OptionAction            _interpolationTypeAction;       /** Interpolation type action */
+    ToggleAction            _useConstantColorAction;        /** Constant color action */
+    ColorAction             _constantColorAction;           /** Color action */
 };

@@ -15,20 +15,20 @@ using namespace hdps::util;
 class ImageAction;
 
 /**
- * Channel action class
+ * Scalar channel action class
  *
  * Layer channel class
  *
  * @author Thomas Kroes
  */
-class ChannelAction : public WidgetAction
+class ScalarChannelAction : public WidgetAction
 {
     Q_OBJECT
 
 public:
 
-    /** Channel index enumerations */
-    enum ChannelIndex {
+    /** Channel identifier enumerations */
+    enum Identifier {
         Channel1,       /** Channel 1 */
         Channel2,       /** Channel 2 */
         Channel3,       /** Channel 3 */
@@ -38,7 +38,7 @@ public:
     };
 
     /** Maps channel index enum to name */
-    static const QMap<ChannelIndex, QString> channelIndexes;
+    static const QMap<Identifier, QString> channelIndexes;
 
     /** Describes the widget flags */
     enum WidgetFlag {
@@ -70,12 +70,12 @@ public:
      * Constructor
      * @param imageAction Reference to layer image action
      * @param index Channel index
-     * @param name Name of the channel
+     * @param name Name of the scalar channel
      */
-    ChannelAction(ImageAction& imageAction, const ChannelIndex& index, const QString& name);
+    ScalarChannelAction(ImageAction& imageAction, const Identifier& index, const QString& name);
 
-    /** Get the channel index */
-    const ChannelIndex getIndex() const;
+    /** Get the channel identifier */
+    const Identifier getIdentifier() const;
 
     /** Get image size */
     QSize getImageSize();
@@ -108,7 +108,7 @@ protected:
 signals:
     
     /** Signals the channel changed */
-    void changed(ChannelAction& channelAction);
+    void changed(ScalarChannelAction& channelAction);
 
 public: /** Action getters */
 
@@ -118,7 +118,7 @@ public: /** Action getters */
 
 protected:
     ImageAction&            _imageAction;           /** Reference to image action */
-    const ChannelIndex      _index;                 /** Channel index */
+    const Identifier        _identifier;            /** Channel index */
     ToggleAction            _enabledAction;         /** Enabled action */
     OptionAction            _dimensionAction;       /** Selected dimension action */
     WindowLevelAction       _windowLevelAction;     /** Window/level action */

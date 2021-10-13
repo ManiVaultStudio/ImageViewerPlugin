@@ -58,16 +58,16 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
     };
 
     // Update the color map scalar data in the image prop
-    const auto updateChannelScalarData = [this](ChannelAction& channelAction) {
+    const auto updateChannelScalarData = [this](ScalarChannelAction& channelAction) {
 
-        switch (channelAction.getIndex()) {
-            case ChannelAction::Channel1:
-            case ChannelAction::Channel2:
-            case ChannelAction::Channel3:
-            case ChannelAction::Mask:
+        switch (channelAction.getIdentifier()) {
+            case ScalarChannelAction::Channel1:
+            case ScalarChannelAction::Channel2:
+            case ScalarChannelAction::Channel3:
+            case ScalarChannelAction::Mask:
             {
                 // Assign the scalar data to the prop
-                this->getPropByName<ImageProp>("ImageProp")->setChannelScalarData(channelAction.getIndex(), channelAction.getScalarData(), channelAction.getDisplayRange());
+                this->getPropByName<ImageProp>("ImageProp")->setChannelScalarData(channelAction.getIdentifier(), channelAction.getScalarData(), channelAction.getDisplayRange());
 
                 break;
             }
@@ -115,7 +115,7 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
     connect(&_generalAction.getYPositionAction(), &DecimalAction::valueChanged, this, updateModelMatrixAndReRender);
 
     updateColorMap();
-    updateChannelScalarData(_imageAction.getChannel1Action());
+    updateChannelScalarData(_imageAction.getScalarChannel1Action());
     updateInterpolationType();
     updateModelMatrixAndReRender();
 
@@ -568,7 +568,7 @@ void Layer::computeSelectionIndices()
             const auto localPixelIndex      = localPixelCoordinate.y() * targetImageWidth + localPixelCoordinate.x();
 
             // And add the target pixel index to the list of selected pixels
-            if (localPixelIndex < _images->getNumberOfPixels())
+            if (static_cast<std::uint32_t>(localPixelIndex) < _images->getNumberOfPixels())
                 _selectedIndices.push_back(localPixelIndex);
 
             // Assign selected pixel

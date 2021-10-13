@@ -42,7 +42,7 @@ public:
 protected:
 
     /**
-     * Get widget representation of the channel action
+     * Get widget representation of the navigation action
      * @param parent Pointer to parent widget
      * @param widgetFlags Widget flags for the configuration of the widget (type)
      */

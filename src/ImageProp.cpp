@@ -135,7 +135,7 @@ void ImageProp::render(const QMatrix4x4& modelViewProjectionMatrix)
         // Configure shader program
         shaderProgram->setUniformValue("colorMapTexture", 0);
         shaderProgram->setUniformValue("channelTextures", 1);
-        shaderProgram->setUniformValue("noChannels", imageAction.getNumberOfActiveChannels());
+        shaderProgram->setUniformValue("noChannels", imageAction.getNumberOfActiveScalarChannels());
         shaderProgram->setUniformValue("useConstantColor", imageAction.getUseConstantColorAction().isChecked());
         shaderProgram->setUniformValue("constantColor", imageAction.getConstantColorAction().getColor());
         shaderProgram->setUniformValue("colorSpace", imageAction.getColorSpaceAction().getCurrentIndex());

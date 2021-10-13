@@ -1,4 +1,4 @@
-#include "ChannelAction.h"
+#include "ScalarChannelAction.h"
 #include "ImageAction.h"
 #include "Layer.h"
 
@@ -9,17 +9,17 @@
 
 using namespace hdps;
 
-const QMap<ChannelAction::ChannelIndex, QString> ChannelAction::channelIndexes = {
-    { ChannelAction::Channel1, "Channel 1" },
-    { ChannelAction::Channel2, "Channel 2" },
-    { ChannelAction::Channel3, "Channel 3" },
-    { ChannelAction::Mask, "Mask channel" }
+const QMap<ScalarChannelAction::Identifier, QString> ScalarChannelAction::channelIndexes = {
+    { ScalarChannelAction::Channel1, "Channel 1" },
+    { ScalarChannelAction::Channel2, "Channel 2" },
+    { ScalarChannelAction::Channel3, "Channel 3" },
+    { ScalarChannelAction::Mask, "Mask channel" }
 };
 
-ChannelAction::ChannelAction(ImageAction& imageAction, const ChannelIndex& index, const QString& name) :
+ScalarChannelAction::ScalarChannelAction(ImageAction& imageAction, const Identifier& index, const QString& name) :
     WidgetAction(reinterpret_cast<QObject*>(&imageAction)),
     _imageAction(imageAction),
-    _index(index),
+    _identifier(index),
     _enabledAction(this, "Enabled"),
     _dimensionAction(this, "Dimension"),
     _windowLevelAction(this),
@@ -28,9 +28,9 @@ ChannelAction::ChannelAction(ImageAction& imageAction, const ChannelIndex& index
 {
     setText(name);
     setMayReset(true);
-    setDefaultWidgetFlags(ChannelAction::ComboBox | ChannelAction::WindowLevelWidget);
+    setDefaultWidgetFlags(ScalarChannelAction::ComboBox | ScalarChannelAction::WindowLevelWidget);
 
-    switch (_index)
+    switch (_identifier)
     {
         case Channel1:
         case Mask:
@@ -64,7 +64,7 @@ ChannelAction::ChannelAction(ImageAction& imageAction, const ChannelIndex& index
         const auto numberOfPixels = getImages()->getNumberOfPixels();
 
         // Allocate space for the scalar data
-        switch (_index)
+        switch (_identifier)
         {
             case Channel1:
             case Channel2:
@@ -100,12 +100,12 @@ ChannelAction::ChannelAction(ImageAction& imageAction, const ChannelIndex& index
     computeScalarData();
 }
 
-const ChannelAction::ChannelIndex ChannelAction::getIndex() const
+const ScalarChannelAction::Identifier ScalarChannelAction::getIdentifier() const
 {
-    return _index;
+    return _identifier;
 }
 
-QSize ChannelAction::getImageSize()
+QSize ScalarChannelAction::getImageSize()
 {
     const auto imageSize        = getImages()->getImageSize();
     const auto subsampleFactor  = _imageAction.getSubsampleFactorAction().getValue();
@@ -113,17 +113,17 @@ QSize ChannelAction::getImageSize()
     return QSize(static_cast<int>(floorf(imageSize.width() / subsampleFactor)), static_cast<int>(floorf(imageSize.width() / subsampleFactor)));
 }
 
-const QVector<float>& ChannelAction::getScalarData() const
+const QVector<float>& ScalarChannelAction::getScalarData() const
 {
     return _scalarData;
 }
 
-const QPair<float, float>& ChannelAction::getScalarDataRange() const
+const QPair<float, float>& ScalarChannelAction::getScalarDataRange() const
 {
     return _scalarDataRange;
 }
 
-QPair<float, float> ChannelAction::getDisplayRange()
+QPair<float, float> ScalarChannelAction::getDisplayRange()
 {
     QPair<float, float> displayRange;
 
@@ -139,17 +139,17 @@ QPair<float, float> ChannelAction::getDisplayRange()
     return displayRange;
 }
 
-bool ChannelAction::isResettable() const
+bool ScalarChannelAction::isResettable() const
 {
     return _dimensionAction.isResettable();
 }
 
-void ChannelAction::reset()
+void ScalarChannelAction::reset()
 {
     _dimensionAction.reset();
 }
 
-void ChannelAction::computeScalarData()
+void ScalarChannelAction::computeScalarData()
 {
     try
     {
@@ -162,7 +162,7 @@ void ChannelAction::computeScalarData()
         if (!getImages().isValid())
             throw std::runtime_error("Images dataset is not valid");
 
-        switch (_index)
+        switch (_identifier)
         {
             case Channel1:
             case Channel2:
@@ -198,25 +198,25 @@ void ChannelAction::computeScalarData()
     }
 }
 
-void ChannelAction::computeMaskChannel()
+void ScalarChannelAction::computeMaskChannel()
 {
-    qDebug() << "Compute mask for channel" << _index << QString("(%1)").arg(_imageAction.getLayer().getGeneralAction().getNameAction().getString());
+    qDebug() << "Compute mask for channel" << _identifier << QString("(%1)").arg(_imageAction.getLayer().getGeneralAction().getNameAction().getString());
 
     // Future implementations can use external masks, for now just leave opaque
     std::fill(_scalarData.begin(), _scalarData.end(), 1.0f);
 }
 
-hdps::util::DatasetRef<Images>& ChannelAction::getImages()
+hdps::util::DatasetRef<Images>& ScalarChannelAction::getImages()
 {
     return _imageAction.getLayer().getImages();
 }
 
-hdps::util::DatasetRef<Points>& ChannelAction::getPoints()
+hdps::util::DatasetRef<Points>& ScalarChannelAction::getPoints()
 {
     return _imageAction.getLayer().getPoints();
 }
 
-QWidget* ChannelAction::getWidget(QWidget* parent, const std::int32_t& widgetFlags)
+QWidget* ScalarChannelAction::getWidget(QWidget* parent, const std::int32_t& widgetFlags)
 {
     auto widget = new WidgetActionWidget(parent, this);
     auto layout = new QHBoxLayout();
@@ -224,13 +224,13 @@ QWidget* ChannelAction::getWidget(QWidget* parent, const std::int32_t& widgetFla
     layout->setMargin(0);
     layout->setSpacing(3);
 
-    if (widgetFlags & ChannelAction::ComboBox)
+    if (widgetFlags & ScalarChannelAction::ComboBox)
         layout->addWidget(_dimensionAction.createWidget(widget));
 
     if (widgetFlags & WidgetFlag::WindowLevelWidget)
         layout->addWidget(_windowLevelAction.createCollapsedWidget(widget));
 
-    if (widgetFlags & ChannelAction::ResetPushButton)
+    if (widgetFlags & ScalarChannelAction::ResetPushButton)
         layout->addWidget(createResetButton(widget));
 
     widget->setLayout(layout);

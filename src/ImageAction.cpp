@@ -14,10 +14,10 @@ ImageAction::ImageAction(Layer& layer) :
     _opacityAction(this, "Opacity", 0.0f, 100.0f, 100.0f, 100.0f, 1),
     _subsampleFactorAction(this, "Subsample", 1, 8, 1, 1),
     _colorSpaceAction(this, "Color space", colorSpaces.values(), "Mono", "Mono"),
-    _channel1Action(*this, ChannelAction::Channel1, ChannelAction::channelIndexes.value(ChannelAction::Channel1)),
-    _channel2Action(*this, ChannelAction::Channel2, ChannelAction::channelIndexes.value(ChannelAction::Channel2)),
-    _channel3Action(*this, ChannelAction::Channel3, ChannelAction::channelIndexes.value(ChannelAction::Channel3)),
-    _channelMaskAction(*this, ChannelAction::Mask, ChannelAction::channelIndexes.value(ChannelAction::Mask)),
+    _scalarChannel1Action(*this, ScalarChannelAction::Channel1, ScalarChannelAction::channelIndexes.value(ScalarChannelAction::Channel1)),
+    _scalarChannel2Action(*this, ScalarChannelAction::Channel2, ScalarChannelAction::channelIndexes.value(ScalarChannelAction::Channel2)),
+    _scalarChannel3Action(*this, ScalarChannelAction::Channel3, ScalarChannelAction::channelIndexes.value(ScalarChannelAction::Channel3)),
+    _scalarChannelMaskAction(*this, ScalarChannelAction::Mask, ScalarChannelAction::channelIndexes.value(ScalarChannelAction::Mask)),
     _colorMapAction(this, "Color map", ColorMap::Type::OneDimensional, "Black to white", "Black to white"),
     _interpolationTypeAction(this, "Interpolate", interpolationTypes.values(), "Bilinear", "Bilinear"),
     _useConstantColorAction(this, "Use constant color", false, false),
@@ -27,14 +27,14 @@ ImageAction::ImageAction(Layer& layer) :
     setEventCore(Application::core());
 
     _subsampleFactorAction.setVisible(false);
-    _channelMaskAction.setVisible(false);
+    _scalarChannelMaskAction.setVisible(false);
 
     _opacityAction.setToolTip("Image layer opacity");
     _subsampleFactorAction.setToolTip("Subsampling factor");
-    _channel1Action.setToolTip("Channel 1");
-    _channel2Action.setToolTip("Channel 2");
-    _channel3Action.setToolTip("Channel 3");
-    _channelMaskAction.setToolTip("Mask channel");
+    _scalarChannel1Action.setToolTip("Scalar channel 1");
+    _scalarChannel2Action.setToolTip("Scalar channel 2");
+    _scalarChannel3Action.setToolTip("Scalar channel 3");
+    _scalarChannelMaskAction.setToolTip("Mask channel");
     _colorSpaceAction.setToolTip("The color space used to shade the image");
     _colorMapAction.setToolTip("Image color map");
     _interpolationTypeAction.setToolTip("The type of two-dimensional image interpolation used");
@@ -61,75 +61,75 @@ ImageAction::ImageAction(Layer& layer) :
         _colorSpaceAction.setCurrentIndex(0);
 
     // Set channel dimension names
-    _channel1Action.getDimensionAction().setOptions(dimensionNames);
-    _channel2Action.getDimensionAction().setOptions(dimensionNames);
-    _channel3Action.getDimensionAction().setOptions(dimensionNames);
+    _scalarChannel1Action.getDimensionAction().setOptions(dimensionNames);
+    _scalarChannel2Action.getDimensionAction().setOptions(dimensionNames);
+    _scalarChannel3Action.getDimensionAction().setOptions(dimensionNames);
 
-    _channel1Action.getDimensionAction().setCurrentIndex(0);
-    _channel1Action.getDimensionAction().setDefaultIndex(0);
+    _scalarChannel1Action.getDimensionAction().setCurrentIndex(0);
+    _scalarChannel1Action.getDimensionAction().setDefaultIndex(0);
 
     if (_layer.getNumberOfImages() >= 2) {
-        _channel2Action.getDimensionAction().setCurrentIndex(1);
-        _channel2Action.getDimensionAction().setDefaultIndex(1);
+        _scalarChannel2Action.getDimensionAction().setCurrentIndex(1);
+        _scalarChannel2Action.getDimensionAction().setDefaultIndex(1);
     }
 
     if (_layer.getNumberOfImages() >= 3) {
-        _channel3Action.getDimensionAction().setCurrentIndex(2);
-        _channel3Action.getDimensionAction().setDefaultIndex(2);
+        _scalarChannel3Action.getDimensionAction().setCurrentIndex(2);
+        _scalarChannel3Action.getDimensionAction().setDefaultIndex(2);
     }
 
-    const auto updateChannelActions = [this]() -> void {
+    const auto updateScalarChannelActions = [this]() -> void {
         switch (static_cast<ColorSpaceType>(_colorSpaceAction.getCurrentIndex()))
         {
             case ColorSpaceType::Mono:
-                _channel1Action.getEnabledAction().setChecked(true);
-                _channel2Action.getEnabledAction().setChecked(false);
-                _channel3Action.getEnabledAction().setChecked(false);
-                _channel1Action.setText("Channel 1");
-                _channel2Action.setText("Channel 2");
-                _channel3Action.setText("Channel 3");
+                _scalarChannel1Action.getEnabledAction().setChecked(true);
+                _scalarChannel2Action.getEnabledAction().setChecked(false);
+                _scalarChannel3Action.getEnabledAction().setChecked(false);
+                _scalarChannel1Action.setText("Channel 1");
+                _scalarChannel2Action.setText("Channel 2");
+                _scalarChannel3Action.setText("Channel 3");
                 _colorMapAction.setEnabled(true);
                 _colorMapAction.setColorMapType(ColorMap::Type::OneDimensional);
                 break;
 
             case ColorSpaceType::Duo:
-                _channel1Action.getEnabledAction().setChecked(true);
-                _channel2Action.getEnabledAction().setChecked(true);
-                _channel3Action.getEnabledAction().setChecked(false);
-                _channel1Action.setText("Channel 1");
-                _channel2Action.setText("Channel 2");
-                _channel3Action.setText("Channel 3");
+                _scalarChannel1Action.getEnabledAction().setChecked(true);
+                _scalarChannel2Action.getEnabledAction().setChecked(true);
+                _scalarChannel3Action.getEnabledAction().setChecked(false);
+                _scalarChannel1Action.setText("Channel 1");
+                _scalarChannel2Action.setText("Channel 2");
+                _scalarChannel3Action.setText("Channel 3");
                 _colorMapAction.setEnabled(true);
                 _colorMapAction.setColorMapType(ColorMap::Type::TwoDimensional);
                 break;
 
             case ColorSpaceType::RGB:
-                _channel1Action.getEnabledAction().setChecked(true);
-                _channel2Action.getEnabledAction().setChecked(true);
-                _channel3Action.getEnabledAction().setChecked(true);
-                _channel1Action.setText("Red");
-                _channel2Action.setText("Green");
-                _channel3Action.setText("Blue");
+                _scalarChannel1Action.getEnabledAction().setChecked(true);
+                _scalarChannel2Action.getEnabledAction().setChecked(true);
+                _scalarChannel3Action.getEnabledAction().setChecked(true);
+                _scalarChannel1Action.setText("Red");
+                _scalarChannel2Action.setText("Green");
+                _scalarChannel3Action.setText("Blue");
                 _colorMapAction.setEnabled(false);
                 break;
 
             case ColorSpaceType::HSL:
-                _channel1Action.getEnabledAction().setChecked(true);
-                _channel2Action.getEnabledAction().setChecked(true);
-                _channel3Action.getEnabledAction().setChecked(true);
-                _channel1Action.setText("Hue");
-                _channel2Action.setText("Saturation");
-                _channel3Action.setText("Lightness");
+                _scalarChannel1Action.getEnabledAction().setChecked(true);
+                _scalarChannel2Action.getEnabledAction().setChecked(true);
+                _scalarChannel3Action.getEnabledAction().setChecked(true);
+                _scalarChannel1Action.setText("Hue");
+                _scalarChannel2Action.setText("Saturation");
+                _scalarChannel3Action.setText("Lightness");
                 _colorMapAction.setEnabled(false);
                 break;
 
             case ColorSpaceType::LAB:
-                _channel1Action.getEnabledAction().setChecked(true);
-                _channel2Action.getEnabledAction().setChecked(true);
-                _channel3Action.getEnabledAction().setChecked(true);
-                _channel1Action.setText("L");
-                _channel2Action.setText("A");
-                _channel3Action.setText("B");
+                _scalarChannel1Action.getEnabledAction().setChecked(true);
+                _scalarChannel2Action.getEnabledAction().setChecked(true);
+                _scalarChannel3Action.getEnabledAction().setChecked(true);
+                _scalarChannel1Action.setText("L");
+                _scalarChannel2Action.setText("A");
+                _scalarChannel3Action.setText("B");
                 _colorMapAction.setEnabled(false);
                 break;
 
@@ -138,7 +138,7 @@ ImageAction::ImageAction(Layer& layer) :
         }
     };
 
-    connect(&_colorSpaceAction, &OptionAction::currentIndexChanged, this, updateChannelActions);
+    connect(&_colorSpaceAction, &OptionAction::currentIndexChanged, this, updateScalarChannelActions);
 
     const auto useConstantColorToggled = [this]() {
         _colorMapAction.setEnabled(!_useConstantColorAction.isChecked());
@@ -148,16 +148,16 @@ ImageAction::ImageAction(Layer& layer) :
 
     connect(&_useConstantColorAction, &ToggleAction::toggled, this, useConstantColorToggled);
 
-    connect(&_channel1Action, &ChannelAction::changed, this, [this]() {
-        emit channelChanged(_channel1Action);
+    connect(&_scalarChannel1Action, &ScalarChannelAction::changed, this, [this]() {
+        emit channelChanged(_scalarChannel1Action);
     });
     
-    connect(&_channel2Action, &ChannelAction::changed, this, [this]() {
-        emit channelChanged(_channel2Action);
+    connect(&_scalarChannel2Action, &ScalarChannelAction::changed, this, [this]() {
+        emit channelChanged(_scalarChannel2Action);
     });
 
-    connect(&_channel3Action, &ChannelAction::changed, this, [this]() {
-        emit channelChanged(_channel3Action);
+    connect(&_scalarChannel3Action, &ScalarChannelAction::changed, this, [this]() {
+        emit channelChanged(_scalarChannel3Action);
     });
 
     const auto render = [this]() {
@@ -169,7 +169,7 @@ ImageAction::ImageAction(Layer& layer) :
     connect(&_interpolationTypeAction, &OptionAction::currentIndexChanged, this, render);
     connect(&_constantColorAction, &ColorAction::colorChanged, this, render);
 
-    updateChannelActions();
+    updateScalarChannelActions();
     useConstantColorToggled();
 
     // Register for events for images datasets
@@ -203,9 +203,9 @@ ImageAction::ImageAction(Layer& layer) :
         {
             case EventType::DataChanged:
             {
-                _channel1Action.computeScalarData();
-                _channel2Action.computeScalarData();
-                _channel3Action.computeScalarData();
+                _scalarChannel1Action.computeScalarData();
+                _scalarChannel2Action.computeScalarData();
+                _scalarChannel3Action.computeScalarData();
 
                 break;
             }
@@ -222,7 +222,7 @@ ImageAction::ImageAction(Layer& layer) :
     });
 }
 
-const std::uint32_t ImageAction::getNumberOfActiveChannels() const
+const std::uint32_t ImageAction::getNumberOfActiveScalarChannels() const
 {
     switch (static_cast<ColorSpaceType>(_colorSpaceAction.getCurrentIndex()))
     {
