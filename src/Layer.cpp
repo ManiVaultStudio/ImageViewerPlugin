@@ -69,7 +69,7 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
             case ScalarChannelAction::Channel3:
             case ScalarChannelAction::Mask:
             {
-                // Assign the scalar data to the prop
+                // Assign color data to the prop in case of points dataset
                 this->getPropByName<ImageProp>("ImageProp")->setChannelScalarData(channelAction.getIdentifier(), channelAction.getScalarData(), channelAction.getDisplayRange());
 
                 break;
@@ -329,7 +329,7 @@ const QStringList Layer::getDimensionNames() const
     }
 
     if (_sourceDataset->getDataType() == ClusterType) {
-        dimensionNames << "Clusters";
+        dimensionNames << "Red" << "Green" << "Blue";
     }
 
     return dimensionNames;

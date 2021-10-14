@@ -4,6 +4,9 @@
 
 #include "util//Exception.h"
 
+#include "PointData.h"
+#include "ClusterData.h"
+
 #include <QHBoxLayout>
 #include <QCheckBox>
 
@@ -58,26 +61,9 @@ ScalarChannelAction::ScalarChannelAction(ImageAction& imageAction, const Identif
         computeScalarData();
     });
 
+    // Allocate space for the data
     const auto resizeScalars = [this]() {
-
-        // Get number of pixels
-        const auto numberOfPixels = getImages()->getNumberOfPixels();
-
-        // Allocate space for the scalar data
-        switch (_identifier)
-        {
-            case Channel1:
-            case Channel2:
-            case Channel3:
-            case Mask:
-            {
-                _scalarData.resize(numberOfPixels);
-                break;
-            }
-
-            default:
-                break;
-        }
+        _scalarData.resize(getImages()->getNumberOfPixels());
     };
 
     const auto updateEnabled = [this]() -> void {
@@ -168,7 +154,7 @@ void ScalarChannelAction::computeScalarData()
                 if (_dimensionAction.getCurrentIndex() < 0)
                     break;
 
-                getImages()->getScalarData(_dimensionAction.getCurrentIndex(), _scalarData, _scalarDataRange, _imageAction.getSubsampleFactorAction().getValue());
+                getImages()->getScalarData(_dimensionAction.getCurrentIndex(), _scalarData, _scalarDataRange);
 
                 break;
             }

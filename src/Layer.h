@@ -175,6 +175,6 @@ protected:
     SelectionAction                 _selectionAction;           /** Selection action */
     std::vector<std::uint8_t>       _selectionData;             /** Selection data for selection prop */
     QRect                           _selectionBoundaries;       /** Selection boundaries in pixel coordinates */
-
+    QVector<float>                  _colorData;                 /** Color data for the specified dimension */
     friend class ImageViewerWidget;
 };

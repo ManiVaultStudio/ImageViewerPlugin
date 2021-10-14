@@ -1,7 +1,7 @@
 #include "ImageViewerPlugin.h"
 #include "SelectionAction.h"
 #include "Layer.h"
-#include "PointsToImagesDialog.h"
+#include "ConvertToImagesDatasetDialog.h"
 
 #include "ImageData/Images.h"
 #include "ImageData/ImageData.h"
@@ -115,7 +115,7 @@ void ImageViewerPlugin::init()
                 try
                 {
                     // Create conversion dialog
-                    PointsToImagesDialog pointsToImagesDialog(*this, datasetName);
+                    ConvertToImagesDatasetDialog pointsToImagesDialog(*this, datasetName);
 
                     // Show the dialog
                     pointsToImagesDialog.exec();
@@ -135,7 +135,7 @@ void ImageViewerPlugin::init()
                 try
                 {
                     // Create conversion dialog
-                    PointsToImagesDialog pointsToImagesDialog(*this, datasetName);
+                    ConvertToImagesDatasetDialog pointsToImagesDialog(*this, datasetName);
 
                     // Show the dialog
                     pointsToImagesDialog.exec();

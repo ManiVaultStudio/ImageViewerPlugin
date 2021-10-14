@@ -1,4 +1,4 @@
-#include "PointsToImagesDialog.h"
+#include "ConvertToImagesDatasetDialog.h"
 #include "ImageViewerPlugin.h"
 #include "Application.h"
 #include "DataHierarchyItem.h"
@@ -14,7 +14,7 @@
 
 using namespace hdps;
 
-PointsToImagesDialog::PointsToImagesDialog(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
+ConvertToImagesDatasetDialog::ConvertToImagesDatasetDialog(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
     QDialog(&imageViewerPlugin),
     _imageViewerPlugin(imageViewerPlugin),
     _sourceDataset(datasetName),
@@ -22,7 +22,7 @@ PointsToImagesDialog::PointsToImagesDialog(ImageViewerPlugin& imageViewerPlugin,
     _datasetNameAction(this, "Dataset name"),
     _imageWidthAction(this, "Image width", 1, 10000, 100, 100),
     _imageHeightAction(this, "Image height", 1, 10000, 100, 100),
-    _numberOfImagesAction(this, "Number of images", 1, 10000, 1, 1),
+    _numberOfImagesAction(this, "Number of images", 1, 10000, 3, 3),
     _numberOfPixelsAction(this, "Number of pixels"),
     _groupAction(this)
 {
@@ -38,29 +38,13 @@ PointsToImagesDialog::PointsToImagesDialog(ImageViewerPlugin& imageViewerPlugin,
     _imageWidthAction.setDefaultWidgetFlags(IntegralAction::SpinBox);
     _imageHeightAction.setDefaultWidgetFlags(IntegralAction::SpinBox);
 
-    // Try to guess the image dimensions if the points dataset is derived
-    if (_sourceDataset->isDerivedData()) {
+    // Guess the image dimensions
+    const auto imageSize = findImageSize(_sourceDataset->getHierarchyItem().getParent());
 
-        // Get the source points dataset
-        auto pointsParentHierarchyItem = _sourceDataset->getHierarchyItem().getParent();
-
-        // Iterate over each child of the source dataset
-        for (auto childHierarchyItem : pointsParentHierarchyItem->getChildren()) {
-
-            // Get image dimensions in case of an images dataset
-            if (childHierarchyItem->getDataType() == ImageType) {
-
-                // Get reference to images dataset
-                _imagesDataset.setDatasetName(childHierarchyItem->getDatasetName());
-
-                // Get image size
-                const auto imageSize = _imagesDataset->getImageSize();
-
-                // Set image resolution
-                _imageWidthAction.initialize(0, 10000, imageSize.width(), imageSize.width());
-                _imageHeightAction.initialize(0, 10000, imageSize.height(), imageSize.height());
-            }
-        }
+    // Set image resolution if valid
+    if (imageSize.isValid()) {
+        _imageWidthAction.initialize(0, 10000, imageSize.width(), imageSize.width());
+        _imageHeightAction.initialize(0, 10000, imageSize.height(), imageSize.height());
     }
 
     const auto defaultDatasetName = QString("%1_img").arg(datasetName);
@@ -145,7 +129,7 @@ PointsToImagesDialog::PointsToImagesDialog(ImageViewerPlugin& imageViewerPlugin,
     });
 
     // Handle when rejected
-    connect(dialogButtonBox, &QDialogButtonBox::rejected, this, &PointsToImagesDialog::reject);
+    connect(dialogButtonBox, &QDialogButtonBox::rejected, this, &ConvertToImagesDatasetDialog::reject);
 
     // Update the number of pixels and note action
     const auto updateActions = [this, dialogButtonBox]() {
@@ -168,7 +152,26 @@ PointsToImagesDialog::PointsToImagesDialog(ImageViewerPlugin& imageViewerPlugin,
     updateActions();
 }
 
-QSize PointsToImagesDialog::getImageSize() const
+QSize ConvertToImagesDatasetDialog::getImageSize() const
 {
     return QSize(_imageWidthAction.getValue(), _imageHeightAction.getValue());
+}
+
+QSize ConvertToImagesDatasetDialog::findImageSize(DataHierarchyItem* dataHierarchyItem)
+{
+    // Iterate over each child of the source dataset
+    for (auto childHierarchyItem : dataHierarchyItem->getChildren()) {
+
+        // Get image dimensions in case of an images dataset
+        if (childHierarchyItem->getDataType() == ImageType)
+            return childHierarchyItem->getDataset<Images>().getImageSize();
+    }
+
+    // Get data hierarchy parent
+    auto dataHierarchyParent = dataHierarchyItem->getParent();
+
+    if (dataHierarchyParent == nullptr)
+        return QSize();
+
+    return findImageSize(dataHierarchyParent);
 }

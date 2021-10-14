@@ -6,6 +6,8 @@
 
 #include "util/DatasetRef.h"
 
+#include "DataHierarchyItem.h"
+
 #include "ImageData/Images.h"
 #include "PointData.h"
 
@@ -17,11 +19,11 @@ using namespace hdps::util;
 class ImageViewerPlugin;
 
 /**
- * Points to images dialog class
+ * Convert to images dataset dialog class
  *
  * @author Thomas Kroes
  */
-class PointsToImagesDialog : public QDialog
+class ConvertToImagesDatasetDialog : public QDialog
 {
 public:
 
@@ -31,10 +33,10 @@ public:
      * @param datasetName Name of the points dataset
      * @param parent Pointer to parent widget
      */
-    PointsToImagesDialog(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName);
+    ConvertToImagesDatasetDialog(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName);
 
     /** Destructor */
-    ~PointsToImagesDialog() = default;
+    ~ConvertToImagesDatasetDialog() = default;
 
     /** Get preferred size */
     QSize sizeHint() const override {
@@ -48,6 +50,12 @@ public:
 
     /** Get image size */
     QSize getImageSize() const;
+
+    /**
+     * Find the image size by walking up the tree and looking for images datasets
+     * @param dataHierarchyItem Pointer to data hierarchy item
+     */
+    QSize findImageSize(hdps::DataHierarchyItem* dataHierarchyItem);
 
 public: // Action getters
 
