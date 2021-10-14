@@ -8,6 +8,9 @@
 
 #include "util/Exception.h"
 
+#include "PointData.h"
+#include "ClusterData.h"
+
 #include <set>
 
 using namespace hdps;
@@ -17,8 +20,8 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
     Renderable(imageViewerPlugin.getImageViewerWidget().getRenderer()),
     _imageViewerPlugin(imageViewerPlugin),
     _active(false),
-    _images(datasetName),
-    _points(_images->getHierarchyItem().getParent()->getDatasetName()),
+    _imagesDataset(datasetName),
+    _sourceDataset(_imagesDataset->getHierarchyItem().getParent()->getDatasetName()),
     _selectedIndices(),
     _generalAction(*this),
     _imageAction(*this),
@@ -26,23 +29,23 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
     _selectionData(),
     _selectionBoundaries()
 {
-    if (!_images.isValid())
+    if (!_sourceDataset.isValid())
+        throw std::runtime_error("The layer source dataset is not valid after initialization");
+
+    if (!_imagesDataset.isValid())
         throw std::runtime_error("The layer images dataset is not valid after initialization");
 
-    if (!_points.isValid())
-        throw std::runtime_error("The layer points dataset is not valid after initialization");
-
     // Resize selection data with number of pixels
-    _selectionData.resize(_images->getNumberOfPixels());
+    _selectionData.resize(_imagesDataset->getNumberOfPixels());
 
     // Create layer render props
     _props << new ImageProp(*this, "ImageProp");
     _props << new SelectionProp(*this, "SelectionProp");
     _props << new SelectionToolProp(*this, "SelectionToolProp");
 
-    this->getPropByName<ImageProp>("ImageProp")->setGeometry(_images->getSourceRectangle(), _images->getTargetRectangle());
-    this->getPropByName<SelectionProp>("SelectionProp")->setGeometry(_images->getSourceRectangle(), _images->getTargetRectangle());
-    this->getPropByName<SelectionToolProp>("SelectionToolProp")->setGeometry(_images->getSourceRectangle(), _images->getTargetRectangle());
+    this->getPropByName<ImageProp>("ImageProp")->setGeometry(_imagesDataset->getSourceRectangle(), _imagesDataset->getTargetRectangle());
+    this->getPropByName<SelectionProp>("SelectionProp")->setGeometry(_imagesDataset->getSourceRectangle(), _imagesDataset->getTargetRectangle());
+    this->getPropByName<SelectionToolProp>("SelectionToolProp")->setGeometry(_imagesDataset->getSourceRectangle(), _imagesDataset->getTargetRectangle());
 
     // Do an initial computation of the selected indices
     computeSelectionIndices();
@@ -283,39 +286,50 @@ void Layer::updateModelMatrix()
 
 const QString Layer::getImagesDatasetName() const
 {
-    return _images.getDatasetName();
+    return _imagesDataset.getDatasetName();
 }
 
 const std::uint32_t Layer::getNumberOfImages() const
 {
-    if (!_images.isValid())
+    if (!_imagesDataset.isValid())
         return 0;
 
-    return _images->getNumberOfImages();
+    return _imagesDataset->getNumberOfImages();
 }
 
 const QSize Layer::getImageSize() const
 {
-    if (!_images.isValid())
+    if (!_imagesDataset.isValid())
         return QSize();
 
-    return _images->getImageSize();
+    return _imagesDataset->getImageSize();
 }
 
 const QStringList Layer::getDimensionNames() const
 {
-    if (!_images.isValid() || !_points.isValid())
+    if (!_imagesDataset.isValid() || !_sourceDataset.isValid())
         return QStringList();
 
     QStringList dimensionNames;
 
-    if (_points->getDimensionNames().size() == _points->getNumDimensions()) {
-        for (const auto& dimensionName : _points->getDimensionNames())
-            dimensionNames << dimensionName;
+    if (_sourceDataset->getDataType() == PointType) {
+
+        // Get reference to points dataset
+        auto points = getSourceDataset<Points>();
+
+        // Populate dimension names
+        if (points->getDimensionNames().size() == points->getNumDimensions()) {
+            for (const auto& dimensionName : points->getDimensionNames())
+                dimensionNames << dimensionName;
+        }
+        else {
+            for (std::uint32_t dimensionIndex = 0; dimensionIndex < points->getNumDimensions(); dimensionIndex++)
+                dimensionNames << QString("Dim %1").arg(QString::number(dimensionIndex));
+        }
     }
-    else {
-        for (std::uint32_t dimensionIndex = 0; dimensionIndex < _points->getNumDimensions(); dimensionIndex++)
-            dimensionNames << QString("Dim %1").arg(QString::number(dimensionIndex));
+
+    if (_sourceDataset->getDataType() == ClusterType) {
+        dimensionNames << "Clusters";
     }
 
     return dimensionNames;
@@ -323,17 +337,20 @@ const QStringList Layer::getDimensionNames() const
 
 void Layer::selectAll()
 {
-    _points->selectAll();
+    if (_sourceDataset->getDataType() == PointType)
+        getSourceDataset<Points>()->selectAll();
 }
 
 void Layer::selectNone()
 {
-    _points->selectNone();
+    if (_sourceDataset->getDataType() == PointType)
+        getSourceDataset<Points>()->selectNone();
 }
 
 void Layer::selectInvert()
 {
-    _points->selectInvert();
+    if (_sourceDataset->getDataType() == PointType)
+        getSourceDataset<Points>()->selectInvert();
 }
 
 void Layer::startSelection()
@@ -407,15 +424,15 @@ void Layer::publishSelection()
         //qDebug() << "Publish pixel selection for layer:" << _generalAction.getNameAction().getString();
 
         // Make sure we have a valid points dataset
-        if (!_points.isValid())
+        if (!_sourceDataset.isValid())
             throw std::runtime_error("The layer points dataset is not valid after initialization");
 
         // Make sure we have a valid images dataset
-        if (!_images.isValid())
+        if (!_imagesDataset.isValid())
             throw std::runtime_error("The layer images dataset is not valid after initialization");
 
         // Get reference to points selection indices
-        auto& selectionIndices = _points->getSelection<Points>().indices;
+        auto& selectionIndices = _sourceDataset->getSelection<Points>().indices;
 
         // Get reference to the pixel selection tool
         auto& pixelSelectionTool = getImageViewerPlugin().getImageViewerWidget().getPixelSelectionTool();
@@ -432,9 +449,9 @@ void Layer::publishSelection()
                 const auto selectionImage   = getPropByName<SelectionToolProp>("SelectionToolProp")->getSelectionImage().mirrored(true, true);
                 const auto noComponents     = 4;
                 const auto width            = static_cast<float>(getImageSize().width());
-                const auto noPixels         = _images->getNumberOfPixels();
-                const auto sourceRectangle  = _images->getSourceRectangle();
-                const auto targetRectangle  = _images->getTargetRectangle();
+                const auto noPixels         = _imagesDataset->getNumberOfPixels();
+                const auto sourceRectangle  = _imagesDataset->getSourceRectangle();
+                const auto targetRectangle  = _imagesDataset->getTargetRectangle();
 
                 // Get source pixel index from two-dimensional pixel coordinates
                 const auto getSourcePixelIndex = [sourceRectangle] (const std::int32_t& pixelX, const std::int32_t& pixelY) -> std::int32_t {
@@ -516,7 +533,7 @@ void Layer::publishSelection()
         }
 
         // Notify listeners of the selection change
-        Application::core()->notifySelectionChanged(_points.getSourceData().getName());
+        Application::core()->notifySelectionChanged(_sourceDataset.getSourceData().getName());
 
         // Render
         invalidate();
@@ -535,7 +552,7 @@ void Layer::computeSelectionIndices()
     try {
 
         // Get selection image, selected indices and selection boundaries from the image dataset
-        _images->getSelectionData(_selectionData, _selectedIndices, _selectionBoundaries);
+        _imagesDataset->getSelectionData(_selectionData, _selectedIndices, _selectionBoundaries);
 
         // Assign the scalar data to the prop
         this->getPropByName<SelectionProp>("SelectionProp")->setSelectionData(_selectionData);
@@ -557,9 +574,6 @@ void Layer::computeSelectionIndices()
 
 std::vector<std::uint32_t>& Layer::getSelectedIndices()
 {
-    if (!_points.isValid())
-        throw std::runtime_error("The points dataset is not valid");
-
     return _selectedIndices;
 }
 
@@ -607,7 +621,7 @@ void Layer::zoomToSelection()
         auto layerImageProp = getPropByName<ImageProp>("ImageProp");
 
         // Get target rectangle (needed for image offset)
-        const auto targetRectangle = _images->getTargetRectangle();
+        const auto targetRectangle = _imagesDataset->getTargetRectangle();
 
         // Add the target image offset
         _selectionBoundaries.translate(targetRectangle.topLeft());

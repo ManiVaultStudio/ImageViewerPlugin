@@ -3,6 +3,8 @@
 
 #include "util/Exception.h"
 
+#include "PointData.h"
+
 #include <QMessageBox>
 #include <QPainter>
 

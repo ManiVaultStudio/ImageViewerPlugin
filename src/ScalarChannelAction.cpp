@@ -156,9 +156,6 @@ void ScalarChannelAction::computeScalarData()
         if (!_enabledAction.isChecked())
             return;
 
-        if (!getPoints().isValid())
-            throw std::runtime_error("Points dataset is not valid");
-
         if (!getImages().isValid())
             throw std::runtime_error("Images dataset is not valid");
 
@@ -206,14 +203,9 @@ void ScalarChannelAction::computeMaskChannel()
     std::fill(_scalarData.begin(), _scalarData.end(), 1.0f);
 }
 
-hdps::util::DatasetRef<Images>& ScalarChannelAction::getImages()
+DatasetRef<Images>& ScalarChannelAction::getImages()
 {
     return _imageAction.getLayer().getImages();
-}
-
-hdps::util::DatasetRef<Points>& ScalarChannelAction::getPoints()
-{
-    return _imageAction.getLayer().getPoints();
 }
 
 QWidget* ScalarChannelAction::getWidget(QWidget* parent, const std::int32_t& widgetFlags)

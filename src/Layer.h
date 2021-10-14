@@ -8,8 +8,8 @@
 
 #include "util/DatasetRef.h"
 
+#include "Set.h"
 #include "ImageData/Images.h"
-#include "PointData.h"
 
 using namespace hdps::util;
 
@@ -50,10 +50,30 @@ public:
     /** Invalidates the prop (triggers a re-render of all layers) */
     void invalidate();
 
+    /** Update the model transformation matrix (used in OpenGL) */
     void updateModelMatrix();
 
-    DatasetRef<Images>& getImages() { return _images; }
-    DatasetRef<Points>& getPoints() { return _points; }
+    /** Get source dataset */
+    hdps::DataSet* getSourceDataset() {
+        return _sourceDataset.get();
+    }
+
+    /** Get source dataset of a specific dataset type */
+    template<typename DatasetType>
+    DatasetType* getSourceDataset() {
+        return dynamic_cast<DatasetType*>(_sourceDataset.get());
+    }
+
+    /** Get const source dataset of a specific dataset type */
+    template<typename DatasetType>
+    const DatasetType* getSourceDataset() const {
+        return const_cast<Layer*>(this)->getSourceDataset<DatasetType>();
+    }
+
+    /** Get images dataset */
+    DatasetRef<Images>& getImages() {
+        return _imagesDataset;
+    }
 
     const QString getImagesDatasetName() const;
 
@@ -147,8 +167,8 @@ public: /** Action getters */
 protected:
     ImageViewerPlugin&              _imageViewerPlugin;         /** Reference to image viewer plugin */
     bool                            _active;                    /** Whether the layer is active (editable) */
-    DatasetRef<Images>              _images;                    /** Reference to images dataset */
-    DatasetRef<Points>              _points;                    /** Reference to input points dataset of the images */
+    DatasetRef<Images>              _imagesDataset;             /** Reference to images dataset */
+    DatasetRef<hdps::DataSet>       _sourceDataset;             /** Reference to source dataset of the images */
     std::vector<std::uint32_t>      _selectedIndices;           /** Indices of the selected pixels */
     GeneralAction                   _generalAction;             /** General action */
     ImageAction                     _imageAction;               /** Image action */

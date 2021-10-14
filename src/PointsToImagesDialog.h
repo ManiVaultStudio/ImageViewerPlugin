@@ -51,19 +51,18 @@ public:
 
 public: // Action getters
 
-    IntegralAction& getImageWidthAction() {return _imageWidthAction; }
-    IntegralAction& getImageHeightAction() {return _imageHeightAction; }
-    IntegralAction& getNumberOfImagesAction() {return _numberOfImagesAction; }
+    IntegralAction& getImageWidthAction() { return _imageWidthAction; }
+    IntegralAction& getImageHeightAction() { return _imageHeightAction; }
+    IntegralAction& getNumberOfImagesAction() { return _numberOfImagesAction; }
 
 protected:
-    ImageViewerPlugin&  _imageViewerPlugin;         /** Reference to image viewer plugin */
-    DatasetRef<Points>  _points;                    /** Reference to points dataset */
-    DatasetRef<Images>  _images;                    /** Reference to images dataset */
-    StringAction        _datasetNameAction;         /** Images dataset name action */
-    IntegralAction      _imageWidthAction;          /** Image width action */
-    IntegralAction      _imageHeightAction;         /** Image height action */
-    IntegralAction      _numberOfImagesAction;      /** Number of images action */
-    StringAction        _numberOfPixelsAction;      /** Number of pixels action */
-    StringAction        _notesAction;               /** Notes action */
-    GroupAction         _groupAction;               /** Group action */
+    ImageViewerPlugin&          _imageViewerPlugin;         /** Reference to image viewer plugin */
+    DatasetRef<hdps::DataSet>   _sourceDataset;             /** Reference to source dataset */
+    DatasetRef<Images>          _imagesDataset;             /** Reference to images dataset */
+    StringAction                _datasetNameAction;         /** Images dataset name action */
+    IntegralAction              _imageWidthAction;          /** Image width action */
+    IntegralAction              _imageHeightAction;         /** Image height action */
+    IntegralAction              _numberOfImagesAction;      /** Number of images action */
+    StringAction                _numberOfPixelsAction;      /** Number of pixels action */
+    GroupAction                 _groupAction;               /** Group action */
 };

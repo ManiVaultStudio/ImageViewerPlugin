@@ -17,14 +17,13 @@ using namespace hdps;
 PointsToImagesDialog::PointsToImagesDialog(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
     QDialog(&imageViewerPlugin),
     _imageViewerPlugin(imageViewerPlugin),
-    _points(datasetName),
-    _images(),
+    _sourceDataset(datasetName),
+    _imagesDataset(),
     _datasetNameAction(this, "Dataset name"),
     _imageWidthAction(this, "Image width", 1, 10000, 100, 100),
     _imageHeightAction(this, "Image height", 1, 10000, 100, 100),
-    _numberOfImagesAction(this, "Number of images", 1, 10000, 10, 10),
+    _numberOfImagesAction(this, "Number of images", 1, 10000, 1, 1),
     _numberOfPixelsAction(this, "Number of pixels"),
-    _notesAction(this, "Notes"),
     _groupAction(this)
 {
     // Throw exception is dataset name is empty
@@ -33,17 +32,17 @@ PointsToImagesDialog::PointsToImagesDialog(ImageViewerPlugin& imageViewerPlugin,
 
     // Update window title and icon
     setWindowTitle(QString("Load %1 as images").arg(datasetName));
-    setWindowIcon(_points->getIcon());
+    setWindowIcon(_sourceDataset->getIcon());
     
     // Set widget flags for image width and height actions
     _imageWidthAction.setDefaultWidgetFlags(IntegralAction::SpinBox);
     _imageHeightAction.setDefaultWidgetFlags(IntegralAction::SpinBox);
 
     // Try to guess the image dimensions if the points dataset is derived
-    if (_points->isDerivedData()) {
+    if (_sourceDataset->isDerivedData()) {
 
         // Get the source points dataset
-        auto pointsParentHierarchyItem = _points->getHierarchyItem().getParent();
+        auto pointsParentHierarchyItem = _sourceDataset->getHierarchyItem().getParent();
 
         // Iterate over each child of the source dataset
         for (auto childHierarchyItem : pointsParentHierarchyItem->getChildren()) {
@@ -52,10 +51,10 @@ PointsToImagesDialog::PointsToImagesDialog(ImageViewerPlugin& imageViewerPlugin,
             if (childHierarchyItem->getDataType() == ImageType) {
 
                 // Get reference to images dataset
-                _images.setDatasetName(childHierarchyItem->getDatasetName());
+                _imagesDataset.setDatasetName(childHierarchyItem->getDatasetName());
 
                 // Get image size
-                const auto imageSize = _images->getImageSize();
+                const auto imageSize = _imagesDataset->getImageSize();
 
                 // Set image resolution
                 _imageWidthAction.initialize(0, 10000, imageSize.width(), imageSize.width());
@@ -73,16 +72,15 @@ PointsToImagesDialog::PointsToImagesDialog(ImageViewerPlugin& imageViewerPlugin,
     _numberOfImagesAction.setDefaultWidgetFlags(IntegralAction::LineEdit);
     _numberOfImagesAction.setMayReset(false);
     _numberOfImagesAction.setEnabled(false);
-    _numberOfImagesAction.setValue(_points->getNumDimensions());
+
+    if (_sourceDataset->getDataType() == PointType)
+        _numberOfImagesAction.setValue(_sourceDataset.get<Points>()->getNumDimensions());
 
     // Number of pixels and notes may not be reset by the user
     _numberOfPixelsAction.setMayReset(false);
-    _notesAction.setMayReset(false);
 
     // Enable/disable actions
     _numberOfPixelsAction.setEnabled(false);
-    _notesAction.setEnabled(false);
-
     _numberOfPixelsAction.setDefaultWidgetFlags(IntegralAction::SpinBox);
 
     auto layout = new QVBoxLayout();
@@ -93,7 +91,6 @@ PointsToImagesDialog::PointsToImagesDialog(ImageViewerPlugin& imageViewerPlugin,
     _groupAction << _imageHeightAction;
     _groupAction << _numberOfImagesAction;
     _groupAction << _numberOfPixelsAction;
-    _groupAction << _notesAction;
 
     // Create group action widget
     auto groupActionWidget = _groupAction.createWidget(this);
@@ -119,16 +116,15 @@ PointsToImagesDialog::PointsToImagesDialog(ImageViewerPlugin& imageViewerPlugin,
     // Handle when accepted
     connect(dialogButtonBox, &QDialogButtonBox::accepted, this, [this, datasetName]() {
 
-        // Get references to input points and create images dataset
+        // Add images dataset
         DatasetRef<Images> images(Application::core()->addData("Images", _datasetNameAction.getString(), datasetName));
-        DatasetRef<Points> points(datasetName);
 
         if (!images.isValid())
             throw std::runtime_error("Unable to create images dataset");
 
-        const auto sourceImageSize   = _images.isValid() ? _images->getSourceRectangle().size() : QSize(_imageWidthAction.getValue(), _imageHeightAction.getValue());
-        const auto targetImageSize   = _images.isValid() ? _images->getTargetRectangle().size() : QSize(_imageWidthAction.getValue(), _imageHeightAction.getValue());
-        const auto imageOffset       = _images.isValid() ? _images->getTargetRectangle().topLeft() : QPoint();
+        const auto sourceImageSize   = _imagesDataset.isValid() ? _imagesDataset->getSourceRectangle().size() : QSize(_imageWidthAction.getValue(), _imageHeightAction.getValue());
+        const auto targetImageSize   = _imagesDataset.isValid() ? _imagesDataset->getTargetRectangle().size() : QSize(_imageWidthAction.getValue(), _imageHeightAction.getValue());
+        const auto imageOffset       = _imagesDataset.isValid() ? _imagesDataset->getTargetRectangle().topLeft() : QPoint();
 
         images->setType(ImageData::Type::Stack);
         images->setNumberOfImages(_numberOfImagesAction.getValue());
@@ -162,12 +158,6 @@ PointsToImagesDialog::PointsToImagesDialog(ImageViewerPlugin& imageViewerPlugin,
 
         // Update the number of pixels action
         _numberOfPixelsAction.setString(QString("%1").arg(QString::number(numberOfPixels)));
-
-        // Establish whether the number of elements match
-        const auto numberOfElementsMatch = numberOfPixels == _points->getNumPoints();
-
-        // Update the notes action
-        _notesAction.setString(numberOfElementsMatch ? "" : "Incorrect number of pixels");
     };
 
     connect(&_datasetNameAction, &StringAction::stringChanged, this, updateActions);

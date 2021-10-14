@@ -4,6 +4,9 @@
 #include "util/ColorSpace.h"
 #include "util/Interpolation.h"
 
+#include "PointData.h"
+#include "ClusterData.h"
+
 using namespace hdps;
 using namespace hdps::util;
 
@@ -192,11 +195,44 @@ ImageAction::ImageAction(Layer& layer) :
     registerDataEventByType(PointType, [this](DataEvent* dataEvent) {
 
         // The points dataset might have been deleted so check first if it is valid
-        if (!_layer.getPoints().isValid())
+        if (_layer.getSourceDataset() == nullptr)
             return;
 
         // Only process points dataset that is referenced by us
-        if (dataEvent->dataSetName != _layer.getPoints()->getName())
+        if (dataEvent->dataSetName != _layer.getSourceDataset()->getName())
+            return;
+
+        switch (dataEvent->getType())
+        {
+            case EventType::DataChanged:
+            {
+                _scalarChannel1Action.computeScalarData();
+                _scalarChannel2Action.computeScalarData();
+                _scalarChannel3Action.computeScalarData();
+
+                break;
+            }
+
+            case EventType::SelectionChanged:
+            {
+                _layer.computeSelectionIndices();
+                break;
+            }
+
+            default:
+                break;
+        }
+    });
+
+    // Register for events for clusters datasets
+    registerDataEventByType(ClusterType, [this](DataEvent* dataEvent) {
+
+        // The points dataset might have been deleted so check first if it is valid
+        if (_layer.getSourceDataset() == nullptr)
+            return;
+
+        // Only process points dataset that is referenced by us
+        if (dataEvent->dataSetName != _layer.getSourceDataset()->getName())
             return;
 
         switch (dataEvent->getType())

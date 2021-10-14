@@ -4,6 +4,8 @@
 
 #include "util/Exception.h"
 
+#include "PointData.h"
+
 using namespace hdps;
 
 SubsetAction::SubsetAction(ImageViewerPlugin& imageViewerPlugin) :
@@ -81,7 +83,13 @@ SubsetAction::SubsetAction(ImageViewerPlugin& imageViewerPlugin) :
             // Get pointer to selected layer
             auto layer = static_cast<Layer*>(selectedRows.first().internalPointer());
 
-            auto& points = layer->getPoints();
+            // Pointer to points dataset
+            Points* points = nullptr;
+
+            if (layer->getSourceDataset()->getDataType() == PointType)
+                points = layer->getSourceDataset<Points>();
+
+            // Get reference to images dataset
             auto& images = layer->getImages();
 
             if (_fromRegionAction.isChecked()) {
@@ -99,7 +107,7 @@ SubsetAction::SubsetAction(ImageViewerPlugin& imageViewerPlugin) :
                 const auto numberOfPixelsInRegion = selectionBoundaries.width() * selectionBoundaries.height();
 
                 // Get reference to selection indices
-                auto& selectionIndices = dynamic_cast<Points&>(points.getSourceData().getSelection()).indices;
+                auto& selectionIndices = dynamic_cast<Points&>(points->getSelection()).indices;
 
                 // Allocate space for indices
                 selectionIndices.clear();
@@ -115,16 +123,16 @@ SubsetAction::SubsetAction(ImageViewerPlugin& imageViewerPlugin) :
                     throw std::runtime_error("Selection is empty");
 
                 // Create the points subset
-                DatasetRef<Points> pointsSubset(points.getSourceData().createSubset(_nameAction.getString(), points->getName()));
+                const auto subsetName = layer->getSourceDataset<Points>()->createSubset(_nameAction.getString(), points->getName());
 
                 // Notify that the points set was added
-                Application::core()->notifyDataAdded(pointsSubset.getDatasetName());
+                Application::core()->notifyDataAdded(subsetName);
 
                 // Reset selected indices
                 selectionIndices = cachedSelectionIndices;
 
                 // Create a new image dataset which is a subset of the original image
-                DatasetRef<Images> imagesSubset(Application::core()->addData("Images", _nameAction.getString(), pointsSubset.getDatasetName()));
+                DatasetRef<Images> imagesSubset(Application::core()->addData("Images", _nameAction.getString(), subsetName));
 
                 imagesSubset->setType(images->getType());
                 imagesSubset->setNumberOfImages(images->getNumberOfImages());
@@ -140,10 +148,10 @@ SubsetAction::SubsetAction(ImageViewerPlugin& imageViewerPlugin) :
             }
             else {
                 // Create the points subset
-                DatasetRef<Points> pointsSubset(points.getSourceData().createSubset(_nameAction.getString(), points->getName()));
+                const auto subsetName = points->createSubset(_nameAction.getString(), points->getName());
 
                 // Notify that the points set was added
-                Application::core()->notifyDataAdded(pointsSubset.getDatasetName());
+                Application::core()->notifyDataAdded(subsetName);
             }
         }
         catch (std::exception& e)

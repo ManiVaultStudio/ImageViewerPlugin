@@ -5,6 +5,7 @@
 
 #include "ImageData/Images.h"
 #include "ImageData/ImageData.h"
+#include "ClusterData.h"
 #include "widgets/DropWidget.h"
 #include "util/DatasetRef.h"
 #include "util/Exception.h"
@@ -84,7 +85,7 @@ void ImageViewerPlugin::init()
         const auto tokens       = mimeText.split("\n");
         const auto datasetName  = tokens[0];
         const auto dataType     = hdps::DataType(tokens[1]);
-        const auto dataTypes    = hdps::DataTypes({ ImageType, PointType });
+        const auto dataTypes    = hdps::DataTypes({ ImageType, PointType, ClusterType });
 
         if (!dataTypes.contains(dataType))
             dropRegions << new DropWidget::DropRegion(this, "Incompatible data", "This type of data is not supported", false);
@@ -110,7 +111,7 @@ void ImageViewerPlugin::init()
         }
 
         if (dataType == PointType) {
-            dropRegions << new DropWidget::DropRegion(this, "Points", QString("Add an image layer for %1").arg(datasetName), true, [this, datasetName]() {
+            dropRegions << new DropWidget::DropRegion(this, "Points", QString("Convert %1 to image layer").arg(datasetName), true, [this, datasetName]() {
                 try
                 {
                     // Create conversion dialog
@@ -121,10 +122,30 @@ void ImageViewerPlugin::init()
                 }
                 catch (std::exception& e)
                 {
-                    exceptionMessageBox(QString("Unable to load '%1'").arg(datasetName), e);
+                    exceptionMessageBox(QString("Unable to convert %1 to image layer").arg(datasetName), e);
                 }
                 catch (...) {
-                    exceptionMessageBox(QString("Unable to load '%1'").arg(datasetName));
+                    exceptionMessageBox(QString("Unable to convert %1 to image layer").arg(datasetName));
+                }
+            });
+        }
+
+        if (dataType == ClusterType) {
+            dropRegions << new DropWidget::DropRegion(this, "Clusters", QString("Convert %1 to image layer").arg(datasetName), true, [this, datasetName]() {
+                try
+                {
+                    // Create conversion dialog
+                    PointsToImagesDialog pointsToImagesDialog(*this, datasetName);
+
+                    // Show the dialog
+                    pointsToImagesDialog.exec();
+                }
+                catch (std::exception& e)
+                {
+                    exceptionMessageBox(QString("Unable to convert %1 to image layer").arg(datasetName), e);
+                }
+                catch (...) {
+                    exceptionMessageBox(QString("Unable to convert %1 to image layer").arg(datasetName));
                 }
             });
         }

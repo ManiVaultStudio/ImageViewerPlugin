@@ -102,9 +102,6 @@ protected:
     /** Get reference to images dataset */
     DatasetRef<Images>& getImages();
 
-    /** Get reference to points dataset which contains the actual image data */
-    DatasetRef<Points>& getPoints();
-
 signals:
     
     /** Signals the channel changed */
