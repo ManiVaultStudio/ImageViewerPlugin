@@ -534,52 +534,8 @@ void Layer::computeSelectionIndices()
 {
     try {
 
-        // Get selection indices from points dataset
-        auto& globalSelectionIndices = dynamic_cast<Points&>(getPoints().getSourceData().getSelection()).indices;
-
-        // Clear the selected indices
-        _selectedIndices.clear();
-        _selectedIndices.reserve(_images->getNumberOfPixels());
-
-        const auto sourceImageWidth = _images->getSourceRectangle().width();
-        const auto targetImageWidth = _images->getTargetRectangle().width();
-
-        // Fill selection data with non-selected
-        std::fill(_selectionData.begin(), _selectionData.end(), 0);
-
-        // Initialize selection boundaries with numeric extremes
-        _selectionBoundaries.setTop(std::numeric_limits<int>::max());
-        _selectionBoundaries.setBottom(std::numeric_limits<int>::lowest());
-        _selectionBoundaries.setLeft(std::numeric_limits<int>::max());
-        _selectionBoundaries.setRight(std::numeric_limits<int>::lowest());
-
-        // Iterate over all global selection indices
-        for (const auto& globalSelectionIndex : globalSelectionIndices) {
-
-            // Compute global pixel coordinate
-            const auto globalPixelCoordinate = QPoint(globalSelectionIndex % sourceImageWidth, static_cast<std::int32_t>(floorf(globalSelectionIndex / static_cast<float>(sourceImageWidth))));
-
-            // Only proceed if the pixel is located within the source image rectangle
-            if (!_images->getTargetRectangle().contains(globalPixelCoordinate))
-                continue;
-
-            // Compute local pixel coordinate and index
-            const auto localPixelCoordinate = globalPixelCoordinate - _images->getTargetRectangle().topLeft();
-            const auto localPixelIndex      = localPixelCoordinate.y() * targetImageWidth + localPixelCoordinate.x();
-
-            // And add the target pixel index to the list of selected pixels
-            if (static_cast<std::uint32_t>(localPixelIndex) < _images->getNumberOfPixels())
-                _selectedIndices.push_back(localPixelIndex);
-
-            // Assign selected pixel
-            _selectionData[localPixelIndex] = 255;
-
-            // Add pixel pixel coordinate and possibly inflate the selection boundaries
-            _selectionBoundaries.setLeft(std::min(_selectionBoundaries.left(), localPixelCoordinate.x()));
-            _selectionBoundaries.setRight(std::max(_selectionBoundaries.right(), localPixelCoordinate.x()));
-            _selectionBoundaries.setTop(std::min(_selectionBoundaries.top(), localPixelCoordinate.y()));
-            _selectionBoundaries.setBottom(std::max(_selectionBoundaries.bottom(), localPixelCoordinate.y()));
-        }
+        // Get selection image, selected indices and selection boundaries from the image dataset
+        _images->getSelectionData(_selectionData, _selectedIndices, _selectionBoundaries);
 
         // Assign the scalar data to the prop
         this->getPropByName<SelectionProp>("SelectionProp")->setSelectionData(_selectionData);
