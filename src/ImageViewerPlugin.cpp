@@ -257,6 +257,8 @@ void ImageViewerPlugin::init()
         // Show the context menu
         _settingsAction.getContextMenu()->exec(mapToGlobal(point));
     });
+
+    _dropWidget.setShowDropIndicator(true);
 }
 
 void ImageViewerPlugin::updateWindowTitle()

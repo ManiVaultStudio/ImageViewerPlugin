@@ -55,7 +55,7 @@ public:
      * Find the image size by walking up the tree and looking for images datasets
      * @param dataHierarchyItem Pointer to data hierarchy item
      */
-    QSize findImageSize(hdps::DataHierarchyItem* dataHierarchyItem);
+    void findSourceImagesDataset(hdps::DataHierarchyItem* dataHierarchyItem);
 
 public: // Action getters
 
@@ -66,7 +66,8 @@ public: // Action getters
 protected:
     ImageViewerPlugin&          _imageViewerPlugin;         /** Reference to image viewer plugin */
     DatasetRef<hdps::DataSet>   _sourceDataset;             /** Reference to source dataset */
-    DatasetRef<Images>          _imagesDataset;             /** Reference to images dataset */
+    DatasetRef<Images>          _sourceImagesDataset;       /** Reference to the source images dataset */
+    QRect                       _sourceRectangle;           /** Source rectangle (if a source images dataset is found) */
     StringAction                _datasetNameAction;         /** Images dataset name action */
     IntegralAction              _imageWidthAction;          /** Image width action */
     IntegralAction              _imageHeightAction;         /** Image height action */
