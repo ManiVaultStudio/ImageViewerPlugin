@@ -28,7 +28,7 @@ SubsetAction::SubsetAction(ImageViewerPlugin& imageViewerPlugin) :
 
     connect(&_imageViewerPlugin.getSelectionModel(), &QItemSelectionModel::selectionChanged, this, [this](const QItemSelection& newSelection, const QItemSelection& oldSelection) {
         
-        // Deactivate deselected layers
+        // Process deselected layers
         if (!oldSelection.indexes().isEmpty()) {
 
             // Get pointer to layer that was deselected
@@ -38,7 +38,7 @@ SubsetAction::SubsetAction(ImageViewerPlugin& imageViewerPlugin) :
             disconnect(layer, &Layer::selectionChanged, this, nullptr);
         }
 
-        // Activate selected layers
+        // Process selected layers
         if (!newSelection.indexes().isEmpty()) {
 
             // Get pointer to layer that was selected
@@ -46,7 +46,12 @@ SubsetAction::SubsetAction(ImageViewerPlugin& imageViewerPlugin) :
 
             // Enable/disable
             const auto updateEnabled = [this, layer]() -> void {
-                setEnabled(!layer->getSelectedIndices().empty());
+
+                // Establish conditions
+                const auto isPointType  = layer->getSourceDataset()->getDataType() == PointType;
+                const auto hasSelection = !layer->getSelectedIndices().empty();
+
+                setEnabled(isPointType && hasSelection);
             };
 
             // Enable/disable when the layer selection changes

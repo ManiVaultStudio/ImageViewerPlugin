@@ -29,6 +29,9 @@ ImageAction::ImageAction(Layer& layer) :
     setText("Image");
     setEventCore(Application::core());
 
+    // Establish whether the source dataset is a clusters dataset
+    const auto isClusterType = _layer.getSourceDataset()->getDataType() == ClusterType;
+
     _subsampleFactorAction.setVisible(false);
     _scalarChannelMaskAction.setVisible(false);
 
@@ -49,8 +52,9 @@ ImageAction::ImageAction(Layer& layer) :
     // Set initial color map type
     _colorMapAction.setColorMapType(ColorMap::Type::TwoDimensional);
 
-    // Establish whether the source dataset is a clusters dataset
-    const auto isClusterType = _layer.getSourceDataset()->getDataType() == ClusterType;
+    // Configure image interpolation
+    _interpolationTypeAction.setCurrentIndex(isClusterType ? static_cast<std::int32_t>(InterpolationType::NearestNeighbor) : static_cast<std::int32_t>(InterpolationType::Bilinear));
+    _interpolationTypeAction.setEnabled(!isClusterType);
 
     // Get the dimension names of the points dataset
     const auto dimensionNames = _layer.getDimensionNames();
@@ -248,7 +252,6 @@ QImage ImageAction::getColorMapImage() const
 
             // Assign pixel color by cluster color
             discreteColorMapImage.setPixelColor(clusterIndex, 0, cluster.getColor());
-
             clusterIndex++;
         }
 
@@ -262,8 +265,10 @@ QImage ImageAction::getColorMapImage() const
 void ImageAction::updateColorMapImage()
 {
     // Establish the color map image interpolation type
-    const auto isDiscreteColorMap   = _layer.getSourceDataset()->getDataType() == ClusterType ? true : _colorMapAction.getSettingsAction().getDiscreteAction().isChecked();
+    const auto isDiscreteColorMap   = _colorMapAction.getSettingsAction().getDiscreteAction().isChecked();
     const auto interpolationType    = isDiscreteColorMap ? InterpolationType::NearestNeighbor : InterpolationType::Bilinear;
+
+    getColorMapImage().save("ColorMap.jpg");
 
     // Set the color map image in the layer
     _layer.setColorMapImage(getColorMapImage(), interpolationType);

@@ -125,10 +125,9 @@ void main(void)
         {
             // Grab channel(s)
             float channel = toneMapChannel(displayRanges[0].x, displayRanges[0].y, texture(channelTextures, vec3(uv, 0)).r);
-            
-            // Color mapping
+
             fragmentColor = texture(colorMapTexture, vec2(channel, 0));
-            
+
             break;
         }
 
@@ -140,7 +139,7 @@ void main(void)
             
             // Color mapping
             fragmentColor = texture(colorMapTexture, vec2(channel1, channel2));
-            
+
             break;
         }
 
