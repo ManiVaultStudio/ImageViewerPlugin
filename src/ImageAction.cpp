@@ -252,8 +252,6 @@ QImage ImageAction::getColorMapImage() const
             clusterIndex++;
         }
 
-        discreteColorMapImage.save("discreteColorMapImage.jpg");
-
         return discreteColorMapImage.convertToFormat(QImage::Format_RGB32);
     }
     else {

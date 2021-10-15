@@ -22,7 +22,7 @@ ConvertToImagesDatasetDialog::ConvertToImagesDatasetDialog(ImageViewerPlugin& im
     _datasetNameAction(this, "Dataset name"),
     _imageWidthAction(this, "Image width", 1, 10000, 100, 100),
     _imageHeightAction(this, "Image height", 1, 10000, 100, 100),
-    _numberOfImagesAction(this, "Number of images", 1, 10000, 3, 3),
+    _numberOfImagesAction(this, "Number of images", 1, 10000, 1, 1),
     _numberOfPixelsAction(this, "Number of pixels"),
     _groupAction(this)
 {

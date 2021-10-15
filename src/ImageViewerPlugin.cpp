@@ -172,7 +172,7 @@ void ImageViewerPlugin::init()
     connect(&_imageViewerWidget, &ImageViewerWidget::mousePositionsChanged, this, [this](const QVector<QPoint>& mousePositions) {
 
         // No point in computing selection when there are no mouse positions
-        if (mousePositions.count() <= 1)
+        if (mousePositions.count() == 0)
             return;
 
         // Get selected layers model rows

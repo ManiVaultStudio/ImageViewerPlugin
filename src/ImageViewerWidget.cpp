@@ -213,6 +213,16 @@ bool ImageViewerWidget::eventFilter(QObject* target, QEvent* event)
                             break;
                         }
 
+                        case PixelSelectionType::Sample:
+                        {
+                            if (mouseEvent->buttons() & Qt::LeftButton) {
+                                _mousePositions = { mouseEvent->pos() };
+                                notifyMousePositionsChanged();
+                            }
+
+                            break;
+                        }
+
                         default:
                             break;
                     }
