@@ -85,7 +85,13 @@ public: // Rendering
      * Set image interpolation type
      * @param interpolationType Interpolation type
      */
-    void setInterpolationType(const InterpolationType& interpolationType);    
+    void setInterpolationType(const InterpolationType& interpolationType);
+
+    /**
+     * Set color map interpolation type
+     * @param interpolationType Interpolation type
+     */
+    void setColorMapInterpolationType(const InterpolationType& interpolationType);
 
 protected:
     Layer&          _layer;             /** Reference to layer */

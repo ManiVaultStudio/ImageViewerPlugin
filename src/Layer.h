@@ -7,6 +7,7 @@
 #include "SelectionAction.h"
 
 #include "util/DatasetRef.h"
+#include "util/Interpolation.h"
 
 #include "Set.h"
 #include "ImageData/Images.h"
@@ -49,9 +50,6 @@ public:
 
     /** Invalidates the prop (triggers a re-render of all layers) */
     void invalidate();
-
-    /** Update the model transformation matrix (used in OpenGL) */
-    void updateModelMatrix();
 
     /** Get source dataset */
     hdps::DataSet* getSourceDataset() {
@@ -138,13 +136,25 @@ public: // View
     /** Get the bounding rectangle */
     QRectF getWorldBoundingRectangle() const override;
 
-protected:
+protected: // Rendering
 
     /**
      * Renders the props
      * @param modelViewProjectionMatrix Model view projection matrix
      */
     void render(const QMatrix4x4& modelViewProjectionMatrix) override;
+
+    /** Update the model transformation matrix (used in OpenGL) */
+    void updateModelMatrix();
+
+    /**
+     * Assign the color map image to the image rendering prop
+     * @param colorMapImage Color map image
+     * @param interpolationType Interpolation type
+     */
+    void setColorMapImage(const QImage& colorMapImage, const InterpolationType& interpolationType);
+
+protected: // Miscellaneous
 
     /** Update the view plugin window title when activated or when the layer name changes */
     void updateWindowTitle();
@@ -176,5 +186,7 @@ protected:
     std::vector<std::uint8_t>       _selectionData;             /** Selection data for selection prop */
     QRect                           _selectionBoundaries;       /** Selection boundaries in pixel coordinates */
     QVector<float>                  _colorData;                 /** Color data for the specified dimension */
+
     friend class ImageViewerWidget;
+    friend class ImageAction;
 };

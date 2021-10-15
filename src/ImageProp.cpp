@@ -295,6 +295,7 @@ void ImageProp::setChannelScalarData(const std::uint32_t& channelIndex, const QV
 void ImageProp::setInterpolationType(const InterpolationType& interpolationType)
 {
     try {
+
         // Get channels texture
         auto texture = getTextureByName("Channels");
 
@@ -316,6 +317,45 @@ void ImageProp::setInterpolationType(const InterpolationType& interpolationType)
             default:
                 break;
         }
+    }
+    catch (std::exception& e)
+    {
+        exceptionMessageBox("Unable to set channel color map interpolation type in layer image prop", e.what());
+    }
+    catch (...) {
+        exceptionMessageBox("Unable to set channel color map interpolation type in layer image prop");
+    }
+}
+
+void ImageProp::setColorMapInterpolationType(const InterpolationType& interpolationType)
+{
+    try {
+
+        getRenderer().bindOpenGLContext();
+        {
+            // Get color map texture
+            auto texture = getTextureByName("ColorMap");
+
+            // Except when texture is not created
+            if (!texture->isCreated())
+                throw std::runtime_error("Color map texture is not created.");
+
+            // Configure interpolation
+            switch (interpolationType)
+            {
+                case InterpolationType::Bilinear:
+                    texture->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Linear);
+                    break;
+
+                case InterpolationType::NearestNeighbor:
+                    texture->setMinMagFilters(QOpenGLTexture::Nearest, QOpenGLTexture::Nearest);
+                    break;
+
+                default:
+                    break;
+            }
+        }
+        getRenderer().releaseOpenGLContext();
     }
     catch (std::exception& e)
     {

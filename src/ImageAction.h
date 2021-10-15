@@ -33,11 +33,27 @@ public:
      */
     ImageAction(Layer& layer);
 
+    /** Perform action initialization */
+    void init();
+
     /** Get reference to parent layer */
     Layer& getLayer() { return _layer; }
 
     /** Get the number of active scalar channels */
     const std::uint32_t getNumberOfActiveScalarChannels() const;
+
+protected: // Color map
+
+    /** Get color map image */
+    QImage getColorMapImage() const;
+
+    /** Update the color map image and notify others */
+    void updateColorMapImage();
+
+protected:
+
+    /** Updates the scalar channel actions */
+    void updateScalarChannelActions();
 
 public: // Action getters
 

@@ -30,6 +30,7 @@ public:
 
 public: /** Action getters */
 
+    StringAction& getDatasetNameAction() { return _datasetNameAction; }
     ToggleAction& getVisibleAction() { return _visibleAction; }
     ColorAction& getColorAction() { return _colorAction; }
     StringAction& getNameAction() { return _nameAction; }
@@ -40,6 +41,7 @@ public: /** Action getters */
 
 protected:
     Layer&          _layer;                 /** Reference to layer */
+    StringAction    _datasetNameAction;     /** Dataset name action */
     ToggleAction    _visibleAction;         /** Visible action */
     ColorAction     _colorAction;           /** Color action */
     StringAction    _nameAction;            /** Name action */

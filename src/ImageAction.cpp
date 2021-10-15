@@ -55,91 +55,6 @@ ImageAction::ImageAction(Layer& layer) :
     // Get the dimension names of the points dataset
     const auto dimensionNames = _layer.getDimensionNames();
 
-    const auto updateScalarChannelActions = [this, isClusterType]() -> void {
-        switch (static_cast<ColorSpaceType>(_colorSpaceAction.getCurrentIndex()))
-        {
-            case ColorSpaceType::Mono:
-            {
-                _scalarChannel1Action.getEnabledAction().setChecked(true);
-                _scalarChannel2Action.getEnabledAction().setChecked(false);
-                _scalarChannel3Action.getEnabledAction().setChecked(false);
-
-                _scalarChannel1Action.setText("Channel 1");
-                _scalarChannel2Action.setText("Channel 2");
-                _scalarChannel3Action.setText("Channel 3");
-                
-                _colorMapAction.setEnabled(true);
-                _colorMapAction.setColorMapType(ColorMap::Type::OneDimensional);
-
-                break;
-            }
-
-            case ColorSpaceType::Duo:
-            {
-                _scalarChannel1Action.getEnabledAction().setChecked(true);
-                _scalarChannel2Action.getEnabledAction().setChecked(true);
-                _scalarChannel3Action.getEnabledAction().setChecked(false);
-                
-                _scalarChannel1Action.setText("Channel 1");
-                _scalarChannel2Action.setText("Channel 2");
-                _scalarChannel3Action.setText("Channel 3");
-
-                _colorMapAction.setEnabled(true);
-                _colorMapAction.setColorMapType(ColorMap::Type::TwoDimensional);
-
-                break;
-            }
-
-            case ColorSpaceType::RGB:
-            {
-                _scalarChannel1Action.getEnabledAction().setChecked(true);
-                _scalarChannel2Action.getEnabledAction().setChecked(true);
-                _scalarChannel3Action.getEnabledAction().setChecked(true);
-
-                _scalarChannel1Action.setText(isClusterType ? "Cluster red" : "Red");
-                _scalarChannel2Action.setText(isClusterType ? "Cluster green" : "Green");
-                _scalarChannel3Action.setText(isClusterType ? "Cluster blue" : "Blue");
-
-                _colorMapAction.setEnabled(false);
-
-                break;
-            }
-
-            case ColorSpaceType::HSL:
-            {
-                _scalarChannel1Action.getEnabledAction().setChecked(true);
-                _scalarChannel2Action.getEnabledAction().setChecked(true);
-                _scalarChannel3Action.getEnabledAction().setChecked(true);
-                
-                _scalarChannel1Action.setText("Hue");
-                _scalarChannel2Action.setText("Saturation");
-                _scalarChannel3Action.setText("Lightness");
-                
-                _colorMapAction.setEnabled(false);
-                
-                break;
-            }
-
-            case ColorSpaceType::LAB:
-            {
-                _scalarChannel1Action.getEnabledAction().setChecked(true);
-                _scalarChannel2Action.getEnabledAction().setChecked(true);
-                _scalarChannel3Action.getEnabledAction().setChecked(true);
-
-                _scalarChannel1Action.setText("L");
-                _scalarChannel2Action.setText("A");
-                _scalarChannel3Action.setText("B");
-
-                _colorMapAction.setEnabled(false);
-
-                break;
-            }
-
-            default:
-                break;
-        }
-    };
-
     const auto useConstantColorToggled = [this]() {
         _colorMapAction.setEnabled(!_useConstantColorAction.isChecked());
         _constantColorAction.setEnabled(_useConstantColorAction.isChecked());
@@ -172,7 +87,7 @@ ImageAction::ImageAction(Layer& layer) :
     updateScalarChannelActions();
     useConstantColorToggled();
 
-    connect(&_colorSpaceAction, &OptionAction::currentIndexChanged, this, updateScalarChannelActions);
+    connect(&_colorSpaceAction, &OptionAction::currentIndexChanged, this, &ImageAction::updateScalarChannelActions);
 
     // Set color space to mono in case of one dimension
     if (dimensionNames.count() == 1)
@@ -192,14 +107,10 @@ ImageAction::ImageAction(Layer& layer) :
 
     if (dimensionNames.count() >= 3) {
         if (dimensionNames.count() == 3 && isClusterType) {
-            _colorSpaceAction.setCurrentText("RGB");
+            _colorSpaceAction.setCurrentText("Mono");
 
             _scalarChannel1Action.getDimensionAction().setCurrentIndex(0);
             _scalarChannel1Action.getDimensionAction().setDefaultIndex(0);
-            _scalarChannel2Action.getDimensionAction().setCurrentIndex(1);
-            _scalarChannel2Action.getDimensionAction().setDefaultIndex(1);
-            _scalarChannel3Action.getDimensionAction().setCurrentIndex(2);
-            _scalarChannel3Action.getDimensionAction().setDefaultIndex(2);
         }
         else {
             _colorSpaceAction.setCurrentIndex(static_cast<std::int32_t>(ColorSpaceType::Mono));
@@ -217,21 +128,9 @@ ImageAction::ImageAction(Layer& layer) :
         }
     }
 
-    // Register for events for images datasets
-    registerDataEventByType(ImageType, [this](DataEvent* dataEvent) {
-
-        switch (dataEvent->getType())
-        {
-            case EventType::DataAboutToBeRemoved:
-            {
-                Application::core()->unregisterEventListener(this);
-                break;
-            }
-
-            default:
-                break;
-        }
-    });
+    // Update the color map image when the discrete color map option changes
+    connect(&_colorMapAction, &ColorMapAction::imageChanged, this, &ImageAction::updateColorMapImage);
+    connect(&_colorMapAction.getSettingsAction().getDiscreteAction(), &ColorMapDiscreteAction::toggled, this, &ImageAction::updateColorMapImage);
 
     const auto updateScalarChannels = [this]() {
         _scalarChannel1Action.computeScalarData();
@@ -286,7 +185,7 @@ ImageAction::ImageAction(Layer& layer) :
             case EventType::DataChanged:
             {
                 updateScalarChannels();
-
+                updateColorMapImage();
                 break;
             }
 
@@ -301,8 +200,13 @@ ImageAction::ImageAction(Layer& layer) :
         }
     });
 
-    // Do an initial update of the scalar channels
+    // Do an initial update of the scalar data
     updateScalarChannels();
+}
+
+void ImageAction::init()
+{
+    updateColorMapImage();
 }
 
 const std::uint32_t ImageAction::getNumberOfActiveScalarChannels() const
@@ -325,4 +229,133 @@ const std::uint32_t ImageAction::getNumberOfActiveScalarChannels() const
     }
 
     return 0;
+}
+
+QImage ImageAction::getColorMapImage() const
+{
+    if (_layer.getSourceDataset()->getDataType() == ClusterType) {
+        
+        // Get pointer to clusters
+        auto clusters = _layer.getSourceDataset<Clusters>()->getClusters();
+
+        // Create discrete one-dimensional color map image
+        QImage discreteColorMapImage(static_cast<std::int32_t>(clusters.size()), 1, QImage::Format::Format_RGB32);
+
+        auto clusterIndex = 0;
+
+        // Populate color map
+        for (const auto& cluster : clusters) {
+
+            // Assign pixel color by cluster color
+            discreteColorMapImage.setPixelColor(clusterIndex, 0, cluster.getColor());
+
+            clusterIndex++;
+        }
+
+        discreteColorMapImage.save("discreteColorMapImage.jpg");
+
+        return discreteColorMapImage.convertToFormat(QImage::Format_RGB32);
+    }
+    else {
+        return _colorMapAction.getColorMapImage();
+    }
+}
+
+void ImageAction::updateColorMapImage()
+{
+    // Establish the color map image interpolation type
+    const auto isDiscreteColorMap   = _layer.getSourceDataset()->getDataType() == ClusterType ? true : _colorMapAction.getSettingsAction().getDiscreteAction().isChecked();
+    const auto interpolationType    = isDiscreteColorMap ? InterpolationType::NearestNeighbor : InterpolationType::Bilinear;
+
+    // Set the color map image in the layer
+    _layer.setColorMapImage(getColorMapImage(), interpolationType);
+}
+
+void ImageAction::updateScalarChannelActions()
+{
+    // Establish whether the source dataset is a clusters dataset
+    const auto isClusterType = _layer.getSourceDataset()->getDataType() == ClusterType;
+
+    switch (static_cast<ColorSpaceType>(_colorSpaceAction.getCurrentIndex()))
+    {
+        case ColorSpaceType::Mono:
+        {
+            _scalarChannel1Action.getEnabledAction().setChecked(true);
+            _scalarChannel2Action.getEnabledAction().setChecked(false);
+            _scalarChannel3Action.getEnabledAction().setChecked(false);
+
+            _scalarChannel1Action.setText("Channel 1");
+            _scalarChannel2Action.setText("Channel 2");
+            _scalarChannel3Action.setText("Channel 3");
+
+            _colorMapAction.setEnabled(isClusterType ? false : true);
+            _colorMapAction.setColorMapType(ColorMap::Type::OneDimensional);
+
+            break;
+        }
+
+        case ColorSpaceType::Duo:
+        {
+            _scalarChannel1Action.getEnabledAction().setChecked(true);
+            _scalarChannel2Action.getEnabledAction().setChecked(true);
+            _scalarChannel3Action.getEnabledAction().setChecked(false);
+
+            _scalarChannel1Action.setText("Channel 1");
+            _scalarChannel2Action.setText("Channel 2");
+            _scalarChannel3Action.setText("Channel 3");
+
+            _colorMapAction.setEnabled(true);
+            _colorMapAction.setColorMapType(ColorMap::Type::TwoDimensional);
+
+            break;
+        }
+
+        case ColorSpaceType::RGB:
+        {
+            _scalarChannel1Action.getEnabledAction().setChecked(true);
+            _scalarChannel2Action.getEnabledAction().setChecked(true);
+            _scalarChannel3Action.getEnabledAction().setChecked(true);
+
+            _scalarChannel1Action.setText("Red");
+            _scalarChannel2Action.setText("Green");
+            _scalarChannel3Action.setText("Blue");
+
+            _colorMapAction.setEnabled(false);
+
+            break;
+        }
+
+        case ColorSpaceType::HSL:
+        {
+            _scalarChannel1Action.getEnabledAction().setChecked(true);
+            _scalarChannel2Action.getEnabledAction().setChecked(true);
+            _scalarChannel3Action.getEnabledAction().setChecked(true);
+
+            _scalarChannel1Action.setText("Hue");
+            _scalarChannel2Action.setText("Saturation");
+            _scalarChannel3Action.setText("Lightness");
+
+            _colorMapAction.setEnabled(false);
+
+            break;
+        }
+
+        case ColorSpaceType::LAB:
+        {
+            _scalarChannel1Action.getEnabledAction().setChecked(true);
+            _scalarChannel2Action.getEnabledAction().setChecked(true);
+            _scalarChannel3Action.getEnabledAction().setChecked(true);
+
+            _scalarChannel1Action.setText("L");
+            _scalarChannel2Action.setText("A");
+            _scalarChannel3Action.setText("B");
+
+            _colorMapAction.setEnabled(false);
+
+            break;
+        }
+
+        default:
+            break;
+    }
 }

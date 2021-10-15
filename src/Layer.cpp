@@ -50,16 +50,6 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
     // Do an initial computation of the selected indices
     computeSelectionIndices();
 
-    // Update the color map image in the image prop
-    const auto updateColorMap = [this]() {
-
-        // Set the color map image in the prop
-        this->getPropByName<ImageProp>("ImageProp")->setColorMapImage(_imageAction.getColorMapAction().getColorMapImage());
-
-        // Render
-        invalidate();
-    };
-
     // Update the color map scalar data in the image prop
     const auto updateChannelScalarData = [this](ScalarChannelAction& channelAction) {
 
@@ -83,26 +73,24 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
     // Update the interpolation type in the image prop
     const auto updateInterpolationType = [this]() {
 
+        // Get pointer to image prop
+        auto imageProp = this->getPropByName<ImageProp>("ImageProp");
+
         // Assign the scalar data to the prop
-        this->getPropByName<ImageProp>("ImageProp")->setInterpolationType(static_cast<InterpolationType>(_imageAction.getInterpolationTypeAction().getCurrentIndex()));
+        imageProp->setInterpolationType(static_cast<InterpolationType>(_imageAction.getInterpolationTypeAction().getCurrentIndex()));
+        
 
         // Render
         invalidate();
     };
 
-    // Update the image prop
-    const auto updateProp = [this]() {
-        invalidate();
-    };
-
-    connect(&_generalAction.getVisibleAction(), &ToggleAction::toggled, this, updateProp);
-    connect(&_imageAction.getColorMapAction(), &ColorMapAction::imageChanged, this, updateColorMap);
+    connect(&_generalAction.getVisibleAction(), &ToggleAction::toggled, this, &Layer::invalidate);
     connect(&_imageAction, &ImageAction::channelChanged, this, updateChannelScalarData);
     connect(&_imageAction.getInterpolationTypeAction(), &OptionAction::currentIndexChanged, this, updateInterpolationType);
     
     // Update prop when selection overlay color and opacity change
-    connect(&_selectionAction.getOverlayColor(), &ColorAction::colorChanged, this, updateProp);
-    connect(&_selectionAction.getOverlayOpacity(), &DecimalAction::valueChanged, this, updateProp);
+    connect(&_selectionAction.getOverlayColor(), &ColorAction::colorChanged, this, &Layer::invalidate);
+    connect(&_selectionAction.getOverlayOpacity(), &DecimalAction::valueChanged, this, &Layer::invalidate);
 
     // Update the model matrix and re-render
     const auto updateModelMatrixAndReRender = [this]() {
@@ -110,20 +98,18 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
         invalidate();
     };
 
-    // Update model matrix when layer scale changes
     connect(&_generalAction.getScaleAction(), &DecimalAction::valueChanged, this, updateModelMatrixAndReRender);
-
-    // Update model matrix when layer position changes
     connect(&_generalAction.getXPositionAction(), &DecimalAction::valueChanged, this, updateModelMatrixAndReRender);
     connect(&_generalAction.getYPositionAction(), &DecimalAction::valueChanged, this, updateModelMatrixAndReRender);
 
-    updateColorMap();
     updateChannelScalarData(_imageAction.getScalarChannel1Action());
     updateInterpolationType();
     updateModelMatrixAndReRender();
 
     // Update the window title when the layer name changes
     connect(&_generalAction.getNameAction(), &StringAction::stringChanged, this, &Layer::updateWindowTitle);
+
+    _imageAction.init();
 }
 
 Layer::~Layer()
@@ -150,6 +136,51 @@ void Layer::render(const QMatrix4x4& modelViewProjectionMatrix)
     catch (...) {
         exceptionMessageBox(QString("Unable to render layer: %1").arg(_generalAction.getNameAction().getString()));
     }
+}
+
+void Layer::updateModelMatrix()
+{
+    qDebug() << "Update model matrix for layer:" << _generalAction.getNameAction().getString();
+
+    try {
+
+        // Get reference to general action for getting the layer position and scale
+        auto& generalAction = _generalAction;
+
+        QMatrix4x4 translateMatrix, scaleMatrix;
+
+        // Compute the translation matrix
+        translateMatrix.translate(generalAction.getXPositionAction().getValue(), generalAction.getYPositionAction().getValue(), 0.0f);
+
+        // Get the scale factor
+        const auto scaleFactor = 0.01f * generalAction.getScaleAction().getValue();
+
+        // And compute the scale factor
+        scaleMatrix.scale(scaleFactor, scaleFactor, scaleFactor);
+
+        // Assign model matrix
+        setModelMatrix(translateMatrix * scaleMatrix);
+    }
+    catch (std::exception& e)
+    {
+        exceptionMessageBox(QString("Unable to update the model matrix for layer: %1").arg(_generalAction.getNameAction().getString()), e);
+    }
+    catch (...) {
+        exceptionMessageBox(QString("Unable to update the model matrix for layer: %1").arg(_generalAction.getNameAction().getString()));
+    }
+}
+
+void Layer::setColorMapImage(const QImage& colorMapImage, const InterpolationType& interpolationType)
+{
+    // Get pointer to image prop
+    auto imageProp = this->getPropByName<ImageProp>("ImageProp");
+
+    // Set the color map image and interpolation type in the image prop
+    imageProp->setColorMapImage(colorMapImage);
+    imageProp->setColorMapInterpolationType(interpolationType);
+
+    // Render
+    invalidate();
 }
 
 void Layer::updateWindowTitle()
@@ -252,38 +283,6 @@ void Layer::invalidate()
     _imageViewerPlugin.getImageViewerWidget().update();
 }
 
-void Layer::updateModelMatrix()
-{
-    qDebug() << "Update model matrix for layer:" << _generalAction.getNameAction().getString();
-
-    try {
-
-        // Get reference to general action for getting the layer position and scale
-        auto& generalAction = _generalAction;
-
-        QMatrix4x4 translateMatrix, scaleMatrix;
-
-        // Compute the translation matrix
-        translateMatrix.translate(generalAction.getXPositionAction().getValue(), generalAction.getYPositionAction().getValue(), 0.0f);
-
-        // Get the scale factor
-        const auto scaleFactor = 0.01f * generalAction.getScaleAction().getValue();
-
-        // And compute the scale factor
-        scaleMatrix.scale(scaleFactor, scaleFactor, scaleFactor);
-
-        // Assign model matrix
-        setModelMatrix(translateMatrix * scaleMatrix);
-    }
-    catch (std::exception& e)
-    {
-        exceptionMessageBox(QString("Unable to update the model matrix for layer: %1").arg(_generalAction.getNameAction().getString()), e);
-    }
-    catch (...) {
-        exceptionMessageBox(QString("Unable to update the model matrix for layer: %1").arg(_generalAction.getNameAction().getString()));
-    }
-}
-
 const QString Layer::getImagesDatasetName() const
 {
     return _imagesDataset.getDatasetName();
@@ -329,7 +328,7 @@ const QStringList Layer::getDimensionNames() const
     }
 
     if (_sourceDataset->getDataType() == ClusterType) {
-        dimensionNames << "Red" << "Green" << "Blue";
+        dimensionNames << "Cluster index";
     }
 
     return dimensionNames;

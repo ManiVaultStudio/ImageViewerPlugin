@@ -6,6 +6,7 @@
 GeneralAction::GeneralAction(Layer& layer) :
     GroupAction(&layer, false),
     _layer(layer),
+    _datasetNameAction(this, "Dataset name", layer.getImagesDatasetName()),
     _visibleAction(this, "Visible", true, true),
     _colorAction(this, "Color"),
     _nameAction(this, "Name"),
@@ -15,8 +16,13 @@ GeneralAction::GeneralAction(Layer& layer) :
     _zoomAction(*this)
 {
     setText("General");
-    
+
+    _datasetNameAction.setEnabled(false);
+    _datasetNameAction.setMayReset(false);
+
     // Set tooltips
+    _datasetNameAction.setToolTip("Name of the images dataset");
+    _visibleAction.setToolTip("Visibility of the layer");
     _nameAction.setToolTip("Name of the layer");
     _scaleAction.setToolTip("Layer scale in percentages");
     _xPositionAction.setToolTip("Layer x-position");
