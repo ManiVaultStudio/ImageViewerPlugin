@@ -65,4 +65,5 @@ protected:
     DecimalAction       _zoomMarginAction;          /** Margin around layers extents action */
     ColorAction         _backgroundColorAction;     /** Background color action action */
     ToggleAction        _animationEnabledAction;    /** Animation on/off action */
+    ToggleAction        _smartZoomAction;            /** Automatically zoom when selecting layers action */
 };

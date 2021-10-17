@@ -12,14 +12,21 @@ GlobalViewSettingsAction::GlobalViewSettingsAction(ImageViewerPlugin& imageViewe
     _groupAction(this),
     _zoomMarginAction(this, "Zoom margin"),
     _backgroundColorAction(this, "Background color"),
-    _animationEnabledAction(this, "Animation")
+    _animationEnabledAction(this, "Animation"),
+    _smartZoomAction(this, "Smart zoom")
 {
     setIcon(Application::getIconFont("FontAwesome").getIcon("cog"));
     setText("View settings");
 
+    _zoomMarginAction.setToolTip("Zoom margin around the layers extents");
+    _backgroundColorAction.setToolTip("Background color of the viewer");
+    _animationEnabledAction.setToolTip("Enable animations");
+    _smartZoomAction.setToolTip("Automatically zoom when selecting layers");
+    
     _groupAction << _zoomMarginAction;
     _groupAction << _backgroundColorAction;
     _groupAction << _animationEnabledAction;
+    _groupAction << _smartZoomAction;
 
     _zoomMarginAction.setSuffix("px");
     _zoomMarginAction.setUpdateDuringDrag(false);
@@ -33,16 +40,19 @@ GlobalViewSettingsAction::GlobalViewSettingsAction(ImageViewerPlugin& imageViewe
     const auto defaultZoomMargin        = 100.0f;
     const auto defaultBackgroundColor   = QColor(50, 50, 50);
     const auto defaultAnimationEnabled  = true;
+    const auto defaultSmartZoom         = true;
 
     // Get action values from image viewer plugin settings
     const auto globalZoomMargin         = _imageViewerPlugin.getSetting(QString("%1/%2").arg(settingsPrefix, "/ZoomMargin"), defaultZoomMargin).toFloat();
     const auto globalBackgroundColor    = _imageViewerPlugin.getSetting(QString("%1/%2").arg(settingsPrefix, "/BackgroundColor"), defaultBackgroundColor).value<QColor>();
     const auto globalAnimationEnabled   = _imageViewerPlugin.getSetting(QString("%1/%2").arg(settingsPrefix, "/AnimationEnabled"), defaultAnimationEnabled).toBool();
+    const auto globalSmartZoom          = _imageViewerPlugin.getSetting(QString("%1/%2").arg(settingsPrefix, "/SmartZoom"), defaultSmartZoom).toBool();
 
     // Initialize actions with default values
     _zoomMarginAction.initialize(0.0f, 250.0f, globalZoomMargin, defaultZoomMargin);
     _backgroundColorAction.initialize(globalBackgroundColor, defaultBackgroundColor);
     _animationEnabledAction.initialize(globalAnimationEnabled, defaultAnimationEnabled);
+    _smartZoomAction.initialize(globalSmartZoom, defaultSmartZoom);
 
     // Update renderer zoom margin
     const auto updateZoomMargin = [this, &imageViewerWidget, settingsPrefix]() {

@@ -3,6 +3,7 @@
 #include "renderers/Renderer.h"
 
 #include <QVector2D>
+#include <QParallelAnimationGroup>
 #include <QPropertyAnimation>
 #include <QRectF>
 
@@ -25,7 +26,8 @@ class Renderer : public QObject, public hdps::Renderer
 {
     Q_OBJECT
 
-    Q_PROPERTY(QRectF zoomRectangle MEMBER _zoomRectangle NOTIFY zoomRectangleChanged)
+    Q_PROPERTY(QPointF zoomRectangleTopLeft MEMBER _zoomRectangleTopLeft NOTIFY zoomRectangleChanged)
+    Q_PROPERTY(QSizeF zoomRectangleSize MEMBER _zoomRectangleSize NOTIFY zoomRectangleChanged)
 
 public: // Construction
 
@@ -141,6 +143,9 @@ public: // Navigation
      */
     void zoomAround(const QPoint& screenPoint, const float& factor);
 
+    /** Gets the zoom rectangle in world coordinates */
+    QRectF getZoomRectangle() const;
+
     /** Zoom to rectangle in world coordinates */
     void setZoomRectangle(const QRectF& zoomRectangle);
 
@@ -176,10 +181,15 @@ signals:
     void zoomRectangleChanged();
 
 protected:
-    float                   _zoomSensitivity;           /** Zoom sensitivity */
-    float                   _zoomMargin;                /** Zoom margin */
-    QRectF                  _worldBoundingRectangle;    /** World bounding rectangle */
-    QRectF                  _zoomRectangle;             /** Zoom rectangle in world coordinates */
-    QPropertyAnimation      _zoomAnimation;             /** Zoom rectangle property animation */
-    bool                    _animationEnabled;          /** Zoom animation enabled */
+    float                       _zoomSensitivity;                   /** Zoom sensitivity */
+    float                       _zoomMargin;                        /** Zoom margin */
+    QRectF                      _worldBoundingRectangle;            /** World bounding rectangle */
+    QParallelAnimationGroup     _parallelAnimationGroup;            /** Parallel animation group for zoom animation */
+    QPropertyAnimation          _zoomRectangleTopLeftAnimation;     /** Zoom rectangle center property animation */
+    QPropertyAnimation          _zoomRectangleSizeAnimation;        /** Zoom rectangle size property animation */
+    bool                        _animationEnabled;                  /** Zoom animation enabled */
+
+private:
+    QPointF                     _zoomRectangleTopLeft;              /** Zoom rectangle top-left in world coordinates */
+    QSizeF                      _zoomRectangleSize;                 /** Zoom rectangle size in world coordinates */
 };
