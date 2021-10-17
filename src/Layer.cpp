@@ -29,7 +29,7 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
     _imageAction(*this),
     _selectionAction(*this, &_imageViewerPlugin.getImageViewerWidget(), _imageViewerPlugin.getImageViewerWidget().getPixelSelectionTool()),
     _selectionData(),
-    _selectionBoundaries()
+    _imageSelectionRectangle()
 {
     if (!_sourceDataset.isValid())
         throw std::runtime_error("The layer source dataset is not valid after initialization");
@@ -287,47 +287,67 @@ void Layer::invalidate()
 
 void Layer::paint(QPainter& painter, const PaintFlag& paintFlags)
 {
-    // Don't draw if the layer is invisible
-    if (!_generalAction.getVisibleAction().isChecked())
-        return;
+    try {
 
-    // Get world bounding rectangle
-    const auto worldBoundingRectangle = getPropByName<ImageProp>("ImageProp")->getWorldBoundingRectangle();
+        // Don't draw if the layer is invisible
+        if (!_generalAction.getVisibleAction().isChecked())
+            return;
 
-    // Get reference to renderer
-    auto& renderer = _imageViewerPlugin.getImageViewerWidget().getRenderer();
+        // Get image prop screen bounding rectangle
+        const auto propRectangle = getPropByName<ImageProp>("ImageProp")->getScreenBoundingRectangle();
 
-    // Compute screen bounding rectangle
-    const auto topLeftScreen        = renderer.getWorldPositionToScreenPoint(QVector3D(worldBoundingRectangle.topLeft()));
-    const auto bottomRightScreen    = renderer.getWorldPositionToScreenPoint(QVector3D(worldBoundingRectangle.bottomRight()));
+        // Draw layer bounds
+        if (paintFlags & Layer::Bounds) {
 
-    // Establish image prop rectangle
-    const auto propRectangle = QRectF(topLeftScreen, bottomRightScreen);
+            // Configure pen and brush
+            painter.setPen(QPen(QBrush(_generalAction.getColorAction().getColor()), _active ? 2.0f : 1.0f, _active ? Qt::SolidLine : Qt::DashLine));
+            painter.setBrush(Qt::transparent);
 
-    // Draw layer bounds
-    if (paintFlags & Layer::Bounds) {
+            // Draw the bounding rectangle
+            painter.drawRect(propRectangle);
+        }
 
-        // Configure pen and brush
-        painter.setPen(QPen(QBrush(_generalAction.getColorAction().getColor()), _active ? 2.0f : 1.0f, _active ? Qt::SolidLine : Qt::DashLine));
-        painter.setBrush(Qt::transparent);
+        // Draw layer selection rectangle
+        if ((paintFlags & Layer::SelectionRectangle) && _active && _imageSelectionRectangle.isValid()) {
 
-        // Draw the bounding rectangle
-        painter.drawRect(propRectangle);
+            // Create perimeter pen
+            auto perimeterPen = QPen(QBrush(_imageViewerPlugin.getImageViewerWidget().getPixelSelectionTool().getMainColor()), 0.7f);
+
+            // Custom dash pattern
+            perimeterPen.setDashPattern(QVector<qreal>{ 7, 7 });
+
+            // Configure pen and brush
+            painter.setPen(perimeterPen);
+            painter.setBrush(Qt::transparent);
+
+            // Draw the bounding rectangle
+            painter.drawRect(getRenderer().getScreenRectangleFromWorldRectangle(getWorldSelectionRectangle().marginsAdded(QMarginsF(0.0f, 0.0f, 1.0f, 1.0f))));
+        }
+
+        // Draw layer label
+        if ((paintFlags & Layer::Label) && _active) {
+
+            // Establish label text
+            const auto labelText = QString("%1 (%2x%3)").arg(_generalAction.getNameAction().getString(), QString::number(_imagesDataset->getImageSize().width()), QString::number(_imagesDataset->getImageSize().height()));
+
+            // Configure pen and brush
+            painter.setPen(QPen(QBrush(_generalAction.getColorAction().getColor()), _active ? 2.0f : 1.0f));
+            painter.setBrush(Qt::transparent);
+
+            // Upper margin in pixels
+            const auto margin = 5;
+
+            // Draw the text
+            painter.setFont(QFont("arial", 7));
+            painter.drawText(propRectangle.translated(QPoint(0.0f, propRectangle.height() + margin)), labelText, QTextOption(Qt::AlignTop | Qt::AlignLeft));
+        }
     }
-
-    // Draw layer label
-    if ((paintFlags & Layer::Label) && _active) {
-
-        // Establish label text
-        const auto labelText = QString("%1 (%2x%3)").arg(_generalAction.getNameAction().getString(), QString::number(_imagesDataset->getImageSize().width()), QString::number(_imagesDataset->getImageSize().height()));
-
-        // Configure pen and brush
-        painter.setPen(QPen(QBrush(_generalAction.getColorAction().getColor()), _active ? 2.0f : 1.0f));
-        painter.setBrush(Qt::transparent);
-
-        // Draw the text
-        painter.setFont(QFont("arial", 8));
-        painter.drawText(propRectangle.translated(QPointF(0.0f, propRectangle.height())), labelText, QTextOption(Qt::AlignTop | Qt::AlignLeft));
+    catch (std::exception& e)
+    {
+        exceptionMessageBox(QString("Unable to native paint layer: %1").arg(_generalAction.getNameAction().getString()), e);
+    }
+    catch (...) {
+        exceptionMessageBox(QString("Unable to native paint layer: %1").arg(_generalAction.getNameAction().getString()));
     }
 }
 
@@ -666,7 +686,7 @@ void Layer::computeSelectionIndices()
     try {
 
         // Get selection image, selected indices and selection boundaries from the image dataset
-        _imagesDataset->getSelectionData(_selectionData, _selectedIndices, _selectionBoundaries);
+        _imagesDataset->getSelectionData(_selectionData, _selectedIndices, _imageSelectionRectangle);
 
         // Assign the scalar data to the prop
         this->getPropByName<SelectionProp>("SelectionProp")->setSelectionData(_selectionData);
@@ -696,9 +716,31 @@ const std::vector<std::uint32_t>& Layer::getSelectedIndices() const
     return const_cast<Layer*>(this)->getSelectedIndices();
 }
 
-QRect Layer::getSelectionBoundaries() const
+QRect Layer::getImageSelectionRectangle() const
 {
-    return _selectionBoundaries;
+    return _imageSelectionRectangle;
+}
+
+QRectF Layer::getWorldSelectionRectangle() const
+{
+    // Get pointer to image prop
+    auto layerImageProp = getPropByName<ImageProp>("ImageProp");
+
+    // Get target rectangle (needed for image offset)
+    const auto targetRectangle = _imagesDataset->getTargetRectangle();
+
+    // Add the offset
+    const auto translatedSelectionRectangleProp = _imageSelectionRectangle.translated(targetRectangle.topLeft());
+
+    // Ensure selection boundaries are valid
+    if (!translatedSelectionRectangleProp.isValid())
+        throw std::runtime_error("Selection boundaries are invalid");
+
+    // Compute composite matrix
+    const auto matrix = getModelMatrix() * layerImageProp->getModelMatrix();
+
+    // Compute rectangle extents in world coordinates
+    return QRectF(matrix * translatedSelectionRectangleProp.topLeft(), matrix * translatedSelectionRectangleProp.bottomRight());
 }
 
 void Layer::zoomToExtents()
@@ -731,47 +773,8 @@ void Layer::zoomToSelection()
 
         qDebug() << "Zoom to the pixel selection of layer:" << _generalAction.getNameAction().getString();;
 
-        // Get pointer to image prop
-        auto layerImageProp = getPropByName<ImageProp>("ImageProp");
-
-        // Get target rectangle (needed for image offset)
-        const auto targetRectangle = _imagesDataset->getTargetRectangle();
-
-        // Add the target image offset
-        _selectionBoundaries.translate(targetRectangle.topLeft());
-
-        // Ensure selection boundaries are valid
-        if (!_selectionBoundaries.isValid())
-            throw std::runtime_error("Selection boundaries are invalid");
-
-        auto rectangle = layerImageProp->getWorldBoundingRectangle();
-
-        // Compute composite matrix
-        const auto matrix = getModelMatrix() * layerImageProp->getModelMatrix();
-
-        // Compute rectangle extents in world coordinates
-        const auto worldTopLeft     = matrix * _selectionBoundaries.topLeft();
-        const auto worldBottomRight = matrix * _selectionBoundaries.bottomRight();
-
-        const auto rectangleFromPoints = [](const QPointF& first, const QPointF& second) -> QRectF {
-            QRectF rectangle;
-
-            rectangle.setLeft(std::min(first.x(), second.x()));
-            rectangle.setRight(std::max(first.x(), second.x()));
-            rectangle.setTop(std::min(first.y(), second.y()));
-            rectangle.setBottom(std::max(first.y(), second.y()));
-
-            return rectangle;
-        };
-
-        // Compute the zoom rectangle in world coordinates
-        const auto zoomRectangleWorld = rectangleFromPoints(worldTopLeft, worldBottomRight);
-
-        // Zoom to layer selection
-        _imageViewerPlugin.getImageViewerWidget().getRenderer().setZoomRectangle(zoomRectangleWorld);
-
-        // Trigger render
-        invalidate();
+        // Zoom to the world selection rectangle
+        _imageViewerPlugin.getImageViewerWidget().getRenderer().setZoomRectangle(getWorldSelectionRectangle());
     }
     catch (std::exception& e)
     {

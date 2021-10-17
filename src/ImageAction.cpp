@@ -56,6 +56,9 @@ ImageAction::ImageAction(Layer& layer) :
     _interpolationTypeAction.setCurrentIndex(isClusterType ? static_cast<std::int32_t>(InterpolationType::NearestNeighbor) : static_cast<std::int32_t>(InterpolationType::Bilinear));
     _interpolationTypeAction.setEnabled(!isClusterType);
 
+    // Configure color space action
+    _colorSpaceAction.setEnabled(!isClusterType);
+
     _scalarChannel1Action.getWindowLevelAction().setEnabled(!isClusterType);
 
     // Get the dimension names of the points dataset

@@ -22,8 +22,9 @@ class Layer : public QObject, public Renderable
 
     /** Paint flags */
     enum PaintFlag {
-        Bounds  = 0x001,
-        Label   = 0x002
+        Bounds              = 0x001,
+        Label               = 0x002,
+        SelectionRectangle  = 0x004
     };
 
 public:
@@ -134,8 +135,11 @@ public: // Selection
     /** Get indices of the selected pixel indices */
     const std::vector<std::uint32_t>& getSelectedIndices() const;
 
-    /** Get selection boundaries */
-    QRect getSelectionBoundaries() const;
+    /** Get selection rectangle in image coordinates */
+    QRect getImageSelectionRectangle() const;
+
+    /** Get selection rectangle in world coordinates */
+    QRectF getWorldSelectionRectangle() const;
 
 public: // View
 
@@ -187,17 +191,17 @@ public: /** Action getters */
     SelectionAction& getSelectionAction() { return _selectionAction; }
 
 protected:
-    ImageViewerPlugin&              _imageViewerPlugin;         /** Reference to image viewer plugin */
-    bool                            _active;                    /** Whether the layer is active (editable) */
-    DatasetRef<Images>              _imagesDataset;             /** Reference to images dataset */
-    DatasetRef<hdps::DataSet>       _sourceDataset;             /** Reference to source dataset of the images */
-    std::vector<std::uint32_t>      _selectedIndices;           /** Indices of the selected pixels */
-    GeneralAction                   _generalAction;             /** General action */
-    ImageAction                     _imageAction;               /** Image action */
-    SelectionAction                 _selectionAction;           /** Selection action */
-    std::vector<std::uint8_t>       _selectionData;             /** Selection data for selection prop */
-    QRect                           _selectionBoundaries;       /** Selection boundaries in pixel coordinates */
-    QVector<float>                  _colorData;                 /** Color data for the specified dimension */
+    ImageViewerPlugin&              _imageViewerPlugin;             /** Reference to image viewer plugin */
+    bool                            _active;                        /** Whether the layer is active (editable) */
+    DatasetRef<Images>              _imagesDataset;                 /** Reference to images dataset */
+    DatasetRef<hdps::DataSet>       _sourceDataset;                 /** Reference to source dataset of the images */
+    std::vector<std::uint32_t>      _selectedIndices;               /** Indices of the selected pixels */
+    GeneralAction                   _generalAction;                 /** General action */
+    ImageAction                     _imageAction;                   /** Image action */
+    SelectionAction                 _selectionAction;               /** Selection action */
+    std::vector<std::uint8_t>       _selectionData;                 /** Selection data for selection prop */
+    QRect                           _imageSelectionRectangle;       /** Selection boundaries in image coordinates */
+    QVector<float>                  _colorData;                     /** Color data for the specified dimension */
 
     friend class ImageViewerWidget;
     friend class ImageAction;

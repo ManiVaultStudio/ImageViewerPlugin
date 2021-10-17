@@ -30,6 +30,12 @@ protected: // Widget
          * @param widgetFlags Widget flags for the configuration of the widget (type)
          */
         Widget(QWidget* parent, SubsetAction* subsetAction, const std::int32_t& widgetFlags);
+
+        /** Destructor */
+        ~Widget();
+
+    protected:
+        SubsetAction*   _subsetAction;  /** Pointer to subset action */
     };
 
     /**
@@ -51,6 +57,9 @@ public:
 
     /** Get reference to image viewer plugin */
     ImageViewerPlugin& getImageViewerPlugin() { return _imageViewerPlugin; }
+
+    /** Update the highlight region in the viewer */
+    void updateHighlightRegion();
 
 public: // Action getters
 

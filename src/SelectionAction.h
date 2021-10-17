@@ -36,8 +36,8 @@ public:
     /** Get reference to parent layer */
     Layer& getLayer() { return _layer; }
 
-    /** Get selection boundaries */
-    QRect getSelectionBoundaries() const;
+    /** Get selection rectangle in image coordinates */
+    QRect getImageSelectionRectangle() const;
 
 public: /** Action getters */
 

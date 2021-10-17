@@ -4,7 +4,7 @@
 #include "ImageViewerPlugin.h"
 
 GeneralAction::GeneralAction(Layer& layer) :
-    GroupAction(&layer, false),
+    GroupAction(&layer, true),
     _layer(layer),
     _visibleAction(this, "Visible", true, true),
     _datasetNameAction(this, "Dataset name", layer.getImagesDatasetName()),

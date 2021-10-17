@@ -570,8 +570,10 @@ void ImageViewerWidget::paintGL()
         }
 
         // Draw the image layer label of the active layer
-        for (auto& layer : layersSorted)
+        for (auto& layer : layersSorted) {
+            layer->paint(painter, Layer::SelectionRectangle);
             layer->paint(painter, Layer::Label);
+        }
 
         // Draw the pixel selection tool overlays if the pixel selection tool is enabled
         if (_pixelSelectionTool.isEnabled()) {

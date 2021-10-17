@@ -138,15 +138,11 @@ QMatrix4x4 Renderer::getProjectionMatrix() const
 
 QRect Renderer::getScreenRectangleFromWorldRectangle(const QRectF& worldBoundingRectangle) const
 {
-    // Get extremes in world coordinates
-    const auto worldTopLeft         = QVector3D(worldBoundingRectangle.topLeft().toPoint());
-    const auto worldBottomRight     = QVector3D(worldBoundingRectangle.bottomRight().toPoint());
+    // Compute screen bounding rectangle extremes
+    const auto topLeftScreen        = getWorldPositionToScreenPoint(QVector3D(worldBoundingRectangle.bottomLeft()));
+    const auto bottomRightScreen    = getWorldPositionToScreenPoint(QVector3D(worldBoundingRectangle.topRight()));
 
-    // Get extremes in screen coordinates
-    const auto screenTopLeft        = getWorldPositionToScreenPoint(worldTopLeft);
-    const auto screenBottomRight    = getWorldPositionToScreenPoint(worldBottomRight);
-
-    return QRect(screenTopLeft, screenBottomRight);
+    return QRect(topLeftScreen, bottomRightScreen);
 }
 
 void Renderer::panBy(const QPointF& delta)

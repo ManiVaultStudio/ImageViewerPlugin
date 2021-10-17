@@ -105,8 +105,8 @@ SubsetAction::SubsetAction(ImageViewerPlugin& imageViewerPlugin) :
                 // Cache the selection indices
                 auto cachedSelectionIndices = layer->getSelectedIndices();
 
-                // Get the selection boundaries
-                const auto selectionBoundaries = layer->getSelectionAction().getSelectionBoundaries();
+                // Get the selection rectangle in image coordinates
+                const auto selectionBoundaries = layer->getSelectionAction().getImageSelectionRectangle();
 
                 // Compute the number of pixels in the region
                 const auto numberOfPixelsInRegion = selectionBoundaries.width() * selectionBoundaries.height();
@@ -167,10 +167,30 @@ SubsetAction::SubsetAction(ImageViewerPlugin& imageViewerPlugin) :
             exceptionMessageBox("Unable to set create subset");
         }
     });
+
+    // Highlight the selection region in the viewer when needed
+    connect(&_fromRegionAction, &ToggleAction::toggled, this, &SubsetAction::updateHighlightRegion);
+}
+
+void SubsetAction::updateHighlightRegion()
+{
+    // Get selected row from selection model
+    const auto selectedRows = _imageViewerPlugin.getSelectionModel().selectedRows();
+
+    // Only accept one selected layer at a time
+    if (selectedRows.isEmpty())
+        return;
+
+    // Get pointer to selected layer
+    auto layer = static_cast<Layer*>(selectedRows.first().internalPointer());
+
+    // Show/hide the region
+    layer->getSelectionAction().getShowRegionAction().setChecked(getFromRegionAction().isChecked());
 }
 
 SubsetAction::Widget::Widget(QWidget* parent, SubsetAction* subsetAction, const std::int32_t& widgetFlags) :
-    WidgetActionWidget(parent, subsetAction)
+    WidgetActionWidget(parent, subsetAction),
+    _subsetAction(subsetAction)
 {
     auto layout = new QGridLayout();
 
@@ -184,6 +204,9 @@ SubsetAction::Widget::Widget(QWidget* parent, SubsetAction* subsetAction, const 
         parentWidget()->close();
     });
 
+    // Highlight the selection region when needed
+    subsetAction->updateHighlightRegion();
+
     if (widgetFlags & PopupLayout)
     {
         setPopupLayout(layout);
@@ -192,4 +215,20 @@ SubsetAction::Widget::Widget(QWidget* parent, SubsetAction* subsetAction, const 
         layout->setMargin(0);
         setLayout(layout);
     }
+}
+
+SubsetAction::Widget::~Widget()
+{
+    // Get selected row from selection model
+    const auto selectedRows = _subsetAction->getImageViewerPlugin().getSelectionModel().selectedRows();
+
+    // Only accept one selected layer at a time
+    if (selectedRows.isEmpty())
+        return;
+
+    // Get pointer to selected layer
+    auto layer = static_cast<Layer*>(selectedRows.first().internalPointer());
+
+    // Hide the selection region in the viewer
+    layer->getSelectionAction().getShowRegionAction().setChecked(false);
 }

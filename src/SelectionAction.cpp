@@ -12,7 +12,7 @@ SelectionAction::SelectionAction(Layer& layer, QWidget* targetWidget, PixelSelec
     _layer(layer),
     _targetWidget(targetWidget),
     _pixelSelectionTool(pixelSelectionTool),
-    _showRegionAction(this, "Show selected region", true, true),
+    _showRegionAction(this, "Show selected region", false, false),
     _groupAction(this, false)
 {
     setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("mouse-pointer"));
@@ -30,23 +30,17 @@ SelectionAction::SelectionAction(Layer& layer, QWidget* targetWidget, PixelSelec
     // Populate group action
     _groupAction << _typeAction;
     _groupAction << _brushRadiusAction;
-    _groupAction << _showRegionAction;
     _groupAction << _overlayColor;
     _groupAction << _overlayOpacity;
     _groupAction << _notifyDuringSelectionAction;
 
-    // Re-render
-    const auto render = [this]() {
-        _layer.invalidate();
-    };
-
     // Re-render when the overlay color, overlay opacity or show region changes
-    connect(&_overlayColor, &ColorAction::colorChanged, this, render);
-    connect(&_overlayOpacity, &DecimalAction::valueChanged, this, render);
-    connect(&_showRegionAction, &ToggleAction::toggled, this, render);
+    connect(&_overlayColor, &ColorAction::colorChanged, &_layer, &Layer::invalidate);
+    connect(&_overlayOpacity, &DecimalAction::valueChanged, &_layer, &Layer::invalidate);
+    connect(&_showRegionAction, &ToggleAction::toggled, &_layer, &Layer::invalidate);
 }
 
-QRect SelectionAction::getSelectionBoundaries() const
+QRect SelectionAction::getImageSelectionRectangle() const
 {
-    return _layer.getSelectionBoundaries();
+    return _layer.getImageSelectionRectangle();
 }
