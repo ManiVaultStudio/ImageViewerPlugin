@@ -539,26 +539,39 @@ void ImageViewerWidget::paintGL()
         if (!painter.begin(this))
             throw std::runtime_error("Unable to begin painting");
 
+        // Enable anti-aliasing
+        painter.setRenderHint(QPainter::Antialiasing);
+        painter.setRenderHint(QPainter::TextAntialiasing);
+
         // Draw the background
         painter.setBrush(_backgroundColor);
         painter.drawRect(rect());
 
-        // Draw layers with OpenGL
-        painter.beginNativePainting();
-        {
-            glEnable(GL_BLEND);
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        auto layersSorted = _layersModel.getLayers();
 
-            auto layersSorted = _layersModel.getLayers();
+        // Sort the layers
+        std::reverse(layersSorted.begin(), layersSorted.end());
 
-            // Sort the layers
-            std::reverse(layersSorted.begin(), layersSorted.end());
-
-            // Draw the image layers
-            for (auto& layer : layersSorted)
+        // Draw the image layers
+        for (auto& layer : layersSorted) {
+                
+            // Draw layer with OpenGL
+            painter.beginNativePainting();
+            {
+                glEnable(GL_BLEND);
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+                    
                 layer->render(_renderer.getProjectionMatrix() * _renderer.getViewMatrix());
+            }
+            painter.endNativePainting();
+
+            // Draw layer native
+            layer->paint(painter, Layer::Bounds);
         }
-        painter.endNativePainting();
+
+        // Draw the image layer label of the active layer
+        for (auto& layer : layersSorted)
+            layer->paint(painter, Layer::Label);
 
         // Draw the pixel selection tool overlays if the pixel selection tool is enabled
         if (_pixelSelectionTool.isEnabled()) {

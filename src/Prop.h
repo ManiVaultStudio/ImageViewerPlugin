@@ -64,6 +64,8 @@ public:
     /** Returns the full shape name (actor_name::prop_name::shape_name */
     QString getFullName();
 
+public: // Geometry
+
     /** Returns the model matrix */
     QMatrix4x4 getModelMatrix() const;
 
@@ -73,14 +75,17 @@ public:
      */
     void setModelMatrix(const QMatrix4x4& modelMatrix);
 
+    /** Gets the bounding rectangle of the prop in world coordinates */
+    virtual QRectF getWorldBoundingRectangle() const = 0;
+
+    /** Gets the bounding rectangle of the prop in screen coordinates */
+    virtual QRect getScreenBoundingRectangle() const final;
+
     /**
      * Renders the prop
      * @param modelViewProjectionMatrix Model view projection matrix
      */
     virtual void render(const QMatrix4x4& modelViewProjectionMatrix);
-
-    /** Get the bounding rectangle of the prop in world coordinates */
-    virtual QRectF getWorldBoundingRectangle() const = 0;
 
     /** Get reference to the renderer */
     Renderer& getRenderer();

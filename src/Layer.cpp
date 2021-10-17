@@ -11,6 +11,8 @@
 #include "PointData.h"
 #include "ClusterData.h"
 
+#include <QPainter>
+
 #include <set>
 
 using namespace hdps;
@@ -281,6 +283,52 @@ void Layer::deactivate()
 void Layer::invalidate()
 {
     _imageViewerPlugin.getImageViewerWidget().update();
+}
+
+void Layer::paint(QPainter& painter, const PaintFlag& paintFlags)
+{
+    // Don't draw if the layer is invisible
+    if (!_generalAction.getVisibleAction().isChecked())
+        return;
+
+    // Get world bounding rectangle
+    const auto worldBoundingRectangle = getPropByName<ImageProp>("ImageProp")->getWorldBoundingRectangle();
+
+    // Get reference to renderer
+    auto& renderer = _imageViewerPlugin.getImageViewerWidget().getRenderer();
+
+    // Compute screen bounding rectangle
+    const auto topLeftScreen        = renderer.getWorldPositionToScreenPoint(QVector3D(worldBoundingRectangle.topLeft()));
+    const auto bottomRightScreen    = renderer.getWorldPositionToScreenPoint(QVector3D(worldBoundingRectangle.bottomRight()));
+
+    // Establish image prop rectangle
+    const auto propRectangle = QRectF(topLeftScreen, bottomRightScreen);
+
+    // Draw layer bounds
+    if (paintFlags & Layer::Bounds) {
+
+        // Configure pen and brush
+        painter.setPen(QPen(QBrush(_generalAction.getColorAction().getColor()), _active ? 2.0f : 1.0f, _active ? Qt::SolidLine : Qt::DashLine));
+        painter.setBrush(Qt::transparent);
+
+        // Draw the bounding rectangle
+        painter.drawRect(propRectangle);
+    }
+
+    // Draw layer label
+    if ((paintFlags & Layer::Label) && _active) {
+
+        // Establish label text
+        const auto labelText = QString("%1 (%2x%3)").arg(_generalAction.getNameAction().getString(), QString::number(_imagesDataset->getImageSize().width()), QString::number(_imagesDataset->getImageSize().height()));
+
+        // Configure pen and brush
+        painter.setPen(QPen(QBrush(_generalAction.getColorAction().getColor()), _active ? 2.0f : 1.0f));
+        painter.setBrush(Qt::transparent);
+
+        // Draw the text
+        painter.setFont(QFont("arial", 8));
+        painter.drawText(propRectangle.translated(QPointF(0.0f, propRectangle.height())), labelText, QTextOption(Qt::AlignTop | Qt::AlignLeft));
+    }
 }
 
 const QString Layer::getImagesDatasetName() const

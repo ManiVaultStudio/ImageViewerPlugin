@@ -20,6 +20,12 @@ class Layer : public QObject, public Renderable
 {
     Q_OBJECT
 
+    /** Paint flags */
+    enum PaintFlag {
+        Bounds  = 0x001,
+        Label   = 0x002
+    };
+
 public:
 
     /**
@@ -50,6 +56,12 @@ public:
 
     /** Invalidates the prop (triggers a re-render of all layers) */
     void invalidate();
+
+    /**
+     * Paint
+     * @param painter Reference to painter
+     */
+    void paint(QPainter& painter, const PaintFlag& paintFlags);
 
     /** Get source dataset */
     hdps::DataSet* getSourceDataset() {

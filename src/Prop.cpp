@@ -141,3 +141,18 @@ void Prop::setModelMatrix(const QMatrix4x4& modelMatrix)
 
     _modelMatrix = modelMatrix;
 }
+
+QRect Prop::getScreenBoundingRectangle() const
+{
+    // Get world bounding rectangle
+    const auto worldBoundingRectangle = getWorldBoundingRectangle();
+
+    // Get reference to renderer
+    auto& renderer = _renderable.getRenderer();
+
+    // Compute screen bounding rectangle extremes
+    const auto topLeftScreen        = renderer.getWorldPositionToScreenPoint(QVector3D(worldBoundingRectangle.topLeft()));
+    const auto bottomRightScreen    = renderer.getWorldPositionToScreenPoint(QVector3D(worldBoundingRectangle.bottomRight()));
+
+    return QRect(topLeftScreen, bottomRightScreen);
+}

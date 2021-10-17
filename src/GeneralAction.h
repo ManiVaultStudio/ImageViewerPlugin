@@ -41,8 +41,8 @@ public: /** Action getters */
 
 protected:
     Layer&          _layer;                 /** Reference to layer */
-    StringAction    _datasetNameAction;     /** Dataset name action */
     ToggleAction    _visibleAction;         /** Visible action */
+    StringAction    _datasetNameAction;     /** Dataset name action */
     ColorAction     _colorAction;           /** Color action */
     StringAction    _nameAction;            /** Name action */
     DecimalAction   _scaleAction;           /** Scale action */

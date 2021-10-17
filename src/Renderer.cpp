@@ -63,7 +63,7 @@ QVector2D Renderer::getWorldPositionToNormalizedScreenPoint(const QVector3D& pos
 
 QPoint Renderer::getWorldPositionToScreenPoint(const QVector3D& position) const
 {
-    const auto normalizedScreenPoint    = getWorldPositionToNormalizedScreenPoint(position);
+    const auto normalizedScreenPoint    = QVector2D(1.0f, -1.0f) * getWorldPositionToNormalizedScreenPoint(position);
     const auto viewSize                 = QVector2D(getParentWidgetSize().width(), getParentWidgetSize().height());
 
     return (viewSize * ((QVector2D(1.0f, 1.0f) + normalizedScreenPoint) / 2.0f)).toPoint();
