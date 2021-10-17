@@ -308,7 +308,7 @@ void Layer::paint(QPainter& painter, const PaintFlag& paintFlags)
         }
 
         // Draw layer selection rectangle
-        if ((paintFlags & Layer::SelectionRectangle) && _active && _imageSelectionRectangle.isValid()) {
+        if ((paintFlags & Layer::SelectionRectangle) && _imageSelectionRectangle.isValid()) {
 
             // Create perimeter pen
             auto perimeterPen = QPen(QBrush(_imageViewerPlugin.getImageViewerWidget().getPixelSelectionTool().getMainColor()), 0.7f);
