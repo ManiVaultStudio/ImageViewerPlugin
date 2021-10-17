@@ -565,14 +565,15 @@ void ImageViewerWidget::paintGL()
             }
             painter.endNativePainting();
 
-            // Draw layer bounds and selection rectangle with native rendering
-            layer->paint(painter, Layer::Bounds);
+            // Draw selection rectangle with native rendering
             layer->paint(painter, Layer::SelectionRectangle);
         }
 
-        // Draw the image layer label of the active layer
-        for (auto& layer : layersSorted)
+        // Draw the layer label and layer bounds with native rendering
+        for (auto& layer : layersSorted) {
+            layer->paint(painter, Layer::Bounds);
             layer->paint(painter, Layer::Label);
+        }
 
         // Draw the pixel selection tool overlays if the pixel selection tool is enabled
         if (_pixelSelectionTool.isEnabled()) {

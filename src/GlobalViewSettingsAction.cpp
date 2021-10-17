@@ -21,6 +21,7 @@ GlobalViewSettingsAction::GlobalViewSettingsAction(ImageViewerPlugin& imageViewe
     _groupAction << _backgroundColorAction;
     _groupAction << _animationEnabledAction;
 
+    _zoomMarginAction.setSuffix("px");
     _zoomMarginAction.setUpdateDuringDrag(false);
 
     auto& imageViewerWidget = _imageViewerPlugin.getImageViewerWidget();

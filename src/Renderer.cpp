@@ -110,14 +110,16 @@ QMatrix4x4 Renderer::getViewMatrix() const
     // Create look-at transformation matrix
     lookAt.lookAt(eye, center, up);
 
-    const auto viewerSize   = getParentWidgetSize();
-    const auto totalMargins = 2 * _zoomMargin;
-    const auto factorX      = static_cast<float>(viewerSize.width() - totalMargins) / static_cast<float>(_zoomRectangle.width() - 1);
-    const auto factorY      = static_cast<float>(viewerSize.height() - totalMargins) / static_cast<float>(_zoomRectangle.height() - 1);
-    const auto scaleFactor  = factorX < factorY ? factorX : factorY;
+    const auto viewerSize           = getParentWidgetSize();
+    const auto totalMargins         = 2 * _zoomMargin;
+    const auto factorX              = static_cast<float>(viewerSize.width()) / static_cast<float>(_zoomRectangle.width());
+    const auto factorY              = static_cast<float>(viewerSize.height()) / static_cast<float>(_zoomRectangle.height());
+    const auto scaleFactor          = factorX < factorY ? factorX : factorY;
+
+    const auto d = 1.0f - (2 * _zoomMargin) / std::max(viewerSize.width(), viewerSize.height());
 
     // Create scale matrix
-    scale.scale(scaleFactor, scaleFactor, scaleFactor);
+    scale.scale(scaleFactor * d, scaleFactor * d, scaleFactor * d);
 
     // Return composite matrix of scale and look-at transformation matrix
     return scale * lookAt;

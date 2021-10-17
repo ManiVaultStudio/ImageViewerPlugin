@@ -339,7 +339,7 @@ void Layer::paint(QPainter& painter, const PaintFlag& paintFlags)
 
             // Draw the text
             painter.setFont(QFont("arial", 7));
-            painter.drawText(propRectangle.translated(QPoint(0.0f, propRectangle.height() + margin)), labelText, QTextOption(Qt::AlignTop | Qt::AlignLeft));
+            painter.drawText(QRect(propRectangle.bottomLeft() + QPoint(0.0f, margin), QSize(500, 100)), labelText, QTextOption(Qt::AlignTop | Qt::AlignLeft));
         }
     }
     catch (std::exception& e)
@@ -774,7 +774,7 @@ void Layer::zoomToSelection()
         qDebug() << "Zoom to the pixel selection of layer:" << _generalAction.getNameAction().getString();;
 
         // Zoom to the world selection rectangle
-        _imageViewerPlugin.getImageViewerWidget().getRenderer().setZoomRectangle(getWorldSelectionRectangle());
+        _imageViewerPlugin.getImageViewerWidget().getRenderer().setZoomRectangle(getWorldSelectionRectangle().marginsAdded(QMarginsF(0.0f, 0.0f, 1.0f, 1.0f)));
     }
     catch (std::exception& e)
     {
