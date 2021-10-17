@@ -118,7 +118,7 @@ ZoomToolbarAction::Widget::Widget(QWidget* parent, ZoomToolbarAction* zoomToolba
 
     layout->addStretch(1);
     layout->addWidget(zoomToolbarAction->getZoomOutAction().createWidget(this, TriggerAction::Icon));
-    layout->addWidget(zoomToolbarAction->getZoomPercentageAction().createWidget(this, TriggerAction::Icon));
+    layout->addWidget(zoomToolbarAction->getZoomPercentageAction().createWidget(this, DecimalAction::SpinBox | DecimalAction::Slider));
     layout->addWidget(zoomToolbarAction->getZoomInAction().createWidget(this, TriggerAction::Icon));
     layout->addWidget(zoomToolbarAction->getZoomExtentsAction().createWidget(this, TriggerAction::Icon));
     //layout->addWidget(navigationAction->getExportToImageAction().createWidget(this, ToggleAction::PushButtonIcon));

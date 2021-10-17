@@ -30,7 +30,7 @@ GlobalViewSettingsAction::GlobalViewSettingsAction(ImageViewerPlugin& imageViewe
     const auto settingsPrefix = "ImageViewerPlugin/ViewSettings";
 
     // Default values
-    const auto defaultZoomMargin        = 50.0f;
+    const auto defaultZoomMargin        = 100.0f;
     const auto defaultBackgroundColor   = QColor(50, 50, 50);
     const auto defaultAnimationEnabled  = true;
 

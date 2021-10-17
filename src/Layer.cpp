@@ -608,7 +608,7 @@ void Layer::publishSelection()
                     for (std::int32_t pixelY = targetRectangle.top(); pixelY <= targetRectangle.bottom(); pixelY++) {
                         for (std::int32_t pixelX = targetRectangle.left(); pixelX <= targetRectangle.right(); pixelX++) {
                             if (selectionImage.bits()[getTargetPixelIndex(pixelX, pixelY) * noComponents] > 0)
-                                selectionIndices.push_back(integerScalarData[getSourcePixelIndex(pixelX, pixelY)]);
+                                selectionIndices.push_back(integerScalarData[getTargetPixelIndex(pixelX, pixelY)]);
                         }
                     }
 
@@ -631,7 +631,7 @@ void Layer::publishSelection()
                     for (std::int32_t pixelY = targetRectangle.top(); pixelY <= targetRectangle.bottom(); pixelY++) {
                         for (std::int32_t pixelX = targetRectangle.left(); pixelX <= targetRectangle.right(); pixelX++) {
                             if (selectionImage.bits()[getTargetPixelIndex(pixelX, pixelY) * noComponents] > 0)
-                                selectionSet.insert(integerScalarData[getSourcePixelIndex(pixelX, pixelY)]);
+                                selectionSet.insert(integerScalarData[getTargetPixelIndex(pixelX, pixelY)]);
                         }
                     }
 
@@ -651,7 +651,7 @@ void Layer::publishSelection()
                     for (std::int32_t pixelY = targetRectangle.top(); pixelY <= targetRectangle.bottom(); pixelY++) {
                         for (std::int32_t pixelX = targetRectangle.left(); pixelX <= targetRectangle.right(); pixelX++) {
                             if (selectionImage.bits()[getTargetPixelIndex(pixelX, pixelY) * noComponents] > 0)
-                                selectionSet.erase(integerScalarData[getSourcePixelIndex(pixelX, pixelY)]);
+                                selectionSet.erase(integerScalarData[getTargetPixelIndex(pixelX, pixelY)]);
                         }
                     }
 
