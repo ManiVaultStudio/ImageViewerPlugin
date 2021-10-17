@@ -6,6 +6,7 @@
 #include "actions/ToggleAction.h"
 
 #include "SubsetAction.h"
+#include "GlobalViewSettingsAction.h"
 
 class ImageViewerPlugin;
 class ImageViewerWidget;
@@ -85,17 +86,19 @@ public: // Action getters
     ToggleAction& getSampleSelectionAction() { return _sampleSelectionAction; }
     SubsetAction& getSubsetAction() { return _subsetAction; }
     TriggerAction& getExportToImageAction() { return _exportToImageAction; }
+    GlobalViewSettingsAction& getGlobalViewSettingsAction() { return _globalViewSettingsAction; }
 
 protected:
-    ImageViewerPlugin&  _imageViewerPlugin;             /** Reference to image viewer plugin */
-    ToggleAction        _panAction;                     /** Pan interaction mode action */
-    ToggleAction        _selectAction;                  /** Select interaction mode action */
-    ToggleAction        _rectangleSelectionAction;      /** Rectangle selection action */
-    ToggleAction        _brushSelectionAction;          /** Brush selection action */
-    ToggleAction        _lassoSelectionAction;          /** Lasso selection action */
-    ToggleAction        _polygonSelectionAction;        /** Polygon selection action */
-    ToggleAction        _sampleSelectionAction;         /** Sample selection action */
-    SubsetAction        _subsetAction;                  /** Subset action */
-    TriggerAction       _exportToImageAction;           /** Export to image action */
-    QActionGroup        _interactionModeActionGroup;    /** Interaction mode action group */
+    ImageViewerPlugin&          _imageViewerPlugin;                 /** Reference to image viewer plugin */
+    ToggleAction                _panAction;                         /** Pan interaction mode action */
+    ToggleAction                _selectAction;                      /** Select interaction mode action */
+    ToggleAction                _rectangleSelectionAction;          /** Rectangle selection action */
+    ToggleAction                _brushSelectionAction;              /** Brush selection action */
+    ToggleAction                _lassoSelectionAction;              /** Lasso selection action */
+    ToggleAction                _polygonSelectionAction;            /** Polygon selection action */
+    ToggleAction                _sampleSelectionAction;             /** Sample selection action */
+    SubsetAction                _subsetAction;                      /** Subset action */
+    TriggerAction               _exportToImageAction;               /** Export to image action */
+    QActionGroup                _interactionModeActionGroup;        /** Interaction mode action group */
+    GlobalViewSettingsAction    _globalViewSettingsAction;          /** Global view settings action */
 };

@@ -32,6 +32,11 @@ protected: // Widget
         Widget(QWidget* parent, SubsetAction* subsetAction, const std::int32_t& widgetFlags);
     };
 
+    /**
+     * Get widget representation of the subset action
+     * @param parent Pointer to parent widget
+     * @param widgetFlags Widget flags for the configuration of the widget (type)
+     */
     QWidget* getWidget(QWidget* parent, const std::int32_t& widgetFlags) override {
         return new Widget(parent, this, widgetFlags);
     };

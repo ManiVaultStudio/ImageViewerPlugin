@@ -23,7 +23,7 @@ ImageViewerWidget::ImageViewerWidget(QWidget* parent, LayersModel& layersModel) 
     _openGLInitialized(false),
     _pixelSelectionTool(this),
     _openglDebugLogger(std::make_unique<QOpenGLDebugLogger>()),
-    _backgroundGradient(),
+    _backgroundColor(Qt::darkGray),
     _keys(),
     _mousePositions(),
     _mouseButtons(),
@@ -64,14 +64,6 @@ ImageViewerWidget::ImageViewerWidget(QWidget* parent, LayersModel& layersModel) 
     surfaceFormat.setSamples(16);
 
     setFormat(surfaceFormat);
-
-    const auto backgroundColor = QColor(50, 50, 50);
-
-    _backgroundGradient.setCoordinateMode(QGradient::ObjectBoundingMode);
-    _backgroundGradient.setCenter(0.5, 0.50);
-    _backgroundGradient.setFocalPoint(0.5, 0.5);
-    _backgroundGradient.setColorAt(0.0, backgroundColor);
-    _backgroundGradient.setColorAt(0.7, backgroundColor);
 
     this->installEventFilter(this);
 
@@ -548,7 +540,7 @@ void ImageViewerWidget::paintGL()
             throw std::runtime_error("Unable to begin painting");
 
         // Draw the background
-        painter.setBrush(_backgroundGradient);
+        painter.setBrush(_backgroundColor);
         painter.drawRect(rect());
 
         // Draw layers with OpenGL

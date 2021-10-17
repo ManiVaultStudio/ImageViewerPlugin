@@ -19,7 +19,8 @@ Renderer::Renderer(QOpenGLWidget* parent) :
     _zoomSensitivity(0.1f),
     _zoomMargin(50.0f),
     _worldBoundingRectangle(),
-    _zoomAnimation(this, "zoomRectangle")
+    _zoomAnimation(this, "zoomRectangle"),
+    _animationEnabled()
 {
     // Set duration of zoom animation
     _zoomAnimation.setDuration(500);
@@ -206,6 +207,8 @@ float Renderer::getZoomMargin() const
 void Renderer::setZoomMargin(const float& zoomMargin)
 {
     _zoomMargin = zoomMargin;
+
+    setZoomRectangle(_worldBoundingRectangle);
 }
 
 QRectF Renderer::getWorldBoundingBox() const
@@ -233,9 +236,19 @@ void Renderer::zoomAround(const QPoint& screenPoint, const float& factor)
 
 void Renderer::setZoomRectangle(const QRectF& zoomRectangle)
 {
-    _zoomAnimation.setStartValue(_zoomRectangle.isValid() ? _zoomRectangle : zoomRectangle);
+    _zoomAnimation.setStartValue((_zoomRectangle.isValid() && _animationEnabled) ? _zoomRectangle : zoomRectangle);
     _zoomAnimation.setEndValue(zoomRectangle);
     _zoomAnimation.start();
+}
+
+bool Renderer::getAnimationEnabled() const
+{
+    return _animationEnabled;
+}
+
+void Renderer::setAnimationEnabled(const bool& animationEnabled)
+{
+    _animationEnabled = animationEnabled;
 }
 
 void Renderer::bindOpenGLContext()

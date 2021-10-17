@@ -22,7 +22,8 @@ MainToolbarAction::MainToolbarAction(ImageViewerPlugin& imageViewerPlugin) :
     _sampleSelectionAction(this, "Sample selection"),
     _subsetAction(imageViewerPlugin),
     _exportToImageAction(this, ""),
-    _interactionModeActionGroup(this)
+    _interactionModeActionGroup(this),
+    _globalViewSettingsAction(imageViewerPlugin)
 {
     setText("Navigation");
 
@@ -216,6 +217,7 @@ MainToolbarAction::Widget::Widget(QWidget* parent, MainToolbarAction* interactio
     layout->addWidget(getDivider());
     layout->addWidget(interactionAction->getSubsetAction().createCollapsedWidget(this));
     layout->addStretch(1);
+    layout->addWidget(interactionAction->getGlobalViewSettingsAction().createCollapsedWidget(this));
 
     setLayout(layout);
 }

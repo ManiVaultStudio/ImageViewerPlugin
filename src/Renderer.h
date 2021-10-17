@@ -144,6 +144,15 @@ public: // Navigation
     /** Zoom to rectangle in world coordinates */
     void setZoomRectangle(const QRectF& zoomRectangle);
 
+    /** Get whether animations are enabled */
+    bool getAnimationEnabled() const;
+
+    /**
+     * Set whether animations are enabled
+     * @param animationEnabled Whether animations are enabled
+     */
+    void setAnimationEnabled(const bool& animationEnabled);
+
 public: // Miscellaneous
 
     /** Returns the parent widget */
@@ -172,4 +181,5 @@ protected:
     QRectF                  _worldBoundingRectangle;    /** World bounding rectangle */
     QRectF                  _zoomRectangle;             /** Zoom rectangle in world coordinates */
     QPropertyAnimation      _zoomAnimation;             /** Zoom rectangle property animation */
+    bool                    _animationEnabled;          /** Zoom animation enabled */
 };

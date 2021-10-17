@@ -65,6 +65,20 @@ public:
         return _pixelSelectionTool;
     }
 
+    /** Get viewport background color */
+    QColor getBackgroundColor() const {
+        return _backgroundColor;
+    }
+
+    /**
+     * Set viewport background color
+     * @param backgroundColor The background color
+     */
+    void setBackgroundColor(const QColor& backgroundColor) {
+        _backgroundColor = backgroundColor;
+        update();
+    }
+
     /** Get a reference to the pixel selection tool */
     Renderer& getRenderer() {
         return _renderer;
@@ -136,7 +150,7 @@ protected:
     bool                                    _openGLInitialized;         /** Whether OpenGL is initialized or not */
     PixelSelectionTool                      _pixelSelectionTool;        /** Pixel selection tool */
     std::unique_ptr<QOpenGLDebugLogger>     _openglDebugLogger;         /** OpenGL logger instance for debugging (only enabled in debug mode for performance reasons) */
-    QRadialGradient                         _backgroundGradient;        /** Viewport gradient background */
+    QColor                                  _backgroundColor;           /** Viewport background color */
     std::int32_t                            _keys;                      /** Currently pressed keyboard keys */
     QVector<QPoint>                         _mousePositions;            /** Recorded mouse positions */
     int                                     _mouseButtons;              /** State of the left, middle and right mouse buttons */
