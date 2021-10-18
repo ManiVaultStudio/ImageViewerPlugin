@@ -469,8 +469,6 @@ void LayersModel::addLayer(Layer* layer)
                 const auto changedCell = index(_layers.indexOf(layer), Column::Opacity);
                 emit dataChanged(changedCell, changedCell);
             });
-
-            layer->zoomToExtents();
         }
         endInsertRows();
     }

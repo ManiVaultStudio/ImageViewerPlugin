@@ -58,6 +58,7 @@ public: /** Action getters */
     GroupAction& getGroupAction() { return _groupAction; }
     DecimalAction& getZoomMarginAction() { return _zoomMarginAction; }
     ColorAction& getBackgroundColorAction() { return _backgroundColorAction; }
+    ToggleAction& getSmartZoomAction() { return _smartZoomAction; }
 
 protected:
     ImageViewerPlugin&  _imageViewerPlugin;         /** Reference to image viewer plugin */

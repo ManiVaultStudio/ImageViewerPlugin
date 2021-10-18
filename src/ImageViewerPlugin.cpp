@@ -112,41 +112,17 @@ void ImageViewerPlugin::init()
 
         if (dataType == PointType) {
             dropRegions << new DropWidget::DropRegion(this, "Points", QString("Convert %1 to image layer").arg(datasetName), true, [this, datasetName]() {
-                try
-                {
-                    // Create conversion dialog
-                    ConvertToImagesDatasetDialog pointsToImagesDialog(*this, datasetName);
 
-                    // Show the dialog
-                    pointsToImagesDialog.exec();
-                }
-                catch (std::exception& e)
-                {
-                    exceptionMessageBox(QString("Unable to convert %1 to image layer").arg(datasetName), e);
-                }
-                catch (...) {
-                    exceptionMessageBox(QString("Unable to convert %1 to image layer").arg(datasetName));
-                }
+                // Convert the points dataset to an images dataset and add as a layer
+                immigrateDataset(datasetName);
             });
         }
 
         if (dataType == ClusterType) {
             dropRegions << new DropWidget::DropRegion(this, "Clusters", QString("Convert %1 to image layer").arg(datasetName), true, [this, datasetName]() {
-                try
-                {
-                    // Create conversion dialog
-                    ConvertToImagesDatasetDialog pointsToImagesDialog(*this, datasetName);
 
-                    // Show the dialog
-                    pointsToImagesDialog.exec();
-                }
-                catch (std::exception& e)
-                {
-                    exceptionMessageBox(QString("Unable to convert %1 to image layer").arg(datasetName), e);
-                }
-                catch (...) {
-                    exceptionMessageBox(QString("Unable to convert %1 to image layer").arg(datasetName));
-                }
+                // Convert the points dataset to an images dataset and add as a layer
+                immigrateDataset(datasetName);
             });
         }
 
@@ -242,10 +218,10 @@ void ImageViewerPlugin::init()
     layersInsertedRemovedChanged();
 
     // Change the window title when the layer selection or layer name changes
-    connect(&_selectionModel, &QItemSelectionModel::selectionChanged, this, &ImageViewerPlugin::updateWindowTitle);
+    connect(&_selectionModel, &QItemSelectionModel::selectionChanged, this, &ImageViewerPlugin::onLayerSelectionChanged);
 
     // Do an initial update of the window title
-    updateWindowTitle();
+    onLayerSelectionChanged();
 
     // Routine to show the context menu
     connect(&_imageViewerWidget, &ImageViewerWidget::customContextMenuRequested, this, [this](const QPoint& point) {
@@ -261,7 +237,7 @@ void ImageViewerPlugin::init()
     _dropWidget.setShowDropIndicator(true);
 }
 
-void ImageViewerPlugin::updateWindowTitle()
+void ImageViewerPlugin::onLayerSelectionChanged()
 {
     // Get selected row and establish whether there is a valid selection
     const auto selectedRows = _selectionModel.selectedRows();
@@ -278,10 +254,47 @@ void ImageViewerPlugin::updateWindowTitle()
 
         // A layer is selected so change the current layer name
         currentLayerName = layer->getGeneralAction().getNameAction().getString();
+
+        // Zoom to the extents of the layer if smart zoom is enabled
+        if (_mainToolbarAction.getGlobalViewSettingsAction().getSmartZoomAction().isChecked())
+            layer->zoomToExtents();
     }
 
     // Update the window title
     setWindowTitle(QString("%1%2").arg(getGuiName(), currentLayerName.isEmpty() ? "" : QString(": %1").arg(currentLayerName)));
+}
+
+void ImageViewerPlugin::immigrateDataset(const QString& datasetName)
+{
+    try {
+
+        // Create conversion dialog
+        ConvertToImagesDatasetDialog pointsToImagesDialog(*this, datasetName);
+
+        // Show the dialog and add the layer if accepted
+        if (pointsToImagesDialog.exec() == 1) {
+
+            // Create new layer for the converted dataset
+            auto layer = new Layer(*this, pointsToImagesDialog.getTargetImagesDatasetName());
+
+            // Add new layer to the model
+            _model.addLayer(layer);
+
+            // Update world bounds of all layers
+            _imageViewerWidget.updateWorldBoundingRectangle();
+
+            // Zoom to the extents of the layer if smart zoom is enabled
+            if (_mainToolbarAction.getGlobalViewSettingsAction().getSmartZoomAction().isChecked())
+                layer->zoomToExtents();
+        }
+    }
+    catch (std::exception& e)
+    {
+        exceptionMessageBox(QString("Unable to immigrate dataset: %1").arg(datasetName), e);
+    }
+    catch (...) {
+        exceptionMessageBox(QString("Unable to immigrate dataset: %1").arg(datasetName));
+    }
 }
 
 QIcon ImageViewerPluginFactory::getIcon() const

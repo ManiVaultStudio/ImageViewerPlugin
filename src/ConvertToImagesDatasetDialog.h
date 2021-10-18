@@ -48,8 +48,10 @@ public:
         return sizeHint();
     }
 
-    /** Get image size */
-    QSize getImageSize() const;
+    /** Get the name of the target images dataset */
+    QString getTargetImagesDatasetName() const;
+
+protected:
 
     /**
      * Find the image size by walking up the tree and looking for images datasets
@@ -64,14 +66,15 @@ public: // Action getters
     IntegralAction& getNumberOfImagesAction() { return _numberOfImagesAction; }
 
 protected:
-    ImageViewerPlugin&          _imageViewerPlugin;         /** Reference to image viewer plugin */
-    DatasetRef<hdps::DataSet>   _sourceDataset;             /** Reference to source dataset */
-    DatasetRef<Images>          _sourceImagesDataset;       /** Reference to the source images dataset */
-    QRect                       _sourceRectangle;           /** Source rectangle (if a source images dataset is found) */
-    StringAction                _datasetNameAction;         /** Images dataset name action */
-    IntegralAction              _imageWidthAction;          /** Image width action */
-    IntegralAction              _imageHeightAction;         /** Image height action */
-    IntegralAction              _numberOfImagesAction;      /** Number of images action */
-    StringAction                _numberOfPixelsAction;      /** Number of pixels action */
-    GroupAction                 _groupAction;               /** Group action */
+    ImageViewerPlugin&          _imageViewerPlugin;             /** Reference to image viewer plugin */
+    DatasetRef<hdps::DataSet>   _sourceDataset;                 /** Reference to source dataset */
+    DatasetRef<Images>          _sourceImagesDataset;           /** Reference to the source images dataset */
+    QRect                       _sourceRectangle;               /** Source rectangle (if a source images dataset is found) */
+    StringAction                _datasetNameAction;             /** Images dataset name action */
+    IntegralAction              _imageWidthAction;              /** Image width action */
+    IntegralAction              _imageHeightAction;             /** Image height action */
+    IntegralAction              _numberOfImagesAction;          /** Number of images action */
+    StringAction                _numberOfPixelsAction;          /** Number of pixels action */
+    GroupAction                 _groupAction;                   /** Group action */
+    QString                     _targetImagesDatasetName;       /** Name of the target images dataset */
 };

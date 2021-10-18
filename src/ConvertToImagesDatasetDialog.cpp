@@ -24,7 +24,8 @@ ConvertToImagesDatasetDialog::ConvertToImagesDatasetDialog(ImageViewerPlugin& im
     _imageHeightAction(this, "Image height", 1, 10000, 100, 100),
     _numberOfImagesAction(this, "Number of images", 1, 10000, 1, 1),
     _numberOfPixelsAction(this, "Number of pixels"),
-    _groupAction(this)
+    _groupAction(this),
+    _targetImagesDatasetName()
 {
     // Throw exception is dataset name is empty
     if (datasetName.isEmpty())
@@ -123,11 +124,8 @@ ConvertToImagesDatasetDialog::ConvertToImagesDatasetDialog(ImageViewerPlugin& im
         // Notify others that an images dataset was added
         Application::core()->notifyDataAdded(images->getName());
 
-        // Add new layer to the model
-        _imageViewerPlugin.getModel().addLayer(new Layer(_imageViewerPlugin, images.getDatasetName()));
-
-        // Update bounds
-        _imageViewerPlugin.getImageViewerWidget().updateWorldBoundingRectangle();
+        // Set the target images dataset name
+        _targetImagesDatasetName = images->getName();
 
         // Exit the dialog
         accept();
@@ -157,9 +155,9 @@ ConvertToImagesDatasetDialog::ConvertToImagesDatasetDialog(ImageViewerPlugin& im
     updateActions();
 }
 
-QSize ConvertToImagesDatasetDialog::getImageSize() const
+QString ConvertToImagesDatasetDialog::getTargetImagesDatasetName() const
 {
-    return QSize(_imageWidthAction.getValue(), _imageHeightAction.getValue());
+    return _targetImagesDatasetName;
 }
 
 void ConvertToImagesDatasetDialog::findSourceImagesDataset(hdps::DataHierarchyItem* dataHierarchyItem)

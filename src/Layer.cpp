@@ -338,7 +338,7 @@ void Layer::paint(QPainter& painter, const PaintFlag& paintFlags)
             const auto margin = 5;
 
             // Draw the text
-            painter.setFont(QFont("arial", 7));
+            painter.setFont(QFont("arial", 8, 300));
             painter.drawText(QRect(propRectangle.bottomLeft() + QPoint(0.0f, margin), QSize(500, 100)), labelText, QTextOption(Qt::AlignTop | Qt::AlignLeft));
         }
     }

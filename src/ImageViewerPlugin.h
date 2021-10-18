@@ -54,8 +54,14 @@ public: // Miscellaneous
 
 protected:
 
-    /** Update the window title */
-    void updateWindowTitle();
+    /** Invoked when the layer selection changed */
+    void onLayerSelectionChanged();
+
+    /**
+     * Converts a non-images dataset to an images dataset and adds the created dataset as a layer
+     * @param datasetName Name of the dataset
+     */
+    void immigrateDataset(const QString& datasetName);
 
 public: // Action getters
 
