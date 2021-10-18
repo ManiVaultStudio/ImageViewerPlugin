@@ -616,7 +616,7 @@ void Layer::publishSelection()
         if (_sourceDataset->getDataType() == ClusterType) {
 
             // Get reference to clusters selection indices
-            std::vector<std::uint32_t>& selectionIndices = _sourceDataset->getSelection<Clusters>().indices;
+            auto& selectionIndices = _sourceDataset->getSelection<Clusters>().indices;
 
             // Convert floating point scalars to unsigned integer scalars
             std::vector<std::uint32_t> integerScalarData(_imageAction.getScalarChannel1Action().getScalarData().begin(), _imageAction.getScalarChannel1Action().getScalarData().end());
@@ -690,6 +690,34 @@ void Layer::publishSelection()
                 default:
                     break;
             }
+
+            // Get reference to the clusters dataset
+            auto& clusters = dynamic_cast<Clusters&>(*_sourceDataset);
+
+            // Get selected indices
+            const auto selectedIndices = clusters.getSelectedIndices();
+            
+            // Get reference to clusters input points and its selection
+            auto& points    = _sourceDataset->getHierarchyItem().getParent()->getDataset<Points>();
+            auto& selection = points.getSelection<Points>();
+
+            // Reserve enough space for selection
+            selection.indices.clear();
+            selection.indices.reserve(selectedIndices.size());
+
+            // Select the points
+            if (points.isFull()) {
+                selection.indices = selectedIndices;
+            }
+            else {
+
+                // Translate selection indices and add them
+                for (auto selectedIndex : selectedIndices)
+                    selection.indices.push_back(points.indices[selectedIndex]);
+            }
+
+            // Notify others that the point selection changed
+            Application::core()->notifySelectionChanged(points.getName());
         }
 
         // Notify listeners of the selection change
