@@ -2,6 +2,7 @@
 
 #include "actions/Actions.h"
 
+#include "PositionAction.h"
 #include "ZoomAction.h"
 
 class Layer;
@@ -34,9 +35,8 @@ public: /** Action getters */
     ToggleAction& getVisibleAction() { return _visibleAction; }
     ColorAction& getColorAction() { return _colorAction; }
     StringAction& getNameAction() { return _nameAction; }
+    PositionAction& getPositionAction() { return _positionAction; }
     DecimalAction& getScaleAction() { return _scaleAction; }
-    DecimalAction& getXPositionAction() { return _xPositionAction; }
-    DecimalAction& getYPositionAction() { return _yPositionAction; }
     ZoomAction& getZoomAction() { return _zoomAction; }
 
 protected:
@@ -45,8 +45,7 @@ protected:
     StringAction    _datasetNameAction;     /** Dataset name action */
     ColorAction     _colorAction;           /** Color action */
     StringAction    _nameAction;            /** Name action */
+    PositionAction  _positionAction;        /** Position action */
     DecimalAction   _scaleAction;           /** Scale action */
-    DecimalAction   _xPositionAction;       /** X-position action */
-    DecimalAction   _yPositionAction;       /** Y-position action */
     ZoomAction      _zoomAction;            /** Zoom to extents action */
 };

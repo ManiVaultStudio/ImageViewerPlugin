@@ -101,8 +101,7 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
     };
 
     connect(&_generalAction.getScaleAction(), &DecimalAction::valueChanged, this, updateModelMatrixAndReRender);
-    connect(&_generalAction.getXPositionAction(), &DecimalAction::valueChanged, this, updateModelMatrixAndReRender);
-    connect(&_generalAction.getYPositionAction(), &DecimalAction::valueChanged, this, updateModelMatrixAndReRender);
+    connect(&_generalAction.getPositionAction(), &PositionAction::changed, this, updateModelMatrixAndReRender);
 
     updateChannelScalarData(_imageAction.getScalarChannel1Action());
     updateInterpolationType();
@@ -152,7 +151,7 @@ void Layer::updateModelMatrix()
         QMatrix4x4 translateMatrix, scaleMatrix;
 
         // Compute the translation matrix
-        translateMatrix.translate(generalAction.getXPositionAction().getValue(), generalAction.getYPositionAction().getValue(), 0.0f);
+        translateMatrix.translate(generalAction.getPositionAction().getXAction().getValue(), generalAction.getPositionAction().getYAction().getValue(), 0.0f);
 
         // Get the scale factor
         const auto scaleFactor = 0.01f * generalAction.getScaleAction().getValue();
@@ -283,6 +282,27 @@ void Layer::deactivate()
 void Layer::invalidate()
 {
     _imageViewerPlugin.getImageViewerWidget().update();
+}
+
+void Layer::fitInRectangle(const QRectF& rectangle)
+{
+    // Only fit into valid rectangle
+    if (!rectangle.isValid())
+        return;
+
+    // Get target rectangle center and size
+    const auto rectangleCenter  = rectangle.center();
+    const auto rectangleSize    = rectangle.size();
+
+    // Position layer at center
+    _generalAction.getPositionAction().getXAction().setValue(rectangleCenter.x());
+    _generalAction.getPositionAction().getYAction().setValue(rectangleCenter.y());
+
+    // Compute x- and y scale
+    const auto scale = QVector2D(rectangleSize.width() / getWorldBoundingRectangle().width(), rectangleSize.height() / getWorldBoundingRectangle().height());
+
+    // Assign scale
+    _generalAction.getScaleAction().setValue(100.0f * std::min(scale.x(), scale.y()));
 }
 
 void Layer::paint(QPainter& painter, const PaintFlag& paintFlags)

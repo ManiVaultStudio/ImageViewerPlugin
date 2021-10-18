@@ -94,11 +94,17 @@ void ImageViewerPlugin::init()
             dropRegions << new DropWidget::DropRegion(this, "Images", QString("Add an image layer for %1").arg(datasetName), true, [this, datasetName]() {
                 try
                 {
+                    // Create new layer for the converted dataset
+                    auto layer = new Layer(*this, datasetName);
+
                     // Add new layer to the model
-                    _model.addLayer(new Layer(*this, datasetName));
+                    _model.addLayer(layer);
 
                     // Update bounds
                     _imageViewerWidget.updateWorldBoundingRectangle();
+
+                    // Squeeze the layer in to the layers world bounding rectangle
+                    //layer->fitInRectangle(_imageViewerWidget.getWorldBoundingRectangle());
                 }
                 catch (std::exception& e)
                 {
@@ -282,6 +288,9 @@ void ImageViewerPlugin::immigrateDataset(const QString& datasetName)
 
             // Update world bounds of all layers
             _imageViewerWidget.updateWorldBoundingRectangle();
+
+            // Squeeze the layer in to the layers world bounding rectangle
+            //layer->fitInRectangle(_imageViewerWidget.getWorldBoundingRectangle());
 
             // Zoom to the extents of the layer if smart zoom is enabled
             if (_mainToolbarAction.getGlobalViewSettingsAction().getSmartZoomAction().isChecked())

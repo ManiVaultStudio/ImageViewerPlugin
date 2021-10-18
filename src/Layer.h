@@ -59,6 +59,12 @@ public:
     void invalidate();
 
     /**
+     * Squeeze the layer into a rectangle whilst maintaining its aspect ratio
+     * @param rectangle Rectangle to squeeze into
+     */
+    void fitInRectangle(const QRectF& rectangle);
+
+    /**
      * Paint
      * @param painter Reference to painter
      */
