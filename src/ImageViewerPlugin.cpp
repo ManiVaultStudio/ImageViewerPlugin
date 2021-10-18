@@ -104,7 +104,7 @@ void ImageViewerPlugin::init()
                     _imageViewerWidget.updateWorldBoundingRectangle();
 
                     // Squeeze the layer in to the layers world bounding rectangle
-                    //layer->fitInRectangle(_imageViewerWidget.getWorldBoundingRectangle());
+                    layer->fitInRectangle(_imageViewerWidget.getWorldBoundingRectangle());
                 }
                 catch (std::exception& e)
                 {

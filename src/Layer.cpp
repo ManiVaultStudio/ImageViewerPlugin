@@ -301,6 +301,8 @@ void Layer::fitInRectangle(const QRectF& rectangle)
     // Compute x- and y scale
     const auto scale = QVector2D(rectangleSize.width() / getWorldBoundingRectangle().width(), rectangleSize.height() / getWorldBoundingRectangle().height());
 
+    qDebug() << scale;
+
     // Assign scale
     _generalAction.getScaleAction().setValue(100.0f * std::min(scale.x(), scale.y()));
 }
