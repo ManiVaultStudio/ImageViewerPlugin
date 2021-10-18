@@ -1,9 +1,12 @@
 #include "ImageViewerWidget.h"
+#include "ImageViewerPlugin.h"
 #include "LayersModel.h"
 #include "Layer.h"
 #include "ExportToImageDialog.h"
 
 #include "util/Exception.h"
+
+#include "ClusterData.h"
 
 #include <QKeyEvent>
 #include <QPainter>
@@ -16,10 +19,10 @@ const QMap<ImageViewerWidget::InteractionMode, QString> ImageViewerWidget::inter
     { ImageViewerWidget::Selection, "Layer editing" }
 };
 
-ImageViewerWidget::ImageViewerWidget(QWidget* parent, LayersModel& layersModel) :
-    QOpenGLWidget(parent),
+ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin& imageViewerPlugin) :
+    QOpenGLWidget(&imageViewerPlugin),
     QOpenGLFunctions_3_3_Core(),
-    _layersModel(layersModel),
+    _imageViewerPlugin(imageViewerPlugin),
     _openGLInitialized(false),
     _pixelSelectionTool(this),
     _openglDebugLogger(std::make_unique<QOpenGLDebugLogger>()),
@@ -547,7 +550,7 @@ void ImageViewerWidget::paintGL()
         painter.setBrush(_backgroundColor);
         painter.drawRect(rect());
 
-        auto layersSorted = _layersModel.getLayers();
+        auto layersSorted = _imageViewerPlugin.getModel().getLayers();
 
         // Sort the layers
         std::reverse(layersSorted.begin(), layersSorted.end());
@@ -580,7 +583,35 @@ void ImageViewerWidget::paintGL()
             painter.drawPixmap(rect(), _pixelSelectionTool.getAreaPixmap());
             painter.drawPixmap(rect(), _pixelSelectionTool.getShapePixmap());
         }
-        
+
+        // Show cluster name when in sample selection mode
+        if (_interactionMode == Selection) {
+
+            // Only deal with sample selection type
+            if (_pixelSelectionTool.getType() != PixelSelectionType::Sample)
+                return;
+
+            // Get selected rows
+            const auto selectedRows = _imageViewerPlugin.getSelectionModel().selectedRows();
+            
+            // Only show hovered cluster name if a layer is selected
+            if (selectedRows.isEmpty())
+                return;
+
+            // Get pointer to layer that is deselected
+            auto layer = static_cast<Layer*>(selectedRows.first().internalPointer());
+
+            // Show cluster name if hovering over a cluster image
+            if (layer->getSourceDataset()->getDataType() == ClusterType) {
+
+                // Get mouse position in widget coordinates
+                const auto mousePosition = QWidget::mapFromGlobal(QCursor::pos());
+
+                //_renderer.getScreenPointToWorldPosition()
+                painter.drawText(QWidget::mapFromGlobal(QCursor::pos()), "Cluster 1");
+            }
+        }
+
         // End mixed OpenGL/native painting
         painter.end();
     }
@@ -644,7 +675,7 @@ QRectF ImageViewerWidget::getWorldBoundingRectangle() const
 {
     QRectF worldBoundingRectangle;
 
-    for (const auto& layer : _layersModel.getLayers()) {
+    for (const auto& layer : _imageViewerPlugin.getModel().getLayers()) {
         if (layer->getGeneralAction().getVisibleAction().isChecked())
             worldBoundingRectangle |= layer->getWorldBoundingRectangle();
     }

@@ -52,6 +52,14 @@ ImageAction::ImageAction(Layer& layer) :
     // Set initial color map type
     _colorMapAction.setColorMapType(ColorMap::Type::TwoDimensional);
 
+    // Disable horizontal range actions
+    _colorMapAction.getSettingsAction().getHorizontalAxisAction().getRangeAction().getRangeMinAction().setEnabled(false);
+    _colorMapAction.getSettingsAction().getHorizontalAxisAction().getRangeAction().getRangeMaxAction().setEnabled(false);
+    
+    // Disable vertical range actions
+    _colorMapAction.getSettingsAction().getVerticalAxisAction().getRangeAction().getRangeMinAction().setEnabled(false);
+    _colorMapAction.getSettingsAction().getVerticalAxisAction().getRangeAction().getRangeMaxAction().setEnabled(false);
+
     // Configure image interpolation
     _interpolationTypeAction.setCurrentIndex(isClusterType ? static_cast<std::int32_t>(InterpolationType::NearestNeighbor) : static_cast<std::int32_t>(InterpolationType::Bilinear));
     _interpolationTypeAction.setEnabled(!isClusterType);

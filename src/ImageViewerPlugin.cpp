@@ -24,7 +24,7 @@ ImageViewerPlugin::ImageViewerPlugin(hdps::plugin::PluginFactory* factory) :
     _model(this),
     _selectionModel(&_model),
     _splitter(Qt::Horizontal, this),
-    _imageViewerWidget(this, _model),
+    _imageViewerWidget(*this),
     _dropWidget(&_imageViewerWidget),
     _mainToolbarAction(*this),
     _zoomToolbarAction(*this),
@@ -240,6 +240,7 @@ void ImageViewerPlugin::init()
         _settingsAction.getContextMenu()->exec(mapToGlobal(point));
     });
 
+    _dropWidget.setShowDropIndicator(false);
     _dropWidget.setShowDropIndicator(true);
 }
 

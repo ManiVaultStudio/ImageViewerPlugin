@@ -8,7 +8,7 @@
 #include <QOpenGLFunctions_3_3_Core>
 #include <QOpenGLDebugLogger>
 
-class LayersModel;
+class ImageViewerPlugin;
 
 using namespace hdps::util;
 
@@ -43,10 +43,9 @@ public:
 
     /**
      * Constructor
-     * @param parent Pointer to parent widget
-     * @param layersModel Reference to layers model
+     * @param imageViewerPlugin Reference to image viewer plugin
      */
-    ImageViewerWidget(QWidget* parent, LayersModel& layersModel);
+    ImageViewerWidget(ImageViewerPlugin& imageViewerPlugin);
 
     /**
      * Widget event capture
@@ -54,11 +53,6 @@ public:
      *@param event Event that occurred
      */
     bool eventFilter(QObject* target, QEvent* event) override;
-
-    /** Get a reference to the layers model */
-    LayersModel& getLayersModel() {
-        return _layersModel;
-    }
 
     /** Get a reference to the pixel selection tool */
     PixelSelectionTool& getPixelSelectionTool() {
@@ -146,7 +140,7 @@ signals:
     void interactionModeChanged(const InteractionMode& interactionMode);
 
 protected:
-    LayersModel&                            _layersModel;               /** Reference to layers model */
+    ImageViewerPlugin&                      _imageViewerPlugin;         /** Reference to image viewer plugin */
     bool                                    _openGLInitialized;         /** Whether OpenGL is initialized or not */
     PixelSelectionTool                      _pixelSelectionTool;        /** Pixel selection tool */
     std::unique_ptr<QOpenGLDebugLogger>     _openglDebugLogger;         /** OpenGL logger instance for debugging (only enabled in debug mode for performance reasons) */
