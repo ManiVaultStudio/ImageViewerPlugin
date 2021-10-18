@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Common.h"
-
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLBuffer>
 
@@ -15,18 +13,18 @@ class Renderer;
  *
  * @author Thomas Kroes
  */
-class Shape : public QObject
+class Shape
 {
 public:
 
     /** Constructor
-     * @param prop Parent prop
+     * @param prop Reference to prop in which the shapes resides
      * @param name Name of the shape
      */
-    Shape(Prop* prop, const QString& name);
+    Shape(Prop& prop, const QString& name);
 
     /** Destructor */
-    ~Shape() override;
+    ~Shape() = default;
 
 public:
 
@@ -51,8 +49,8 @@ public:
      */
     void setName(const QString& name);
 
-    /** Returns the prop to which the shape is attached */
-    Prop* getProp();
+    /** Returns reference to the prop in which the shapes resides */
+    Prop& getProp();
 
     /** Returns the full shape name (actor_name::prop_name::shape_name */
     QString getFullName();
@@ -64,7 +62,7 @@ public:
     QOpenGLBuffer& getVBO() { return _vbo; }
 
 protected:
-    Prop*                       _prop;      /** Parent prop */
+    Prop&                       _prop;      /** Reference to prop in which the shapes resides */
     QString                     _name;      /** Name of the shape */
     QOpenGLVertexArrayObject    _vao;       /** OpenGL Vertex Array Object (VAO) */
     QOpenGLBuffer               _vbo;       /** OpenGL Vertex Buffer Object (VBO) */

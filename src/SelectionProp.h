@@ -2,7 +2,7 @@
 
 #include "Prop.h"
 
-class SelectionLayer;
+class Layer;
 
 /**
  * Selection prop class
@@ -13,39 +13,43 @@ class SelectionLayer;
  */
 class SelectionProp : public Prop
 {
-    Q_OBJECT
-
-public: // Construction/destruction
+public:
 
     /**
      * Constructor
-     * @param selectionLayer Pointer to the associated selection layer
+     * @param layer Reference to layer in which the prop resides
      * @param name Name of the prop
      */
-    SelectionProp(SelectionLayer* selectionLayer, const QString& name);
+    SelectionProp(Layer& layer, const QString& name);
 
     /** Destructor */
-    ~SelectionProp() override;
-
-public: // Rendering
-
-    /**
-     * Renders the prop
-     * @param nodeMVP Node model view projection matrix
-     * @param opacity Render opacity [0-1]
-     */
-    void render(const QMatrix4x4& nodeMVP, const float& opacity) override;
-
-    /** Returns the bounding rectangle of the prop */
-    QRectF getBoundingRectangle() const override;
-
-protected: // Inherited
+    ~SelectionProp() = default;
 
     /** Initializes the prop */
     void initialize() override;
 
-protected: // Miscellaneous
+    /**
+     * Renders the prop
+     * @param modelViewProjectionMatrix Model view projection matrix
+     */
+    void render(const QMatrix4x4& modelViewProjectionMatrix) override;
 
-	/** Updates the internal model matrix */
-	void updateModelMatrix();
+    /** Get the bounding rectangle of the prop in world coordinates */
+    QRectF getWorldBoundingRectangle() const override;
+
+    /**
+     * Set the geometry
+     * @param sourceImageRectangle Source image rectangle
+     * @param targetImageRectangle Target image rectangle
+     */
+    void setGeometry(const QRect& sourceImageRectangle, const QRect& targetImageRectangle);
+
+    /**
+     * Set selection data
+     * @param selectionData Selection data
+     */
+    void setSelectionData(const std::vector<std::uint8_t>& selectionData);
+
+protected:
+    Layer&      _layer;     /** Reference to layer */
 };

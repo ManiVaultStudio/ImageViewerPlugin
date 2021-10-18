@@ -14,16 +14,14 @@
  */
 class QuadShape : public Shape
 {
-    Q_OBJECT
-
 public: // Construction
 
     /**
      * Constructor
-     * @param prop Pointer to associated prop
+     * @param prop Reference to the prop in which the shape resides
      * @param name Name of the shape
      */
-    QuadShape(Prop* prop, const QString& name);
+    QuadShape(Prop& prop, const QString& name);
 
 public: // Inherited
 
