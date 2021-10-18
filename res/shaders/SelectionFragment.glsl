@@ -31,7 +31,7 @@ void main(void)
         if (texture(channelTextures, vec3(uv, 0)).r > 0u)
             fragmentColor= vec4(overlayColor.rgb, opacity);
         else
-            fragmentColor = vec4(overlayColor.rgb, showRegion ? 0.4f * opacity : 0.0f);
+            fragmentColor = vec4(overlayColor.rgb, showRegion ? 0.75f * opacity : 0.0f);
     } else {
         fragmentColor = vec4(0);
     }
