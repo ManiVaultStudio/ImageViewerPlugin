@@ -284,12 +284,12 @@ void Layer::invalidate()
     _imageViewerPlugin.getImageViewerWidget().update();
 }
 
-void Layer::fitInRectangle(const QRectF& rectangle)
+void Layer::scaleToFit(const QRectF& rectangle)
 {
     // Only fit into valid rectangle
     if (!rectangle.isValid())
         return;
-
+    
     // Get target rectangle center and size
     const auto rectangleCenter  = rectangle.center();
     const auto rectangleSize    = rectangle.size();
@@ -298,11 +298,15 @@ void Layer::fitInRectangle(const QRectF& rectangle)
     _generalAction.getPositionAction().getXAction().setValue(rectangleCenter.x());
     _generalAction.getPositionAction().getYAction().setValue(rectangleCenter.y());
 
+    // Compute composite matrix
+    const auto matrix   = getModelMatrix() * getPropByName<ImageProp>("ImageProp")->getModelMatrix();
+
+    // Compute scaled source rectangle size
+    const auto sourceRectangleSize = _imagesDataset->getSourceRectangle().size();
+
     // Compute x- and y scale
-    const auto scale = QVector2D(rectangleSize.width() / getWorldBoundingRectangle().width(), rectangleSize.height() / getWorldBoundingRectangle().height());
-
-    qDebug() << scale;
-
+    const auto scale = QVector2D(rectangle.width() / sourceRectangleSize.width(), rectangle.height() / sourceRectangleSize.height());
+   
     // Assign scale
     _generalAction.getScaleAction().setValue(100.0f * std::min(scale.x(), scale.y()));
 }

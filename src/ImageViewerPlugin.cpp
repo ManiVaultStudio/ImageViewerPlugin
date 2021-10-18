@@ -97,14 +97,14 @@ void ImageViewerPlugin::init()
                     // Create new layer for the converted dataset
                     auto layer = new Layer(*this, datasetName);
 
+                    // Squeeze the layer in to the layers world bounding rectangle
+                    layer->scaleToFit(_imageViewerWidget.getWorldBoundingRectangle());
+
                     // Add new layer to the model
                     _model.addLayer(layer);
 
                     // Update bounds
                     _imageViewerWidget.updateWorldBoundingRectangle();
-
-                    // Squeeze the layer in to the layers world bounding rectangle
-                    layer->fitInRectangle(_imageViewerWidget.getWorldBoundingRectangle());
                 }
                 catch (std::exception& e)
                 {

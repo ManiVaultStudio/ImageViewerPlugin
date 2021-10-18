@@ -16,7 +16,7 @@ GlobalViewSettingsAction::GlobalViewSettingsAction(ImageViewerPlugin& imageViewe
     _smartZoomAction(this, "Smart zoom")
 {
     setIcon(Application::getIconFont("FontAwesome").getIcon("cog"));
-    setText("View settings");
+    setText("Global view settings");
 
     _zoomMarginAction.setToolTip("Zoom margin around the layers extents");
     _backgroundColorAction.setToolTip("Background color of the viewer");

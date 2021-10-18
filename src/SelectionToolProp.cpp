@@ -116,8 +116,11 @@ void SelectionToolProp::setGeometry(const QRect& sourceImageRectangle, const QRe
             // Update the model matrix
             QMatrix4x4 modelMatrix;
 
+            // Establish center
+            const auto center = QRectF(sourceImageRectangle).center();
+
             // Compute the model matrix
-            modelMatrix.translate(-sourceImageRectangle.center().x() + targetImageRectangle.left(), -sourceImageRectangle.center().y() + targetImageRectangle.top(), 0.0f);
+            modelMatrix.translate(-center.x() + targetImageRectangle.left(), -center.y() + targetImageRectangle.top(), 0.0f);
 
             // Assign model matrix
             setModelMatrix(modelMatrix);

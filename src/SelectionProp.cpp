@@ -175,8 +175,11 @@ void SelectionProp::setGeometry(const QRect& sourceImageRectangle, const QRect& 
     // Get quad shape
     const auto rectangle = getShapeByName<QuadShape>("Quad")->getRectangle();
 
+    // Establish center
+    const auto center = QRectF(sourceImageRectangle).center();
+
     // Compute the  model matrix
-    modelMatrix.translate(-sourceImageRectangle.center().x(), -sourceImageRectangle.center().y(), 0.0f);
+    modelMatrix.translate(-center.x(), -center.y(), 0.0f);
 
     // Assign model matrix
     setModelMatrix(modelMatrix);
