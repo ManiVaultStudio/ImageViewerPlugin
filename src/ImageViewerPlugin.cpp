@@ -105,6 +105,10 @@ void ImageViewerPlugin::init()
 
                     // Update bounds
                     _imageViewerWidget.updateWorldBoundingRectangle();
+
+                    // Zoom when this is the first layer added
+                    if (_model.rowCount() == 1)
+                        layer->zoomToExtents();
                 }
                 catch (std::exception& e)
                 {
@@ -290,11 +294,8 @@ void ImageViewerPlugin::immigrateDataset(const QString& datasetName)
             // Update world bounds of all layers
             _imageViewerWidget.updateWorldBoundingRectangle();
 
-            // Squeeze the layer in to the layers world bounding rectangle
-            //layer->fitInRectangle(_imageViewerWidget.getWorldBoundingRectangle());
-
             // Zoom to the extents of the layer if smart zoom is enabled
-            if (_mainToolbarAction.getGlobalViewSettingsAction().getSmartZoomAction().isChecked())
+            if (_mainToolbarAction.getGlobalViewSettingsAction().getSmartZoomAction().isChecked() || _model.rowCount() == 1)
                 layer->zoomToExtents();
         }
     }

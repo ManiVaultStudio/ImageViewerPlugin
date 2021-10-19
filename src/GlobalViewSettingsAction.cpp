@@ -85,14 +85,23 @@ GlobalViewSettingsAction::GlobalViewSettingsAction(ImageViewerPlugin& imageViewe
         _imageViewerPlugin.setSetting("ImageViewerPlugin/ViewSettings/AnimationEnabled", _animationEnabledAction.isChecked());
     };
 
+    // Update smart zoom enabled
+    const auto updateSmartZoom = [this, &imageViewerWidget, settingsPrefix]() {
+
+        // Save to plugin settings
+        _imageViewerPlugin.setSetting("ImageViewerPlugin/ViewSettings/SmartZoom", _smartZoomAction.isChecked());
+    };
+
     connect(&_zoomMarginAction, &DecimalAction::valueChanged, this, updateZoomMargin);
     connect(&_backgroundColorAction, &ColorAction::colorChanged, this, updateBackgroundColor);
     connect(&_animationEnabledAction, &ToggleAction::toggled, this, updateAnimation);
+    connect(&_smartZoomAction, &ToggleAction::toggled, this, updateSmartZoom);
 
-    // Do initial updates of the view
+    // Do initial updates
     updateZoomMargin();
     updateBackgroundColor();
     updateAnimation();
+    updateSmartZoom();
 }
 
 GlobalViewSettingsAction::Widget::Widget(QWidget* parent, GlobalViewSettingsAction* globalViewSettingsAction, const std::int32_t& widgetFlags) :
