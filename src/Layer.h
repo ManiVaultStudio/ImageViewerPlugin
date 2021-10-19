@@ -24,7 +24,8 @@ class Layer : public QObject, public Renderable
     enum PaintFlag {
         Bounds              = 0x001,
         Label               = 0x002,
-        SelectionRectangle  = 0x004
+        SelectionRectangle  = 0x004,
+        Sample              = 0x008
     };
 
 public:

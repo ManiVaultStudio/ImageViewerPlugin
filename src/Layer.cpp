@@ -12,6 +12,7 @@
 #include "ClusterData.h"
 
 #include <QPainter>
+#include <QFontMetrics>
 
 #include <set>
 
@@ -322,6 +323,9 @@ void Layer::paint(QPainter& painter, const PaintFlag& paintFlags)
         // Get image prop screen bounding rectangle
         const auto propRectangle = getPropByName<ImageProp>("ImageProp")->getScreenBoundingRectangle();
 
+        // Get pixel selection color
+        const auto pixelSelectionColor = _imageViewerPlugin.getImageViewerWidget().getPixelSelectionTool().getMainColor();
+
         // Draw layer bounds
         if (paintFlags & Layer::Bounds) {
 
@@ -364,8 +368,88 @@ void Layer::paint(QPainter& painter, const PaintFlag& paintFlags)
             const auto margin = 5;
 
             // Draw the text
-            painter.setFont(QFont("arial", 8, 300));
+            painter.setFont(QApplication::font());
             painter.drawText(QRect(propRectangle.bottomLeft() + QPoint(0.0f, margin), QSize(500, 100)), labelText, QTextOption(Qt::AlignTop | Qt::AlignLeft));
+        }
+
+        // Draw sample information
+        if (paintFlags & Layer::Sample) {
+
+            // Get mouse position in widget coordinates
+            const auto mousePositionWidget = _imageViewerPlugin.getImageViewerWidget().mapFromGlobal(QCursor::pos());
+
+            // Get mouse position in image coordinates
+            const auto mousePositionImage = _renderer.getScreenPointToWorldPosition(getModelViewMatrix() * getPropByName<ImageProp>("ImageProp")->getModelMatrix(), mousePositionWidget).toPoint() - _imagesDataset->getTargetRectangle().topLeft();
+
+            // Establish label prefix text
+            QString labelText = QString("Pixel ID\t: [%1, %2]\n").arg(QString::number(mousePositionImage.x()), QString::number(mousePositionImage.y()));
+            
+            // Compute pixel index
+            const auto pixelIndex = static_cast<std::uint32_t>(mousePositionImage.y() * _imagesDataset->getTargetRectangle().width() + mousePositionImage.x());
+
+            if (pixelIndex >= 0 && pixelIndex < _imagesDataset->getNumberOfPixels()) {
+
+                // Show scalar(s) data if hovering over an image that originates from points data
+                if (getSourceDataset()->getDataType() == PointType) {
+
+                    if (_imageAction.getScalarChannel1Action().getEnabledAction().isChecked())
+                        labelText += "Scalar 1\t: " + QString::number(_imageAction.getScalarChannel1Action().getScalarData()[pixelIndex], 'f', 2);
+
+                    if (_imageAction.getScalarChannel2Action().getEnabledAction().isChecked())
+                        labelText += "\nScalar 2\t: " + QString::number(_imageAction.getScalarChannel2Action().getScalarData()[pixelIndex], 'f', 2);
+
+                    if (_imageAction.getScalarChannel3Action().getEnabledAction().isChecked())
+                        labelText += "\nScalar 3\t: " + QString::number(_imageAction.getScalarChannel3Action().getScalarData()[pixelIndex], 'f', 2);
+                }
+
+                // Show cluster name if hovering over an image that originates from clusters data
+                if (getSourceDataset()->getDataType() == ClusterType) {
+
+                    // Get cluster index from channel scalar data
+                    const auto clusterIndex = static_cast<std::int32_t>(_imageAction.getScalarChannel1Action().getScalarData()[pixelIndex]);
+
+                    // Get cluster name from cluster index
+                    const auto clusterName = _sourceDataset.get<Clusters>()->getClusters()[clusterIndex].getName();
+
+                    // Add cluster name to the label text
+                    labelText += "Cluster\t: " + clusterName;
+                }
+
+                // Configure pen and brush
+                painter.setPen(QPen(QBrush(_imageViewerPlugin.getImageViewerWidget().getPixelSelectionTool().getMainColor()), _active ? 2.0f : 1.0f));
+                painter.setBrush(Qt::transparent);
+
+                // Upper margin in pixels
+                const auto margin = 15;
+
+                // Text font from application
+                auto font = QApplication::font();
+
+                // Adjust font size
+                font.setPointSizeF(7.0f);
+                
+                // Create font metrics for establishing the text rectangle size
+                QFontMetrics fontMetrics(font);
+
+                // Text rectangle size
+                const auto textRectangle = fontMetrics.boundingRect(QRect(QPoint(), QSize(512, 512)), Qt::TextExpandTabs, labelText);
+
+                // Create text options for more control over text layout
+                QTextOption textOption(Qt::AlignLeft);
+
+                // Adjust tab stop distance so that the values align
+                textOption.setTabStopDistance(50);
+
+                // Draw text rectangle
+                painter.setPen(QPen(QBrush(pixelSelectionColor), 0.7f));
+                painter.setBrush(QBrush(QColor::fromHsl(pixelSelectionColor.hslHue(), pixelSelectionColor.hsvSaturation(), 80, 200)));
+                painter.drawRoundedRect(textRectangle.translated(mousePositionWidget - QPoint(0, textRectangle.height()) + QPoint(margin, -margin)).marginsAdded(QMargins(5, 5, 5, 5)), 2.5f, 2.5f);
+
+                // Draw text
+                painter.setFont(font);
+                painter.setPen(QPen(pixelSelectionColor, 1.0f));
+                painter.drawText(QRectF(mousePositionWidget - QPoint(0, textRectangle.height()) + QPoint(margin, -margin), QSize(512, textRectangle.height())), labelText, textOption);
+            }
         }
     }
     catch (std::exception& e)
@@ -515,6 +599,9 @@ void Layer::publishSelection()
     try {
 
         //qDebug() << "Publish pixel selection for layer:" << _generalAction.getNameAction().getString();
+
+        if (!_generalAction.getVisibleAction().isChecked())
+            return;
 
         // Make sure we have a valid points dataset
         if (!_sourceDataset.isValid())
@@ -705,16 +792,14 @@ void Layer::publishSelection()
             selection.indices.clear();
             selection.indices.reserve(selectedIndices.size());
 
-            // Select the points
-            if (points.isFull()) {
-                selection.indices = selectedIndices;
-            }
-            else {
+            std::vector<std::uint32_t> globalIndices;
 
-                // Translate selection indices and add them
-                for (auto selectedIndex : selectedIndices)
-                    selection.indices.push_back(points.indices[selectedIndex]);
-            }
+            // Get global indices for mapping selection
+            points.getGlobalIndices(globalIndices);
+
+            // Translate selection indices and add them
+            for (auto selectedIndex : selectedIndices)
+                selection.indices.push_back(globalIndices[selectedIndex]);
 
             // Notify others that the point selection changed
             Application::core()->notifySelectionChanged(points.getName());

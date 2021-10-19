@@ -2,6 +2,7 @@
 #include "ImageViewerPlugin.h"
 #include "LayersModel.h"
 #include "Layer.h"
+#include "ImageProp.h"
 #include "ExportToImageDialog.h"
 
 #include "util/Exception.h"
@@ -591,25 +592,12 @@ void ImageViewerWidget::paintGL()
             if (_pixelSelectionTool.getType() != PixelSelectionType::Sample)
                 return;
 
-            // Get selected rows
-            const auto selectedRows = _imageViewerPlugin.getSelectionModel().selectedRows();
+            // Get layer beneath cursor (if any)
+            auto layer = getLayerBeneathCursor();
             
-            // Only show hovered cluster name if a layer is selected
-            if (selectedRows.isEmpty())
-                return;
-
-            // Get pointer to layer that is deselected
-            auto layer = static_cast<Layer*>(selectedRows.first().internalPointer());
-
-            // Show cluster name if hovering over a cluster image
-            if (layer->getSourceDataset()->getDataType() == ClusterType) {
-
-                // Get mouse position in widget coordinates
-                const auto mousePosition = QWidget::mapFromGlobal(QCursor::pos());
-
-                //_renderer.getScreenPointToWorldPosition()
-                painter.drawText(QWidget::mapFromGlobal(QCursor::pos()), "Cluster 1");
-            }
+            // Draw sample info if a layer is found
+            if (layer)
+                layer->paint(painter, Layer::PaintFlag::Sample);
         }
 
         // End mixed OpenGL/native painting
@@ -645,6 +633,29 @@ void ImageViewerWidget::cleanup()
     _openGLInitialized = false;
 
     makeCurrent();
+}
+
+Layer* ImageViewerWidget::getLayerBeneathCursor()
+{
+    // Iterate over all active layers from front to back
+    for (auto layer : _imageViewerPlugin.getModel().getLayers()) {
+
+        // Only do an intersection test when the layer is visible
+        if (!layer->getGeneralAction().getVisibleAction().isChecked())
+            continue;
+
+        // Get mouse position in widget coordinates
+        const auto mousePositionWidget = QWidget::mapFromGlobal(QCursor::pos());
+
+        // Get mouse position in world coordinates
+        const auto mousePositionWorld = _renderer.getScreenPointToWorldPosition(layer->getModelViewMatrix() * layer->getPropByName<ImageProp>("ImageProp")->getModelMatrix(), mousePositionWidget);
+
+        // Establish whether the mouse position is contained by its bounding box and return the layer if so
+        if (layer->getImages()->getTargetRectangle().contains(mousePositionWorld.toPoint()))
+            return layer;
+    }
+
+    return nullptr;
 }
 
 ImageViewerWidget::InteractionMode ImageViewerWidget::getInteractionMode() const

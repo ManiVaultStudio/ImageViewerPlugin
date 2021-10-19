@@ -263,7 +263,7 @@ void ImageViewerPlugin::onLayerSelectionChanged()
         currentLayerName = layer->getGeneralAction().getNameAction().getString();
 
         // Zoom to the extents of the layer if smart zoom is enabled
-        if (_mainToolbarAction.getGlobalViewSettingsAction().getSmartZoomAction().isChecked())
+        if (_mainToolbarAction.getGlobalViewSettingsAction().getSmartZoomAction().isChecked() && layer->getGeneralAction().getVisibleAction().isChecked())
             layer->zoomToExtents();
     }
 

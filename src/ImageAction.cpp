@@ -60,15 +60,6 @@ ImageAction::ImageAction(Layer& layer) :
     _colorMapAction.getSettingsAction().getVerticalAxisAction().getRangeAction().getRangeMinAction().setEnabled(false);
     _colorMapAction.getSettingsAction().getVerticalAxisAction().getRangeAction().getRangeMaxAction().setEnabled(false);
 
-    // Configure image interpolation
-    _interpolationTypeAction.setCurrentIndex(isClusterType ? static_cast<std::int32_t>(InterpolationType::NearestNeighbor) : static_cast<std::int32_t>(InterpolationType::Bilinear));
-    _interpolationTypeAction.setEnabled(!isClusterType);
-
-    // Configure color space action
-    _colorSpaceAction.setEnabled(!isClusterType);
-
-    _scalarChannel1Action.getWindowLevelAction().setEnabled(!isClusterType);
-
     // Get the dimension names of the points dataset
     const auto dimensionNames = _layer.getDimensionNames();
 
@@ -122,16 +113,20 @@ ImageAction::ImageAction(Layer& layer) :
     _scalarChannel1Action.getDimensionAction().setCurrentIndex(0);
     _scalarChannel1Action.getDimensionAction().setDefaultIndex(0);
 
-    if (dimensionNames.count() >= 3) {
-        if (dimensionNames.count() == 3 && isClusterType) {
-            _colorSpaceAction.setCurrentText("Mono");
+    if (isClusterType) {
+        
+        // Configure image interpolation
+        _interpolationTypeAction.setCurrentIndex(static_cast<std::int32_t>(InterpolationType::NearestNeighbor));
+        _interpolationTypeAction.setEnabled(false);
 
-            _scalarChannel1Action.getDimensionAction().setCurrentIndex(0);
-            _scalarChannel1Action.getDimensionAction().setDefaultIndex(0);
-        }
-        else {
-            _colorSpaceAction.setCurrentIndex(static_cast<std::int32_t>(ColorSpaceType::Mono));
-        }
+        // Configure color space
+        _colorSpaceAction.setEnabled(false);
+        _colorSpaceAction.setCurrentText("Mono");
+
+        // Disable all channels
+        _scalarChannel1Action.getWindowLevelAction().setEnabled(false);
+        _scalarChannel2Action.getWindowLevelAction().setEnabled(false);
+        _scalarChannel3Action.getWindowLevelAction().setEnabled(false);
     }
     else {
         if (_layer.getNumberOfImages() >= 2) {

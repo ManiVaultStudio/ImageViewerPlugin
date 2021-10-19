@@ -9,6 +9,7 @@
 #include <QOpenGLDebugLogger>
 
 class ImageViewerPlugin;
+class Layer;
 
 using namespace hdps::util;
 
@@ -101,6 +102,9 @@ protected: // OpenGL
 
     /** Perform cleanup when viewer widget is destroyed */
     void cleanup();
+
+    /** Get a pointer to the layer that is beneath the cursor */
+    Layer* getLayerBeneathCursor();
 
 public: // Miscellaneous
 
