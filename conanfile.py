@@ -1,4 +1,5 @@
 from conans import ConanFile, CMake
+from conans.tools import save, load
 import os
 import shutil
 import pathlib
@@ -40,6 +41,14 @@ class ImageViewerPluginConan(ConanFile):
         "url": "auto",
         "revision": "auto",
     }
+
+    def export(self):
+        print("In export")
+        # save the original source path to the directory used to build the package
+        save(
+            pathlib.Path(self.export_folder, "__gitpath.txt"),
+            str(pathlib.Path(__file__).parent.resolve()),
+        )
 
     def set_version(self):
         # Assign a version from the branch name
