@@ -14,6 +14,9 @@
 #include <QOpenGLFramebufferObject>
 #include <QOffscreenSurface>
 
+#include <chrono>
+#include <thread>
+
 const QMap<ImageViewerWidget::InteractionMode, QString> ImageViewerWidget::interactionModes = {
     { ImageViewerWidget::None, "No interaction" },
     { ImageViewerWidget::Navigation, "Navigation" },
@@ -473,7 +476,7 @@ void ImageViewerWidget::exportToImage()
                     layer->render(_renderer.getProjectionMatrix() * _renderer.getViewMatrix());
                     */
 
-                Sleep(1000);
+                std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
                 fbo->toImage().save("export.jpg");
 
