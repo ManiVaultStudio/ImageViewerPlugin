@@ -42,6 +42,13 @@ class ImageViewerPluginConan(ConanFile):
         "revision": "auto",
     }
 
+    def __get_git_path(self):
+        path = load(
+            pathlib.Path(pathlib.Path(__file__).parent.resolve(), "__gitpath.txt")
+        )
+        print(f"git info from {path}")
+        return path
+
     def export(self):
         print("In export")
         # save the original source path to the directory used to build the package
