@@ -2,10 +2,9 @@
 
 #include "Prop.h"
 
-#include <QScopedPointer>
 #include <QOpenGLFramebufferObject>
 
-class SelectionLayer;
+class Layer;
 
 /**
  * Selection tool prop class
@@ -16,48 +15,52 @@ class SelectionLayer;
  */
 class SelectionToolProp : public Prop
 {
-    Q_OBJECT
-
-public: // Construction/destruction
+public:
 
     /**
      * Constructor
-     * @param selectionLayer Pointer to the associated selection layer
+     * @param layer Reference to layer in which the prop resides
      * @param name Name of the prop
      */
-    SelectionToolProp(SelectionLayer* selectionLayer, const QString& name);
+    SelectionToolProp(Layer& layer, const QString& name);
 
     /** Destructor */
-    ~SelectionToolProp() override;
+    ~SelectionToolProp() = default;
 
-public: // Rendering
-
-    /** Renders the prop */
-    void render(const QMatrix4x4& nodeMVP, const float& opacity) override;
-
-    /** Returns the bounding rectangle of the prop */
-    QRectF getBoundingRectangle() const override;
-
-public: // Pixel selection
-
-    /** Computes the pixel selection (based on the tool) and stores the result in an off-screen pixel selection buffer */
-    void compute();
-
-    /** Resets the off-screen pixel selection buffer */
-    void reset();
-
-    /** Returns the pixel selection in image format */
-    QImage getSelectionImage();
-
-protected: // Inherited
+public:
 
     /** Initializes the prop */
     void initialize() override;
 
-protected: // Miscellaneous
+    /**
+     * Renders the prop
+     * @param modelViewProjectionMatrix Model view projection matrix
+     */
+    void render(const QMatrix4x4& modelViewProjectionMatrix) override;
 
-	/** Updates the internal model matrix */
-	void updateModelMatrix();
+    /** Returns the bounding rectangle of the prop */
+    QRectF getWorldBoundingRectangle() const override;
+
+    /**
+     * Set the geometry
+     * @param sourceImageRectangle Source image rectangle
+     * @param targetImageRectangle Target image rectangle
+     */
+    void setGeometry(const QRect& sourceImageRectangle, const QRect& targetImageRectangle);
+
+public: // Pixel selection
+
+    /** 
+     * Computes the pixel selection (based on the tool) and stores the result in an off-screen pixel selection buffer
+     * @param mousePositions Mouse positions
+     */
+    void compute(const QVector<QPoint>& mousePositions);
+
+    /** Resets the off-screen pixel selection buffer */
+    void resetOffScreenSelectionBuffer();
+
+    /** Returns the pixel selection in image format */
+    QImage getSelectionImage();
 
 private: // Shader programs
 
@@ -68,5 +71,6 @@ private: // Shader programs
     void loadSelectionToolOffScreenShaderProgram();
 
 private:
+    Layer&                                      _layer;     /** Reference to layer */
     QScopedPointer<QOpenGLFramebufferObject>    _fbo;       /** Frame Buffer Object for off screen pixel selection tools */
 };

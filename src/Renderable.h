@@ -8,6 +8,8 @@
 
 #include <stdexcept>
 
+class Renderer;
+
 /**
  * Renderable class
  *
@@ -19,21 +21,25 @@ class Renderable
 {
 public: // Construction/destruction
 
-    /** Default constructor */
-    Renderable();
+    /**
+     * Constructor
+     * @param renderer Reference to the renderer in which the renderable object will reside
+     */
+    Renderable(Renderer& renderer);
 
     /** Destructor */
-    ~Renderable();
+    ~Renderable() = default;
 
 public: // Rendering
 
     /**
-     * Renders the prop
+     * Renders the props
      * @param parentMVP Parent model view projection matrix
      */
-    virtual void render(const QMatrix4x4& parentMVP) = 0;
+    virtual void render(const QMatrix4x4& modelViewProjectionMatrix) = 0;
 
-public: // Matrix functions
+    /** Get reference to the renderer */
+    Renderer& getRenderer();
 
     /** Returns the model matrix */
     QMatrix4x4 getModelMatrix() const;
@@ -50,67 +56,8 @@ public: // Matrix functions
     /** Returns the model-view-projection matrix */
     QMatrix4x4 getModelViewProjectionMatrix() const;
 
-public: // Opacity
-
-    /** Returns the render opacity */
-    QVariant getOpacity(const int& role) const;
-
-    /** Sets the render opacity
-     * @param opacity Render opacity
-    */
-    void setOpacity(const float& opacity);
-
-    /** Returns the scale */
-    QVariant getScale(const int& role) const;
-
-    /** Sets the scale
-     * @param scale Scale
-    */
-    void setScale(const float& scale);
-
-protected: // Prop management
-
-    /**
-     * Adds a prop
-     * @param T Prop type
-     * @param Args Prop constructor arguments
-     */
-    template<typename T, typename ...Args>
-    void addProp(Args... args)
-    {
-        try {
-            auto newProp    = new T(args...);
-            auto prop       = dynamic_cast<Prop*>(newProp);
-            auto propName   = prop->name();
-
-            if (_props.contains(propName))
-                throw std::runtime_error(QString("%1 already exists").arg(propName).toLatin1());
-
-            _props.insert(propName, newProp);
-        }
-        catch (const std::exception& e)
-        {
-            throw std::runtime_error(QString("Unable to add prop: %1").arg(e.what()).toLatin1());
-        }
-    }
-
-    /**
-     * Remove a prop by name
-     * @param name Prop name
-     */
-    void removeProp(const QString& name)
-    {
-        try {
-            if (!_props.contains(name))
-                throw std::runtime_error(QString("%1 does not exist").arg(name).toLatin1());
-
-            _props.remove(name);
-        }
-        catch (const std::exception& e)
-        {
-            throw std::runtime_error(QString("Unable to remove prop: %1").arg(e.what()).toLatin1());
-        }
-    }
+    /** Get the bounding rectangle of the prop in world coordinates */
+    virtual QRectF getWorldBoundingRectangle() const = 0;
 
     /**
      * Retrieve a prop by name
@@ -120,10 +67,11 @@ protected: // Prop management
     const T* getPropByName(const QString& name) const
     {
         try {
-            if (!_props.contains(name))
-                throw std::runtime_error(QString("no prop named %1").arg(name).toLatin1());
+            for (auto prop : _props)
+                if (prop->getName() == name)
+                    return dynamic_cast<T*>(prop);
 
-            return dynamic_cast<T*>(_props[name]);
+            throw std::runtime_error(QString("%1 does not exist").arg(name).toLatin1());
         }
         catch (const std::exception& e)
         {
@@ -141,19 +89,15 @@ protected: // Prop management
         const auto constThis = const_cast<const Renderable*>(this);
         return const_cast<T*>(constThis->getPropByName<T>(name));
     }
-    
+
     /** Returns all props */
-    const QMap<QString, Prop*> getProps() const
+    const QVector<Prop*> getProps() const
     {
         return _props;
     }
 
-public:
-    static Renderer* renderer;                  /** Static renderer instance */
-
 protected:
-    float                   _opacity;           /** Render opacity */
-    float                   _scale;             /** Scale */
-    QMatrix4x4              _modelMatrix;       /** Model matrix */
-    QMap<QString, Prop*>    _props;             /** Props map */
+    Renderer&           _renderer;      /** Reference to the renderer in which the renderable object will reside */
+    QMatrix4x4          _modelMatrix;   /** Model matrix */
+    QVector<Prop*>      _props;         /** Props */
 };

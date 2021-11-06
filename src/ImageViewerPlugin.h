@@ -1,26 +1,20 @@
 #pragma once
 
-#include <ViewPlugin.h>
+#include "ViewPlugin.h"
 
-#include "Application.h"
 #include "LayersModel.h"
-#include "ColorMapModel.h"
+#include "ImageViewerWidget.h"
+#include "MainToolbarAction.h"
+#include "ZoomToolbarAction.h"
+#include "SettingsAction.h"
+
+#include "widgets/DropWidget.h"
 
 #include <QItemSelectionModel>
+#include <QSplitter>
 
 using hdps::plugin::ViewPluginFactory;
 using hdps::plugin::ViewPlugin;
-
-class Images;
-class ViewerWidget;
-class StatusbarWidget;
-class SettingsWidget;
-
-namespace hdps {
-    namespace gui {
-        class DropWidget;
-    }
-}
 
 /**
  * Image viewer plugin class
@@ -34,70 +28,56 @@ class ImageViewerPlugin : public ViewPlugin
 
 public:
     /** Constructor */
-    ImageViewerPlugin();
+    ImageViewerPlugin(hdps::plugin::PluginFactory* factory);
 
 public: // Inherited from ViewPlugin
-
-    /** Returns the icon of this plugin */
-    QIcon getIcon() const override {
-        return hdps::Application::getIconFont("FontAwesome").getIcon("images");
-    }
 
     /** Initializes the plugin */
     void init() override;
 
-    template<typename T>
-    T& requestData(const QString& datasetName)
-    {
-        return _core->requestData<T>(datasetName);
-    }
-
-    /** Returns a pointer to the core interface */
-    hdps::CoreInterface* core() { return _core; }
-
 public: // Miscellaneous
 
-    /** Returns the image viewer widget */
-    ViewerWidget* getViewerWidget() {
-        return _viewerWidget;
+    /** Get the layers model */
+    LayersModel& getModel() {
+        return _model;
     }
 
-    /** Returns the settings widget */
-    SettingsWidget* getSettingsWidget()
-    {
-        return _settingsWidget;
+    /** Get the layers selection model */
+    QItemSelectionModel& getSelectionModel() {
+        return _selectionModel;
     }
 
-    /** Returns the layer model */
-    LayersModel& getLayersModel()
-    {
-        return _layersModel;
+    /** Get reference to the image viewer widget */
+    ImageViewerWidget& getImageViewerWidget() {
+        return _imageViewerWidget;
     }
 
-    /** Returns the color map model */
-    ColorMapModel& getColorMapModel()
-    {
-        return _colorMapModel;
-    }
+protected:
 
-    /** Returns the names of the points datasets in HDPS */
-    QStringList getPointsDatasets() const {
-        return _pointsDatasets;
-    }
+    /** Invoked when the layer selection changed */
+    void onLayerSelectionChanged();
 
-signals:
+    /**
+     * Converts a non-images dataset to an images dataset and adds the created dataset as a layer
+     * @param datasetName Name of the dataset
+     */
+    void immigrateDataset(const QString& datasetName);
 
-    /** Signals that list of point datasets in HDPS has changed */
-    void pointsDatasetsChanged(QStringList pointsDatasets);
+public: // Action getters
+
+    MainToolbarAction& getMainToolbarAction() { return _mainToolbarAction; }
+    ZoomToolbarAction& getZoomToolbarAction() { return _zoomToolbarAction; }
+    SettingsAction& getSettingsAction() { return _settingsAction; }
 
 private:
-    ViewerWidget*               _viewerWidget;          /** The image viewer widget */
-    StatusbarWidget*            _statusbarWidget;       /** The status bar widget */
-    SettingsWidget*             _settingsWidget;        /** Settings widget */
-    LayersModel                 _layersModel;           /** Layers model */
-    ColorMapModel               _colorMapModel;         /** Colormap model */
-    QStringList                 _pointsDatasets;        /** Point datasets loaded in HDPS */
-    hdps::gui::DropWidget*      _dropWidget;            /** Widget for dropping data */
+    LayersModel             _model;                 /** Layers model */
+    QItemSelectionModel     _selectionModel;        /** Layers selection model */
+    QSplitter               _splitter;              /** Splitter which divides the layers view and editor */
+    ImageViewerWidget       _imageViewerWidget;     /** Image viewer widget */
+    DropWidget              _dropWidget;            /** Widget for dropping data */
+    MainToolbarAction       _mainToolbarAction;     /** Main toolbar action */
+    ZoomToolbarAction       _zoomToolbarAction;     /** Zoom toolbar action */
+    SettingsAction          _settingsAction;        /** Layers settings action */
 };
 
 /**
@@ -108,7 +88,7 @@ class ImageViewerPluginFactory : public ViewPluginFactory
 {
     Q_INTERFACES(hdps::plugin::ViewPluginFactory hdps::plugin::PluginFactory)
         Q_OBJECT
-        Q_PLUGIN_METADATA(IID "nl.tudelft.ImageViewerPlugin" FILE "ImageViewerPlugin.json")
+        Q_PLUGIN_METADATA(IID "nl.BioVault.ImageViewerPlugin" FILE "ImageViewerPlugin.json")
 
 public:
     /** Default constructor */
@@ -117,6 +97,11 @@ public:
     /** Destructor */
     ~ImageViewerPluginFactory() override {}
 
+    /** Returns the plugin icon */
+    QIcon getIcon() const override;
+
     /** Creates an image viewer plugin instance */
     ImageViewerPlugin* produce() override;
+
+    hdps::DataTypes supportedDataTypes() const override;
 };

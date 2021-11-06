@@ -1,18 +1,15 @@
 #include "Prop.h"
 #include "Renderer.h"
+#include "Renderable.h"
 #include "Shape.h"
-#include "Node.h"
 
 #include <QOpenGLShaderProgram>
 #include <QOpenGLTexture>
 #include <QOpenGLFramebufferObject>
 #include <QDebug>
 
-Renderer* Prop::renderer = nullptr;
-
-Prop::Prop(Node* node, const QString& name) :
-    QObject(reinterpret_cast<QObject*>(node)),
-    _node(node),
+Prop::Prop(Renderable& renderable, const QString& name) :
+    _renderable(renderable),
     _initialized(false),
     _name(name),
     _visible(true),
@@ -23,13 +20,11 @@ Prop::Prop(Node* node, const QString& name) :
 {
 }
 
-Prop::~Prop() = default;
-
 void Prop::initialize()
 {
     //qDebug() << "Initialize" << fullName();
 
-    renderer->bindOpenGLContext();
+    _renderable.getRenderer().bindOpenGLContext();
 
     for (auto shape : _shapes) {
         shape->initialize();
@@ -40,7 +35,7 @@ void Prop::destroy()
 {
     //qDebug() << "Destroy" << fullName();
 
-    renderer->bindOpenGLContext();
+    _renderable.getRenderer().bindOpenGLContext();
 
     for (auto shape : _shapes) {
         shape->destroy();
@@ -72,9 +67,14 @@ QSharedPointer<QOpenGLTexture>& Prop::getTextureByName(const QString& name)
     return _textures[name];
 }
 
-void Prop::render(const QMatrix4x4& nodeMVP, const float& opacity)
+void Prop::render(const QMatrix4x4& modelViewProjectionMatrix)
 {
-    //qDebug() << "Render" << fullName();
+    qDebug() << "Render not implemented in prop";
+}
+
+Renderer& Prop::getRenderer()
+{
+    return _renderable.getRenderer();
 }
 
 bool Prop::isInitialized() const
@@ -82,7 +82,7 @@ bool Prop::isInitialized() const
     return _initialized;
 }
 
-QString Prop::name() const
+QString Prop::getName() const
 {
     return _name;
 }
@@ -131,7 +131,7 @@ QString Prop::getFullName()
 
 QMatrix4x4 Prop::getModelMatrix() const
 {
-    return _node->getModelMatrix() * _modelMatrix;
+    return _modelMatrix;
 }
 
 void Prop::setModelMatrix(const QMatrix4x4& modelMatrix)
@@ -140,4 +140,9 @@ void Prop::setModelMatrix(const QMatrix4x4& modelMatrix)
         return;
 
     _modelMatrix = modelMatrix;
+}
+
+QRect Prop::getScreenBoundingRectangle() const
+{
+    return _renderable.getRenderer().getScreenRectangleFromWorldRectangle(getWorldBoundingRectangle());
 }

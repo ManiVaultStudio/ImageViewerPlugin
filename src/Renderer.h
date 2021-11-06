@@ -1,22 +1,19 @@
 #pragma once
 
-#include "Common.h"
-
 #include "renderers/Renderer.h"
 
-#include <QWidget>
-#include <QColor>
 #include <QVector2D>
-
-class ViewerWidget;
-class ImageDatasetsModel;
-class SelectionPickerActor;
+#include <QParallelAnimationGroup>
+#include <QPropertyAnimation>
+#include <QRectF>
 
 class QMouseEvent;
 class QWheelEvent;
 class QOpenGLWidget;
 class QMenu;
 class QOpenGLWidget;
+
+class Renderable;
 
 /**
  * Renderer class
@@ -29,6 +26,9 @@ class Renderer : public QObject, public hdps::Renderer
 {
     Q_OBJECT
 
+    Q_PROPERTY(QPointF zoomRectangleTopLeft MEMBER _zoomRectangleTopLeft NOTIFY zoomRectangleChanged)
+    Q_PROPERTY(QSizeF zoomRectangleSize MEMBER _zoomRectangleSize NOTIFY zoomRectangleChanged)
+
 public: // Construction
 
     /**
@@ -36,8 +36,6 @@ public: // Construction
      * @param parentWidget Parent OpenGL image viewer widget
      */
     Renderer(QOpenGLWidget* parent);
-
-public: // 
 
     /** Initialize the renderer */
     void init() override;
@@ -51,45 +49,32 @@ public: //
     /** Resizes the renderer */
     void resize(QSize renderSize) override {};
 
-    /**
-     * Handles events passed on from widgets
-     * @param event Event
-     */
-    void handleEvent(QEvent* event);
-
-public: // Getters/setters
-
-    /** Returns the current interaction mode */
-    InteractionMode interactionMode() const;
-
-    /**
-     * Sets the current interaction mode
-     * @param interactionMode The interaction mode
-     */
-    void setInteractionMode(const InteractionMode& interactionMode);
-
 public: // Coordinate conversions
 
-    /** Convert point in screen coordinates to point in world coordinates
+    /**
+     * Convert point in screen coordinates to point in world coordinates
      * @param modelViewMatrix Model-view matrix
      * @param screenPoint Point in screen coordinates [0..width, 0..height]
      * @return Position in world coordinates
      */
     QVector3D getScreenPointToWorldPosition(const QMatrix4x4& modelViewMatrix, const QPoint& screenPoint) const;
 
-    /** Convert position in world coordinates to point in normalized screen coordinates
+    /**
+     * Convert position in world coordinates to point in normalized screen coordinates
      * @param position Position in world coordinates
      * @return Point in normalized screen coordinates [-1..1, -1..1]
      */
     QVector2D getWorldPositionToNormalizedScreenPoint(const QVector3D& position) const;
 
-    /** Convert position in world coordinates to point in screen coordinates
+    /**
+     * Convert position in world coordinates to point in screen coordinates
      * @param position Position in world coordinates
      * @return Point in screen coordinates [0..width, 0..height]
      */
     QPoint getWorldPositionToScreenPoint(const QVector3D& position) const;
 
-    /** Convert point in screen coordinates to point in normalized screen coordinates
+    /**
+     * Convert point in screen coordinates to point in normalized screen coordinates
      * @param screenPoint Point in screen coordinates [0..width, 0..height]
      * @return Point in normalized screen coordinates [-1..1, -1..1]
      */
@@ -107,22 +92,49 @@ public: // Coordinate conversions
     /** Returns the projection matrix */
     QMatrix4x4 getProjectionMatrix() const;
 
+    /**
+     * Get screen bounding rectangle from world bounding rectangle
+     * @param worldBoundingRectangle World bounding rectangle
+     */
+    virtual QRect getScreenRectangleFromWorldRectangle(const QRectF& worldBoundingRectangle) const final;
+
 public: // Navigation
 
     /**
      * Move the view horizontally/vertically
      * @param delta Amount to move
      */
-    void pan(const QVector2D& delta);
+    void panBy(const QPointF& delta);
 
-    /** Return the current zoom level */
-    float zoom() const;
+    /** Get the zoom percentage */
+    float getZoomPercentage() const;
 
     /**
-     * Zoom the view
-     * @param factor Factor to zoom by
+     * Set the zoom percentage
+     * @param zoomPercentage Zoom percentage
      */
-    void zoomBy(const float& factor);
+    void setZoomPercentage(const float& zoomPercentage);
+
+    /** get the zoom level sensitivity */
+    float getZoomSensitivity() const;
+
+    /** get the zoom margin */
+    float getZoomMargin() const;
+
+    /**
+     * Set zoom margin
+     * @param zoomMargin Zoom margin
+     */
+    void setZoomMargin(const float& zoomMargin);
+
+    /** get the world bounding box of all objects */
+    QRectF getWorldBoundingBox() const;
+
+    /**
+     * Set world bounding box
+     * @param worldBoundingBox World bounding box
+     */
+    void setWorldBoundingRectangle(const QRectF& worldBoundingRectangle);
 
     /**
      * Zoom around screen point
@@ -131,17 +143,20 @@ public: // Navigation
      */
     void zoomAround(const QPoint& screenPoint, const float& factor);
 
+    /** Gets the zoom rectangle in world coordinates */
+    QRectF getZoomRectangle() const;
+
+    /** Zoom to rectangle in world coordinates */
+    void setZoomRectangle(const QRectF& zoomRectangle);
+
+    /** Get whether animations are enabled */
+    bool getAnimationEnabled() const;
+
     /**
-     * Zoom to rectangle
-     * @param rectangle Rectangle to zoom to
+     * Set whether animations are enabled
+     * @param animationEnabled Whether animations are enabled
      */
-    void zoomToRectangle(const QRectF& rectangle);
-
-    /** Zoom to selected pixels */
-    void zoomToSelection();
-
-    /** Reset the view */
-    void resetView();
+    void setAnimationEnabled(const bool& animationEnabled);
 
 public: // Miscellaneous
 
@@ -160,12 +175,21 @@ public: // Miscellaneous
     /** Releases the OpenGL context */
     void releaseOpenGLContext();
 
+signals:
+
+    /** Signals that the zoom rectangle changed */
+    void zoomRectangleChanged();
+
 protected:
-    QVector<QPoint>     _mousePositions;        /** Recorded mouse positions */
-    int                 _mouseButtons;          /** State of the left, middle and right mouse buttons */
-    QVector2D           _pan;                   /** Move view horizontally/vertically */
-    float               _zoom;                  /** Zoom view in/out */
-    float               _zoomSensitivity;       /** Zoom sensitivity */
-    int                 _margin;                /** Margin between image and viewer widget boundaries */
-    InteractionMode     _interactionMode;       /** Interaction mode e.g. navigation and layer editing */
+    float                       _zoomSensitivity;                   /** Zoom sensitivity */
+    float                       _zoomMargin;                        /** Zoom margin */
+    QRectF                      _worldBoundingRectangle;            /** World bounding rectangle */
+    QParallelAnimationGroup     _parallelAnimationGroup;            /** Parallel animation group for zoom animation */
+    QPropertyAnimation          _zoomRectangleTopLeftAnimation;     /** Zoom rectangle center property animation */
+    QPropertyAnimation          _zoomRectangleSizeAnimation;        /** Zoom rectangle size property animation */
+    bool                        _animationEnabled;                  /** Zoom animation enabled */
+
+private:
+    QPointF                     _zoomRectangleTopLeft;              /** Zoom rectangle top-left in world coordinates */
+    QSizeF                      _zoomRectangleSize;                 /** Zoom rectangle size in world coordinates */
 };

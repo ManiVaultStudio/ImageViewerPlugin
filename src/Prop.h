@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Common.h"
-
 #include <QMatrix4x4>
 #include <QMap>
 #include <QSharedPointer>
@@ -9,7 +7,7 @@
 #include <QOpenGLTexture>
 
 class Renderer;
-class Node;
+class Renderable;
 class Shape;
 
 /**
@@ -20,18 +18,19 @@ class Shape;
  *
  * @author Thomas Kroes
  */
-class Prop : public QObject
+class Prop
 {
 public: // Construction/destruction
 
-    /** Constructor
-     * @param node Pointer to the associated node
+    /**
+     * Constructor
+     * @param renderable Reference to renderable object
      * @param name Name of the prop
      */
-    Prop(Node* node, const QString& name);
+    Prop(Renderable& renderable, const QString& name);
 
     /** Destructor */
-    ~Prop() override;
+    virtual ~Prop() {};
 
 public:
 
@@ -39,7 +38,7 @@ public:
     bool isInitialized() const;
 
     /** Returns the prop name */
-    QString name() const;
+    QString getName() const;
 
     /**
      * Sets the prop name
@@ -65,6 +64,8 @@ public:
     /** Returns the full shape name (actor_name::prop_name::shape_name */
     QString getFullName();
 
+public: // Geometry
+
     /** Returns the model matrix */
     QMatrix4x4 getModelMatrix() const;
 
@@ -74,15 +75,20 @@ public:
      */
     void setModelMatrix(const QMatrix4x4& modelMatrix);
 
+    /** Gets the bounding rectangle of the prop in world coordinates */
+    virtual QRectF getWorldBoundingRectangle() const = 0;
+
+    /** Gets the bounding rectangle of the prop in screen coordinates */
+    virtual QRect getScreenBoundingRectangle() const final;
+
     /**
      * Renders the prop
-     * @param nodeMVP Node model view projection matrix
-     * @param opacity Render opacity [0-1]
+     * @param modelViewProjectionMatrix Model view projection matrix
      */
-    virtual void render(const QMatrix4x4& nodeMVP, const float& opacity);
+    virtual void render(const QMatrix4x4& modelViewProjectionMatrix);
 
-    /** Returns the bounding rectangle of the prop */
-    virtual QRectF getBoundingRectangle() const = 0;
+    /** Get reference to the renderer */
+    Renderer& getRenderer();
 
 protected:
 
@@ -110,7 +116,7 @@ protected: // Shape management
     template<typename T>
     void addShape(const QString& name)
     {
-        auto shape = QSharedPointer<T>::create(this, name);
+        auto shape = QSharedPointer<T>::create(*this, name);
 
         _shapes.insert(name, shape);
     }
@@ -163,14 +169,11 @@ protected: // Texture management
     */
     QSharedPointer<QOpenGLTexture>& getTextureByName(const QString& name);
 
-public:
-    static Renderer* renderer;                                                      /** Static renderer instance */
-
 protected:
-    Node*                                                   _node;                  /** Pointer to parent (if any) */
-    bool                                                    _initialized;           /** Whether the prop is ready for rendering */
-    QString                                                 _name;                  /** Name of the prop */
-    bool                                                    _visible;               /** Whether the prop is visible or not */
+    Renderable&     _renderable;        /** Reference to renderable object */
+    bool            _initialized;       /** Whether the prop is ready for rendering */
+    QString         _name;              /** Name of the prop */
+    bool            _visible;           /** Whether the prop is visible or not */
 
 private:
     QMatrix4x4                                              _modelMatrix;           /** Transformation matrix */

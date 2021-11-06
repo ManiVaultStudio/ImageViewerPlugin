@@ -1,310 +1,652 @@
 #include "LayersModel.h"
-#include "ImageViewerPlugin.h"
-#include "Layer.h"
-#include "RootLayer.h"
-#include "GroupLayer.h"
-#include "PointsLayer.h"
-#include "SelectionLayer.h"
+#include "Application.h"
 
-#include <QFont>
-#include <QBrush>
-#include <QDebug>
-#include <QAbstractItemView>
-#include <QMimeData>
+#include "util/Exception.h"
 
-LayersModel::LayersModel(ImageViewerPlugin* imageViewerPlugin) :
-    QAbstractItemModel(imageViewerPlugin),
-    _selectionModel(this),
-    _root(nullptr)
+#include "PointData.h"
+
+#include <QMessageBox>
+#include <QPainter>
+
+#include <stdexcept>
+
+using namespace hdps;
+
+LayersModel::LayersModel(QObject* parent) :
+    QAbstractListModel(parent),
+    EventListener(),
+    _layers()
 {
+    setEventCore(Application::core());
+
+    // Register for events for points datasets
+    registerDataEventByType(PointType, [this](DataEvent* dataEvent) {
+
+        switch (dataEvent->getType())
+        {
+            case EventType::DataRemoved:
+            {
+                removeLayer(dataEvent->dataSetName);
+                break;
+            }
+
+            default:
+                break;
+        }
+    });
+
+    // Register for events for images datasets
+    registerDataEventByType(ImageType, [this](DataEvent* dataEvent) {
+
+        switch (dataEvent->getType())
+        {
+            case EventType::DataRemoved:
+            {
+                removeLayer(dataEvent->dataSetName);
+                break;
+            }
+
+            default:
+                break;
+        }
+    });
 }
 
 LayersModel::~LayersModel()
 {
-    delete _root;
+    // Remove all layers
+    for (std::int32_t row = 0; rowCount(); row++)
+        removeLayer(row);
 }
 
-void LayersModel::paint(QPainter* painter)
+int LayersModel::rowCount(const QModelIndex& parent /*= QModelIndex()*/) const
 {
-    if (getSelectedLayer() == nullptr)
-        return;
-
-    getSelectedLayer()->paint(painter);
-}
-
-void LayersModel::dispatchEventToSelectedLayer(QEvent* event)
-{
-    const auto selectedRows = _selectionModel.selectedRows();
-
-    if (selectedRows.isEmpty())
-        return;
-
-    getSelectedLayer()->handleEvent(event, selectedRows.first());
+    return _layers.count();
 }
 
 int LayersModel::columnCount(const QModelIndex& parent /*= QModelIndex()*/) const
 {
-    Q_UNUSED(parent);
-
-    return ult(Layer::Column::End) + 1;
+    return Column::Count;
 }
 
-QVariant LayersModel::data(const QModelIndex &index, int role) const
+QModelIndex LayersModel::index(int row, int column, const QModelIndex& parent /*= QModelIndex()*/) const
 {
-    if (!index.isValid())
-        return QVariant();
-
-    auto layer = getLayer(index);
-
-    return layer->getData(index, role);
+    return createIndex(row, column, static_cast<void*>(_layers.at(row)));
 }
 
-QVariant LayersModel::data(const int& row, const int& column, const int& role) const
+QVariant LayersModel::data(const QModelIndex& index, int role) const
 {
-    return data(index(row, column), role);
-}
+    auto layer = static_cast<Layer*>(index.internalPointer());
 
-bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int role /*= Qt::EditRole*/)
-{
-    auto layer = getLayer(index);
+    switch (role) {
+        case Qt::DisplayRole:
+        {
+            switch (static_cast<Column>(index.column())) {
+                case Column::Visible:
+                    break;
 
-    const auto affectedIndices = layer->setData(index, value, role);
+                case Column::Color:
+                    return "";
 
-    for (auto affectedIndex : affectedIndices) {
-        emit dataChanged(affectedIndex, affectedIndex);
-    }
+                case Column::Name:
+                    return data(index, Qt::EditRole).toString();
 
-    return true;
-}
+                case Column::ImageWidth:
+                    return QString::number(data(index, Qt::EditRole).toInt());
 
-bool LayersModel::setData(const int& row, const int& column, const QVariant& value, int role /*= Qt::EditRole*/)
-{
-    return setData(index(row, column), value, role);
-}
+                case Column::ImageHeight:
+                    return QString::number(data(index, Qt::EditRole).toInt());
 
-Qt::ItemFlags LayersModel::flags(const QModelIndex& index) const
-{
-    return getLayer(index)->getFlags(index);
-}
+                case Column::Scale:
+                case Column::Opacity:
+                    return QString("%1%").arg(QString::number(data(index, Qt::EditRole).toFloat(), 'f', 1));
 
-Qt::ItemFlags LayersModel::flags(const int& row, const int& column) const
-{
-    return flags(index(row, column));
-}
+                default:
+                    break;
+            }
 
-Layer* LayersModel::getLayer(const QModelIndex& index) const
-{
-    if (index.isValid()) {
-        auto layer = static_cast<Layer*>(index.internalPointer());
+            break;
+        }
+
+        case Qt::EditRole:
+        {
+            switch (static_cast<Column>(index.column())) {
+                case Column::Visible:
+                    return layer->getGeneralAction().getVisibleAction().isChecked();
+
+                case Column::Color:
+                    return layer->getGeneralAction().getColorAction().getColor();
+
+                case Column::Name:
+                    return layer->getGeneralAction().getNameAction().getString();
+
+                case Column::ImageWidth:
+                    return layer->getImageSize().width();
+
+                case Column::ImageHeight:
+                    return layer->getImageSize().height();
+
+                case Column::Scale:
+                    return layer->getGeneralAction().getScaleAction().getValue();
+
+                case Column::Opacity:
+                    return layer->getImageAction().getOpacityAction().getValue();
+
+                default:
+                    break;
+            }
+
+            break;
+        }
+
+        case Qt::CheckStateRole:
+        {
+            switch (static_cast<Column>(index.column())) {
+                case Column::Visible:
+                    return layer->getGeneralAction().getVisibleAction().isChecked() ? Qt::Checked : Qt::Unchecked;
+
+                case Column::Color:
+                case Column::Name:
+                case Column::ImageWidth:
+                case Column::ImageHeight:
+                case Column::Scale:
+                case Column::Opacity:
+                    break;
+
+                default:
+                    break;
+            }
+
+            break;
+        }
+
+        case Qt::DecorationRole:
+        {
+            switch (static_cast<Column>(index.column())) {
+                case Column::Visible:
+                    break;
+
+                case Column::Color:
+                {
+                    if (layer->getGeneralAction().getVisibleAction().isChecked()) {
+                        return getColorIcon(layer->getGeneralAction().getColorAction().getColor());
+                    } else {
+                        const auto color = layer->getGeneralAction().getColorAction().getColor();
+                        return getColorIcon(QColor::fromHsl(color.hue(), 0, color.lightness()));
+                    }
+                }
+
+                case Column::Name:
+                case Column::ImageWidth:
+                case Column::ImageHeight:
+                case Column::Scale:
+                case Column::Opacity:
+                    break;
+
+                default:
+                    break;
+            }
+
+            break;
+        }
         
-        if (layer)
-            return layer;
-    }
+        case Qt::ForegroundRole:
+        {
+            switch (static_cast<Column>(index.column())) {
+                case Column::Visible:
+                case Column::Color:
+                case Column::Name:
+                case Column::ImageWidth:
+                case Column::ImageHeight:
+                case Column::Scale:
+                case Column::Opacity:
+                    return QColor(layer->getGeneralAction().getVisibleAction().isChecked() ? QApplication::palette().color(QPalette::Text) : QApplication::palette().color(QPalette::Disabled, QPalette::Text));
 
-    return _root;
-}
-
-QVariant LayersModel::headerData(int section, Qt::Orientation orientation, int role) const
-{
-    if (role != Qt::DisplayRole)
-        return QVariant();
-
-    if (orientation == Qt::Horizontal) {
-        return Layer::getColumnName(static_cast<Layer::Column>(section));
+                default:
+                    break;
+            }
+        }
     }
 
     return QVariant();
 }
 
-QModelIndex LayersModel::index(int row, int column, const QModelIndex &parent) const
+bool LayersModel::setData(const QModelIndex& index, const QVariant& value, int role /*= Qt::EditRole*/)
 {
-    if (parent.isValid() && parent.column() != 0)
-        return QModelIndex();
+    auto layer = static_cast<Layer*>(index.internalPointer());
 
-    auto parentLayer = getLayer(parent);
+    switch (role) {
+        case Qt::DisplayRole:
+            break;
 
-    if (!parentLayer)
-        return QModelIndex();
+        case Qt::EditRole:
+        {
+            switch (static_cast<Column>(index.column())) {
+                case Column::Visible:
+                    break;
 
-    auto childLayer = parentLayer->getChild(row);
+                case Column::Color:
+                {
+                    layer->getGeneralAction().getColorAction().setColor(value.value<QColor>());
+                    break;
+                }
 
-    if (childLayer)
-        return createIndex(row, column, childLayer);
+                case Column::Name:
+                {
+                    layer->getGeneralAction().getNameAction().setString(value.toString());
+                    break;
+                }
 
-    return QModelIndex();
-}
+                case Column::ImageWidth:
+                case Column::ImageHeight:
+                case Column::Scale:
+                case Column::Opacity:
+                    break;
 
-bool LayersModel::insertLayer(int row, Layer* layer, const QModelIndex& parent /*= QModelIndex()*/)
-{
-    auto parentLayer = getLayer(parent);
+                default:
+                    break;
+            }
 
-    if (!parentLayer)
-        return false;
+            break;
+        }
 
-    beginInsertRows(parent, row, row);
-    {
-        parentLayer->insertChild(row, layer);
+        case Qt::CheckStateRole:
+        {
+            switch (static_cast<Column>(index.column())) {
+                case Column::Visible:
+                {
+                    layer->getGeneralAction().getVisibleAction().setChecked(value.toBool());
+                    break;
+                }
+
+                case Column::Color:
+                case Column::Name:
+                case Column::ImageWidth:
+                case Column::ImageHeight:
+                case Column::Scale:
+                case Column::Opacity:
+                    break;
+
+                default:
+                    break;
+            }
+
+            break;
+        }
     }
-    endInsertRows();
+
+    emit dataChanged(index, index);
 
     return true;
 }
 
-QModelIndex LayersModel::parent(const QModelIndex &index) const
+QVariant LayersModel::headerData(int section, Qt::Orientation orientation, int role /*= Qt::DisplayRole*/) const
 {
-    if (!index.isValid())
-        return QModelIndex();
+    const auto iconSize = QSize(14, 14);
 
-    auto childLayer     = getLayer(index);
-    auto parentLayer    = childLayer ? childLayer->getParent() : nullptr;
+    if (orientation == Qt::Horizontal) {
+        switch (role)
+        {
+            case Qt::DisplayRole:
+            {
+                switch (static_cast<Column>(section))
+                {
+                    case Column::Visible:
+                    case Column::Color:
+                        return "";
 
-    if (parentLayer == _root || !parentLayer)
-        return QModelIndex();
+                    case Column::Name:
+                        return "Name";
 
-    return createIndex(parentLayer->getChildIndex(), 0, parentLayer);
+                    case Column::ImageWidth:
+                        return "Width";
+
+                    case Column::ImageHeight:
+                        return "Height";
+
+                    case Column::Scale:
+                        return "Scale";
+
+                    case Column::Opacity:
+                        return "Opacity";
+
+                    default:
+                        break;
+                }
+
+                break;
+            }
+
+            case Qt::ToolTipRole:
+            {
+                switch (static_cast<Column>(section))
+                {
+                    case Column::Visible:
+                        return "Whether the layer is visible or not";
+
+                    case Column::Color:
+                        return "Color of the layer";
+
+                    case Column::Name:
+                        return "Name of the layer";
+
+                    case Column::ImageWidth:
+                        return "Width of the image";
+
+                    case Column::ImageHeight:
+                        return "Height of the image";
+
+                    case Column::Scale:
+                        return "Scale of the layer";
+
+                    case Column::Opacity:
+                        return "Opacity of the layer";
+
+                    default:
+                        break;
+                }
+
+                break;
+            }
+
+            case Qt::DecorationRole:
+            {
+                switch (static_cast<Column>(section))
+                {
+                    case Column::Visible:
+                        break;//return Application::getIconFont("FontAwesome").getIcon("eye", iconSize);
+
+                    case Column::Color:
+                        break;//return Application::getIconFont("FontAwesome").getIcon("palette", iconSize);
+
+                    case Column::Name:
+                        break;
+
+                    case Column::ImageWidth:
+                        break;//return Application::getIconFont("FontAwesome").getIcon("ruler-horizontal", QSize(12, 12));
+
+                    case Column::ImageHeight:
+                        break;//return Application::getIconFont("FontAwesome").getIcon("ruler-vertical", QSize(12, 12));
+
+                    case Column::Scale:
+                        break;//return Application::getIconFont("FontAwesome").getIcon("percentage", QSize(12, 12));
+
+                    case Column::Opacity:
+                        break;
+
+                    default:
+                        break;
+                }
+
+                break;
+            }
+
+            case Qt::TextAlignmentRole:
+            {
+                switch (static_cast<Column>(section)) {
+                    case Column::Visible:
+                        return Qt::AlignCenter;
+
+                    case Column::Color:
+                    case Column::Name:
+                    case Column::ImageWidth:
+                    case Column::ImageHeight:
+                    case Column::Scale:
+                    case Column::Opacity:
+                        break;
+
+                    default:
+                        break;
+                }
+
+                break;
+            }
+
+            default:
+                break;
+        }
+    }
+
+    return QVariant();
 }
 
-bool LayersModel::removeLayers(const QModelIndexList& indices)
+Qt::ItemFlags LayersModel::flags(const QModelIndex& index) const
 {
-    QModelIndexList sortedIndices = indices;
+    if (!index.isValid())
+        return Qt::NoItemFlags;
 
-    qSort(sortedIndices.begin(), sortedIndices.end(), qGreater<QModelIndex>());
+    auto itemFlags = Qt::ItemIsSelectable | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled | QAbstractItemModel::flags(index);
 
-    for (auto sortedIndex : sortedIndices) {
-        const int row = sortedIndex.row();
+    auto layer = static_cast<Layer*>(index.internalPointer());
 
-        beginRemoveRows(sortedIndex.parent(), row, row);
+    if (index.column() == Column::Visible) {
+        itemFlags |= Qt::ItemIsUserCheckable;
+    }
+    else {
+        if (index.column() == Column::Name)
+            itemFlags |= Qt::ItemIsEditable;
+    }
+
+    return itemFlags;
+}
+
+void LayersModel::addLayer(Layer* layer)
+{
+    try
+    {
+        // Insert the layer action at the beginning
+        beginInsertRows(QModelIndex(), 0, 0);
         {
-            getLayer(sortedIndex.parent())->removeChild(row);
+            // Insert the layer at the beginning (layer will be added on top of all other layers)
+            _layers.insert(0, layer);
+
+            // Inform views that the layer visibility has changed when it is changed in the action
+            connect(&layer->getGeneralAction().getVisibleAction(), &ToggleAction::toggled, this, [this, layer](bool toggled) {
+                const auto changedCell = index(_layers.indexOf(layer), Column::Name);
+                emit dataChanged(changedCell, changedCell.siblingAtColumn(Column::Last));
+            });
+
+            // Inform views that the layer color has changed when it is changed in the action
+            connect(&layer->getGeneralAction().getColorAction(), &ColorAction::colorChanged, this, [this, layer](const QColor& color) {
+                const auto changedCell = index(_layers.indexOf(layer), Column::Color);
+                emit dataChanged(changedCell, changedCell);
+            });
+
+            // Inform views that the layer name has changed when it is changed in the action
+            connect(&layer->getGeneralAction().getNameAction(), &StringAction::stringChanged, this, [this, layer]() {
+                const auto changedCell = index(_layers.indexOf(layer), Column::Name);
+                emit dataChanged(changedCell, changedCell);
+            });
+
+            // Inform views that the layer scale has changed when it is changed in the action
+            connect(&layer->getGeneralAction().getScaleAction(), &DecimalAction::valueChanged, this, [this, layer](const float& value) {
+                const auto changedCell = index(_layers.indexOf(layer), Column::Scale);
+                emit dataChanged(changedCell, changedCell);
+            });
+
+            // Inform views that the layer opacity has changed when it is changed in the action
+            connect(&layer->getImageAction().getOpacityAction(), &DecimalAction::valueChanged, this, [this, layer](const float& value) {
+                const auto changedCell = index(_layers.indexOf(layer), Column::Opacity);
+                emit dataChanged(changedCell, changedCell);
+            });
+        }
+        endInsertRows();
+    }
+    catch (std::exception& e)
+    {
+        exceptionMessageBox("Unable to add layer to the layers model", e);
+    }
+    catch (...) {
+        exceptionMessageBox("Unable to add layer to the layers model");
+    }
+}
+
+void LayersModel::removeLayer(const std::uint32_t& row)
+{
+    try
+    {
+        // Get pointer to layer which needs to be removed
+        auto removeLayer = _layers[row];
+
+        qDebug() << "Remove layer:" << removeLayer->getGeneralAction().getNameAction().getString();
+
+        // Remove the row from the model
+        beginRemoveRows(QModelIndex(), row, row);
+        {
+            // Remove the layer from the list
+            _layers.removeAt(row);
+
+            // Remove the layer physically
+            delete removeLayer;
         }
         endRemoveRows();
     }
-
-    return true;
+    catch (std::exception& e)
+    {
+        exceptionMessageBox("Unable to remove layer from the layers model", e);
+    }
+    catch (...) {
+        exceptionMessageBox("Unable to remove layer from the layers model");
+    }
 }
 
-bool LayersModel::mayMoveLayer(const QModelIndex& index, const int& delta) const
+void LayersModel::removeLayer(const QModelIndex& layerModelIndex)
 {
-    const auto sourceIndex = index;
-    const auto targetIndex = index.siblingAtRow(index.row() + delta);
-
-    if (!sourceIndex.isValid() || !targetIndex.isValid())
-        return false;
-
-    return true;
+    removeLayer(layerModelIndex.row());
 }
 
-bool LayersModel::moveLayer(const QModelIndex& sourceParent, const int& sourceRow, const QModelIndex& targetParent, int targetRow)
+void LayersModel::removeLayer(const QString& datasetName)
 {
-    if (targetRow < 0)
-        targetRow = 0;
+    try
+    {
+        if (datasetName.isEmpty())
+            throw std::runtime_error("Dataset name is empty");
 
-    if (sourceParent == targetParent) {
-        if (beginMoveRows(sourceParent, sourceRow, sourceRow, targetParent, targetRow)) {
-            auto sourceParentLayer  = getLayer(sourceParent);
-            auto targetParentLayer  = getLayer(targetParent);
-            auto sourceLayer        = sourceParentLayer->getChild(sourceRow);
-
-            sourceParentLayer->removeChild(sourceRow, false);
-            targetParentLayer->insertChild(targetRow > sourceRow ? targetRow - 1 : targetRow, sourceLayer);
-
-            endMoveRows();
+        for (const auto& layer : _layers) {
+            if (datasetName == layer->getImagesDatasetName())
+                removeLayer(_layers.indexOf(layer));
         }
     }
-    else {
-        if (beginMoveRows(sourceParent, sourceRow, sourceRow, targetParent, targetRow)) {
-            auto sourceParentLayer  = getLayer(sourceParent);
-            auto targetParentLayer  = getLayer(targetParent);
-            auto sourceLayer        = sourceParentLayer->getChild(sourceRow);
+    catch (std::exception& e)
+    {
+        exceptionMessageBox("Unable to remove layer from the layers model", e);
+    }
+    catch (...) {
+        exceptionMessageBox("Unable to remove layer from the layers model");
+    }
+}
 
-            sourceParentLayer->removeChild(sourceRow, false);
-            targetParentLayer->insertChild(targetRow, sourceLayer);
+void LayersModel::duplicateLayer(const QModelIndex& layerModelIndex)
+{
+    try
+    {
+        throw std::runtime_error("This feature is not yet implemented.");
+    }
+    catch (std::exception& e)
+    {
+        exceptionMessageBox("Unable to duplicate the layer", e);
+    }
+    catch (...) {
+        exceptionMessageBox("Unable to duplicate the layer");
+    }
+}
 
-            endMoveRows();
+void LayersModel::moveLayer(const QModelIndex& layerModelIndex, const std::int32_t& amount /*= 1*/)
+{
+    try
+    {
+        // Establish source and target row index
+        const auto sourceRowIndex = layerModelIndex.row();
+        const auto targetRowIndex = std::clamp(sourceRowIndex + amount, 0, rowCount() - 1);
+
+        QVector<std::int32_t> rowIndices{ sourceRowIndex, targetRowIndex };
+
+        if (sourceRowIndex < targetRowIndex) {
+            
+            // Begin moving the row in the model
+            if (beginMoveRows(QModelIndex(), rowIndices.first(), rowIndices.first(), QModelIndex(), rowIndices.last() + 1)) {
+
+                // Re-arrange internal layers data
+                _layers.insert(rowIndices.last() + 1, _layers[rowIndices.first()]);
+                _layers.removeAt(rowIndices.first());
+
+                // Finished moving row around
+                endMoveRows();
+            }
+            else {
+                throw std::runtime_error("Unable to begin moving rows");
+            }
+        }
+        else {
+
+            // Begin moving the row in the model
+            if (beginMoveRows(QModelIndex(), rowIndices.first(), rowIndices.first(), QModelIndex(), rowIndices.last())) {
+
+                auto cache = _layers[rowIndices.first()];
+
+                // Re-arrange internal layers data
+                _layers.removeAt(rowIndices.first());
+                _layers.insert(rowIndices.last(), cache);
+
+                // Finished moving row around
+                endMoveRows();
+            }
+            else {
+                throw std::runtime_error("Unable to begin moving rows");
+            }
         }
     }
-
-    return true;
-}
-
-void LayersModel::initialize()
-{
-    _root = new RootLayer();
-}
-
-void LayersModel::addPointsDataset(const QString& datasetName)
-{
-    const auto selectionName            = QString("%1_selection").arg(datasetName);
-    const auto selectionLayerIndices    = match(index(0, ult(Layer::Column::ID)), Qt::DisplayRole, selectionName, -1, Qt::MatchExactly);
-    const auto createSelectionLayer     = selectionLayerIndices.isEmpty();
-    const auto layerFlags               = ult(Layer::Flag::Enabled) | ult(Layer::Flag::Renamable);
-
-    auto pointsLayer = new PointsLayer(datasetName, datasetName, datasetName, layerFlags);
-
-    if (pointsLayer->getImageCollectionType() == ult(ImageData::Type::Stack) && createSelectionLayer) {
-        auto selectionLayer = new SelectionLayer(datasetName, selectionName, selectionName, layerFlags);
-
-        selectionLayer->setOpacity(0.8f);
-
-        insertLayer(0, pointsLayer);
-        insertLayer(0, selectionLayer);
-        selectRow(1);
+    catch (std::exception& e)
+    {
+        exceptionMessageBox("Unable to move layer in the layers model", e);
     }
-    else {
-        const auto row = selectionLayerIndices.isEmpty() ? 0 : selectionLayerIndices.first().row() + 1;
+    catch (...) {
+        exceptionMessageBox("Unable to move layer in the layers model");
+    }
+}
 
-        insertLayer(row, pointsLayer);
-        selectRow(row);
+QVector<Layer*>& LayersModel::getLayers()
+{
+    return _layers;
+}
+
+Layer* LayersModel::getLayerByDatasetName(const QString& datasetName)
+{
+    try
+    {
+        if (datasetName.isEmpty())
+            throw std::runtime_error("Dataset name is empty");
+
+        for (const auto& layer : _layers) {
+            if (datasetName == layer->getImagesDatasetName())
+                return layer;
+        }
+    }
+    catch (std::exception& e)
+    {
+        exceptionMessageBox("Unable to get layer from the layers model", e);
+    }
+    catch (...) {
+        exceptionMessageBox("Unable to get layer from the layers model");
     }
 
-	const auto getLargestImageSize = [this]() -> QSize {
-		auto largestImageSize = QSize();
-
-		for (auto imageLayerIndex : match(index(0, ult(Layer::Column::Type)), Qt::EditRole, ult(Layer::Type::Points), -1, Qt::MatchExactly | Qt::MatchRecursive)) {
-			const auto imageSize = data(imageLayerIndex.siblingAtColumn(ult(Layer::Column::ImageSize)), Qt::EditRole).toSize();
-
-			if (imageSize.width() > largestImageSize.width() && imageSize.height() > largestImageSize.height())
-				largestImageSize = imageSize;
-		}
-
-		return largestImageSize;
-	};
-
-	const auto assimilateLayers = [this](const QModelIndexList& imageLayerIndices, const QSize& largestImageSize) {
-		for (auto imageLayerIndex : imageLayerIndices) {
-			const auto imageSize	= data(imageLayerIndex.siblingAtColumn(ult(Layer::Column::ImageSize)), Qt::EditRole).toSize();
-			const auto vScale		= static_cast<float>(largestImageSize.height()) / static_cast<float>(imageSize.height());
-			const auto hScale		= static_cast<float>(largestImageSize.width()) / static_cast<float>(imageSize.width());
-
-			if (imageSize.width() < largestImageSize.width() || imageSize.height() < largestImageSize.height())
-				setData(imageLayerIndex.siblingAtColumn(ult(Layer::Column::Scale)), std::max(vScale, hScale));
-		}
-
-		return largestImageSize;
-	};
-
-	assimilateLayers(match(index(0, ult(Layer::Column::Type)), Qt::EditRole, ult(Layer::Type::Points), -1, Qt::MatchExactly | Qt::MatchRecursive), getLargestImageSize());
-	assimilateLayers(match(index(0, ult(Layer::Column::Type)), Qt::EditRole, ult(Layer::Type::Selection), -1, Qt::MatchExactly | Qt::MatchRecursive), getLargestImageSize());
+    return nullptr;
 }
 
-void LayersModel::selectRow(const std::int32_t& row)
+QIcon LayersModel::getColorIcon(const QColor& color) const
 {
-    _selectionModel.setCurrentIndex(index(row, 0), QItemSelectionModel::SelectionFlag::Current | QItemSelectionModel::SelectionFlag::ClearAndSelect | QItemSelectionModel::SelectionFlag::Rows);
-}
+    QPixmap pixmap(QSize(13, 13));
 
-Layer* LayersModel::getSelectedLayer()
-{
-    const auto selectedRows = _selectionModel.selectedRows();
+    pixmap.fill(Qt::transparent);
 
-    if (selectedRows.isEmpty())
-        return nullptr;
+    QPainter painter(&pixmap);
 
-    return getLayer(selectedRows.first());
-}
+    const auto radius = 3;
 
-int LayersModel::rowCount(const QModelIndex& parent /*= QModelIndex()*/) const
-{
-    const auto parentLayer = getLayer(parent);
+    painter.setRenderHint(QPainter::Antialiasing);
+    painter.setPen(Qt::NoPen);
+    painter.setBrush(QBrush(color));
+    painter.drawRoundedRect(0, 0, pixmap.width(), pixmap.height(), radius, radius);
 
-    return parentLayer ? parentLayer->getChildCount() : 0;
+    return QIcon(pixmap);
 }

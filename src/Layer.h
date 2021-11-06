@@ -1,339 +1,215 @@
 #pragma once
 
-#include "Node.h"
-#include "Range.h"
+#include "Renderable.h"
+#include "LayersAction.h"
+#include "GeneralAction.h"
+#include "ImageAction.h"
+#include "SelectionAction.h"
 
-#include <QColor>
-#include <QObject>
-#include <QImage>
-#include <QModelIndex>
-#include <QVector>
+#include "util/DatasetRef.h"
+#include "util/Interpolation.h"
 
-#include "event/EventListener.h"
+#include "Set.h"
+#include "ImageData/Images.h"
 
-class QPaintEvent;
+using namespace hdps::util;
 
 class ImageViewerPlugin;
-class Prop;
 
-/**
- * Layer node class
- *
- * This class represents a hierarchical layer node
- *
- * @author Thomas Kroes
- */
-class Layer : public Node, public hdps::EventListener
+class Layer : public QObject, public Renderable
 {
     Q_OBJECT
 
+    /** Paint flags */
+    enum PaintFlag {
+        Bounds              = 0x001,
+        Label               = 0x002,
+        SelectionRectangle  = 0x004,
+        Sample              = 0x008
+    };
+
 public:
-
-    /**
-     * Hint class
-     * 
-     * @author Thomas Kroes
-    */
-    class Hint {
-    public:
-        Hint(const QString& title = "", const QString& description = "", const bool& active = false) :
-            _title(title),
-            _description(description),
-            _active(active)
-        {
-        }
-
-        /** Returns the hint title */
-        QString getTitle() const {
-            return _title;
-        }
-
-        /** Returns the hint description */
-        QString getDescription() const {
-            return _description;
-        }
-
-        /** Returns the whether the hint is active */
-        bool isActive() const {
-            return _active;
-        }
-
-    private:
-        QString     _title;             /** Title of the hint */
-        QString     _description;       /** The hint description */
-        bool        _active;            /** Whether the hint is active */
-    };
-
-    using Hints = QVector<Hint>;
-
-    /**  Columns */
-    enum class Column {
-        Type,               // Type of layer
-        Name,               // Name of the layer
-        DatasetName,        // Name of the dataset (if any)
-        ID,                 // Layer identifier (for internal use)
-        ImageSize,          // Size of the image(s)
-        ImageWidth,         // Width of the image(s)
-        ImageHeight,        // Height of the image(s)
-        Opacity,            // Layer opacity
-        Scale,              // Layer scale
-        Flags,              // Configuration bit flags
-
-        Start = Type,
-        End = Flags
-    };
-
-    /** Get string representation of layer column enumeration */
-    static QString getColumnName(const Column& column) {
-        switch (column) {
-            case Column::Name:
-                return "Name";
-
-            case Column::Type:
-                return "";
-
-            case Column::DatasetName:
-                return "Dataset Name";
-
-            case Column::ID:
-                return "ID";
-
-            case Column::ImageSize:
-                return "Image Size";
-
-            case Column::ImageWidth:
-                return "Width";
-
-            case Column::ImageHeight:
-                return "Height";
-
-            case Column::Opacity:
-                return "Opacity";
-
-            case Column::Scale:
-                return "Scale";
-
-            case Column::Flags:
-                return "Flags";
-
-            default:
-                return QString();
-        }
-
-        return QString();
-    }
-
-    /** Layer types */
-    enum class Type {
-        Points,         /** Points dataset */
-        Selection,      /** Selection layer */
-        Group           /** Group layer */
-    };
-
-    /** Get string representation of layer type enumeration */
-    static QString getTypeName(const Type& type) {
-        switch (type)
-        {
-            case Type::Points:
-                return "Points";
-
-            case Type::Selection:
-                return "Selection";
-
-            default:
-                break;
-        }
-
-        return "";
-    }
 
     /**
      * Constructor
-     * @param datasetName Name of the dataset
-     * @param type Type of layer
-     * @param id Layer identifier
-     * @param name Layer name
-     * @param flags Configuration bit flags
+     * @param imageViewerPlugin Reference to image viewer plugin
+     * @param datasetName Name of the images dataset
      */
-    Layer(const QString& datasetName, const Type& type, const QString& id, const QString& name, const int& flags);
+    Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName);
 
     /** Destructor */
-    ~Layer() override;
+    virtual ~Layer();
 
-public: // Miscellaneous
-
-    /**
-     * Adjust the layer scaling to fit into the supplied image size
-     * @param imageSize Size of the image to scale into
-     */
-    void matchScaling(const QSize& targetImageSize);
+    /** Get reference to image viewer plugin */
+    ImageViewerPlugin& getImageViewerPlugin();
 
     /**
-     * Paints the layer
-     * @param painter Pointer to painter
+     * Get the context menu
+     * @param parent Parent widget
+     * @return Context menu
      */
-    virtual void paint(QPainter* painter);
+    QMenu* getContextMenu(QWidget* parent = nullptr);
+
+    /** Activate the layer */
+    void activate();
+
+    /** De-activate the layer */
+    void deactivate();
+
+    /** Invalidates the prop (triggers a re-render of all layers) */
+    void invalidate();
 
     /**
-     * Handles a widget event
-     * @param event Event
-     * @param index Model index
+     * Squeeze the layer into a rectangle whilst maintaining its aspect ratio
+     * @param rectangle Rectangle to squeeze into
      */
-    virtual void handleEvent(QEvent* event, const QModelIndex& index) {};
-
-    /** Zooms to the extents of the layer */
-    void zoomExtents();
-
-public: // MVC
-    
-    /** Returns the number of columns */
-    virtual int getColumnCount() const { return ult(Column::End) + 1; }
+    void scaleToFit(const QRectF& rectangle);
 
     /**
-     * Returns the item flags for the given model index
-     * @param index Model index
-     * @return Item flags for the index
+     * Paint
+     * @param painter Reference to painter
      */
-    virtual Qt::ItemFlags getFlags(const QModelIndex& index) const;
+    void paint(QPainter& painter, const PaintFlag& paintFlags);
+
+    /** Get source dataset */
+    hdps::DataSet* getSourceDataset() {
+        return _sourceDataset.get();
+    }
+
+    /** Get source dataset of a specific dataset type */
+    template<typename DatasetType>
+    DatasetType* getSourceDataset() {
+        return dynamic_cast<DatasetType*>(_sourceDataset.get());
+    }
+
+    /** Get const source dataset of a specific dataset type */
+    template<typename DatasetType>
+    const DatasetType* getSourceDataset() const {
+        return const_cast<Layer*>(this)->getSourceDataset<DatasetType>();
+    }
+
+    /** Get images dataset */
+    DatasetRef<Images>& getImages() {
+        return _imagesDataset;
+    }
+
+    const QString getImagesDatasetName() const;
+
+public: // Images wrapper functions
+
+    const std::uint32_t getNumberOfImages() const;
+    const QSize getImageSize() const;
+
+public: // Points wrapper functions
+
+    const QStringList getDimensionNames() const;
+
+public: // Selection
+
+    /** Select all pixels in the image(s) */
+    void selectAll();
+
+    /** De-select all pixels in the image(s) */
+    void selectNone();
+
+    /** Invert the pixel selection in the image(s) */
+    void selectInvert();
+
+    /** Start the selection */
+    void startSelection();
 
     /**
-     * Returns the data for the given model index and data role
-     * @param index Model index
-     * @param role Data role
-     * @return Data in variant form
+     * Reset off-screen selection buffer
+     * @param mousePositions Mouse positions
      */
-    virtual QVariant getData(const QModelIndex& index, const int& role) const;
+    void resetSelectionBuffer();
 
     /**
-     * Sets the data value for the given model index and data role
-     * @param index Model index
-     * @param value Data value in variant form
-     * @param role Data role
-     * @return Model indices that are affected by the operation
+     * Compute selection
+     * @param mousePositions Mouse positions
      */
-    virtual QModelIndexList setData(const QModelIndex& index, const QVariant& value, const int& role);
+    void computeSelection(const QVector<QPoint>& mousePositions);
 
-public: // Getters/setters
+    /** Publish selection */
+    void publishSelection();
+
+    /** Compute the selected indices */
+    void computeSelectionIndices();
+
+    /** Get indices of the selected pixels */
+    std::vector<std::uint32_t>& getSelectedIndices();
+
+    /** Get indices of the selected pixel indices */
+    const std::vector<std::uint32_t>& getSelectedIndices() const;
+
+    /** Get selection rectangle in image coordinates */
+    QRect getImageSelectionRectangle() const;
+
+    /** Get selection rectangle in world coordinates */
+    QRectF getWorldSelectionRectangle() const;
+
+public: // View
+
+    // Zoom to layer extents
+    void zoomToExtents();
+
+    // Zoom to layer selection
+    void zoomToSelection();
+
+    /** Get the bounding rectangle */
+    QRectF getWorldBoundingRectangle() const override;
+
+protected: // Rendering
 
     /**
-     * Returns the dataset name
-     * @param role The data role
-     * @return Dataset name in variant form
+     * Renders the props
+     * @param modelViewProjectionMatrix Model view projection matrix
      */
-    QVariant getDatasetName(const int& role) const;
+    void render(const QMatrix4x4& modelViewProjectionMatrix) override;
 
-    /**
-     * Returns the layer type
-     * @param role The data role
-     * @return Layer type in variant form
-     */
-    QVariant getType(const int& role) const;
-
-    /**
-     * Sets the layer type
-     * @param type Layer type
-     */
-    void setType(const Layer::Type& type);
-
-    /**
-     * Returns the image size
-     * @param role Data role
-     * @return Image size in variant form
-     */
-    QVariant getImageSize(const int& role) const;
-
-    /**
-     * Returns the width of the images in the dataset
-     * @param role The data role
-     * @return Image width in variant form
-     */
-    QVariant getImageWidth(const int& role) const;
-
-    /**
-     * Returns the height of the images in the dataset
-     * @param role The data role
-     * @return Image height in variant form
-     */
-    QVariant getImageHeight(const int& role) const;
-
-    /**
-     * Returns the pressed keys
-     * @param role The data role
-     * @return Keys in variant form
-     */
-    QVariant getKeys(const int& role = Qt::DisplayRole) const;
-
-    /**
-     * Sets the keys
-     * @param keys Keys
-     */
-    void setKeys(const int& keys);
-
-    /** Returns the recorded mouse event positions */
-    QVector<QPoint> getMousePositions() const;
-
-protected:
-    
-    /**
-     * Returns the image size
-     * @return Image size
-     */
-    virtual QSize getImageSize() const = 0;
-
-    /** Updates the model matrix */
+    /** Update the model transformation matrix (used in OpenGL) */
     void updateModelMatrix();
 
-    /** Get discrete texture coordinates from \p screenPoint
-     * @param screenPoint Screen point [0..(screenWidth - 1), 0..(screenHeight - 1)]
-     * @return Discrete texture coordinates [0..(textureWidth - 1), 0..(textureHeight - 1)]
-     */
-    QPoint getTextureCoordinateFromScreenPoint(const QPoint& screenPoint) const;
-
-    /** Determines whether \p screenPoint is within the bounds of the layer
-     * @param screenPoint Screen point [0..(screenWidth - 1), 0..(screenHeight - 1)]
-     * @return Whether \p screenPoint is within the bounds of the layer
-     */
-    bool isWithin(const QPoint& screenPoint) const;
-
     /**
-     * Returns the number of pixels in the image
-     * @return Number of pixels
+     * Assign the color map image to the image rendering prop
+     * @param colorMapImage Color map image
+     * @param interpolationType Interpolation type
      */
-    int getNoPixels() const;
+    void setColorMapImage(const QImage& colorMapImage, const InterpolationType& interpolationType);
 
-    /** Returns hints that pertain to the layer */
-    virtual Hints getHints() const;
+protected: // Miscellaneous
 
-    /**
-     * Draws the layer title
-     * @param painter Pointer to painter
-     */
-    void drawTitle(QPainter* painter);
-
-    /**
-     * Draws the layer hints
-     * @param painter Pointer to painter
-     */
-    void drawHints(QPainter* painter);
+    /** Update the view plugin window title when activated or when the layer name changes */
+    void updateWindowTitle();
 
 signals:
-    
+
     /**
-     * Signals that a channel has changed
-     * @param channelId Identifier of the channel
+     * Signals that the selection changed
+     * @param selectedIndices Selected pixel indices
      */
-    void channelChanged(const std::uint32_t& channelId);
+    void selectionChanged(const std::vector<std::uint32_t>& selectedIndices);
+
+public: /** Action getters */
+
+    LayersAction& getLayersAction();
+    GeneralAction& getGeneralAction() { return _generalAction; }
+    ImageAction& getImageAction() { return _imageAction; }
+    SelectionAction& getSelectionAction() { return _selectionAction; }
 
 protected:
-    QString             _datasetName;       /** Name of the dataset to which the layer refers */
-    Layer::Type         _type;              /** Type of layer */
-    QVector<QPoint>     _mousePositions;    /** Recorded mouse positions */
-    int                 _mouseButtons;      /** State of the left, middle and right mouse buttons */
-    int                 _keys;              /** Pressed keyboard buttons */
+    ImageViewerPlugin&              _imageViewerPlugin;             /** Reference to image viewer plugin */
+    bool                            _active;                        /** Whether the layer is active (editable) */
+    DatasetRef<Images>              _imagesDataset;                 /** Reference to images dataset */
+    DatasetRef<hdps::DataSet>       _sourceDataset;                 /** Reference to source dataset of the images */
+    std::vector<std::uint32_t>      _selectedIndices;               /** Indices of the selected pixels */
+    GeneralAction                   _generalAction;                 /** General action */
+    ImageAction                     _imageAction;                   /** Image action */
+    SelectionAction                 _selectionAction;               /** Selection action */
+    std::vector<std::uint8_t>       _selectionData;                 /** Selection data for selection prop */
+    QRect                           _imageSelectionRectangle;       /** Selection boundaries in image coordinates */
+    QVector<float>                  _colorData;                     /** Color data for the specified dimension */
 
-public:
-    static ImageViewerPlugin*   imageViewerPlugin;      /** Pointer to the image viewer plugin for interfacing with datasets */
-    static bool                 showHints;              /** Whether to show hints */
-    static const QColor         hintsColor;             /** Color for hints */
-    static const qreal          textMargins;            /** Text margins */
+    friend class ImageViewerWidget;
+    friend class ImageAction;
 };

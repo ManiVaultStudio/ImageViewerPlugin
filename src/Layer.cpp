@@ -1,167 +1,776 @@
 #include "Layer.h"
 #include "ImageViewerPlugin.h"
-#include "Renderer.h"
+#include "SettingsAction.h"
+#include "DataHierarchyItem.h"
+#include "ImageProp.h"
+#include "SelectionProp.h"
+#include "SelectionToolProp.h"
 
-#include "ImageData/Images.h"
+#include "util/Exception.h"
+
 #include "PointData.h"
+#include "ClusterData.h"
 
-#include "Application.h"
-
-#include <QFont>
-#include <QDebug>
 #include <QPainter>
-#include <QTextDocument>
-#include <QtMath>
+#include <QFontMetrics>
 
-ImageViewerPlugin* Layer::imageViewerPlugin     = nullptr;
-bool Layer::showHints                           = true;
-const QColor Layer::hintsColor                  = QColor(255, 174, 66, 200);
-const qreal Layer::textMargins                  = 10.0;
+#include <set>
 
-Layer::Layer(const QString& datasetName, const Type& type, const QString& id, const QString& name, const int& flags) :
-    Node(id, name, flags),
-    hdps::EventListener(),
-    _datasetName(datasetName),
-    _type(type),
-    _mousePositions(),
-    _mouseButtons(),
-    _keys()
+using namespace hdps;
+
+Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
+    QObject(&imageViewerPlugin),
+    Renderable(imageViewerPlugin.getImageViewerWidget().getRenderer()),
+    _imageViewerPlugin(imageViewerPlugin),
+    _active(false),
+    _imagesDataset(datasetName),
+    _sourceDataset(_imagesDataset->getHierarchyItem().getParent()->getDatasetName()),
+    _selectedIndices(),
+    _generalAction(*this),
+    _imageAction(*this),
+    _selectionAction(*this, &_imageViewerPlugin.getImageViewerWidget(), _imageViewerPlugin.getImageViewerWidget().getPixelSelectionTool()),
+    _selectionData(),
+    _imageSelectionRectangle()
 {
-}
+    if (!_sourceDataset.isValid())
+        throw std::runtime_error("The layer source dataset is not valid after initialization");
 
-Layer::~Layer() = default;
+    if (!_imagesDataset.isValid())
+        throw std::runtime_error("The layer images dataset is not valid after initialization");
 
-void Layer::matchScaling(const QSize& targetImageSize)
-{
-    const auto layerImageSize   = getImageSize();
-    const auto widthScaling     = static_cast<float>(targetImageSize.width()) / layerImageSize.width();
-    const auto heightScaling    = static_cast<float>(targetImageSize.height()) / layerImageSize.height();
+    // Resize selection data with number of pixels
+    _selectionData.resize(_imagesDataset->getNumberOfPixels());
 
-    const auto scale = std::min(widthScaling, heightScaling);
+    // Create layer render props
+    _props << new ImageProp(*this, "ImageProp");
+    _props << new SelectionProp(*this, "SelectionProp");
+    _props << new SelectionToolProp(*this, "SelectionToolProp");
 
-    setScale(scale);
-}
+    this->getPropByName<ImageProp>("ImageProp")->setGeometry(_imagesDataset->getSourceRectangle(), _imagesDataset->getTargetRectangle());
+    this->getPropByName<SelectionProp>("SelectionProp")->setGeometry(_imagesDataset->getSourceRectangle(), _imagesDataset->getTargetRectangle());
+    this->getPropByName<SelectionToolProp>("SelectionToolProp")->setGeometry(_imagesDataset->getSourceRectangle(), _imagesDataset->getTargetRectangle());
 
-void Layer::paint(QPainter* painter)
-{
-    drawTitle(painter);
-    drawHints(painter);
-}
+    // Do an initial computation of the selected indices
+    computeSelectionIndices();
 
-void Layer::zoomExtents()
-{
-    renderer->zoomToRectangle(getBoundingRectangle());
-}
+    // Update the color map scalar data in the image prop
+    const auto updateChannelScalarData = [this](ScalarChannelAction& channelAction) {
 
-Qt::ItemFlags Layer::getFlags(const QModelIndex& index) const
-{
-    Qt::ItemFlags flags = Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled;
+        switch (channelAction.getIdentifier()) {
+            case ScalarChannelAction::Channel1:
+            case ScalarChannelAction::Channel2:
+            case ScalarChannelAction::Channel3:
+            case ScalarChannelAction::Mask:
+            {
+                // Assign color data to the prop in case of points dataset
+                this->getPropByName<ImageProp>("ImageProp")->setChannelScalarData(channelAction.getIdentifier(), channelAction.getScalarData(), channelAction.getDisplayRange());
 
-    const auto type = static_cast<Type>(_type);
-
-    switch (static_cast<Column>(index.column())) {
-        case Column::Name:
-        {
-            flags |= Qt::ItemIsUserCheckable;
-
-            if (getFlag(Layer::Flag::Renamable, Qt::EditRole).toBool())
-                flags |= Qt::ItemIsEditable;
-
-            break;
+                break;
+            }
         }
 
-        case Column::DatasetName:
-        case Column::Type:
-        case Column::ID:
-        case Column::ImageSize:
-        case Column::ImageWidth:
-        case Column::ImageHeight:
-            break;
+        // Render
+        invalidate();
+    };
 
-        case Column::Opacity:
-            flags |= Qt::ItemIsEditable;
-            break;
+    // Update the interpolation type in the image prop
+    const auto updateInterpolationType = [this]() {
 
-        case Column::Scale:
-            flags |= Qt::ItemIsEditable;
-            break;
+        // Get pointer to image prop
+        auto imageProp = this->getPropByName<ImageProp>("ImageProp");
 
-        case Column::Flags:
-            break;
+        // Assign the scalar data to the prop
+        imageProp->setInterpolationType(static_cast<InterpolationType>(_imageAction.getInterpolationTypeAction().getCurrentIndex()));
+        
 
-        default:
-            break;
-    }
+        // Render
+        invalidate();
+    };
 
-    return flags;
+    connect(&_generalAction.getVisibleAction(), &ToggleAction::toggled, this, &Layer::invalidate);
+    connect(&_imageAction, &ImageAction::channelChanged, this, updateChannelScalarData);
+    connect(&_imageAction.getInterpolationTypeAction(), &OptionAction::currentIndexChanged, this, updateInterpolationType);
+    
+    // Update prop when selection overlay color and opacity change
+    connect(&_selectionAction.getOverlayColor(), &ColorAction::colorChanged, this, &Layer::invalidate);
+    connect(&_selectionAction.getOverlayOpacity(), &DecimalAction::valueChanged, this, &Layer::invalidate);
+
+    // Update the model matrix and re-render
+    const auto updateModelMatrixAndReRender = [this]() {
+        updateModelMatrix();
+        invalidate();
+    };
+
+    connect(&_generalAction.getScaleAction(), &DecimalAction::valueChanged, this, updateModelMatrixAndReRender);
+    connect(&_generalAction.getPositionAction(), &PositionAction::changed, this, updateModelMatrixAndReRender);
+
+    updateChannelScalarData(_imageAction.getScalarChannel1Action());
+    updateInterpolationType();
+    updateModelMatrixAndReRender();
+
+    // Update the window title when the layer name changes
+    connect(&_generalAction.getNameAction(), &StringAction::stringChanged, this, &Layer::updateWindowTitle);
+
+    _imageAction.init();
 }
 
-QVariant Layer::getData(const QModelIndex& index, const int& role) const
+Layer::~Layer()
 {
-    switch (static_cast<Column>(index.column())) {
-        case Column::Name:
-            return getName(role);
-
-        case Column::DatasetName:
-            return getDatasetName(role);
-
-        case Column::Type:
-            return getType(role);
-
-        case Column::ID:
-            return getID(role);
-
-        case Column::ImageSize:
-            return getImageSize(role);
-
-        case Column::ImageWidth:
-            return getImageWidth(role);
-
-        case Column::ImageHeight:
-            return getImageHeight(role);
-
-        case Column::Opacity:
-            return getOpacity(role);
-
-        case Column::Scale:
-            return getScale(role);
-
-        case Column::Flags:
-            return Node::getFlags(role);
-
-        default:
-            break;
-    }
-
-    return QVariant();
+    qDebug() << "Delete layer" << _generalAction.getNameAction().getString();
 }
 
-QModelIndexList Layer::setData(const QModelIndex& index, const QVariant& value, const int& role)
+void Layer::render(const QMatrix4x4& modelViewProjectionMatrix)
 {
-    QModelIndexList affectedIndices{index};
+    try {
 
-    const auto column = static_cast<Column>(index.column());
+        // Don't render if invisible
+        if (!_generalAction.getVisibleAction().isChecked())
+            return;
 
-    switch (role)
+        // Render props
+        for (auto prop : _props)
+            prop->render(modelViewProjectionMatrix);
+    }
+    catch (std::exception& e)
     {
-        case Qt::CheckStateRole:
-        {
-            switch (column) {
-                case Column::Name:
+        exceptionMessageBox(QString("Unable to render layer: %1").arg(_generalAction.getNameAction().getString()), e);
+    }
+    catch (...) {
+        exceptionMessageBox(QString("Unable to render layer: %1").arg(_generalAction.getNameAction().getString()));
+    }
+}
+
+void Layer::updateModelMatrix()
+{
+    qDebug() << "Update model matrix for layer:" << _generalAction.getNameAction().getString();
+
+    try {
+
+        // Get reference to general action for getting the layer position and scale
+        auto& generalAction = _generalAction;
+
+        QMatrix4x4 translateMatrix, scaleMatrix;
+
+        // Compute the translation matrix
+        translateMatrix.translate(generalAction.getPositionAction().getXAction().getValue(), generalAction.getPositionAction().getYAction().getValue(), 0.0f);
+
+        // Get the scale factor
+        const auto scaleFactor = 0.01f * generalAction.getScaleAction().getValue();
+
+        // And compute the scale factor
+        scaleMatrix.scale(scaleFactor, scaleFactor, scaleFactor);
+
+        // Assign model matrix
+        setModelMatrix(translateMatrix * scaleMatrix);
+    }
+    catch (std::exception& e)
+    {
+        exceptionMessageBox(QString("Unable to update the model matrix for layer: %1").arg(_generalAction.getNameAction().getString()), e);
+    }
+    catch (...) {
+        exceptionMessageBox(QString("Unable to update the model matrix for layer: %1").arg(_generalAction.getNameAction().getString()));
+    }
+}
+
+void Layer::setColorMapImage(const QImage& colorMapImage, const InterpolationType& interpolationType)
+{
+    // Get pointer to image prop
+    auto imageProp = this->getPropByName<ImageProp>("ImageProp");
+
+    // Set the color map image and interpolation type in the image prop
+    imageProp->setColorMapImage(colorMapImage);
+    imageProp->setColorMapInterpolationType(interpolationType);
+
+    // Render
+    invalidate();
+}
+
+void Layer::updateWindowTitle()
+{
+    try {
+
+        qDebug() << "Update the window title for layer:" << _generalAction.getNameAction().getString();
+
+        // Get layer name
+        const auto name = _generalAction.getNameAction().getString();
+
+        // Update the window title
+        _imageViewerPlugin.setWindowTitle(QString("%1%2").arg(_imageViewerPlugin.getGuiName(), _active ? QString(": %1").arg(name) : ""));
+    }
+    catch (std::exception& e)
+    {
+        exceptionMessageBox(QString("Unable to update the window title for layer: %1").arg(_generalAction.getNameAction().getString()), e);
+    }
+    catch (...) {
+        exceptionMessageBox(QString("Unable to update the window title for layer: %1").arg(_generalAction.getNameAction().getString()));
+    }
+}
+
+LayersAction& Layer::getLayersAction()
+{
+    return _imageViewerPlugin.getSettingsAction().getLayersAction();
+}
+
+ImageViewerPlugin& Layer::getImageViewerPlugin()
+{
+    return _imageViewerPlugin;
+}
+
+QMenu* Layer::getContextMenu(QWidget* parent /*= nullptr*/)
+{
+    auto menu = new QMenu(_generalAction.getNameAction().getString(), parent);
+
+    menu->addAction(&_generalAction.getVisibleAction());
+    menu->addAction(&_imageAction.getOpacityAction());
+
+    return menu;
+}
+
+void Layer::activate()
+{
+    try {
+
+        qDebug() << "Activate layer:" << _generalAction.getNameAction().getString();
+
+        // Set active
+        _active = true;
+
+        // Enable shortcuts for the layer
+        _selectionAction.setShortcutsEnabled(true);
+
+        // Enable the pixel selection tool
+        _selectionAction.getPixelSelectionTool().setEnabled(true);
+
+        // Update the view plugin window tile
+        updateWindowTitle();
+    }
+    catch (std::exception& e)
+    {
+        exceptionMessageBox(QString("Unable to activate layer: %1").arg(_generalAction.getNameAction().getString()), e);
+    }
+    catch (...) {
+        exceptionMessageBox(QString("Unable to activate layer: %1").arg(_generalAction.getNameAction().getString()));
+    }
+}
+
+void Layer::deactivate()
+{
+    try {
+
+        qDebug() << "Deactivate layer:" << _generalAction.getNameAction().getString();
+
+        // Set active
+        _active = false;
+
+        // Disable shortcuts for the layer
+        _selectionAction.setShortcutsEnabled(false);
+
+        // Disable the pixel selection tool
+        _selectionAction.getPixelSelectionTool().setEnabled(false);
+
+        // Update the view plugin window tile
+        updateWindowTitle();
+    }
+    catch (std::exception& e)
+    {
+        exceptionMessageBox(QString("Unable to deactivate layer: %1").arg(_generalAction.getNameAction().getString()), e);
+    }
+    catch (...) {
+        exceptionMessageBox(QString("Unable to deactivate layer: %1").arg(_generalAction.getNameAction().getString()));
+    }
+}
+
+void Layer::invalidate()
+{
+    _imageViewerPlugin.getImageViewerWidget().update();
+}
+
+void Layer::scaleToFit(const QRectF& rectangle)
+{
+    // Only fit into valid rectangle
+    if (!rectangle.isValid())
+        return;
+    
+    // Get target rectangle center and size
+    const auto rectangleCenter  = rectangle.center();
+    const auto rectangleSize    = rectangle.size();
+
+    // Position layer at center
+    _generalAction.getPositionAction().getXAction().setValue(rectangleCenter.x());
+    _generalAction.getPositionAction().getYAction().setValue(rectangleCenter.y());
+
+    // Compute composite matrix
+    const auto matrix   = getModelMatrix() * getPropByName<ImageProp>("ImageProp")->getModelMatrix();
+
+    // Compute scaled source rectangle size
+    const auto sourceRectangleSize = _imagesDataset->getSourceRectangle().size();
+
+    // Compute x- and y scale
+    const auto scale = QVector2D(rectangle.width() / sourceRectangleSize.width(), rectangle.height() / sourceRectangleSize.height());
+   
+    // Assign scale
+    _generalAction.getScaleAction().setValue(100.0f * std::min(scale.x(), scale.y()));
+}
+
+void Layer::paint(QPainter& painter, const PaintFlag& paintFlags)
+{
+    try {
+
+        // Don't draw if the layer is invisible
+        if (!_generalAction.getVisibleAction().isChecked())
+            return;
+
+        // Get image prop screen bounding rectangle
+        const auto propRectangle = getPropByName<ImageProp>("ImageProp")->getScreenBoundingRectangle();
+
+        // Get pixel selection color
+        const auto pixelSelectionColor = _imageViewerPlugin.getImageViewerWidget().getPixelSelectionTool().getMainColor();
+
+        // Draw layer bounds
+        if (paintFlags & Layer::Bounds) {
+
+            // Configure pen and brush
+            painter.setPen(QPen(QBrush(_generalAction.getColorAction().getColor()), _active ? 2.0f : 1.0f, _active ? Qt::SolidLine : Qt::DashLine));
+            painter.setBrush(Qt::transparent);
+
+            // Draw the bounding rectangle
+            painter.drawRect(propRectangle);
+        }
+
+        // Draw layer selection rectangle
+        if ((paintFlags & Layer::SelectionRectangle) && _imageSelectionRectangle.isValid()) {
+
+            // Create perimeter pen
+            auto perimeterPen = QPen(QBrush(_imageViewerPlugin.getImageViewerWidget().getPixelSelectionTool().getMainColor()), 0.7f);
+
+            // Custom dash pattern
+            perimeterPen.setDashPattern(QVector<qreal>{ 7, 7 });
+
+            // Configure pen and brush
+            painter.setPen(perimeterPen);
+            painter.setBrush(Qt::transparent);
+
+            // Draw the bounding rectangle
+            painter.drawRect(getRenderer().getScreenRectangleFromWorldRectangle(getWorldSelectionRectangle().marginsAdded(QMarginsF(0.0f, 0.0f, 1.0f, 1.0f))));
+        }
+
+        // Draw layer label
+        if ((paintFlags & Layer::Label) && _active) {
+
+            // Establish label text
+            const auto labelText = QString("%1 (%2x%3)").arg(_generalAction.getNameAction().getString(), QString::number(_imagesDataset->getImageSize().width()), QString::number(_imagesDataset->getImageSize().height()));
+
+            // Configure pen and brush
+            painter.setPen(QPen(QBrush(_generalAction.getColorAction().getColor()), _active ? 2.0f : 1.0f));
+            painter.setBrush(Qt::transparent);
+
+            // Upper margin in pixels
+            const auto margin = 5;
+
+            // Draw the text
+            painter.setFont(QApplication::font());
+            painter.drawText(QRect(propRectangle.bottomLeft() + QPoint(0.0f, margin), QSize(500, 100)), labelText, QTextOption(Qt::AlignTop | Qt::AlignLeft));
+        }
+
+        // Draw sample information
+        if (paintFlags & Layer::Sample) {
+
+            // Get mouse position in widget coordinates
+            const auto mousePositionWidget = _imageViewerPlugin.getImageViewerWidget().mapFromGlobal(QCursor::pos());
+
+            // Get mouse position in image coordinates
+            const auto mousePositionImage = _renderer.getScreenPointToWorldPosition(getModelViewMatrix() * getPropByName<ImageProp>("ImageProp")->getModelMatrix(), mousePositionWidget).toPoint() - _imagesDataset->getTargetRectangle().topLeft();
+
+            // Establish label prefix text
+            QString labelText = QString("Pixel ID\t: [%1, %2]\n").arg(QString::number(mousePositionImage.x()), QString::number(mousePositionImage.y()));
+            
+            // Compute pixel index
+            const auto pixelIndex = static_cast<std::uint32_t>(mousePositionImage.y() * _imagesDataset->getTargetRectangle().width() + mousePositionImage.x());
+
+            if (pixelIndex >= 0 && pixelIndex < _imagesDataset->getNumberOfPixels()) {
+
+                // Show scalar(s) data if hovering over an image that originates from points data
+                if (getSourceDataset()->getDataType() == PointType) {
+
+                    if (_imageAction.getScalarChannel1Action().getEnabledAction().isChecked())
+                        labelText += "Scalar 1\t: " + QString::number(_imageAction.getScalarChannel1Action().getScalarData()[pixelIndex], 'f', 2);
+
+                    if (_imageAction.getScalarChannel2Action().getEnabledAction().isChecked())
+                        labelText += "\nScalar 2\t: " + QString::number(_imageAction.getScalarChannel2Action().getScalarData()[pixelIndex], 'f', 2);
+
+                    if (_imageAction.getScalarChannel3Action().getEnabledAction().isChecked())
+                        labelText += "\nScalar 3\t: " + QString::number(_imageAction.getScalarChannel3Action().getScalarData()[pixelIndex], 'f', 2);
+                }
+
+                // Show cluster name if hovering over an image that originates from clusters data
+                if (getSourceDataset()->getDataType() == ClusterType) {
+
+                    // Get cluster index from channel scalar data
+                    const auto clusterIndex = static_cast<std::int32_t>(_imageAction.getScalarChannel1Action().getScalarData()[pixelIndex]);
+
+                    // Get cluster name from cluster index
+                    const auto clusterName = _sourceDataset.get<Clusters>()->getClusters()[clusterIndex].getName();
+
+                    // Add cluster name to the label text
+                    labelText += "Cluster\t: " + clusterName;
+                }
+
+                // Configure pen and brush
+                painter.setPen(QPen(QBrush(_imageViewerPlugin.getImageViewerWidget().getPixelSelectionTool().getMainColor()), _active ? 2.0f : 1.0f));
+                painter.setBrush(Qt::transparent);
+
+                // Upper margin in pixels
+                const auto margin = 15;
+
+                // Text font from application
+                auto font = QApplication::font();
+
+                // Adjust font size
+                font.setPointSizeF(7.0f);
+                
+                // Create font metrics for establishing the text rectangle size
+                QFontMetrics fontMetrics(font);
+
+                // Text rectangle size
+                const auto textRectangle = fontMetrics.boundingRect(QRect(QPoint(), QSize(512, 512)), Qt::TextExpandTabs, labelText);
+
+                // Create text options for more control over text layout
+                QTextOption textOption(Qt::AlignLeft);
+
+                // Adjust tab stop distance so that the values align
+                textOption.setTabStopDistance(50);
+
+                // Draw text rectangle
+                painter.setPen(QPen(QBrush(pixelSelectionColor), 0.7f));
+                painter.setBrush(QBrush(QColor::fromHsl(pixelSelectionColor.hslHue(), pixelSelectionColor.hsvSaturation(), 80, 200)));
+                painter.drawRoundedRect(textRectangle.translated(mousePositionWidget - QPoint(0, textRectangle.height()) + QPoint(margin, -margin)).marginsAdded(QMargins(5, 5, 5, 5)), 2.5f, 2.5f);
+
+                // Draw text
+                painter.setFont(font);
+                painter.setPen(QPen(pixelSelectionColor, 1.0f));
+                painter.drawText(QRectF(mousePositionWidget - QPoint(0, textRectangle.height()) + QPoint(margin, -margin), QSize(512, textRectangle.height())), labelText, textOption);
+            }
+        }
+    }
+    catch (std::exception& e)
+    {
+        exceptionMessageBox(QString("Unable to native paint layer: %1").arg(_generalAction.getNameAction().getString()), e);
+    }
+    catch (...) {
+        exceptionMessageBox(QString("Unable to native paint layer: %1").arg(_generalAction.getNameAction().getString()));
+    }
+}
+
+const QString Layer::getImagesDatasetName() const
+{
+    return _imagesDataset.getDatasetName();
+}
+
+const std::uint32_t Layer::getNumberOfImages() const
+{
+    if (!_imagesDataset.isValid())
+        return 0;
+
+    return _imagesDataset->getNumberOfImages();
+}
+
+const QSize Layer::getImageSize() const
+{
+    if (!_imagesDataset.isValid())
+        return QSize();
+
+    return _imagesDataset->getImageSize();
+}
+
+const QStringList Layer::getDimensionNames() const
+{
+    if (!_imagesDataset.isValid() || !_sourceDataset.isValid())
+        return QStringList();
+
+    QStringList dimensionNames;
+
+    if (_sourceDataset->getDataType() == PointType) {
+
+        // Get reference to points dataset
+        auto points = getSourceDataset<Points>();
+
+        // Populate dimension names
+        if (points->getDimensionNames().size() == points->getNumDimensions()) {
+            for (const auto& dimensionName : points->getDimensionNames())
+                dimensionNames << dimensionName;
+        }
+        else {
+            for (std::uint32_t dimensionIndex = 0; dimensionIndex < points->getNumDimensions(); dimensionIndex++)
+                dimensionNames << QString("Dim %1").arg(QString::number(dimensionIndex));
+        }
+    }
+
+    if (_sourceDataset->getDataType() == ClusterType) {
+        dimensionNames << "Cluster index";
+    }
+
+    return dimensionNames;
+}
+
+void Layer::selectAll()
+{
+    if (_sourceDataset->getDataType() == PointType)
+        getSourceDataset<Points>()->selectAll();
+}
+
+void Layer::selectNone()
+{
+    if (_sourceDataset->getDataType() == PointType)
+        getSourceDataset<Points>()->selectNone();
+}
+
+void Layer::selectInvert()
+{
+    if (_sourceDataset->getDataType() == PointType)
+        getSourceDataset<Points>()->selectInvert();
+}
+
+void Layer::startSelection()
+{
+    try {
+
+        qDebug() << "Start the pixel selection for layer:" << _generalAction.getNameAction().getString();;
+
+        // Compute the selection in the selection tool prop
+        this->getPropByName<SelectionToolProp>("SelectionToolProp")->resetOffScreenSelectionBuffer();
+
+        // Render
+        invalidate();
+    }
+    catch (std::exception& e)
+    {
+        exceptionMessageBox(QString("Unable to start the layer pixel selection for layer: %1").arg(_generalAction.getNameAction().getString()), e);
+    }
+    catch (...) {
+        exceptionMessageBox(QString("Unable to start the layer pixel selection for layer: %1").arg(_generalAction.getNameAction().getString()));
+    }
+}
+
+void Layer::computeSelection(const QVector<QPoint>& mousePositions)
+{
+    try {
+
+        qDebug() << "Compute the pixel selection for layer:" << _generalAction.getNameAction().getString();;
+
+        // Compute the selection in the selection tool prop
+        this->getPropByName<SelectionToolProp>("SelectionToolProp")->compute(mousePositions);
+
+        // Render
+        invalidate();
+    }
+    catch (std::exception& e)
+    {
+        exceptionMessageBox(QString("Unable to compute layer selection for layer: %1").arg(_generalAction.getNameAction().getString()), e);
+    }
+    catch (...) {
+        exceptionMessageBox(QString("Unable to compute layer selection for layer: %1").arg(_generalAction.getNameAction().getString()));
+    }
+}
+
+void Layer::resetSelectionBuffer()
+{
+    try {
+
+        qDebug() << "Reset the selection buffer for layer:" << _generalAction.getNameAction().getString();
+
+        // Reset the off-screen selection buffer
+        getPropByName<SelectionToolProp>("SelectionToolProp")->resetOffScreenSelectionBuffer();
+
+        // Trigger render
+        invalidate();
+    }
+    catch (std::exception& e)
+    {
+        exceptionMessageBox(QString("Unable to reset the off-screen selection buffer for layer: %1").arg(_generalAction.getNameAction().getString()), e);
+    }
+    catch (...) {
+        exceptionMessageBox(QString("Unable to reset the off-screen selection buffer for layer: %1").arg(_generalAction.getNameAction().getString()));
+    }
+}
+
+void Layer::publishSelection()
+{
+    //return;
+    try {
+
+        //qDebug() << "Publish pixel selection for layer:" << _generalAction.getNameAction().getString();
+
+        if (!_generalAction.getVisibleAction().isChecked())
+            return;
+
+        // Make sure we have a valid points dataset
+        if (!_sourceDataset.isValid())
+            throw std::runtime_error("The layer points dataset is not valid after initialization");
+
+        // Make sure we have a valid images dataset
+        if (!_imagesDataset.isValid())
+            throw std::runtime_error("The layer images dataset is not valid after initialization");
+
+        // Get reference to the pixel selection tool
+        auto& pixelSelectionTool = getImageViewerPlugin().getImageViewerWidget().getPixelSelectionTool();
+
+        // Get current selection image
+        const auto selectionImage   = getPropByName<SelectionToolProp>("SelectionToolProp")->getSelectionImage().mirrored(true, true);
+        const auto noComponents     = 4;
+        const auto width            = static_cast<float>(getImageSize().width());
+        const auto noPixels         = _imagesDataset->getNumberOfPixels();
+        const auto sourceRectangle  = _imagesDataset->getSourceRectangle();
+        const auto targetRectangle  = _imagesDataset->getTargetRectangle();
+
+        // Get source pixel index from two-dimensional pixel coordinates
+        const auto getSourcePixelIndex = [sourceRectangle](const std::int32_t& pixelX, const std::int32_t& pixelY) -> std::int32_t {
+            return pixelY * sourceRectangle.width() + pixelX;
+        };
+
+        // Get target pixel index from two-dimensional pixel coordinates
+        const auto getTargetPixelIndex = [targetRectangle](const std::int32_t& pixelX, const std::int32_t& pixelY) -> std::int32_t {
+            return (pixelY - targetRectangle.top()) * targetRectangle.width() + (pixelX - targetRectangle.left());
+        };
+
+        if (_sourceDataset->getDataType() == PointType) {
+            
+            // Get reference to points selection indices
+            std::vector<std::uint32_t>& selectionIndices = _sourceDataset->getSelection<Points>().indices;
+
+            // Establish new selection indices depending on the type of modifier
+            switch (pixelSelectionTool.getModifier())
+            {
+                // Replace pixels with new selection
+                case PixelSelectionModifierType::Replace:
                 {
-                    setFlag(Layer::Flag::Enabled, value.toBool());
+                    selectionIndices.clear();
+                    selectionIndices.reserve(noPixels);
 
-                    for (int column = ult(Column::Type); column <= ult(Column::End); ++column) {
-                        affectedIndices << index.siblingAtColumn(column);
+                    // Loop over all the pixels in the selection image in row-column order and add to the selection indices if the pixel is non-zero
+                    for (std::int32_t pixelY = targetRectangle.top(); pixelY <= targetRectangle.bottom(); pixelY++) {
+                        for (std::int32_t pixelX = targetRectangle.left(); pixelX <= targetRectangle.right(); pixelX++) {
+                            if (selectionImage.bits()[getTargetPixelIndex(pixelX, pixelY) * noComponents] > 0)
+                                selectionIndices.push_back(getSourcePixelIndex(pixelX, pixelY));
+                        }
                     }
 
-                    auto parent = index.parent();
+                    break;
+                }
 
-                    while (parent.isValid()) {
-                        affectedIndices << parent;
-                        parent = parent.parent();
+                // Add pixels to current selection
+                case PixelSelectionModifierType::Add:
+                {
+                    // Create selection set of current selection indices
+                    auto selectionSet = std::set<std::uint32_t>(selectionIndices.begin(), selectionIndices.end());
+
+                    // Loop over all the pixels in the selection image in row-column order and insert the selection index into the set if the pixel is non-zero
+                    for (std::int32_t pixelY = targetRectangle.top(); pixelY <= targetRectangle.bottom(); pixelY++) {
+                        for (std::int32_t pixelX = targetRectangle.left(); pixelX <= targetRectangle.right(); pixelX++) {
+                            if (selectionImage.bits()[getTargetPixelIndex(pixelX, pixelY) * noComponents] > 0)
+                                selectionSet.insert(getSourcePixelIndex(pixelX, pixelY));
+                        }
                     }
-                    
+
+                    // Convert the set back to a vector
+                    selectionIndices = std::vector<std::uint32_t>(selectionSet.begin(), selectionSet.end());
+                    break;
+                }
+
+                // Remove pixels from current selection
+                case PixelSelectionModifierType::Remove:
+                {
+                    // Create selection set of current selection indices
+                    auto selectionSet = std::set<std::uint32_t>(selectionIndices.begin(), selectionIndices.end());
+
+                    // Loop over all the pixels in the selection image in row-column order and remove the selection index from the set if the pixel is non-zero
+                    for (std::int32_t pixelY = targetRectangle.top(); pixelY <= targetRectangle.bottom(); pixelY++) {
+                        for (std::int32_t pixelX = targetRectangle.left(); pixelX <= targetRectangle.right(); pixelX++) {
+                            if (selectionImage.bits()[getTargetPixelIndex(pixelX, pixelY) * noComponents] > 0)
+                                selectionSet.erase(getSourcePixelIndex(pixelX, pixelY));
+                        }
+                    }
+
+                    // Convert the set back to a vector
+                    selectionIndices = std::vector<std::uint32_t>(selectionSet.begin(), selectionSet.end());
+                    break;
+                }
+
+                default:
+                    break;
+            }
+        }
+
+        if (_sourceDataset->getDataType() == ClusterType) {
+
+            // Get reference to clusters selection indices
+            auto& selectionIndices = _sourceDataset->getSelection<Clusters>().indices;
+
+            // Convert floating point scalars to unsigned integer scalars
+            std::vector<std::uint32_t> integerScalarData(_imageAction.getScalarChannel1Action().getScalarData().begin(), _imageAction.getScalarChannel1Action().getScalarData().end());
+
+            // Establish new selection indices depending on the type of modifier
+            switch (pixelSelectionTool.getModifier())
+            {
+                // Replace pixels with new selection
+                case PixelSelectionModifierType::Replace:
+                {
+                    selectionIndices.clear();
+                    selectionIndices.reserve(noPixels);
+
+                    // Loop over all the pixels in the selection image in row-column order and add to the selection indices if the pixel is non-zero
+                    for (std::int32_t pixelY = targetRectangle.top(); pixelY <= targetRectangle.bottom(); pixelY++) {
+                        for (std::int32_t pixelX = targetRectangle.left(); pixelX <= targetRectangle.right(); pixelX++) {
+                            if (selectionImage.bits()[getTargetPixelIndex(pixelX, pixelY) * noComponents] > 0)
+                                selectionIndices.push_back(integerScalarData[getTargetPixelIndex(pixelX, pixelY)]);
+                        }
+                    }
+
+                    // Convert selection indices vector to set to remove duplicates
+                    std::set<std::uint32_t> selectionSet(selectionIndices.begin(), selectionIndices.end());
+
+                    // Convert the set back to a vector
+                    selectionIndices = std::vector<std::uint32_t>(selectionSet.begin(), selectionSet.end());
+
+                    break;
+                }
+
+                // Add pixels to current selection
+                case PixelSelectionModifierType::Add:
+                {
+                    // Create selection set of current selection indices
+                    auto selectionSet = std::set<std::uint32_t>(selectionIndices.begin(), selectionIndices.end());
+
+                    // Loop over all the pixels in the selection image in row-column order and insert the selection index into the set if the pixel is non-zero
+                    for (std::int32_t pixelY = targetRectangle.top(); pixelY <= targetRectangle.bottom(); pixelY++) {
+                        for (std::int32_t pixelX = targetRectangle.left(); pixelX <= targetRectangle.right(); pixelX++) {
+                            if (selectionImage.bits()[getTargetPixelIndex(pixelX, pixelY) * noComponents] > 0)
+                                selectionSet.insert(integerScalarData[getTargetPixelIndex(pixelX, pixelY)]);
+                        }
+                    }
+
+                    // Convert the set back to a vector
+                    selectionIndices = std::vector<std::uint32_t>(selectionSet.begin(), selectionSet.end());
+
+                    break;
+                }
+
+                // Remove pixels from current selection
+                case PixelSelectionModifierType::Remove:
+                {
+                    // Create selection set of current selection indices
+                    auto selectionSet = std::set<std::uint32_t>(selectionIndices.begin(), selectionIndices.end());
+
+                    // Loop over all the pixels in the selection image in row-column order and remove the selection index from the set if the pixel is non-zero
+                    for (std::int32_t pixelY = targetRectangle.top(); pixelY <= targetRectangle.bottom(); pixelY++) {
+                        for (std::int32_t pixelX = targetRectangle.left(); pixelX <= targetRectangle.right(); pixelX++) {
+                            if (selectionImage.bits()[getTargetPixelIndex(pixelX, pixelY) * noComponents] > 0)
+                                selectionSet.erase(integerScalarData[getTargetPixelIndex(pixelX, pixelY)]);
+                        }
+                    }
+
+                    // Convert the set back to a vector
+                    selectionIndices = std::vector<std::uint32_t>(selectionSet.begin(), selectionSet.end());
+
                     break;
                 }
 
@@ -169,313 +778,153 @@ QModelIndexList Layer::setData(const QModelIndex& index, const QVariant& value, 
                     break;
             }
 
-            break;
+            // Get reference to the clusters dataset
+            auto& clusters = dynamic_cast<Clusters&>(*_sourceDataset);
+
+            // Get selected indices
+            const auto selectedIndices = clusters.getSelectedIndices();
+            
+            // Get reference to clusters input points and its selection
+            auto& points    = _sourceDataset->getHierarchyItem().getParent()->getDataset<Points>();
+            auto& selection = points.getSelection<Points>();
+
+            // Reserve enough space for selection
+            selection.indices.clear();
+            selection.indices.reserve(selectedIndices.size());
+
+            std::vector<std::uint32_t> globalIndices;
+
+            // Get global indices for mapping selection
+            points.getGlobalIndices(globalIndices);
+
+            // Translate selection indices and add them
+            for (auto selectedIndex : selectedIndices)
+                selection.indices.push_back(globalIndices[selectedIndex]);
+
+            // Notify others that the point selection changed
+            Application::core()->notifySelectionChanged(points.getName());
         }
 
-        case Qt::EditRole:
-        {
-            switch (column) {
-                case Column::Name:
-                    setName(value.toString());
-                    break;
+        // Notify listeners of the selection change
+        Application::core()->notifySelectionChanged(_sourceDataset.getSourceData().getName());
 
-                case Column::DatasetName:
-                    break;
-
-                case Column::Type:
-                    setType(static_cast<Type>(value.toInt()));
-                    break;
-
-                case Column::ID:
-                    setId(value.toString());
-                    break;
-
-                case Column::ImageSize:
-                case Column::ImageWidth:
-                case Column::ImageHeight:
-                    break;
-
-                case Column::Opacity:
-                    setOpacity(value.toFloat());
-                    break;
-
-                case Column::Scale:
-                    setScale(value.toFloat());
-                    break;
-
-                case Column::Flags:
-                    setFlags(value.toInt());
-                    break;
-
-                default:
-                    break;
-            }
-
-            break;
-        }
-
-        default:
-            break;
+        // Render
+        invalidate();
     }
-
-    Renderable::renderer->render();
-
-    return affectedIndices;
-}
-
-QVariant Layer::getDatasetName(const int& role) const
-{
-    switch (role)
+    catch (std::exception& e)
     {
-        case Qt::DisplayRole:
-        case Qt::EditRole:
-            return _datasetName;
-
-        case Qt::ToolTipRole:
-            return QString("Dataset name: %1").arg(_datasetName);
-
-        default:
-            break;
+        exceptionMessageBox(QString("Unable to publish selection change for layer: %1").arg(_generalAction.getNameAction().getString()), e);
     }
-
-    return QVariant();
+    catch (...) {
+        exceptionMessageBox(QString("Unable to publish selection change for layer: %1").arg(_generalAction.getNameAction().getString()));
+    }
 }
 
-QVariant Layer::getType(const int& role) const
+void Layer::computeSelectionIndices()
 {
-    const auto typeName = Layer::getTypeName(_type);
+    try {
 
-    switch (role)
+        // Get selection image, selected indices and selection boundaries from the image dataset
+        _imagesDataset->getSelectionData(_selectionData, _selectedIndices, _imageSelectionRectangle);
+
+        // Assign the scalar data to the prop
+        this->getPropByName<SelectionProp>("SelectionProp")->setSelectionData(_selectionData);
+
+        // Notify others that the selection changed
+        emit selectionChanged(_selectedIndices);
+
+        // Render layer
+        invalidate();
+    }
+    catch (std::exception& e)
     {
-        case Qt::FontRole:
-            return hdps::Application::getIconFont("FontAwesome").getFont(9);
-
-        case Qt::EditRole:
-            return static_cast<int>(_type);
-
-        case Qt::ToolTipRole:
-            return QString("Type: %1").arg(typeName);
-
-        case Qt::DisplayRole:
-        {
-            switch (_type) {
-                case Type::Selection:
-                    return hdps::Application::getIconFont("FontAwesome").getIconCharacter("mouse-pointer");
-
-                case Type::Points:
-                    return hdps::Application::getIconFont("FontAwesome").getIconCharacter("th");
-
-                default:
-                    break;
-            }
-
-            break;
-        }
-
-        case Qt::TextAlignmentRole:
-            return Qt::AlignCenter;
-
-        default:
-            break;
+        qDebug() << QString("Unable to compute selected indices for layer %1: %2").arg(_generalAction.getNameAction().getString(), e.what());
     }
-
-    return QVariant();
+    catch (...) {
+        qDebug() << QString("Unable to compute selected indices for layer %1 due to an unhandled exception").arg(_generalAction.getNameAction().getString());
+    }
 }
 
-void Layer::setType(const Type& type)
+std::vector<std::uint32_t>& Layer::getSelectedIndices()
 {
-    _type = type;
+    return _selectedIndices;
 }
 
-QVariant Layer::getImageSize(const int& role /*= Qt::DisplayRole*/) const
+const std::vector<std::uint32_t>& Layer::getSelectedIndices() const
 {
-    const auto imageSize        = this->getImageSize();
-    const auto imageSizeString  = QString::number(imageSize.width()) + " x" + QString::number(imageSize.height());
+    return const_cast<Layer*>(this)->getSelectedIndices();
+}
 
-    switch (role)
+QRect Layer::getImageSelectionRectangle() const
+{
+    return _imageSelectionRectangle;
+}
+
+QRectF Layer::getWorldSelectionRectangle() const
+{
+    // Get pointer to image prop
+    auto layerImageProp = getPropByName<ImageProp>("ImageProp");
+
+    // Get target rectangle (needed for image offset)
+    const auto targetRectangle = _imagesDataset->getTargetRectangle();
+
+    // Add the offset
+    const auto translatedSelectionRectangleProp = _imageSelectionRectangle.translated(targetRectangle.topLeft());
+
+    // Ensure selection boundaries are valid
+    if (!translatedSelectionRectangleProp.isValid())
+        throw std::runtime_error("Selection boundaries are invalid");
+
+    // Compute composite matrix
+    const auto matrix = getModelMatrix() * layerImageProp->getModelMatrix();
+
+    // Compute rectangle extents in world coordinates
+    return QRectF(matrix * translatedSelectionRectangleProp.topLeft(), matrix * translatedSelectionRectangleProp.bottomRight());
+}
+
+void Layer::zoomToExtents()
+{
+    try {
+
+        qDebug() << "Zoom to the extents of layer:" << _generalAction.getNameAction().getString();
+
+        // Get pointer to image prop
+        auto layerImageProp = getPropByName<ImageProp>("ImageProp");
+
+        // Zoom to layer extents
+        _imageViewerPlugin.getImageViewerWidget().getRenderer().setZoomRectangle(getWorldBoundingRectangle());
+
+        // Trigger render
+        invalidate();
+    }
+    catch (std::exception& e)
     {
-        case Qt::DisplayRole:
-            return imageSizeString;
-
-        case Qt::EditRole:
-            return imageSize;
-
-        case Qt::ToolTipRole:
-            return QString("Image size: %1").arg(imageSizeString);
-
-        default:
-            break;
+        exceptionMessageBox(QString("Unable to zoom to extents of layer: %1").arg(_generalAction.getNameAction().getString()), e);
     }
-
-    return QVariant();
+    catch (...) {
+        exceptionMessageBox(QString("Unable to zoom to extents of layer: %1").arg(_generalAction.getNameAction().getString()));
+    }
 }
 
-// TODO
-void Layer::updateModelMatrix()
+void Layer::zoomToSelection()
 {
-    QMatrix4x4 modelMatrix;
+    try {
 
-    modelMatrix.translate(-0.5f * getImageWidth(Qt::EditRole).toInt(), -0.5f * getImageHeight(Qt::EditRole).toInt(), 0.0f);
+        qDebug() << "Zoom to the pixel selection of layer:" << _generalAction.getNameAction().getString();;
 
-    //setModelMatrix(modelMatrix);
-}
-
-QPoint Layer::getTextureCoordinateFromScreenPoint(const QPoint& screenPoint) const
-{
-    auto correctedScreenPosition = QPoint(renderer->getParentWidgetSize().width() - screenPoint.x(), screenPoint.y());
-    const auto worldPosition = renderer->getScreenPointToWorldPosition(getModelViewMatrix(), correctedScreenPosition);
-
-    return QPoint(qFloor(worldPosition.x()), qFloor(worldPosition.y()));
-}
-
-bool Layer::isWithin(const QPoint& screenPoint) const
-{
-    const auto textureCoordinate = getTextureCoordinateFromScreenPoint(screenPoint);
-
-    if (textureCoordinate.x() < 0 || textureCoordinate.x() >= getImageWidth(Qt::EditRole).toInt())
-        return false;
-
-    if (textureCoordinate.y() < 0 || textureCoordinate.y() >= getImageHeight(Qt::EditRole).toInt())
-        return false;
-
-    return true;
-}
-
-QVariant Layer::getImageWidth(const int& role) const
-{
-    const auto imageSize    = this->getImageSize(Qt::EditRole).toSize();
-    const auto widthString  = QString::number(imageSize.width());
-
-    switch (role)
+        // Zoom to the world selection rectangle
+        _imageViewerPlugin.getImageViewerWidget().getRenderer().setZoomRectangle(getWorldSelectionRectangle().marginsAdded(QMarginsF(0.0f, 0.0f, 1.0f, 1.0f)));
+    }
+    catch (std::exception& e)
     {
-        case Qt::DisplayRole:
-            return widthString;
-
-        case Qt::EditRole:
-            return imageSize.width();
-
-        case Qt::ToolTipRole:
-            return QString("Image width: %1 pixels").arg(widthString);
-
-        default:
-            break;
+        exceptionMessageBox(QString("Unable to zoom to the pixel selection for layer: %1").arg(_generalAction.getNameAction().getString()), e);
     }
-
-    return QVariant();
-}
-
-QVariant Layer::getImageHeight(const int& role) const
-{
-    const auto imageSize    = this->getImageSize(Qt::EditRole).toSize();
-    const auto heightString = QString::number(imageSize.height());
-
-    switch (role)
-    {
-        case Qt::DisplayRole:
-            return heightString;
-
-        case Qt::EditRole:
-            return imageSize.height();
-
-        case Qt::ToolTipRole:
-            return QString("Image height: %1 pixels").arg(heightString);
-
-        default:
-            break;
+    catch (...) {
+        exceptionMessageBox(QString("Unable to zoom to the pixel selection for layer: %1").arg(_generalAction.getNameAction().getString()));
     }
-
-    return QVariant();
 }
 
-QVariant Layer::getKeys(const int& role /*= Qt::DisplayRole*/) const
+QRectF Layer::getWorldBoundingRectangle() const
 {
-    const auto keysString = "";
-
-    switch (role)
-    {
-        case Qt::DisplayRole:
-            return keysString;
-
-        case Qt::EditRole:
-            return _keys;
-
-        case Qt::ToolTipRole:
-        {
-            return QString("Keys: %1").arg(keysString);
-        }
-
-        default:
-            break;
-    }
-
-    return QVariant();
-}
-
-void Layer::setKeys(const int& keys)
-{
-    _keys = keys;
-}
-
-QVector<QPoint> Layer::getMousePositions() const
-{
-    return _mousePositions;
-}
-
-int Layer::getNoPixels() const
-{
-    return getImageSize().width() * getImageSize().height();
-}
-
-Layer::Hints Layer::getHints() const
-{
-    return Hints({
-        Hint(),
-        Hint(),
-        Hint(),
-        Hint("Space + Scroll up", "Zoom in"),
-        Hint("Space + Scroll down", "Zoom out"),
-        Hint("Space + Move mouse", "Pan view")
-    });
-}
-
-void Layer::drawTitle(QPainter* painter)
-{
-    QTextDocument titleDocument;
-
-    const auto color = QString("rgba(%1, %2, %3, %4)").arg(QString::number(hintsColor.red()), QString::number(hintsColor.green()), QString::number(hintsColor.blue()), QString::number(isFlagSet(Flag::Enabled) ? hintsColor.alpha() : 80));
-
-    QString titleHtml = QString("<div style='width: 100%; text-align: center; color: %1; font-weight: bold;'>%2 (%3x%4)<div>").arg(color, _name, QString::number(getImageSize().width()), QString::number(getImageSize().height()));
-    
-    titleDocument.setTextWidth(painter->viewport().width());
-    titleDocument.setDocumentMargin(textMargins);
-    titleDocument.setHtml(titleHtml);
-    titleDocument.drawContents(painter, painter->viewport());
-}
-
-void Layer::drawHints(QPainter* painter)
-{
-    if (!Layer::showHints)
-        return;
-
-    QTextDocument hintsDocument;
-
-    QString hintsHtml;
-
-    const auto color = QString("rgba(%1, %2, %3, %4)").arg(QString::number(hintsColor.red()), QString::number(hintsColor.green()), QString::number(hintsColor.blue()), QString::number(isFlagSet(Flag::Enabled) ? hintsColor.alpha() : 80));
-
-    hintsHtml += QString("<div style='height: 100%'><table style='color: %1;'>").arg(color);
-
-    for (auto hint : getHints()) {
-        if (hint.getTitle().isEmpty())
-            hintsHtml += "<tr><td></td><td></td></tr>";
-        else
-            hintsHtml += QString("<tr style='font-weight: %1'><td width=120>%2</td><td>: %3</td></tr>").arg(hint.isActive() ? "bold" : "normal", hint.getTitle(), hint.getDescription());
-    }
-
-    hintsHtml += "</table></div>";
-
-    hintsDocument.setTextWidth(painter->viewport().width());
-    hintsDocument.setDocumentMargin(textMargins);
-    hintsDocument.setHtml(hintsHtml);
-    hintsDocument.drawContents(painter);
+    return getPropByName<ImageProp>("ImageProp")->getWorldBoundingRectangle();
 }

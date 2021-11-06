@@ -1,53 +1,214 @@
 #include "SelectionProp.h"
 #include "QuadShape.h"
 #include "LayersModel.h"
-#include "Range.h"
 #include "Renderer.h"
-#include "SelectionLayer.h"
+#include "ImageViewerPlugin.h"
+#include "SettingsAction.h"
+
+#include "util/FileUtil.h"
+#include "util/Exception.h"
 
 #include <QDebug>
 #include <QOpenGLContext>
 #include <QOpenGLFunctions>
 #include <QOpenGLPixelTransferOptions>
 
-#include <stdexcept> // For runtime_error.
+#include <stdexcept>
 
-const std::string vertexShaderSource =
-    #include "SelectionVertex.glsl"
-;
-
-const std::string fragmentShaderSource =
-    #include "SelectionFragment.glsl"
-;
-
-SelectionProp::SelectionProp(SelectionLayer* selectionLayer, const QString& name) :
-    Prop(reinterpret_cast<Node*>(selectionLayer), name)
+SelectionProp::SelectionProp(Layer& layer, const QString& name) :
+    Prop(layer, name),
+    _layer(layer)
 {
+    // Add quad shape and shader program
     addShape<QuadShape>("Quad");
     addShaderProgram("Quad");
-    addTexture("Channels", QOpenGLTexture::Target2DArray);
 
-    QObject::connect(selectionLayer, &SelectionLayer::channelChanged, [this, selectionLayer](const std::uint32_t& channelId) {
-        try
+    // Add channels texture
+    addTexture("Selection", QOpenGLTexture::Target2DArray);
+
+    // Initialize the prop
+    initialize();
+}
+
+void SelectionProp::initialize()
+{
+    try
+    {
+        Prop::initialize();
+
+        getRenderer().bindOpenGLContext();
         {
-            renderer->bindOpenGLContext();
+            const auto shaderProgram = getShaderProgramByName("Quad");
 
-            auto channel = selectionLayer->getChannel(channelId);
+            // Load vertex/fragment shaders from resources
+            const auto vertexShader     = loadFileContents(":/Shaders/SelectionVertex.glsl");
+            const auto fragmentShader   = loadFileContents(":Shaders/SelectionFragment.glsl");
 
-            const auto imageSize = channel->getImageSize();
+            // Assign vertex shader to shader program
+            if (!shaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShader))
+                throw std::runtime_error("Unable to compile quad vertex shader");
 
+            // Assign fragment shader to shader program
+            if (!shaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShader))
+                throw std::runtime_error("Unable to compile quad fragment shader");
+
+            // Link the shader program
+            if (!shaderProgram->link())
+                throw std::runtime_error("Unable to link quad shader program");
+
+            // Number of bytes per stride
+            const auto stride = 5 * sizeof(GLfloat);
+
+            // Get quad shape
+            auto shape = getShapeByName<QuadShape>("Quad");
+
+            // Bind shader program
+            if (!shaderProgram->bind())
+                throw std::runtime_error("Unable to bind quad shader program");
+
+            shape->getVAO().bind();
+            {
+                shape->getVBO().bind();
+                {
+                    // Configure shader program
+                    shaderProgram->enableAttributeArray(QuadShape::_vertexAttribute);
+                    shaderProgram->enableAttributeArray(QuadShape::_textureAttribute);
+                    shaderProgram->setAttributeBuffer(QuadShape::_vertexAttribute, GL_FLOAT, 0, 3, stride);
+                    shaderProgram->setAttributeBuffer(QuadShape::_textureAttribute, GL_FLOAT, 3 * sizeof(GLfloat), 2, stride);
+                    shaderProgram->release();
+                }
+                shape->getVAO().release();
+            }
+            shape->getVBO().release();
+
+            _initialized = true;
+        }
+        getRenderer().releaseOpenGLContext();
+    }
+    catch (std::exception& e)
+    {
+        exceptionMessageBox("Selection prop initialization failed", e);
+    }
+    catch (...) {
+        exceptionMessageBox("Selection prop initialization failed");
+    }
+}
+
+void SelectionProp::render(const QMatrix4x4& modelViewProjectionMatrix)
+{
+    try {
+
+        if (!canRender())
+            return;
+
+        const auto shape            = getShapeByName<QuadShape>("Quad");
+        const auto shaderProgram    = getShaderProgramByName("Quad");
+        const auto quadTexture      = getTextureByName("Quad");
+
+        if (!getTextureByName("Selection")->isCreated())
+            throw std::runtime_error("Channels texture is not created");
+
+        // Activate the texture
+        getRenderer().getOpenGLContext()->functions()->glActiveTexture(GL_TEXTURE0);
+
+        // Bind the selection texture
+        getTextureByName("Selection")->bind();
+
+        // Bind shader program
+        if (!shaderProgram->bind())
+            throw std::runtime_error("Unable to bind shader program");
+
+        // Get reference to selection action
+        auto& selectionAction = _layer.getSelectionAction();
+
+        // Configure shader program
+        shaderProgram->setUniformValue("channelTextures", 0);
+        shaderProgram->setUniformValue("textureSize", shape->getImageSize());
+        shaderProgram->setUniformValue("overlayColor", selectionAction.getOverlayColor().getColor());
+        shaderProgram->setUniformValue("opacity", 0.01f * selectionAction.getOverlayOpacity().getValue());
+        shaderProgram->setUniformValue("topLeft", selectionAction.getImageSelectionRectangle().topLeft());
+        shaderProgram->setUniformValue("bottomRight", selectionAction.getImageSelectionRectangle().bottomRight());
+        shaderProgram->setUniformValue("showRegion", selectionAction.getShowRegionAction().isChecked());
+        shaderProgram->setUniformValue("transform", modelViewProjectionMatrix * _renderable.getModelMatrix() * getModelMatrix());
+
+        // Render the quad
+        shape->render();
+
+        // Release the shader program
+        shaderProgram->release();
+
+        // Release texture
+        getTextureByName("Selection")->release();
+    }
+    catch (std::exception& e)
+    {
+        exceptionMessageBox("Selection prop rendering failed", e);
+    }
+    catch (...) {
+        exceptionMessageBox("Selection prop rendering failed");
+    }
+}
+
+QRectF SelectionProp::getWorldBoundingRectangle() const
+{
+    // Get quad bounding rectangle
+    auto boundingRectangle = getShapeByName<QuadShape>("Quad")->getRectangle();
+
+    // Compute composite matrix
+    const auto matrix = _renderable.getModelMatrix() * getModelMatrix();
+
+    // Compute rectangle extents in world coordinates
+    const auto worldTopLeft     = matrix * boundingRectangle.topLeft();
+    const auto worldBottomRight = matrix * boundingRectangle.bottomRight();
+
+    return QRectF(worldTopLeft, worldBottomRight);
+}
+
+void SelectionProp::setGeometry(const QRect& sourceImageRectangle, const QRect& targetImageRectangle)
+{
+    // Assign the rectangle to the quad shape
+    getShapeByName<QuadShape>("Quad")->setRectangle(targetImageRectangle);
+
+    // Update the model matrix
+    QMatrix4x4 modelMatrix;
+
+    // Get quad shape
+    const auto rectangle = getShapeByName<QuadShape>("Quad")->getRectangle();
+
+    // Establish center
+    const auto center = QRectF(sourceImageRectangle).center();
+
+    // Compute the  model matrix
+    modelMatrix.translate(-center.x(), -center.y(), 0.0f);
+
+    // Assign model matrix
+    setModelMatrix(modelMatrix);
+}
+
+void SelectionProp::setSelectionData(const std::vector<std::uint8_t>& selectionData)
+{
+    try {
+        getRenderer().bindOpenGLContext();
+        {
+            // Get image size from quad shape
+            const auto imageSize = getShapeByName<QuadShape>("Quad")->getImageSize();
+
+            // Only proceed if the image size is valid (non-zero in x/y)
             if (!imageSize.isValid())
                 return;
 
-            auto texture = getTextureByName("Channels");
+            // Get channels texture
+            auto texture = getTextureByName("Selection");
 
+            // Create the texture if not created
             if (!texture->isCreated())
                 texture->create();
 
+            // Re-configure when the image size has changed
             if (imageSize != QSize(texture->width(), texture->height())) {
                 texture->destroy();
                 texture->create();
-                texture->setLayers(ult(SelectionLayer::ChannelIndex::Count));
+                texture->setLayers(1);
                 texture->setSize(imageSize.width(), imageSize.height(), 1);
                 texture->setFormat(QOpenGLTexture::R8_UNorm);
                 texture->setWrapMode(QOpenGLTexture::ClampToEdge);
@@ -59,140 +220,16 @@ SelectionProp::SelectionProp(SelectionLayer* selectionLayer, const QString& name
 
             options.setAlignment(1);
 
-            texture->setData(0, channel->getId(), QOpenGLTexture::PixelFormat::Red, QOpenGLTexture::PixelType::UInt8, channel->getElements().data(), &options);// channel->elements().data());
-
-            const auto rectangle = QRectF(QPointF(0.f, 0.f), QSizeF(imageSize));
-
-            this->getShapeByName<QuadShape>("Quad")->setRectangle(rectangle);
-
-			updateModelMatrix();
+            // Assign texture data
+            texture->setData(0, 0, QOpenGLTexture::PixelFormat::Red, QOpenGLTexture::PixelType::UInt8, selectionData.data(), &options);
         }
-        catch (std::exception& e)
-        {
-            qDebug() << _name << "channel texture update failed:" << e.what();
-        }
-        catch (...) {
-            qDebug() << _name << "channel texture update failed due to unhandled exception";
-        }
-    });
-
-    initialize();
-}
-
-SelectionProp::~SelectionProp() = default;
-
-void SelectionProp::initialize()
-{
-    try
-    {
-        renderer->bindOpenGLContext();
-
-        Prop::initialize();
-
-        const auto shaderProgram = getShaderProgramByName("Quad");
-
-        if (!shaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSource.c_str()))
-            throw std::runtime_error("Unable to compile quad vertex shader");
-
-        if (!shaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSource.c_str()))
-            throw std::runtime_error("Unable to compile quad fragment shader");
-
-        if (!shaderProgram->link())
-            throw std::runtime_error("Unable to link quad shader program");
-
-        const auto stride = 5 * sizeof(GLfloat);
-
-        auto shape = getShapeByName<QuadShape>("Quad");
-
-        if (!shaderProgram->bind())
-            throw std::runtime_error("Unable to bind quad shader program");
-
-        shape->getVAO().bind();
-        shape->getVBO().bind();
-
-        shaderProgram->enableAttributeArray(QuadShape::_vertexAttribute);
-        shaderProgram->enableAttributeArray(QuadShape::_textureAttribute);
-        shaderProgram->setAttributeBuffer(QuadShape::_vertexAttribute, GL_FLOAT, 0, 3, stride);
-        shaderProgram->setAttributeBuffer(QuadShape::_textureAttribute, GL_FLOAT, 3 * sizeof(GLfloat), 2, stride);
-        shaderProgram->release();
-
-        shape->getVAO().release();
-        shape->getVBO().release();
-
-        _initialized = true;
+        getRenderer().releaseOpenGLContext();
     }
     catch (std::exception& e)
     {
-        qDebug() << _name << "initialization failed:" << e.what();
+        exceptionMessageBox("Unable to set scalar data in selection prop", e);
     }
     catch (...) {
-        qDebug() << _name << "initialization failed due to unhandled exception";
+        exceptionMessageBox("Unable to set scalar data in selection prop");
     }
-}
-
-void SelectionProp::render(const QMatrix4x4& nodeMVP, const float& opacity)
-{
-    try {
-        if (!canRender())
-            return;
-
-        Prop::render(nodeMVP, opacity);
-
-        const auto shape            = getShapeByName<QuadShape>("Quad");
-        const auto shaderProgram    = getShaderProgramByName("Quad");
-        const auto quadTexture      = getTextureByName("Quad");
-
-        if (!getTextureByName("Channels")->isCreated())
-            throw std::runtime_error("Channels texture is not created");
-
-        renderer->getOpenGLContext()->functions()->glActiveTexture(GL_TEXTURE0);
-
-        getTextureByName("Channels")->bind();
-
-        if (!shaderProgram->bind())
-            throw std::runtime_error("Unable to bind shader program");
-
-        auto selectionLayer = static_cast<SelectionLayer*>(_node);
-
-        const auto overlayColor = selectionLayer->getOverlayColor(Qt::EditRole).value<QColor>();
-
-        shaderProgram->setUniformValue("channelTextures", 0);
-        shaderProgram->setUniformValue("textureSize", QSizeF(selectionLayer->getImageSize()));
-        shaderProgram->setUniformValue("overlayColor", overlayColor);
-        shaderProgram->setUniformValue("opacity", opacity);
-        shaderProgram->setUniformValue("transform", nodeMVP * getModelMatrix());
-
-        shape->render();
-
-        shaderProgram->release();
-
-        getTextureByName("Channels")->release();
-    }
-    catch (std::exception& e)
-    {
-        qDebug() << _name << "render failed:" << e.what();
-    }
-    catch (...) {
-        qDebug() << _name << "render failed due to unhandled exception";
-    }
-}
-
-QRectF SelectionProp::getBoundingRectangle() const
-{
-	auto rectangle = getShapeByName<QuadShape>("Quad")->getRectangle();
-
-	rectangle.setSize(_node->getScale(Qt::EditRole).toFloat() * rectangle.size());
-
-	return rectangle;
-}
-
-void SelectionProp::updateModelMatrix()
-{
-	QMatrix4x4 modelMatrix;
-
-	const auto rectangle = getShapeByName<QuadShape>("Quad")->getRectangle();
-
-	modelMatrix.translate(-0.5f * rectangle.width(), -0.5f * rectangle.height(), 0.0f);
-
-	setModelMatrix(modelMatrix);
 }
