@@ -276,8 +276,6 @@ void ImageAction::updateColorMapImage()
     const auto isDiscreteColorMap   = _colorMapAction.getSettingsAction().getDiscreteAction().isChecked();
     const auto interpolationType    = isDiscreteColorMap ? InterpolationType::NearestNeighbor : InterpolationType::Bilinear;
 
-    getColorMapImage().save("ColorMap.jpg");
-
     // Set the color map image in the layer
     _layer.setColorMapImage(getColorMapImage(), interpolationType);
 }
