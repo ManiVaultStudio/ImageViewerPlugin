@@ -18,13 +18,14 @@
 
 using namespace hdps;
 
-Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
+Layer::Layer(ImageViewerPlugin& imageViewerPlugin, Images& imagesDataset) :
     QObject(&imageViewerPlugin),
     Renderable(imageViewerPlugin.getImageViewerWidget().getRenderer()),
+    EventListener(),
     _imageViewerPlugin(imageViewerPlugin),
     _active(false),
-    _imagesDataset(datasetName),
-    _sourceDataset(_imagesDataset->getHierarchyItem().getParent()->getDatasetName()),
+    _imagesDataset(imagesDataset),
+    _sourceDataset(&_imagesDataset->getDataHierarchyItem().getParent().getDataset()),
     _selectedIndices(),
     _generalAction(*this),
     _imageAction(*this),
@@ -32,6 +33,8 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
     _selectionData(),
     _imageSelectionRectangle()
 {
+    setEventCore(Application::core());
+
     if (!_sourceDataset.isValid())
         throw std::runtime_error("The layer source dataset is not valid after initialization");
 
@@ -110,6 +113,25 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
 
     // Update the window title when the layer name changes
     connect(&_generalAction.getNameAction(), &StringAction::stringChanged, this, &Layer::updateWindowTitle);
+
+    // Register for events for images datasets
+    registerDataEventByType(ImageType, [this](DataEvent* dataEvent) {
+
+        switch (dataEvent->getType())
+        {
+            case EventType::DataGuiNameChanged:
+            {
+                if (dataEvent->getDataset() != *_imagesDataset)
+                    break;
+
+                _generalAction.getDatasetNameAction().setString(_imagesDataset->getGuiName());
+                _generalAction.getNameAction().setDefaultString(_imagesDataset->getGuiName());
+            }
+
+            default:
+                break;
+        }
+    });
 
     _imageAction.init();
 }
@@ -461,9 +483,9 @@ void Layer::paint(QPainter& painter, const PaintFlag& paintFlags)
     }
 }
 
-const QString Layer::getImagesDatasetName() const
+const QString Layer::getImagesDatasetId() const
 {
-    return _imagesDataset.getDatasetName();
+    return _imagesDataset->getId();
 }
 
 const std::uint32_t Layer::getNumberOfImages() const
@@ -785,7 +807,7 @@ void Layer::publishSelection()
             const auto selectedIndices = clusters.getSelectedIndices();
             
             // Get reference to clusters input points and its selection
-            auto& points    = _sourceDataset->getHierarchyItem().getParent()->getDataset<Points>();
+            auto& points    = _sourceDataset->getDataHierarchyItem().getParent().getDataset<Points>();
             auto& selection = points.getSelection<Points>();
 
             // Reserve enough space for selection
@@ -802,11 +824,11 @@ void Layer::publishSelection()
                 selection.indices.push_back(globalIndices[selectedIndex]);
 
             // Notify others that the point selection changed
-            Application::core()->notifySelectionChanged(points.getName());
+            Application::core()->notifyDataSelectionChanged(points);
         }
 
         // Notify listeners of the selection change
-        Application::core()->notifySelectionChanged(_sourceDataset.getSourceData().getName());
+        Application::core()->notifyDataSelectionChanged(_sourceDataset.getSourceData());
 
         // Render
         invalidate();

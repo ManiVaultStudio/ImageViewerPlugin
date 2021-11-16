@@ -8,6 +8,7 @@
 
 #include "util/DatasetRef.h"
 #include "util/Interpolation.h"
+#include "event/EventListener.h"
 
 #include "Set.h"
 #include "ImageData/Images.h"
@@ -16,7 +17,7 @@ using namespace hdps::util;
 
 class ImageViewerPlugin;
 
-class Layer : public QObject, public Renderable
+class Layer : public QObject, public Renderable, public hdps::EventListener
 {
     Q_OBJECT
 
@@ -33,9 +34,9 @@ public:
     /**
      * Constructor
      * @param imageViewerPlugin Reference to image viewer plugin
-     * @param datasetName Name of the images dataset
+     * @param dataset Reference to images dataset
      */
-    Layer(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName);
+    Layer(ImageViewerPlugin& imageViewerPlugin, Images& imagesDataset);
 
     /** Destructor */
     virtual ~Layer();
@@ -93,7 +94,8 @@ public:
         return _imagesDataset;
     }
 
-    const QString getImagesDatasetName() const;
+    /** Get the globally unique identifier of the images dataset */
+    const QString getImagesDatasetId() const;
 
 public: // Images wrapper functions
 

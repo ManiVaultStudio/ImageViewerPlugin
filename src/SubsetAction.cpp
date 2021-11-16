@@ -128,35 +128,35 @@ SubsetAction::SubsetAction(ImageViewerPlugin& imageViewerPlugin) :
                     throw std::runtime_error("Selection is empty");
 
                 // Create the points subset
-                const auto subsetName = layer->getSourceDataset<Points>()->createSubset(_nameAction.getString(), points->getName());
+                auto& subset = layer->getSourceDataset<Points>()->createSubset(_nameAction.getString(), points);
 
                 // Notify that the points set was added
-                Application::core()->notifyDataAdded(subsetName);
+                Application::core()->notifyDataAdded(subset);
 
                 // Reset selected indices
                 selectionIndices = cachedSelectionIndices;
 
                 // Create a new image dataset which is a subset of the original image
-                DatasetRef<Images> imagesSubset(Application::core()->addData("Images", _nameAction.getString(), subsetName));
+                auto& imagesSubset = Application::core()->addData<Images>("Images", _nameAction.getString(), points);
 
-                imagesSubset->setType(images->getType());
-                imagesSubset->setNumberOfImages(images->getNumberOfImages());
-                imagesSubset->setImageGeometry(images->getSourceRectangle().size(), selectionBoundaries.size(), selectionBoundaries.topLeft());
-                imagesSubset->setNumberOfComponentsPerPixel(images->getNumberOfComponentsPerPixel());
+                imagesSubset.setType(images->getType());
+                imagesSubset.setNumberOfImages(images->getNumberOfImages());
+                imagesSubset.setImageGeometry(images->getSourceRectangle().size(), selectionBoundaries.size(), selectionBoundaries.topLeft());
+                imagesSubset.setNumberOfComponentsPerPixel(images->getNumberOfComponentsPerPixel());
                 //imagesSubset->setImageFilePaths(images->getImag);
 
                 // Notify others that the images dataset was added
-                Application::core()->notifyDataAdded(imagesSubset.getDatasetName());
+                Application::core()->notifyDataAdded(imagesSubset);
 
                 // Reset the name
                 _nameAction.reset();
             }
             else {
                 // Create the points subset
-                const auto subsetName = points->createSubset(_nameAction.getString(), points->getName());
+                auto& subset = points->createSubset(_nameAction.getString(), points);
 
                 // Notify that the points set was added
-                Application::core()->notifyDataAdded(subsetName);
+                Application::core()->notifyDataAdded(subset);
             }
         }
         catch (std::exception& e)

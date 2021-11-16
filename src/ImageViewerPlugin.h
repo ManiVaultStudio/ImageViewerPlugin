@@ -9,6 +9,7 @@
 #include "SettingsAction.h"
 
 #include "widgets/DropWidget.h"
+#include "Set.h"
 
 #include <QItemSelectionModel>
 #include <QSplitter>
@@ -59,9 +60,9 @@ protected:
 
     /**
      * Converts a non-images dataset to an images dataset and adds the created dataset as a layer
-     * @param datasetName Name of the dataset
+     * @param dataset Reference to the dataset that will be converted and added
      */
-    void immigrateDataset(const QString& datasetName);
+    void immigrateDataset(hdps::DataSet& dataset);
 
 public: // Action getters
 

@@ -106,10 +106,10 @@ public: // Layer operations
     void removeLayer(const std::uint32_t& row);
 
     /**
-     * Remove a layer from the model by images dataset name
-     * @param datasetName Name of the images dataset
+     * Remove a layer from the model by images dataset globally unique identifier
+     * @param datasetId Globally unique identifier of the images dataset
      */
-    void removeLayer(const QString& datasetName);
+    void removeLayer(const QString& datasetId);
 
     /**
      * Remove a layer from the model by model index of the layer to remove
@@ -134,10 +134,11 @@ public: // Layer operations
     QVector<Layer*>& getLayers();
 
     /**
-     * Get pointer to layer by dataset name
-     * @param datasetName Name of the images dataset which the layer references
+     * Get pointer to layer by dataset globally unique identifier
+     * @param datasetId Globally unique identifier of the images dataset
+     * @param Reference to layer
      */
-    Layer* getLayerByDatasetName(const QString& datasetName);
+    Layer& getLayerByDatasetId(const QString& datasetId);
 
 protected:
     

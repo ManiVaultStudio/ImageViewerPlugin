@@ -14,6 +14,7 @@
 #include <QSplitter>
 #include <QMimeData>
 
+using namespace hdps;
 using namespace hdps::gui;
 using namespace hdps::util;
 
@@ -81,21 +82,25 @@ void ImageViewerPlugin::init()
     _dropWidget.initialize([this](const QMimeData* mimeData) -> DropWidget::DropRegions {
         DropWidget::DropRegions dropRegions;
 
-        const auto mimeText     = mimeData->text();
-        const auto tokens       = mimeText.split("\n");
-        const auto datasetName  = tokens[0];
-        const auto dataType     = hdps::DataType(tokens[1]);
-        const auto dataTypes    = hdps::DataTypes({ ImageType, PointType, ClusterType });
+        const auto mimeText         = mimeData->text();
+        const auto tokens           = mimeText.split("\n");
+        const auto datasetGuiName   = tokens[0];
+        const auto datasetId        = tokens[1];
+        const auto dataType         = hdps::DataType(tokens[2]);
+        const auto dataTypes        = hdps::DataTypes({ ImageType, PointType, ClusterType });
+
+        // Get reference to the drop dataset
+        auto& dataset = _core->requestData(datasetId);
 
         if (!dataTypes.contains(dataType))
             dropRegions << new DropWidget::DropRegion(this, "Incompatible data", "This type of data is not supported", false);
 
         if (dataType == ImageType) {
-            dropRegions << new DropWidget::DropRegion(this, "Images", QString("Add an image layer for %1").arg(datasetName), true, [this, datasetName]() {
+            dropRegions << new DropWidget::DropRegion(this, "Images", QString("Add an image layer for %1").arg(datasetGuiName), true, [this, datasetGuiName, &dataset]() {
                 try
                 {
                     // Create new layer for the converted dataset
-                    auto layer = new Layer(*this, datasetName);
+                    auto layer = new Layer(*this, dynamic_cast<Images&>(dataset));
 
                     // Squeeze the layer in to the layers world bounding rectangle
                     layer->scaleToFit(_imageViewerWidget.getWorldBoundingRectangle());
@@ -112,27 +117,27 @@ void ImageViewerPlugin::init()
                 }
                 catch (std::exception& e)
                 {
-                    exceptionMessageBox(QString("Unable to load '%1'").arg(datasetName), e);
+                    exceptionMessageBox(QString("Unable to load '%1'").arg(datasetGuiName), e);
                 }
                 catch (...) {
-                    exceptionMessageBox(QString("Unable to load '%1'").arg(datasetName));
+                    exceptionMessageBox(QString("Unable to load '%1'").arg(datasetGuiName));
                 }
             });
         }
 
         if (dataType == PointType) {
-            dropRegions << new DropWidget::DropRegion(this, "Points", QString("Convert %1 to image layer").arg(datasetName), true, [this, datasetName]() {
+            dropRegions << new DropWidget::DropRegion(this, "Points", QString("Convert %1 to image layer").arg(datasetGuiName), true, [this, &dataset]() {
 
                 // Convert the points dataset to an images dataset and add as a layer
-                immigrateDataset(datasetName);
+                immigrateDataset(dataset);
             });
         }
 
         if (dataType == ClusterType) {
-            dropRegions << new DropWidget::DropRegion(this, "Clusters", QString("Convert %1 to image layer").arg(datasetName), true, [this, datasetName]() {
+            dropRegions << new DropWidget::DropRegion(this, "Clusters", QString("Convert %1 to image layer").arg(datasetGuiName), true, [this, &dataset]() {
 
                 // Convert the points dataset to an images dataset and add as a layer
-                immigrateDataset(datasetName);
+                immigrateDataset(dataset);
             });
         }
 
@@ -275,18 +280,18 @@ void ImageViewerPlugin::onLayerSelectionChanged()
     setWindowTitle(QString("%1%2").arg(getGuiName(), currentLayerName.isEmpty() ? "" : QString(": %1").arg(currentLayerName)));
 }
 
-void ImageViewerPlugin::immigrateDataset(const QString& datasetName)
+void ImageViewerPlugin::immigrateDataset(DataSet& dataset)
 {
     try {
 
         // Create conversion dialog
-        ConvertToImagesDatasetDialog pointsToImagesDialog(*this, datasetName);
+        ConvertToImagesDatasetDialog convertToImagesDatasetDialog(*this, dataset);
 
         // Show the dialog and add the layer if accepted
-        if (pointsToImagesDialog.exec() == 1) {
+        if (convertToImagesDatasetDialog.exec() == 1) {
 
             // Create new layer for the converted dataset
-            auto layer = new Layer(*this, pointsToImagesDialog.getTargetImagesDatasetName());
+            auto layer = new Layer(*this, *convertToImagesDatasetDialog.getTargetImagesDataset());
 
             // Add new layer to the model
             _model.addLayer(layer);
@@ -301,10 +306,10 @@ void ImageViewerPlugin::immigrateDataset(const QString& datasetName)
     }
     catch (std::exception& e)
     {
-        exceptionMessageBox(QString("Unable to immigrate dataset: %1").arg(datasetName), e);
+        exceptionMessageBox(QString("Unable to immigrate dataset: %1").arg(dataset.getGuiName()), e);
     }
     catch (...) {
-        exceptionMessageBox(QString("Unable to immigrate dataset: %1").arg(datasetName));
+        exceptionMessageBox(QString("Unable to immigrate dataset: %1").arg(dataset.getGuiName()));
     }
 }
 

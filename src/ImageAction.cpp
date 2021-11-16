@@ -158,7 +158,7 @@ ImageAction::ImageAction(Layer& layer) :
             return;
 
         // Only process points dataset that is referenced by us
-        if (dataEvent->dataSetName != _layer.getSourceDataset()->getName())
+        if (dataEvent->getDataset() != *_layer.getSourceDataset())
             return;
 
         switch (dataEvent->getType())
@@ -170,7 +170,7 @@ ImageAction::ImageAction(Layer& layer) :
                 break;
             }
 
-            case EventType::SelectionChanged:
+            case EventType::DataSelectionChanged:
             {
                 _layer.computeSelectionIndices();
                 break;
@@ -189,7 +189,7 @@ ImageAction::ImageAction(Layer& layer) :
             return;
 
         // Only process points dataset that is referenced by us
-        if (dataEvent->dataSetName != _layer.getSourceDataset()->getName())
+        if (dataEvent->getDataset() != *_layer.getSourceDataset())
             return;
 
         switch (dataEvent->getType())
@@ -201,7 +201,7 @@ ImageAction::ImageAction(Layer& layer) :
                 break;
             }
 
-            case EventType::SelectionChanged:
+            case EventType::DataSelectionChanged:
             {
                 _layer.computeSelectionIndices();
                 break;

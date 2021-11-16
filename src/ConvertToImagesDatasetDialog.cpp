@@ -14,25 +14,21 @@
 
 using namespace hdps;
 
-ConvertToImagesDatasetDialog::ConvertToImagesDatasetDialog(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName) :
+ConvertToImagesDatasetDialog::ConvertToImagesDatasetDialog(ImageViewerPlugin& imageViewerPlugin, DataSet& dataset) :
     QDialog(&imageViewerPlugin),
     _imageViewerPlugin(imageViewerPlugin),
-    _sourceDataset(datasetName),
+    _sourceDataset(&dataset),
     _sourceImagesDataset(),
+    _targetImagesDataset(),
     _datasetNameAction(this, "Dataset name"),
     _imageWidthAction(this, "Image width", 1, 10000, 100, 100),
     _imageHeightAction(this, "Image height", 1, 10000, 100, 100),
     _numberOfImagesAction(this, "Number of images", 1, 10000, 1, 1),
     _numberOfPixelsAction(this, "Number of pixels"),
-    _groupAction(this),
-    _targetImagesDatasetName()
+    _groupAction(this)
 {
-    // Throw exception is dataset name is empty
-    if (datasetName.isEmpty())
-        throw std::runtime_error("Points dataset name is empty");
-
     // Update window title and icon
-    setWindowTitle(QString("Load %1 as images").arg(datasetName));
+    setWindowTitle(QString("Load %1 as images").arg(_sourceDataset->getGuiName()));
     setWindowIcon(_sourceDataset->getIcon());
     
     // Set widget flags for image width and height actions
@@ -40,7 +36,8 @@ ConvertToImagesDatasetDialog::ConvertToImagesDatasetDialog(ImageViewerPlugin& im
     _imageHeightAction.setDefaultWidgetFlags(IntegralAction::SpinBox);
 
     // Find the source images dataset (if any)
-    findSourceImagesDataset(_sourceDataset->getHierarchyItem().getParent());
+    if (_sourceDataset->getDataHierarchyItem().hasParent())
+        findSourceImagesDataset(_sourceDataset->getDataHierarchyItem().getParent());
 
     // Set image resolution if valid
     if (_sourceImagesDataset.isValid()) {
@@ -53,7 +50,7 @@ ConvertToImagesDatasetDialog::ConvertToImagesDatasetDialog(ImageViewerPlugin& im
         _imageHeightAction.initialize(0, 10000, imageSize.height(), imageSize.height());
     }
 
-    const auto defaultDatasetName = QString("%1_img").arg(datasetName);
+    const auto defaultDatasetName = QString("%1_img").arg(_sourceDataset->getGuiName());
 
     // Configure name action
     _datasetNameAction.initialize(defaultDatasetName, defaultDatasetName);
@@ -104,28 +101,25 @@ ConvertToImagesDatasetDialog::ConvertToImagesDatasetDialog(ImageViewerPlugin& im
     layout->addWidget(dialogButtonBox);
 
     // Handle when accepted
-    connect(dialogButtonBox, &QDialogButtonBox::accepted, this, [this, datasetName]() {
+    connect(dialogButtonBox, &QDialogButtonBox::accepted, this, [this]() {
 
         // Add images dataset
-        DatasetRef<Images> images(Application::core()->addData("Images", _datasetNameAction.getString(), datasetName));
-
-        if (!images.isValid())
-            throw std::runtime_error("Unable to create images dataset");
+        auto& images = Application::core()->addData<Images>("Images", _datasetNameAction.getString(), _sourceDataset.get());
 
         const auto sourceImageSize   = _sourceImagesDataset.isValid() ? _sourceImagesDataset->getSourceRectangle().size() : QSize(_imageWidthAction.getValue(), _imageHeightAction.getValue());
         const auto targetImageSize   = _sourceImagesDataset.isValid() ? _sourceImagesDataset->getTargetRectangle().size() : QSize(_imageWidthAction.getValue(), _imageHeightAction.getValue());
         const auto imageOffset       = _sourceImagesDataset.isValid() ? _sourceImagesDataset->getTargetRectangle().topLeft() : QPoint();
 
-        images->setType(ImageData::Type::Stack);
-        images->setNumberOfImages(_numberOfImagesAction.getValue());
-        images->setImageGeometry(sourceImageSize, targetImageSize, imageOffset);
-        images->setNumberOfComponentsPerPixel(1);
+        images.setType(ImageData::Type::Stack);
+        images.setNumberOfImages(_numberOfImagesAction.getValue());
+        images.setImageGeometry(sourceImageSize, targetImageSize, imageOffset);
+        images.setNumberOfComponentsPerPixel(1);
 
         // Notify others that an images dataset was added
-        Application::core()->notifyDataAdded(images->getName());
+        Application::core()->notifyDataAdded(images);
 
-        // Set the target images dataset name
-        _targetImagesDatasetName = images->getName();
+        // Assign target images dataset reference
+        _targetImagesDataset.set(images);
 
         // Exit the dialog
         accept();
@@ -155,30 +149,24 @@ ConvertToImagesDatasetDialog::ConvertToImagesDatasetDialog(ImageViewerPlugin& im
     updateActions();
 }
 
-QString ConvertToImagesDatasetDialog::getTargetImagesDatasetName() const
+DatasetRef<Images> ConvertToImagesDatasetDialog::getTargetImagesDataset() const
 {
-    return _targetImagesDatasetName;
+    return _targetImagesDataset;
 }
 
-void ConvertToImagesDatasetDialog::findSourceImagesDataset(hdps::DataHierarchyItem* dataHierarchyItem)
+void ConvertToImagesDatasetDialog::findSourceImagesDataset(hdps::DataHierarchyItem& dataHierarchyItem)
 {
-    if (dataHierarchyItem == nullptr)
-        return;
-
     // Iterate over each child of the source dataset
-    for (auto childHierarchyItem : dataHierarchyItem->getChildren()) {
+    for (auto childHierarchyItem : dataHierarchyItem.getChildren()) {
 
         // Get image dimensions in case of an images dataset
         if (childHierarchyItem->getDataType() == ImageType) {
-            _sourceImagesDataset.setDatasetName(childHierarchyItem->getDatasetName());
+            _sourceImagesDataset.set(&childHierarchyItem->getDataset());
             return;
         }
     }
 
-    // Get data hierarchy parent
-    auto dataHierarchyParent = dataHierarchyItem->getParent();
-
     // Source images dataset not found yet, so try the parent (if it exists)
-    if (dataHierarchyParent)
-        findSourceImagesDataset(dataHierarchyParent);
+    if (dataHierarchyItem.hasParent())
+        findSourceImagesDataset(dataHierarchyItem.getParent());
 }

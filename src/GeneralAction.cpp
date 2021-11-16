@@ -7,7 +7,7 @@ GeneralAction::GeneralAction(Layer& layer) :
     GroupAction(&layer, true),
     _layer(layer),
     _visibleAction(this, "Visible", true, true),
-    _datasetNameAction(this, "Dataset name", layer.getImagesDatasetName()),
+    _datasetNameAction(this, "Dataset name"),
     _colorAction(this, "Color"),
     _nameAction(this, "Name"),
     _positionAction(*this),
@@ -35,11 +35,14 @@ GeneralAction::GeneralAction(Layer& layer) :
     _scaleAction.setSuffix("%");
 
     // Get the name of the images dataset
-    const auto imagesDatasetName = _layer.getImagesDatasetName();
+    const auto guiName = _layer.getImages()->getGuiName();
 
-    // Set name and default name
-    _nameAction.setString(imagesDatasetName);
-    _nameAction.setDefaultString(imagesDatasetName);
+    // Set dataset name
+    _datasetNameAction.setString(guiName);
+
+    // Set layer name and default name
+    _nameAction.setString(guiName);
+    _nameAction.setDefaultString(guiName);
 
     // Zoom to extents
     connect(&_zoomAction, &ToggleAction::triggered, this, [this]() {
