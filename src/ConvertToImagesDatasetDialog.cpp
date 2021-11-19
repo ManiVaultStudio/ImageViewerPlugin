@@ -14,10 +14,10 @@
 
 using namespace hdps;
 
-ConvertToImagesDatasetDialog::ConvertToImagesDatasetDialog(ImageViewerPlugin& imageViewerPlugin, DataSet& dataset) :
+ConvertToImagesDatasetDialog::ConvertToImagesDatasetDialog(ImageViewerPlugin& imageViewerPlugin, Dataset<DatasetImpl>& dataset) :
     QDialog(&imageViewerPlugin),
     _imageViewerPlugin(imageViewerPlugin),
-    _sourceDataset(&dataset),
+    _sourceDataset(dataset),
     _sourceImagesDataset(),
     _targetImagesDataset(),
     _datasetNameAction(this, "Dataset name"),
@@ -104,22 +104,22 @@ ConvertToImagesDatasetDialog::ConvertToImagesDatasetDialog(ImageViewerPlugin& im
     connect(dialogButtonBox, &QDialogButtonBox::accepted, this, [this]() {
 
         // Add images dataset
-        auto& images = Application::core()->addData<Images>("Images", _datasetNameAction.getString(), _sourceDataset.get());
+        auto images = Application::core()->addDataset<Images>("Images", _datasetNameAction.getString(), _sourceDataset);
 
         const auto sourceImageSize   = _sourceImagesDataset.isValid() ? _sourceImagesDataset->getSourceRectangle().size() : QSize(_imageWidthAction.getValue(), _imageHeightAction.getValue());
         const auto targetImageSize   = _sourceImagesDataset.isValid() ? _sourceImagesDataset->getTargetRectangle().size() : QSize(_imageWidthAction.getValue(), _imageHeightAction.getValue());
         const auto imageOffset       = _sourceImagesDataset.isValid() ? _sourceImagesDataset->getTargetRectangle().topLeft() : QPoint();
 
-        images.setType(ImageData::Type::Stack);
-        images.setNumberOfImages(_numberOfImagesAction.getValue());
-        images.setImageGeometry(sourceImageSize, targetImageSize, imageOffset);
-        images.setNumberOfComponentsPerPixel(1);
+        images->setType(ImageData::Type::Stack);
+        images->setNumberOfImages(_numberOfImagesAction.getValue());
+        images->setImageGeometry(sourceImageSize, targetImageSize, imageOffset);
+        images->setNumberOfComponentsPerPixel(1);
 
         // Notify others that an images dataset was added
-        Application::core()->notifyDataAdded(images);
+        Application::core()->notifyDataAdded(*images);
 
         // Assign target images dataset reference
-        _targetImagesDataset.set(images);
+        _targetImagesDataset.set(*images);
 
         // Exit the dialog
         accept();
@@ -149,7 +149,7 @@ ConvertToImagesDatasetDialog::ConvertToImagesDatasetDialog(ImageViewerPlugin& im
     updateActions();
 }
 
-DatasetRef<Images> ConvertToImagesDatasetDialog::getTargetImagesDataset() const
+Dataset<Images> ConvertToImagesDatasetDialog::getTargetImagesDataset() const
 {
     return _targetImagesDataset;
 }
@@ -161,7 +161,7 @@ void ConvertToImagesDatasetDialog::findSourceImagesDataset(hdps::DataHierarchyIt
 
         // Get image dimensions in case of an images dataset
         if (childHierarchyItem->getDataType() == ImageType) {
-            _sourceImagesDataset.set(&childHierarchyItem->getDataset());
+            _sourceImagesDataset = childHierarchyItem->getDataset();
             return;
         }
     }

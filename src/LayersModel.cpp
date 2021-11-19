@@ -2,6 +2,7 @@
 #include "Application.h"
 
 #include "util/Exception.h"
+#include "event/Event.h"
 
 #include "PointData.h"
 
@@ -26,7 +27,7 @@ LayersModel::LayersModel(QObject* parent) :
         {
             case EventType::DataRemoved:
             {
-                removeLayer(dataEvent->getDataset().getId());
+                removeLayer(dataEvent->getDataset()->getGuid());
                 break;
             }
 
@@ -42,7 +43,7 @@ LayersModel::LayersModel(QObject* parent) :
         {
             case EventType::DataRemoved:
             {
-                removeLayer(dataEvent->getDataset().getId());
+                removeLayer(dataEvent->getDataset()->getGuid());
                 break;
             }
 

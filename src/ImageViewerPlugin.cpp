@@ -7,7 +7,6 @@
 #include "ImageData/ImageData.h"
 #include "ClusterData.h"
 #include "widgets/DropWidget.h"
-#include "util/DatasetRef.h"
 #include "util/Exception.h"
 
 #include <QDebug>
@@ -90,17 +89,17 @@ void ImageViewerPlugin::init()
         const auto dataTypes        = hdps::DataTypes({ ImageType, PointType, ClusterType });
 
         // Get reference to the drop dataset
-        auto& dataset = _core->requestData(datasetId);
+        auto dataset = _core->requestDataset(datasetId);
 
         if (!dataTypes.contains(dataType))
             dropRegions << new DropWidget::DropRegion(this, "Incompatible data", "This type of data is not supported", false);
 
         if (dataType == ImageType) {
-            dropRegions << new DropWidget::DropRegion(this, "Images", QString("Add an image layer for %1").arg(datasetGuiName), true, [this, datasetGuiName, &dataset]() {
+            dropRegions << new DropWidget::DropRegion(this, "Images", QString("Add an image layer for %1").arg(datasetGuiName), true, [this, datasetGuiName, dataset]() {
                 try
                 {
                     // Create new layer for the converted dataset
-                    auto layer = new Layer(*this, dynamic_cast<Images&>(dataset));
+                    auto layer = new Layer(*this, dataset);
 
                     // Squeeze the layer in to the layers world bounding rectangle
                     layer->scaleToFit(_imageViewerWidget.getWorldBoundingRectangle());
@@ -280,12 +279,12 @@ void ImageViewerPlugin::onLayerSelectionChanged()
     setWindowTitle(QString("%1%2").arg(getGuiName(), currentLayerName.isEmpty() ? "" : QString(": %1").arg(currentLayerName)));
 }
 
-void ImageViewerPlugin::immigrateDataset(DataSet& dataset)
+void ImageViewerPlugin::immigrateDataset(const Dataset<DatasetImpl>& dataset)
 {
     try {
 
         // Create conversion dialog
-        ConvertToImagesDatasetDialog convertToImagesDatasetDialog(*this, dataset);
+        ConvertToImagesDatasetDialog convertToImagesDatasetDialog(*this, const_cast<Dataset<DatasetImpl>&>(dataset));
 
         // Show the dialog and add the layer if accepted
         if (convertToImagesDatasetDialog.exec() == 1) {
@@ -306,10 +305,10 @@ void ImageViewerPlugin::immigrateDataset(DataSet& dataset)
     }
     catch (std::exception& e)
     {
-        exceptionMessageBox(QString("Unable to immigrate dataset: %1").arg(dataset.getGuiName()), e);
+        exceptionMessageBox(QString("Unable to immigrate dataset: %1").arg(dataset->getGuiName()), e);
     }
     catch (...) {
-        exceptionMessageBox(QString("Unable to immigrate dataset: %1").arg(dataset.getGuiName()));
+        exceptionMessageBox(QString("Unable to immigrate dataset: %1").arg(dataset->getGuiName()));
     }
 }
 

@@ -18,14 +18,14 @@
 
 using namespace hdps;
 
-Layer::Layer(ImageViewerPlugin& imageViewerPlugin, Images& imagesDataset) :
+Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const hdps::Dataset<Images>& imagesDataset) :
     QObject(&imageViewerPlugin),
     Renderable(imageViewerPlugin.getImageViewerWidget().getRenderer()),
     EventListener(),
     _imageViewerPlugin(imageViewerPlugin),
     _active(false),
     _imagesDataset(imagesDataset),
-    _sourceDataset(&_imagesDataset->getDataHierarchyItem().getParent().getDataset()),
+    _sourceDataset(_imagesDataset->getDataHierarchyItem().getParent().getDataset()),
     _selectedIndices(),
     _generalAction(*this),
     _imageAction(*this),
@@ -121,7 +121,7 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, Images& imagesDataset) :
         {
             case EventType::DataGuiNameChanged:
             {
-                if (dataEvent->getDataset() != *_imagesDataset)
+                if (dataEvent->getDataset() != _imagesDataset)
                     break;
 
                 _generalAction.getDatasetNameAction().setString(_imagesDataset->getGuiName());
@@ -485,7 +485,7 @@ void Layer::paint(QPainter& painter, const PaintFlag& paintFlags)
 
 const QString Layer::getImagesDatasetId() const
 {
-    return _imagesDataset->getId();
+    return _imagesDataset->getGuid();
 }
 
 const std::uint32_t Layer::getNumberOfImages() const
@@ -657,7 +657,7 @@ void Layer::publishSelection()
         if (_sourceDataset->getDataType() == PointType) {
             
             // Get reference to points selection indices
-            std::vector<std::uint32_t>& selectionIndices = _sourceDataset->getSelection<Points>().indices;
+            std::vector<std::uint32_t>& selectionIndices = _sourceDataset->getSelection<Points>()->indices;
 
             // Establish new selection indices depending on the type of modifier
             switch (pixelSelectionTool.getModifier())
@@ -725,7 +725,7 @@ void Layer::publishSelection()
         if (_sourceDataset->getDataType() == ClusterType) {
 
             // Get reference to clusters selection indices
-            auto& selectionIndices = _sourceDataset->getSelection<Clusters>().indices;
+            auto& selectionIndices = _sourceDataset->getSelection<Clusters>()->indices;
 
             // Convert floating point scalars to unsigned integer scalars
             std::vector<std::uint32_t> integerScalarData(_imageAction.getScalarChannel1Action().getScalarData().begin(), _imageAction.getScalarChannel1Action().getScalarData().end());
@@ -801,34 +801,34 @@ void Layer::publishSelection()
             }
 
             // Get reference to the clusters dataset
-            auto& clusters = dynamic_cast<Clusters&>(*_sourceDataset);
+            auto clusters = Dataset<Clusters>(_sourceDataset);
 
             // Get selected indices
-            const auto selectedIndices = clusters.getSelectedIndices();
+            const auto selectedIndices = clusters->getSelectedIndices();
             
             // Get reference to clusters input points and its selection
-            auto& points    = _sourceDataset->getDataHierarchyItem().getParent().getDataset<Points>();
-            auto& selection = points.getSelection<Points>();
+            auto points     = _sourceDataset->getDataHierarchyItem().getParent().getDataset<Points>();
+            auto selection  = points->getSelection<Points>();
 
             // Reserve enough space for selection
-            selection.indices.clear();
-            selection.indices.reserve(selectedIndices.size());
+            selection->indices.clear();
+            selection->indices.reserve(selectedIndices.size());
 
             std::vector<std::uint32_t> globalIndices;
 
             // Get global indices for mapping selection
-            points.getGlobalIndices(globalIndices);
+            points->getGlobalIndices(globalIndices);
 
             // Translate selection indices and add them
             for (auto selectedIndex : selectedIndices)
-                selection.indices.push_back(globalIndices[selectedIndex]);
+                selection->indices.push_back(globalIndices[selectedIndex]);
 
             // Notify others that the point selection changed
             Application::core()->notifyDataSelectionChanged(points);
         }
 
         // Notify listeners of the selection change
-        Application::core()->notifyDataSelectionChanged(_sourceDataset.getSourceData());
+        Application::core()->notifyDataSelectionChanged(_sourceDataset->getSourceDataset<DatasetImpl>());
 
         // Render
         invalidate();

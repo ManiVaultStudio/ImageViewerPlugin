@@ -6,7 +6,6 @@
 #include "ImageAction.h"
 #include "SelectionAction.h"
 
-#include "util/DatasetRef.h"
 #include "util/Interpolation.h"
 #include "event/EventListener.h"
 
@@ -34,9 +33,9 @@ public:
     /**
      * Constructor
      * @param imageViewerPlugin Reference to image viewer plugin
-     * @param dataset Reference to images dataset
+     * @param dataset Smart pointer to images dataset
      */
-    Layer(ImageViewerPlugin& imageViewerPlugin, Images& imagesDataset);
+    Layer(ImageViewerPlugin& imageViewerPlugin, const hdps::Dataset<Images>& imagesDataset);
 
     /** Destructor */
     virtual ~Layer();
@@ -73,24 +72,24 @@ public:
     void paint(QPainter& painter, const PaintFlag& paintFlags);
 
     /** Get source dataset */
-    hdps::DataSet* getSourceDataset() {
-        return _sourceDataset.get();
+    hdps::Dataset<hdps::DatasetImpl> getSourceDataset() {
+        return _sourceDataset;
     }
 
     /** Get source dataset of a specific dataset type */
     template<typename DatasetType>
-    DatasetType* getSourceDataset() {
-        return dynamic_cast<DatasetType*>(_sourceDataset.get());
+    hdps::Dataset<DatasetType> getSourceDataset() {
+        return _sourceDataset;
     }
 
     /** Get const source dataset of a specific dataset type */
     template<typename DatasetType>
-    const DatasetType* getSourceDataset() const {
+    hdps::Dataset<DatasetType> getSourceDataset() const {
         return const_cast<Layer*>(this)->getSourceDataset<DatasetType>();
     }
 
     /** Get images dataset */
-    DatasetRef<Images>& getImages() {
+    hdps::Dataset<Images> getImages() {
         return _imagesDataset;
     }
 
@@ -200,17 +199,17 @@ public: /** Action getters */
     SelectionAction& getSelectionAction() { return _selectionAction; }
 
 protected:
-    ImageViewerPlugin&              _imageViewerPlugin;             /** Reference to image viewer plugin */
-    bool                            _active;                        /** Whether the layer is active (editable) */
-    DatasetRef<Images>              _imagesDataset;                 /** Reference to images dataset */
-    DatasetRef<hdps::DataSet>       _sourceDataset;                 /** Reference to source dataset of the images */
-    std::vector<std::uint32_t>      _selectedIndices;               /** Indices of the selected pixels */
-    GeneralAction                   _generalAction;                 /** General action */
-    ImageAction                     _imageAction;                   /** Image action */
-    SelectionAction                 _selectionAction;               /** Selection action */
-    std::vector<std::uint8_t>       _selectionData;                 /** Selection data for selection prop */
-    QRect                           _imageSelectionRectangle;       /** Selection boundaries in image coordinates */
-    QVector<float>                  _colorData;                     /** Color data for the specified dimension */
+    ImageViewerPlugin&                  _imageViewerPlugin;             /** Reference to image viewer plugin */
+    bool                                _active;                        /** Whether the layer is active (editable) */
+    hdps::Dataset<Images>               _imagesDataset;                 /** Smart pointer to images dataset */
+    hdps::Dataset<hdps::DatasetImpl>    _sourceDataset;                 /** Smart pointer to source dataset of the images */
+    std::vector<std::uint32_t>          _selectedIndices;               /** Indices of the selected pixels */
+    GeneralAction                       _generalAction;                 /** General action */
+    ImageAction                         _imageAction;                   /** Image action */
+    SelectionAction                     _selectionAction;               /** Selection action */
+    std::vector<std::uint8_t>           _selectionData;                 /** Selection data for selection prop */
+    QRect                               _imageSelectionRectangle;       /** Selection boundaries in image coordinates */
+    QVector<float>                      _colorData;                     /** Color data for the specified dimension */
 
     friend class ImageViewerWidget;
     friend class ImageAction;

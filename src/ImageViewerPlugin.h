@@ -60,9 +60,9 @@ protected:
 
     /**
      * Converts a non-images dataset to an images dataset and adds the created dataset as a layer
-     * @param dataset Reference to the dataset that will be converted and added
+     * @param dataset Smart pointer to the dataset that will be converted and added
      */
-    void immigrateDataset(hdps::DataSet& dataset);
+    void immigrateDataset(const hdps::Dataset<hdps::DatasetImpl>& dataset);
 
 public: // Action getters
 

@@ -89,10 +89,7 @@ SubsetAction::SubsetAction(ImageViewerPlugin& imageViewerPlugin) :
             auto layer = static_cast<Layer*>(selectedRows.first().internalPointer());
 
             // Pointer to points dataset
-            Points* points = nullptr;
-
-            if (layer->getSourceDataset()->getDataType() == PointType)
-                points = layer->getSourceDataset<Points>();
+            auto points = layer->getSourceDataset<Points>();
 
             // Get reference to images dataset
             auto& images = layer->getImages();
@@ -112,7 +109,7 @@ SubsetAction::SubsetAction(ImageViewerPlugin& imageViewerPlugin) :
                 const auto numberOfPixelsInRegion = selectionBoundaries.width() * selectionBoundaries.height();
 
                 // Get reference to selection indices
-                auto& selectionIndices = dynamic_cast<Points&>(points->getSelection()).indices;
+                auto& selectionIndices = points->getSelection<Points>()->indices;
 
                 // Allocate space for indices
                 selectionIndices.clear();
@@ -137,16 +134,16 @@ SubsetAction::SubsetAction(ImageViewerPlugin& imageViewerPlugin) :
                 selectionIndices = cachedSelectionIndices;
 
                 // Create a new image dataset which is a subset of the original image
-                auto& imagesSubset = Application::core()->addData<Images>("Images", _nameAction.getString(), points);
+                auto imagesSubset = Application::core()->addDataset<Images>("Images", _nameAction.getString(), points);
 
-                imagesSubset.setType(images->getType());
-                imagesSubset.setNumberOfImages(images->getNumberOfImages());
-                imagesSubset.setImageGeometry(images->getSourceRectangle().size(), selectionBoundaries.size(), selectionBoundaries.topLeft());
-                imagesSubset.setNumberOfComponentsPerPixel(images->getNumberOfComponentsPerPixel());
+                imagesSubset->setType(images->getType());
+                imagesSubset->setNumberOfImages(images->getNumberOfImages());
+                imagesSubset->setImageGeometry(images->getSourceRectangle().size(), selectionBoundaries.size(), selectionBoundaries.topLeft());
+                imagesSubset->setNumberOfComponentsPerPixel(images->getNumberOfComponentsPerPixel());
                 //imagesSubset->setImageFilePaths(images->getImag);
 
                 // Notify others that the images dataset was added
-                Application::core()->notifyDataAdded(imagesSubset);
+                Application::core()->notifyDataAdded(*imagesSubset);
 
                 // Reset the name
                 _nameAction.reset();
