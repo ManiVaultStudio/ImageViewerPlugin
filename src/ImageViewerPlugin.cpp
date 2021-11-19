@@ -125,7 +125,7 @@ void ImageViewerPlugin::init()
         }
 
         if (dataType == PointType) {
-            dropRegions << new DropWidget::DropRegion(this, "Points", QString("Convert %1 to image layer").arg(datasetGuiName), true, [this, &dataset]() {
+            dropRegions << new DropWidget::DropRegion(this, "Points", QString("Convert %1 to image layer").arg(datasetGuiName), true, [this, dataset]() {
 
                 // Convert the points dataset to an images dataset and add as a layer
                 immigrateDataset(dataset);
@@ -133,7 +133,7 @@ void ImageViewerPlugin::init()
         }
 
         if (dataType == ClusterType) {
-            dropRegions << new DropWidget::DropRegion(this, "Clusters", QString("Convert %1 to image layer").arg(datasetGuiName), true, [this, &dataset]() {
+            dropRegions << new DropWidget::DropRegion(this, "Clusters", QString("Convert %1 to image layer").arg(datasetGuiName), true, [this, dataset]() {
 
                 // Convert the points dataset to an images dataset and add as a layer
                 immigrateDataset(dataset);
