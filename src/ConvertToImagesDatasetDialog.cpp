@@ -119,7 +119,7 @@ ConvertToImagesDatasetDialog::ConvertToImagesDatasetDialog(ImageViewerPlugin& im
         Application::core()->notifyDataAdded(*images);
 
         // Assign target images dataset reference
-        _targetImagesDataset.set(*images);
+        _targetImagesDataset = images;
 
         // Exit the dialog
         accept();

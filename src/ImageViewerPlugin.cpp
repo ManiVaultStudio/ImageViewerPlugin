@@ -92,27 +92,13 @@ void ImageViewerPlugin::init()
         auto dataset = _core->requestDataset(datasetId);
 
         if (!dataTypes.contains(dataType))
-            dropRegions << new DropWidget::DropRegion(this, "Incompatible data", "This type of data is not supported", false);
+            dropRegions << new DropWidget::DropRegion(this, "Incompatible data", "This type of data is not supported", "exclamation-circle", false);
 
         if (dataType == ImageType) {
-            dropRegions << new DropWidget::DropRegion(this, "Images", QString("Add an image layer for %1").arg(datasetGuiName), true, [this, datasetGuiName, dataset]() {
+            dropRegions << new DropWidget::DropRegion(this, "Images", QString("Add an image layer for %1").arg(datasetGuiName), "images", true, [this, datasetGuiName, dataset]() {
                 try
                 {
-                    // Create new layer for the converted dataset
-                    auto layer = new Layer(*this, dataset);
-
-                    // Squeeze the layer in to the layers world bounding rectangle
-                    layer->scaleToFit(_imageViewerWidget.getWorldBoundingRectangle());
-
-                    // Add new layer to the model
-                    _model.addLayer(layer);
-
-                    // Update bounds
-                    _imageViewerWidget.updateWorldBoundingRectangle();
-
-                    // Zoom when this is the first layer added
-                    if (_model.rowCount() == 1)
-                        layer->zoomToExtents();
+                    addDataset(dataset);
                 }
                 catch (std::exception& e)
                 {
@@ -125,7 +111,7 @@ void ImageViewerPlugin::init()
         }
 
         if (dataType == PointType) {
-            dropRegions << new DropWidget::DropRegion(this, "Points", QString("Convert %1 to image layer").arg(datasetGuiName), true, [this, dataset]() {
+            dropRegions << new DropWidget::DropRegion(this, "Points", QString("Convert %1 to image layer").arg(datasetGuiName), "braille", true, [this, dataset]() {
 
                 // Convert the points dataset to an images dataset and add as a layer
                 immigrateDataset(dataset);
@@ -133,7 +119,7 @@ void ImageViewerPlugin::init()
         }
 
         if (dataType == ClusterType) {
-            dropRegions << new DropWidget::DropRegion(this, "Clusters", QString("Convert %1 to image layer").arg(datasetGuiName), true, [this, dataset]() {
+            dropRegions << new DropWidget::DropRegion(this, "Clusters", QString("Convert %1 to image layer").arg(datasetGuiName), "th-large", true, [this, dataset]() {
 
                 // Convert the points dataset to an images dataset and add as a layer
                 immigrateDataset(dataset);
@@ -250,6 +236,36 @@ void ImageViewerPlugin::init()
 
     _dropWidget.setShowDropIndicator(false);
     _dropWidget.setShowDropIndicator(true);
+}
+
+void ImageViewerPlugin::loadData(const Datasets& datasets)
+{
+    // Only load data if we at least have one set
+    if (datasets.isEmpty())
+        return;
+
+    // Add datasets one-by-one
+    for (const auto& dataset : datasets)
+        addDataset(dataset);
+}
+
+void ImageViewerPlugin::addDataset(const Dataset<Images>& dataset)
+{
+    // Create new layer for the converted dataset
+    auto layer = new Layer(*this, dataset);
+
+    // Squeeze the layer in to the layers world bounding rectangle
+    layer->scaleToFit(_imageViewerWidget.getWorldBoundingRectangle());
+
+    // Add new layer to the model
+    _model.addLayer(layer);
+
+    // Update bounds
+    _imageViewerWidget.updateWorldBoundingRectangle();
+
+    // Zoom when this is the first layer added
+    if (_model.rowCount() == 1)
+        layer->zoomToExtents();
 }
 
 void ImageViewerPlugin::onLayerSelectionChanged()

@@ -36,6 +36,18 @@ public: // Inherited from ViewPlugin
     /** Initializes the plugin */
     void init() override;
 
+    /**
+     * Load one (or more datasets in the view)
+     * @param datasets Dataset(s) to load
+     */
+    void loadData(const hdps::Datasets& datasets);
+
+    /**
+     * Add dataset to the viewer
+     * @param dataset Smart pointer to images dataset
+     */
+    void addDataset(const hdps::Dataset<Images>& dataset);
+
 public: // Miscellaneous
 
     /** Get the layers model */

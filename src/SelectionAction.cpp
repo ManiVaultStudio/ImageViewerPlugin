@@ -23,7 +23,7 @@ SelectionAction::SelectionAction(Layer& layer, QWidget* targetWidget, PixelSelec
     allowedPixelSelectionTypes << PixelSelectionType::Sample;
 
     // Assign allowed types
-    setAllowedTypes(allowedPixelSelectionTypes);
+    //setAllowedTypes(allowedPixelSelectionTypes);
 
     _groupAction.setText("Selection");
 
