@@ -143,6 +143,9 @@ signals:
      */
     void interactionModeChanged(const InteractionMode& interactionMode);
 
+    /** Signals that the viewport has changed */
+    void viewportChanged();
+
 protected:
     ImageViewerPlugin&                      _imageViewerPlugin;         /** Reference to image viewer plugin */
     bool                                    _openGLInitialized;         /** Whether OpenGL is initialized or not */

@@ -133,6 +133,21 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const hdps::Dataset<Images>& 
         }
     });
 
+    // Possibly select pixels when the viewport changes
+    connect(&_imageViewerPlugin.getImageViewerWidget(), &ImageViewerWidget::viewportChanged, this, [this]() {
+        
+        // Don't do anything when the layer is not active
+        if (!_active)
+            return;
+
+        // Only update and publish the selection when the select pixels in view action is enabled
+        if (!_selectionAction.getSelectPixelsInViewAction().isChecked())
+            return;
+
+        // Select pixels in view
+        publishSelection();
+    });
+
     _imageAction.init();
 }
 
@@ -617,7 +632,6 @@ void Layer::resetSelectionBuffer()
 
 void Layer::publishSelection()
 {
-    //return;
     try {
 
         //qDebug() << "Publish pixel selection for layer:" << _generalAction.getNameAction().getString();
@@ -659,66 +673,82 @@ void Layer::publishSelection()
             // Get reference to points selection indices
             std::vector<std::uint32_t>& selectionIndices = _sourceDataset->getSelection<Points>()->indices;
 
-            // Establish new selection indices depending on the type of modifier
-            switch (pixelSelectionTool.getModifier())
-            {
-                // Replace pixels with new selection
-                case PixelSelectionModifierType::Replace:
-                {
-                    selectionIndices.clear();
-                    selectionIndices.reserve(noPixels);
+            if (_selectionAction.getSelectPixelsInViewAction().isChecked()) {
 
-                    // Loop over all the pixels in the selection image in row-column order and add to the selection indices if the pixel is non-zero
-                    for (std::int32_t pixelY = targetRectangle.top(); pixelY <= targetRectangle.bottom(); pixelY++) {
-                        for (std::int32_t pixelX = targetRectangle.left(); pixelX <= targetRectangle.right(); pixelX++) {
-                            if (selectionImage.bits()[getTargetPixelIndex(pixelX, pixelY) * noComponents] > 0)
-                                selectionIndices.push_back(getSourcePixelIndex(pixelX, pixelY));
+                // Loop over all the pixels in the selection image in row-column order and add to the selection indices if the pixel is non-zero
+                for (std::int32_t pixelY = targetRectangle.top(); pixelY <= targetRectangle.bottom(); pixelY += 10) {
+                    for (std::int32_t pixelX = targetRectangle.left(); pixelX <= targetRectangle.right(); pixelX += 10) {
+
+                        const auto screenPoint = _imageViewerPlugin.getImageViewerWidget().getRenderer().getWorldPositionToScreenPoint(QVector3D(pixelX, pixelY, 0.0f));
+                        //qDebug() << screenPoint;
+                        if (_imageViewerPlugin.getImageViewerWidget().rect().contains(QPoint(pixelX, pixelY)))
+                            selectionIndices.push_back(getSourcePixelIndex(pixelX, pixelY));
+                    }
+                }
+            }
+            else {
+
+                // Establish new selection indices depending on the type of modifier
+                switch (pixelSelectionTool.getModifier())
+                {
+                    // Replace pixels with new selection
+                    case PixelSelectionModifierType::Replace:
+                    {
+                        selectionIndices.clear();
+                        selectionIndices.reserve(noPixels);
+
+                        // Loop over all the pixels in the selection image in row-column order and add to the selection indices if the pixel is non-zero
+                        for (std::int32_t pixelY = targetRectangle.top(); pixelY <= targetRectangle.bottom(); pixelY++) {
+                            for (std::int32_t pixelX = targetRectangle.left(); pixelX <= targetRectangle.right(); pixelX++) {
+                                if (selectionImage.bits()[getTargetPixelIndex(pixelX, pixelY) * noComponents] > 0)
+                                    selectionIndices.push_back(getSourcePixelIndex(pixelX, pixelY));
+                            }
                         }
+
+                        break;
                     }
 
-                    break;
-                }
+                    // Add pixels to current selection
+                    case PixelSelectionModifierType::Add:
+                    {
+                        // Create selection set of current selection indices
+                        auto selectionSet = std::set<std::uint32_t>(selectionIndices.begin(), selectionIndices.end());
 
-                // Add pixels to current selection
-                case PixelSelectionModifierType::Add:
-                {
-                    // Create selection set of current selection indices
-                    auto selectionSet = std::set<std::uint32_t>(selectionIndices.begin(), selectionIndices.end());
-
-                    // Loop over all the pixels in the selection image in row-column order and insert the selection index into the set if the pixel is non-zero
-                    for (std::int32_t pixelY = targetRectangle.top(); pixelY <= targetRectangle.bottom(); pixelY++) {
-                        for (std::int32_t pixelX = targetRectangle.left(); pixelX <= targetRectangle.right(); pixelX++) {
-                            if (selectionImage.bits()[getTargetPixelIndex(pixelX, pixelY) * noComponents] > 0)
-                                selectionSet.insert(getSourcePixelIndex(pixelX, pixelY));
+                        // Loop over all the pixels in the selection image in row-column order and insert the selection index into the set if the pixel is non-zero
+                        for (std::int32_t pixelY = targetRectangle.top(); pixelY <= targetRectangle.bottom(); pixelY++) {
+                            for (std::int32_t pixelX = targetRectangle.left(); pixelX <= targetRectangle.right(); pixelX++) {
+                                if (selectionImage.bits()[getTargetPixelIndex(pixelX, pixelY) * noComponents] > 0)
+                                    selectionSet.insert(getSourcePixelIndex(pixelX, pixelY));
+                            }
                         }
+
+                        // Convert the set back to a vector
+                        selectionIndices = std::vector<std::uint32_t>(selectionSet.begin(), selectionSet.end());
+                        break;
                     }
 
-                    // Convert the set back to a vector
-                    selectionIndices = std::vector<std::uint32_t>(selectionSet.begin(), selectionSet.end());
-                    break;
-                }
+                    // Remove pixels from current selection
+                    case PixelSelectionModifierType::Remove:
+                    {
+                        // Create selection set of current selection indices
+                        auto selectionSet = std::set<std::uint32_t>(selectionIndices.begin(), selectionIndices.end());
 
-                // Remove pixels from current selection
-                case PixelSelectionModifierType::Remove:
-                {
-                    // Create selection set of current selection indices
-                    auto selectionSet = std::set<std::uint32_t>(selectionIndices.begin(), selectionIndices.end());
-
-                    // Loop over all the pixels in the selection image in row-column order and remove the selection index from the set if the pixel is non-zero
-                    for (std::int32_t pixelY = targetRectangle.top(); pixelY <= targetRectangle.bottom(); pixelY++) {
-                        for (std::int32_t pixelX = targetRectangle.left(); pixelX <= targetRectangle.right(); pixelX++) {
-                            if (selectionImage.bits()[getTargetPixelIndex(pixelX, pixelY) * noComponents] > 0)
-                                selectionSet.erase(getSourcePixelIndex(pixelX, pixelY));
+                        // Loop over all the pixels in the selection image in row-column order and remove the selection index from the set if the pixel is non-zero
+                        for (std::int32_t pixelY = targetRectangle.top(); pixelY <= targetRectangle.bottom(); pixelY++) {
+                            for (std::int32_t pixelX = targetRectangle.left(); pixelX <= targetRectangle.right(); pixelX++) {
+                                if (selectionImage.bits()[getTargetPixelIndex(pixelX, pixelY) * noComponents] > 0)
+                                    selectionSet.erase(getSourcePixelIndex(pixelX, pixelY));
+                            }
                         }
+
+                        // Convert the set back to a vector
+                        selectionIndices = std::vector<std::uint32_t>(selectionSet.begin(), selectionSet.end());
+                        break;
                     }
 
-                    // Convert the set back to a vector
-                    selectionIndices = std::vector<std::uint32_t>(selectionSet.begin(), selectionSet.end());
-                    break;
+                    default:
+                        break;
                 }
-
-                default:
-                    break;
             }
         }
 

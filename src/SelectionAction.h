@@ -42,12 +42,14 @@ public:
 public: /** Action getters */
 
     ToggleAction& getShowRegionAction() { return _showRegionAction; }
+    ToggleAction& getSelectPixelsInViewAction() { return _selectPixelsInViewAction; }
     GroupAction& getGroupAction() { return _groupAction; }
 
 protected:
-    Layer&                  _layer;                 /** Reference to layer */
-    QWidget*                _targetWidget;          /** Pointer to target widget */
-    PixelSelectionTool&     _pixelSelectionTool;    /** Reference to pixel selection tool */
-    ToggleAction            _showRegionAction;      /** Show region action */
-    GroupAction             _groupAction;           /** Group action */
+    Layer&                  _layer;                     /** Reference to layer */
+    QWidget*                _targetWidget;              /** Pointer to target widget */
+    PixelSelectionTool&     _pixelSelectionTool;        /** Reference to pixel selection tool */
+    ToggleAction            _showRegionAction;          /** Show region action */
+    ToggleAction            _selectPixelsInViewAction;  /** Select pixels in view action */
+    GroupAction             _groupAction;               /** Group action */
 };
