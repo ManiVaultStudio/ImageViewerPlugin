@@ -92,7 +92,7 @@ SubsetAction::SubsetAction(ImageViewerPlugin& imageViewerPlugin) :
             auto points = layer->getSourceDataset<Points>();
 
             // Get reference to images dataset
-            auto& images = layer->getImages();
+            auto images = layer->getImages();
 
             if (_fromRegionAction.isChecked()) {
 
@@ -125,7 +125,7 @@ SubsetAction::SubsetAction(ImageViewerPlugin& imageViewerPlugin) :
                     throw std::runtime_error("Selection is empty");
 
                 // Create the points subset
-                auto& subset = layer->getSourceDataset<Points>()->createSubset(_nameAction.getString(), points);
+                auto subset = layer->getSourceDataset<Points>()->createSubset(_nameAction.getString(), points);
 
                 // Notify that the points set was added
                 Application::core()->notifyDataAdded(subset);
@@ -149,8 +149,9 @@ SubsetAction::SubsetAction(ImageViewerPlugin& imageViewerPlugin) :
                 _nameAction.reset();
             }
             else {
+                
                 // Create the points subset
-                auto& subset = points->createSubset(_nameAction.getString(), points);
+                auto subset = points->createSubset(_nameAction.getString(), points);
 
                 // Notify that the points set was added
                 Application::core()->notifyDataAdded(subset);

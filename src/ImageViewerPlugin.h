@@ -40,7 +40,7 @@ public: // Inherited from ViewPlugin
      * Load one (or more datasets in the view)
      * @param datasets Dataset(s) to load
      */
-    void loadData(const hdps::Datasets& datasets);
+    void loadData(const hdps::Datasets& datasets) override;
 
     /**
      * Add dataset to the viewer
