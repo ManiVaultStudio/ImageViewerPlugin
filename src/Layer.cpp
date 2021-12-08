@@ -70,6 +70,9 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const hdps::Dataset<Images>& 
 
                 break;
             }
+
+            case ScalarChannelAction::Count:
+                break;
         }
 
         // Render

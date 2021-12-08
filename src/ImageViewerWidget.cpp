@@ -410,6 +410,10 @@ bool ImageViewerWidget::eventFilter(QObject* target, QEvent* event)
 
                     break;
                 }
+
+                case None:
+                case Selection:
+                    break;
             }
 
             notifyMousePositionsChanged();
