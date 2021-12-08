@@ -3,8 +3,6 @@
 #include "actions/WidgetAction.h"
 #include "actions/TriggerAction.h"
 
-#include "util/DatasetRef.h"
-
 #include "ImageData/Images.h"
 
 using namespace hdps::gui;

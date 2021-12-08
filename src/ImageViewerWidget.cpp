@@ -306,6 +306,9 @@ bool ImageViewerWidget::eventFilter(QObject* target, QEvent* event)
                         _renderer.render();
                     }
 
+                    // Notify others that the viewport changed
+                    emit viewportChanged();
+
                     break;
                 }
 
@@ -401,6 +404,9 @@ bool ImageViewerWidget::eventFilter(QObject* target, QEvent* event)
                     else {
                         _renderer.zoomAround(zoomCenter, 1.0f + _renderer.getZoomSensitivity());
                     }
+
+                    // Notify others that the viewport changed
+                    emit viewportChanged();
 
                     break;
                 }

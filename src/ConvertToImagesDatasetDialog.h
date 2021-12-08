@@ -4,12 +4,10 @@
 #include "actions/StringAction.h"
 #include "actions/GroupAction.h"
 
-#include "util/DatasetRef.h"
-
 #include "DataHierarchyItem.h"
-
 #include "ImageData/Images.h"
 #include "PointData.h"
+#include "Set.h"
 
 #include <QDialog>
 
@@ -30,10 +28,10 @@ public:
     /**
      * Constructor
      * @param imageViewerPlugin Reference to image viewer plugin
-     * @param datasetName Name of the points dataset
+     * @param dataset Dataset to convert
      * @param parent Pointer to parent widget
      */
-    ConvertToImagesDatasetDialog(ImageViewerPlugin& imageViewerPlugin, const QString& datasetName);
+    ConvertToImagesDatasetDialog(ImageViewerPlugin& imageViewerPlugin, hdps::Dataset<hdps::DatasetImpl>& dataset);
 
     /** Destructor */
     ~ConvertToImagesDatasetDialog() = default;
@@ -48,16 +46,16 @@ public:
         return sizeHint();
     }
 
-    /** Get the name of the target images dataset */
-    QString getTargetImagesDatasetName() const;
+    /** Get smart pointer to the target images dataset */
+    hdps::Dataset<Images> getTargetImagesDataset() const;
 
 protected:
 
     /**
      * Find the image size by walking up the tree and looking for images datasets
-     * @param dataHierarchyItem Pointer to data hierarchy item
+     * @param dataHierarchyItem Reference to data hierarchy item
      */
-    void findSourceImagesDataset(hdps::DataHierarchyItem* dataHierarchyItem);
+    void findSourceImagesDataset(hdps::DataHierarchyItem& dataHierarchyItem);
 
 public: // Action getters
 
@@ -66,15 +64,15 @@ public: // Action getters
     IntegralAction& getNumberOfImagesAction() { return _numberOfImagesAction; }
 
 protected:
-    ImageViewerPlugin&          _imageViewerPlugin;             /** Reference to image viewer plugin */
-    DatasetRef<hdps::DataSet>   _sourceDataset;                 /** Reference to source dataset */
-    DatasetRef<Images>          _sourceImagesDataset;           /** Reference to the source images dataset */
-    QRect                       _sourceRectangle;               /** Source rectangle (if a source images dataset is found) */
-    StringAction                _datasetNameAction;             /** Images dataset name action */
-    IntegralAction              _imageWidthAction;              /** Image width action */
-    IntegralAction              _imageHeightAction;             /** Image height action */
-    IntegralAction              _numberOfImagesAction;          /** Number of images action */
-    StringAction                _numberOfPixelsAction;          /** Number of pixels action */
-    GroupAction                 _groupAction;                   /** Group action */
-    QString                     _targetImagesDatasetName;       /** Name of the target images dataset */
+    ImageViewerPlugin&                  _imageViewerPlugin;             /** Reference to image viewer plugin */
+    hdps::Dataset<hdps::DatasetImpl>    _sourceDataset;                 /** Reference to source dataset */
+    hdps::Dataset<Images>               _sourceImagesDataset;           /** Reference to the source images dataset */
+    hdps::Dataset<Images>               _targetImagesDataset;           /** Reference to the target images dataset */
+    QRect                               _sourceRectangle;               /** Source rectangle (if a source images dataset is found) */
+    StringAction                        _datasetNameAction;             /** Images dataset name action */
+    IntegralAction                      _imageWidthAction;              /** Image width action */
+    IntegralAction                      _imageHeightAction;             /** Image height action */
+    IntegralAction                      _numberOfImagesAction;          /** Number of images action */
+    StringAction                        _numberOfPixelsAction;          /** Number of pixels action */
+    GroupAction                         _groupAction;                   /** Group action */
 };

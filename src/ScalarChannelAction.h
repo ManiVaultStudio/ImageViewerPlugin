@@ -5,8 +5,6 @@
 #include "actions/OptionAction.h"
 #include "actions/WindowLevelAction.h"
 
-#include "util/DatasetRef.h"
-
 #include "ImageData/Images.h"
 
 using namespace hdps::gui;
@@ -99,8 +97,8 @@ protected:
     /** Compute mask channel */
     void computeMaskChannel();
 
-    /** Get reference to images dataset */
-    DatasetRef<Images>& getImages();
+    /** Get smart pointer to images dataset */
+    hdps::Dataset<Images> getImages();
 
 signals:
     

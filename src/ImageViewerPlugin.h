@@ -9,6 +9,7 @@
 #include "SettingsAction.h"
 
 #include "widgets/DropWidget.h"
+#include "Set.h"
 
 #include <QItemSelectionModel>
 #include <QSplitter>
@@ -35,6 +36,18 @@ public: // Inherited from ViewPlugin
     /** Initializes the plugin */
     void init() override;
 
+    /**
+     * Load one (or more datasets in the view)
+     * @param datasets Dataset(s) to load
+     */
+    void loadData(const hdps::Datasets& datasets);
+
+    /**
+     * Add dataset to the viewer
+     * @param dataset Smart pointer to images dataset
+     */
+    void addDataset(const hdps::Dataset<Images>& dataset);
+
 public: // Miscellaneous
 
     /** Get the layers model */
@@ -59,9 +72,9 @@ protected:
 
     /**
      * Converts a non-images dataset to an images dataset and adds the created dataset as a layer
-     * @param datasetName Name of the dataset
+     * @param dataset Smart pointer to the dataset that will be converted and added
      */
-    void immigrateDataset(const QString& datasetName);
+    void immigrateDataset(const hdps::Dataset<hdps::DatasetImpl>& dataset);
 
 public: // Action getters
 

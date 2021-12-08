@@ -189,7 +189,7 @@ void ScalarChannelAction::computeMaskChannel()
     std::fill(_scalarData.begin(), _scalarData.end(), 1.0f);
 }
 
-DatasetRef<Images>& ScalarChannelAction::getImages()
+Dataset<Images> ScalarChannelAction::getImages()
 {
     return _imageAction.getLayer().getImages();
 }

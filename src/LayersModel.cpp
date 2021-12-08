@@ -2,6 +2,7 @@
 #include "Application.h"
 
 #include "util/Exception.h"
+#include "event/Event.h"
 
 #include "PointData.h"
 
@@ -26,7 +27,7 @@ LayersModel::LayersModel(QObject* parent) :
         {
             case EventType::DataRemoved:
             {
-                removeLayer(dataEvent->dataSetName);
+                removeLayer(dataEvent->getDataset()->getGuid());
                 break;
             }
 
@@ -42,7 +43,7 @@ LayersModel::LayersModel(QObject* parent) :
         {
             case EventType::DataRemoved:
             {
-                removeLayer(dataEvent->dataSetName);
+                removeLayer(dataEvent->getDataset()->getGuid());
                 break;
             }
 
@@ -515,15 +516,15 @@ void LayersModel::removeLayer(const QModelIndex& layerModelIndex)
     removeLayer(layerModelIndex.row());
 }
 
-void LayersModel::removeLayer(const QString& datasetName)
+void LayersModel::removeLayer(const QString& datasetId)
 {
     try
     {
-        if (datasetName.isEmpty())
-            throw std::runtime_error("Dataset name is empty");
+        if (datasetId.isEmpty())
+            throw std::runtime_error("Dataset UID is empty");
 
         for (const auto& layer : _layers) {
-            if (datasetName == layer->getImagesDatasetName())
+            if (layer->getImagesDatasetId() == datasetId)
                 removeLayer(_layers.indexOf(layer));
         }
     }
@@ -610,16 +611,16 @@ QVector<Layer*>& LayersModel::getLayers()
     return _layers;
 }
 
-Layer* LayersModel::getLayerByDatasetName(const QString& datasetName)
+Layer& LayersModel::getLayerByDatasetId(const QString& datasetId)
 {
     try
     {
-        if (datasetName.isEmpty())
-            throw std::runtime_error("Dataset name is empty");
+        if (datasetId.isEmpty())
+            throw std::runtime_error("Dataset UUID is empty");
 
         for (const auto& layer : _layers) {
-            if (datasetName == layer->getImagesDatasetName())
-                return layer;
+            if (layer->getImagesDatasetId() == datasetId)
+                return *layer;
         }
     }
     catch (std::exception& e)
@@ -629,8 +630,6 @@ Layer* LayersModel::getLayerByDatasetName(const QString& datasetName)
     catch (...) {
         exceptionMessageBox("Unable to get layer from the layers model");
     }
-
-    return nullptr;
 }
 
 QIcon LayersModel::getColorIcon(const QColor& color) const

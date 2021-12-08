@@ -3,6 +3,7 @@
 
 #include "util/ColorSpace.h"
 #include "util/Interpolation.h"
+#include "event/Event.h"
 
 #include "PointData.h"
 #include "ClusterData.h"
@@ -154,11 +155,11 @@ ImageAction::ImageAction(Layer& layer) :
     registerDataEventByType(PointType, [this, updateScalarChannels](DataEvent* dataEvent) {
 
         // The points dataset might have been deleted so check first if it is valid
-        if (_layer.getSourceDataset() == nullptr)
+        if (!_layer.getSourceDataset().isValid())
             return;
 
         // Only process points dataset that is referenced by us
-        if (dataEvent->dataSetName != _layer.getSourceDataset()->getName())
+        if (dataEvent->getDataset() != _layer.getSourceDataset())
             return;
 
         switch (dataEvent->getType())
@@ -170,7 +171,7 @@ ImageAction::ImageAction(Layer& layer) :
                 break;
             }
 
-            case EventType::SelectionChanged:
+            case EventType::DataSelectionChanged:
             {
                 _layer.computeSelectionIndices();
                 break;
@@ -185,11 +186,11 @@ ImageAction::ImageAction(Layer& layer) :
     registerDataEventByType(ClusterType, [this, updateScalarChannels](DataEvent* dataEvent) {
 
         // The points dataset might have been deleted so check first if it is valid
-        if (_layer.getSourceDataset() == nullptr)
+        if (!_layer.getSourceDataset().isValid())
             return;
 
         // Only process points dataset that is referenced by us
-        if (dataEvent->dataSetName != _layer.getSourceDataset()->getName())
+        if (dataEvent->getDataset() != _layer.getSourceDataset())
             return;
 
         switch (dataEvent->getType())
@@ -201,7 +202,7 @@ ImageAction::ImageAction(Layer& layer) :
                 break;
             }
 
-            case EventType::SelectionChanged:
+            case EventType::DataSelectionChanged:
             {
                 _layer.computeSelectionIndices();
                 break;
