@@ -198,7 +198,7 @@ void SelectionToolProp::compute(const QVector<QPoint>& mousePositions)
             selectionToolOffScreenShaderProgram->setUniformValue("transform", transform);
             selectionToolOffScreenShaderProgram->setUniformValue("selectionType", selectionType);
             selectionToolOffScreenShaderProgram->setUniformValue("imageSize", fboSize.width(), fboSize.height());
-            
+
             // Get number of mouse positions
             const auto numberOfMousePositions = mousePositions.size();
 
@@ -285,6 +285,28 @@ void SelectionToolProp::compute(const QVector<QPoint>& mousePositions)
 
                     // Convert sample 2D screen position to world position
                     QList<QVector2D> points{ getRenderer().getScreenPointToWorldPosition(modelViewMatrix, mousePositions.first()).toVector2D() };
+
+                    // Assign sample point to shader
+                    selectionToolOffScreenShaderProgram->setUniformValueArray("points", &points[0], static_cast<std::int32_t>(points.size()));
+
+                    // Draw off-screen 
+                    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+                    break;
+                }
+
+                case PixelSelectionType::ROI:
+                {
+                    // Compute UV coordinates of viewing rectangle
+                    const auto roiTopLeft       = getRenderer().getScreenPointToWorldPosition(modelViewMatrix, QPoint(0, getRenderer().getParentWidgetSize().height()));
+                    const auto roiBottomRight   = getRenderer().getScreenPointToWorldPosition(modelViewMatrix, QPoint(getRenderer().getParentWidgetSize().width(), 0));
+                    const auto roiTopLeftUV     = QVector2D(roiTopLeft.x() / fboSize.width(), roiTopLeft.y() / fboSize.height());
+                    const auto roiBottomRightUV = QVector2D(roiBottomRight.x() / fboSize.width(), roiBottomRight.y() / fboSize.height());
+
+                    QList<QVector2D> points {
+                        roiTopLeftUV,
+                        roiBottomRightUV
+                    };
 
                     // Assign sample point to shader
                     selectionToolOffScreenShaderProgram->setUniformValueArray("points", &points[0], static_cast<std::int32_t>(points.size()));

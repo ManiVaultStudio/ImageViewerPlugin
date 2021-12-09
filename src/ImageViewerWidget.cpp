@@ -222,6 +222,9 @@ bool ImageViewerWidget::eventFilter(QObject* target, QEvent* event)
                             break;
                         }
 
+                        case PixelSelectionType::ROI:
+                            break;
+
                         default:
                             break;
                     }

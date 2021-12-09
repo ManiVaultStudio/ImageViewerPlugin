@@ -7,13 +7,21 @@
 
 using namespace hdps::util;
 
+const auto allowedPixelSelectionTypes = PixelSelectionTypes({
+    PixelSelectionType::Rectangle,
+    PixelSelectionType::Brush,
+    PixelSelectionType::Lasso,
+    PixelSelectionType::Polygon,
+    PixelSelectionType::Sample,
+    PixelSelectionType::ROI
+});
+
 SelectionAction::SelectionAction(Layer& layer, QWidget* targetWidget, PixelSelectionTool& pixelSelectionTool) :
-    PixelSelectionAction(&layer, targetWidget, pixelSelectionTool, PixelSelectionTypes({ PixelSelectionType::Rectangle, PixelSelectionType::Brush, PixelSelectionType::Polygon, PixelSelectionType::Lasso, PixelSelectionType::Sample })),
+    PixelSelectionAction(&layer, targetWidget, pixelSelectionTool, allowedPixelSelectionTypes),
     _layer(layer),
     _targetWidget(targetWidget),
     _pixelSelectionTool(pixelSelectionTool),
     _showRegionAction(this, "Show selected region", false, false),
-    _selectPixelsInViewAction(this, "Select pixels in view", false, false),
     _groupAction(this, false)
 {
     setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("mouse-pointer"));
@@ -26,7 +34,6 @@ SelectionAction::SelectionAction(Layer& layer, QWidget* targetWidget, PixelSelec
     _groupAction << _overlayColor;
     _groupAction << _overlayOpacity;
     _groupAction << _notifyDuringSelectionAction;
-    _groupAction << _selectPixelsInViewAction;
 
     // Re-render when the overlay color, overlay opacity or show region changes
     connect(&_overlayColor, &ColorAction::colorChanged, &_layer, &Layer::invalidate);

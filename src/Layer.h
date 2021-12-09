@@ -129,7 +129,7 @@ public: // Selection
      * Compute selection
      * @param mousePositions Mouse positions
      */
-    void computeSelection(const QVector<QPoint>& mousePositions);
+    void computeSelection(const QVector<QPoint>& mousePositions = QVector<QPoint>());
 
     /** Publish selection */
     void publishSelection();
