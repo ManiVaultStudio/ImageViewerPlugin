@@ -56,6 +56,9 @@ public:
     /** De-activate the layer */
     void deactivate();
 
+    /** Get whether the layer is active or not */
+    bool isActive() const;
+
     /** Invalidates the prop (triggers a re-render of all layers) */
     void invalidate();
 
@@ -129,7 +132,7 @@ public: // Selection
      * Compute selection
      * @param mousePositions Mouse positions
      */
-    void computeSelection(const QVector<QPoint>& mousePositions);
+    void computeSelection(const QVector<QPoint>& mousePositions = QVector<QPoint>());
 
     /** Publish selection */
     void publishSelection();

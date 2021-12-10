@@ -85,7 +85,7 @@ ZoomToolbarAction::ZoomToolbarAction(ImageViewerPlugin& imageViewerPlugin) :
         _zoomInAction.setEnabled(zoomPercentage < _zoomPercentageAction.getMaximum());
     };
 
-    connect(&getImageViewerWidget().getRenderer(), &Renderer::zoomRectangleChanged, this, [this, updateZoomPercentage]() {
+    connect(&getImageViewerWidget().getRenderer(), &LayersRenderer::zoomRectangleChanged, this, [this, updateZoomPercentage]() {
         updateZoomPercentage();
     });
 

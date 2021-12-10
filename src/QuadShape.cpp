@@ -1,6 +1,6 @@
 #include "QuadShape.h"
 #include "Prop.h"
-#include "Renderer.h"
+#include "LayersRenderer.h"
 
 #include <QDebug>
 

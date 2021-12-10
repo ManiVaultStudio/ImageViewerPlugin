@@ -1,6 +1,6 @@
 #include "ImageProp.h"
 #include "QuadShape.h"
-#include "Renderer.h"
+#include "LayersRenderer.h"
 
 #include "util/FileUtil.h"
 #include "util/Interpolation.h"

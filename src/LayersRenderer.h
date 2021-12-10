@@ -22,7 +22,7 @@ class Renderable;
  *
  * @author Thomas Kroes
  */
-class Renderer : public QObject, public hdps::Renderer
+class LayersRenderer : public QObject, public hdps::Renderer
 {
     Q_OBJECT
 
@@ -35,7 +35,7 @@ public: // Construction
      * Constructor
      * @param parentWidget Parent OpenGL image viewer widget
      */
-    Renderer(QOpenGLWidget* parent);
+    LayersRenderer(QOpenGLWidget* parent);
 
     /** Initialize the renderer */
     void init() override;

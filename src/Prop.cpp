@@ -1,5 +1,5 @@
 #include "Prop.h"
-#include "Renderer.h"
+#include "LayersRenderer.h"
 #include "Renderable.h"
 #include "Shape.h"
 
@@ -72,7 +72,7 @@ void Prop::render(const QMatrix4x4& modelViewProjectionMatrix)
     qDebug() << "Render not implemented in prop";
 }
 
-Renderer& Prop::getRenderer()
+LayersRenderer& Prop::getRenderer()
 {
     return _renderable.getRenderer();
 }

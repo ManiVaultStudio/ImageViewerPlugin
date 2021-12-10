@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Renderer.h"
+#include "LayersRenderer.h"
 
 #include "util/PixelSelectionTool.h"
 
@@ -75,7 +75,7 @@ public:
     }
 
     /** Get a reference to the pixel selection tool */
-    Renderer& getRenderer() {
+    LayersRenderer& getRenderer() {
         return _renderer;
     }
 
@@ -143,8 +143,14 @@ signals:
      */
     void interactionModeChanged(const InteractionMode& interactionMode);
 
+    /** Signals that the viewport navigation started */
+    void navigationStarted();
+
     /** Signals that the viewport has changed */
     void viewportChanged();
+
+    /** Signals that the viewport navigation ended */
+    void navigationEnded();
 
 protected:
     ImageViewerPlugin&                      _imageViewerPlugin;         /** Reference to image viewer plugin */
@@ -155,6 +161,6 @@ protected:
     std::int32_t                            _keys;                      /** Currently pressed keyboard keys */
     QVector<QPoint>                         _mousePositions;            /** Recorded mouse positions */
     int                                     _mouseButtons;              /** State of the left, middle and right mouse buttons */
-    Renderer                                _renderer;                  /** Layers OpenGL renderer */
+    LayersRenderer                                _renderer;                  /** Layers OpenGL renderer */
     InteractionMode                         _interactionMode;           /** Interaction mode e.g. navigation and layer editing */
 };

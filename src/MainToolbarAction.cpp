@@ -20,6 +20,7 @@ MainToolbarAction::MainToolbarAction(ImageViewerPlugin& imageViewerPlugin) :
     _lassoSelectionAction(this, "Lasso selection"),
     _polygonSelectionAction(this, "Polygon selection"),
     _sampleSelectionAction(this, "Sample selection"),
+    _roiSelectionAction(this, "ROI selection"),
     _subsetAction(imageViewerPlugin),
     _exportToImageAction(this, ""),
     _interactionModeActionGroup(this),
@@ -36,11 +37,12 @@ MainToolbarAction::MainToolbarAction(ImageViewerPlugin& imageViewerPlugin) :
 
     _panAction.setIcon(fontAwesome.getIcon("arrows-alt"));
     _selectAction.setIcon(fontAwesome.getIcon("mouse-pointer"));
-    _rectangleSelectionAction.setIcon(PixelSelectionTool::getIcon(PixelSelectionType::Rectangle));
-    _brushSelectionAction.setIcon(PixelSelectionTool::getIcon(PixelSelectionType::Brush));
-    _lassoSelectionAction.setIcon(PixelSelectionTool::getIcon(PixelSelectionType::Lasso));
-    _polygonSelectionAction.setIcon(PixelSelectionTool::getIcon(PixelSelectionType::Polygon));
-    _sampleSelectionAction.setIcon(PixelSelectionTool::getIcon(PixelSelectionType::Sample));
+    _rectangleSelectionAction.setIcon(getPixelSelectionTypeIcon(PixelSelectionType::Rectangle));
+    _brushSelectionAction.setIcon(getPixelSelectionTypeIcon(PixelSelectionType::Brush));
+    _lassoSelectionAction.setIcon(getPixelSelectionTypeIcon(PixelSelectionType::Lasso));
+    _polygonSelectionAction.setIcon(getPixelSelectionTypeIcon(PixelSelectionType::Polygon));
+    _sampleSelectionAction.setIcon(getPixelSelectionTypeIcon(PixelSelectionType::Sample));
+    _roiSelectionAction.setIcon(getPixelSelectionTypeIcon(PixelSelectionType::ROI));
     _exportToImageAction.setIcon(fontAwesome.getIcon("camera"));
     
     _interactionModeActionGroup.addAction(&_panAction);
@@ -62,8 +64,8 @@ MainToolbarAction::MainToolbarAction(ImageViewerPlugin& imageViewerPlugin) :
     const auto updateInteractionActions = [this]() -> void {
         const auto inSelectionMode = getImageViewerWidget().getInteractionMode() == ImageViewerWidget::InteractionMode::Selection;
 
-        _panAction.setChecked(!inSelectionMode);
-        _selectAction.setChecked(inSelectionMode);
+        //_panAction.setChecked(!inSelectionMode);
+        //_selectAction.setChecked(inSelectionMode);
 
         // Determine whether selection may take place
         const auto maySelect = inSelectionMode && !_imageViewerPlugin.getSelectionModel().selectedRows().isEmpty();
@@ -138,6 +140,13 @@ void MainToolbarAction::setupInteraction()
             selectedLayer->getSelectionAction().getSampleAction().setChecked(toggled);
     });
 
+    connect(&_roiSelectionAction, &ToggleAction::toggled, this, [this, getSelectedLayer](bool toggled) {
+        auto selectedLayer = getSelectedLayer();
+
+        if (selectedLayer)
+            selectedLayer->getSelectionAction().getRoiAction().setChecked(toggled);
+    });
+
     connect(&_imageViewerPlugin.getSelectionModel(), &QItemSelectionModel::selectionChanged, this, [this](const QItemSelection& newSelection, const QItemSelection& oldSelection) {
 
         // Process deselected layers
@@ -155,6 +164,7 @@ void MainToolbarAction::setupInteraction()
             disconnect(&selectionAction.getLassoAction(), &ToggleAction::toggled, this, nullptr);
             disconnect(&selectionAction.getPolygonAction(), &ToggleAction::toggled, this, nullptr);
             disconnect(&selectionAction.getSampleAction(), &ToggleAction::toggled, this, nullptr);
+            disconnect(&selectionAction.getRoiAction(), &ToggleAction::toggled, this, nullptr);
         }
 
         // Process selected layers
@@ -173,6 +183,7 @@ void MainToolbarAction::setupInteraction()
                 _lassoSelectionAction.setChecked(selectionAction.getLassoAction().isChecked());
                 _polygonSelectionAction.setChecked(selectionAction.getPolygonAction().isChecked());
                 _sampleSelectionAction.setChecked(selectionAction.getSampleAction().isChecked());
+                _roiSelectionAction.setChecked(selectionAction.getRoiAction().isChecked());
             };
 
             connect(&selectionAction.getRectangleAction(), &ToggleAction::toggled, this, updateSelectionActions);
@@ -180,6 +191,7 @@ void MainToolbarAction::setupInteraction()
             connect(&selectionAction.getLassoAction(), &ToggleAction::toggled, this, updateSelectionActions);
             connect(&selectionAction.getPolygonAction(), &ToggleAction::toggled, this, updateSelectionActions);
             connect(&selectionAction.getSampleAction(), &ToggleAction::toggled, this, updateSelectionActions);
+            connect(&selectionAction.getRoiAction(), &ToggleAction::toggled, this, updateSelectionActions);
 
             // Do an initial update when the layer is selected
             updateSelectionActions();
@@ -214,6 +226,7 @@ MainToolbarAction::Widget::Widget(QWidget* parent, MainToolbarAction* interactio
     layout->addWidget(interactionAction->getLassoSelectionAction().createWidget(this, ToggleAction::PushButtonIcon));
     layout->addWidget(interactionAction->getPolygonSelectionAction().createWidget(this, ToggleAction::PushButtonIcon));
     layout->addWidget(interactionAction->getSampleSelectionAction().createWidget(this, ToggleAction::PushButtonIcon));
+    layout->addWidget(interactionAction->getRoiSelectionAction().createWidget(this, ToggleAction::PushButtonIcon));
     layout->addWidget(getDivider());
     layout->addWidget(interactionAction->getSubsetAction().createCollapsedWidget(this));
     layout->addStretch(1);

@@ -114,6 +114,8 @@ void main(void)
     vec2 P = uv * imageSize;
 
     switch (selectionType) {
+
+        // Rectangle
         case 0:
         {
             bool inRectangle    = uv.x >= rectangleTopLeft.x && uv.x < rectangleBottomRight.x && uv.y >= rectangleTopLeft.y && uv.y < rectangleBottomRight.y;
@@ -121,6 +123,7 @@ void main(void)
             break;
         }
 
+        // Brush
         case 1:
         {
             bool inBrush        = length(P - currentBrushCenter) < brushRadius;
@@ -144,6 +147,7 @@ void main(void)
             break;
         }
 
+        // Lasso and polygon
         case 2:
         case 3:
         {
@@ -151,9 +155,18 @@ void main(void)
             break;
         }
 
+        // Sample
         case 4:
         {
             fragmentColor = floor(P) == floor(points[0]) ? vec4(1) : vec4(vec3(0), 1);
+            break;
+        }
+
+        // Region of interest
+        case 5:
+        {
+            bool inROI      = (uv.x >= points[0].x && uv.x <= points[1].x) && (uv.y >= points[0].y && uv.y <= points[1].y);
+            fragmentColor   = inROI ? vec4(1) : vec4(vec3(0), 1);
             break;
         }
     }

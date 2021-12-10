@@ -1,16 +1,16 @@
 #include "Renderable.h"
-#include "Renderer.h"
+#include "LayersRenderer.h"
 
 #include <QDebug>
 
-Renderable::Renderable(Renderer& renderer) :
+Renderable::Renderable(LayersRenderer& renderer) :
     _renderer(renderer),
     _modelMatrix(),
     _props()
 {
 }
 
-Renderer& Renderable::getRenderer()
+LayersRenderer& Renderable::getRenderer()
 {
     return _renderer;
 }

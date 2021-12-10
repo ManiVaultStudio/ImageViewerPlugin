@@ -1,7 +1,7 @@
 #include "SelectionProp.h"
 #include "QuadShape.h"
 #include "LayersModel.h"
-#include "Renderer.h"
+#include "LayersRenderer.h"
 #include "ImageViewerPlugin.h"
 #include "SettingsAction.h"
 

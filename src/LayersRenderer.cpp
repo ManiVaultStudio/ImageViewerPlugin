@@ -1,4 +1,4 @@
-#include "Renderer.h"
+#include "LayersRenderer.h"
 #include "Renderable.h"
 
 #include <QtMath>
@@ -13,7 +13,7 @@
 
 #include <stdexcept>
 
-Renderer::Renderer(QOpenGLWidget* parent) :
+LayersRenderer::LayersRenderer(QOpenGLWidget* parent) :
     QObject(parent),
     hdps::Renderer(),
     _zoomSensitivity(0.1f),
@@ -43,32 +43,32 @@ Renderer::Renderer(QOpenGLWidget* parent) :
     _zoomRectangleSizeAnimation.setEasingCurve(easingCurve);
 
     // Re-render when the zoom rectangle changes
-    connect(this, &Renderer::zoomRectangleChanged, this, [this]() {
+    connect(this, &LayersRenderer::zoomRectangleChanged, this, [this]() {
         getParentWidget()->update();
     });
 }
 
-void Renderer::init()
+void LayersRenderer::init()
 {
 }
 
-void Renderer::render()
+void LayersRenderer::render()
 {
     static_cast<QOpenGLWidget*>(parent())->update();
 }
 
-QVector3D Renderer::getScreenPointToWorldPosition(const QMatrix4x4& modelViewMatrix, const QPoint& screenPoint) const
+QVector3D LayersRenderer::getScreenPointToWorldPosition(const QMatrix4x4& modelViewMatrix, const QPoint& screenPoint) const
 {
     return QVector3D(screenPoint.x(), getParentWidgetSize().height()- screenPoint.y(), 0).unproject(modelViewMatrix, getProjectionMatrix(), QRect(0, 0, getParentWidgetSize().width(), getParentWidgetSize().height()));
 }
 
-QVector2D Renderer::getWorldPositionToNormalizedScreenPoint(const QVector3D& position) const
+QVector2D LayersRenderer::getWorldPositionToNormalizedScreenPoint(const QVector3D& position) const
 {
     const auto clipSpacePos = getProjectionMatrix() * (getViewMatrix() * QVector4D(position, 1.0));
     return (clipSpacePos.toVector3D() / clipSpacePos.w()).toVector2D();
 }
 
-QPoint Renderer::getWorldPositionToScreenPoint(const QVector3D& position) const
+QPoint LayersRenderer::getWorldPositionToScreenPoint(const QVector3D& position) const
 {
     const auto normalizedScreenPoint    = QVector2D(1.0f, -1.0f) * getWorldPositionToNormalizedScreenPoint(position);
     const auto viewSize                 = QVector2D(getParentWidgetSize().width(), getParentWidgetSize().height());
@@ -76,13 +76,13 @@ QPoint Renderer::getWorldPositionToScreenPoint(const QVector3D& position) const
     return (viewSize * ((QVector2D(1.0f, 1.0f) + normalizedScreenPoint) / 2.0f)).toPoint();
 }
 
-QVector2D Renderer::getScreenPointToNormalizedScreenPoint(const QVector2D& screenPoint) const
+QVector2D LayersRenderer::getScreenPointToNormalizedScreenPoint(const QVector2D& screenPoint) const
 {
     const auto viewSize = QVector2D(getParentWidgetSize().width(), getParentWidgetSize().height());
     return QVector2D(-1.f, -1.f) + 2.f * (QVector2D(screenPoint.x(), getParentWidgetSize().height() - screenPoint.y()) / viewSize);
 }
 
-QMatrix4x4 Renderer::getScreenToNormalizedScreenMatrix() const
+QMatrix4x4 LayersRenderer::getScreenToNormalizedScreenMatrix() const
 {
     QMatrix4x4 translate, scale;
 
@@ -92,7 +92,7 @@ QMatrix4x4 Renderer::getScreenToNormalizedScreenMatrix() const
     return translate * scale;
 }
 
-QMatrix4x4 Renderer::getNormalizedScreenToScreenMatrix() const
+QMatrix4x4 LayersRenderer::getNormalizedScreenToScreenMatrix() const
 {
     QMatrix4x4 translate, scale;
 
@@ -105,7 +105,7 @@ QMatrix4x4 Renderer::getNormalizedScreenToScreenMatrix() const
     return translate * scale;
 }
 
-QMatrix4x4 Renderer::getViewMatrix() const
+QMatrix4x4 LayersRenderer::getViewMatrix() const
 {
     QMatrix4x4 lookAt, scale;
 
@@ -132,7 +132,7 @@ QMatrix4x4 Renderer::getViewMatrix() const
     return scale * lookAt;
 }
 
-QMatrix4x4 Renderer::getProjectionMatrix() const
+QMatrix4x4 LayersRenderer::getProjectionMatrix() const
 {
     // Compute half of the widget size
     const auto halfSize = getParentWidgetSize() / 2;
@@ -145,7 +145,7 @@ QMatrix4x4 Renderer::getProjectionMatrix() const
     return matrix;
 }
 
-QRect Renderer::getScreenRectangleFromWorldRectangle(const QRectF& worldBoundingRectangle) const
+QRect LayersRenderer::getScreenRectangleFromWorldRectangle(const QRectF& worldBoundingRectangle) const
 {
     // Compute screen bounding rectangle extremes
     const auto topLeftScreen        = getWorldPositionToScreenPoint(QVector3D(worldBoundingRectangle.bottomLeft()));
@@ -154,9 +154,9 @@ QRect Renderer::getScreenRectangleFromWorldRectangle(const QRectF& worldBounding
     return QRect(topLeftScreen, bottomRightScreen);
 }
 
-void Renderer::panBy(const QPointF& delta)
+void LayersRenderer::panBy(const QPointF& delta)
 {
-    qDebug() << "Pan by" << delta;
+    //qDebug() << "Pan by" << delta;
 
     const auto p1 = getScreenPointToWorldPosition(getViewMatrix(), QPoint()).toPointF() ;
     const auto p2 = getScreenPointToWorldPosition(getViewMatrix(), delta.toPoint()).toPointF() ;
@@ -166,7 +166,7 @@ void Renderer::panBy(const QPointF& delta)
     emit zoomRectangleChanged();
 }
 
-float Renderer::getZoomPercentage() const
+float LayersRenderer::getZoomPercentage() const
 {
     if (!_worldBoundingRectangle.isValid() || !getZoomRectangle().isValid())
         return 1.0f;
@@ -180,12 +180,12 @@ float Renderer::getZoomPercentage() const
     return scaleFactor;
 }
 
-void Renderer::setZoomPercentage(const float& zoomPercentage)
+void LayersRenderer::setZoomPercentage(const float& zoomPercentage)
 {
     if (zoomPercentage < 0.05f)
         return;
 
-    qDebug() << "Set zoom percentage" << zoomPercentage;
+    //qDebug() << "Set zoom percentage" << zoomPercentage;
 
     const auto viewerSize       = getParentWidgetSize();
     const auto viewerCenter     = getScreenPointToWorldPosition(getViewMatrix(), QPoint(viewerSize.width(), viewerSize.height()) / 2).toPointF();
@@ -200,36 +200,36 @@ void Renderer::setZoomPercentage(const float& zoomPercentage)
     emit zoomRectangleChanged();
 }
 
-float Renderer::getZoomSensitivity() const
+float LayersRenderer::getZoomSensitivity() const
 {
     return _zoomSensitivity;
 }
 
-float Renderer::getZoomMargin() const
+float LayersRenderer::getZoomMargin() const
 {
     return _zoomMargin;
 }
 
-void Renderer::setZoomMargin(const float& zoomMargin)
+void LayersRenderer::setZoomMargin(const float& zoomMargin)
 {
     _zoomMargin = zoomMargin;
 
     setZoomRectangle(_worldBoundingRectangle);
 }
 
-QRectF Renderer::getWorldBoundingBox() const
+QRectF LayersRenderer::getWorldBoundingBox() const
 {
     return _worldBoundingRectangle;
 }
 
-void Renderer::setWorldBoundingRectangle(const QRectF& worldBoundingRectangle)
+void LayersRenderer::setWorldBoundingRectangle(const QRectF& worldBoundingRectangle)
 {
     _worldBoundingRectangle = worldBoundingRectangle;
 }
 
-void Renderer::zoomAround(const QPoint& screenPoint, const float& factor)
+void LayersRenderer::zoomAround(const QPoint& screenPoint, const float& factor)
 {
-    qDebug() << "Zoom around" << screenPoint << "by" << factor;
+    //qDebug() << "Zoom around" << screenPoint << "by" << factor;
 
     const auto p1   = getScreenPointToWorldPosition(getViewMatrix(), screenPoint).toPointF();
     const auto v1   = getZoomRectangle().topLeft() - p1;
@@ -241,16 +241,18 @@ void Renderer::zoomAround(const QPoint& screenPoint, const float& factor)
     emit zoomRectangleChanged();
 }
 
-QRectF Renderer::getZoomRectangle() const
+QRectF LayersRenderer::getZoomRectangle() const
 {
     return QRectF(_zoomRectangleTopLeft, _zoomRectangleSize);
 }
 
-void Renderer::setZoomRectangle(const QRectF& zoomRectangle)
+void LayersRenderer::setZoomRectangle(const QRectF& zoomRectangle)
 {
     if (!getZoomRectangle().isValid() || !_animationEnabled) {
         _zoomRectangleTopLeft   = zoomRectangle.topLeft();
         _zoomRectangleSize      = zoomRectangle.size();
+
+        emit zoomRectangleChanged();
 
         return;
     }
@@ -267,37 +269,37 @@ void Renderer::setZoomRectangle(const QRectF& zoomRectangle)
     _parallelAnimationGroup.start();
 }
 
-bool Renderer::getAnimationEnabled() const
+bool LayersRenderer::getAnimationEnabled() const
 {
     return _animationEnabled;
 }
 
-void Renderer::setAnimationEnabled(const bool& animationEnabled)
+void LayersRenderer::setAnimationEnabled(const bool& animationEnabled)
 {
     _animationEnabled = animationEnabled;
 }
 
-void Renderer::bindOpenGLContext()
+void LayersRenderer::bindOpenGLContext()
 {
     getParentWidget()->makeCurrent();
 }
 
-void Renderer::releaseOpenGLContext()
+void LayersRenderer::releaseOpenGLContext()
 {
     getParentWidget()->doneCurrent();
 }
 
-QOpenGLWidget* Renderer::getParentWidget() const
+QOpenGLWidget* LayersRenderer::getParentWidget() const
 {
     return dynamic_cast<QOpenGLWidget*>(parent());
 }
 
-QOpenGLContext* Renderer::getOpenGLContext() const
+QOpenGLContext* LayersRenderer::getOpenGLContext() const
 {
     return getParentWidget()->context();
 }
 
-QSize Renderer::getParentWidgetSize() const
+QSize LayersRenderer::getParentWidgetSize() const
 {
     return getParentWidget()->size();
 }
