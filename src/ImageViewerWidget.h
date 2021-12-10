@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Renderer.h"
+#include "LayersRenderer.h"
 
 #include "util/PixelSelectionTool.h"
 

@@ -5,7 +5,7 @@
 #include "ImageProp.h"
 #include "SelectionProp.h"
 #include "SelectionToolProp.h"
-#include "Renderer.h"
+#include "LayersRenderer.h"
 
 #include "util/Exception.h"
 
@@ -129,7 +129,7 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const hdps::Dataset<Images>& 
         publishSelection();
     };
 
-    // Possibly select pixels when the viewport changes
+    // In ROI selection mode select pixels when the viewport changes
     connect(&_imageViewerPlugin.getImageViewerWidget().getRenderer(), &LayersRenderer::zoomRectangleChanged, this, [this, updateSelectionRoi]() {
         
         // Don't do anything when the layer is not active
