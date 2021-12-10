@@ -383,6 +383,10 @@ void Layer::paint(QPainter& painter, const PaintFlag& paintFlags)
         if (!_generalAction.getVisibleAction().isChecked())
             return;
 
+        // Don't paint in ROI selection mode
+        if (_selectionAction.getTypeAction().getCurrentIndex() == static_cast<std::int16_t>(PixelSelectionType::ROI))
+            return;
+
         // Get image prop screen bounding rectangle
         const auto propRectangle = getPropByName<ImageProp>("ImageProp")->getScreenBoundingRectangle();
 
