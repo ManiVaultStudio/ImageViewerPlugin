@@ -191,8 +191,16 @@ void Layer::render(const QMatrix4x4& modelViewProjectionMatrix)
             return;
 
         // Render props
-        for (auto prop : _props)
+        for (auto prop : _props) {
+
+            // Do not render the selection prop and selection tool prop in ROI selection mode
+            if (prop->getName() == "SelectionProp" || prop->getName() == "SelectionToolProp")
+                if (_selectionAction.getTypeAction().getCurrentIndex() == static_cast<std::int16_t>(PixelSelectionType::ROI))
+                    continue;
+
+            // Render the prop
             prop->render(modelViewProjectionMatrix);
+        }
     }
     catch (std::exception& e)
     {
@@ -383,10 +391,6 @@ void Layer::paint(QPainter& painter, const PaintFlag& paintFlags)
         if (!_generalAction.getVisibleAction().isChecked())
             return;
 
-        // Don't paint in ROI selection mode
-        if (_selectionAction.getTypeAction().getCurrentIndex() == static_cast<std::int16_t>(PixelSelectionType::ROI))
-            return;
-
         // Get image prop screen bounding rectangle
         const auto propRectangle = getPropByName<ImageProp>("ImageProp")->getScreenBoundingRectangle();
 
@@ -404,8 +408,8 @@ void Layer::paint(QPainter& painter, const PaintFlag& paintFlags)
             painter.drawRect(propRectangle);
         }
 
-        // Draw layer selection rectangle
-        if ((paintFlags & Layer::SelectionRectangle) && _imageSelectionRectangle.isValid()) {
+        // Draw layer selection rectangle (if not in ROI selection mode)
+        if ((paintFlags & Layer::SelectionRectangle) && _imageSelectionRectangle.isValid() && _selectionAction.getTypeAction().getCurrentIndex() != static_cast<std::int16_t>(PixelSelectionType::ROI)) {
 
             // Create perimeter pen
             auto perimeterPen = QPen(QBrush(_imageViewerPlugin.getImageViewerWidget().getPixelSelectionTool().getMainColor()), 0.7f);
