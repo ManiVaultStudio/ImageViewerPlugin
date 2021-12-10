@@ -56,6 +56,9 @@ public:
     /** De-activate the layer */
     void deactivate();
 
+    /** Get whether the layer is active or not */
+    bool isActive() const;
+
     /** Invalidates the prop (triggers a re-render of all layers) */
     void invalidate();
 

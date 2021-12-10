@@ -588,7 +588,7 @@ void ImageViewerWidget::paintGL()
             {
                 glEnable(GL_BLEND);
                 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-                    
+
                 layer->render(_renderer.getProjectionMatrix() * _renderer.getViewMatrix());
             }
             painter.endNativePainting();
@@ -597,14 +597,34 @@ void ImageViewerWidget::paintGL()
             layer->paint(painter, Layer::SelectionRectangle);
         }
 
+        Layer* activeLayer = nullptr;
+        
         // Draw the layer label and layer bounds with native rendering
-        for (auto& layer : layersSorted) {
+        for (auto layer : layersSorted) {
             layer->paint(painter, Layer::Bounds);
             layer->paint(painter, Layer::Label);
+
+            if (layer->isActive())
+                activeLayer = layer;
         }
 
         // Draw the pixel selection tool overlays if the pixel selection tool is enabled
         if (_pixelSelectionTool.isEnabled()) {
+
+            // Draw the area and shape pixmaps in the viewport
+            painter.drawPixmap(rect(), _pixelSelectionTool.getAreaPixmap());
+            painter.drawPixmap(rect(), _pixelSelectionTool.getShapePixmap());
+        }
+
+        if (activeLayer && static_cast<PixelSelectionType>(activeLayer->getSelectionAction().getTypeAction().getCurrentIndex()) == PixelSelectionType::ROI) {
+
+            // Prevent infinite updates
+            QSignalBlocker pixelSelectionToolBlocker(&_pixelSelectionTool);
+
+            // Force paint in selection tool because it does not rely on mouse input
+            _pixelSelectionTool.update();
+
+            // Draw the area and shape pixmaps in the viewport
             painter.drawPixmap(rect(), _pixelSelectionTool.getAreaPixmap());
             painter.drawPixmap(rect(), _pixelSelectionTool.getShapePixmap());
         }
@@ -689,12 +709,15 @@ ImageViewerWidget::InteractionMode ImageViewerWidget::getInteractionMode() const
 
 void ImageViewerWidget::setInteractionMode(const InteractionMode& interactionMode)
 {
+    if (interactionMode == _interactionMode)
+        return;
+
     qDebug() << "Set interaction mode to" << interactionModes.value(interactionMode);
 
     _interactionMode = interactionMode;
 
     // Enable/disable the pixel selection tool depending on the interaction mode
-    _pixelSelectionTool.setEnabled(_interactionMode == Selection);
+    //_pixelSelectionTool.setEnabled(_interactionMode == Selection);
 
     // Provide a visual cursor cue
     setCursor(_interactionMode == Selection ? Qt::ArrowCursor : Qt::OpenHandCursor);

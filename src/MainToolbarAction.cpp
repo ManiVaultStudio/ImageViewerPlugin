@@ -64,8 +64,8 @@ MainToolbarAction::MainToolbarAction(ImageViewerPlugin& imageViewerPlugin) :
     const auto updateInteractionActions = [this]() -> void {
         const auto inSelectionMode = getImageViewerWidget().getInteractionMode() == ImageViewerWidget::InteractionMode::Selection;
 
-        _panAction.setChecked(!inSelectionMode);
-        _selectAction.setChecked(inSelectionMode);
+        //_panAction.setChecked(!inSelectionMode);
+        //_selectAction.setChecked(inSelectionMode);
 
         // Determine whether selection may take place
         const auto maySelect = inSelectionMode && !_imageViewerPlugin.getSelectionModel().selectedRows().isEmpty();

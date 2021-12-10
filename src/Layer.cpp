@@ -351,6 +351,11 @@ void Layer::deactivate()
     }
 }
 
+bool Layer::isActive() const
+{
+    return _active;
+}
+
 void Layer::invalidate()
 {
     _imageViewerPlugin.getImageViewerWidget().update();

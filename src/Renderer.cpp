@@ -156,7 +156,7 @@ QRect Renderer::getScreenRectangleFromWorldRectangle(const QRectF& worldBounding
 
 void Renderer::panBy(const QPointF& delta)
 {
-    qDebug() << "Pan by" << delta;
+    //qDebug() << "Pan by" << delta;
 
     const auto p1 = getScreenPointToWorldPosition(getViewMatrix(), QPoint()).toPointF() ;
     const auto p2 = getScreenPointToWorldPosition(getViewMatrix(), delta.toPoint()).toPointF() ;
@@ -185,7 +185,7 @@ void Renderer::setZoomPercentage(const float& zoomPercentage)
     if (zoomPercentage < 0.05f)
         return;
 
-    qDebug() << "Set zoom percentage" << zoomPercentage;
+    //qDebug() << "Set zoom percentage" << zoomPercentage;
 
     const auto viewerSize       = getParentWidgetSize();
     const auto viewerCenter     = getScreenPointToWorldPosition(getViewMatrix(), QPoint(viewerSize.width(), viewerSize.height()) / 2).toPointF();
