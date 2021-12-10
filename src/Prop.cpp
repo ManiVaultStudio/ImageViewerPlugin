@@ -72,7 +72,7 @@ void Prop::render(const QMatrix4x4& modelViewProjectionMatrix)
     qDebug() << "Render not implemented in prop";
 }
 
-Renderer& Prop::getRenderer()
+LayersRenderer& Prop::getRenderer()
 {
     return _renderable.getRenderer();
 }

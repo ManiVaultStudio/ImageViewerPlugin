@@ -5,6 +5,7 @@
 #include "ImageProp.h"
 #include "SelectionProp.h"
 #include "SelectionToolProp.h"
+#include "Renderer.h"
 
 #include "util/Exception.h"
 
@@ -15,8 +16,6 @@
 #include <QFontMetrics>
 
 #include <set>
-
-using namespace hdps;
 
 Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const hdps::Dataset<Images>& imagesDataset) :
     QObject(&imageViewerPlugin),
@@ -131,7 +130,7 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const hdps::Dataset<Images>& 
     };
 
     // Possibly select pixels when the viewport changes
-    connect(&_imageViewerPlugin.getImageViewerWidget(), &ImageViewerWidget::viewportChanged, this, [this, updateSelectionRoi]() {
+    connect(&_imageViewerPlugin.getImageViewerWidget().getRenderer(), &LayersRenderer::zoomRectangleChanged, this, [this, updateSelectionRoi]() {
         
         // Don't do anything when the layer is not active
         if (!_active)

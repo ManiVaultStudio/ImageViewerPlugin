@@ -4,7 +4,7 @@
 #include <QOpenGLBuffer>
 
 class Prop;
-class Renderer;
+class LayersRenderer;
 
 /**
  * Shape class

@@ -6,7 +6,7 @@
 #include <QOpenGLShaderProgram>
 #include <QOpenGLTexture>
 
-class Renderer;
+class LayersRenderer;
 class Renderable;
 class Shape;
 
@@ -88,7 +88,7 @@ public: // Geometry
     virtual void render(const QMatrix4x4& modelViewProjectionMatrix);
 
     /** Get reference to the renderer */
-    Renderer& getRenderer();
+    LayersRenderer& getRenderer();
 
 protected:
 

@@ -8,7 +8,7 @@
 
 #include <stdexcept>
 
-class Renderer;
+class LayersRenderer;
 
 /**
  * Renderable class
@@ -25,7 +25,7 @@ public: // Construction/destruction
      * Constructor
      * @param renderer Reference to the renderer in which the renderable object will reside
      */
-    Renderable(Renderer& renderer);
+    Renderable(LayersRenderer& renderer);
 
     /** Destructor */
     ~Renderable() = default;
@@ -39,7 +39,7 @@ public: // Rendering
     virtual void render(const QMatrix4x4& modelViewProjectionMatrix) = 0;
 
     /** Get reference to the renderer */
-    Renderer& getRenderer();
+    LayersRenderer& getRenderer();
 
     /** Returns the model matrix */
     QMatrix4x4 getModelMatrix() const;
@@ -97,7 +97,7 @@ public: // Rendering
     }
 
 protected:
-    Renderer&           _renderer;      /** Reference to the renderer in which the renderable object will reside */
+    LayersRenderer&           _renderer;      /** Reference to the renderer in which the renderable object will reside */
     QMatrix4x4          _modelMatrix;   /** Model matrix */
     QVector<Prop*>      _props;         /** Props */
 };
