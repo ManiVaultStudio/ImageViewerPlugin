@@ -1,5 +1,7 @@
 #include "SelectionAction.h"
 #include "Layer.h"
+#include "ImageViewerPlugin.h"
+#include "ImageViewerWidget.h"
 
 #include "util/PixelSelectionTool.h"
 
@@ -39,6 +41,10 @@ SelectionAction::SelectionAction(Layer& layer, QWidget* targetWidget, PixelSelec
     connect(&_overlayColor, &ColorAction::colorChanged, &_layer, &Layer::invalidate);
     connect(&_overlayOpacity, &DecimalAction::valueChanged, &_layer, &Layer::invalidate);
     connect(&_showRegionAction, &ToggleAction::toggled, &_layer, &Layer::invalidate);
+
+    connect(&_layer.getImageViewerPlugin().getImageViewerWidget(), &ImageViewerWidget::interactionModeChanged, this, [this](const ImageViewerWidget::InteractionMode& interactionMode) {
+        _groupAction.setEnabled(interactionMode == ImageViewerWidget::InteractionMode::Selection);// && (_typeAction.getCurrentText() != "ROI"));
+    });
 }
 
 QRect SelectionAction::getImageSelectionRectangle() const

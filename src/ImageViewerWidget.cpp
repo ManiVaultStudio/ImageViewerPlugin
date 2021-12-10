@@ -20,7 +20,7 @@
 const QMap<ImageViewerWidget::InteractionMode, QString> ImageViewerWidget::interactionModes = {
     { ImageViewerWidget::None, "No interaction" },
     { ImageViewerWidget::Navigation, "Navigation" },
-    { ImageViewerWidget::Selection, "Layer editing" }
+    { ImageViewerWidget::Selection, "Selection" }
 };
 
 ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin& imageViewerPlugin) :
@@ -172,6 +172,9 @@ bool ImageViewerWidget::eventFilter(QObject* target, QEvent* event)
 
                     setCursor(Qt::ClosedHandCursor);
 
+                    // Notify others that navigation has started
+                    emit navigationStarted();
+
                     break;
                 }
 
@@ -248,6 +251,9 @@ bool ImageViewerWidget::eventFilter(QObject* target, QEvent* event)
                 case Navigation:
                 {
                     setCursor(Qt::OpenHandCursor);
+
+                    // Notify others that navigation has ended
+                    emit navigationEnded();
 
                     break;
                 }
@@ -408,8 +414,10 @@ bool ImageViewerWidget::eventFilter(QObject* target, QEvent* event)
                         _renderer.zoomAround(zoomCenter, 1.0f + _renderer.getZoomSensitivity());
                     }
 
-                    // Notify others that the viewport changed
+                    // Notify others that navigation has started, the viewport changed and navigation ended
+                    emit navigationStarted();
                     emit viewportChanged();
+                    emit navigationStarted();
 
                     break;
                 }

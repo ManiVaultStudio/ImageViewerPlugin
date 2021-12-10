@@ -31,7 +31,8 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const hdps::Dataset<Images>& 
     _imageAction(*this),
     _selectionAction(*this, &_imageViewerPlugin.getImageViewerWidget(), _imageViewerPlugin.getImageViewerWidget().getPixelSelectionTool()),
     _selectionData(),
-    _imageSelectionRectangle()
+    _imageSelectionRectangle(),
+    _colorData()
 {
     setEventCore(Application::core());
 
@@ -123,8 +124,14 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const hdps::Dataset<Images>& 
         _generalAction.getNameAction().setDefaultString(newGuiName);
     });
 
+    // Update ROI selection and publish it
+    const auto updateSelectionRoi = [this]() {
+        computeSelection();
+        publishSelection();
+    };
+
     // Possibly select pixels when the viewport changes
-    connect(&_imageViewerPlugin.getImageViewerWidget(), &ImageViewerWidget::viewportChanged, this, [this]() {
+    connect(&_imageViewerPlugin.getImageViewerWidget(), &ImageViewerWidget::viewportChanged, this, [this, updateSelectionRoi]() {
         
         // Don't do anything when the layer is not active
         if (!_active)
@@ -134,11 +141,37 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const hdps::Dataset<Images>& 
         if (_selectionAction.getPixelSelectionTool().getType() != PixelSelectionType::ROI)
             return;
 
-        // Compute the layer selection
-        computeSelection();
+        // Only update when notify during selection is enabled
+        if (!_selectionAction.getNotifyDuringSelectionAction().isChecked())
+            return;
 
-        // Select pixels in view
-        publishSelection();
+        // Update ROI selection and publish it
+        updateSelectionRoi();
+    });
+
+    // Possibly select pixels when the viewport changes
+    connect(&_imageViewerPlugin.getImageViewerWidget(), &ImageViewerWidget::navigationEnded, this, [this, updateSelectionRoi]() {
+
+        // Don't do anything when the layer is not active
+        if (!_active)
+            return;
+
+        // Only update and publish the selection when the select pixels in view action is enabled
+        if (_selectionAction.getPixelSelectionTool().getType() != PixelSelectionType::ROI)
+            return;
+
+        // Only update when notify during selection is disabled
+        if (_selectionAction.getNotifyDuringSelectionAction().isChecked())
+            return;
+
+        // Update ROI selection and publish it
+        updateSelectionRoi();
+    });
+
+    // Update ROI selection when the pixel selection type changes to ROI
+    connect(&_selectionAction.getTypeAction(), &OptionAction::currentIndexChanged, this, [this, updateSelectionRoi](const std::int32_t& currentIndex) {
+        if (currentIndex == static_cast<std::int32_t>(PixelSelectionType::ROI))
+            updateSelectionRoi();
     });
 
     _imageAction.init();

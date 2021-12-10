@@ -143,8 +143,14 @@ signals:
      */
     void interactionModeChanged(const InteractionMode& interactionMode);
 
+    /** Signals that the viewport navigation started */
+    void navigationStarted();
+
     /** Signals that the viewport has changed */
     void viewportChanged();
+
+    /** Signals that the viewport navigation ended */
+    void navigationEnded();
 
 protected:
     ImageViewerPlugin&                      _imageViewerPlugin;         /** Reference to image viewer plugin */
