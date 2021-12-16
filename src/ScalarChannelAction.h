@@ -30,9 +30,8 @@ public:
         Channel1,       /** Channel 1 */
         Channel2,       /** Channel 2 */
         Channel3,       /** Channel 3 */
-        Mask,           /** Mask channel */
 
-        Count = Mask + 1
+        Count = Channel3 + 1
     };
 
     /** Maps channel index enum to name */
@@ -93,9 +92,6 @@ public: // Channel data
     void computeScalarData();
 
 protected:
-
-    /** Compute mask channel */
-    void computeMaskChannel();
 
     /** Get smart pointer to images dataset */
     hdps::Dataset<Images> getImages();

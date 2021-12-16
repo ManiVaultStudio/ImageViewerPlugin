@@ -31,7 +31,7 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const hdps::Dataset<Images>& 
     _selectionAction(*this, &_imageViewerPlugin.getImageViewerWidget(), _imageViewerPlugin.getImageViewerWidget().getPixelSelectionTool()),
     _selectionData(),
     _imageSelectionRectangle(),
-    _colorData()
+    _maskData()
 {
     setEventCore(Application::core());
 
@@ -56,6 +56,9 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const hdps::Dataset<Images>& 
     // Do an initial computation of the selected indices
     computeSelectionIndices();
 
+    // Resize mask data vector
+    _maskData.resize(_imagesDataset->getNumberOfPixels());
+
     // Update the color map scalar data in the image prop
     const auto updateChannelScalarData = [this](ScalarChannelAction& channelAction) {
 
@@ -63,9 +66,7 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const hdps::Dataset<Images>& 
             case ScalarChannelAction::Channel1:
             case ScalarChannelAction::Channel2:
             case ScalarChannelAction::Channel3:
-            case ScalarChannelAction::Mask:
             {
-                // Assign color data to the prop in case of points dataset
                 this->getPropByName<ImageProp>("ImageProp")->setChannelScalarData(channelAction.getIdentifier(), channelAction.getScalarData(), channelAction.getDisplayRange());
 
                 break;
@@ -87,7 +88,6 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const hdps::Dataset<Images>& 
 
         // Assign the scalar data to the prop
         imageProp->setInterpolationType(static_cast<InterpolationType>(_imageAction.getInterpolationTypeAction().getCurrentIndex()));
-        
 
         // Render
         invalidate();
@@ -174,6 +174,9 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const hdps::Dataset<Images>& 
     });
 
     _imageAction.init();
+
+    _imagesDataset->getMaskData(_maskData);
+    this->getPropByName<ImageProp>("ImageProp")->setMaskData(_maskData);
 }
 
 Layer::~Layer()
@@ -567,7 +570,7 @@ const QStringList Layer::getDimensionNames() const
     if (_sourceDataset->getDataType() == PointType) {
 
         // Get reference to points dataset
-        auto points = getSourceDataset<Points>();
+        auto points = Dataset<Points>(const_cast<Layer*>(this)->getSourceDataset());
 
         // Populate dimension names
         if (points->getDimensionNames().size() == points->getNumDimensions()) {
@@ -590,19 +593,19 @@ const QStringList Layer::getDimensionNames() const
 void Layer::selectAll()
 {
     if (_sourceDataset->getDataType() == PointType)
-        getSourceDataset<Points>()->selectAll();
+        Dataset<Points>(getSourceDataset())->selectAll();
 }
 
 void Layer::selectNone()
 {
     if (_sourceDataset->getDataType() == PointType)
-        getSourceDataset<Points>()->selectNone();
+        Dataset<Points>(getSourceDataset())->selectNone();
 }
 
 void Layer::selectInvert()
 {
     if (_sourceDataset->getDataType() == PointType)
-        getSourceDataset<Points>()->selectInvert();
+        Dataset<Points>(getSourceDataset())->selectInvert();
 }
 
 void Layer::startSelection()

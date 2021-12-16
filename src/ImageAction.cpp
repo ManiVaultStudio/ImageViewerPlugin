@@ -21,7 +21,6 @@ ImageAction::ImageAction(Layer& layer) :
     _scalarChannel1Action(*this, ScalarChannelAction::Channel1, ScalarChannelAction::channelIndexes.value(ScalarChannelAction::Channel1)),
     _scalarChannel2Action(*this, ScalarChannelAction::Channel2, ScalarChannelAction::channelIndexes.value(ScalarChannelAction::Channel2)),
     _scalarChannel3Action(*this, ScalarChannelAction::Channel3, ScalarChannelAction::channelIndexes.value(ScalarChannelAction::Channel3)),
-    _scalarChannelMaskAction(*this, ScalarChannelAction::Mask, ScalarChannelAction::channelIndexes.value(ScalarChannelAction::Mask)),
     _colorMapAction(this, "Color map", ColorMap::Type::OneDimensional, "Black to white", "Black to white"),
     _interpolationTypeAction(this, "Interpolate", interpolationTypes.values(), "Bilinear", "Bilinear"),
     _useConstantColorAction(this, "Use constant color", false, false),
@@ -34,14 +33,12 @@ ImageAction::ImageAction(Layer& layer) :
     const auto isClusterType = _layer.getSourceDataset()->getDataType() == ClusterType;
 
     _subsampleFactorAction.setVisible(false);
-    _scalarChannelMaskAction.setVisible(false);
 
     _opacityAction.setToolTip("Image layer opacity");
     _subsampleFactorAction.setToolTip("Subsampling factor");
     _scalarChannel1Action.setToolTip("Scalar channel 1");
     _scalarChannel2Action.setToolTip("Scalar channel 2");
     _scalarChannel3Action.setToolTip("Scalar channel 3");
-    _scalarChannelMaskAction.setToolTip("Mask channel");
     _colorSpaceAction.setToolTip("The color space used to shade the image");
     _colorMapAction.setToolTip("Image color map");
     _interpolationTypeAction.setToolTip("The type of two-dimensional image interpolation used");
@@ -56,7 +53,7 @@ ImageAction::ImageAction(Layer& layer) :
     // Disable horizontal range actions
     _colorMapAction.getSettingsAction().getHorizontalAxisAction().getRangeAction().getRangeMinAction().setEnabled(false);
     _colorMapAction.getSettingsAction().getHorizontalAxisAction().getRangeAction().getRangeMaxAction().setEnabled(false);
-    
+
     // Disable vertical range actions
     _colorMapAction.getSettingsAction().getVerticalAxisAction().getRangeAction().getRangeMinAction().setEnabled(false);
     _colorMapAction.getSettingsAction().getVerticalAxisAction().getRangeAction().getRangeMaxAction().setEnabled(false);
@@ -83,6 +80,10 @@ ImageAction::ImageAction(Layer& layer) :
     connect(&_scalarChannel3Action, &ScalarChannelAction::changed, this, [this]() {
         emit channelChanged(_scalarChannel3Action);
     });
+
+    //connect(&_scalarChannelMaskAction, &ScalarChannelAction::changed, this, [this]() {
+    //    emit channelChanged(_scalarChannelMaskAction);
+    //});
 
     const auto render = [this]() {
         _layer.invalidate();
@@ -249,7 +250,7 @@ QImage ImageAction::getColorMapImage() const
     if (_layer.getSourceDataset()->getDataType() == ClusterType) {
         
         // Get pointer to clusters
-        auto clusters = _layer.getSourceDataset<Clusters>()->getClusters();
+        auto clusters = Dataset<Clusters>(_layer.getSourceDataset())->getClusters();
 
         // Create discrete one-dimensional color map image
         QImage discreteColorMapImage(static_cast<std::int32_t>(clusters.size()), 1, QImage::Format::Format_RGB32);

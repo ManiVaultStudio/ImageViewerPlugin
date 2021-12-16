@@ -86,7 +86,7 @@ SubsetAction::SubsetAction(ImageViewerPlugin& imageViewerPlugin) :
             auto layer = static_cast<Layer*>(selectedRows.first().internalPointer());
 
             // Pointer to points dataset
-            auto points = layer->getSourceDataset<Points>();
+            auto points = Dataset<Points>(layer->getSourceDataset());
 
             // Get reference to images dataset
             auto images = layer->getImages();

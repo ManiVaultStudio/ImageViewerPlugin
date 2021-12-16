@@ -63,7 +63,6 @@ public: // Action getters
     ScalarChannelAction& getScalarChannel1Action() { return _scalarChannel1Action; }
     ScalarChannelAction& getScalarChannel2Action() { return _scalarChannel2Action; }
     ScalarChannelAction& getScalarChannel3Action() { return _scalarChannel3Action; }
-    ScalarChannelAction& getScalarChannelMaskAction() { return _scalarChannelMaskAction; }
     ColorMapAction& getColorMapAction() { return _colorMapAction; }
     OptionAction& getInterpolationTypeAction() { return _interpolationTypeAction; }
     ToggleAction& getUseConstantColorAction() { return _useConstantColorAction; }
@@ -88,7 +87,6 @@ protected:
     ScalarChannelAction     _scalarChannel1Action;          /** Scalar channel 1 action */
     ScalarChannelAction     _scalarChannel2Action;          /** Scalar channel 2 action */
     ScalarChannelAction     _scalarChannel3Action;          /** Scalar channel 3 action */
-    ScalarChannelAction     _scalarChannelMaskAction;       /** Mask channel action */
     ColorMapAction          _colorMapAction;                /** Color map action */
     OptionAction            _interpolationTypeAction;       /** Interpolation type action */
     ToggleAction            _useConstantColorAction;        /** Constant color action */

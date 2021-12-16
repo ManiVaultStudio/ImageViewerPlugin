@@ -9,6 +9,7 @@
 #include <QDebug>
 #include <QOpenGLContext>
 #include <QOpenGLFunctions>
+#include <QOpenGLPixelTransferOptions>
 
 #include <stdexcept>
 
@@ -24,6 +25,7 @@ ImageProp::ImageProp(Layer& layer, const QString& name) :
     // Add color map and channels texture
     addTexture("ColorMap", QOpenGLTexture::Target2D);
     addTexture("Channels", QOpenGLTexture::Target2DArray);
+    addTexture("Mask", QOpenGLTexture::Target2DArray);
 
     // Initialize the prop
     initialize();
@@ -119,6 +121,15 @@ void ImageProp::render(const QMatrix4x4& modelViewProjectionMatrix)
             throw std::runtime_error("Channels texture is not created.");
         }
 
+        // Activate and bind mask texture
+        if (getTextureByName("Mask")->isCreated()) {
+            getRenderer().getOpenGLContext()->functions()->glActiveTexture(GL_TEXTURE2);
+            getTextureByName("Mask")->bind();
+        }
+        else {
+            throw std::runtime_error("Mask texture is not created.");
+        }
+
         // Bind shader program
         if (!shaderProgram->bind())
             throw std::runtime_error("Unable to bind quad shader program");
@@ -133,8 +144,10 @@ void ImageProp::render(const QMatrix4x4& modelViewProjectionMatrix)
         };
 
         // Configure shader program
+        shaderProgram->setUniformValue("textureSize", shape->getImageSize());
         shaderProgram->setUniformValue("colorMapTexture", 0);
         shaderProgram->setUniformValue("channelTextures", 1);
+        shaderProgram->setUniformValue("maskTexture", 2);
         shaderProgram->setUniformValue("noChannels", imageAction.getNumberOfActiveScalarChannels());
         shaderProgram->setUniformValue("useConstantColor", imageAction.getUseConstantColorAction().isChecked());
         shaderProgram->setUniformValue("constantColor", imageAction.getConstantColorAction().getColor());
@@ -152,6 +165,7 @@ void ImageProp::render(const QMatrix4x4& modelViewProjectionMatrix)
         // Release textures
         getTextureByName("Channels")->release();
         getTextureByName("ColorMap")->release();
+        getTextureByName("Mask")->release();
     }
     catch (std::exception& e)
     {
@@ -242,7 +256,7 @@ void ImageProp::setColorMapImage(const QImage& colorMapImage)
 void ImageProp::setChannelScalarData(const std::uint32_t& channelIndex, const QVector<float>& scalarData, const DisplayRange& displayRange)
 {
     try {
-        if (channelIndex > 3)
+        if (channelIndex >= 3)
             throw std::runtime_error("Invalid channel index");
 
         getRenderer().bindOpenGLContext();
@@ -268,7 +282,7 @@ void ImageProp::setChannelScalarData(const std::uint32_t& channelIndex, const QV
             if (imageSize != QSize(texture->width(), texture->height())) {
                 texture->destroy();
                 texture->create();
-                texture->setLayers(4);
+                texture->setLayers(3);
                 texture->setSize(imageSize.width(), imageSize.height(), 1);
                 texture->setSize(imageSize.width(), imageSize.height(), 2);
                 texture->setSize(imageSize.width(), imageSize.height(), 3);
@@ -292,6 +306,51 @@ void ImageProp::setChannelScalarData(const std::uint32_t& channelIndex, const QV
     }
     catch (...) {
         exceptionMessageBox("Unable to set channel scalar data in layer image prop");
+    }
+}
+
+void ImageProp::setMaskData(const std::vector<std::uint8_t>& maskData)
+{
+    try {
+        getRenderer().bindOpenGLContext();
+        {
+            // Get image size from quad
+            const auto imageSize = getShapeByName<QuadShape>("Quad")->getRectangle().size();
+
+            // Only proceed if the image size is valid (non-zero in x/y)
+            if (!imageSize.isValid())
+                return;
+
+            // Get channels texture
+            auto texture = getTextureByName("Mask");
+
+            // Create the texture if not created
+            if (!texture->isCreated())
+                texture->create();
+
+            // Configure the texture
+            texture->setLayers(1);
+            texture->setSize(imageSize.width(), imageSize.height());
+            texture->setFormat(QOpenGLTexture::R8_UNorm);
+            texture->setWrapMode(QOpenGLTexture::ClampToEdge);
+            texture->setMinMagFilters(QOpenGLTexture::Nearest, QOpenGLTexture::Nearest);
+            texture->allocateStorage(QOpenGLTexture::Red, QOpenGLTexture::UInt8);
+
+            QOpenGLPixelTransferOptions options;
+
+            options.setAlignment(1);
+
+            // Assign the scalar data to the texture
+            texture->setData(QOpenGLTexture::PixelFormat::Red, QOpenGLTexture::PixelType::UInt8, maskData.data() , &options);
+        }
+        getRenderer().releaseOpenGLContext();
+    }
+    catch (std::exception& e)
+    {
+        exceptionMessageBox("Unable to set mask data in layer image prop", e);
+    }
+    catch (...) {
+        exceptionMessageBox("Unable to set mask data in layer image prop");
     }
 }
 

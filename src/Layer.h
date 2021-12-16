@@ -79,18 +79,6 @@ public:
         return _sourceDataset;
     }
 
-    /** Get source dataset of a specific dataset type */
-    template<typename DatasetType>
-    hdps::Dataset<DatasetType>& getSourceDataset() {
-        return Dataset<DatasetType>(_sourceDataset);
-    }
-
-    /** Get const source dataset of a specific dataset type */
-    template<typename DatasetType>
-    hdps::Dataset<DatasetType>& getSourceDataset() const {
-        return const_cast<Layer*>(this)->getSourceDataset<DatasetType>();
-    }
-
     /** Get images dataset */
     hdps::Dataset<Images> getImages() {
         return _imagesDataset;
@@ -212,7 +200,7 @@ protected:
     SelectionAction                     _selectionAction;               /** Selection action */
     std::vector<std::uint8_t>           _selectionData;                 /** Selection data for selection prop */
     QRect                               _imageSelectionRectangle;       /** Selection boundaries in image coordinates */
-    QVector<float>                      _colorData;                     /** Color data for the specified dimension */
+    std::vector<std::uint8_t>           _maskData;                      /** Mask data for the image */
 
     friend class ImageViewerWidget;
     friend class ImageAction;
