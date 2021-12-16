@@ -24,7 +24,7 @@ SelectionProp::SelectionProp(Layer& layer, const QString& name) :
     addShaderProgram("Quad");
 
     // Add channels texture
-    addTexture("Selection", QOpenGLTexture::Target2DArray);
+    addTexture("Textures", QOpenGLTexture::Target2DArray);
 
     // Initialize the prop
     initialize();
@@ -105,14 +105,17 @@ void SelectionProp::render(const QMatrix4x4& modelViewProjectionMatrix)
         const auto shaderProgram    = getShaderProgramByName("Quad");
         const auto quadTexture      = getTextureByName("Quad");
 
-        if (!getTextureByName("Selection")->isCreated())
-            throw std::runtime_error("Channels texture is not created");
-
-        // Activate the texture
-        getRenderer().getOpenGLContext()->functions()->glActiveTexture(GL_TEXTURE0);
+        // Activate and bind selection texture
+        if (getTextureByName("Textures")->isCreated()) {
+            getRenderer().getOpenGLContext()->functions()->glActiveTexture(GL_TEXTURE0);
+            getTextureByName("Textures")->bind();
+        }
+        else {
+            throw std::runtime_error("Texture not created.");
+        }
 
         // Bind the selection texture
-        getTextureByName("Selection")->bind();
+        getTextureByName("Textures")->bind();
 
         // Bind shader program
         if (!shaderProgram->bind())
@@ -122,13 +125,9 @@ void SelectionProp::render(const QMatrix4x4& modelViewProjectionMatrix)
         auto& selectionAction = _layer.getSelectionAction();
 
         // Configure shader program
-        shaderProgram->setUniformValue("channelTextures", 0);
-        shaderProgram->setUniformValue("textureSize", shape->getImageSize());
+        shaderProgram->setUniformValue("textures", 0);
         shaderProgram->setUniformValue("overlayColor", selectionAction.getOverlayColor().getColor());
         shaderProgram->setUniformValue("opacity", 0.01f * selectionAction.getOverlayOpacity().getValue());
-        shaderProgram->setUniformValue("topLeft", selectionAction.getImageSelectionRectangle().topLeft());
-        shaderProgram->setUniformValue("bottomRight", selectionAction.getImageSelectionRectangle().bottomRight());
-        shaderProgram->setUniformValue("showRegion", selectionAction.getShowRegionAction().isChecked());
         shaderProgram->setUniformValue("transform", modelViewProjectionMatrix * _renderable.getModelMatrix() * getModelMatrix());
 
         // Render the quad
@@ -138,7 +137,7 @@ void SelectionProp::render(const QMatrix4x4& modelViewProjectionMatrix)
         shaderProgram->release();
 
         // Release texture
-        getTextureByName("Selection")->release();
+        getTextureByName("Textures")->release();
     }
     catch (std::exception& e)
     {
@@ -198,7 +197,7 @@ void SelectionProp::setSelectionData(const std::vector<std::uint8_t>& selectionD
                 return;
 
             // Get channels texture
-            auto texture = getTextureByName("Selection");
+            auto texture = getTextureByName("Textures");
 
             // Create the texture if not created
             if (!texture->isCreated())
@@ -208,8 +207,9 @@ void SelectionProp::setSelectionData(const std::vector<std::uint8_t>& selectionD
             if (imageSize != QSize(texture->width(), texture->height())) {
                 texture->destroy();
                 texture->create();
-                texture->setLayers(1);
+                texture->setLayers(2);
                 texture->setSize(imageSize.width(), imageSize.height(), 1);
+                texture->setSize(imageSize.width(), imageSize.height(), 2);
                 texture->setFormat(QOpenGLTexture::R8_UNorm);
                 texture->setWrapMode(QOpenGLTexture::ClampToEdge);
                 texture->setMinMagFilters(QOpenGLTexture::Nearest, QOpenGLTexture::Nearest);
@@ -231,5 +231,55 @@ void SelectionProp::setSelectionData(const std::vector<std::uint8_t>& selectionD
     }
     catch (...) {
         exceptionMessageBox("Unable to set scalar data in selection prop");
+    }
+}
+
+void SelectionProp::setMaskData(const std::vector<std::uint8_t>& maskData)
+{
+    try {
+        getRenderer().bindOpenGLContext();
+        {
+            // Get image size from quad
+            const auto imageSize = getShapeByName<QuadShape>("Quad")->getRectangle().size();
+
+            // Only proceed if the image size is valid (non-zero in x/y)
+            if (!imageSize.isValid())
+                return;
+
+            // Get channels texture
+            auto texture = getTextureByName("Textures");
+
+            // Create the texture if not created
+            if (!texture->isCreated())
+                texture->create();
+
+            // Re-configure when the image size has changed
+            if (imageSize != QSize(texture->width(), texture->height())) {
+                texture->destroy();
+                texture->create();
+                texture->setLayers(2);
+                texture->setSize(imageSize.width(), imageSize.height(), 1);
+                texture->setSize(imageSize.width(), imageSize.height(), 2);
+                texture->setFormat(QOpenGLTexture::R8_UNorm);
+                texture->setWrapMode(QOpenGLTexture::ClampToEdge);
+                texture->setMinMagFilters(QOpenGLTexture::Nearest, QOpenGLTexture::Nearest);
+                texture->allocateStorage();
+            }
+
+            QOpenGLPixelTransferOptions options;
+
+            options.setAlignment(1);
+
+            // Assign the scalar data to the texture
+            texture->setData(0, 1, QOpenGLTexture::PixelFormat::Red, QOpenGLTexture::PixelType::UInt8, maskData.data(), &options);
+        }
+        getRenderer().releaseOpenGLContext();
+    }
+    catch (std::exception& e)
+    {
+        exceptionMessageBox("Unable to set mask data in layer selection prop", e);
+    }
+    catch (...) {
+        exceptionMessageBox("Unable to set mask data in layer selection prop");
     }
 }
