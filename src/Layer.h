@@ -75,19 +75,19 @@ public:
     void paint(QPainter& painter, const PaintFlag& paintFlags);
 
     /** Get source dataset */
-    hdps::Dataset<hdps::DatasetImpl> getSourceDataset() {
+    hdps::Dataset<hdps::DatasetImpl>& getSourceDataset() {
         return _sourceDataset;
     }
 
     /** Get source dataset of a specific dataset type */
     template<typename DatasetType>
-    hdps::Dataset<DatasetType> getSourceDataset() {
-        return _sourceDataset;
+    hdps::Dataset<DatasetType>& getSourceDataset() {
+        return Dataset<DatasetType>(_sourceDataset);
     }
 
     /** Get const source dataset of a specific dataset type */
     template<typename DatasetType>
-    hdps::Dataset<DatasetType> getSourceDataset() const {
+    hdps::Dataset<DatasetType>& getSourceDataset() const {
         return const_cast<Layer*>(this)->getSourceDataset<DatasetType>();
     }
 

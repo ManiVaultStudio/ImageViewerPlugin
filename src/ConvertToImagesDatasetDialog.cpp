@@ -106,13 +106,12 @@ ConvertToImagesDatasetDialog::ConvertToImagesDatasetDialog(ImageViewerPlugin& im
         // Add images dataset
         auto images = Application::core()->addDataset<Images>("Images", _datasetNameAction.getString(), _sourceDataset);
 
-        const auto sourceImageSize   = _sourceImagesDataset.isValid() ? _sourceImagesDataset->getSourceRectangle().size() : QSize(_imageWidthAction.getValue(), _imageHeightAction.getValue());
-        const auto targetImageSize   = _sourceImagesDataset.isValid() ? _sourceImagesDataset->getTargetRectangle().size() : QSize(_imageWidthAction.getValue(), _imageHeightAction.getValue());
-        const auto imageOffset       = _sourceImagesDataset.isValid() ? _sourceImagesDataset->getTargetRectangle().topLeft() : QPoint();
+        // Establish the correct image size
+        const auto imageSize = _sourceImagesDataset.isValid() ? _sourceImagesDataset->getImageSize() : QSize(_imageWidthAction.getValue(), _imageHeightAction.getValue());
 
         images->setType(ImageData::Type::Stack);
         images->setNumberOfImages(_numberOfImagesAction.getValue());
-        images->setImageGeometry(sourceImageSize, targetImageSize, imageOffset);
+        images->setImageSize(imageSize);
         images->setNumberOfComponentsPerPixel(1);
 
         // Notify others that an images dataset was added

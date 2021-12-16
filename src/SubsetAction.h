@@ -58,18 +58,13 @@ public:
     /** Get reference to image viewer plugin */
     ImageViewerPlugin& getImageViewerPlugin() { return _imageViewerPlugin; }
 
-    /** Update the highlight region in the viewer */
-    void updateHighlightRegion();
-
 public: // Action getters
 
-    ToggleAction& getFromRegionAction() { return _fromRegionAction; }
     StringAction& getNameAction() { return _nameAction; }
     TriggerAction& getCreateAction() { return _createAction; }
 
 protected:
     ImageViewerPlugin&  _imageViewerPlugin;     /** Reference to image viewer plugin */
     StringAction        _nameAction;            /** Subset name action */
-    ToggleAction        _fromRegionAction;      /** Whether to create an image set from the selected region of pixels */
     TriggerAction       _createAction;          /** Create subset action */
 };

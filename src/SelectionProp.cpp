@@ -164,10 +164,10 @@ QRectF SelectionProp::getWorldBoundingRectangle() const
     return QRectF(worldTopLeft, worldBottomRight);
 }
 
-void SelectionProp::setGeometry(const QRect& sourceImageRectangle, const QRect& targetImageRectangle)
+void SelectionProp::setGeometry(const QRect& imageRectangle)
 {
     // Assign the rectangle to the quad shape
-    getShapeByName<QuadShape>("Quad")->setRectangle(targetImageRectangle);
+    getShapeByName<QuadShape>("Quad")->setRectangle(imageRectangle);
 
     // Update the model matrix
     QMatrix4x4 modelMatrix;
@@ -176,7 +176,7 @@ void SelectionProp::setGeometry(const QRect& sourceImageRectangle, const QRect& 
     const auto rectangle = getShapeByName<QuadShape>("Quad")->getRectangle();
 
     // Establish center
-    const auto center = QRectF(sourceImageRectangle).center();
+    const auto center = imageRectangle.center();
 
     // Compute the  model matrix
     modelMatrix.translate(-center.x(), -center.y(), 0.0f);
