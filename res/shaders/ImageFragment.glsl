@@ -1,7 +1,9 @@
 #version 330
 
+uniform vec2 textureSize;                   // Size of the textures in pixels
 uniform sampler2D colorMapTexture;			// Colormap texture sampler
-uniform sampler2DArray channelTextures;		// Texture samplers (0: Channel 1, 1: Channel 2, 2: Channel 3, 3: Mask)
+uniform sampler2DArray channelTextures;		// Texture samplers (0: Scalar channel 1, 1: Scalar channel 2, 2: Scalar channel 3)
+uniform usampler2DArray maskTexture;        // Mask texture sampler
 uniform vec2 displayRanges[3];				// Display ranges for each channel
 uniform int noChannels;						// Number of active channels
 uniform bool useConstantColor;				// Whether the pixel color is constant and the alpha is modulated by the intensity of the selected channel
@@ -179,11 +181,13 @@ void main(void)
             break;
         }
     }
-    
+
+    float mask = texelFetch(maskTexture, ivec3(uv  * textureSize, 0), 0).r > 0u ? 1.0f : 0.0f;
+
     if (useConstantColor) {
         fragmentColor = constantColor;
-        fragmentColor.a = opacity * toneMapChannel(displayRanges[0].x, displayRanges[0].y, texture(channelTextures, vec3(uv, 0)).r);
+        fragmentColor.a = mask * opacity * toneMapChannel(displayRanges[0].x, displayRanges[0].y, texture(channelTextures, vec3(uv, 0)).r);
     } else {
-        fragmentColor.a = opacity;
+        fragmentColor.a = mask * opacity;
     }
 }

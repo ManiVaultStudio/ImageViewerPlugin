@@ -31,7 +31,7 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const hdps::Dataset<Images>& 
     _selectionAction(*this, &_imageViewerPlugin.getImageViewerWidget(), _imageViewerPlugin.getImageViewerWidget().getPixelSelectionTool()),
     _selectionData(),
     _imageSelectionRectangle(),
-    _colorData()
+    _maskData()
 {
     setEventCore(Application::core());
 
@@ -49,12 +49,15 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const hdps::Dataset<Images>& 
     _props << new SelectionProp(*this, "SelectionProp");
     _props << new SelectionToolProp(*this, "SelectionToolProp");
 
-    this->getPropByName<ImageProp>("ImageProp")->setGeometry(_imagesDataset->getSourceRectangle(), _imagesDataset->getTargetRectangle());
-    this->getPropByName<SelectionProp>("SelectionProp")->setGeometry(_imagesDataset->getSourceRectangle(), _imagesDataset->getTargetRectangle());
-    this->getPropByName<SelectionToolProp>("SelectionToolProp")->setGeometry(_imagesDataset->getSourceRectangle(), _imagesDataset->getTargetRectangle());
+    this->getPropByName<ImageProp>("ImageProp")->setGeometry(_imagesDataset->getRectangle());
+    this->getPropByName<SelectionProp>("SelectionProp")->setGeometry(_imagesDataset->getRectangle());
+    this->getPropByName<SelectionToolProp>("SelectionToolProp")->setGeometry(_imagesDataset->getRectangle());
 
     // Do an initial computation of the selected indices
     computeSelectionIndices();
+
+    // Resize mask data vector
+    _maskData.resize(_imagesDataset->getNumberOfPixels());
 
     // Update the color map scalar data in the image prop
     const auto updateChannelScalarData = [this](ScalarChannelAction& channelAction) {
@@ -63,9 +66,7 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const hdps::Dataset<Images>& 
             case ScalarChannelAction::Channel1:
             case ScalarChannelAction::Channel2:
             case ScalarChannelAction::Channel3:
-            case ScalarChannelAction::Mask:
             {
-                // Assign color data to the prop in case of points dataset
                 this->getPropByName<ImageProp>("ImageProp")->setChannelScalarData(channelAction.getIdentifier(), channelAction.getScalarData(), channelAction.getDisplayRange());
 
                 break;
@@ -87,7 +88,6 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const hdps::Dataset<Images>& 
 
         // Assign the scalar data to the prop
         imageProp->setInterpolationType(static_cast<InterpolationType>(_imageAction.getInterpolationTypeAction().getCurrentIndex()));
-        
 
         // Render
         invalidate();
@@ -171,9 +171,17 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const hdps::Dataset<Images>& 
     connect(&_selectionAction.getTypeAction(), &OptionAction::currentIndexChanged, this, [this, updateSelectionRoi](const std::int32_t& currentIndex) {
         if (currentIndex == static_cast<std::int32_t>(PixelSelectionType::ROI))
             updateSelectionRoi();
+        else
+            _imagesDataset->selectNone();
     });
 
     _imageAction.init();
+
+    _imagesDataset->getMaskData(_maskData);
+
+    // Apply masking to props
+    this->getPropByName<ImageProp>("ImageProp")->setMaskData(_maskData);
+    this->getPropByName<SelectionProp>("SelectionProp")->setMaskData(_maskData);
 }
 
 Layer::~Layer()
@@ -276,6 +284,35 @@ void Layer::updateWindowTitle()
     }
 }
 
+QRectF Layer::getWorldBoundingRectangle() const
+{
+    // Compute composite matrix and rectangle extents in world coordinates
+    const auto matrix           = getModelMatrix() * getPropByName<ImageProp>("ImageProp")->getModelMatrix();
+    const auto visibleRectangle = QRectF(_imagesDataset->getVisibleRectangle());
+    const auto worldTopLeft     = matrix * visibleRectangle.topLeft();
+    const auto worldBottomRight = matrix * visibleRectangle.bottomRight();
+
+    //qDebug() << _imagesDataset->getGuiName() << visibleRectangle;
+
+    const auto rectangleFromPoints = [](const QPointF& first, const QPointF& second) -> QRectF {
+        QRectF rectangle;
+
+        rectangle.setLeft(std::min(first.x(), second.x()));
+        rectangle.setRight(std::max(first.x(), second.x()));
+        rectangle.setTop(std::min(first.y(), second.y()));
+        rectangle.setBottom(std::max(first.y(), second.y()));
+
+        return rectangle;
+    };
+
+    return rectangleFromPoints(worldTopLeft, worldBottomRight);
+}
+
+QRectF Layer::getScreenBoundingRectangle() const
+{
+    return getRenderer().getScreenRectangleFromWorldRectangle(getWorldBoundingRectangle());
+}
+
 LayersAction& Layer::getLayersAction()
 {
     return _imageViewerPlugin.getSettingsAction().getLayersAction();
@@ -365,20 +402,19 @@ void Layer::scaleToFit(const QRectF& rectangle)
     // Only fit into valid rectangle
     if (!rectangle.isValid())
         return;
-    
+
     // Get target rectangle center and size
-    const auto rectangleCenter  = rectangle.center();
-    const auto rectangleSize    = rectangle.size();
+    const auto rectangleCenter = rectangle.center();
 
     // Position layer at center
     _generalAction.getPositionAction().getXAction().setValue(rectangleCenter.x());
     _generalAction.getPositionAction().getYAction().setValue(rectangleCenter.y());
 
     // Compute composite matrix
-    const auto matrix   = getModelMatrix() * getPropByName<ImageProp>("ImageProp")->getModelMatrix();
+    const auto matrix = getModelMatrix() * getPropByName<ImageProp>("ImageProp")->getModelMatrix();
 
     // Compute scaled source rectangle size
-    const auto sourceRectangleSize = _imagesDataset->getSourceRectangle().size();
+    const auto sourceRectangleSize = _imagesDataset->getRectangle().size();
 
     // Compute x- and y scale
     const auto scale = QVector2D(rectangle.width() / sourceRectangleSize.width(), rectangle.height() / sourceRectangleSize.height());
@@ -395,8 +431,8 @@ void Layer::paint(QPainter& painter, const PaintFlag& paintFlags)
         if (!_generalAction.getVisibleAction().isChecked())
             return;
 
-        // Get image prop screen bounding rectangle
-        const auto propRectangle = getPropByName<ImageProp>("ImageProp")->getScreenBoundingRectangle();
+        // Get image prop visible screen bounding rectangle
+        const auto propRectangle = getScreenBoundingRectangle();
 
         // Get pixel selection color
         const auto pixelSelectionColor = _imageViewerPlugin.getImageViewerWidget().getPixelSelectionTool().getMainColor();
@@ -426,7 +462,7 @@ void Layer::paint(QPainter& painter, const PaintFlag& paintFlags)
             painter.setBrush(Qt::transparent);
 
             // Draw the bounding rectangle
-            painter.drawRect(getRenderer().getScreenRectangleFromWorldRectangle(getWorldSelectionRectangle().marginsAdded(QMarginsF(0.0f, 0.0f, 1.0f, 1.0f))));
+            painter.drawRect(getRenderer().getScreenRectangleFromWorldRectangle(getWorldSelectionRectangle()));
         }
 
         // Draw layer label
@@ -444,7 +480,7 @@ void Layer::paint(QPainter& painter, const PaintFlag& paintFlags)
 
             // Draw the text
             painter.setFont(QApplication::font());
-            painter.drawText(QRect(propRectangle.bottomLeft() + QPoint(0.0f, margin), QSize(500, 100)), labelText, QTextOption(Qt::AlignTop | Qt::AlignLeft));
+            painter.drawText(QRectF(propRectangle.bottomLeft() + QPoint(0.0f, margin), QSize(500, 100)), labelText, QTextOption(Qt::AlignTop | Qt::AlignLeft));
         }
 
         // Draw sample information
@@ -454,13 +490,13 @@ void Layer::paint(QPainter& painter, const PaintFlag& paintFlags)
             const auto mousePositionWidget = _imageViewerPlugin.getImageViewerWidget().mapFromGlobal(QCursor::pos());
 
             // Get mouse position in image coordinates
-            const auto mousePositionImage = _renderer.getScreenPointToWorldPosition(getModelViewMatrix() * getPropByName<ImageProp>("ImageProp")->getModelMatrix(), mousePositionWidget).toPoint() - _imagesDataset->getTargetRectangle().topLeft();
+            const auto mousePositionImage = _renderer.getScreenPointToWorldPosition(getModelViewMatrix() * getPropByName<ImageProp>("ImageProp")->getModelMatrix(), mousePositionWidget).toPoint();
 
             // Establish label prefix text
             QString labelText = QString("Pixel ID\t: [%1, %2]\n").arg(QString::number(mousePositionImage.x()), QString::number(mousePositionImage.y()));
             
             // Compute pixel index
-            const auto pixelIndex = static_cast<std::uint32_t>(mousePositionImage.y() * _imagesDataset->getTargetRectangle().width() + mousePositionImage.x());
+            const auto pixelIndex = static_cast<std::uint32_t>(mousePositionImage.y() * _imagesDataset->getImageSize().width() + mousePositionImage.x());
 
             if (pixelIndex >= 0 && pixelIndex < _imagesDataset->getNumberOfPixels()) {
 
@@ -567,7 +603,7 @@ const QStringList Layer::getDimensionNames() const
     if (_sourceDataset->getDataType() == PointType) {
 
         // Get reference to points dataset
-        auto points = getSourceDataset<Points>();
+        auto points = Dataset<Points>(const_cast<Layer*>(this)->getSourceDataset());
 
         // Populate dimension names
         if (points->getDimensionNames().size() == points->getNumDimensions()) {
@@ -590,19 +626,19 @@ const QStringList Layer::getDimensionNames() const
 void Layer::selectAll()
 {
     if (_sourceDataset->getDataType() == PointType)
-        getSourceDataset<Points>()->selectAll();
+        Dataset<Points>(getSourceDataset())->selectAll();
 }
 
 void Layer::selectNone()
 {
     if (_sourceDataset->getDataType() == PointType)
-        getSourceDataset<Points>()->selectNone();
+        Dataset<Points>(getSourceDataset())->selectNone();
 }
 
 void Layer::selectInvert()
 {
     if (_sourceDataset->getDataType() == PointType)
-        getSourceDataset<Points>()->selectInvert();
+        Dataset<Points>(getSourceDataset())->selectInvert();
 }
 
 void Layer::startSelection()
@@ -671,9 +707,8 @@ void Layer::resetSelectionBuffer()
 void Layer::publishSelection()
 {
     try {
-
         //qDebug() << "Publish pixel selection for layer:" << _generalAction.getNameAction().getString();
-
+        
         if (!_generalAction.getVisibleAction().isChecked())
             return;
 
@@ -694,17 +729,11 @@ void Layer::publishSelection()
         const auto noComponents     = 4;
         const auto width            = static_cast<float>(getImageSize().width());
         const auto noPixels         = _imagesDataset->getNumberOfPixels();
-        const auto sourceRectangle  = _imagesDataset->getSourceRectangle();
-        const auto targetRectangle  = _imagesDataset->getTargetRectangle();
+        const auto imageRectangle   = _imagesDataset->getRectangle();
 
-        // Get source pixel index from two-dimensional pixel coordinates
-        const auto getSourcePixelIndex = [sourceRectangle](const std::int32_t& pixelX, const std::int32_t& pixelY) -> std::int32_t {
-            return pixelY * sourceRectangle.width() + pixelX;
-        };
-
-        // Get target pixel index from two-dimensional pixel coordinates
-        const auto getTargetPixelIndex = [targetRectangle](const std::int32_t& pixelX, const std::int32_t& pixelY) -> std::int32_t {
-            return (pixelY - targetRectangle.top()) * targetRectangle.width() + (pixelX - targetRectangle.left());
+        // Get pixel index from two-dimensional pixel coordinates
+        const auto getPixelIndex = [&imageRectangle](const std::int32_t& pixelX, const std::int32_t& pixelY) -> std::int32_t {
+            return pixelY * imageRectangle.width() + pixelX;
         };
 
         if (_sourceDataset->getDataType() == PointType) {
@@ -722,10 +751,10 @@ void Layer::publishSelection()
                     selectionIndices.reserve(noPixels);
 
                     // Loop over all the pixels in the selection image in row-column order and add to the selection indices if the pixel is non-zero
-                    for (std::int32_t pixelY = targetRectangle.top(); pixelY <= targetRectangle.bottom(); pixelY++) {
-                        for (std::int32_t pixelX = targetRectangle.left(); pixelX <= targetRectangle.right(); pixelX++) {
-                            if (selectionImage.bits()[getTargetPixelIndex(pixelX, pixelY) * noComponents] > 0)
-                                selectionIndices.push_back(getSourcePixelIndex(pixelX, pixelY));
+                    for (std::int32_t pixelY = 0; pixelY < imageRectangle.height(); pixelY++) {
+                        for (std::int32_t pixelX = 0; pixelX < imageRectangle.width(); pixelX++) {
+                            if (_maskData[getPixelIndex(pixelX, pixelY)] > 0u && selectionImage.bits()[getPixelIndex(pixelX, pixelY) * noComponents] > 0)
+                                selectionIndices.push_back(getPixelIndex(pixelX, pixelY));
                         }
                     }
 
@@ -739,10 +768,10 @@ void Layer::publishSelection()
                     auto selectionSet = std::set<std::uint32_t>(selectionIndices.begin(), selectionIndices.end());
 
                     // Loop over all the pixels in the selection image in row-column order and insert the selection index into the set if the pixel is non-zero
-                    for (std::int32_t pixelY = targetRectangle.top(); pixelY <= targetRectangle.bottom(); pixelY++) {
-                        for (std::int32_t pixelX = targetRectangle.left(); pixelX <= targetRectangle.right(); pixelX++) {
-                            if (selectionImage.bits()[getTargetPixelIndex(pixelX, pixelY) * noComponents] > 0)
-                                selectionSet.insert(getSourcePixelIndex(pixelX, pixelY));
+                    for (std::int32_t pixelY = 0; pixelY < imageRectangle.height(); pixelY++) {
+                        for (std::int32_t pixelX = 0; pixelX < imageRectangle.width(); pixelX++) {
+                            if (_maskData[getPixelIndex(pixelX, pixelY)] > 0u && selectionImage.bits()[getPixelIndex(pixelX, pixelY) * noComponents] > 0)
+                                selectionSet.insert(getPixelIndex(pixelX, pixelY));
                         }
                     }
 
@@ -758,10 +787,10 @@ void Layer::publishSelection()
                     auto selectionSet = std::set<std::uint32_t>(selectionIndices.begin(), selectionIndices.end());
 
                     // Loop over all the pixels in the selection image in row-column order and remove the selection index from the set if the pixel is non-zero
-                    for (std::int32_t pixelY = targetRectangle.top(); pixelY <= targetRectangle.bottom(); pixelY++) {
-                        for (std::int32_t pixelX = targetRectangle.left(); pixelX <= targetRectangle.right(); pixelX++) {
-                            if (selectionImage.bits()[getTargetPixelIndex(pixelX, pixelY) * noComponents] > 0)
-                                selectionSet.erase(getSourcePixelIndex(pixelX, pixelY));
+                    for (std::int32_t pixelY = 0; pixelY < imageRectangle.height(); pixelY++) {
+                        for (std::int32_t pixelX = 0; pixelX < imageRectangle.width(); pixelX++) {
+                            if (_maskData[getPixelIndex(pixelX, pixelY)] > 0u && selectionImage.bits()[getPixelIndex(pixelX, pixelY) * noComponents] > 0)
+                                selectionSet.erase(getPixelIndex(pixelX, pixelY));
                         }
                     }
 
@@ -793,10 +822,10 @@ void Layer::publishSelection()
                     selectionIndices.reserve(noPixels);
 
                     // Loop over all the pixels in the selection image in row-column order and add to the selection indices if the pixel is non-zero
-                    for (std::int32_t pixelY = targetRectangle.top(); pixelY <= targetRectangle.bottom(); pixelY++) {
-                        for (std::int32_t pixelX = targetRectangle.left(); pixelX <= targetRectangle.right(); pixelX++) {
-                            if (selectionImage.bits()[getTargetPixelIndex(pixelX, pixelY) * noComponents] > 0)
-                                selectionIndices.push_back(integerScalarData[getTargetPixelIndex(pixelX, pixelY)]);
+                    for (std::int32_t pixelY = 0; pixelY < imageRectangle.height(); pixelY++) {
+                        for (std::int32_t pixelX = 0; pixelX < imageRectangle.width(); pixelX++) {
+                            if (selectionImage.bits()[getPixelIndex(pixelX, pixelY) * noComponents] > 0)
+                                selectionIndices.push_back(integerScalarData[getPixelIndex(pixelX, pixelY)]);
                         }
                     }
 
@@ -816,10 +845,10 @@ void Layer::publishSelection()
                     auto selectionSet = std::set<std::uint32_t>(selectionIndices.begin(), selectionIndices.end());
 
                     // Loop over all the pixels in the selection image in row-column order and insert the selection index into the set if the pixel is non-zero
-                    for (std::int32_t pixelY = targetRectangle.top(); pixelY <= targetRectangle.bottom(); pixelY++) {
-                        for (std::int32_t pixelX = targetRectangle.left(); pixelX <= targetRectangle.right(); pixelX++) {
-                            if (selectionImage.bits()[getTargetPixelIndex(pixelX, pixelY) * noComponents] > 0)
-                                selectionSet.insert(integerScalarData[getTargetPixelIndex(pixelX, pixelY)]);
+                    for (std::int32_t pixelY = 0; pixelY < imageRectangle.height(); pixelY++) {
+                        for (std::int32_t pixelX = 0; pixelX < imageRectangle.width(); pixelX++) {
+                            if (selectionImage.bits()[getPixelIndex(pixelX, pixelY) * noComponents] > 0)
+                                selectionSet.insert(integerScalarData[getPixelIndex(pixelX, pixelY)]);
                         }
                     }
 
@@ -836,10 +865,10 @@ void Layer::publishSelection()
                     auto selectionSet = std::set<std::uint32_t>(selectionIndices.begin(), selectionIndices.end());
 
                     // Loop over all the pixels in the selection image in row-column order and remove the selection index from the set if the pixel is non-zero
-                    for (std::int32_t pixelY = targetRectangle.top(); pixelY <= targetRectangle.bottom(); pixelY++) {
-                        for (std::int32_t pixelX = targetRectangle.left(); pixelX <= targetRectangle.right(); pixelX++) {
-                            if (selectionImage.bits()[getTargetPixelIndex(pixelX, pixelY) * noComponents] > 0)
-                                selectionSet.erase(integerScalarData[getTargetPixelIndex(pixelX, pixelY)]);
+                    for (std::int32_t pixelY = 0; pixelY < imageRectangle.height(); pixelY++) {
+                        for (std::int32_t pixelX = 0; pixelX < imageRectangle.width(); pixelX++) {
+                            if (selectionImage.bits()[getPixelIndex(pixelX, pixelY) * noComponents] > 0)
+                                selectionSet.erase(integerScalarData[getPixelIndex(pixelX, pixelY)]);
                         }
                     }
 
@@ -940,21 +969,15 @@ QRectF Layer::getWorldSelectionRectangle() const
     // Get pointer to image prop
     auto layerImageProp = getPropByName<ImageProp>("ImageProp");
 
-    // Get target rectangle (needed for image offset)
-    const auto targetRectangle = _imagesDataset->getTargetRectangle();
-
-    // Add the offset
-    const auto translatedSelectionRectangleProp = _imageSelectionRectangle.translated(targetRectangle.topLeft());
-
     // Ensure selection boundaries are valid
-    if (!translatedSelectionRectangleProp.isValid())
+    if (!_imageSelectionRectangle.isValid())
         throw std::runtime_error("Selection boundaries are invalid");
 
     // Compute composite matrix
     const auto matrix = getModelMatrix() * layerImageProp->getModelMatrix();
 
     // Compute rectangle extents in world coordinates
-    return QRectF(matrix * translatedSelectionRectangleProp.topLeft(), matrix * translatedSelectionRectangleProp.bottomRight());
+    return QRectF(matrix * _imageSelectionRectangle.topLeft(), matrix * _imageSelectionRectangle.bottomRight());
 }
 
 void Layer::zoomToExtents()
@@ -997,9 +1020,4 @@ void Layer::zoomToSelection()
     catch (...) {
         exceptionMessageBox(QString("Unable to zoom to the pixel selection for layer: %1").arg(_generalAction.getNameAction().getString()));
     }
-}
-
-QRectF Layer::getWorldBoundingRectangle() const
-{
-    return getPropByName<ImageProp>("ImageProp")->getWorldBoundingRectangle();
 }

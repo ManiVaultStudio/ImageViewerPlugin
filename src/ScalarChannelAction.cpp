@@ -15,8 +15,7 @@ using namespace hdps;
 const QMap<ScalarChannelAction::Identifier, QString> ScalarChannelAction::channelIndexes = {
     { ScalarChannelAction::Channel1, "Channel 1" },
     { ScalarChannelAction::Channel2, "Channel 2" },
-    { ScalarChannelAction::Channel3, "Channel 3" },
-    { ScalarChannelAction::Mask, "Mask channel" }
+    { ScalarChannelAction::Channel3, "Channel 3" }
 };
 
 ScalarChannelAction::ScalarChannelAction(ImageAction& imageAction, const Identifier& index, const QString& name) :
@@ -36,7 +35,6 @@ ScalarChannelAction::ScalarChannelAction(ImageAction& imageAction, const Identif
     switch (_identifier)
     {
         case Channel1:
-        case Mask:
             _enabledAction.setChecked(true);
             break;
 
@@ -137,6 +135,7 @@ void ScalarChannelAction::reset()
 
 void ScalarChannelAction::computeScalarData()
 {
+    
     try
     {
         if (!_enabledAction.isChecked())
@@ -159,12 +158,6 @@ void ScalarChannelAction::computeScalarData()
                 break;
             }
 
-            case Mask:
-            {
-                computeMaskChannel();
-                break;
-            }
-
             default:
                 break;
         }
@@ -179,14 +172,6 @@ void ScalarChannelAction::computeScalarData()
     catch (...) {
         exceptionMessageBox("Unable to compute scalar data");
     }
-}
-
-void ScalarChannelAction::computeMaskChannel()
-{
-    qDebug() << "Compute mask for channel" << _identifier << QString("(%1)").arg(_imageAction.getLayer().getGeneralAction().getNameAction().getString());
-
-    // Future implementations can use external masks, for now just leave opaque
-    std::fill(_scalarData.begin(), _scalarData.end(), 1.0f);
 }
 
 Dataset<Images> ScalarChannelAction::getImages()

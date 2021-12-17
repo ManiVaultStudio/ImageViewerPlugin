@@ -695,7 +695,7 @@ Layer* ImageViewerWidget::getLayerBeneathCursor()
         const auto mousePositionWorld = _renderer.getScreenPointToWorldPosition(layer->getModelViewMatrix() * layer->getPropByName<ImageProp>("ImageProp")->getModelMatrix(), mousePositionWidget);
 
         // Establish whether the mouse position is contained by its bounding box and return the layer if so
-        if (layer->getImages()->getTargetRectangle().contains(mousePositionWorld.toPoint()))
+        if (layer->getImages()->getVisibleRectangle().contains(mousePositionWorld.toPoint()))
             return layer;
     }
 
@@ -734,8 +734,10 @@ QRectF ImageViewerWidget::getWorldBoundingRectangle() const
     QRectF worldBoundingRectangle;
 
     for (const auto& layer : _imageViewerPlugin.getModel().getLayers()) {
-        if (layer->getGeneralAction().getVisibleAction().isChecked())
+        if (layer->getGeneralAction().getVisibleAction().isChecked()) {
             worldBoundingRectangle |= layer->getWorldBoundingRectangle();
+            qDebug() << "worldBoundingRectangle" << layer->getWorldBoundingRectangle();
+        }
     }
 
     return worldBoundingRectangle;

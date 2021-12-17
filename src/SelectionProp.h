@@ -39,16 +39,21 @@ public:
 
     /**
      * Set the geometry
-     * @param sourceImageRectangle Source image rectangle
-     * @param targetImageRectangle Target image rectangle
+     * @param imageRectangle Image rectangle
      */
-    void setGeometry(const QRect& sourceImageRectangle, const QRect& targetImageRectangle);
+    void setGeometry(const QRectF& imageRectangle);
 
     /**
      * Set selection data
      * @param selectionData Selection data
      */
     void setSelectionData(const std::vector<std::uint8_t>& selectionData);
+
+    /**
+     * Set mask data
+     * @param maskData Mask data
+     */
+    void setMaskData(const std::vector<std::uint8_t>& maskData);
 
 protected:
     Layer&      _layer;     /** Reference to layer */

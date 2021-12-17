@@ -31,7 +31,7 @@ public: // Enumerations
         Channel1,
         Channel2,
         Channel3,
-        Channel4
+        Mask
     };
 
 public: // Construction/destruction
@@ -62,10 +62,9 @@ public: // Rendering
 
     /**
      * Set the geometry
-     * @param sourceImageRectangle Source image rectangle
-     * @param targetImageRectangle Target image rectangle
+     * @param imageRectangle Image rectangle
      */
-    void setGeometry(const QRect& sourceImageRectangle, const QRect& targetImageRectangle);
+    void setGeometry(const QRectF& imageRectangle);
 
     /**
      * Set the color map image
@@ -80,6 +79,12 @@ public: // Rendering
      * @param displayRange Display range
      */
     void setChannelScalarData(const std::uint32_t& channelIndex, const QVector<float>& scalarData, const DisplayRange& displayRange);
+
+    /**
+     * Set mask data
+     * @param maskData Mask data
+     */
+    void setMaskData(const std::vector<std::uint8_t>& maskData);
 
     /**
      * Set image interpolation type

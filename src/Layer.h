@@ -75,20 +75,8 @@ public:
     void paint(QPainter& painter, const PaintFlag& paintFlags);
 
     /** Get source dataset */
-    hdps::Dataset<hdps::DatasetImpl> getSourceDataset() {
+    hdps::Dataset<hdps::DatasetImpl>& getSourceDataset() {
         return _sourceDataset;
-    }
-
-    /** Get source dataset of a specific dataset type */
-    template<typename DatasetType>
-    hdps::Dataset<DatasetType> getSourceDataset() {
-        return _sourceDataset;
-    }
-
-    /** Get const source dataset of a specific dataset type */
-    template<typename DatasetType>
-    hdps::Dataset<DatasetType> getSourceDataset() const {
-        return const_cast<Layer*>(this)->getSourceDataset<DatasetType>();
     }
 
     /** Get images dataset */
@@ -160,8 +148,11 @@ public: // View
     // Zoom to layer selection
     void zoomToSelection();
 
-    /** Get the bounding rectangle */
+    /** Get the visible rectangle in world coordinates */
     QRectF getWorldBoundingRectangle() const override;
+
+    /** Get the visible rectangle in screen coordinates */
+    QRectF getScreenBoundingRectangle() const;
 
 protected: // Rendering
 
@@ -212,7 +203,7 @@ protected:
     SelectionAction                     _selectionAction;               /** Selection action */
     std::vector<std::uint8_t>           _selectionData;                 /** Selection data for selection prop */
     QRect                               _imageSelectionRectangle;       /** Selection boundaries in image coordinates */
-    QVector<float>                      _colorData;                     /** Color data for the specified dimension */
+    std::vector<std::uint8_t>           _maskData;                      /** Mask data for the image */
 
     friend class ImageViewerWidget;
     friend class ImageAction;

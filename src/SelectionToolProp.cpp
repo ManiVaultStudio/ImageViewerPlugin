@@ -103,31 +103,31 @@ QRectF SelectionToolProp::getWorldBoundingRectangle() const
     return getShapeByName<QuadShape>("Quad")->getRectangle();
 }
 
-void SelectionToolProp::setGeometry(const QRect& sourceImageRectangle, const QRect& targetImageRectangle)
+void SelectionToolProp::setGeometry(const QRectF& imageRectangle)
 {
     try {
-        qDebug() << "Set selection tool prop geometry:" << sourceImageRectangle << targetImageRectangle;
+        qDebug() << "Set selection tool prop geometry:" << imageRectangle;
 
         getRenderer().bindOpenGLContext();
         {
             // Assign the rectangle to the quad shape
-            getShapeByName<QuadShape>("Quad")->setRectangle(QRect(QPoint(), targetImageRectangle.size()));
+            getShapeByName<QuadShape>("Quad")->setRectangle(imageRectangle);
 
             // Update the model matrix
             QMatrix4x4 modelMatrix;
 
             // Establish center
-            const auto center = QRectF(sourceImageRectangle).center();
+            const auto center = imageRectangle.center();
 
             // Compute the model matrix
-            modelMatrix.translate(-center.x() + targetImageRectangle.left(), -center.y() + targetImageRectangle.top(), 0.0f);
+            modelMatrix.translate(-center.x() + imageRectangle.left(), -center.y() + imageRectangle.top(), 0.0f);
 
             // Assign model matrix
             setModelMatrix(modelMatrix);
 
             // Create FBO when none exists
             if (_fbo.isNull())
-                _fbo.reset(new QOpenGLFramebufferObject(targetImageRectangle.width(), targetImageRectangle.height()));
+                _fbo.reset(new QOpenGLFramebufferObject(imageRectangle.width(), imageRectangle.height()));
         }
         getRenderer().releaseOpenGLContext();
     }

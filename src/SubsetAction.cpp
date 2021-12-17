@@ -12,18 +12,15 @@ SubsetAction::SubsetAction(ImageViewerPlugin& imageViewerPlugin) :
     TriggerAction(&imageViewerPlugin),
     _imageViewerPlugin(imageViewerPlugin),
     _nameAction(this, "Name"),
-    _fromRegionAction(this, "From region", true, true),
     _createAction(this, "Create")
 {
     setText("Create subset");
     setIcon(Application::getIconFont("FontAwesome").getIcon("crop"));
 
     _nameAction.setToolTip("Name of the subset");
-    _fromRegionAction.setToolTip("Create an image from the selected region");
     _createAction.setToolTip("Create the subset");
 
     // Actions may not be reset
-    _fromRegionAction.setMayReset(false);
     _nameAction.setMayReset(false);
 
     connect(&_imageViewerPlugin.getSelectionModel(), &QItemSelectionModel::selectionChanged, this, [this](const QItemSelection& newSelection, const QItemSelection& oldSelection) {
@@ -55,7 +52,7 @@ SubsetAction::SubsetAction(ImageViewerPlugin& imageViewerPlugin) :
             };
 
             // Enable/disable when the layer selection changes
-            connect(layer, &Layer::selectionChanged, this, updateEnabled);
+            connect(&layer->getSourceDataset(), &Dataset<DatasetImpl>::dataSelectionChanged, this, updateEnabled);
 
             // Do an initial update when the layer is selected
             updateEnabled();
@@ -89,73 +86,28 @@ SubsetAction::SubsetAction(ImageViewerPlugin& imageViewerPlugin) :
             auto layer = static_cast<Layer*>(selectedRows.first().internalPointer());
 
             // Pointer to points dataset
-            auto points = layer->getSourceDataset<Points>();
+            auto points = Dataset<Points>(layer->getSourceDataset());
 
             // Get reference to images dataset
             auto images = layer->getImages();
 
-            if (_fromRegionAction.isChecked()) {
+            // Create the points subset
+            auto subset = points->createSubset(_nameAction.getString(), points);
 
-                // Get the image size
-                const auto imageSize = layer->getImageSize();
+            // Notify that the points set was added
+            Application::core()->notifyDataAdded(subset);
 
-                // Cache the selection indices
-                auto cachedSelectionIndices = layer->getSelectedIndices();
+            // Create a new image dataset which is a subset of the original image
+            auto imagesSubset = Application::core()->addDataset<Images>("Images", _nameAction.getString(), subset);
 
-                // Get the selection rectangle in image coordinates
-                const auto selectionBoundaries = layer->getSelectionAction().getImageSelectionRectangle();
+            imagesSubset->setType(images->getType());
+            imagesSubset->setNumberOfImages(images->getNumberOfImages());
+            imagesSubset->setImageSize(images->getImageSize());
+            imagesSubset->setNumberOfComponentsPerPixel(images->getNumberOfComponentsPerPixel());
+            //imagesSubset->setImageFilePaths(images->getImag);
 
-                // Compute the number of pixels in the region
-                const auto numberOfPixelsInRegion = selectionBoundaries.width() * selectionBoundaries.height();
-
-                // Get reference to selection indices
-                auto& selectionIndices = points->getSelection<Points>()->indices;
-
-                // Allocate space for indices
-                selectionIndices.clear();
-                selectionIndices.reserve(numberOfPixelsInRegion);
-
-                // Populate new selection indices
-                for (std::int32_t roiPixelY = selectionBoundaries.top(); roiPixelY <= selectionBoundaries.bottom(); roiPixelY++)
-                    for (std::int32_t roiPixelX = selectionBoundaries.left(); roiPixelX <= selectionBoundaries.right(); roiPixelX++)
-                        selectionIndices.push_back(roiPixelY * imageSize.width() + roiPixelX);
-
-                // Except when selection set is empty
-                if (selectionIndices.empty())
-                    throw std::runtime_error("Selection is empty");
-
-                // Create the points subset
-                auto subset = layer->getSourceDataset<Points>()->createSubset(_nameAction.getString(), points);
-
-                // Notify that the points set was added
-                Application::core()->notifyDataAdded(subset);
-
-                // Reset selected indices
-                selectionIndices = cachedSelectionIndices;
-
-                // Create a new image dataset which is a subset of the original image
-                auto imagesSubset = Application::core()->addDataset<Images>("Images", _nameAction.getString(), points);
-
-                imagesSubset->setType(images->getType());
-                imagesSubset->setNumberOfImages(images->getNumberOfImages());
-                imagesSubset->setImageGeometry(images->getSourceRectangle().size(), selectionBoundaries.size(), selectionBoundaries.topLeft());
-                imagesSubset->setNumberOfComponentsPerPixel(images->getNumberOfComponentsPerPixel());
-                //imagesSubset->setImageFilePaths(images->getImag);
-
-                // Notify others that the images dataset was added
-                Application::core()->notifyDataAdded(*imagesSubset);
-
-                // Reset the name
-                _nameAction.reset();
-            }
-            else {
-                
-                // Create the points subset
-                auto subset = points->createSubset(_nameAction.getString(), points);
-
-                // Notify that the points set was added
-                Application::core()->notifyDataAdded(subset);
-            }
+            // Notify others that the images dataset was added
+            Application::core()->notifyDataAdded(*imagesSubset);
         }
         catch (std::exception& e)
         {
@@ -165,25 +117,6 @@ SubsetAction::SubsetAction(ImageViewerPlugin& imageViewerPlugin) :
             exceptionMessageBox("Unable to set create subset");
         }
     });
-
-    // Highlight the selection region in the viewer when needed
-    connect(&_fromRegionAction, &ToggleAction::toggled, this, &SubsetAction::updateHighlightRegion);
-}
-
-void SubsetAction::updateHighlightRegion()
-{
-    // Get selected row from selection model
-    const auto selectedRows = _imageViewerPlugin.getSelectionModel().selectedRows();
-
-    // Only accept one selected layer at a time
-    if (selectedRows.isEmpty())
-        return;
-
-    // Get pointer to selected layer
-    auto layer = static_cast<Layer*>(selectedRows.first().internalPointer());
-
-    // Show/hide the region
-    layer->getSelectionAction().getShowRegionAction().setChecked(getFromRegionAction().isChecked());
 }
 
 SubsetAction::Widget::Widget(QWidget* parent, SubsetAction* subsetAction, const std::int32_t& widgetFlags) :
@@ -194,16 +127,12 @@ SubsetAction::Widget::Widget(QWidget* parent, SubsetAction* subsetAction, const 
 
     layout->addWidget(subsetAction->getNameAction().createLabelWidget(this), 0, 0);
     layout->addWidget(subsetAction->getNameAction().createWidget(this), 0, 1);
-    layout->addWidget(subsetAction->getFromRegionAction().createWidget(this), 1, 1);
     layout->addWidget(subsetAction->getCreateAction().createWidget(this), 2, 1);
 
     // Close the widget when the create action is triggered
     connect(&subsetAction->getCreateAction(), &TriggerAction::triggered, this, [this]() {
         parentWidget()->close();
     });
-
-    // Highlight the selection region when needed
-    subsetAction->updateHighlightRegion();
 
     if (widgetFlags & PopupLayout)
     {

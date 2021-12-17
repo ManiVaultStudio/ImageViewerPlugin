@@ -43,10 +43,9 @@ public:
 
     /**
      * Set the geometry
-     * @param sourceImageRectangle Source image rectangle
-     * @param targetImageRectangle Target image rectangle
+     * @param imageRectangle Image rectangle
      */
-    void setGeometry(const QRect& sourceImageRectangle, const QRect& targetImageRectangle);
+    void setGeometry(const QRectF& imageRectangle);
 
 public: // Pixel selection
 

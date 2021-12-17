@@ -9,8 +9,8 @@ out vec4 fragmentColor;                 // Output fragment
 
 void main(void)
 {
-    if (texture(offScreenTexture, uv).r > 0)
-        fragmentColor= color;
-    else 
-        fragmentColor= vec4(0);
+//    if (texture(offScreenTexture, uv).r > 0)
+//        fragmentColor= color;
+//    else 
+//        fragmentColor= vec4(0);
 }
