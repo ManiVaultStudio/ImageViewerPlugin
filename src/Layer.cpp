@@ -284,6 +284,33 @@ void Layer::updateWindowTitle()
     }
 }
 
+QRectF Layer::getWorldBoundingRectangle() const
+{
+    // Compute composite matrix and rectangle extents in world coordinates
+    const auto matrix           = getModelMatrix() * getPropByName<ImageProp>("ImageProp")->getModelMatrix();
+    const auto visibleRectangle = _imagesDataset->getVisibleRectangle();
+    const auto worldTopLeft     = matrix * visibleRectangle.topLeft();
+    const auto worldBottomRight = matrix * visibleRectangle.bottomRight();
+
+    const auto rectangleFromPoints = [](const QPointF& first, const QPointF& second) -> QRectF {
+        QRectF rectangle;
+
+        rectangle.setLeft(std::min(first.x(), second.x()));
+        rectangle.setRight(std::max(first.x(), second.x()));
+        rectangle.setTop(std::min(first.y(), second.y()));
+        rectangle.setBottom(std::max(first.y(), second.y()));
+
+        return rectangle;
+    };
+
+    return rectangleFromPoints(worldTopLeft, worldBottomRight);
+}
+
+QRectF Layer::getScreenBoundingRectangle() const
+{
+    return getRenderer().getScreenRectangleFromWorldRectangle(getWorldBoundingRectangle());
+}
+
 LayersAction& Layer::getLayersAction()
 {
     return _imageViewerPlugin.getSettingsAction().getLayersAction();
@@ -402,8 +429,8 @@ void Layer::paint(QPainter& painter, const PaintFlag& paintFlags)
         if (!_generalAction.getVisibleAction().isChecked())
             return;
 
-        // Get image prop screen bounding rectangle
-        const auto propRectangle = getPropByName<ImageProp>("ImageProp")->getScreenBoundingRectangle();
+        // Get image prop visible screen bounding rectangle
+        const auto propRectangle = getScreenBoundingRectangle();
 
         // Get pixel selection color
         const auto pixelSelectionColor = _imageViewerPlugin.getImageViewerWidget().getPixelSelectionTool().getMainColor();
@@ -451,7 +478,7 @@ void Layer::paint(QPainter& painter, const PaintFlag& paintFlags)
 
             // Draw the text
             painter.setFont(QApplication::font());
-            painter.drawText(QRect(propRectangle.bottomLeft() + QPoint(0.0f, margin), QSize(500, 100)), labelText, QTextOption(Qt::AlignTop | Qt::AlignLeft));
+            painter.drawText(QRectF(propRectangle.bottomLeft() + QPoint(0.0f, margin), QSize(500, 100)), labelText, QTextOption(Qt::AlignTop | Qt::AlignLeft));
         }
 
         // Draw sample information
@@ -991,9 +1018,4 @@ void Layer::zoomToSelection()
     catch (...) {
         exceptionMessageBox(QString("Unable to zoom to the pixel selection for layer: %1").arg(_generalAction.getNameAction().getString()));
     }
-}
-
-QRectF Layer::getWorldBoundingRectangle() const
-{
-    return getPropByName<ImageProp>("ImageProp")->getWorldBoundingRectangle();
 }

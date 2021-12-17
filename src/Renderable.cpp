@@ -15,6 +15,11 @@ LayersRenderer& Renderable::getRenderer()
     return _renderer;
 }
 
+const LayersRenderer& Renderable::getRenderer() const
+{
+    return _renderer;
+}
+
 QMatrix4x4 Renderable::getModelMatrix() const
 {
     return _modelMatrix;

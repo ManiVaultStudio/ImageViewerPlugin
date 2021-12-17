@@ -41,6 +41,9 @@ public: // Rendering
     /** Get reference to the renderer */
     LayersRenderer& getRenderer();
 
+    /** Get reference to the renderer */
+    const LayersRenderer& getRenderer() const;
+
     /** Returns the model matrix */
     QMatrix4x4 getModelMatrix() const;
 

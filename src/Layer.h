@@ -148,8 +148,11 @@ public: // View
     // Zoom to layer selection
     void zoomToSelection();
 
-    /** Get the bounding rectangle */
+    /** Get the visible rectangle in world coordinates */
     QRectF getWorldBoundingRectangle() const override;
+
+    /** Get the visible rectangle in screen coordinates */
+    QRectF getScreenBoundingRectangle() const;
 
 protected: // Rendering
 
@@ -199,7 +202,7 @@ protected:
     ImageAction                         _imageAction;                   /** Image action */
     SelectionAction                     _selectionAction;               /** Selection action */
     std::vector<std::uint8_t>           _selectionData;                 /** Selection data for selection prop */
-    QRect                               _imageSelectionRectangle;      /** Selection boundaries in image coordinates */
+    QRect                               _imageSelectionRectangle;       /** Selection boundaries in image coordinates */
     std::vector<std::uint8_t>           _maskData;                      /** Mask data for the image */
 
     friend class ImageViewerWidget;
