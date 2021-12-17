@@ -103,7 +103,7 @@ QRectF SelectionToolProp::getWorldBoundingRectangle() const
     return getShapeByName<QuadShape>("Quad")->getRectangle();
 }
 
-void SelectionToolProp::setGeometry(const QRect& imageRectangle)
+void SelectionToolProp::setGeometry(const QRectF& imageRectangle)
 {
     try {
         qDebug() << "Set selection tool prop geometry:" << imageRectangle;

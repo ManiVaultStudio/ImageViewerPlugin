@@ -202,22 +202,33 @@ QRectF ImageProp::getWorldBoundingRectangle() const
     return rectangleFromPoints(worldTopLeft, worldBottomRight);
 }
 
-void ImageProp::setGeometry(const QRect& imageRectangle)
+void ImageProp::setGeometry(const QRectF& imageRectangle)
 {
-    // Assign the rectangle to the quad shape
-    getShapeByName<QuadShape>("Quad")->setRectangle(imageRectangle);
+    try {
+        qDebug() << "Set image prop geometry:" << imageRectangle;
 
-    // Update the model matrix
-    QMatrix4x4 modelMatrix;
+        // Assign the rectangle to the quad shape
+        getShapeByName<QuadShape>("Quad")->setRectangle(imageRectangle);
 
-    // Establish center
-    const auto center = imageRectangle.center();
+        // Update the model matrix
+        QMatrix4x4 modelMatrix;
 
-    // Compute the  model matrix
-    modelMatrix.translate(-center.x(), -center.y(), 0.0f);
+        // Establish center
+        const auto center = imageRectangle.center();
 
-    // Assign model matrix
-    setModelMatrix(modelMatrix);
+        // Compute the  model matrix
+        modelMatrix.translate(-center.x(), -center.y(), 0.0f);
+
+        // Assign model matrix
+        setModelMatrix(modelMatrix);
+    }
+    catch (std::exception& e)
+    {
+        exceptionMessageBox("Image prop set geometry failed", e);
+    }
+    catch (...) {
+        exceptionMessageBox("Image prop set geometry failed");
+    }
 }
 
 void ImageProp::setColorMapImage(const QImage& colorMapImage)

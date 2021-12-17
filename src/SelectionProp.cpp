@@ -163,25 +163,36 @@ QRectF SelectionProp::getWorldBoundingRectangle() const
     return QRectF(worldTopLeft, worldBottomRight);
 }
 
-void SelectionProp::setGeometry(const QRect& imageRectangle)
+void SelectionProp::setGeometry(const QRectF& imageRectangle)
 {
-    // Assign the rectangle to the quad shape
-    getShapeByName<QuadShape>("Quad")->setRectangle(imageRectangle);
+    try {
+        qDebug() << "Set selection prop geometry:" << imageRectangle;
 
-    // Update the model matrix
-    QMatrix4x4 modelMatrix;
+        // Assign the rectangle to the quad shape
+        getShapeByName<QuadShape>("Quad")->setRectangle(imageRectangle);
 
-    // Get quad shape
-    const auto rectangle = getShapeByName<QuadShape>("Quad")->getRectangle();
+        // Update the model matrix
+        QMatrix4x4 modelMatrix;
 
-    // Establish center
-    const auto center = imageRectangle.center();
+        // Get quad shape
+        const auto rectangle = getShapeByName<QuadShape>("Quad")->getRectangle();
 
-    // Compute the  model matrix
-    modelMatrix.translate(-center.x(), -center.y(), 0.0f);
+        // Establish center
+        const auto center = imageRectangle.center();
 
-    // Assign model matrix
-    setModelMatrix(modelMatrix);
+        // Compute the  model matrix
+        modelMatrix.translate(-center.x(), -center.y(), 0.0f);
+
+        // Assign model matrix
+        setModelMatrix(modelMatrix);
+    }
+    catch (std::exception& e)
+    {
+        exceptionMessageBox("Selection prop set geometry failed", e);
+    }
+    catch (...) {
+        exceptionMessageBox("Selection prop set geometry failed");
+    }
 }
 
 void SelectionProp::setSelectionData(const std::vector<std::uint8_t>& selectionData)

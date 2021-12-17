@@ -45,7 +45,7 @@ public:
      * Set the geometry
      * @param imageRectangle Image rectangle
      */
-    void setGeometry(const QRect& imageRectangle);
+    void setGeometry(const QRectF& imageRectangle);
 
 public: // Pixel selection
 

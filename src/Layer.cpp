@@ -288,9 +288,11 @@ QRectF Layer::getWorldBoundingRectangle() const
 {
     // Compute composite matrix and rectangle extents in world coordinates
     const auto matrix           = getModelMatrix() * getPropByName<ImageProp>("ImageProp")->getModelMatrix();
-    const auto visibleRectangle = _imagesDataset->getVisibleRectangle();
+    const auto visibleRectangle = QRectF(_imagesDataset->getVisibleRectangle());
     const auto worldTopLeft     = matrix * visibleRectangle.topLeft();
     const auto worldBottomRight = matrix * visibleRectangle.bottomRight();
+
+    //qDebug() << _imagesDataset->getGuiName() << visibleRectangle;
 
     const auto rectangleFromPoints = [](const QPointF& first, const QPointF& second) -> QRectF {
         QRectF rectangle;
@@ -400,7 +402,7 @@ void Layer::scaleToFit(const QRectF& rectangle)
     // Only fit into valid rectangle
     if (!rectangle.isValid())
         return;
-    
+
     // Get target rectangle center and size
     const auto rectangleCenter = rectangle.center();
 
