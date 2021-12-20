@@ -300,7 +300,7 @@ void ImageProp::setChannelScalarData(const std::uint32_t& channelIndex, const QV
                 texture->setSize(imageSize.width(), imageSize.height(), 4);
                 texture->setFormat(QOpenGLTexture::R32F);
                 texture->allocateStorage(QOpenGLTexture::Red, QOpenGLTexture::Float32);
-                texture->setWrapMode(QOpenGLTexture::ClampToEdge);
+                texture->setWrapMode(QOpenGLTexture::ClampToBorder);
             }
 
             // Set the interpolation type
