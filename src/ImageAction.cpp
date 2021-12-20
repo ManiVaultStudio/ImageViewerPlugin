@@ -117,13 +117,19 @@ ImageAction::ImageAction(Layer& layer) :
 
     if (isClusterType) {
         
-        // Configure image interpolation
+        // Configure image interpolation action
         _interpolationTypeAction.setCurrentIndex(static_cast<std::int32_t>(InterpolationType::NearestNeighbor));
         _interpolationTypeAction.setEnabled(false);
 
-        // Configure color space
+        // Configure color space action
         _colorSpaceAction.setEnabled(false);
         _colorSpaceAction.setCurrentText("Mono");
+
+        // Configure color map action
+        _colorMapAction.setEnabled(false);
+
+        // Configure constant color action
+        _constantColorAction.setEnabled(false);
 
         // Disable all channels
         _scalarChannel1Action.getWindowLevelAction().setEnabled(false);
