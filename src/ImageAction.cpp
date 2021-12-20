@@ -128,8 +128,8 @@ ImageAction::ImageAction(Layer& layer) :
         // Configure color map action
         _colorMapAction.setEnabled(false);
 
-        // Configure constant color action
-        _constantColorAction.setEnabled(false);
+        // Configure use constant color action
+        _useConstantColorAction.setEnabled(false);
 
         // Disable all channels
         _scalarChannel1Action.getWindowLevelAction().setEnabled(false);
