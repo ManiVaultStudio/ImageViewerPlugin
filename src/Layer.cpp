@@ -111,6 +111,8 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const hdps::Dataset<Images>& 
     connect(&_generalAction.getPositionAction(), &PositionAction::changed, this, updateModelMatrixAndReRender);
 
     updateChannelScalarData(_imageAction.getScalarChannel1Action());
+    updateChannelScalarData(_imageAction.getScalarChannel2Action());
+    updateChannelScalarData(_imageAction.getScalarChannel3Action());
     updateInterpolationType();
     updateModelMatrixAndReRender();
 
