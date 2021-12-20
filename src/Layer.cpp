@@ -469,7 +469,7 @@ void Layer::paint(QPainter& painter, const PaintFlag& paintFlags)
         if ((paintFlags & Layer::Label) && _active) {
 
             // Establish label text
-            const auto labelText = QString("%1 (%2x%3)").arg(_generalAction.getNameAction().getString(), QString::number(_imagesDataset->getImageSize().width()), QString::number(_imagesDataset->getImageSize().height()));
+            const auto labelText = QString("%1 (%2x%3)").arg(_generalAction.getNameAction().getString(), QString::number(propRectangle.width()), QString::number(propRectangle.height()));
 
             // Configure pen and brush
             painter.setPen(QPen(QBrush(_generalAction.getColorAction().getColor()), _active ? 2.0f : 1.0f));
