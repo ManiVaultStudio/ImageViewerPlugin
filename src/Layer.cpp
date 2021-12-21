@@ -826,7 +826,7 @@ void Layer::publishSelection()
                     // Loop over all the pixels in the selection image in row-column order and add to the selection indices if the pixel is non-zero
                     for (std::int32_t pixelY = 0; pixelY < imageRectangle.height(); pixelY++) {
                         for (std::int32_t pixelX = 0; pixelX < imageRectangle.width(); pixelX++) {
-                            if (selectionImage.bits()[getPixelIndex(pixelX, pixelY) * noComponents] > 0)
+                            if (_maskData[getPixelIndex(pixelX, pixelY)] > 0u && selectionImage.bits()[getPixelIndex(pixelX, pixelY) * noComponents] > 0)
                                 selectionIndices.push_back(integerScalarData[getPixelIndex(pixelX, pixelY)]);
                         }
                     }
@@ -849,7 +849,7 @@ void Layer::publishSelection()
                     // Loop over all the pixels in the selection image in row-column order and insert the selection index into the set if the pixel is non-zero
                     for (std::int32_t pixelY = 0; pixelY < imageRectangle.height(); pixelY++) {
                         for (std::int32_t pixelX = 0; pixelX < imageRectangle.width(); pixelX++) {
-                            if (selectionImage.bits()[getPixelIndex(pixelX, pixelY) * noComponents] > 0)
+                            if (_maskData[getPixelIndex(pixelX, pixelY)] > 0u && selectionImage.bits()[getPixelIndex(pixelX, pixelY) * noComponents] > 0)
                                 selectionSet.insert(integerScalarData[getPixelIndex(pixelX, pixelY)]);
                         }
                     }
@@ -869,7 +869,7 @@ void Layer::publishSelection()
                     // Loop over all the pixels in the selection image in row-column order and remove the selection index from the set if the pixel is non-zero
                     for (std::int32_t pixelY = 0; pixelY < imageRectangle.height(); pixelY++) {
                         for (std::int32_t pixelX = 0; pixelX < imageRectangle.width(); pixelX++) {
-                            if (selectionImage.bits()[getPixelIndex(pixelX, pixelY) * noComponents] > 0)
+                            if (_maskData[getPixelIndex(pixelX, pixelY)] > 0u && selectionImage.bits()[getPixelIndex(pixelX, pixelY) * noComponents] > 0)
                                 selectionSet.erase(integerScalarData[getPixelIndex(pixelX, pixelY)]);
                         }
                     }
