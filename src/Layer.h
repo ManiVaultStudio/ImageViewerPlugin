@@ -66,7 +66,7 @@ public:
      * Squeeze the layer into a rectangle whilst maintaining its aspect ratio
      * @param rectangle Rectangle to squeeze into
      */
-    void scaleToFit(const QRectF& rectangle);
+    void scaleToFit(const QRectF& layersRectangle);
 
     /**
      * Paint

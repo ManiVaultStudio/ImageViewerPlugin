@@ -11,13 +11,15 @@ GeneralAction::GeneralAction(Layer& layer) :
     _colorAction(this, "Color"),
     _nameAction(this, "Name"),
     _positionAction(*this),
-    _scaleAction(this, "Scale", 0.0f, 1000.0f, 100.0f, 100.0f, 1),
+    _scaleAction(this, "Scale", 0.0f, 1000000.0f, 100.0f, 100.0f, 1),
     _zoomAction(*this)
 {
     setText("General");
 
     _datasetNameAction.setEnabled(false);
     _datasetNameAction.setMayReset(false);
+
+    _scaleAction.setDefaultWidgetFlags(DecimalAction::SpinBox);
 
     // Set tooltips
     _visibleAction.setToolTip("Visibility of the layer");

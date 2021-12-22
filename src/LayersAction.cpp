@@ -106,7 +106,7 @@ LayersAction::Widget::Widget(QWidget* parent, LayersAction* layersAction) :
     header->resizeSection(LayersModel::Color, minimumSectionSize);
     header->resizeSection(LayersModel::ImageWidth, 50);
     header->resizeSection(LayersModel::ImageHeight, 50);
-    header->resizeSection(LayersModel::Scale, 50);
+    header->resizeSection(LayersModel::Scale, 60);
     header->resizeSection(LayersModel::Opacity, 50);
 
     header->setSectionResizeMode(LayersModel::Visible, QHeaderView::Fixed);
@@ -114,7 +114,7 @@ LayersAction::Widget::Widget(QWidget* parent, LayersAction* layersAction) :
     header->setSectionResizeMode(LayersModel::Name, QHeaderView::Interactive);
     header->setSectionResizeMode(LayersModel::ImageWidth, QHeaderView::Fixed);
     header->setSectionResizeMode(LayersModel::ImageHeight, QHeaderView::Fixed);
-    header->setSectionResizeMode(LayersModel::Scale, QHeaderView::Fixed);
+    header->setSectionResizeMode(LayersModel::Scale, QHeaderView::Interactive);
     header->setSectionResizeMode(LayersModel::Opacity, QHeaderView::Fixed);
 
     layout->setMargin(0);

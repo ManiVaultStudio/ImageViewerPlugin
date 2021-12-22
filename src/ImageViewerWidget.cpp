@@ -734,10 +734,8 @@ QRectF ImageViewerWidget::getWorldBoundingRectangle() const
     QRectF worldBoundingRectangle;
 
     for (const auto& layer : _imageViewerPlugin.getModel().getLayers()) {
-        if (layer->getGeneralAction().getVisibleAction().isChecked()) {
+        if (layer->getGeneralAction().getVisibleAction().isChecked())
             worldBoundingRectangle |= layer->getWorldBoundingRectangle();
-            qDebug() << "worldBoundingRectangle" << layer->getWorldBoundingRectangle();
-        }
     }
 
     return worldBoundingRectangle;

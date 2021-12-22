@@ -399,27 +399,25 @@ void Layer::invalidate()
     _imageViewerPlugin.getImageViewerWidget().update();
 }
 
-void Layer::scaleToFit(const QRectF& rectangle)
+void Layer::scaleToFit(const QRectF& layersRectangle)
 {
     // Only fit into valid rectangle
-    if (!rectangle.isValid())
+    if (!layersRectangle.isValid())
         return;
 
     // Get target rectangle center and size
-    const auto rectangleCenter = rectangle.center();
+    const auto rectangleCenter = layersRectangle.center();
 
     // Position layer at center
     _generalAction.getPositionAction().getXAction().setValue(rectangleCenter.x());
     _generalAction.getPositionAction().getYAction().setValue(rectangleCenter.y());
 
-    // Compute composite matrix
-    const auto matrix = getModelMatrix() * getPropByName<ImageProp>("ImageProp")->getModelMatrix();
-
-    // Compute scaled source rectangle size
-    const auto sourceRectangleSize = _imagesDataset->getRectangle().size();
+    // Compute composite matrix and fetch image size
+    const auto matrix               = getModelMatrix() * getPropByName<ImageProp>("ImageProp")->getModelMatrix();
+    const auto imageRectangleSize   = QSizeF(_imagesDataset->getRectangle().size());
 
     // Compute x- and y scale
-    const auto scale = QVector2D(rectangle.width() / sourceRectangleSize.width(), rectangle.height() / sourceRectangleSize.height());
+    const auto scale = QVector2D(layersRectangle.width() / imageRectangleSize.width(), layersRectangle.height() / imageRectangleSize.height());
    
     // Assign scale
     _generalAction.getScaleAction().setValue(100.0f * std::min(scale.x(), scale.y()));
@@ -471,7 +469,7 @@ void Layer::paint(QPainter& painter, const PaintFlag& paintFlags)
         if ((paintFlags & Layer::Label) && _active) {
 
             // Establish label text
-            const auto labelText = QString("%1 (%2x%3)").arg(_generalAction.getNameAction().getString(), QString::number(propRectangle.width()), QString::number(propRectangle.height()));
+            const auto labelText = QString("%1 (%2x%3)").arg(_generalAction.getNameAction().getString(), QString::number(_imagesDataset->getVisibleRectangle().width()), QString::number(_imagesDataset->getVisibleRectangle().height()));
 
             // Configure pen and brush
             painter.setPen(QPen(QBrush(_generalAction.getColorAction().getColor()), _active ? 2.0f : 1.0f));
@@ -979,7 +977,7 @@ QRectF Layer::getWorldSelectionRectangle() const
     const auto matrix = getModelMatrix() * layerImageProp->getModelMatrix();
 
     // Compute rectangle extents in world coordinates
-    return QRectF(matrix * _imageSelectionRectangle.topLeft(), matrix * _imageSelectionRectangle.bottomRight());
+    return QRectF(matrix * QPointF(_imageSelectionRectangle.topLeft()), matrix * QPointF(_imageSelectionRectangle.bottomRight()));
 }
 
 void Layer::zoomToExtents()
