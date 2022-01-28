@@ -193,9 +193,6 @@ QWidget* ScalarChannelAction::getWidget(QWidget* parent, const std::int32_t& wid
     if (widgetFlags & WidgetFlag::WindowLevelWidget)
         layout->addWidget(_windowLevelAction.createCollapsedWidget(widget));
 
-    if (widgetFlags & ScalarChannelAction::ResetPushButton)
-        layout->addWidget(createResetButton(widget));
-
     widget->setLayout(layout);
 
     return widget;
