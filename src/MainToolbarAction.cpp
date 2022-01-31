@@ -216,7 +216,7 @@ MainToolbarAction::Widget::Widget(QWidget* parent, MainToolbarAction* interactio
     auto layout = new QHBoxLayout();
 
     layout->setSpacing(3);
-    layout->setMargin(4);
+    layout->setContentsMargins(4,4,4,4);
 
     layout->addWidget(interactionAction->getPanAction().createWidget(this, ToggleAction::PushButtonIcon));
     layout->addWidget(interactionAction->getSelectAction().createWidget(this, ToggleAction::PushButtonIcon));

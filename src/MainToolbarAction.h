@@ -7,6 +7,7 @@
 
 #include "SubsetAction.h"
 #include "GlobalViewSettingsAction.h"
+#include <QActionGroup>
 
 class ImageViewerPlugin;
 class ImageViewerWidget;

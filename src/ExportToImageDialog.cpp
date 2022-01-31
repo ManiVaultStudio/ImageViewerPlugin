@@ -35,7 +35,7 @@ ExportToImageDialog::ExportToImageDialog(QWidget* parent /*= nullptr*/) :
     auto groupActionWidget = _groupAction.createWidget(this);
 
     // Adjust margins of group action widget
-    groupActionWidget->layout()->setMargin(0);
+    groupActionWidget->layout()->setContentsMargins(0,0,0,0);
 
     // Add the widget to the layout
     layout->addWidget(groupActionWidget);

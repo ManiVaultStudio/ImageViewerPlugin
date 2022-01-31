@@ -42,7 +42,7 @@ QWidget* ZoomAction::getWidget(QWidget* parent, const std::int32_t& widgetFlags)
     auto widget = new WidgetActionWidget(parent, this);
     auto layout = new QHBoxLayout();
 
-    layout->setMargin(0);
+    layout->setContentsMargins(0,0,0,0);
     layout->setSpacing(3);
 
     layout->addWidget(_zoomExtentsAction.createWidget(widget));

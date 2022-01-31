@@ -39,7 +39,7 @@ void ImageViewerPlugin::init()
     // Create main layout for view and editing
     auto mainLayout = new QHBoxLayout();
 
-    mainLayout->setMargin(0);
+    mainLayout->setContentsMargins(0,0,0,0);
     mainLayout->setSpacing(0);
 
     setLayout(mainLayout);
@@ -51,7 +51,7 @@ void ImageViewerPlugin::init()
     auto mainWidgetLayout = new QVBoxLayout();
 
     // Configure main layout
-    mainWidgetLayout->setMargin(0);
+    mainWidgetLayout->setContentsMargins(0,0,0,0);
     mainWidgetLayout->setSpacing(0);
 
     // And add the toolbar, image viewer widget

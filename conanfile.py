@@ -33,7 +33,7 @@ class ImageViewerPluginConan(ConanFile):
     options = {"shared": [True, False], "fPIC": [True, False]}
     default_options = {"shared": True, "fPIC": True}
 
-    requires = "qt/5.15.1@lkeb/stable"
+    requires = "hdps-core/qt6@lkeb/stable"
 
     scm = {
         "type": "git",
@@ -62,10 +62,10 @@ class ImageViewerPluginConan(ConanFile):
         branch_info = PluginBranchInfo(self.recipe_folder)
         self.version = branch_info.version
 
-    def requirements(self):
-        branch_info = PluginBranchInfo(self.__get_git_path())
-        print(f"Core requirement {branch_info.core_requirement}")
-        self.requires(branch_info.core_requirement)
+    # def requirements(self):
+    #     branch_info = PluginBranchInfo(self.__get_git_path())
+    #     print(f"Core requirement {branch_info.core_requirement}")
+    #     self.requires(branch_info.core_requirement)
 
     # Remove runtime and use always default (MD/MDd)
     def configure(self):
@@ -83,7 +83,7 @@ class ImageViewerPluginConan(ConanFile):
     def _configure_cmake(self, build_type):
         # locate Qt root to allow find_package to work
         qtpath = pathlib.Path(self.deps_cpp_info["qt"].rootpath)
-        qt_root = str(list(qtpath.glob("**/Qt5Config.cmake"))[0].parents[3])
+        qt_root = str(list(qtpath.glob("**/Qt6Config.cmake"))[0].parents[3])
         print("Qt root ", qt_root)
 
         cmake = CMake(self, build_type=build_type)
@@ -109,8 +109,8 @@ class ImageViewerPluginConan(ConanFile):
         print("Install dir type: ", self.install_dir)
         shutil.copytree(hdps_pkg_root, self.install_dir)
 
-        cmake_debug = self._configure_cmake("Debug")
-        cmake_debug.build()
+        # cmake_debug = self._configure_cmake("Debug")
+        # cmake_debug.build()
 
         cmake_release = self._configure_cmake("Release")
         cmake_release.build()
@@ -118,17 +118,17 @@ class ImageViewerPluginConan(ConanFile):
     def package(self):
         package_dir = os.path.join(self.build_folder, "package")
         print("Packaging install dir: ", package_dir)
-        subprocess.run(
-            [
-                "cmake",
-                "--install",
-                self.build_folder,
-                "--config",
-                "Debug",
-                "--prefix",
-                os.path.join(package_dir, "Debug"),
-            ]
-        )
+        # subprocess.run(
+        #     [
+        #         "cmake",
+        #         "--install",
+        #         self.build_folder,
+        #         "--config",
+        #         "Debug",
+        #         "--prefix",
+        #         os.path.join(package_dir, "Debug"),
+        #     ]
+        # )
         subprocess.run(
             [
                 "cmake",
@@ -143,9 +143,9 @@ class ImageViewerPluginConan(ConanFile):
         self.copy(pattern="*", src=package_dir)
 
     def package_info(self):
-        self.cpp_info.debug.libdirs = ["Debug/lib"]
-        self.cpp_info.debug.bindirs = ["Debug/Plugins", "Debug"]
-        self.cpp_info.debug.includedirs = ["Debug/include", "Debug"]
+        # self.cpp_info.debug.libdirs = ["Debug/lib"]
+        # self.cpp_info.debug.bindirs = ["Debug/Plugins", "Debug"]
+        # self.cpp_info.debug.includedirs = ["Debug/include", "Debug"]
         self.cpp_info.release.libdirs = ["Release/lib"]
         self.cpp_info.release.bindirs = ["Release/Plugins", "Release"]
         self.cpp_info.release.includedirs = ["Release/include", "Release"]
