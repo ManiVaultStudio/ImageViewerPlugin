@@ -2,9 +2,9 @@
 #include "ImageViewerPlugin.h"
 #include "Layer.h"
 
-#include "util/Exception.h"
+#include <util/Exception.h>
 
-#include "PointData.h"
+#include <PointData.h>
 
 using namespace hdps;
 
@@ -16,12 +16,11 @@ SubsetAction::SubsetAction(ImageViewerPlugin& imageViewerPlugin) :
 {
     setText("Create subset");
     setIcon(Application::getIconFont("FontAwesome").getIcon("crop"));
+    setSerializable(false);
 
     _nameAction.setToolTip("Name of the subset");
     _createAction.setToolTip("Create the subset");
 
-    // Actions may not be reset
-    _nameAction.setMayReset(false);
 
     connect(&_imageViewerPlugin.getSelectionModel(), &QItemSelectionModel::selectionChanged, this, [this](const QItemSelection& newSelection, const QItemSelection& oldSelection) {
         

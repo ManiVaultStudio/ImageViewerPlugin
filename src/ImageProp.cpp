@@ -2,9 +2,9 @@
 #include "QuadShape.h"
 #include "LayersRenderer.h"
 
-#include "util/FileUtil.h"
-#include "util/Interpolation.h"
-#include "util/Exception.h"
+#include <util/FileUtil.h>
+#include <util/Interpolation.h>
+#include <util/Exception.h>
 
 #include <QDebug>
 #include <QOpenGLContext>

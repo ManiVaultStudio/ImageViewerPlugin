@@ -1,6 +1,10 @@
 #pragma once
 
-#include "actions/Actions.h"
+#include <actions/GroupAction.h>
+#include <actions/ToggleAction.h>
+#include <actions/StringAction.h>
+#include <actions/ColorAction.h>
+#include <actions/DecimalAction.h>
 
 #include "PositionAction.h"
 #include "ZoomAction.h"

@@ -1,12 +1,12 @@
 #include "ImageAction.h"
 #include "Layer.h"
 
-#include "util/ColorSpace.h"
-#include "util/Interpolation.h"
-#include "event/Event.h"
+#include <util/ColorSpace.h>
+#include <util/Interpolation.h>
+#include <event/Event.h>
 
-#include "PointData.h"
-#include "ClusterData.h"
+#include <PointData.h>
+#include <ClusterData.h>
 
 using namespace hdps;
 using namespace hdps::util;
@@ -26,8 +26,14 @@ ImageAction::ImageAction(Layer& layer) :
     _useConstantColorAction(this, "Use constant color", false, false),
     _constantColorAction(this, "Constant color", QColor(Qt::white), QColor(Qt::white))
 {
+    qDebug() << __FUNCTION__;
+
     setText("Image");
     setEventCore(Application::core());
+
+    _scalarChannel1Action.setObjectName("Channel 1");
+    _scalarChannel2Action.setObjectName("Channel 2");
+    _scalarChannel3Action.setObjectName("Channel 3");
 
     // Establish whether the source dataset is a clusters dataset
     const auto isClusterType = _layer.getSourceDataset()->getDataType() == ClusterType;
@@ -222,6 +228,8 @@ ImageAction::ImageAction(Layer& layer) :
 
     // Do an initial update of the scalar data
     updateScalarChannels();
+
+    qDebug() << __FUNCTION__;
 }
 
 void ImageAction::init()

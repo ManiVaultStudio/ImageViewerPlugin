@@ -1,10 +1,10 @@
 #pragma once
 
-#include "actions/WidgetAction.h"
-#include "actions/GroupAction.h"
-#include "actions/DecimalAction.h"
-#include "actions/ColorAction.h"
-#include "actions/ToggleAction.h"
+#include <actions/WidgetAction.h>
+#include <actions/GroupAction.h>
+#include <actions/DecimalAction.h>
+#include <actions/ColorAction.h>
+#include <actions/ToggleAction.h>
 
 using namespace hdps::gui;
 

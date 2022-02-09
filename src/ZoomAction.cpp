@@ -13,7 +13,6 @@ ZoomAction::ZoomAction(GeneralAction& generalAction) :
     _zoomSelectionAction(this, "Selected pixels")
 {
     setText("Zoom");
-    setMayReset(false);
 
     // Zoom to layer extents
     connect(&_zoomExtentsAction, &TriggerAction::triggered, this, [this]() {

@@ -1,10 +1,9 @@
 #include "LayersModel.h"
-#include "Application.h"
 
-#include "util/Exception.h"
-#include "event/Event.h"
-
-#include "PointData.h"
+#include <Application.h>
+#include <util/Exception.h>
+#include <event/Event.h>
+#include <PointData.h>
 
 #include <QMessageBox>
 #include <QPainter>

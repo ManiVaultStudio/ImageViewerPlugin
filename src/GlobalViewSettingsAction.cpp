@@ -1,6 +1,7 @@
 #include "GlobalViewSettingsAction.h"
 #include "ImageViewerPlugin.h"
-#include "Application.h"
+
+#include <Application.h> 
 
 #include <QHBoxLayout>
 
@@ -10,10 +11,10 @@ GlobalViewSettingsAction::GlobalViewSettingsAction(ImageViewerPlugin& imageViewe
     WidgetAction(reinterpret_cast<QObject*>(&imageViewerPlugin)),
     _imageViewerPlugin(imageViewerPlugin),
     _groupAction(this),
-    _zoomMarginAction(this, "Zoom margin"),
-    _backgroundColorAction(this, "Background color"),
-    _animationEnabledAction(this, "Animation"),
-    _smartZoomAction(this, "Smart zoom")
+    _zoomMarginAction(this, "Zoom margin", 1.0f, 1000.0f, 100.0f, 100.0f),
+    _backgroundColorAction(this, "Background color", QColor(50, 50, 50), QColor(50, 50, 50)),
+    _animationEnabledAction(this, "Animation", true, true),
+    _smartZoomAction(this, "Smart zoom", true, true)
 {
     setIcon(Application::getIconFont("FontAwesome").getIcon("cog"));
     setText("Global view settings");
@@ -33,75 +34,30 @@ GlobalViewSettingsAction::GlobalViewSettingsAction(ImageViewerPlugin& imageViewe
 
     auto& imageViewerWidget = _imageViewerPlugin.getImageViewerWidget();
 
-    // Settings prefix in the plugin
-    const auto settingsPrefix = "ImageViewerPlugin/ViewSettings";
-
-    // Default values
-    const auto defaultZoomMargin        = 100.0f;
-    const auto defaultBackgroundColor   = QColor(50, 50, 50);
-    const auto defaultAnimationEnabled  = true;
-    const auto defaultSmartZoom         = true;
-
-    // Get action values from image viewer plugin settings
-    const auto globalZoomMargin         = _imageViewerPlugin.getSetting(QString("%1/%2").arg(settingsPrefix, "/ZoomMargin"), defaultZoomMargin).toFloat();
-    const auto globalBackgroundColor    = _imageViewerPlugin.getSetting(QString("%1/%2").arg(settingsPrefix, "/BackgroundColor"), defaultBackgroundColor).value<QColor>();
-    const auto globalAnimationEnabled   = _imageViewerPlugin.getSetting(QString("%1/%2").arg(settingsPrefix, "/AnimationEnabled"), defaultAnimationEnabled).toBool();
-    const auto globalSmartZoom          = _imageViewerPlugin.getSetting(QString("%1/%2").arg(settingsPrefix, "/SmartZoom"), defaultSmartZoom).toBool();
-
-    // Initialize actions with default values
-    _zoomMarginAction.initialize(0.0f, 250.0f, globalZoomMargin, defaultZoomMargin);
-    _backgroundColorAction.initialize(globalBackgroundColor, defaultBackgroundColor);
-    _animationEnabledAction.initialize(globalAnimationEnabled, defaultAnimationEnabled);
-    _smartZoomAction.initialize(globalSmartZoom, defaultSmartZoom);
-
     // Update renderer zoom margin
-    const auto updateZoomMargin = [this, &imageViewerWidget, settingsPrefix]() {
-
-        // Update renderer zoom margin
+    const auto updateZoomMargin = [this, &imageViewerWidget]() {
         imageViewerWidget.getRenderer().setZoomMargin(_zoomMarginAction.getValue());
         imageViewerWidget.getRenderer().setZoomRectangle(imageViewerWidget.getWorldBoundingRectangle());
-
-        // Save to plugin settings
-        _imageViewerPlugin.setSetting("ImageViewerPlugin/ViewSettings/ZoomMargin", _zoomMarginAction.getValue());
     };
 
     // Update the viewer background color
-    const auto updateBackgroundColor = [this, &imageViewerWidget, settingsPrefix]() {
-
-        // Update viewer background color
+    const auto updateBackgroundColor = [this, &imageViewerWidget]() {
         imageViewerWidget.setBackgroundColor(_backgroundColorAction.getColor());
-
-        // Save to plugin settings
-        _imageViewerPlugin.setSetting("ImageViewerPlugin/ViewSettings/BackgroundColor", _backgroundColorAction.getColor());
     };
 
     // Update animation enabled
-    const auto updateAnimation = [this, &imageViewerWidget, settingsPrefix]() {
-
-        // Update renderer animation enabled
+    const auto updateAnimation = [this, &imageViewerWidget]() {
         imageViewerWidget.getRenderer().setAnimationEnabled(_animationEnabledAction.isChecked());
-
-        // Save to plugin settings
-        _imageViewerPlugin.setSetting("ImageViewerPlugin/ViewSettings/AnimationEnabled", _animationEnabledAction.isChecked());
-    };
-
-    // Update smart zoom enabled
-    const auto updateSmartZoom = [this, &imageViewerWidget, settingsPrefix]() {
-
-        // Save to plugin settings
-        _imageViewerPlugin.setSetting("ImageViewerPlugin/ViewSettings/SmartZoom", _smartZoomAction.isChecked());
     };
 
     connect(&_zoomMarginAction, &DecimalAction::valueChanged, this, updateZoomMargin);
     connect(&_backgroundColorAction, &ColorAction::colorChanged, this, updateBackgroundColor);
     connect(&_animationEnabledAction, &ToggleAction::toggled, this, updateAnimation);
-    connect(&_smartZoomAction, &ToggleAction::toggled, this, updateSmartZoom);
 
     // Do initial updates
     updateZoomMargin();
     updateBackgroundColor();
     updateAnimation();
-    updateSmartZoom();
 }
 
 GlobalViewSettingsAction::Widget::Widget(QWidget* parent, GlobalViewSettingsAction* globalViewSettingsAction, const std::int32_t& widgetFlags) :

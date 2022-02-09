@@ -15,10 +15,10 @@ GeneralAction::GeneralAction(Layer& layer) :
     _zoomAction(*this)
 {
     setText("General");
+    setSerializable(false);
 
     _datasetNameAction.setEnabled(false);
-    _datasetNameAction.setMayReset(false);
-
+    
     _scaleAction.setDefaultWidgetFlags(DecimalAction::SpinBox);
 
     // Set tooltips

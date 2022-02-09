@@ -3,9 +3,8 @@
 #include "ImageViewerPlugin.h"
 #include "ImageViewerWidget.h"
 
-#include "util/PixelSelectionTool.h"
-
-#include "Application.h"
+#include <util/PixelSelectionTool.h>
+#include <Application.h>
 
 using namespace hdps::util;
 
@@ -19,31 +18,32 @@ const auto allowedPixelSelectionTypes = PixelSelectionTypes({
 });
 
 SelectionAction::SelectionAction(Layer& layer, QWidget* targetWidget, PixelSelectionTool& pixelSelectionTool) :
-    PixelSelectionAction(&layer, targetWidget, pixelSelectionTool, allowedPixelSelectionTypes),
+    GroupAction(&layer),
     _layer(layer),
     _targetWidget(targetWidget),
+    _pixelSelectionAction(&layer, targetWidget, pixelSelectionTool, allowedPixelSelectionTypes),
     _pixelSelectionTool(pixelSelectionTool),
-    _showRegionAction(this, "Show selected region", false, false),
-    _groupAction(this, false)
+    _showRegionAction(this, "Show selected region", false, false)
 {
+    setText("Selection");
     setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("mouse-pointer"));
 
-    _groupAction.setText("Selection");
+    _showRegionAction.setVisible(false);
 
     // Populate group action
-    _groupAction << _typeAction;
-    _groupAction << _brushRadiusAction;
-    _groupAction << _overlayColor;
-    _groupAction << _overlayOpacity;
-    _groupAction << _notifyDuringSelectionAction;
+    *this << _pixelSelectionAction.getTypeAction();
+    *this << _pixelSelectionAction.getBrushRadiusAction();
+    *this << _pixelSelectionAction.getOverlayColorAction();
+    *this << _pixelSelectionAction.getOverlayOpacityAction();
+    *this << _pixelSelectionAction.getNotifyDuringSelectionAction();
 
     // Re-render when the overlay color, overlay opacity or show region changes
-    connect(&_overlayColor, &ColorAction::colorChanged, &_layer, &Layer::invalidate);
-    connect(&_overlayOpacity, &DecimalAction::valueChanged, &_layer, &Layer::invalidate);
+    connect(&_pixelSelectionAction.getOverlayColorAction(), &ColorAction::colorChanged, &_layer, &Layer::invalidate);
+    connect(&_pixelSelectionAction.getOverlayOpacityAction(), &DecimalAction::valueChanged, &_layer, &Layer::invalidate);
     connect(&_showRegionAction, &ToggleAction::toggled, &_layer, &Layer::invalidate);
 
     connect(&_layer.getImageViewerPlugin().getImageViewerWidget(), &ImageViewerWidget::interactionModeChanged, this, [this](const ImageViewerWidget::InteractionMode& interactionMode) {
-        _groupAction.setEnabled(interactionMode == ImageViewerWidget::InteractionMode::Selection);// && (_typeAction.getCurrentText() != "ROI"));
+        setEnabled(interactionMode == ImageViewerWidget::InteractionMode::Selection);
     });
 }
 

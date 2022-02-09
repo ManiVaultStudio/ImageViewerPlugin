@@ -1,9 +1,9 @@
 #pragma once
 
-#include "actions/WidgetAction.h"
-#include "actions/TriggerAction.h"
-#include "actions/DecimalAction.h"
-#include "actions/ToggleAction.h"
+#include <actions/WidgetAction.h>
+#include <actions/TriggerAction.h>
+#include <actions/DecimalAction.h>
+#include <actions/ToggleAction.h>
 
 #include "SubsetAction.h"
 
@@ -57,14 +57,6 @@ public:
      * @param imageViewerWidget Reference to image viewer plugin
      */
     ZoomToolbarAction(ImageViewerPlugin& imageViewerPlugin);
-
-    /** Determines whether the current value can be reset to its default */
-    bool isResettable() const override {
-        return false;
-    };
-
-    /** Reset the current value to the default value */
-    void reset() override {};
 
     /** Get reference to image viewer widget */
     ImageViewerWidget& getImageViewerWidget();

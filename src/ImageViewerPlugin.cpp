@@ -3,15 +3,15 @@
 #include "Layer.h"
 #include "ConvertToImagesDatasetDialog.h"
 
-#include "ImageData/Images.h"
-#include "ImageData/ImageData.h"
-#include "ClusterData.h"
-#include "widgets/DropWidget.h"
-#include "util/Exception.h"
+#include <ImageData/Images.h>
+#include <ImageData/ImageData.h>
+#include <ClusterData.h>
+#include <util/Exception.h>
 
 #include <QDebug>
 #include <QSplitter>
 #include <QMimeData>
+#include <QMenu>
 
 using namespace hdps;
 using namespace hdps::gui;
@@ -23,15 +23,17 @@ ImageViewerPlugin::ImageViewerPlugin(hdps::plugin::PluginFactory* factory) :
     ViewPlugin(factory),
     _model(this),
     _selectionModel(&_model),
-    _splitter(Qt::Horizontal, this),
+    _splitter(Qt::Horizontal, &getWidget()),
     _imageViewerWidget(*this),
     _dropWidget(&_imageViewerWidget),
     _mainToolbarAction(*this),
     _zoomToolbarAction(*this),
     _settingsAction(*this)
 {
-    setContextMenuPolicy(Qt::CustomContextMenu);
-    setFocusPolicy(Qt::ClickFocus);
+    setObjectName("Images");
+
+    getWidget().setContextMenuPolicy(Qt::CustomContextMenu);
+    getWidget().setFocusPolicy(Qt::ClickFocus);
 }
 
 void ImageViewerPlugin::init()
@@ -42,7 +44,7 @@ void ImageViewerPlugin::init()
     mainLayout->setMargin(0);
     mainLayout->setSpacing(0);
 
-    setLayout(mainLayout);
+    getWidget().setLayout(mainLayout);
 
     // Create main left widget
     auto mainWidget = new QWidget();
@@ -55,16 +57,16 @@ void ImageViewerPlugin::init()
     mainWidgetLayout->setSpacing(0);
 
     // And add the toolbar, image viewer widget
-    mainWidgetLayout->addWidget(_mainToolbarAction.createWidget(this));
+    mainWidgetLayout->addWidget(_mainToolbarAction.createWidget(&getWidget()));
     mainWidgetLayout->addWidget(&_imageViewerWidget, 1);
-    mainWidgetLayout->addWidget(_zoomToolbarAction.createWidget(this));
+    mainWidgetLayout->addWidget(_zoomToolbarAction.createWidget(&getWidget()));
 
     // Apply layout to main widget
     mainWidget->setLayout(mainWidgetLayout);
 
     // Add viewer widget and settings panel to the splitter
     _splitter.addWidget(mainWidget);
-    _splitter.addWidget(_settingsAction.createWidget(this));
+    _splitter.addWidget(_settingsAction.createWidget(&getWidget()));
 
     // Configure splitter
     _splitter.setStretchFactor(0, 1);
@@ -75,7 +77,7 @@ void ImageViewerPlugin::init()
     mainLayout->addWidget(&_splitter);
 
     // Provide a hint on how to load data
-    _dropWidget.setDropIndicatorWidget(new DropWidget::DropIndicatorWidget(this, "No data loaded", "Drag an item from the data hierarchy and drop it here to visualize data..."));
+    _dropWidget.setDropIndicatorWidget(new DropWidget::DropIndicatorWidget(&getWidget(), "No data loaded", "Drag an item from the data hierarchy and drop it here to visualize data..."));
 
     // Establish droppable regions
     _dropWidget.initialize([this](const QMimeData* mimeData) -> DropWidget::DropRegions {
@@ -168,10 +170,10 @@ void ImageViewerPlugin::init()
         auto& selectionAction = layer->getSelectionAction();
 
         // Establish whether the selection type is sample
-        const auto isSampleSelection = layer->getSelectionAction().getTypeAction().getCurrentIndex() == static_cast<std::int32_t>(PixelSelectionType::Sample);
+        const auto isSampleSelection = layer->getSelectionAction().getPixelSelectionAction().getTypeAction().getCurrentIndex() == static_cast<std::int32_t>(PixelSelectionType::Sample);
 
         // Publish the selection
-        if (selectionAction.getNotifyDuringSelectionAction().isChecked() || isSampleSelection)
+        if (selectionAction.getPixelSelectionAction().getNotifyDuringSelectionAction().isChecked() || isSampleSelection)
             layer->publishSelection();
 
         // Reset the off-screen selection buffer in the case of sample selection
@@ -231,7 +233,7 @@ void ImageViewerPlugin::init()
             return;
 
         // Show the context menu
-        _settingsAction.getContextMenu()->exec(mapToGlobal(point));
+        _settingsAction.getContextMenu()->exec(getWidget().mapToGlobal(point));
     });
 
     _dropWidget.setShowDropIndicator(false);
@@ -292,7 +294,7 @@ void ImageViewerPlugin::onLayerSelectionChanged()
     }
 
     // Update the window title
-    setWindowTitle(QString("%1%2").arg(getGuiName(), currentLayerName.isEmpty() ? "" : QString(": %1").arg(currentLayerName)));
+    getWidget().setWindowTitle(QString("%1%2").arg(getGuiName(), currentLayerName.isEmpty() ? "" : QString(": %1").arg(currentLayerName)));
 }
 
 void ImageViewerPlugin::immigrateDataset(const Dataset<DatasetImpl>& dataset)

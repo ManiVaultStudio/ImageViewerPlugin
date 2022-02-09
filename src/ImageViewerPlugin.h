@@ -8,8 +8,7 @@
 #include "ZoomToolbarAction.h"
 #include "SettingsAction.h"
 
-#include "widgets/DropWidget.h"
-#include "Set.h"
+#include <widgets/DropWidget.h>
 
 #include <QItemSelectionModel>
 #include <QSplitter>

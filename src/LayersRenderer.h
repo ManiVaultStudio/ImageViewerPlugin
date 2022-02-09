@@ -1,6 +1,6 @@
 #pragma once
 
-#include "renderers/Renderer.h"
+#include <renderers/Renderer.h>
 
 #include <QVector2D>
 #include <QParallelAnimationGroup>

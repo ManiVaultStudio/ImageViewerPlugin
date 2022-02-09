@@ -3,6 +3,8 @@
 #include "MainToolbarAction.h"
 #include "ZoomToolbarAction.h"
 
+#include <QMenu>
+
 using namespace hdps::gui;
 
 SettingsAction::SettingsAction(ImageViewerPlugin& imageViewerPlugin) :
@@ -10,6 +12,7 @@ SettingsAction::SettingsAction(ImageViewerPlugin& imageViewerPlugin) :
     _imageViewerPlugin(imageViewerPlugin),
     _layersAction(*this)
 {
+    setText("Settings");
 }
 
 QMenu* SettingsAction::getContextMenu(QWidget* parent /*= nullptr*/)
@@ -41,12 +44,15 @@ QMenu* SettingsAction::getContextMenu(QWidget* parent /*= nullptr*/)
         // Apply the layout
         selectionTypesWidget->setLayout(selectionTypesLayout);
 
+        // Get reference to the pixel selection action
+        auto& pixelSelectionAction = selectionAction.getPixelSelectionAction();
+
         // Add selection type buttons to the layout
-        selectionTypesLayout->addWidget(selectionAction.getRectangleAction().createWidget(selectionTypesWidget, ToggleAction::PushButtonIcon));
-        selectionTypesLayout->addWidget(selectionAction.getBrushAction().createWidget(selectionTypesWidget, ToggleAction::PushButtonIcon));
-        selectionTypesLayout->addWidget(selectionAction.getLassoAction().createWidget(selectionTypesWidget, ToggleAction::PushButtonIcon));
-        selectionTypesLayout->addWidget(selectionAction.getPolygonAction().createWidget(selectionTypesWidget, ToggleAction::PushButtonIcon));
-        selectionTypesLayout->addWidget(selectionAction.getSampleAction().createWidget(selectionTypesWidget, ToggleAction::PushButtonIcon));
+        selectionTypesLayout->addWidget(pixelSelectionAction.getRectangleAction().createWidget(selectionTypesWidget, ToggleAction::PushButtonIcon));
+        selectionTypesLayout->addWidget(pixelSelectionAction.getBrushAction().createWidget(selectionTypesWidget, ToggleAction::PushButtonIcon));
+        selectionTypesLayout->addWidget(pixelSelectionAction.getLassoAction().createWidget(selectionTypesWidget, ToggleAction::PushButtonIcon));
+        selectionTypesLayout->addWidget(pixelSelectionAction.getPolygonAction().createWidget(selectionTypesWidget, ToggleAction::PushButtonIcon));
+        selectionTypesLayout->addWidget(pixelSelectionAction.getSampleAction().createWidget(selectionTypesWidget, ToggleAction::PushButtonIcon));
         selectionTypesLayout->addStretch(1);
 
         // Create widget action that will display the selection types widget
@@ -85,8 +91,8 @@ QMenu* SettingsAction::getContextMenu(QWidget* parent /*= nullptr*/)
 
     menu->addSeparator();
 
-    menu->addAction(&_imageViewerPlugin.getMainToolbarAction().getPanAction());
-    menu->addAction(&_imageViewerPlugin.getMainToolbarAction().getSelectAction());
+    //menu->addAction(&_imageViewerPlugin.getMainToolbarAction().getPanAction());
+    //menu->addAction(&_imageViewerPlugin.getMainToolbarAction().getSelectAction());
     menu->addAction(&_imageViewerPlugin.getZoomToolbarAction().getZoomExtentsAction());
 
     return menu;

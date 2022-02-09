@@ -1,8 +1,8 @@
 #pragma once
 
-#include "actions/TriggerAction.h"
-#include "actions/ToggleAction.h"
-#include "actions/StringAction.h"
+#include <actions/TriggerAction.h>
+#include <actions/ToggleAction.h>
+#include <actions/StringAction.h>
 
 class ImageViewerPlugin;
 

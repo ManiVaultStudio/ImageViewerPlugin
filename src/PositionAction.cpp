@@ -14,7 +14,6 @@ PositionAction::PositionAction(GeneralAction& generalAction) :
 {
     setText("Position");
     setToolTip("Layer position");
-    setMayReset(true);
 
     // Set tooltips
     _xAction.setToolTip("Layer x-position");
@@ -31,17 +30,6 @@ PositionAction::PositionAction(GeneralAction& generalAction) :
 
     connect(&_xAction, &DecimalAction::valueChanged, this, notifyChanged);
     connect(&_yAction, &DecimalAction::valueChanged, this, notifyChanged);
-}
-
-bool PositionAction::isResettable() const
-{
-    return _xAction.isResettable() || _yAction.isResettable();
-}
-
-void PositionAction::reset()
-{
-    _xAction.reset();
-    _yAction.reset();
 }
 
 QWidget* PositionAction::getWidget(QWidget* parent, const std::int32_t& widgetFlags)

@@ -5,9 +5,9 @@
 #include "ImageProp.h"
 #include "ExportToImageDialog.h"
 
-#include "util/Exception.h"
+#include <util/Exception.h>
 
-#include "ClusterData.h"
+#include <ClusterData.h>
 
 #include <QKeyEvent>
 #include <QPainter>
@@ -24,7 +24,7 @@ const QMap<ImageViewerWidget::InteractionMode, QString> ImageViewerWidget::inter
 };
 
 ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin& imageViewerPlugin) :
-    QOpenGLWidget(&imageViewerPlugin),
+    QOpenGLWidget(&imageViewerPlugin.getWidget()),
     QOpenGLFunctions_3_3_Core(),
     _imageViewerPlugin(imageViewerPlugin),
     _openGLInitialized(false),
@@ -616,7 +616,7 @@ void ImageViewerWidget::paintGL()
             painter.drawPixmap(rect(), _pixelSelectionTool.getShapePixmap());
         }
 
-        if (activeLayer && static_cast<PixelSelectionType>(activeLayer->getSelectionAction().getTypeAction().getCurrentIndex()) == PixelSelectionType::ROI) {
+        if (activeLayer && static_cast<PixelSelectionType>(activeLayer->getSelectionAction().getPixelSelectionAction().getTypeAction().getCurrentIndex()) == PixelSelectionType::ROI) {
 
             // Prevent infinite updates
             QSignalBlocker pixelSelectionToolBlocker(&_pixelSelectionTool);

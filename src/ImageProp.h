@@ -3,7 +3,7 @@
 #include "Prop.h"
 #include "Layer.h"
 
-#include "util/Interpolation.h"
+#include <util/Interpolation.h>
 
 class Layer;
 

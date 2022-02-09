@@ -1,9 +1,9 @@
 #include "ConvertToImagesDatasetDialog.h"
 #include "ImageViewerPlugin.h"
-#include "Application.h"
-#include "DataHierarchyItem.h"
 
-#include "ImageData/Images.h"
+#include <Application.h>
+#include <DataHierarchyItem.h>
+#include <ImageData/Images.h>
 
 #include <QDebug>
 #include <QVBoxLayout>
@@ -15,7 +15,7 @@
 using namespace hdps;
 
 ConvertToImagesDatasetDialog::ConvertToImagesDatasetDialog(ImageViewerPlugin& imageViewerPlugin, Dataset<DatasetImpl>& dataset) :
-    QDialog(&imageViewerPlugin),
+    QDialog(&imageViewerPlugin.getWidget()),
     _imageViewerPlugin(imageViewerPlugin),
     _sourceDataset(dataset),
     _sourceImagesDataset(),
@@ -57,14 +57,10 @@ ConvertToImagesDatasetDialog::ConvertToImagesDatasetDialog(ImageViewerPlugin& im
 
     // Configure number of images action
     _numberOfImagesAction.setDefaultWidgetFlags(IntegralAction::LineEdit);
-    _numberOfImagesAction.setMayReset(false);
     _numberOfImagesAction.setEnabled(false);
 
     if (_sourceDataset->getDataType() == PointType)
         _numberOfImagesAction.setValue(_sourceDataset.get<Points>()->getNumDimensions());
-
-    // Number of pixels and notes may not be reset by the user
-    _numberOfPixelsAction.setMayReset(false);
 
     // Enable/disable actions
     _numberOfPixelsAction.setEnabled(false);

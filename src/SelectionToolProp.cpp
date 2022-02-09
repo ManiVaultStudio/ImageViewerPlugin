@@ -5,9 +5,9 @@
 #include "ImageViewerPlugin.h"
 #include "SettingsAction.h"
 
-#include "util/FileUtil.h"
-#include "util/Exception.h"
-#include "util/PixelSelection.h"
+#include <util/FileUtil.h>
+#include <util/Exception.h>
+#include <util/PixelSelection.h>
 
 #include <QDebug>
 #include <QOpenGLContext>
@@ -80,7 +80,7 @@ void SelectionToolProp::render(const QMatrix4x4& modelViewProjectionMatrix)
         // Configure shader program
         selectionToolShaderProgram->setUniformValue("offScreenTexture", 0);
         selectionToolShaderProgram->setUniformValue("color", QColor(255, 156, 50, 100));
-        selectionToolShaderProgram->setUniformValue("opacity", selectionAction.getOverlayOpacity().getValue());
+        selectionToolShaderProgram->setUniformValue("opacity", selectionAction.getPixelSelectionAction().getOverlayOpacityAction().getValue());
         selectionToolShaderProgram->setUniformValue("transform", modelViewProjectionMatrix * _renderable.getModelMatrix() * getModelMatrix());
 
         // Render the quad
@@ -187,8 +187,8 @@ void SelectionToolProp::compute(const QVector<QPoint>& mousePositions)
             glBindTexture(GL_TEXTURE_2D, _fbo->texture());
 
             // Get selection type and brush radius
-            const auto selectionType    = selectionAction.getTypeAction().getCurrentIndex();
-            const auto brushRadius      = selectionAction.getBrushRadiusAction().getValue();
+            const auto selectionType    = selectionAction.getPixelSelectionAction().getTypeAction().getCurrentIndex();
+            const auto brushRadius      = selectionAction.getPixelSelectionAction().getBrushRadiusAction().getValue();
 
             // Get the FBO size in floating point
             const auto fboSize = QSizeF(static_cast<float>(_fbo->size().width()), static_cast<float>(_fbo->size().height()));

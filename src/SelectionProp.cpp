@@ -5,8 +5,8 @@
 #include "ImageViewerPlugin.h"
 #include "SettingsAction.h"
 
-#include "util/FileUtil.h"
-#include "util/Exception.h"
+#include <util/FileUtil.h>
+#include <util/Exception.h>
 
 #include <QDebug>
 #include <QOpenGLContext>
@@ -126,8 +126,8 @@ void SelectionProp::render(const QMatrix4x4& modelViewProjectionMatrix)
 
         // Configure shader program
         shaderProgram->setUniformValue("textures", 0);
-        shaderProgram->setUniformValue("overlayColor", selectionAction.getOverlayColor().getColor());
-        shaderProgram->setUniformValue("opacity", 0.01f * selectionAction.getOverlayOpacity().getValue());
+        shaderProgram->setUniformValue("overlayColor", selectionAction.getPixelSelectionAction().getOverlayColorAction().getColor());
+        shaderProgram->setUniformValue("opacity", 0.01f * selectionAction.getPixelSelectionAction().getOverlayOpacityAction().getValue());
         shaderProgram->setUniformValue("transform", modelViewProjectionMatrix * _renderable.getModelMatrix() * getModelMatrix());
 
         // Render the quad
