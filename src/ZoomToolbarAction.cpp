@@ -2,9 +2,9 @@
 #include "ImageViewerPlugin.h"
 #include "ImageViewerWidget.h"
 #include "LayersModel.h"
-#include "Application.h"
 
-#include "util/PixelSelectionTool.h"
+#include <Application.h>
+#include <util/PixelSelectionTool.h>
 
 #include <QHBoxLayout>
 

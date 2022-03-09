@@ -17,8 +17,7 @@ GeneralAction::GeneralAction(Layer& layer) :
     setText("General");
 
     _datasetNameAction.setEnabled(false);
-    _datasetNameAction.setMayReset(false);
-
+    
     _scaleAction.setDefaultWidgetFlags(DecimalAction::SpinBox);
 
     // Set tooltips

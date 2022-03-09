@@ -2,9 +2,9 @@
 #include "ImageViewerPlugin.h"
 #include "ImageViewerWidget.h"
 #include "LayersModel.h"
-#include "Application.h"
 
-#include "util/PixelSelectionTool.h"
+#include <Application.h>
+#include <util/PixelSelectionTool.h>
 
 #include <QHBoxLayout>
 
@@ -109,42 +109,42 @@ void MainToolbarAction::setupInteraction()
         auto selectedLayer = getSelectedLayer();
 
         if (selectedLayer)
-            selectedLayer->getSelectionAction().getRectangleAction().setChecked(toggled);
+            selectedLayer->getSelectionAction().getPixelSelectionAction().getRectangleAction().setChecked(toggled);
     });
 
     connect(&_brushSelectionAction, &ToggleAction::toggled, this, [this, getSelectedLayer](bool toggled) {
         auto selectedLayer = getSelectedLayer();
 
         if (selectedLayer)
-            selectedLayer->getSelectionAction().getBrushAction().setChecked(toggled);
+            selectedLayer->getSelectionAction().getPixelSelectionAction().getBrushAction().setChecked(toggled);
     });
 
     connect(&_lassoSelectionAction, &ToggleAction::toggled, this, [this, getSelectedLayer](bool toggled) {
         auto selectedLayer = getSelectedLayer();
 
         if (selectedLayer)
-            selectedLayer->getSelectionAction().getLassoAction().setChecked(toggled);
+            selectedLayer->getSelectionAction().getPixelSelectionAction().getLassoAction().setChecked(toggled);
     });
 
     connect(&_polygonSelectionAction, &ToggleAction::toggled, this, [this, getSelectedLayer](bool toggled) {
         auto selectedLayer = getSelectedLayer();
 
         if (selectedLayer)
-            selectedLayer->getSelectionAction().getPolygonAction().setChecked(toggled);
+            selectedLayer->getSelectionAction().getPixelSelectionAction().getPolygonAction().setChecked(toggled);
     });
 
     connect(&_sampleSelectionAction, &ToggleAction::toggled, this, [this, getSelectedLayer](bool toggled) {
         auto selectedLayer = getSelectedLayer();
 
         if (selectedLayer)
-            selectedLayer->getSelectionAction().getSampleAction().setChecked(toggled);
+            selectedLayer->getSelectionAction().getPixelSelectionAction().getSampleAction().setChecked(toggled);
     });
 
     connect(&_roiSelectionAction, &ToggleAction::toggled, this, [this, getSelectedLayer](bool toggled) {
         auto selectedLayer = getSelectedLayer();
 
         if (selectedLayer)
-            selectedLayer->getSelectionAction().getRoiAction().setChecked(toggled);
+            selectedLayer->getSelectionAction().getPixelSelectionAction().getRoiAction().setChecked(toggled);
     });
 
     connect(&_imageViewerPlugin.getSelectionModel(), &QItemSelectionModel::selectionChanged, this, [this](const QItemSelection& newSelection, const QItemSelection& oldSelection) {
@@ -155,16 +155,16 @@ void MainToolbarAction::setupInteraction()
             // Get pointer to layer that was deselected
             auto layer = static_cast<Layer*>(oldSelection.indexes().first().internalPointer());
 
-            // Get reference to the layer selection action
-            auto& selectionAction = layer->getSelectionAction();
+            // Get reference to the layer pixel selection action
+            auto& pixelSelectionAction = layer->getSelectionAction().getPixelSelectionAction();
 
             // Disconnect
-            disconnect(&selectionAction.getRectangleAction(), &ToggleAction::toggled, this, nullptr);
-            disconnect(&selectionAction.getBrushAction(), &ToggleAction::toggled, this, nullptr);
-            disconnect(&selectionAction.getLassoAction(), &ToggleAction::toggled, this, nullptr);
-            disconnect(&selectionAction.getPolygonAction(), &ToggleAction::toggled, this, nullptr);
-            disconnect(&selectionAction.getSampleAction(), &ToggleAction::toggled, this, nullptr);
-            disconnect(&selectionAction.getRoiAction(), &ToggleAction::toggled, this, nullptr);
+            disconnect(&pixelSelectionAction.getRectangleAction(), &ToggleAction::toggled, this, nullptr);
+            disconnect(&pixelSelectionAction.getBrushAction(), &ToggleAction::toggled, this, nullptr);
+            disconnect(&pixelSelectionAction.getLassoAction(), &ToggleAction::toggled, this, nullptr);
+            disconnect(&pixelSelectionAction.getPolygonAction(), &ToggleAction::toggled, this, nullptr);
+            disconnect(&pixelSelectionAction.getSampleAction(), &ToggleAction::toggled, this, nullptr);
+            disconnect(&pixelSelectionAction.getRoiAction(), &ToggleAction::toggled, this, nullptr);
         }
 
         // Process selected layers
@@ -173,25 +173,25 @@ void MainToolbarAction::setupInteraction()
             // Get pointer to layer that was selected
             auto layer = static_cast<Layer*>(newSelection.indexes().first().internalPointer());
 
-            // Get reference to the layer selection action
-            auto& selectionAction = layer->getSelectionAction();
+            // Get reference to the layer pixel selection action
+            auto& pixelSelectionAction = layer->getSelectionAction().getPixelSelectionAction();
 
             // Update the check state of the selection actions
-            const auto updateSelectionActions = [this, &selectionAction]() -> void {
-                _rectangleSelectionAction.setChecked(selectionAction.getRectangleAction().isChecked());
-                _brushSelectionAction.setChecked(selectionAction.getBrushAction().isChecked());
-                _lassoSelectionAction.setChecked(selectionAction.getLassoAction().isChecked());
-                _polygonSelectionAction.setChecked(selectionAction.getPolygonAction().isChecked());
-                _sampleSelectionAction.setChecked(selectionAction.getSampleAction().isChecked());
-                _roiSelectionAction.setChecked(selectionAction.getRoiAction().isChecked());
+            const auto updateSelectionActions = [this, &pixelSelectionAction]() -> void {
+                _rectangleSelectionAction.setChecked(pixelSelectionAction.getRectangleAction().isChecked());
+                _brushSelectionAction.setChecked(pixelSelectionAction.getBrushAction().isChecked());
+                _lassoSelectionAction.setChecked(pixelSelectionAction.getLassoAction().isChecked());
+                _polygonSelectionAction.setChecked(pixelSelectionAction.getPolygonAction().isChecked());
+                _sampleSelectionAction.setChecked(pixelSelectionAction.getSampleAction().isChecked());
+                _roiSelectionAction.setChecked(pixelSelectionAction.getRoiAction().isChecked());
             };
 
-            connect(&selectionAction.getRectangleAction(), &ToggleAction::toggled, this, updateSelectionActions);
-            connect(&selectionAction.getBrushAction(), &ToggleAction::toggled, this, updateSelectionActions);
-            connect(&selectionAction.getLassoAction(), &ToggleAction::toggled, this, updateSelectionActions);
-            connect(&selectionAction.getPolygonAction(), &ToggleAction::toggled, this, updateSelectionActions);
-            connect(&selectionAction.getSampleAction(), &ToggleAction::toggled, this, updateSelectionActions);
-            connect(&selectionAction.getRoiAction(), &ToggleAction::toggled, this, updateSelectionActions);
+            connect(&pixelSelectionAction.getRectangleAction(), &ToggleAction::toggled, this, updateSelectionActions);
+            connect(&pixelSelectionAction.getBrushAction(), &ToggleAction::toggled, this, updateSelectionActions);
+            connect(&pixelSelectionAction.getLassoAction(), &ToggleAction::toggled, this, updateSelectionActions);
+            connect(&pixelSelectionAction.getPolygonAction(), &ToggleAction::toggled, this, updateSelectionActions);
+            connect(&pixelSelectionAction.getSampleAction(), &ToggleAction::toggled, this, updateSelectionActions);
+            connect(&pixelSelectionAction.getRoiAction(), &ToggleAction::toggled, this, updateSelectionActions);
 
             // Do an initial update when the layer is selected
             updateSelectionActions();

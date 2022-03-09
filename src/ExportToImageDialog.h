@@ -1,8 +1,8 @@
 #pragma once
 
-#include "actions/DecimalAction.h"
-#include "actions/StringAction.h"
-#include "actions/GroupAction.h"
+#include <actions/DecimalAction.h>
+#include <actions/StringAction.h>
+#include <actions/GroupAction.h>
 
 #include <QDialog>
 

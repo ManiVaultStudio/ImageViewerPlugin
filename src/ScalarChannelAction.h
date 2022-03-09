@@ -1,11 +1,11 @@
 #pragma once
 
-#include "actions/WidgetAction.h"
-#include "actions/ToggleAction.h"
-#include "actions/OptionAction.h"
-#include "actions/WindowLevelAction.h"
+#include <actions/WidgetAction.h>
+#include <actions/ToggleAction.h>
+#include <actions/OptionAction.h>
+#include <actions/WindowLevelAction.h>
 
-#include "ImageData/Images.h"
+#include <ImageData/Images.h>
 
 using namespace hdps::gui;
 using namespace hdps::util;
@@ -54,12 +54,6 @@ protected:
      * @param widgetFlags Widget flags for the configuration of the widget (type)
      */
     QWidget* getWidget(QWidget* parent, const std::int32_t& widgetFlags) override;
-
-    /** Determines whether the current color can be reset to its default */
-    bool isResettable() const override;
-
-    /** Reset the current color to the default color */
-    void reset() override;
 
 public:
 

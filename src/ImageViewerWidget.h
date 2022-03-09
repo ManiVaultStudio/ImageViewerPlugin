@@ -2,7 +2,7 @@
 
 #include "LayersRenderer.h"
 
-#include "util/PixelSelectionTool.h"
+#include <util/PixelSelectionTool.h>
 
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions_3_3_Core>
@@ -34,7 +34,7 @@ public:
     {
         None,               /** No interaction takes place */
         Navigation,         /** The image view position and zoom are manipulated */
-        Selection        /** Layer editing interaction */
+        Selection           /** Layer editing interaction */
     };
 
     /** Maps interaction mode enum to name */

@@ -6,17 +6,17 @@
 #include "ImageAction.h"
 #include "SelectionAction.h"
 
-#include "util/Interpolation.h"
-#include "event/EventListener.h"
-
-#include "Set.h"
-#include "ImageData/Images.h"
+#include <util/Interpolation.h>
+#include <event/EventListener.h>
+#include <actions/WidgetAction.h>
+#include <Set.h>
+#include <ImageData/Images.h>
 
 using namespace hdps::util;
 
 class ImageViewerPlugin;
 
-class Layer : public QObject, public Renderable, public hdps::EventListener
+class Layer : public WidgetAction, public Renderable, public hdps::EventListener
 {
     Q_OBJECT
 

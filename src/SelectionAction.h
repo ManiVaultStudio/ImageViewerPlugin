@@ -1,11 +1,11 @@
 #pragma once
 
-#include "actions/ToggleAction.h"
-#include "actions/GroupAction.h"
-#include "actions/PixelSelectionAction.h"
-#include "actions/TriggerAction.h"
+#include <actions/ToggleAction.h>
+#include <actions/GroupAction.h>
+#include <actions/PixelSelectionAction.h>
+#include <actions/TriggerAction.h>
 
-#include "util/PixelSelectionTool.h"
+#include <util/PixelSelectionTool.h>
 
 class QWidget;
 
@@ -21,7 +21,7 @@ using namespace hdps::gui;
  *
  * @author Thomas Kroes
  */
-class SelectionAction : public PixelSelectionAction
+class SelectionAction : public GroupAction
 {
 public:
 
@@ -39,15 +39,15 @@ public:
     /** Get selection rectangle in image coordinates */
     QRect getImageSelectionRectangle() const;
 
-public: /** Action getters */
+public: // Action getters
 
+    PixelSelectionAction& getPixelSelectionAction() { return _pixelSelectionAction; }
     ToggleAction& getShowRegionAction() { return _showRegionAction; }
-    GroupAction& getGroupAction() { return _groupAction; }
 
 protected:
     Layer&                  _layer;                     /** Reference to layer */
     QWidget*                _targetWidget;              /** Pointer to target widget */
+    PixelSelectionAction    _pixelSelectionAction;      /** Pixel selection action */
     PixelSelectionTool&     _pixelSelectionTool;        /** Reference to pixel selection tool */
     ToggleAction            _showRegionAction;          /** Show region action */
-    GroupAction             _groupAction;               /** Group action */
 };

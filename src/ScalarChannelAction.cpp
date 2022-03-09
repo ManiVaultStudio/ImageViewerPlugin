@@ -2,10 +2,10 @@
 #include "ImageAction.h"
 #include "Layer.h"
 
-#include "util//Exception.h"
+#include <util/Exception.h>
 
-#include "PointData.h"
-#include "ClusterData.h"
+#include <PointData.h>
+#include <ClusterData.h>
 
 #include <QHBoxLayout>
 #include <QCheckBox>
@@ -29,7 +29,6 @@ ScalarChannelAction::ScalarChannelAction(ImageAction& imageAction, const Identif
     _scalarDataRange({0.0f, 0.0f})
 {
     setText(name);
-    setMayReset(true);
     setDefaultWidgetFlags(ScalarChannelAction::ComboBox | ScalarChannelAction::WindowLevelWidget);
 
     switch (_identifier)
@@ -41,10 +40,6 @@ ScalarChannelAction::ScalarChannelAction(ImageAction& imageAction, const Identif
         default:
             break;
     }
-
-    connect(&_dimensionAction, &OptionAction::resettableChanged, this, [this]() {
-        setResettable(isResettable());
-    });
 
     connect(&_dimensionAction, &OptionAction::currentIndexChanged, this, [this]() {
         computeScalarData();
@@ -121,16 +116,6 @@ QPair<float, float> ScalarChannelAction::getDisplayRange()
     displayRange.second = std::clamp(level + (window / 2.0f), _scalarDataRange.first, _scalarDataRange.second);
 
     return displayRange;
-}
-
-bool ScalarChannelAction::isResettable() const
-{
-    return _dimensionAction.isResettable();
-}
-
-void ScalarChannelAction::reset()
-{
-    _dimensionAction.reset();
 }
 
 void ScalarChannelAction::computeScalarData()

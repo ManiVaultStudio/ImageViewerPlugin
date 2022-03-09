@@ -2,9 +2,9 @@
 #include "ImageViewerPlugin.h"
 #include "Layer.h"
 
-#include "util/Exception.h"
+#include <util/Exception.h>
 
-#include "PointData.h"
+#include <PointData.h>
 
 using namespace hdps;
 
@@ -20,8 +20,6 @@ SubsetAction::SubsetAction(ImageViewerPlugin& imageViewerPlugin) :
     _nameAction.setToolTip("Name of the subset");
     _createAction.setToolTip("Create the subset");
 
-    // Actions may not be reset
-    _nameAction.setMayReset(false);
 
     connect(&_imageViewerPlugin.getSelectionModel(), &QItemSelectionModel::selectionChanged, this, [this](const QItemSelection& newSelection, const QItemSelection& oldSelection) {
         
@@ -92,10 +90,10 @@ SubsetAction::SubsetAction(ImageViewerPlugin& imageViewerPlugin) :
             auto images = layer->getImages();
 
             // Create the points subset
-            auto subset = points->createSubset(_nameAction.getString(), points);
+            auto subset = points->createSubsetFromSelection(_nameAction.getString(), points);
 
             // Notify that the points set was added
-            Application::core()->notifyDataAdded(subset);
+            Application::core()->notifyDatasetAdded(subset);
 
             // Create a new image dataset which is a subset of the original image
             auto imagesSubset = Application::core()->addDataset<Images>("Images", _nameAction.getString(), subset);
@@ -107,7 +105,7 @@ SubsetAction::SubsetAction(ImageViewerPlugin& imageViewerPlugin) :
             //imagesSubset->setImageFilePaths(images->getImag);
 
             // Notify others that the images dataset was added
-            Application::core()->notifyDataAdded(*imagesSubset);
+            Application::core()->notifyDatasetAdded(*imagesSubset);
         }
         catch (std::exception& e)
         {

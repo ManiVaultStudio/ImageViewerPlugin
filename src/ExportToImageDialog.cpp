@@ -1,8 +1,8 @@
 #include "ExportToImageDialog.h"
-#include "Application.h"
-#include "DataHierarchyItem.h"
 
-#include "ImageData/Images.h"
+#include <Application.h>
+#include <DataHierarchyItem.h>
+#include <ImageData/Images.h>
 
 #include <QDebug>
 #include <QVBoxLayout>

@@ -1,9 +1,9 @@
 #pragma once
 
-#include "actions/WidgetAction.h"
-#include "actions/TriggerAction.h"
+#include <actions/WidgetAction.h>
+#include <actions/TriggerAction.h>
 
-#include "ImageData/Images.h"
+#include <ImageData/Images.h>
 
 using namespace hdps::gui;
 using namespace hdps::util;

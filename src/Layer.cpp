@@ -7,18 +7,19 @@
 #include "SelectionToolProp.h"
 #include "LayersRenderer.h"
 
-#include "util/Exception.h"
-
-#include "PointData.h"
-#include "ClusterData.h"
+#include <util/Exception.h>
+#include <PointData.h>
+#include <ClusterData.h>
 
 #include <QPainter>
 #include <QFontMetrics>
+#include <QDebug>
+#include <QMenu>
 
 #include <set>
 
 Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const hdps::Dataset<Images>& imagesDataset) :
-    QObject(&imageViewerPlugin),
+    WidgetAction(&imageViewerPlugin),
     Renderable(imageViewerPlugin.getImageViewerWidget().getRenderer()),
     EventListener(),
     _imageViewerPlugin(imageViewerPlugin),
@@ -33,6 +34,8 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const hdps::Dataset<Images>& 
     _imageSelectionRectangle(),
     _maskData()
 {
+    setText("Layer");
+    setObjectName("Layer");
     setEventCore(Application::core());
 
     if (!_sourceDataset.isValid())
@@ -98,8 +101,8 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const hdps::Dataset<Images>& 
     connect(&_imageAction.getInterpolationTypeAction(), &OptionAction::currentIndexChanged, this, updateInterpolationType);
     
     // Update prop when selection overlay color and opacity change
-    connect(&_selectionAction.getOverlayColor(), &ColorAction::colorChanged, this, &Layer::invalidate);
-    connect(&_selectionAction.getOverlayOpacity(), &DecimalAction::valueChanged, this, &Layer::invalidate);
+    connect(&_selectionAction.getPixelSelectionAction().getOverlayColorAction(), &ColorAction::colorChanged, this, &Layer::invalidate);
+    connect(&_selectionAction.getPixelSelectionAction().getOverlayOpacityAction(), &DecimalAction::valueChanged, this, &Layer::invalidate);
 
     // Update the model matrix and re-render
     const auto updateModelMatrixAndReRender = [this]() {
@@ -139,11 +142,11 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const hdps::Dataset<Images>& 
             return;
 
         // Only update and publish the selection when the select pixels in view action is enabled
-        if (_selectionAction.getPixelSelectionTool().getType() != PixelSelectionType::ROI)
+        if (_selectionAction.getPixelSelectionAction().getPixelSelectionTool().getType() != PixelSelectionType::ROI)
             return;
 
         // Only update when notify during selection is enabled
-        if (!_selectionAction.getNotifyDuringSelectionAction().isChecked())
+        if (!_selectionAction.getPixelSelectionAction().getNotifyDuringSelectionAction().isChecked())
             return;
 
         // Update ROI selection and publish it
@@ -158,11 +161,11 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const hdps::Dataset<Images>& 
             return;
 
         // Only update and publish the selection when the select pixels in view action is enabled
-        if (_selectionAction.getPixelSelectionTool().getType() != PixelSelectionType::ROI)
+        if (_selectionAction.getPixelSelectionAction().getPixelSelectionTool().getType() != PixelSelectionType::ROI)
             return;
 
         // Only update when notify during selection is disabled
-        if (_selectionAction.getNotifyDuringSelectionAction().isChecked())
+        if (_selectionAction.getPixelSelectionAction().getNotifyDuringSelectionAction().isChecked())
             return;
 
         // Update ROI selection and publish it
@@ -170,7 +173,7 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const hdps::Dataset<Images>& 
     });
 
     // Update ROI selection when the pixel selection type changes to ROI
-    connect(&_selectionAction.getTypeAction(), &OptionAction::currentIndexChanged, this, [this, updateSelectionRoi](const std::int32_t& currentIndex) {
+    connect(&_selectionAction.getPixelSelectionAction().getTypeAction(), &OptionAction::currentIndexChanged, this, [this, updateSelectionRoi](const std::int32_t& currentIndex) {
         if (currentIndex == static_cast<std::int32_t>(PixelSelectionType::ROI))
             updateSelectionRoi();
         else
@@ -184,11 +187,15 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const hdps::Dataset<Images>& 
     // Apply masking to props
     this->getPropByName<ImageProp>("ImageProp")->setMaskData(_maskData);
     this->getPropByName<SelectionProp>("SelectionProp")->setMaskData(_maskData);
+
+    qDebug() << findChildren("");
 }
 
 Layer::~Layer()
 {
+#if _DEBUG
     qDebug() << "Delete layer" << _generalAction.getNameAction().getString();
+#endif
 }
 
 void Layer::render(const QMatrix4x4& modelViewProjectionMatrix)
@@ -204,7 +211,7 @@ void Layer::render(const QMatrix4x4& modelViewProjectionMatrix)
 
             // Do not render the selection prop and selection tool prop in ROI selection mode
             if (prop->getName() == "SelectionProp" || prop->getName() == "SelectionToolProp")
-                if (_selectionAction.getTypeAction().getCurrentIndex() == static_cast<std::int16_t>(PixelSelectionType::ROI))
+                if (_selectionAction.getPixelSelectionAction().getTypeAction().getCurrentIndex() == static_cast<std::int16_t>(PixelSelectionType::ROI))
                     continue;
 
             // Render the prop
@@ -222,7 +229,9 @@ void Layer::render(const QMatrix4x4& modelViewProjectionMatrix)
 
 void Layer::updateModelMatrix()
 {
+#if _DEBUG
     qDebug() << "Update model matrix for layer:" << _generalAction.getNameAction().getString();
+#endif
 
     try {
 
@@ -269,13 +278,15 @@ void Layer::updateWindowTitle()
 {
     try {
 
+#if _DEBUG
         qDebug() << "Update the window title for layer:" << _generalAction.getNameAction().getString();
+#endif
 
         // Get layer name
         const auto name = _generalAction.getNameAction().getString();
 
         // Update the window title
-        _imageViewerPlugin.setWindowTitle(QString("%1%2").arg(_imageViewerPlugin.getGuiName(), _active ? QString(": %1").arg(name) : ""));
+        _imageViewerPlugin.getWidget().setWindowTitle(QString("%1%2").arg(_imageViewerPlugin.getGuiName(), _active ? QString(": %1").arg(name) : ""));
     }
     catch (std::exception& e)
     {
@@ -339,16 +350,18 @@ void Layer::activate()
 {
     try {
 
+#if _DEBUG
         qDebug() << "Activate layer:" << _generalAction.getNameAction().getString();
+#endif
 
         // Set active
         _active = true;
 
         // Enable shortcuts for the layer
-        _selectionAction.setShortcutsEnabled(true);
+        _selectionAction.getPixelSelectionAction().setShortcutsEnabled(true);
 
         // Enable the pixel selection tool
-        _selectionAction.getPixelSelectionTool().setEnabled(true);
+        _selectionAction.getPixelSelectionAction().getPixelSelectionTool().setEnabled(true);
 
         // Update the view plugin window tile
         updateWindowTitle();
@@ -366,16 +379,18 @@ void Layer::deactivate()
 {
     try {
 
+#if _DEBUG
         qDebug() << "Deactivate layer:" << _generalAction.getNameAction().getString();
+#endif
 
         // Set active
         _active = false;
 
         // Disable shortcuts for the layer
-        _selectionAction.setShortcutsEnabled(false);
+        _selectionAction.getPixelSelectionAction().setShortcutsEnabled(false);
 
         // Disable the pixel selection tool
-        _selectionAction.getPixelSelectionTool().setEnabled(false);
+        _selectionAction.getPixelSelectionAction().getPixelSelectionTool().setEnabled(false);
 
         // Update the view plugin window tile
         updateWindowTitle();
@@ -449,7 +464,7 @@ void Layer::paint(QPainter& painter, const PaintFlag& paintFlags)
         }
 
         // Draw layer selection rectangle (if not in ROI selection mode)
-        if ((paintFlags & Layer::SelectionRectangle) && _imageSelectionRectangle.isValid() && _selectionAction.getTypeAction().getCurrentIndex() != static_cast<std::int16_t>(PixelSelectionType::ROI)) {
+        if ((paintFlags & Layer::SelectionRectangle) && _imageSelectionRectangle.isValid() && _selectionAction.getPixelSelectionAction().getTypeAction().getCurrentIndex() != static_cast<std::int16_t>(PixelSelectionType::ROI)) {
 
             // Create perimeter pen
             auto perimeterPen = QPen(QBrush(_imageViewerPlugin.getImageViewerWidget().getPixelSelectionTool().getMainColor()), 0.7f);
@@ -645,7 +660,9 @@ void Layer::startSelection()
 {
     try {
 
+#if _DEBUG
         qDebug() << "Start the pixel selection for layer:" << _generalAction.getNameAction().getString();;
+#endif
 
         // Compute the selection in the selection tool prop
         this->getPropByName<SelectionToolProp>("SelectionToolProp")->resetOffScreenSelectionBuffer();
@@ -666,7 +683,9 @@ void Layer::computeSelection(const QVector<QPoint>& mousePositions /*= QVector<Q
 {
     try {
 
-        //qDebug() << "Compute the pixel selection for layer:" << _generalAction.getNameAction().getString();;
+#if _DEBUG
+        qDebug() << "Compute the pixel selection for layer:" << _generalAction.getNameAction().getString();;
+#endif
 
         // Compute the selection in the selection tool prop
         this->getPropByName<SelectionToolProp>("SelectionToolProp")->compute(mousePositions);
@@ -687,7 +706,9 @@ void Layer::resetSelectionBuffer()
 {
     try {
 
-        //qDebug() << "Reset the selection buffer for layer:" << _generalAction.getNameAction().getString();
+#if _DEBUG
+        qDebug() << "Reset the selection buffer for layer:" << _generalAction.getNameAction().getString();
+#endif
 
         // Reset the off-screen selection buffer
         getPropByName<SelectionToolProp>("SelectionToolProp")->resetOffScreenSelectionBuffer();
@@ -707,8 +728,10 @@ void Layer::resetSelectionBuffer()
 void Layer::publishSelection()
 {
     try {
-        //qDebug() << "Publish pixel selection for layer:" << _generalAction.getNameAction().getString();
-        
+#if _DEBUG
+        qDebug() << "Publish pixel selection for layer:" << _generalAction.getNameAction().getString();
+#endif
+
         if (!_generalAction.getVisibleAction().isChecked())
             return;
 
@@ -906,11 +929,11 @@ void Layer::publishSelection()
                 selection->indices.push_back(globalIndices[selectedIndex]);
 
             // Notify others that the point selection changed
-            Application::core()->notifyDataSelectionChanged(points);
+            Application::core()->notifyDatasetSelectionChanged(points);
         }
 
         // Notify listeners of the selection change
-        Application::core()->notifyDataSelectionChanged(_sourceDataset->getSourceDataset<DatasetImpl>());
+        Application::core()->notifyDatasetSelectionChanged(_sourceDataset->getSourceDataset<DatasetImpl>());
 
         // Render
         invalidate();
@@ -984,7 +1007,9 @@ void Layer::zoomToExtents()
 {
     try {
 
+#if _DEBUG
         qDebug() << "Zoom to the extents of layer:" << _generalAction.getNameAction().getString();
+#endif
 
         // Get pointer to image prop
         auto layerImageProp = getPropByName<ImageProp>("ImageProp");
@@ -1008,7 +1033,9 @@ void Layer::zoomToSelection()
 {
     try {
 
+#if _DEBUG
         qDebug() << "Zoom to the pixel selection of layer:" << _generalAction.getNameAction().getString();;
+#endif
 
         // Zoom to the world selection rectangle
         _imageViewerPlugin.getImageViewerWidget().getRenderer().setZoomRectangle(getWorldSelectionRectangle().marginsAdded(QMarginsF(0.0f, 0.0f, 1.0f, 1.0f)));

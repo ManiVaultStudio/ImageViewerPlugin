@@ -4,7 +4,9 @@
 #include "ImageViewerWidget.h"
 #include "SettingsAction.h"
 
-#include "Application.h"
+#include <Application.h>
+
+#include <widgets/Divider.h>
 
 #include <QTreeView>
 #include <QHeaderView>
@@ -18,6 +20,8 @@ LayersAction::LayersAction(SettingsAction& settingsAction) :
     _currentLayerAction(this),
     _rng(0)
 {
+    setText("Layers");
+
     // Activate selected layer and deactivate any layer that was selected
     connect(&_settingsAction.getImageViewerPlugin().getSelectionModel(), &QItemSelectionModel::selectionChanged, this, [](const QItemSelection& selected, const QItemSelection& deselected) {
 
@@ -136,6 +140,7 @@ LayersAction::Widget::Widget(QWidget* parent, LayersAction* layersAction) :
 
     auto currentLayerWidget = layersAction->getCurrentLayerAction().createWidget(this);
 
+    layout->addWidget(createHorizontalDivider());
     layout->addWidget(currentLayerWidget);
 
     setLayout(layout);
@@ -149,10 +154,10 @@ LayersAction::Widget::Widget(QWidget* parent, LayersAction* layersAction) :
         if (hasSelection) {
             auto layer = static_cast<Layer*>(selectedRows.first().internalPointer());
 
-            groupActions << &layer->getGeneralAction() << &layer->getImageAction() << &layer->getSelectionAction().getGroupAction();
+            groupActions << &layer->getGeneralAction() << &layer->getImageAction() << &layer->getSelectionAction();
         }
 
-        layersAction->getCurrentLayerAction().set(groupActions);
+        layersAction->getCurrentLayerAction().setGroupActions(groupActions);
 
         // Enable the pixel selection tool when there is a selection and disable otherwise
         imageViewerPlugin.getImageViewerWidget().getPixelSelectionTool().setEnabled(hasSelection);

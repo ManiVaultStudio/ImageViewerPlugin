@@ -1,7 +1,7 @@
 #pragma once
 
-#include "actions/WidgetAction.h"
-#include "actions/DecimalAction.h"
+#include <actions/WidgetAction.h>
+#include <actions/DecimalAction.h>
 
 using namespace hdps::gui;
 
@@ -34,12 +34,6 @@ public:
      * @param generalAction Reference to general action
      */
     PositionAction(GeneralAction& generalAction);
-
-    /** Determines whether the current color can be reset to its default */
-    bool isResettable() const override;
-
-    /** Reset the current color to the default color */
-    void reset() override;
 
 signals:
 

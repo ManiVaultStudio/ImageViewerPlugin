@@ -1,13 +1,12 @@
 #pragma once
 
-#include "actions/IntegralAction.h"
-#include "actions/StringAction.h"
-#include "actions/GroupAction.h"
-
-#include "DataHierarchyItem.h"
-#include "ImageData/Images.h"
-#include "PointData.h"
-#include "Set.h"
+#include <actions/IntegralAction.h>
+#include <actions/StringAction.h>
+#include <actions/GroupAction.h>
+#include <DataHierarchyItem.h>
+#include <ImageData/Images.h>
+#include <PointData.h>
+#include <Set.h>
 
 #include <QDialog>
 
