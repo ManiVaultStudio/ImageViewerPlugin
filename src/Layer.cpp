@@ -188,9 +188,6 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const hdps::Dataset<Images>& 
     this->getPropByName<ImageProp>("ImageProp")->setMaskData(_maskData);
     this->getPropByName<SelectionProp>("SelectionProp")->setMaskData(_maskData);
 
-    // Load default settings
-    loadDefault();
-
     qDebug() << findChildren("");
 }
 
@@ -932,11 +929,11 @@ void Layer::publishSelection()
                 selection->indices.push_back(globalIndices[selectedIndex]);
 
             // Notify others that the point selection changed
-            Application::core()->notifyDataSelectionChanged(points);
+            Application::core()->notifyDatasetSelectionChanged(points);
         }
 
         // Notify listeners of the selection change
-        Application::core()->notifyDataSelectionChanged(_sourceDataset->getSourceDataset<DatasetImpl>());
+        Application::core()->notifyDatasetSelectionChanged(_sourceDataset->getSourceDataset<DatasetImpl>());
 
         // Render
         invalidate();

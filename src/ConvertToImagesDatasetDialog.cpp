@@ -111,7 +111,7 @@ ConvertToImagesDatasetDialog::ConvertToImagesDatasetDialog(ImageViewerPlugin& im
         images->setNumberOfComponentsPerPixel(1);
 
         // Notify others that an images dataset was added
-        Application::core()->notifyDataAdded(*images);
+        Application::core()->notifyDatasetAdded(*images);
 
         // Assign target images dataset reference
         _targetImagesDataset = images;

@@ -24,7 +24,6 @@ PositionAction::PositionAction(GeneralAction& generalAction) :
     _yAction.setDefaultWidgetFlags(DecimalAction::SpinBox);
 
     const auto notifyChanged = [this]() -> void {
-        emit resettableChanged(isResettable());
         emit changed();
     };
 

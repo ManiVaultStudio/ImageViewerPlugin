@@ -15,7 +15,6 @@ GeneralAction::GeneralAction(Layer& layer) :
     _zoomAction(*this)
 {
     setText("General");
-    setSerializable(false);
 
     _datasetNameAction.setEnabled(false);
     

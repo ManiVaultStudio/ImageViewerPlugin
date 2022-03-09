@@ -282,6 +282,7 @@ QImage ImageAction::getColorMapImage() const
         return discreteColorMapImage.convertToFormat(QImage::Format_RGB32);
     }
     else {
+        _colorMapAction.getColorMapImage().save("test.jpg");
         return _colorMapAction.getColorMapImage();
     }
 }
