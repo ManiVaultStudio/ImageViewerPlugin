@@ -172,6 +172,8 @@ bool ImageViewerWidget::eventFilter(QObject* target, QEvent* event)
 
                     setCursor(Qt::ClosedHandCursor);
 
+                    _pixelSelectionTool.setEnabled(false);
+
                     // Notify others that navigation has started
                     emit navigationStarted();
 
@@ -180,6 +182,8 @@ bool ImageViewerWidget::eventFilter(QObject* target, QEvent* event)
 
                 case Selection:
                 {
+                    _pixelSelectionTool.setEnabled(true);
+
                     switch (_pixelSelectionTool.getType())
                     {
                         case PixelSelectionType::Rectangle:
