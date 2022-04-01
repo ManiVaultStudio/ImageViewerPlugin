@@ -65,6 +65,12 @@ public:
      */
     ScalarChannelAction(ImageAction& imageAction, const Identifier& index, const QString& name);
 
+    /**
+     * Get type string
+     * @return Widget action type in string format
+     */
+    QString getTypeString() const override;
+
     /** Get the channel identifier */
     const Identifier getIdentifier() const;
 
@@ -106,9 +112,10 @@ public: // Action publishing
 
     /**
      * Publish this action so that other actions can connect to it
-     * @param text Name of the published widget action
+     * @param name Name of the published widget action
+     * @return Pointer to published action
      */
-    void publish(const QString& name) override;
+    WidgetAction* publish(const QString& name) override;
 
     /**
      * Connect this action to a public action

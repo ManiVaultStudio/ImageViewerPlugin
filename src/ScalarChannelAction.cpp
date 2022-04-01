@@ -81,6 +81,11 @@ ScalarChannelAction::ScalarChannelAction(ImageAction& imageAction, const Identif
     computeScalarData();
 }
 
+QString ScalarChannelAction::getTypeString() const
+{
+    return "Option";
+}
+
 const ScalarChannelAction::Identifier ScalarChannelAction::getIdentifier() const
 {
     return _identifier;
@@ -176,9 +181,9 @@ bool ScalarChannelAction::isPublic() const
     return _dimensionAction.isPublic();
 }
 
-void ScalarChannelAction::publish(const QString& name)
+WidgetAction* ScalarChannelAction::publish(const QString& name)
 {
-    _dimensionAction.publish(name);
+    return _dimensionAction.publish(name);
 }
 
 void ScalarChannelAction::connectToPublicAction(WidgetAction* publicAction)
