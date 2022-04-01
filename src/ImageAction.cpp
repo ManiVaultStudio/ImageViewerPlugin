@@ -26,8 +26,6 @@ ImageAction::ImageAction(Layer& layer) :
     _useConstantColorAction(this, "Use constant color", false, false),
     _constantColorAction(this, "Constant color", QColor(Qt::white), QColor(Qt::white))
 {
-    qDebug() << __FUNCTION__;
-
     setText("Image");
     setEventCore(Application::core());
 
@@ -228,8 +226,6 @@ ImageAction::ImageAction(Layer& layer) :
 
     // Do an initial update of the scalar data
     updateScalarChannels();
-
-    qDebug() << __FUNCTION__;
 }
 
 void ImageAction::init()
@@ -282,7 +278,6 @@ QImage ImageAction::getColorMapImage() const
         return discreteColorMapImage.convertToFormat(QImage::Format_RGB32);
     }
     else {
-        _colorMapAction.getColorMapImage().save("test.jpg");
         return _colorMapAction.getColorMapImage();
     }
 }

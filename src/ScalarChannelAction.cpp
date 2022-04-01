@@ -31,6 +31,8 @@ ScalarChannelAction::ScalarChannelAction(ImageAction& imageAction, const Identif
     setText(name);
     setDefaultWidgetFlags(ScalarChannelAction::ComboBox | ScalarChannelAction::WindowLevelWidget);
 
+    connect(&_dimensionAction, &OptionAction::isPublishedChanged, this, &ScalarChannelAction::isPublishedChanged);
+
     switch (_identifier)
     {
         case Channel1:
@@ -162,6 +164,45 @@ void ScalarChannelAction::computeScalarData()
 Dataset<Images> ScalarChannelAction::getImages()
 {
     return _imageAction.getLayer().getImages();
+}
+
+bool ScalarChannelAction::mayPublish() const
+{
+    return true;
+}
+
+bool ScalarChannelAction::isPublic() const
+{
+    return _dimensionAction.isPublic();
+}
+
+void ScalarChannelAction::publish(const QString& name)
+{
+    _dimensionAction.publish(name);
+}
+
+void ScalarChannelAction::connectToPublicAction(WidgetAction* publicAction)
+{
+    auto publicDimensionAction = dynamic_cast<OptionAction*>(publicAction);
+
+    Q_ASSERT(publicDimensionAction != nullptr);
+
+    connect(&_dimensionAction, &OptionAction::currentIndexChanged, publicDimensionAction, &OptionAction::setCurrentIndex);
+    connect(publicDimensionAction, &OptionAction::currentIndexChanged, &_dimensionAction, &OptionAction::setCurrentIndex);
+
+    WidgetAction::connectToPublicAction(publicAction);
+}
+
+void ScalarChannelAction::disconnectFromPublicAction()
+{
+    auto publicDimensionAction = dynamic_cast<OptionAction*>(_publicAction);
+
+    Q_ASSERT(publicDimensionAction != nullptr);
+
+    disconnect(&_dimensionAction, &OptionAction::currentIndexChanged, publicDimensionAction, &OptionAction::setCurrentIndex);
+    disconnect(publicDimensionAction, &OptionAction::currentIndexChanged, &_dimensionAction, &OptionAction::setCurrentIndex);
+
+    WidgetAction::disconnectFromPublicAction();
 }
 
 QWidget* ScalarChannelAction::getWidget(QWidget* parent, const std::int32_t& widgetFlags)

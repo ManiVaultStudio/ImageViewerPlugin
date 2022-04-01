@@ -187,8 +187,6 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const hdps::Dataset<Images>& 
     // Apply masking to props
     this->getPropByName<ImageProp>("ImageProp")->setMaskData(_maskData);
     this->getPropByName<SelectionProp>("SelectionProp")->setMaskData(_maskData);
-
-    qDebug() << findChildren("");
 }
 
 Layer::~Layer()
