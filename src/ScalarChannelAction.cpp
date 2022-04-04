@@ -183,26 +183,21 @@ void ScalarChannelAction::publish(const QString& name)
 
 void ScalarChannelAction::connectToPublicAction(WidgetAction* publicAction)
 {
-    auto publicDimensionAction = dynamic_cast<OptionAction*>(publicAction);
-
-    Q_ASSERT(publicDimensionAction != nullptr);
-
-    connect(&_dimensionAction, &OptionAction::currentIndexChanged, publicDimensionAction, &OptionAction::setCurrentIndex);
-    connect(publicDimensionAction, &OptionAction::currentIndexChanged, &_dimensionAction, &OptionAction::setCurrentIndex);
+    _dimensionAction.connectToPublicAction(publicAction);
 
     WidgetAction::connectToPublicAction(publicAction);
 }
 
 void ScalarChannelAction::disconnectFromPublicAction()
 {
-    auto publicDimensionAction = dynamic_cast<OptionAction*>(_publicAction);
-
-    Q_ASSERT(publicDimensionAction != nullptr);
-
-    disconnect(&_dimensionAction, &OptionAction::currentIndexChanged, publicDimensionAction, &OptionAction::setCurrentIndex);
-    disconnect(publicDimensionAction, &OptionAction::currentIndexChanged, &_dimensionAction, &OptionAction::setCurrentIndex);
+    _dimensionAction.disconnectFromPublicAction();
 
     WidgetAction::disconnectFromPublicAction();
+}
+
+WidgetAction* ScalarChannelAction::getPublicCopy() const
+{
+    return new OptionAction(parent(), text(), _dimensionAction.getOptions(), _dimensionAction.getCurrentText(), _dimensionAction.getDefaultText());
 }
 
 QWidget* ScalarChannelAction::getWidget(QWidget* parent, const std::int32_t& widgetFlags)

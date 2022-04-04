@@ -119,6 +119,14 @@ public: // Action publishing
     /** Disconnect this action from a public action */
     void disconnectFromPublicAction() override;
 
+protected:  // Linking
+
+    /**
+     * Get public copy of the action (other compatible actions can connect to it)
+     * @return Pointer to public copy of the action
+     */
+    virtual WidgetAction* getPublicCopy() const;
+
 signals:
     
     /** Signals the channel changed */
