@@ -30,6 +30,7 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const hdps::Dataset<Images>& 
     _generalAction(*this),
     _imageAction(*this),
     _selectionAction(*this, &_imageViewerPlugin.getImageViewerWidget(), _imageViewerPlugin.getImageViewerWidget().getPixelSelectionTool()),
+    _miscellaneousAction(*this),
     _selectionData(),
     _imageSelectionRectangle(),
     _maskData()

@@ -154,7 +154,7 @@ LayersAction::Widget::Widget(QWidget* parent, LayersAction* layersAction) :
         if (hasSelection) {
             auto layer = static_cast<Layer*>(selectedRows.first().internalPointer());
 
-            groupActions << &layer->getGeneralAction() << &layer->getImageAction() << &layer->getSelectionAction();
+            groupActions << &layer->getGeneralAction() << &layer->getImageAction() << &layer->getSelectionAction() << &layer->getMiscellaneousAction();
         }
 
         layersAction->getCurrentLayerAction().setGroupActions(groupActions);

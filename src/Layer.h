@@ -5,6 +5,7 @@
 #include "GeneralAction.h"
 #include "ImageAction.h"
 #include "SelectionAction.h"
+#include "MiscellaneousAction.h"
 
 #include <util/Interpolation.h>
 #include <event/EventListener.h>
@@ -191,6 +192,7 @@ public: /** Action getters */
     GeneralAction& getGeneralAction() { return _generalAction; }
     ImageAction& getImageAction() { return _imageAction; }
     SelectionAction& getSelectionAction() { return _selectionAction; }
+    MiscellaneousAction& getMiscellaneousAction() { return _miscellaneousAction; }
 
 protected:
     ImageViewerPlugin&                  _imageViewerPlugin;             /** Reference to image viewer plugin */
@@ -201,6 +203,7 @@ protected:
     GeneralAction                       _generalAction;                 /** General action */
     ImageAction                         _imageAction;                   /** Image action */
     SelectionAction                     _selectionAction;               /** Selection action */
+    MiscellaneousAction                 _miscellaneousAction;           /** Miscellaneous action */
     std::vector<std::uint8_t>           _selectionData;                 /** Selection data for selection prop */
     QRect                               _imageSelectionRectangle;       /** Selection boundaries in image coordinates */
     std::vector<std::uint8_t>           _maskData;                      /** Mask data for the image */
