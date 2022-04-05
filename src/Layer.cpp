@@ -137,7 +137,9 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const hdps::Dataset<Images>& 
 
     // In ROI selection mode select pixels when the viewport changes
     connect(&_imageViewerPlugin.getImageViewerWidget().getRenderer(), &LayersRenderer::zoomRectangleChanged, this, [this, updateSelectionRoi]() {
-        
+
+        updateRoi();
+
         // Don't do anything when the layer is not active
         if (!_active)
             return;
@@ -294,6 +296,21 @@ void Layer::updateWindowTitle()
     catch (...) {
         exceptionMessageBox(QString("Unable to update the window title for layer: %1").arg(_generalAction.getNameAction().getString()));
     }
+}
+
+void Layer::updateRoi()
+{
+    const auto modelViewMatrix      = getRenderer().getViewMatrix() * getModelMatrix() *getPropByName<SelectionToolProp>("SelectionToolProp")->getModelMatrix();
+    const auto roiTopLeft           = getRenderer().getScreenPointToWorldPosition(modelViewMatrix, QPoint(0, getRenderer().getParentWidgetSize().height()));
+    const auto roiBottomRight       = getRenderer().getScreenPointToWorldPosition(modelViewMatrix, QPoint(getRenderer().getParentWidgetSize().width(), 0));
+    const auto inputImageSize       = _imagesDataset->getImageSize();
+
+    QRect imageRoi;
+
+    imageRoi.setBottomLeft(QPoint(std::clamp(static_cast<int>(std::round(roiTopLeft.x())), 0, inputImageSize.width()), std::clamp(static_cast<int>(std::round(roiTopLeft.y())), 0, inputImageSize.height())));
+    imageRoi.setTopRight(QPoint(std::clamp(static_cast<int>(std::round(roiBottomRight.x())), 0, inputImageSize.width()), std::clamp(static_cast<int>(std::round(roiBottomRight.y())), 0, inputImageSize.height())));
+
+    _miscellaneousAction.getRoiAction().setRectangle(imageRoi);
 }
 
 QRectF Layer::getWorldBoundingRectangle() const

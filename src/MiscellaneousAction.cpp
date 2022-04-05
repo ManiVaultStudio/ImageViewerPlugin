@@ -10,5 +10,5 @@ MiscellaneousAction::MiscellaneousAction(Layer& layer) :
 {
     setText("Miscellaneous");
 
-    _roiAction.setToolTip("Visible rectangle in image coordinates");
+    _roiAction.setToolTip("Visible rectangle in image coordinates (bottom-left, top-right)");
 }

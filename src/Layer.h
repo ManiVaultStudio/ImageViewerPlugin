@@ -178,6 +178,9 @@ protected: // Miscellaneous
     /** Update the view plugin window title when activated or when the layer name changes */
     void updateWindowTitle();
 
+    /** Update image ROI */
+    void updateRoi();
+
 signals:
 
     /**

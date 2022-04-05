@@ -29,7 +29,7 @@ public:
 
 public: // Action getters
 
-    IntegralRectangleAction& getVisibleRectangleAction() { return _roiAction; }
+    IntegralRectangleAction& getRoiAction() { return _roiAction; }
 
 protected:
     Layer&                      _layer;         /** Reference to layer */
