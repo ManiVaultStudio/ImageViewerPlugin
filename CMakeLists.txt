@@ -27,14 +27,91 @@ set(PLUGIN
     src/ImageViewerPlugin.cpp
 )
 
-file(GLOB MODEL src/*Model.* src/*Layer.* src/*Dataset.* src/*Layer.* src/*Item.* src/Range.* src/*ProxyModel.* src/*Node.* src/*Renderable*.* src/Channel*.*)
-file(GLOB RENDERING src/*Renderer.* src/*Actor.* src/*Prop.* src/*Shape.*)
-file(GLOB WIDGETS src/*Widget.*)
-file(GLOB DIALOGS src/*Dialog.*)
-file(GLOB ACTIONS src/*Action.*)
-file(GLOB SHADERS res/shaders/*.glsl)
-file(GLOB JSON src/*.json)
-file(GLOB QRC src/*.qrc)
+set(MODEL
+    src/Layer.h
+    src/Layer.cpp
+    src/LayersModel.h
+    src/LayersModel.cpp
+    src/Renderable.h
+    src/Renderable.cpp
+)
+
+set(RENDERING
+    src/ImageProp.h
+    src/ImageProp.cpp
+    src/LayersRenderer.h
+    src/LayersRenderer.cpp
+    src/Prop.h
+    src/Prop.cpp
+    src/QuadShape.h
+    src/QuadShape.cpp
+    src/SelectionProp.h
+    src/SelectionProp.cpp
+    src/SelectionToolProp.h
+    src/SelectionToolProp.cpp
+    src/Shape.h
+    src/Shape.cpp
+)
+
+set(WIDGETS
+    src/ImageViewerWidget.h
+    src/ImageViewerWidget.cpp
+)
+
+set(DIALOGS
+    src/ConvertToImagesDatasetDialog.h
+    src/ConvertToImagesDatasetDialog.cpp
+    src/ExportToImageDialog.h
+    src/ExportToImageDialog.cpp
+)
+
+set(ACTIONS
+    src/GeneralAction.h
+    src/GeneralAction.cpp
+    src/GlobalViewSettingsAction.h
+    src/GlobalViewSettingsAction.cpp
+    src/ImageAction.h
+    src/ImageAction.cpp
+    src/LayersAction.h
+    src/LayersAction.cpp
+    src/MainToolbarAction.h
+    src/MainToolbarAction.cpp
+    src/MiscellaneousAction.h
+    src/MiscellaneousAction.cpp
+    src/PositionAction.h
+    src/PositionAction.cpp
+    src/ScalarChannelAction.h
+    src/ScalarChannelAction.cpp
+    src/SelectionAction.h
+    src/SelectionAction.cpp
+    src/SettingsAction.h
+    src/SettingsAction.cpp
+    src/SubsetAction.h
+    src/SubsetAction.cpp
+    src/ZoomAction.h
+    src/ZoomAction.cpp
+    src/ZoomToolbarAction.h
+    src/ZoomToolbarAction.cpp
+)
+
+set(SHADERS
+    res/shaders/ImageFragment.glsl
+    res/shaders/ImageVertex.glsl
+    res/shaders/SelectionFragment.glsl
+    res/shaders/SelectionVertex.glsl
+    res/shaders/SelectionToolFragment.glsl
+    res/shaders/SelectionToolVertex.glsl
+    res/shaders/SelectionToolOffScreenFragment.glsl
+    res/shaders/SelectionToolOffScreenVertex.glsl
+)
+
+set(JSON
+    src/ImageViewerPlugin.json
+)
+
+set(QRC
+    res/resources.qrc
+)
 
 set(SOURCES ${PLUGIN} ${MODEL} ${RENDERING} ${WIDGETS} ${DIALOGS} ${ACTIONS})
 set(AUX ${JSON} ${QRC})
