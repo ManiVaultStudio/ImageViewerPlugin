@@ -2,6 +2,7 @@
 
 #include <actions/GroupAction.h>
 #include <actions/IntegralRectangleAction.h>
+#include <actions/DecimalRectangleAction.h>
 
 class Layer;
 
@@ -29,9 +30,11 @@ public:
 
 public: // Action getters
 
-    IntegralRectangleAction& getRoiAction() { return _roiAction; }
+    IntegralRectangleAction& getRoiLayerAction() { return _roiLayerAction; }
+    DecimalRectangleAction& getRoiViewAction() { return _roiViewAction; }
 
 protected:
-    Layer&                      _layer;         /** Reference to layer */
-    IntegralRectangleAction     _roiAction;     /** Image ROI action */
+    Layer&                      _layer;             /** Reference to layer */
+    IntegralRectangleAction     _roiLayerAction;    /** Layer region of interest action */
+    DecimalRectangleAction      _roiViewAction;     /** View region of interest action */
 };

@@ -248,6 +248,9 @@ QRectF LayersRenderer::getZoomRectangle() const
 
 void LayersRenderer::setZoomRectangle(const QRectF& zoomRectangle)
 {
+    if (zoomRectangle == getZoomRectangle())
+        return;
+
     if (!getZoomRectangle().isValid() || !_animationEnabled) {
         _zoomRectangleTopLeft   = zoomRectangle.topLeft();
         _zoomRectangleSize      = zoomRectangle.size();

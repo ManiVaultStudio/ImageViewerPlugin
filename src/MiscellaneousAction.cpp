@@ -6,9 +6,11 @@
 MiscellaneousAction::MiscellaneousAction(Layer& layer) :
     GroupAction(&layer, true),
     _layer(layer),
-    _roiAction(this, "Image ROI")
+    _roiLayerAction(this, "Layer ROI"),
+    _roiViewAction(this, "View ROI")
 {
     setText("Miscellaneous");
 
-    _roiAction.setToolTip("Visible rectangle in image coordinates (bottom-left, top-right)");
+    _roiLayerAction.setToolTip("Layer region of interest discrete image coordinates (bottom-left:x, bottom-left:y, top-right:x, top-right:y)");
+    _roiViewAction.setToolTip("View region of interest in fractional world coordinates (bottom-left:x, bottom-left:y, top-right:x, top-right:y)");
 }

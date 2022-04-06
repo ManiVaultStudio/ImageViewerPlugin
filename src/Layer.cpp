@@ -183,6 +183,19 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const hdps::Dataset<Images>& 
             _imagesDataset->selectNone();
     });
 
+    connect(&_miscellaneousAction.getRoiViewAction(), &DecimalRectangleAction::rectangleChanged, &getRenderer(), [this](const QRectF& rectangle) -> void {
+        if (rectangle == getRenderer().getZoomRectangle())
+            return;
+
+        const auto animationEnabled = getRenderer().getAnimationEnabled();
+
+        getRenderer().setAnimationEnabled(false);
+        {
+            getRenderer().setZoomRectangle(rectangle);
+        }
+        getRenderer().setAnimationEnabled(animationEnabled);
+    });
+
     _imageAction.init();
 
     _imagesDataset->getMaskData(_maskData);
@@ -310,7 +323,8 @@ void Layer::updateRoi()
     imageRoi.setBottomLeft(QPoint(std::clamp(static_cast<int>(std::round(roiTopLeft.x())), 0, inputImageSize.width()), std::clamp(static_cast<int>(std::round(roiTopLeft.y())), 0, inputImageSize.height())));
     imageRoi.setTopRight(QPoint(std::clamp(static_cast<int>(std::round(roiBottomRight.x())), 0, inputImageSize.width()), std::clamp(static_cast<int>(std::round(roiBottomRight.y())), 0, inputImageSize.height())));
 
-    _miscellaneousAction.getRoiAction().setRectangle(imageRoi);
+    _miscellaneousAction.getRoiLayerAction().setRectangle(imageRoi);
+    _miscellaneousAction.getRoiViewAction().setRectangle(getRenderer().getZoomRectangle());
 }
 
 QRectF Layer::getWorldBoundingRectangle() const
