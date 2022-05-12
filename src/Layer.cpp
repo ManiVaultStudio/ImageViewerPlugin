@@ -21,7 +21,6 @@
 Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const hdps::Dataset<Images>& imagesDataset) :
     WidgetAction(&imageViewerPlugin),
     Renderable(imageViewerPlugin.getImageViewerWidget().getRenderer()),
-    EventListener(),
     _imageViewerPlugin(imageViewerPlugin),
     _active(false),
     _imagesDataset(imagesDataset),
@@ -37,7 +36,6 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const hdps::Dataset<Images>& 
 {
     setText("Layer");
     setObjectName("Layer");
-    setEventCore(Application::core());
 
     if (!_sourceDataset.isValid())
         throw std::runtime_error("The layer source dataset is not valid after initialization");

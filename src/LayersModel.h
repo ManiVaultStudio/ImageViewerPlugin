@@ -1,12 +1,12 @@
 #pragma once
 
-#include "event/EventListener.h"
+#include <event/EventListener.h>
 
 #include "Layer.h"
 
 #include <QAbstractListModel>
 
-class LayersModel : public QAbstractListModel, public hdps::EventListener
+class LayersModel : public QAbstractListModel
 {
 public:
 
@@ -150,5 +150,6 @@ protected:
     QIcon getColorIcon(const QColor& color) const;
 
 protected:
-    QVector<Layer*>    _layers;        /** Layers data */
+    QVector<Layer*>         _layers;            /** Layers data */
+    hdps::EventListener     _eventListener;     /** Listen to HDPS events */
 };

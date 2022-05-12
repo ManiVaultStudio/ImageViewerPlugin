@@ -13,7 +13,6 @@ using namespace hdps::util;
 
 ImageAction::ImageAction(Layer& layer) :
     GroupAction(&layer, true),
-    EventListener(),
     _layer(layer),
     _opacityAction(this, "Opacity", 0.0f, 100.0f, 100.0f, 100.0f, 1),
     _subsampleFactorAction(this, "Subsample", 1, 8, 1, 1),
@@ -27,7 +26,6 @@ ImageAction::ImageAction(Layer& layer) :
     _constantColorAction(this, "Constant color", QColor(Qt::white), QColor(Qt::white))
 {
     setText("Image");
-    setEventCore(Application::core());
 
     _scalarChannel1Action.setObjectName("Channel 1");
     _scalarChannel2Action.setObjectName("Channel 2");
@@ -163,7 +161,10 @@ ImageAction::ImageAction(Layer& layer) :
     };
 
     // Register for events for points datasets
-    registerDataEventByType(PointType, [this, updateScalarChannels](DataEvent* dataEvent) {
+    _eventListener.setEventCore(Application::core());
+    _eventListener.addSupportedEventType(static_cast<std::uint32_t>(EventType::DataChanged));
+    _eventListener.addSupportedEventType(static_cast<std::uint32_t>(EventType::DataSelectionChanged));
+    _eventListener.registerDataEventByType(PointType, [this, updateScalarChannels](DataEvent* dataEvent) {
 
         // The points dataset might have been deleted so check first if it is valid
         if (!_layer.getSourceDataset().isValid())
@@ -194,7 +195,10 @@ ImageAction::ImageAction(Layer& layer) :
     });
 
     // Register for events for clusters datasets
-    registerDataEventByType(ClusterType, [this, updateScalarChannels](DataEvent* dataEvent) {
+    _eventListener.setEventCore(Application::core());
+    _eventListener.addSupportedEventType(static_cast<std::uint32_t>(EventType::DataChanged));
+    _eventListener.addSupportedEventType(static_cast<std::uint32_t>(EventType::DataSelectionChanged));
+    _eventListener.registerDataEventByType(ClusterType, [this, updateScalarChannels](DataEvent* dataEvent) {
 
         // The points dataset might have been deleted so check first if it is valid
         if (!_layer.getSourceDataset().isValid())
