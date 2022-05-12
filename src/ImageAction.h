@@ -21,7 +21,7 @@ using namespace hdps::gui;
  *
  * @author Thomas Kroes
  */
-class ImageAction : public GroupAction, public hdps::EventListener
+class ImageAction : public GroupAction
 {
 Q_OBJECT
 
@@ -91,4 +91,5 @@ protected:
     OptionAction            _interpolationTypeAction;       /** Interpolation type action */
     ToggleAction            _useConstantColorAction;        /** Constant color action */
     ColorAction             _constantColorAction;           /** Color action */
+    hdps::EventListener     _eventListener;                 /** Listen to HDPS events */
 };

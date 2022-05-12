@@ -8,7 +8,6 @@
 #include "MiscellaneousAction.h"
 
 #include <util/Interpolation.h>
-#include <event/EventListener.h>
 #include <actions/WidgetAction.h>
 #include <Set.h>
 #include <ImageData/Images.h>
@@ -17,7 +16,7 @@ using namespace hdps::util;
 
 class ImageViewerPlugin;
 
-class Layer : public WidgetAction, public Renderable, public hdps::EventListener
+class Layer : public WidgetAction, public Renderable
 {
     Q_OBJECT
 

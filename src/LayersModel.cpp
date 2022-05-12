@@ -14,13 +14,13 @@ using namespace hdps;
 
 LayersModel::LayersModel(QObject* parent) :
     QAbstractListModel(parent),
-    EventListener(),
     _layers()
 {
-    setEventCore(Application::core());
+    _eventListener.setEventCore(Application::core());
+    _eventListener.addSupportedEventType(static_cast<std::uint32_t>(EventType::DataRemoved));
 
     // Register for events for points datasets
-    registerDataEventByType(PointType, [this](DataEvent* dataEvent) {
+    _eventListener.registerDataEventByType(PointType, [this](DataEvent* dataEvent) {
 
         switch (dataEvent->getType())
         {
@@ -36,7 +36,7 @@ LayersModel::LayersModel(QObject* parent) :
     });
 
     // Register for events for images datasets
-    registerDataEventByType(ImageType, [this](DataEvent* dataEvent) {
+    _eventListener.registerDataEventByType(ImageType, [this](DataEvent* dataEvent) {
 
         switch (dataEvent->getType())
         {
