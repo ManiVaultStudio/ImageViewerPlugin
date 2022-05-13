@@ -2,12 +2,6 @@ name: ImageViewerPlugin
 
 on:
   push:
-    branches:
-      - master
-      - main
-      - release/*
-      - feature/0.3
-
   pull_request:
   workflow_dispatch:
 
