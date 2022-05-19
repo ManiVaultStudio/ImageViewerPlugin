@@ -30,7 +30,7 @@ class ImageViewerPluginConan(ConanFile):
     default_options = {"shared": True, "fPIC": True}
 
     requires = (
-        "hdps-core/latest@lkeb/stable"
+        "hdps-core/0.2@lkeb/stable"
     )
 
     scm = {
