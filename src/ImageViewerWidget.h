@@ -117,8 +117,11 @@ public: // Miscellaneous
      */
     void setInteractionMode(const InteractionMode& interactionMode);
 
-    /** Get bounding rectangle */
-    QRectF getWorldBoundingRectangle() const;
+    /**
+     * Get bounding rectangle of the world
+     * @param visibleOnly Only include visible layers
+     */
+    QRectF getWorldBoundingRectangle(bool visibleOnly = true) const;
 
     /** Update bounding rectangle */
     void updateWorldBoundingRectangle();
