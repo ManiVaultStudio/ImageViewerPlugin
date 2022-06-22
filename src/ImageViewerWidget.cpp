@@ -733,13 +733,15 @@ void ImageViewerWidget::setInteractionMode(const InteractionMode& interactionMod
     emit interactionModeChanged(_interactionMode);
 }
 
-QRectF ImageViewerWidget::getWorldBoundingRectangle() const
+QRectF ImageViewerWidget::getWorldBoundingRectangle(bool visibleOnly /*= true*/) const
 {
     QRectF worldBoundingRectangle;
 
     for (const auto& layer : _imageViewerPlugin.getModel().getLayers()) {
-        if (layer->getGeneralAction().getVisibleAction().isChecked())
-            worldBoundingRectangle |= layer->getWorldBoundingRectangle();
+        if (visibleOnly && !layer->getGeneralAction().getVisibleAction().isChecked())
+            continue;
+        
+        worldBoundingRectangle |= layer->getWorldBoundingRectangle();
     }
 
     return worldBoundingRectangle;

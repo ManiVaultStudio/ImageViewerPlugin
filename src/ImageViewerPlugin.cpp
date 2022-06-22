@@ -257,7 +257,7 @@ void ImageViewerPlugin::addDataset(const Dataset<Images>& dataset)
     auto layer = new Layer(*this, dataset);
 
     // Squeeze the layer in to the layers world bounding rectangle
-    layer->scaleToFit(_imageViewerWidget.getWorldBoundingRectangle());
+    layer->scaleToFit(_imageViewerWidget.getWorldBoundingRectangle(false));
 
     // Add new layer to the model
     _model.addLayer(layer);
@@ -311,7 +311,7 @@ void ImageViewerPlugin::immigrateDataset(const Dataset<DatasetImpl>& dataset)
             auto layer = new Layer(*this, *convertToImagesDatasetDialog.getTargetImagesDataset());
 
             // Squeeze the layer in to the layers world bounding rectangle
-            layer->scaleToFit(_imageViewerWidget.getWorldBoundingRectangle());
+            layer->scaleToFit(_imageViewerWidget.getWorldBoundingRectangle(false));
 
             // Add new layer to the model
             _model.addLayer(layer);
