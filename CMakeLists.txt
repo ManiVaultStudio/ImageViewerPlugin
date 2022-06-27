@@ -17,7 +17,7 @@ if(MSVC)
 endif(MSVC)
 
 find_package(OpenGL REQUIRED)
-find_package(Qt6 COMPONENTS Widgets WebEngineWidgets REQUIRED)
+find_package(Qt6 COMPONENTS Widgets WebEngineWidgets OpenGL OpenGLWidgets REQUIRED)
 find_package(OpenMP)
 # Normalize the incoming install path
 file(TO_CMAKE_PATH $ENV{HDPS_INSTALL_DIR} INSTALL_DIR)
@@ -145,6 +145,8 @@ endif()
 target_link_libraries(${PROJECT} ${OPENGL_LIBRARIES})
 target_link_libraries(${PROJECT} Qt6::Widgets)
 target_link_libraries(${PROJECT} Qt6::WebEngineWidgets)
+target_link_libraries(${PROJECT} Qt6::OpenGL)
+target_link_libraries(${PROJECT} Qt6::OpenGLWidgets)
 
 target_link_libraries(${PROJECT} "${INSTALL_DIR}/$<CONFIGURATION>/lib/${CMAKE_SHARED_LIBRARY_PREFIX}HDPS_Public${LIB_SUFFIX}")
 target_link_libraries(${PROJECT} "${INSTALL_DIR}/$<CONFIGURATION>/lib/${CMAKE_SHARED_LIBRARY_PREFIX}PointData${LIB_SUFFIX}")

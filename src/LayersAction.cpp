@@ -121,7 +121,7 @@ LayersAction::Widget::Widget(QWidget* parent, LayersAction* layersAction) :
     header->setSectionResizeMode(LayersModel::Scale, QHeaderView::Interactive);
     header->setSectionResizeMode(LayersModel::Opacity, QHeaderView::Fixed);
 
-    layout->setMargin(0);
+    layout->setContentsMargins(0, 0, 0, 0);
     layout->addWidget(treeView);
 
     auto toolbarLayout = new QHBoxLayout();

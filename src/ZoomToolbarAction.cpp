@@ -114,7 +114,7 @@ ZoomToolbarAction::Widget::Widget(QWidget* parent, ZoomToolbarAction* zoomToolba
     auto layout = new QHBoxLayout();
 
     layout->setSpacing(3);
-    layout->setMargin(4);
+    layout->setContentsMargins(4, 4, 4, 4);
 
     layout->addStretch(1);
     layout->addWidget(zoomToolbarAction->getZoomOutAction().createWidget(this, TriggerAction::Icon));
