@@ -109,9 +109,11 @@ QMatrix4x4 LayersRenderer::getViewMatrix() const
 {
     QMatrix4x4 lookAt, scale;
 
+    const auto zoomRectangle = getZoomRectangle();
+
     // Construct look-at parameters
-    const auto eye = QVector3D(getZoomRectangle().center().x(), getZoomRectangle().center().y(), 1);
-    const auto center = QVector3D(getZoomRectangle().center().x(), getZoomRectangle().center().y(), 0);
+    const auto eye      = QVector3D(zoomRectangle.center().x(), zoomRectangle.center().y(), 1);
+    const auto center   = QVector3D(zoomRectangle.center().x(), zoomRectangle.center().y(), 0);
     const auto up       = QVector3D(0, 1, 0);
 
     // Create look-at transformation matrix
@@ -119,8 +121,8 @@ QMatrix4x4 LayersRenderer::getViewMatrix() const
 
     const auto viewerSize           = getParentWidgetSize();
     const auto totalMargins         = 2 * _zoomMargin;
-    const auto factorX              = static_cast<float>(viewerSize.width()) / static_cast<float>(getZoomRectangle().width());
-    const auto factorY              = static_cast<float>(viewerSize.height()) / static_cast<float>(getZoomRectangle().height());
+    const auto factorX              = static_cast<float>(viewerSize.width()) / (zoomRectangle.isValid() ? static_cast<float>(zoomRectangle.width()) : 1.0f);
+    const auto factorY              = static_cast<float>(viewerSize.height()) / (zoomRectangle.isValid() ? static_cast<float>(zoomRectangle.height()) : 1.0f);
     const auto scaleFactor          = factorX < factorY ? factorX : factorY;
 
     const auto d = 1.0f - (2 * _zoomMargin) / std::max(viewerSize.width(), viewerSize.height());

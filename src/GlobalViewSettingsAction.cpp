@@ -65,7 +65,7 @@ GlobalViewSettingsAction::Widget::Widget(QWidget* parent, GlobalViewSettingsActi
 {
     auto layout = new QVBoxLayout();
 
-    layout->setMargin(0);
+    layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(3);
 
     layout->addWidget(globalViewSettingsAction->getGroupAction().createWidget(this));

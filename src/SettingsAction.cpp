@@ -38,7 +38,7 @@ QMenu* SettingsAction::getContextMenu(QWidget* parent /*= nullptr*/)
         auto selectionTypesLayout = new QHBoxLayout();
 
         // Remove margins and tighten space between buttons
-        selectionTypesLayout->setMargin(0);
+        selectionTypesLayout->setContentsMargins(0, 0, 0, 0);
         selectionTypesLayout->setSpacing(2);
 
         // Apply the layout
@@ -106,7 +106,7 @@ SettingsAction::Widget::Widget(QWidget* parent, SettingsAction* settingsAction) 
     
     auto layout = new QVBoxLayout();
 
-    layout->setMargin(4);
+    layout->setContentsMargins(4, 4, 4, 4);
     layout->addWidget(settingsAction->getLayersAction().createWidget(this));
 
     setLayout(layout);

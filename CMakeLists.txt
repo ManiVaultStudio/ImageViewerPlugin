@@ -17,7 +17,7 @@ if(MSVC)
 endif(MSVC)
 
 find_package(OpenGL REQUIRED)
-find_package(Qt5 COMPONENTS Widgets WebEngineWidgets REQUIRED)
+find_package(Qt6 COMPONENTS Widgets WebEngineWidgets OpenGL OpenGLWidgets REQUIRED)
 find_package(OpenMP)
 # Normalize the incoming install path
 file(TO_CMAKE_PATH $ENV{HDPS_INSTALL_DIR} INSTALL_DIR)
@@ -129,8 +129,8 @@ source_group(Resources FILES res/resources.qrc)
 # Note: src is included for ClustersLayerWidget.h
 include_directories("${INSTALL_DIR}/$<CONFIGURATION>/include/" src)
 
-QT5_WRAP_UI(UI_HEADERS ${UIS})
-QT5_ADD_RESOURCES(RESOURCE_FILES res/resources.qrc)
+QT6_WRAP_UI(UI_HEADERS ${UIS})
+QT6_ADD_RESOURCES(RESOURCE_FILES res/resources.qrc)
 
 add_library(${PROJECT} SHARED ${SOURCES} ${UIS} ${SHADERS} ${AUX} ${RESOURCE_FILES})
 
@@ -143,8 +143,10 @@ else()
 endif()
 
 target_link_libraries(${PROJECT} ${OPENGL_LIBRARIES})
-target_link_libraries(${PROJECT} Qt5::Widgets)
-target_link_libraries(${PROJECT} Qt5::WebEngineWidgets)
+target_link_libraries(${PROJECT} Qt6::Widgets)
+target_link_libraries(${PROJECT} Qt6::WebEngineWidgets)
+target_link_libraries(${PROJECT} Qt6::OpenGL)
+target_link_libraries(${PROJECT} Qt6::OpenGLWidgets)
 
 target_link_libraries(${PROJECT} "${INSTALL_DIR}/$<CONFIGURATION>/lib/${CMAKE_SHARED_LIBRARY_PREFIX}HDPS_Public${LIB_SUFFIX}")
 target_link_libraries(${PROJECT} "${INSTALL_DIR}/$<CONFIGURATION>/lib/${CMAKE_SHARED_LIBRARY_PREFIX}PointData${LIB_SUFFIX}")
