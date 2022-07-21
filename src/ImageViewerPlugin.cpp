@@ -342,12 +342,3 @@ ImageViewerPlugin* ImageViewerPluginFactory::produce()
 {
     return new ImageViewerPlugin(this);
 }
-
-hdps::DataTypes ImageViewerPluginFactory::supportedDataTypes() const
-{
-    hdps::DataTypes supportedTypes;
-
-    supportedTypes.append(ImageType);
-
-    return supportedTypes;
-}

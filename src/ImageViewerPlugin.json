@@ -2,20 +2,20 @@
   "name" : "Image Viewer",
   "version" : "0.1.0",
   "dependencies": ["Images"],
-  "inputs": [
+  "producers": [
 	{
-		"sets_re": "Images",
-		"action": "Image",
+		"input_re": "Images",
+		"title": "Image",
 		"description": "View image in the image viewer"
 	},
 	{
-		"sets_re": "Images*",
-		"action": "View images",
+		"input_re": "Images*",
+		"title": "View images",
 		"description": "View images in the image viewer"
 	},
 	{
-		"sets_re": "Points",
-		"action": "Image",
+		"input_re": "Points",
+		"title": "Image",
 		"description": "Convert points to images and display it in the image viewer"
 	}
   ]

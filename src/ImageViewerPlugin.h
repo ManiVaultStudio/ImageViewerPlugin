@@ -112,8 +112,9 @@ public:
     /** Returns the plugin icon */
     QIcon getIcon() const override;
 
-    /** Creates an image viewer plugin instance */
+    /**
+     * Produces the plugin
+     * @return Pointer to the produced plugin
+     */
     ImageViewerPlugin* produce() override;
-
-    hdps::DataTypes supportedDataTypes() const override;
 };
