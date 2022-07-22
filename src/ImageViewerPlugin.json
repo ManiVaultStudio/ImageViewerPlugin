@@ -3,20 +3,20 @@
   "version" : "0.1.0",
   "dependencies": ["Images"],
   "producers": [
-	{
-		"input_re": "Images",
-		"title": "Image",
-		"description": "View image in the image viewer"
-	},
-	{
-		"input_re": "Images*",
-		"title": "View images",
-		"description": "View images in the image viewer"
-	},
-	{
-		"input_re": "Points",
-		"title": "Image",
-		"description": "Convert points to images and display it in the image viewer"
-	}
+	  {
+		  "input_re": "Images",
+		  "title": "Image",
+		  "description": "View image in the image viewer"
+	  },
+	  {
+		  "input_re": "Images*",
+		  "title": "View images",
+		  "description": "View images in the image viewer"
+	  },
+	  {
+		  "input_re": "Points",
+		  "title": "Image",
+		  "description": "Convert points to images and display it in the image viewer"
+	  }
   ]
 }

@@ -342,3 +342,54 @@ ImageViewerPlugin* ImageViewerPluginFactory::produce()
 {
     return new ImageViewerPlugin(this);
 }
+
+QList<QAction*> ImageViewerPluginFactory::getProducers(const Datasets& datasets) const
+{
+    QList<QAction*> producerActions;
+
+    const auto getInstance = [this]() -> ImageViewerPlugin* {
+        return dynamic_cast<ImageViewerPlugin*>(Application::core()->requestPlugin(getKind()));
+    };
+
+    const auto createAction = [this](const QString& title, const QString& description) -> QAction* {
+        auto action = new QAction(title);
+        
+        action->setToolTip(description);
+        action->setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("images"));
+
+        return action;
+    };
+
+    if (areAllDatasetsOfTheSameType(datasets, "Images")) {
+        const auto numberOfImages = datasets.count();
+
+        if (numberOfImages == 1) {
+            if (datasets.first()->getDataType().getTypeString() == "Images") {
+                auto producerAction = createAction("in image viewer", "Load image in image viewer");
+
+                connect(producerAction, &QAction::triggered, [this, getInstance, datasets]() -> void {
+                    getInstance()->loadData(datasets);
+                    });
+
+                producerActions << producerAction;
+            }
+        }
+        else {
+            auto viewTogetherAction     = createAction("Stacked", "View selected images together in a single image viewer");
+            auto viewSeparatelyAction   = createAction("Side-by-side", "View selected images in separate image viewers");
+
+            connect(viewTogetherAction, &QAction::triggered, [this, getInstance, datasets]() -> void {
+                getInstance()->loadData(datasets);
+            });
+
+            connect(viewSeparatelyAction, &QAction::triggered, [this, getInstance, datasets]() -> void {
+                for (auto dataset : datasets)
+                    getInstance()->loadData(Datasets({ dataset }));
+            });
+
+            producerActions << viewTogetherAction << viewSeparatelyAction;
+        }
+    }
+
+	return producerActions;
+}
