@@ -119,7 +119,7 @@ public:
     ImageViewerPlugin* produce() override;
 
     /**
-     * Get a list of producer actions given a sequence of input dataset types
+     * Get a list of producer actions given a sequence of input datasets
      * @param datasets Sequence of input datasets (order in which they were selected in the data hierarchy)
      * @return List of producer actions with which one (or more) plugins can be triggered
      */
