@@ -353,7 +353,7 @@ QList<QAction*> ImageViewerPluginFactory::getProducers(const Datasets& datasets)
 
     const auto numberOfDatasets = datasets.count();
 
-    if (areAllDatasetsOfTheSameType(datasets, "Images")) {
+    if (PluginFactory::areAllDatasetsOfTheSameType(datasets, "Images")) {
         if (numberOfDatasets == 1) {
             if (datasets.first()->getDataType().getTypeString() == "Images") {
                 auto producerAction = createProducerAction("in image viewer", "Load dataset in image viewer", "images");
