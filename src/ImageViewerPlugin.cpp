@@ -333,9 +333,9 @@ void ImageViewerPlugin::immigrateDataset(const Dataset<DatasetImpl>& dataset)
     }
 }
 
-QIcon ImageViewerPluginFactory::getIcon() const
+QIcon ImageViewerPluginFactory::getIcon(const QColor& color /*= Qt::black*/) const
 {
-    return hdps::Application::getIconFont("FontAwesome").getIcon("images");
+    return hdps::Application::getIconFont("FontAwesome").getIcon("images", color);
 }
 
 ImageViewerPlugin* ImageViewerPluginFactory::produce()
