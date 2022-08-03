@@ -343,9 +343,9 @@ ImageViewerPlugin* ImageViewerPluginFactory::produce()
     return new ImageViewerPlugin(this);
 }
 
-QList<QAction*> ImageViewerPluginFactory::getProducers(const Datasets& datasets) const
+QList<TriggerAction*> ImageViewerPluginFactory::getProducers(const Datasets& datasets) const
 {
-    QList<QAction*> producerActions;
+    QList<TriggerAction*> producerActions;
 
     const auto getInstance = [this]() -> ImageViewerPlugin* {
         return dynamic_cast<ImageViewerPlugin*>(Application::core()->requestPlugin(getKind()));

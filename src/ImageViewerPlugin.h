@@ -9,12 +9,15 @@
 #include "SettingsAction.h"
 
 #include <widgets/DropWidget.h>
+#include <actions/TriggerAction.h>
 
 #include <QItemSelectionModel>
 #include <QSplitter>
 
 using hdps::plugin::ViewPluginFactory;
 using hdps::plugin::ViewPlugin;
+
+using namespace hdps::gui;
 
 /**
  * Image viewer plugin class
@@ -127,5 +130,5 @@ public:
      * @param datasets Sequence of input datasets (order in which they were selected in the data hierarchy)
      * @return List of producer actions with which one (or more) plugins can be triggered
      */
-    QList<QAction*> getProducers(const hdps::Datasets& datasets) const override;
+    QList<TriggerAction*> getProducers(const hdps::Datasets& datasets) const override;
 };
