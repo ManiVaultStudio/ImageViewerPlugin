@@ -8,6 +8,8 @@
 #include <ClusterData.h>
 #include <util/Exception.h>
 
+#include <actions/PluginTriggerAction.h>
+
 #include <QDebug>
 #include <QSplitter>
 #include <QMimeData>
@@ -343,9 +345,9 @@ ImageViewerPlugin* ImageViewerPluginFactory::produce()
     return new ImageViewerPlugin(this);
 }
 
-QList<TriggerAction*> ImageViewerPluginFactory::getProducers(const Datasets& datasets) const
+QList<PluginTriggerAction*> ImageViewerPluginFactory::getPluginTriggerActions(const hdps::Datasets& datasets) const
 {
-    QList<TriggerAction*> producerActions;
+    QList<PluginTriggerAction*> pluginTriggerActions;
 
     const auto getInstance = [this]() -> ImageViewerPlugin* {
         return dynamic_cast<ImageViewerPlugin*>(Application::core()->requestPlugin(getKind()));
@@ -356,18 +358,18 @@ QList<TriggerAction*> ImageViewerPluginFactory::getProducers(const Datasets& dat
     if (PluginFactory::areAllDatasetsOfTheSameType(datasets, "Images")) {
         if (numberOfDatasets == 1) {
             if (datasets.first()->getDataType().getTypeString() == "Images") {
-                auto producerAction = createProducerAction("in image viewer", "Load dataset in image viewer", "images");
+                auto pluginTriggerAction = createPluginTriggerAction("in image viewer", "Load dataset in image viewer", datasets, "images");
 
-                connect(producerAction, &QAction::triggered, [this, getInstance, datasets]() -> void {
+                connect(pluginTriggerAction, &QAction::triggered, [this, getInstance, datasets]() -> void {
                     getInstance()->loadData(datasets);
                 });
 
-                producerActions << producerAction;
+                pluginTriggerActions << pluginTriggerAction;
             }
         }
         else {
-            auto viewTogetherAction     = createProducerAction("Stacked", "View selected datasets together in a single image viewer", "images");
-            auto viewSeparatelyAction   = createProducerAction("Side-by-side", "View selected datasets in separate image viewers", "images");
+            auto viewTogetherAction     = createPluginTriggerAction("Stacked", "View selected datasets together in a single image viewer", datasets, "images");
+            auto viewSeparatelyAction   = createPluginTriggerAction("Side-by-side", "View selected datasets in separate image viewers", datasets, "images");
 
             connect(viewTogetherAction, &QAction::triggered, [this, getInstance, datasets]() -> void {
                 getInstance()->loadData(datasets);
@@ -378,9 +380,9 @@ QList<TriggerAction*> ImageViewerPluginFactory::getProducers(const Datasets& dat
                     getInstance()->loadData(Datasets({ dataset }));
             });
 
-            producerActions << viewTogetherAction << viewSeparatelyAction;
+            pluginTriggerActions << viewTogetherAction << viewSeparatelyAction;
         }
     }
 
-	return producerActions;
+	return pluginTriggerActions;
 }
