@@ -345,9 +345,9 @@ ImageViewerPlugin* ImageViewerPluginFactory::produce()
     return new ImageViewerPlugin(this);
 }
 
-QList<PluginTriggerAction*> ImageViewerPluginFactory::getPluginTriggerActions(const hdps::Datasets& datasets) const
+PluginTriggerActions ImageViewerPluginFactory::getPluginTriggerActions(const hdps::Datasets& datasets) const
 {
-    QList<PluginTriggerAction*> pluginTriggerActions;
+    PluginTriggerActions pluginTriggerActions;
 
     const auto getInstance = [this]() -> ImageViewerPlugin* {
         return dynamic_cast<ImageViewerPlugin*>(Application::core()->requestPlugin(getKind()));
