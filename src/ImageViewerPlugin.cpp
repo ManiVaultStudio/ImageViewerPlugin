@@ -355,9 +355,9 @@ PluginTriggerActions ImageViewerPluginFactory::getPluginTriggerActions(const hdp
 
     const auto numberOfDatasets = datasets.count();
 
-    if (PluginFactory::areAllDatasetsOfTheSameType(datasets, "Images")) {
+    if (PluginFactory::areAllDatasetsOfTheSameType(datasets, ImageType)) {
         if (numberOfDatasets == 1) {
-            if (datasets.first()->getDataType().getTypeString() == "Images") {
+            if (datasets.first()->getDataType() == ImageType) {
                 auto pluginTriggerAction = createPluginTriggerAction("in image viewer", "Load dataset in image viewer", datasets, "images");
 
                 connect(pluginTriggerAction, &QAction::triggered, [this, getInstance, datasets]() -> void {
