@@ -367,7 +367,8 @@ PluginTriggerActions ImageViewerPluginFactory::getPluginTriggerActions(const hdp
                 pluginTriggerActions << pluginTriggerAction;
             }
         }
-        else {
+        
+        if (numberOfDatasets >= 2) {
             auto viewTogetherAction     = createPluginTriggerAction("Stacked", "View selected datasets together in a single image viewer", datasets, "images");
             auto viewSeparatelyAction   = createPluginTriggerAction("Side-by-side", "View selected datasets in separate image viewers", datasets, "images");
 
