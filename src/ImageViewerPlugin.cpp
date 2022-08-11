@@ -300,15 +300,15 @@ void ImageViewerPlugin::onLayerSelectionChanged()
 void ImageViewerPlugin::immigrateDataset(const Dataset<DatasetImpl>& dataset)
 {
     try {
+        // don't call QDialog.exec() or use a static method like QDialog::getOpenFileName
+        // since they trigger some assertion failures due to threading issues when opening the dialog here
 
         // Create conversion dialog
-        ConvertToImagesDatasetDialog convertToImagesDatasetDialog(*this, const_cast<Dataset<DatasetImpl>&>(dataset));
+        ConvertToImagesDatasetDialog* dialog = new ConvertToImagesDatasetDialog(*this, const_cast<Dataset<DatasetImpl>&>(dataset));
 
-        // Show the dialog and add the layer if accepted
-        if (convertToImagesDatasetDialog.exec() == 1) {
-
+        connect(dialog, &ConvertToImagesDatasetDialog::accepted, this, [this, dialog]() -> void {
             // Create new layer for the converted dataset
-            auto layer = new Layer(*this, *convertToImagesDatasetDialog.getTargetImagesDataset());
+            auto layer = new Layer(*this, dialog->getTargetImagesDataset());
 
             // Squeeze the layer in to the layers world bounding rectangle
             layer->scaleToFit(_imageViewerWidget.getWorldBoundingRectangle(false));
@@ -322,7 +322,13 @@ void ImageViewerPlugin::immigrateDataset(const Dataset<DatasetImpl>& dataset)
             // Zoom to the extents of the layer if smart zoom is enabled
             if (_mainToolbarAction.getGlobalViewSettingsAction().getSmartZoomAction().isChecked() || _model.rowCount() == 1)
                 layer->zoomToExtents();
-        }
+
+            dialog->deleteLater();
+            });
+
+        // Show the dialog and add the layer if accepted
+        dialog->open();
+
     }
     catch (std::exception& e)
     {
