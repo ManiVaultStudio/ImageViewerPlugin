@@ -274,6 +274,7 @@ void ImageViewerPlugin::addDataset(const Dataset<Images>& dataset)
 
 void ImageViewerPlugin::onLayerSelectionChanged()
 {
+    return;
     // Get selected row and establish whether there is a valid selection
     const auto selectedRows = _selectionModel.selectedRows();
     const auto hasSelection = !selectedRows.isEmpty();
