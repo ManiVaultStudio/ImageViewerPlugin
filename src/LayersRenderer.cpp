@@ -46,6 +46,10 @@ LayersRenderer::LayersRenderer(QOpenGLWidget* parent) :
     connect(this, &LayersRenderer::zoomRectangleChanged, this, [this]() {
         getParentWidget()->update();
     });
+
+    // Send _parallelAnimationGroup::finished outwards, used in e.g. when view ROI is set internally to send ROI after animation is finished
+    connect(&_parallelAnimationGroup, &QParallelAnimationGroup::finished, this, &LayersRenderer::animationFinished);
+
 }
 
 void LayersRenderer::init()

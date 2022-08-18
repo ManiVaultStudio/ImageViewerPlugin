@@ -180,6 +180,9 @@ signals:
     /** Signals that the zoom rectangle changed */
     void zoomRectangleChanged();
 
+    /** Resend _parallelAnimationGroup::finished */
+    void animationFinished();
+
 protected:
     float                       _zoomSensitivity;                   /** Zoom sensitivity */
     float                       _zoomMargin;                        /** Zoom margin */
