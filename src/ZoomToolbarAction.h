@@ -67,6 +67,7 @@ public: // Action getters
     DecimalAction& getZoomPercentageAction() { return _zoomPercentageAction; }
     TriggerAction& getZoomInAction() { return _zoomInAction; }
     TriggerAction& getZoomExtentsAction() { return _zoomExtentsAction; }
+    TriggerAction& getZoomSelectionAction() { return _zoomSelectionAction; }
     TriggerAction& getExportToImageAction() { return _exportToImageAction; }
 
 protected:
@@ -75,6 +76,7 @@ protected:
     DecimalAction       _zoomPercentageAction;      /** Zoom action */
     TriggerAction       _zoomInAction;              /** Zoom in action */
     TriggerAction       _zoomExtentsAction;         /** Zoom extents action */
+    TriggerAction       _zoomSelectionAction;       /** Zoom to selection extents action */
     TriggerAction       _exportToImageAction;       /** Export to image action */
 
     static const float zoomDeltaPercentage;
