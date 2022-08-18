@@ -421,7 +421,7 @@ bool ImageViewerWidget::eventFilter(QObject* target, QEvent* event)
                     // Notify others that navigation has started, the viewport changed and navigation ended
                     emit navigationStarted();
                     emit viewportChanged();
-                    emit navigationStarted();
+                    emit navigationEnded();
 
                     break;
                 }
