@@ -64,7 +64,7 @@ ZoomToolbarAction::ZoomToolbarAction(ImageViewerPlugin& imageViewerPlugin) :
 
     };
 
-    auto triggerPublishViewportAfterAninmation = [this, updateZoomPercentage]() -> void {
+    auto triggerUpdateZoomPercentageAfterAnimation = [this, updateZoomPercentage]() -> void {
         // what until the animation is over - only then are the correct view ROI values set internally correctly
         connect(&getImageViewerWidget().getRenderer(), &LayersRenderer::animationFinished, this, [this, updateZoomPercentage]() {
 
@@ -90,7 +90,7 @@ ZoomToolbarAction::ZoomToolbarAction(ImageViewerPlugin& imageViewerPlugin) :
         getImageViewerWidget().update();
         });
 
-    connect(&_zoomExtentsAction, &TriggerAction::triggered, this, [this, triggerPublishViewportAfterAninmation]() {
+    connect(&_zoomExtentsAction, &TriggerAction::triggered, this, [this, triggerUpdateZoomPercentageAfterAnimation]() {
 
         // Get world bounding rectangles for all layers
         const auto worldBoundingRectangle = getImageViewerWidget().getWorldBoundingRectangle();
@@ -99,10 +99,10 @@ ZoomToolbarAction::ZoomToolbarAction(ImageViewerPlugin& imageViewerPlugin) :
         getImageViewerWidget().getRenderer().setZoomRectangle(worldBoundingRectangle);
         getImageViewerWidget().update();
 
-        triggerPublishViewportAfterAninmation();
+        triggerUpdateZoomPercentageAfterAnimation();
         });
 
-    connect(&_zoomSelectionAction, &TriggerAction::triggered, this, [this, triggerPublishViewportAfterAninmation]() {
+    connect(&_zoomSelectionAction, &TriggerAction::triggered, this, [this, triggerUpdateZoomPercentageAfterAnimation]() {
         const auto worldBoundingRectangle = getImageViewerWidget().getWorldBoundingRectangle();
 
         auto& _selectionModel = _imageViewerPlugin.getSelectionModel();
@@ -122,7 +122,7 @@ ZoomToolbarAction::ZoomToolbarAction(ImageViewerPlugin& imageViewerPlugin) :
         layer->selectNone();
 
         // Inform interactive hsne 
-        triggerPublishViewportAfterAninmation();
+        triggerUpdateZoomPercentageAfterAnimation();
         });
 
     connect(&_exportToImageAction, &TriggerAction::triggered, this, [this]() {
