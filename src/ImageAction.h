@@ -97,5 +97,5 @@ protected:
     QTimer                  _updateSelectionTimer;          /** Timer to update layer selection when appropriate */
     QTimer                  _updateScalarDataTimer;         /** Timer to update layer scalar data when appropriate */
 
-    static const std::int32_t LAZY_UPDATE_INTERVAL = 60;
+    static const std::int32_t LAZY_UPDATE_INTERVAL = 10;
 };
