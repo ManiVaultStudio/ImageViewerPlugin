@@ -10,6 +10,8 @@
 
 #include "ScalarChannelAction.h"
 
+#include <QTimer>
+
 class Layer;
 
 using namespace hdps::gui;
@@ -92,4 +94,8 @@ protected:
     ToggleAction            _useConstantColorAction;        /** Constant color action */
     ColorAction             _constantColorAction;           /** Color action */
     hdps::EventListener     _eventListener;                 /** Listen to HDPS events */
+    QTimer                  _updateSelectionTimer;          /** Timer to update layer selection when appropriate */
+    QTimer                  _updateScalarDataTimer;         /** Timer to update layer scalar data when appropriate */
+
+    static const std::int32_t LAZY_UPDATE_INTERVAL = 10;
 };

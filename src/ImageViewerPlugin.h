@@ -9,12 +9,15 @@
 #include "SettingsAction.h"
 
 #include <widgets/DropWidget.h>
+#include <actions/TriggerAction.h>
 
 #include <QItemSelectionModel>
 #include <QSplitter>
 
 using hdps::plugin::ViewPluginFactory;
 using hdps::plugin::ViewPlugin;
+
+using namespace hdps::gui;
 
 /**
  * Image viewer plugin class
@@ -109,11 +112,23 @@ public:
     /** Destructor */
     ~ImageViewerPluginFactory() override {}
 
-    /** Returns the plugin icon */
-    QIcon getIcon() const override;
+    /**
+     * Get plugin icon
+     * @param color Icon color for flat (font) icons
+     * @return Icon
+     */
+    QIcon getIcon(const QColor& color = Qt::black) const override;
 
-    /** Creates an image viewer plugin instance */
+    /**
+     * Produces the plugin
+     * @return Pointer to the produced plugin
+     */
     ImageViewerPlugin* produce() override;
 
-    hdps::DataTypes supportedDataTypes() const override;
+    /**
+     * Get plugin trigger actions given \p datasets
+     * @param datasets Vector of input datasets
+     * @return Vector of plugin trigger actions
+     */
+    PluginTriggerActions getPluginTriggerActions(const hdps::Datasets& datasets) const override;
 };

@@ -8,6 +8,8 @@
 #include <ClusterData.h>
 #include <util/Exception.h>
 
+#include <actions/PluginTriggerAction.h>
+
 #include <QDebug>
 #include <QSplitter>
 #include <QMimeData>
@@ -272,6 +274,7 @@ void ImageViewerPlugin::addDataset(const Dataset<Images>& dataset)
 
 void ImageViewerPlugin::onLayerSelectionChanged()
 {
+    return;
     // Get selected row and establish whether there is a valid selection
     const auto selectedRows = _selectionModel.selectedRows();
     const auto hasSelection = !selectedRows.isEmpty();
@@ -339,9 +342,9 @@ void ImageViewerPlugin::immigrateDataset(const Dataset<DatasetImpl>& dataset)
     }
 }
 
-QIcon ImageViewerPluginFactory::getIcon() const
+QIcon ImageViewerPluginFactory::getIcon(const QColor& color /*= Qt::black*/) const
 {
-    return hdps::Application::getIconFont("FontAwesome").getIcon("images");
+    return hdps::Application::getIconFont("FontAwesome").getIcon("images", color);
 }
 
 ImageViewerPlugin* ImageViewerPluginFactory::produce()
@@ -349,11 +352,45 @@ ImageViewerPlugin* ImageViewerPluginFactory::produce()
     return new ImageViewerPlugin(this);
 }
 
-hdps::DataTypes ImageViewerPluginFactory::supportedDataTypes() const
+PluginTriggerActions ImageViewerPluginFactory::getPluginTriggerActions(const hdps::Datasets& datasets) const
 {
-    hdps::DataTypes supportedTypes;
+    PluginTriggerActions pluginTriggerActions;
 
-    supportedTypes.append(ImageType);
+    const auto getInstance = [this]() -> ImageViewerPlugin* {
+        return dynamic_cast<ImageViewerPlugin*>(Application::core()->requestPlugin(getKind()));
+    };
 
-    return supportedTypes;
+    const auto numberOfDatasets = datasets.count();
+
+    if (PluginFactory::areAllDatasetsOfTheSameType(datasets, ImageType)) {
+        if (numberOfDatasets == 1) {
+            if (datasets.first()->getDataType() == ImageType) {
+                auto pluginTriggerAction = createPluginTriggerAction("in image viewer", "Load dataset in image viewer", datasets, "images");
+
+                connect(pluginTriggerAction, &QAction::triggered, [this, getInstance, datasets]() -> void {
+                    getInstance()->loadData(datasets);
+                });
+
+                pluginTriggerActions << pluginTriggerAction;
+            }
+        }
+        
+        if (numberOfDatasets >= 2) {
+            auto viewTogetherAction     = createPluginTriggerAction("Stacked", "View selected datasets together in a single image viewer", datasets, "images");
+            auto viewSeparatelyAction   = createPluginTriggerAction("Side-by-side", "View selected datasets in separate image viewers", datasets, "images");
+
+            connect(viewTogetherAction, &QAction::triggered, [this, getInstance, datasets]() -> void {
+                getInstance()->loadData(datasets);
+            });
+
+            connect(viewSeparatelyAction, &QAction::triggered, [this, getInstance, datasets]() -> void {
+                for (auto dataset : datasets)
+                    getInstance()->loadData(Datasets({ dataset }));
+            });
+
+            pluginTriggerActions << viewTogetherAction << viewSeparatelyAction;
+        }
+    }
+
+	return pluginTriggerActions;
 }

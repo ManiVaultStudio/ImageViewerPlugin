@@ -23,7 +23,9 @@ ImageAction::ImageAction(Layer& layer) :
     _colorMapAction(this, "Color map", ColorMap::Type::OneDimensional, "Black to white", "Black to white"),
     _interpolationTypeAction(this, "Interpolate", interpolationTypes.values(), "Bilinear", "Bilinear"),
     _useConstantColorAction(this, "Use constant color", false, false),
-    _constantColorAction(this, "Constant color", QColor(Qt::white), QColor(Qt::white))
+    _constantColorAction(this, "Constant color", QColor(Qt::white), QColor(Qt::white)),
+    _updateSelectionTimer(),
+    _updateScalarDataTimer()
 {
     setText("Image");
 
@@ -160,6 +162,27 @@ ImageAction::ImageAction(Layer& layer) :
         _scalarChannel3Action.computeScalarData();
     };
 
+    _updateSelectionTimer.setSingleShot(true);
+    _updateScalarDataTimer.setSingleShot(true);
+
+    connect(&_updateSelectionTimer, &QTimer::timeout, this, [this]() -> void {
+        if (_updateSelectionTimer.isActive())
+            _updateSelectionTimer.start(LAZY_UPDATE_INTERVAL);
+        else {
+            _updateSelectionTimer.stop();
+            _layer.computeSelectionIndices();
+        }
+    });
+
+    connect(&_updateScalarDataTimer, &QTimer::timeout, this, [this, updateScalarChannels]() -> void {
+        if (_updateScalarDataTimer.isActive())
+            _updateScalarDataTimer.start(LAZY_UPDATE_INTERVAL);
+        else {
+            _updateScalarDataTimer.stop();
+            updateScalarChannels();
+        }
+    });
+
     // Register for events for points datasets
     _eventListener.setEventCore(Application::core());
     _eventListener.addSupportedEventType(static_cast<std::uint32_t>(EventType::DataChanged));
@@ -178,14 +201,13 @@ ImageAction::ImageAction(Layer& layer) :
         {
             case EventType::DataChanged:
             {
-                updateScalarChannels();
-
+                _updateScalarDataTimer.start(LAZY_UPDATE_INTERVAL);
                 break;
             }
 
             case EventType::DataSelectionChanged:
             {
-                _layer.computeSelectionIndices();
+                _updateSelectionTimer.start(LAZY_UPDATE_INTERVAL);
                 break;
             }
 
@@ -212,14 +234,14 @@ ImageAction::ImageAction(Layer& layer) :
         {
             case EventType::DataChanged:
             {
-                updateScalarChannels();
+                _updateScalarDataTimer.start(LAZY_UPDATE_INTERVAL);
                 updateColorMapImage();
                 break;
             }
 
             case EventType::DataSelectionChanged:
             {
-                _layer.computeSelectionIndices();
+                _updateSelectionTimer.start(LAZY_UPDATE_INTERVAL);
                 break;
             }
 

@@ -790,7 +790,7 @@ void Layer::publishSelection()
         if (_sourceDataset->getDataType() == PointType) {
             
             // Get reference to points selection indices
-            std::vector<std::uint32_t>& selectionIndices = _sourceDataset->getSelection<Points>()->indices;
+            std::vector<std::uint32_t> selectionIndices;
 
             // Establish new selection indices depending on the type of modifier
             switch (pixelSelectionTool.getModifier())
@@ -853,6 +853,8 @@ void Layer::publishSelection()
                 default:
                     break;
             }
+
+            _sourceDataset->setSelectionIndices(selectionIndices);
         }
 
         if (_sourceDataset->getDataType() == ClusterType) {
