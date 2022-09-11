@@ -73,5 +73,6 @@ protected:
     IntegralAction                      _imageHeightAction;             /** Image height action */
     IntegralAction                      _numberOfImagesAction;          /** Number of images action */
     StringAction                        _numberOfPixelsAction;          /** Number of pixels action */
+    ToggleAction                        _useLinkedDataAction;           /** Use linked data action */
     GroupAction                         _groupAction;                   /** Group action */
 };

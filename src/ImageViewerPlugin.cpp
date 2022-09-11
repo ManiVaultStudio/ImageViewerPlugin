@@ -365,7 +365,7 @@ PluginTriggerActions ImageViewerPluginFactory::getPluginTriggerActions(const hdp
     if (PluginFactory::areAllDatasetsOfTheSameType(datasets, ImageType)) {
         if (numberOfDatasets == 1) {
             if (datasets.first()->getDataType() == ImageType) {
-                auto pluginTriggerAction = createPluginTriggerAction("in image viewer", "Load dataset in image viewer", datasets, "images");
+                auto pluginTriggerAction = createPluginTriggerAction("Image view", "Load dataset in image viewer", datasets, "images");
 
                 connect(pluginTriggerAction, &QAction::triggered, [this, getInstance, datasets]() -> void {
                     getInstance()->loadData(datasets);
@@ -376,8 +376,8 @@ PluginTriggerActions ImageViewerPluginFactory::getPluginTriggerActions(const hdp
         }
         
         if (numberOfDatasets >= 2) {
-            auto viewTogetherAction     = createPluginTriggerAction("Stacked", "View selected datasets together in a single image viewer", datasets, "images");
-            auto viewSeparatelyAction   = createPluginTriggerAction("Side-by-side", "View selected datasets in separate image viewers", datasets, "images");
+            auto viewTogetherAction     = createPluginTriggerAction("Stacked in image view", "View selected datasets together in a single image viewer", datasets, "images");
+            auto viewSeparatelyAction   = createPluginTriggerAction("Side-by-side in image views", "View selected datasets in separate image viewers", datasets, "images");
 
             connect(viewTogetherAction, &QAction::triggered, [this, getInstance, datasets]() -> void {
                 getInstance()->loadData(datasets);

@@ -20,43 +20,6 @@ SubsetAction::SubsetAction(ImageViewerPlugin& imageViewerPlugin) :
     _nameAction.setToolTip("Name of the subset");
     _createAction.setToolTip("Create the subset");
 
-
-    connect(&_imageViewerPlugin.getSelectionModel(), &QItemSelectionModel::selectionChanged, this, [this](const QItemSelection& newSelection, const QItemSelection& oldSelection) {
-        
-        // Process deselected layers
-        if (!oldSelection.indexes().isEmpty()) {
-
-            // Get pointer to layer that was deselected
-            auto layer = static_cast<Layer*>(oldSelection.indexes().first().internalPointer());
-
-            // Disconnect previously selected layer
-            disconnect(layer, &Layer::selectionChanged, this, nullptr);
-        }
-
-        // Process selected layers
-        if (!newSelection.indexes().isEmpty()) {
-
-            // Get pointer to layer that was selected
-            auto layer = static_cast<Layer*>(newSelection.indexes().first().internalPointer());
-
-            // Enable/disable
-            const auto updateEnabled = [this, layer]() -> void {
-
-                // Establish conditions
-                const auto isPointType  = layer->getSourceDataset()->getDataType() == PointType;
-                const auto hasSelection = !layer->getSelectedIndices().empty();
-
-                setEnabled(isPointType && hasSelection);
-            };
-
-            // Enable/disable when the layer selection changes
-            connect(&layer->getSourceDataset(), &Dataset<DatasetImpl>::dataSelectionChanged, this, updateEnabled);
-
-            // Do an initial update when the layer is selected
-            updateEnabled();
-        }
-    });
-
     // Update the state of the create button
     const auto updateCreateButton = [this]() {
         _createAction.setEnabled(!_nameAction.getString().isEmpty());

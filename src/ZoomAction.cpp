@@ -23,17 +23,6 @@ ZoomAction::ZoomAction(GeneralAction& generalAction) :
     connect(&_zoomSelectionAction, &TriggerAction::triggered, this, [this]() {
         _generalAction.getLayer().zoomToSelection();
     });
-
-    // Enable zoom to selected pixels when the number of pixels is non-zero
-    const auto selectionChanged = [this]() {
-        _zoomSelectionAction.setEnabled(!_generalAction.getLayer().getSelectedIndices().empty());
-    };
-
-    // Re-compute the selection channel when the selection changes
-    connect(&_generalAction.getLayer(), &Layer::selectionChanged, this, selectionChanged);
-
-    // Initial update zoom to selected pixels state
-    selectionChanged();
 }
 
 QWidget* ZoomAction::getWidget(QWidget* parent, const std::int32_t& widgetFlags)

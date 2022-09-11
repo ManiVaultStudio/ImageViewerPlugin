@@ -25,6 +25,7 @@ ConvertToImagesDatasetDialog::ConvertToImagesDatasetDialog(ImageViewerPlugin& im
     _imageHeightAction(this, "Image height", 1, 10000, 100, 100),
     _numberOfImagesAction(this, "Number of images", 1, 10000, 1, 1),
     _numberOfPixelsAction(this, "Number of pixels"),
+    _useLinkedDataAction(this, "Use linked data", false, false),
     _groupAction(this)
 {
     // Update window title and icon
@@ -66,6 +67,8 @@ ConvertToImagesDatasetDialog::ConvertToImagesDatasetDialog(ImageViewerPlugin& im
     _numberOfPixelsAction.setEnabled(false);
     _numberOfPixelsAction.setDefaultWidgetFlags(IntegralAction::SpinBox);
 
+    _useLinkedDataAction.setToolTip("Use linked data to generate the image");
+
     auto layout = new QVBoxLayout();
 
     // Add actions to the group
@@ -74,6 +77,7 @@ ConvertToImagesDatasetDialog::ConvertToImagesDatasetDialog(ImageViewerPlugin& im
     _groupAction << _imageHeightAction;
     _groupAction << _numberOfImagesAction;
     _groupAction << _numberOfPixelsAction;
+    _groupAction << _useLinkedDataAction;
 
     // Create group action widget
     auto groupActionWidget = _groupAction.createWidget(this);
@@ -109,6 +113,7 @@ ConvertToImagesDatasetDialog::ConvertToImagesDatasetDialog(ImageViewerPlugin& im
         images->setNumberOfImages(_numberOfImagesAction.getValue());
         images->setImageSize(imageSize);
         images->setNumberOfComponentsPerPixel(1);
+        images->setLinkedDataFlag(DatasetImpl::LinkedDataFlag::Receive, _useLinkedDataAction.isChecked());
 
         // Notify others that an images dataset was added
         Application::core()->notifyDatasetAdded(*images);
