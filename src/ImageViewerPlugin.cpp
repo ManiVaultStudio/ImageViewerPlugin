@@ -258,14 +258,20 @@ void ImageViewerPlugin::arrangeLayers(LayersLayout layersLayout)
     auto layers = _model.getLayers();
 
     const auto numberOfLayers   = layers.size();
-    const auto margin           = 100;
+    
+    auto margin = 0.0f;
+
+    for (auto layer : layers) {
+        const auto candidateMargin = 0.15f * std::max(layer->getWorldBoundingRectangle().width(), layer->getWorldBoundingRectangle().height());
+
+        if (candidateMargin > margin)
+            margin = candidateMargin;
+    }
 
     switch (layersLayout)
     {
         case LayersLayout::Stacked:
-        {
             break;
-        }
 
         case LayersLayout::Vertical:
         {
