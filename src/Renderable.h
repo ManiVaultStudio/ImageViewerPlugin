@@ -100,7 +100,7 @@ public: // Rendering
     }
 
 protected:
-    LayersRenderer&           _renderer;      /** Reference to the renderer in which the renderable object will reside */
+    LayersRenderer&     _renderer;      /** Reference to the renderer in which the renderable object will reside */
     QMatrix4x4          _modelMatrix;   /** Model matrix */
     QVector<Prop*>      _props;         /** Props */
 };

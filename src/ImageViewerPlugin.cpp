@@ -253,6 +253,112 @@ void ImageViewerPlugin::loadData(const Datasets& datasets)
         addDataset(dataset);
 }
 
+void ImageViewerPlugin::arrangeLayers(LayersLayout layersLayout)
+{
+    auto layers = _model.getLayers();
+
+    const auto numberOfLayers   = layers.size();
+    const auto margin           = 100;
+
+    switch (layersLayout)
+    {
+        case LayersLayout::Stacked:
+        {
+            break;
+        }
+
+        case LayersLayout::Vertical:
+        {
+            auto offsetY = 0u;
+
+            for (int layerIndex = 0; layerIndex < numberOfLayers; ++layerIndex) {
+                auto currentLayer   = layers[layerIndex];
+                auto nextLayer      = layers[(layerIndex + 1) < numberOfLayers ? layerIndex + 1 : layerIndex];
+
+                layers[layerIndex]->getGeneralAction().getPositionAction().getYAction().setValue(offsetY);
+                
+                offsetY += currentLayer->getWorldBoundingRectangle().height() / 2;
+                offsetY += margin;
+                offsetY += nextLayer->getWorldBoundingRectangle().height() / 2;
+            }
+
+            break;
+        }
+
+        case LayersLayout::Horizontal:
+        {
+            auto offsetX = 0u;
+
+            for (int layerIndex = 0; layerIndex < numberOfLayers; ++layerIndex) {
+                auto currentLayer   = layers[layerIndex];
+                auto nextLayer      = layers[(layerIndex + 1) < numberOfLayers ? layerIndex + 1 : layerIndex];
+
+                layers[layerIndex]->getGeneralAction().getPositionAction().getXAction().setValue(offsetX);
+
+                offsetX += currentLayer->getWorldBoundingRectangle().width() / 2;
+                offsetX += margin;
+                offsetX += nextLayer->getWorldBoundingRectangle().width() / 2;
+            }
+
+            break;
+        }
+
+        case LayersLayout::Grid:
+        {
+            const auto numberOfColumns  = static_cast<std::uint32_t>(ceilf(sqrtf(static_cast<float>(numberOfLayers))));
+            const auto numberOfRows     = static_cast<std::uint32_t>(ceilf(static_cast<float>(numberOfLayers) / static_cast<float>(numberOfColumns)));
+
+            QVector<float> columnWidths, rowHeights;
+
+            columnWidths.resize(numberOfColumns, 0.0f);
+            rowHeights.resize(numberOfRows, 0.0f);
+
+            for (int columnIndex = 0; columnIndex < numberOfColumns; ++columnIndex) {
+                for (int rowIndex = 0; rowIndex < numberOfRows; ++rowIndex) {
+                    auto layer = layers[rowIndex * numberOfColumns + columnIndex];
+                    
+                    const auto layerWidth = layer->getWorldBoundingRectangle().width();
+
+                    if (layerWidth > columnWidths[columnIndex])
+                        columnWidths[columnIndex] = layerWidth;
+                }
+            }
+
+            for (int rowIndex = 0; rowIndex < numberOfRows; ++rowIndex) {
+                for (int columnIndex = 0; columnIndex < numberOfColumns; ++columnIndex) {
+                    auto layer = layers[rowIndex * numberOfColumns + columnIndex];
+
+                    const auto layerHeight = layer->getWorldBoundingRectangle().height();
+
+                    if (layerHeight > rowHeights[rowIndex])
+                        rowHeights[rowIndex] = layerHeight;
+                }
+            }
+
+            QPoint offset;
+
+            for (int rowIndex = 0; rowIndex < numberOfRows; ++rowIndex) {
+                for (int columnIndex = 0; columnIndex < numberOfColumns; ++columnIndex) {
+                    auto layer = layers[rowIndex * numberOfColumns + columnIndex];
+
+                    layer->getGeneralAction().getPositionAction().getXAction().setValue(offset.x());
+                    layer->getGeneralAction().getPositionAction().getYAction().setValue(offset.y());
+
+                    offset.setX(offset.x() + columnWidths[columnIndex] + margin);
+                }
+
+                offset.setX(0);
+                offset.setY(offset.y() - rowHeights[rowIndex] - margin);
+            }
+
+            break;
+        }
+    }
+
+    getImageViewerWidget().getRenderer().setZoomRectangle(getImageViewerWidget().getWorldBoundingRectangle());
+    getImageViewerWidget().update();
+}
+
 void ImageViewerPlugin::addDataset(const Dataset<Images>& dataset)
 {
     // Create new layer for the converted dataset
@@ -376,11 +482,35 @@ PluginTriggerActions ImageViewerPluginFactory::getPluginTriggerActions(const hdp
         }
         
         if (numberOfDatasets >= 2) {
-            auto viewTogetherAction     = createPluginTriggerAction("Stacked in image view", "View selected datasets together in a single image viewer", datasets, "images");
-            auto viewSeparatelyAction   = createPluginTriggerAction("Side-by-side in image views", "View selected datasets in separate image viewers", datasets, "images");
+            auto viewTogetherAction         = createPluginTriggerAction("Stacked in image viewer", "View selected datasets together in an image viewer", datasets, "images");
+            auto arrangeVerticallyAction    = createPluginTriggerAction("Arrange vertically in image viewer", "View selected datasets arranged vertically in an image viewer", datasets, "images");
+            auto arrangeHorizontallyAction  = createPluginTriggerAction("Arrange horizontally in image viewer", "View selected datasets arranged horizontally in an image viewer", datasets, "images");
+            auto arrangeGridAction          = createPluginTriggerAction("Arrange in grid in image viewer", "View selected datasets arranged in a grid in an image viewer", datasets, "images");
+            auto viewSeparatelyAction       = createPluginTriggerAction("Side-by-side in image viewers", "View selected datasets in separate image viewers", datasets, "images");
 
             connect(viewTogetherAction, &QAction::triggered, [this, getInstance, datasets]() -> void {
                 getInstance()->loadData(datasets);
+            });
+
+            connect(arrangeVerticallyAction, &QAction::triggered, [this, getInstance, datasets]() -> void {
+                auto instance = getInstance();
+
+                instance->loadData(datasets);
+                instance->arrangeLayers(ImageViewerPlugin::LayersLayout::Vertical);
+            });
+
+            connect(arrangeHorizontallyAction, &QAction::triggered, [this, getInstance, datasets]() -> void {
+                auto instance = getInstance();
+
+                instance->loadData(datasets);
+                instance->arrangeLayers(ImageViewerPlugin::LayersLayout::Horizontal);
+            });
+
+            connect(arrangeGridAction, &QAction::triggered, [this, getInstance, datasets]() -> void {
+                auto instance = getInstance();
+
+                instance->loadData(datasets);
+                instance->arrangeLayers(ImageViewerPlugin::LayersLayout::Grid);
             });
 
             connect(viewSeparatelyAction, &QAction::triggered, [this, getInstance, datasets]() -> void {
@@ -388,7 +518,7 @@ PluginTriggerActions ImageViewerPluginFactory::getPluginTriggerActions(const hdp
                     getInstance()->loadData(Datasets({ dataset }));
             });
 
-            pluginTriggerActions << viewTogetherAction << viewSeparatelyAction;
+            pluginTriggerActions << viewTogetherAction << arrangeVerticallyAction << arrangeHorizontallyAction << arrangeGridAction << viewSeparatelyAction;
         }
     }
 
