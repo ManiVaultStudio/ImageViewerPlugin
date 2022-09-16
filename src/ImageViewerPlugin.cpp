@@ -477,7 +477,7 @@ PluginTriggerActions ImageViewerPluginFactory::getPluginTriggerActions(const hdp
     if (PluginFactory::areAllDatasetsOfTheSameType(datasets, ImageType)) {
         if (numberOfDatasets == 1) {
             if (datasets.first()->getDataType() == ImageType) {
-                auto pluginTriggerAction = createPluginTriggerAction("Image view", "Load dataset in image viewer", datasets, "images");
+                auto pluginTriggerAction = createPluginTriggerAction("Image Viewer", "Load dataset in image viewer", datasets, "images");
 
                 connect(pluginTriggerAction, &QAction::triggered, [this, getInstance, datasets]() -> void {
                     getInstance()->loadData(datasets);
@@ -488,11 +488,10 @@ PluginTriggerActions ImageViewerPluginFactory::getPluginTriggerActions(const hdp
         }
         
         if (numberOfDatasets >= 2) {
-            auto viewTogetherAction         = createPluginTriggerAction("Stacked in image viewer", "View selected datasets together in an image viewer", datasets, "images");
-            auto arrangeVerticallyAction    = createPluginTriggerAction("Arrange vertically in image viewer", "View selected datasets arranged vertically in an image viewer", datasets, "images");
-            auto arrangeHorizontallyAction  = createPluginTriggerAction("Arrange horizontally in image viewer", "View selected datasets arranged horizontally in an image viewer", datasets, "images");
-            auto arrangeGridAction          = createPluginTriggerAction("Arrange in grid in image viewer", "View selected datasets arranged in a grid in an image viewer", datasets, "images");
-            auto viewSeparatelyAction       = createPluginTriggerAction("Side-by-side in image viewers", "View selected datasets in separate image viewers", datasets, "images");
+            auto viewTogetherAction         = createPluginTriggerAction("Images/Stacked", "View datasets in the image viewer arranged on top of each other", datasets, "layer-group");
+            auto arrangeVerticallyAction    = createPluginTriggerAction("Images/Vertically", "View datasets in the image viewer arranged vertically", datasets, "long-arrow-alt-down");
+            auto arrangeHorizontallyAction  = createPluginTriggerAction("Images/Horizontally", "View datasets in the image viewer arranged horizontally", datasets, "long-arrow-alt-right");
+            auto arrangeGridAction          = createPluginTriggerAction("Images/Grid", "View datasets in the image viewer arranged in a grid", datasets, "th");
 
             connect(viewTogetherAction, &QAction::triggered, [this, getInstance, datasets]() -> void {
                 getInstance()->loadData(datasets);
@@ -519,12 +518,7 @@ PluginTriggerActions ImageViewerPluginFactory::getPluginTriggerActions(const hdp
                 instance->arrangeLayers(ImageViewerPlugin::LayersLayout::Grid);
             });
 
-            connect(viewSeparatelyAction, &QAction::triggered, [this, getInstance, datasets]() -> void {
-                for (auto dataset : datasets)
-                    getInstance()->loadData(Datasets({ dataset }));
-            });
-
-            pluginTriggerActions << viewTogetherAction << arrangeVerticallyAction << arrangeHorizontallyAction << arrangeGridAction << viewSeparatelyAction;
+            pluginTriggerActions << viewTogetherAction << arrangeVerticallyAction << arrangeHorizontallyAction << arrangeGridAction;
         }
     }
 
