@@ -3,6 +3,7 @@
 #include "Layer.h"
 
 #include <util/Exception.h>
+#include <util/ColorSpace.h>
 
 #include <PointData.h>
 #include <ClusterData.h>
@@ -26,7 +27,9 @@ ScalarChannelAction::ScalarChannelAction(ImageAction& imageAction, const Identif
     _dimensionAction(this, "Dimension"),
     _windowLevelAction(this),
     _scalarData(),
-    _scalarDataRange({0.0f, 0.0f})
+    _scalarDataRange({0.0f, 0.0f}),
+    _colorSpaceRange({0.0f, 0.0f}),
+    _useColorSpaceRange(false)
 {
     setText(name);
     setDefaultWidgetFlags(ScalarChannelAction::ComboBox | ScalarChannelAction::WindowLevelWidget);
@@ -104,18 +107,31 @@ const QPair<float, float>& ScalarChannelAction::getScalarDataRange() const
     return _scalarDataRange;
 }
 
+void ScalarChannelAction::setColorSpaceRange(bool status, float lower, float upper)
+{
+    _useColorSpaceRange = status;
+    _colorSpaceRange.first = lower;
+    _colorSpaceRange.second = upper;
+}
+
 QPair<float, float> ScalarChannelAction::getDisplayRange()
 {
     QPair<float, float> displayRange;
+    QPair<float, float> dataRange = _scalarDataRange;
 
-    const auto maxWindow        = _scalarDataRange.second - _scalarDataRange.first;
+    if (_useColorSpaceRange)
+    {
+        dataRange = _colorSpaceRange;
+    }
+
+    const auto maxWindow        = dataRange.second - dataRange.first;
     const auto windowNormalized = _windowLevelAction.getWindowAction().getValue();
     const auto levelNormalized  = _windowLevelAction.getLevelAction().getValue();
-    const auto level            = std::clamp(_scalarDataRange.first + (levelNormalized * maxWindow), _scalarDataRange.first, _scalarDataRange.second);
-    const auto window           = std::clamp(windowNormalized * maxWindow, _scalarDataRange.first, _scalarDataRange.second);
+    const auto level            = std::clamp(dataRange.first + (levelNormalized * maxWindow), dataRange.first, dataRange.second);
+    const auto window           = std::clamp(windowNormalized * maxWindow, dataRange.first, dataRange.second);
 
-    displayRange.first  = std::clamp(level - (window / 2.0f), _scalarDataRange.first, _scalarDataRange.second);
-    displayRange.second = std::clamp(level + (window / 2.0f), _scalarDataRange.first, _scalarDataRange.second);
+    displayRange.first  = std::clamp(level - (window / 2.0f), dataRange.first, dataRange.second);
+    displayRange.second = std::clamp(level + (window / 2.0f), dataRange.first, dataRange.second);
 
     return displayRange;
 }

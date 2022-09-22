@@ -68,6 +68,7 @@ public: // Action getters
     ColorMapAction& getColorMapAction() { return _colorMapAction; }
     OptionAction& getInterpolationTypeAction() { return _interpolationTypeAction; }
     ToggleAction& getUseConstantColorAction() { return _useConstantColorAction; }
+    ToggleAction& getFixChannelRangesToColorSpaceAction() { return _fixChannelRangesToColorSpace; }
     ColorAction& getConstantColorAction() { return _constantColorAction; }
 
 signals:
@@ -92,6 +93,7 @@ protected:
     ColorMapAction          _colorMapAction;                /** Color map action */
     OptionAction            _interpolationTypeAction;       /** Interpolation type action */
     ToggleAction            _useConstantColorAction;        /** Constant color action */
+    ToggleAction            _fixChannelRangesToColorSpace;  /** Fixes ranges of channels to color space ranges action */
     ColorAction             _constantColorAction;           /** Color action */
     hdps::EventListener     _eventListener;                 /** Listen to HDPS events */
     QTimer                  _updateSelectionTimer;          /** Timer to update layer selection when appropriate */
