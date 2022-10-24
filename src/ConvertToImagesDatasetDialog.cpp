@@ -25,7 +25,7 @@ ConvertToImagesDatasetDialog::ConvertToImagesDatasetDialog(ImageViewerPlugin& im
     _imageHeightAction(this, "Image height", 1, 10000, 100, 100),
     _numberOfImagesAction(this, "Number of images", 1, 10000, 1, 1),
     _numberOfPixelsAction(this, "Number of pixels"),
-    _useLinkedDataAction(this, "Use linked data", false, false),
+    _useLinkedDataAction(this, "Use linked data", true, true),
     _groupAction(this)
 {
     // Update window title and icon
