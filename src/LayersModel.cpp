@@ -1,6 +1,7 @@
 #include "LayersModel.h"
 
 #include <Application.h>
+#include <DataHierarchyItem.h>
 #include <util/Exception.h>
 #include <event/Event.h>
 #include <PointData.h>
@@ -118,7 +119,7 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
                     return layer->getGeneralAction().getColorAction().getColor();
 
                 case Column::Name:
-                    return layer->getGeneralAction().getNameAction().getString();
+                    return layer->getImages()->getDataHierarchyItem().getFullPathName();
 
                 case Column::ImageWidth:
                     return layer->getImageSize().width();

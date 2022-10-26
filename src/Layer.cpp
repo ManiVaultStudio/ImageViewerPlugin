@@ -512,7 +512,7 @@ void Layer::paint(QPainter& painter, const PaintFlag& paintFlags)
         if ((paintFlags & Layer::Label) && _active) {
 
             // Establish label text
-            const auto labelText = QString("%1").arg(_generalAction.getNameAction().getString());
+            const auto labelText = QString("%1").arg(_imagesDataset->getDataHierarchyItem().getFullPathName());
 
             // Configure pen and brush
             painter.setPen(QPen(QBrush(_generalAction.getColorAction().getColor()), _active ? 2.0f : 1.0f));

@@ -30,6 +30,16 @@ class ImageViewerPlugin : public ViewPlugin
     Q_OBJECT
 
 public:
+
+    /** Spatial layout of layers */
+    enum class LayersLayout {
+        Stacked,            /** Layers are stacked on top of each other */
+        Vertical,           /** Layers are arranged from top to bottom */
+        Horizontal,         /** Layers are arranged from left to right */
+        Grid                /** Layers are arranged in a grid */
+    };
+
+public:
     /** Constructor */
     ImageViewerPlugin(hdps::plugin::PluginFactory* factory);
 
@@ -43,6 +53,12 @@ public: // Inherited from ViewPlugin
      * @param datasets Dataset(s) to load
      */
     void loadData(const hdps::Datasets& datasets) override;
+
+    /**
+     * Arrange layers in layout
+     * @param layersLayout Layout of the layers
+     */
+    void arrangeLayers(LayersLayout layersLayout);
 
     /**
      * Add dataset to the viewer
