@@ -93,12 +93,6 @@ protected:
 public: // Action publishing
 
     /**
-     * Get whether the action may be published or not
-     * @return Boolean indicating whether the action may be published or not
-     */
-    bool mayPublish() const override;
-
-    /**
      * Get whether the action is public (visible to other actions)
      * @return Boolean indicating whether the action is public (visible to other actions)
      */

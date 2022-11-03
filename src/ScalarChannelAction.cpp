@@ -166,11 +166,6 @@ Dataset<Images> ScalarChannelAction::getImages()
     return _imageAction.getLayer().getImages();
 }
 
-bool ScalarChannelAction::mayPublish() const
-{
-    return true;
-}
-
 bool ScalarChannelAction::isPublic() const
 {
     return _dimensionAction.isPublic();
