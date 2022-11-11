@@ -141,8 +141,6 @@ void main(void)
             
             // Color mapping
             fragmentColor = texture(colorMapTexture, vec2(channel1, channel2));
-
-            break;
         }
 
         case 3:

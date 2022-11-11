@@ -108,21 +108,24 @@ QPair<float, float> ScalarChannelAction::getDisplayRange()
 {
     QPair<float, float> displayRange;
 
-    const auto maxWindow        = _scalarDataRange.second - _scalarDataRange.first;
+    const auto range            = _scalarDataRange.second - _scalarDataRange.first;
+    const auto maxWindow        = range;
     const auto windowNormalized = _windowLevelAction.getWindowAction().getValue();
     const auto levelNormalized  = _windowLevelAction.getLevelAction().getValue();
-    const auto level            = std::clamp(_scalarDataRange.first + (levelNormalized * maxWindow), _scalarDataRange.first, _scalarDataRange.second);
-    const auto window           = std::clamp(windowNormalized * maxWindow, _scalarDataRange.first, _scalarDataRange.second);
+    const auto level            = std::clamp(0.f + (levelNormalized * maxWindow), 0.f, range);
+    const auto window           = std::clamp(windowNormalized * maxWindow, 0.f, range);
 
-    displayRange.first  = std::clamp(level - (window / 2.0f), _scalarDataRange.first, _scalarDataRange.second);
-    displayRange.second = std::clamp(level + (window / 2.0f), _scalarDataRange.first, _scalarDataRange.second);
+    displayRange.first  = std::clamp(level - (window / 2.0f), 0.f, range);
+    displayRange.second = std::clamp(level + (window / 2.0f), 0.f, range);
+
+    displayRange.first += _scalarDataRange.first;
+    displayRange.second += _scalarDataRange.first;
 
     return displayRange;
 }
 
 void ScalarChannelAction::computeScalarData()
 {
-    
     try
     {
         if (!_enabledAction.isChecked())
