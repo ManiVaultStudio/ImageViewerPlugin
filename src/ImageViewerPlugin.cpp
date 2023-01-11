@@ -404,7 +404,7 @@ void ImageViewerPlugin::onLayerSelectionChanged()
         currentLayerName = layer->getGeneralAction().getNameAction().getString();
 
         // Zoom to the extents of the layer if smart zoom is enabled
-        if (_mainToolbarAction->getGlobalViewSettingsAction().getSmartZoomAction().isChecked() && layer->getGeneralAction().getVisibleAction().isChecked())
+        if (_mainToolbarAction.getGlobalViewSettingsAction().getSmartZoomAction().isChecked() && layer->getGeneralAction().getVisibleAction().isChecked())
             layer->zoomToExtents();
     }
 
@@ -435,7 +435,7 @@ void ImageViewerPlugin::immigrateDataset(const Dataset<DatasetImpl>& dataset)
             _imageViewerWidget.updateWorldBoundingRectangle();
 
             // Zoom to the extents of the layer if smart zoom is enabled
-            if (_mainToolbarAction->getGlobalViewSettingsAction().getSmartZoomAction().isChecked() || _model.rowCount() == 1)
+            if (_mainToolbarAction.getGlobalViewSettingsAction().getSmartZoomAction().isChecked() || _model.rowCount() == 1)
                 layer->zoomToExtents();
 
             dialog->deleteLater();
@@ -469,7 +469,7 @@ PluginTriggerActions ImageViewerPluginFactory::getPluginTriggerActions(const hdp
     PluginTriggerActions pluginTriggerActions;
 
     const auto getInstance = [this]() -> ImageViewerPlugin* {
-        return dynamic_cast<ImageViewerPlugin*>(Application::core()->requestViewPlugin(getKind()));
+        return dynamic_cast<ImageViewerPlugin*>(Application::core()->getPluginManager().requestViewPlugin(getKind()));
     };
 
     const auto numberOfDatasets = datasets.count();

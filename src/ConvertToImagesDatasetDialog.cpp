@@ -116,7 +116,7 @@ ConvertToImagesDatasetDialog::ConvertToImagesDatasetDialog(ImageViewerPlugin& im
         images->setLinkedDataFlag(DatasetImpl::LinkedDataFlag::Receive, _useLinkedDataAction.isChecked());
 
         // Notify others that an images dataset was added
-        Application::core()->notifyDatasetAdded(*images);
+        events().notifyDatasetAdded(*images);
 
         // Assign target images dataset reference
         _targetImagesDataset = images;
