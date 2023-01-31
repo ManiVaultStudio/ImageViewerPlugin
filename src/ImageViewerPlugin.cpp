@@ -469,17 +469,17 @@ PluginTriggerActions ImageViewerPluginFactory::getPluginTriggerActions(const hdp
     PluginTriggerActions pluginTriggerActions;
 
     const auto getInstance = [this]() -> ImageViewerPlugin* {
-        return dynamic_cast<ImageViewerPlugin*>(Application::core()->requestPlugin(getKind()));
+        return dynamic_cast<ImageViewerPlugin*>(Application::core()->getPluginManager().requestViewPlugin(getKind()));
     };
 
     const auto numberOfDatasets = datasets.count();
 
     if (PluginFactory::areAllDatasetsOfTheSameType(datasets, ImageType)) {
+        auto& fontAwesome = Application::getIconFont("FontAwesome");
+
         if (numberOfDatasets == 1) {
             if (datasets.first()->getDataType() == ImageType) {
-                auto pluginTriggerAction = createPluginTriggerAction("Image Viewer", "Load dataset in image viewer", datasets, "images");
-
-                connect(pluginTriggerAction, &QAction::triggered, [this, getInstance, datasets]() -> void {
+                auto pluginTriggerAction = new PluginTriggerAction(const_cast<ImageViewerPluginFactory*>(this), this, "Image Viewer", "Load dataset in image viewer", fontAwesome.getIcon("images"), [this, getInstance, datasets](PluginTriggerAction& pluginTriggerAction) -> void {
                     getInstance()->loadData(datasets);
                 });
 
@@ -488,34 +488,29 @@ PluginTriggerActions ImageViewerPluginFactory::getPluginTriggerActions(const hdp
         }
         
         if (numberOfDatasets >= 2) {
-            auto viewTogetherAction         = createPluginTriggerAction("Images/Stacked", "View datasets in the image viewer arranged on top of each other", datasets, "layer-group");
-            auto arrangeVerticallyAction    = createPluginTriggerAction("Images/Vertically", "View datasets in the image viewer arranged vertically", datasets, "long-arrow-alt-down");
-            auto arrangeHorizontallyAction  = createPluginTriggerAction("Images/Horizontally", "View datasets in the image viewer arranged horizontally", datasets, "long-arrow-alt-right");
-            auto arrangeGridAction          = createPluginTriggerAction("Images/Grid", "View datasets in the image viewer arranged in a grid", datasets, "th");
-
-            connect(viewTogetherAction, &QAction::triggered, [this, getInstance, datasets]() -> void {
+            auto viewTogetherAction = new PluginTriggerAction(const_cast<ImageViewerPluginFactory*>(this), this, "Images/Stacked", "View datasets in the image viewer arranged on top of each other", fontAwesome.getIcon("layer-group"), [this, getInstance, datasets](PluginTriggerAction& pluginTriggerAction) -> void {
                 getInstance()->loadData(datasets);
             });
 
-            connect(arrangeVerticallyAction, &QAction::triggered, [this, getInstance, datasets]() -> void {
-                auto instance = getInstance();
-
-                instance->loadData(datasets);
-                instance->arrangeLayers(ImageViewerPlugin::LayersLayout::Vertical);
+            auto arrangeVerticallyAction = new PluginTriggerAction(const_cast<ImageViewerPluginFactory*>(this), this, "Images/Vertically", "View datasets in the image viewer arranged vertically", fontAwesome.getIcon("long-arrow-alt-down"), [this, getInstance, datasets](PluginTriggerAction& pluginTriggerAction) -> void {
+                auto plugin = getInstance();
+                
+                plugin->loadData(datasets);
+                plugin->arrangeLayers(ImageViewerPlugin::LayersLayout::Vertical);
             });
 
-            connect(arrangeHorizontallyAction, &QAction::triggered, [this, getInstance, datasets]() -> void {
-                auto instance = getInstance();
+            auto arrangeHorizontallyAction = new PluginTriggerAction(const_cast<ImageViewerPluginFactory*>(this), this, "Images/Horizontally", "View datasets in the image viewer arranged horizontally", fontAwesome.getIcon("long-arrow-alt-right"), [this, getInstance, datasets](PluginTriggerAction& pluginTriggerAction) -> void {
+                auto plugin = getInstance();
 
-                instance->loadData(datasets);
-                instance->arrangeLayers(ImageViewerPlugin::LayersLayout::Horizontal);
+                plugin->loadData(datasets);
+                plugin->arrangeLayers(ImageViewerPlugin::LayersLayout::Horizontal);
             });
 
-            connect(arrangeGridAction, &QAction::triggered, [this, getInstance, datasets]() -> void {
-                auto instance = getInstance();
+            auto arrangeGridAction = new PluginTriggerAction(const_cast<ImageViewerPluginFactory*>(this), this, "Images/Grid", "View datasets in the image viewer arranged in a grid", fontAwesome.getIcon("th"), [this, getInstance, datasets](PluginTriggerAction& pluginTriggerAction) -> void {
+                auto plugin = getInstance();
 
-                instance->loadData(datasets);
-                instance->arrangeLayers(ImageViewerPlugin::LayersLayout::Grid);
+                plugin->loadData(datasets);
+                plugin->arrangeLayers(ImageViewerPlugin::LayersLayout::Grid);
             });
 
             pluginTriggerActions << viewTogetherAction << arrangeVerticallyAction << arrangeHorizontallyAction << arrangeGridAction;

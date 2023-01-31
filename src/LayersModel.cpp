@@ -17,7 +17,6 @@ LayersModel::LayersModel(QObject* parent) :
     QAbstractListModel(parent),
     _layers()
 {
-    _eventListener.setEventCore(Application::core());
     _eventListener.addSupportedEventType(static_cast<std::uint32_t>(EventType::DataRemoved));
 
     // Register for events for points datasets

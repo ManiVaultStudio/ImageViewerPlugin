@@ -183,8 +183,6 @@ ImageAction::ImageAction(Layer& layer) :
         }
     });
 
-    // Register for events for points datasets
-    _eventListener.setEventCore(Application::core());
     _eventListener.addSupportedEventType(static_cast<std::uint32_t>(EventType::DataChanged));
     _eventListener.addSupportedEventType(static_cast<std::uint32_t>(EventType::DataSelectionChanged));
     _eventListener.registerDataEventByType(PointType, [this, updateScalarChannels](DataEvent* dataEvent) {
@@ -216,8 +214,6 @@ ImageAction::ImageAction(Layer& layer) :
         }
     });
 
-    // Register for events for clusters datasets
-    _eventListener.setEventCore(Application::core());
     _eventListener.addSupportedEventType(static_cast<std::uint32_t>(EventType::DataChanged));
     _eventListener.addSupportedEventType(static_cast<std::uint32_t>(EventType::DataSelectionChanged));
     _eventListener.registerDataEventByType(ClusterType, [this, updateScalarChannels](DataEvent* dataEvent) {

@@ -3,6 +3,7 @@
 #include <actions/IntegralAction.h>
 #include <actions/StringAction.h>
 #include <actions/GroupAction.h>
+#include <actions/ToggleAction.h>
 #include <DataHierarchyItem.h>
 #include <ImageData/Images.h>
 #include <PointData.h>

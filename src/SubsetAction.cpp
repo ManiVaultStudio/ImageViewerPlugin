@@ -2,6 +2,8 @@
 #include "ImageViewerPlugin.h"
 #include "Layer.h"
 
+#include <Application.h>
+
 #include <util/Exception.h>
 
 #include <PointData.h>
@@ -56,7 +58,7 @@ SubsetAction::SubsetAction(ImageViewerPlugin& imageViewerPlugin) :
             auto subset = points->createSubsetFromSelection(_nameAction.getString(), points);
 
             // Notify that the points set was added
-            Application::core()->notifyDatasetAdded(subset);
+            events().notifyDatasetAdded(subset);
 
             // Create a new image dataset which is a subset of the original image
             auto imagesSubset = Application::core()->addDataset<Images>("Images", _nameAction.getString(), subset);
@@ -68,7 +70,7 @@ SubsetAction::SubsetAction(ImageViewerPlugin& imageViewerPlugin) :
             //imagesSubset->setImageFilePaths(images->getImag);
 
             // Notify others that the images dataset was added
-            Application::core()->notifyDatasetAdded(*imagesSubset);
+            events().notifyDatasetAdded(*imagesSubset);
         }
         catch (std::exception& e)
         {
