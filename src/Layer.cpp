@@ -27,7 +27,7 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const hdps::Dataset<Images>& 
     _sourceDataset(_imagesDataset->getDataHierarchyItem().getParent().getDataset()),
     _selectedIndices(),
     _generalAction(*this),
-    _imageAction(*this),
+    _imageSettingsAction(*this),
     _selectionAction(*this, &_imageViewerPlugin.getImageViewerWidget(), _imageViewerPlugin.getImageViewerWidget().getPixelSelectionTool()),
     _miscellaneousAction(*this),
     _selectionData(),
@@ -88,15 +88,15 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const hdps::Dataset<Images>& 
         auto imageProp = this->getPropByName<ImageProp>("ImageProp");
 
         // Assign the scalar data to the prop
-        imageProp->setInterpolationType(static_cast<InterpolationType>(_imageAction.getInterpolationTypeAction().getCurrentIndex()));
+        imageProp->setInterpolationType(static_cast<InterpolationType>(_imageSettingsAction.getInterpolationTypeAction().getCurrentIndex()));
 
         // Render
         invalidate();
     };
 
     connect(&_generalAction.getVisibleAction(), &ToggleAction::toggled, this, &Layer::invalidate);
-    connect(&_imageAction, &ImageAction::channelChanged, this, updateChannelScalarData);
-    connect(&_imageAction.getInterpolationTypeAction(), &OptionAction::currentIndexChanged, this, updateInterpolationType);
+    connect(&_imageSettingsAction, &ImageSettingsAction::channelChanged, this, updateChannelScalarData);
+    connect(&_imageSettingsAction.getInterpolationTypeAction(), &OptionAction::currentIndexChanged, this, updateInterpolationType);
     
     // Update prop when selection overlay color and opacity change
     connect(&_selectionAction.getPixelSelectionAction().getOverlayColorAction(), &ColorAction::colorChanged, this, &Layer::invalidate);
@@ -111,9 +111,9 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const hdps::Dataset<Images>& 
     connect(&_generalAction.getScaleAction(), &DecimalAction::valueChanged, this, updateModelMatrixAndReRender);
     connect(&_generalAction.getPositionAction(), &PositionAction::changed, this, updateModelMatrixAndReRender);
 
-    updateChannelScalarData(_imageAction.getScalarChannel1Action());
-    updateChannelScalarData(_imageAction.getScalarChannel2Action());
-    updateChannelScalarData(_imageAction.getScalarChannel3Action());
+    updateChannelScalarData(_imageSettingsAction.getScalarChannel1Action());
+    updateChannelScalarData(_imageSettingsAction.getScalarChannel2Action());
+    updateChannelScalarData(_imageSettingsAction.getScalarChannel3Action());
     updateInterpolationType();
     updateModelMatrixAndReRender();
 
@@ -193,7 +193,7 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const hdps::Dataset<Images>& 
         getRenderer().setAnimationEnabled(animationEnabled);
     });
 
-    _imageAction.init();
+    _imageSettingsAction.init();
 
     _imagesDataset->getMaskData(_maskData);
 
@@ -368,7 +368,7 @@ QMenu* Layer::getContextMenu(QWidget* parent /*= nullptr*/)
     auto menu = new QMenu(_generalAction.getNameAction().getString(), parent);
 
     menu->addAction(&_generalAction.getVisibleAction());
-    menu->addAction(&_imageAction.getOpacityAction());
+    menu->addAction(&_imageSettingsAction.getOpacityAction());
 
     return menu;
 }
@@ -545,21 +545,21 @@ void Layer::paint(QPainter& painter, const PaintFlag& paintFlags)
                 // Show scalar(s) data if hovering over an image that originates from points data
                 if (getSourceDataset()->getDataType() == PointType) {
 
-                    if (_imageAction.getScalarChannel1Action().getEnabledAction().isChecked())
-                        labelText += "Scalar 1\t: " + QString::number(_imageAction.getScalarChannel1Action().getScalarData()[pixelIndex], 'f', 2);
+                    if (_imageSettingsAction.getScalarChannel1Action().getEnabledAction().isChecked())
+                        labelText += "Scalar 1\t: " + QString::number(_imageSettingsAction.getScalarChannel1Action().getScalarData()[pixelIndex], 'f', 2);
 
-                    if (_imageAction.getScalarChannel2Action().getEnabledAction().isChecked())
-                        labelText += "\nScalar 2\t: " + QString::number(_imageAction.getScalarChannel2Action().getScalarData()[pixelIndex], 'f', 2);
+                    if (_imageSettingsAction.getScalarChannel2Action().getEnabledAction().isChecked())
+                        labelText += "\nScalar 2\t: " + QString::number(_imageSettingsAction.getScalarChannel2Action().getScalarData()[pixelIndex], 'f', 2);
 
-                    if (_imageAction.getScalarChannel3Action().getEnabledAction().isChecked())
-                        labelText += "\nScalar 3\t: " + QString::number(_imageAction.getScalarChannel3Action().getScalarData()[pixelIndex], 'f', 2);
+                    if (_imageSettingsAction.getScalarChannel3Action().getEnabledAction().isChecked())
+                        labelText += "\nScalar 3\t: " + QString::number(_imageSettingsAction.getScalarChannel3Action().getScalarData()[pixelIndex], 'f', 2);
                 }
 
                 // Show cluster name if hovering over an image that originates from clusters data
                 if (getSourceDataset()->getDataType() == ClusterType) {
 
                     // Get cluster index from channel scalar data
-                    const auto clusterIndex = static_cast<std::int32_t>(_imageAction.getScalarChannel1Action().getScalarData()[pixelIndex]);
+                    const auto clusterIndex = static_cast<std::int32_t>(_imageSettingsAction.getScalarChannel1Action().getScalarData()[pixelIndex]);
 
                     // Get cluster name from cluster index
                     const auto clusterName = _sourceDataset.get<Clusters>()->getClusters()[clusterIndex].getName();
@@ -862,7 +862,7 @@ void Layer::publishSelection()
             auto& selectionIndices = _sourceDataset->getSelection<Clusters>()->indices;
 
             // Convert floating point scalars to unsigned integer scalars
-            std::vector<std::uint32_t> integerScalarData(_imageAction.getScalarChannel1Action().getScalarData().begin(), _imageAction.getScalarChannel1Action().getScalarData().end());
+            std::vector<std::uint32_t> integerScalarData(_imageSettingsAction.getScalarChannel1Action().getScalarData().begin(), _imageSettingsAction.getScalarChannel1Action().getScalarData().end());
 
             // Establish new selection indices depending on the type of modifier
             switch (pixelSelectionTool.getModifier())

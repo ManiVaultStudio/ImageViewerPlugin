@@ -3,7 +3,7 @@
 #include "Renderable.h"
 #include "LayersAction.h"
 #include "GeneralAction.h"
-#include "ImageAction.h"
+#include "ImageSettingsAction.h"
 #include "SelectionAction.h"
 #include "MiscellaneousAction.h"
 
@@ -192,7 +192,7 @@ public: /** Action getters */
 
     LayersAction& getLayersAction();
     GeneralAction& getGeneralAction() { return _generalAction; }
-    ImageAction& getImageAction() { return _imageAction; }
+    ImageSettingsAction& getImageAction() { return _imageSettingsAction; }
     SelectionAction& getSelectionAction() { return _selectionAction; }
     MiscellaneousAction& getMiscellaneousAction() { return _miscellaneousAction; }
 
@@ -203,7 +203,7 @@ protected:
     hdps::Dataset<hdps::DatasetImpl>    _sourceDataset;                 /** Smart pointer to source dataset of the images */
     std::vector<std::uint32_t>          _selectedIndices;               /** Indices of the selected pixels */
     GeneralAction                       _generalAction;                 /** General action */
-    ImageAction                         _imageAction;                   /** Image action */
+    ImageSettingsAction                 _imageSettingsAction;           /** Image settings action */
     SelectionAction                     _selectionAction;               /** Selection action */
     MiscellaneousAction                 _miscellaneousAction;           /** Miscellaneous action */
     std::vector<std::uint8_t>           _selectionData;                 /** Selection data for selection prop */
@@ -211,5 +211,5 @@ protected:
     std::vector<std::uint8_t>           _maskData;                      /** Mask data for the image */
 
     friend class ImageViewerWidget;
-    friend class ImageAction;
+    friend class ImageSettingsAction;
 };

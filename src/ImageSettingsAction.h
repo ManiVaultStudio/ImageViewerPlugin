@@ -17,13 +17,13 @@ class Layer;
 using namespace hdps::gui;
 
 /**
- * Image action class
+ * Image settings action class
  *
  * Action class for layer image settings
  *
  * @author Thomas Kroes
  */
-class ImageAction : public GroupAction
+class ImageSettingsAction : public GroupAction
 {
 Q_OBJECT
 
@@ -33,7 +33,7 @@ public:
      * Constructor
      * @param layer Reference to layer
      */
-    ImageAction(Layer& layer);
+    ImageSettingsAction(Layer& layer);
 
     /** Perform action initialization */
     void init();

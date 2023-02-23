@@ -70,8 +70,8 @@ set(ACTIONS
     src/GeneralAction.cpp
     src/GlobalViewSettingsAction.h
     src/GlobalViewSettingsAction.cpp
-    src/ImageAction.h
-    src/ImageAction.cpp
+    src/ImageSettingsAction.h
+    src/ImageSettingsAction.cpp
     src/LayersAction.h
     src/LayersAction.cpp
     src/MainToolbarAction.h

@@ -1,5 +1,5 @@
 #include "ScalarChannelAction.h"
-#include "ImageAction.h"
+#include "ImageSettingsAction.h"
 #include "Layer.h"
 
 #include <util/Exception.h>
@@ -18,9 +18,9 @@ const QMap<ScalarChannelAction::Identifier, QString> ScalarChannelAction::channe
     { ScalarChannelAction::Channel3, "Channel 3" }
 };
 
-ScalarChannelAction::ScalarChannelAction(ImageAction& imageAction, const Identifier& index, const QString& name) :
-    WidgetAction(reinterpret_cast<QObject*>(&imageAction)),
-    _imageAction(imageAction),
+ScalarChannelAction::ScalarChannelAction(ImageSettingsAction& imageSettingsAction, const Identifier& index, const QString& name) :
+    WidgetAction(reinterpret_cast<QObject*>(&imageSettingsAction)),
+    _imageSettingsAction(imageSettingsAction),
     _identifier(index),
     _enabledAction(this, "Enabled"),
     _dimensionAction(this, "Dimension"),
@@ -47,7 +47,7 @@ ScalarChannelAction::ScalarChannelAction(ImageAction& imageAction, const Identif
         computeScalarData();
     });
 
-    connect(&_imageAction.getSubsampleFactorAction(), &IntegralAction::valueChanged, this, [this]() {
+    connect(&_imageSettingsAction.getSubsampleFactorAction(), &IntegralAction::valueChanged, this, [this]() {
         computeScalarData();
     });
 
@@ -73,7 +73,7 @@ ScalarChannelAction::ScalarChannelAction(ImageAction& imageAction, const Identif
     });
 
     // Flag as changed when the window level settings change
-    connect(&_imageAction.getSubsampleFactorAction(), &IntegralAction::valueChanged, this, resizeScalars);
+    connect(&_imageSettingsAction.getSubsampleFactorAction(), &IntegralAction::valueChanged, this, resizeScalars);
 
     updateEnabled();
     resizeScalars();
@@ -89,7 +89,7 @@ const ScalarChannelAction::Identifier ScalarChannelAction::getIdentifier() const
 QSize ScalarChannelAction::getImageSize()
 {
     const auto imageSize        = getImages()->getImageSize();
-    const auto subsampleFactor  = _imageAction.getSubsampleFactorAction().getValue();
+    const auto subsampleFactor  = _imageSettingsAction.getSubsampleFactorAction().getValue();
     
     return QSize(static_cast<int>(floorf(imageSize.width() / subsampleFactor)), static_cast<int>(floorf(imageSize.width() / subsampleFactor)));
 }
@@ -166,7 +166,7 @@ void ScalarChannelAction::computeScalarData()
 
 Dataset<Images> ScalarChannelAction::getImages()
 {
-    return _imageAction.getLayer().getImages();
+    return _imageSettingsAction.getLayer().getImages();
 }
 
 bool ScalarChannelAction::isPublic() const

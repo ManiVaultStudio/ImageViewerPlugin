@@ -1,4 +1,4 @@
-#include "ImageAction.h"
+#include "ImageSettingsAction.h"
 #include "Layer.h"
 
 #include <util/ColorSpace.h>
@@ -11,7 +11,7 @@
 using namespace hdps;
 using namespace hdps::util;
 
-ImageAction::ImageAction(Layer& layer) :
+ImageSettingsAction::ImageSettingsAction(Layer& layer) :
     GroupAction(&layer, true),
     _layer(layer),
     _opacityAction(this, "Opacity", 0.0f, 100.0f, 100.0f, 100.0f, 1),
@@ -101,7 +101,7 @@ ImageAction::ImageAction(Layer& layer) :
     updateScalarChannelActions();
     useConstantColorToggled();
 
-    connect(&_colorSpaceAction, &OptionAction::currentIndexChanged, this, &ImageAction::updateScalarChannelActions);
+    connect(&_colorSpaceAction, &OptionAction::currentIndexChanged, this, &ImageSettingsAction::updateScalarChannelActions);
 
     // Set color space to mono in case of one dimension
     if (dimensionNames.count() == 1)
@@ -153,8 +153,8 @@ ImageAction::ImageAction(Layer& layer) :
     }
 
     // Update the color map image when the discrete color map option changes
-    connect(&_colorMapAction, &ColorMapAction::imageChanged, this, &ImageAction::updateColorMapImage);
-    connect(&_colorMapAction.getSettingsAction().getDiscreteAction(), &ColorMapDiscreteAction::toggled, this, &ImageAction::updateColorMapImage);
+    connect(&_colorMapAction, &ColorMapAction::imageChanged, this, &ImageSettingsAction::updateColorMapImage);
+    connect(&_colorMapAction.getSettingsAction().getDiscreteAction(), &ColorMapDiscreteAction::toggled, this, &ImageSettingsAction::updateColorMapImage);
 
     const auto updateScalarChannels = [this]() {
         _scalarChannel1Action.computeScalarData();
@@ -250,12 +250,12 @@ ImageAction::ImageAction(Layer& layer) :
     updateScalarChannels();
 }
 
-void ImageAction::init()
+void ImageSettingsAction::init()
 {
     updateColorMapImage();
 }
 
-const std::uint32_t ImageAction::getNumberOfActiveScalarChannels() const
+const std::uint32_t ImageSettingsAction::getNumberOfActiveScalarChannels() const
 {
     switch (static_cast<ColorSpaceType>(_colorSpaceAction.getCurrentIndex()))
     {
@@ -277,7 +277,7 @@ const std::uint32_t ImageAction::getNumberOfActiveScalarChannels() const
     return 0;
 }
 
-QImage ImageAction::getColorMapImage() const
+QImage ImageSettingsAction::getColorMapImage() const
 {
     if (_layer.getSourceDataset()->getDataType() == ClusterType) {
         
@@ -304,7 +304,7 @@ QImage ImageAction::getColorMapImage() const
     }
 }
 
-void ImageAction::updateColorMapImage()
+void ImageSettingsAction::updateColorMapImage()
 {
     // Establish the color map image interpolation type
     const auto isDiscreteColorMap   = _colorMapAction.getSettingsAction().getDiscreteAction().isChecked();
@@ -314,7 +314,7 @@ void ImageAction::updateColorMapImage()
     _layer.setColorMapImage(getColorMapImage(), interpolationType);
 }
 
-void ImageAction::updateScalarChannelActions()
+void ImageSettingsAction::updateScalarChannelActions()
 {
     // Establish whether the source dataset is a clusters dataset
     const auto isClusterType = _layer.getSourceDataset()->getDataType() == ClusterType;

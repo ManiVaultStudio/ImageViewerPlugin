@@ -10,7 +10,7 @@
 using namespace hdps::gui;
 using namespace hdps::util;
 
-class ImageAction;
+class ImageSettingsAction;
 
 /**
  * Scalar channel action class
@@ -59,11 +59,11 @@ public:
 
     /** 
      * Constructor
-     * @param imageAction Reference to layer image action
+     * @param imageSettingsAction Reference to layer image action
      * @param index Channel index
      * @param name Name of the scalar channel
      */
-    ScalarChannelAction(ImageAction& imageAction, const Identifier& index, const QString& name);
+    ScalarChannelAction(ImageSettingsAction& imageSettingsAction, const Identifier& index, const QString& name);
 
     /** Get the channel identifier */
     const Identifier getIdentifier() const;
@@ -133,7 +133,7 @@ public: /** Action getters */
     WindowLevelAction& getWindowLevelAction() { return _windowLevelAction; }
 
 protected:
-    ImageAction&            _imageAction;           /** Reference to image action */
+    ImageSettingsAction&    _imageSettingsAction;   /** Reference to image action */
     const Identifier        _identifier;            /** Channel index */
     ToggleAction            _enabledAction;         /** Enabled action */
     OptionAction            _dimensionAction;       /** Selected dimension action */
