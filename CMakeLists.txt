@@ -110,7 +110,7 @@ set(JSON
 )
 
 set(QRC
-    res/resources.qrc
+    res/resources_imgageviewer.qrc
 )
 
 set(SOURCES ${PLUGIN} ${MODEL} ${RENDERING} ${WIDGETS} ${DIALOGS} ${ACTIONS})
@@ -124,10 +124,10 @@ source_group(Dialogs FILES ${DIALOGS})
 source_group(Actions FILES ${ACTIONS})
 source_group(Shaders FILES ${SHADERS})
 source_group(Aux FILES ${AUX})
-source_group(Resources FILES res/resources.qrc)
+source_group(Resources FILES ${QRC})
 
 QT6_WRAP_UI(UI_HEADERS ${UIS})
-QT6_ADD_RESOURCES(RESOURCE_FILES res/resources.qrc)
+QT6_ADD_RESOURCES(RESOURCE_FILES ${QRC})
 
 add_library(${PROJECT} SHARED ${SOURCES} ${UIS} ${SHADERS} ${AUX} ${RESOURCE_FILES})
 
