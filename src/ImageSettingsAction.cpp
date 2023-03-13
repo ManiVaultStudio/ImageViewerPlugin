@@ -12,7 +12,7 @@ using namespace hdps;
 using namespace hdps::util;
 
 ImageSettingsAction::ImageSettingsAction(Layer& layer) :
-    GroupAction(&layer, true),
+    VerticalGroupAction(&layer, "Image", true),
     _layer(layer),
     _opacityAction(this, "Opacity", 0.0f, 100.0f, 100.0f, 100.0f, 1),
     _subsampleFactorAction(this, "Subsample", 1, 8, 1, 1),
@@ -27,8 +27,6 @@ ImageSettingsAction::ImageSettingsAction(Layer& layer) :
     _updateSelectionTimer(),
     _updateScalarDataTimer()
 {
-    setText("Image");
-
     _scalarChannel1Action.setObjectName("Channel 1");
     _scalarChannel2Action.setObjectName("Channel 2");
     _scalarChannel3Action.setObjectName("Channel 3");

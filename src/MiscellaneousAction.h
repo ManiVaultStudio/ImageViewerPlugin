@@ -1,6 +1,6 @@
 #pragma once
 
-#include <actions/GroupAction.h>
+#include <actions/VerticalGroupAction.h>
 #include <actions/IntegralRectangleAction.h>
 #include <actions/DecimalRectangleAction.h>
 
@@ -15,7 +15,7 @@ using namespace hdps::gui;
  *
  * @author Thomas Kroes
  */
-class MiscellaneousAction : public GroupAction
+class MiscellaneousAction : public VerticalGroupAction
 {
 public:
 

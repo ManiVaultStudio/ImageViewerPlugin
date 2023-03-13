@@ -1,7 +1,7 @@
 #pragma once
 
+#include <actions/VerticalGroupAction.h>
 #include <actions/ToggleAction.h>
-#include <actions/GroupAction.h>
 #include <actions/PixelSelectionAction.h>
 #include <actions/TriggerAction.h>
 
@@ -21,7 +21,7 @@ using namespace hdps::gui;
  *
  * @author Thomas Kroes
  */
-class SelectionAction : public GroupAction
+class SelectionAction : public VerticalGroupAction
 {
 public:
 

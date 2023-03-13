@@ -17,7 +17,7 @@ ExportToImageDialog::ExportToImageDialog(QWidget* parent /*= nullptr*/) :
     QDialog(parent),
     _imageScaleFactorAction(this, "Image scale", 1.0f, 1000.0f, 100.0f, 100.0f),
     _imageResolutionAction(this, "Image resolution"),
-    _groupAction(this)
+    _groupAction(this, "Settings")
 {
     // Update window title and icon
     setWindowTitle("Export layer(s) to image");
@@ -27,9 +27,8 @@ ExportToImageDialog::ExportToImageDialog(QWidget* parent /*= nullptr*/) :
 
     auto layout = new QVBoxLayout();
 
-    // Add actions to the group
-    _groupAction << _imageScaleFactorAction;
-    _groupAction << _imageResolutionAction;
+    _groupAction.addAction(&_imageScaleFactorAction);
+    _groupAction.addAction(&_imageResolutionAction);
 
     // Create group action widget
     auto groupActionWidget = _groupAction.createWidget(this);

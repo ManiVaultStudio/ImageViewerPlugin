@@ -4,13 +4,14 @@
 #include "ImageViewerPlugin.h"
 
 MiscellaneousAction::MiscellaneousAction(Layer& layer) :
-    GroupAction(&layer, true),
+    VerticalGroupAction(&layer, "Miscellaneous", true),
     _layer(layer),
     _roiLayerAction(this, "Layer ROI"),
     _roiViewAction(this, "View ROI")
 {
-    setText("Miscellaneous");
-
     _roiLayerAction.setToolTip("Layer region of interest discrete image coordinates (bottom-left:x, bottom-left:y, top-right:x, top-right:y)");
     _roiViewAction.setToolTip("View region of interest in fractional world coordinates (bottom-left:x, bottom-left:y, top-right:x, top-right:y)");
+
+    addAction(&_roiLayerAction);
+    addAction(&_roiViewAction);
 }

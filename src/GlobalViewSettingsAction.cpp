@@ -10,7 +10,7 @@ using namespace hdps;
 GlobalViewSettingsAction::GlobalViewSettingsAction(ImageViewerPlugin& imageViewerPlugin) :
     WidgetAction(reinterpret_cast<QObject*>(&imageViewerPlugin)),
     _imageViewerPlugin(imageViewerPlugin),
-    _groupAction(this),
+    _groupAction(this, "Settings"),
     _zoomMarginAction(this, "Zoom margin", 1.0f, 1000.0f, 100.0f, 100.0f),
     _backgroundColorAction(this, "Background color", QColor(50, 50, 50), QColor(50, 50, 50)),
     _animationEnabledAction(this, "Animation", true, true),
@@ -24,10 +24,10 @@ GlobalViewSettingsAction::GlobalViewSettingsAction(ImageViewerPlugin& imageViewe
     _animationEnabledAction.setToolTip("Enable animations");
     _smartZoomAction.setToolTip("Automatically zoom when selecting layers");
     
-    _groupAction << _zoomMarginAction;
-    _groupAction << _backgroundColorAction;
-    _groupAction << _animationEnabledAction;
-    _groupAction << _smartZoomAction;
+    _groupAction.addAction(&_zoomMarginAction);
+    _groupAction.addAction(&_backgroundColorAction);
+    _groupAction.addAction(&_animationEnabledAction);
+    _groupAction.addAction(&_smartZoomAction);
 
     _zoomMarginAction.setSuffix("px");
     _zoomMarginAction.setUpdateDuringDrag(false);

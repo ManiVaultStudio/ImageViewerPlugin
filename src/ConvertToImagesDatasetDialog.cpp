@@ -26,7 +26,7 @@ ConvertToImagesDatasetDialog::ConvertToImagesDatasetDialog(ImageViewerPlugin& im
     _numberOfImagesAction(this, "Number of images", 1, 10000, 1, 1),
     _numberOfPixelsAction(this, "Number of pixels"),
     _useLinkedDataAction(this, "Use linked data", true, true),
-    _groupAction(this)
+    _groupAction(this, "Settings")
 {
     // Update window title and icon
     setWindowTitle(QString("Load %1 as images").arg(_sourceDataset->getGuiName()));
@@ -72,12 +72,12 @@ ConvertToImagesDatasetDialog::ConvertToImagesDatasetDialog(ImageViewerPlugin& im
     auto layout = new QVBoxLayout();
 
     // Add actions to the group
-    _groupAction << _datasetNameAction;
-    _groupAction << _imageWidthAction;
-    _groupAction << _imageHeightAction;
-    _groupAction << _numberOfImagesAction;
-    _groupAction << _numberOfPixelsAction;
-    _groupAction << _useLinkedDataAction;
+    _groupAction.addAction(&_datasetNameAction);
+    _groupAction.addAction(&_imageWidthAction);
+    _groupAction.addAction(&_imageHeightAction);
+    _groupAction.addAction(&_numberOfImagesAction);
+    _groupAction.addAction(&_numberOfPixelsAction);
+    _groupAction.addAction(&_useLinkedDataAction);
 
     // Create group action widget
     auto groupActionWidget = _groupAction.createWidget(this);

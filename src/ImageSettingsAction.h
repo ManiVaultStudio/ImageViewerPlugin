@@ -23,7 +23,7 @@ using namespace hdps::gui;
  *
  * @author Thomas Kroes
  */
-class ImageSettingsAction : public GroupAction
+class ImageSettingsAction : public VerticalGroupAction
 {
 Q_OBJECT
 
