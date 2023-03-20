@@ -33,7 +33,6 @@ ImageSettingsAction::ImageSettingsAction(Layer& layer) :
     _scalarChannel2Action.setObjectName("Channel 2");
     _scalarChannel3Action.setObjectName("Channel 3");
 
-    // Establish whether the source dataset is a clusters dataset
     const auto isClusterType = _layer.getSourceDataset()->getDataType() == ClusterType;
 
     _subsampleFactorAction.setVisible(false);
@@ -51,18 +50,11 @@ ImageSettingsAction::ImageSettingsAction(Layer& layer) :
 
     _opacityAction.setSuffix("%");
 
-    // Set initial color map type
     _colorMapAction.setColorMapType(ColorMap::Type::TwoDimensional);
 
-    // Disable horizontal range actions
-    _colorMapAction.getSettingsAction().getHorizontalAxisAction().getRangeAction().getRangeMinAction().setEnabled(false);
-    _colorMapAction.getSettingsAction().getHorizontalAxisAction().getRangeAction().getRangeMaxAction().setEnabled(false);
+    _colorMapAction.getRangeAction(ColorMapAction::Axis::X).setEnabled(false);
+    _colorMapAction.getRangeAction(ColorMapAction::Axis::Y).setEnabled(false);
 
-    // Disable vertical range actions
-    _colorMapAction.getSettingsAction().getVerticalAxisAction().getRangeAction().getRangeMinAction().setEnabled(false);
-    _colorMapAction.getSettingsAction().getVerticalAxisAction().getRangeAction().getRangeMaxAction().setEnabled(false);
-
-    // Get the dimension names of the points dataset
     const auto dimensionNames = _layer.getDimensionNames();
 
     const auto useConstantColorToggled = [this]() {
@@ -154,7 +146,7 @@ ImageSettingsAction::ImageSettingsAction(Layer& layer) :
 
     // Update the color map image when the discrete color map option changes
     connect(&_colorMapAction, &ColorMapAction::imageChanged, this, &ImageSettingsAction::updateColorMapImage);
-    connect(&_colorMapAction.getSettingsAction().getDiscreteAction(), &ColorMapDiscreteAction::toggled, this, &ImageSettingsAction::updateColorMapImage);
+    connect(&_colorMapAction.getDiscretizeAction(), &ToggleAction::toggled, this, &ImageSettingsAction::updateColorMapImage);
 
     const auto updateScalarChannels = [this]() {
         _scalarChannel1Action.computeScalarData();
@@ -307,7 +299,7 @@ QImage ImageSettingsAction::getColorMapImage() const
 void ImageSettingsAction::updateColorMapImage()
 {
     // Establish the color map image interpolation type
-    const auto isDiscreteColorMap   = _colorMapAction.getSettingsAction().getDiscreteAction().isChecked();
+    const auto isDiscreteColorMap   = _colorMapAction.getDiscretizeAction().isChecked();
     const auto interpolationType    = isDiscreteColorMap ? InterpolationType::NearestNeighbor : InterpolationType::Bilinear;
 
     // Set the color map image in the layer
