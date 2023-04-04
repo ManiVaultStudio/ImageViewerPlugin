@@ -5,7 +5,7 @@
 
 #include <ImageData/Images.h>
 #include <ImageData/ImageData.h>
-#include <ClusterData.h>
+#include <ClusterData/ClusterData.h>
 #include <util/Exception.h>
 
 #include <actions/PluginTriggerAction.h>

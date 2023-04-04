@@ -4,7 +4,7 @@
 #include <DataHierarchyItem.h>
 #include <util/Exception.h>
 #include <event/Event.h>
-#include <PointData.h>
+#include <PointData/PointData.h>
 
 #include <QMessageBox>
 #include <QPainter>
