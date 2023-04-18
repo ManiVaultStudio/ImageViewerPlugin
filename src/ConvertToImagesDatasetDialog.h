@@ -6,7 +6,7 @@
 #include <actions/ToggleAction.h>
 #include <DataHierarchyItem.h>
 #include <ImageData/Images.h>
-#include <PointData.h>
+#include <PointData/PointData.h>
 #include <Set.h>
 
 #include <QDialog>

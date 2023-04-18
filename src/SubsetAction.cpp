@@ -6,7 +6,7 @@
 
 #include <util/Exception.h>
 
-#include <PointData.h>
+#include <PointData/PointData.h>
 
 using namespace hdps;
 

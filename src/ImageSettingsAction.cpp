@@ -5,8 +5,8 @@
 #include <util/Interpolation.h>
 #include <event/Event.h>
 
-#include <PointData.h>
-#include <ClusterData.h>
+#include <PointData/PointData.h>
+#include <ClusterData/ClusterData.h>
 
 using namespace hdps;
 using namespace hdps::util;

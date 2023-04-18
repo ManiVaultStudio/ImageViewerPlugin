@@ -4,8 +4,8 @@
 
 #include <util/Exception.h>
 
-#include <PointData.h>
-#include <ClusterData.h>
+#include <PointData/PointData.h>
+#include <ClusterData/ClusterData.h>
 
 #include <QHBoxLayout>
 #include <QCheckBox>

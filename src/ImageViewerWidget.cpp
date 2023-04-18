@@ -7,7 +7,7 @@
 
 #include <util/Exception.h>
 
-#include <ClusterData.h>
+#include <ClusterData/ClusterData.h>
 
 #include <QKeyEvent>
 #include <QPainter>
