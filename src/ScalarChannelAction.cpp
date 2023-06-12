@@ -20,7 +20,7 @@ const QMap<ScalarChannelAction::Identifier, QString> ScalarChannelAction::channe
 
 ScalarChannelAction::ScalarChannelAction(QObject* parent, const QString& title) :
     WidgetAction(parent, title),
-    _imageSettingsAction(nullptr),
+    _layer(nullptr),
     _identifier(Channel1),
     _enabledAction(this, "Enabled"),
     _dimensionAction(this, "Dimension"),
@@ -45,15 +45,15 @@ ScalarChannelAction::ScalarChannelAction(QObject* parent, const QString& title) 
     updateEnabled();
 }
 
-void ScalarChannelAction::initialize(ImageSettingsAction* imageSettingsAction, const Identifier& identifier)
+void ScalarChannelAction::initialize(Layer* layer, const Identifier& identifier)
 {
-    Q_ASSERT(imageSettingsAction != nullptr);
+    Q_ASSERT(layer != nullptr);
 
-    if (imageSettingsAction == nullptr)
+    if (layer == nullptr)
         return;
 
-    _imageSettingsAction    = imageSettingsAction;
-    _identifier             = identifier;
+    _layer      = layer;
+    _identifier = identifier;
 
     switch (_identifier)
     {
@@ -65,7 +65,7 @@ void ScalarChannelAction::initialize(ImageSettingsAction* imageSettingsAction, c
             break;
     }
 
-    connect(&_imageSettingsAction->getSubsampleFactorAction(), &IntegralAction::valueChanged, this, [this]() {
+    connect(&_layer->getImageSettingsAction().getSubsampleFactorAction(), &IntegralAction::valueChanged, this, [this]() {
         computeScalarData();
     });
 
@@ -75,7 +75,7 @@ void ScalarChannelAction::initialize(ImageSettingsAction* imageSettingsAction, c
 
     resizeScalars();
 
-    connect(&_imageSettingsAction->getSubsampleFactorAction(), &IntegralAction::valueChanged, this, resizeScalars);
+    connect(&_layer->getImageSettingsAction().getSubsampleFactorAction(), &IntegralAction::valueChanged, this, resizeScalars);
     connect(&_dimensionAction, &OptionAction::currentIndexChanged, this, &ScalarChannelAction::computeScalarData);
 
     computeScalarData();
@@ -90,11 +90,11 @@ const ScalarChannelAction::Identifier ScalarChannelAction::getIdentifier() const
 
 QSize ScalarChannelAction::getImageSize()
 {
-    if (_imageSettingsAction == nullptr)
+    if (_layer == nullptr)
         return {};
 
     const auto imageSize        = getImages()->getImageSize();
-    const auto subsampleFactor  = _imageSettingsAction->getSubsampleFactorAction().getValue();
+    const auto subsampleFactor  = _layer->getImageSettingsAction().getSubsampleFactorAction().getValue();
     
     return QSize(static_cast<int>(floorf(imageSize.width() / subsampleFactor)), static_cast<int>(floorf(imageSize.width() / subsampleFactor)));
 }
@@ -171,10 +171,10 @@ void ScalarChannelAction::computeScalarData()
 
 Dataset<Images> ScalarChannelAction::getImages()
 {
-    if (_imageSettingsAction == nullptr)
+    if (_layer == nullptr)
         return {};
 
-    return _imageSettingsAction->getLayer().getImages();
+    return _layer->getImages();
 }
 
 void ScalarChannelAction::connectToPublicAction(WidgetAction* publicAction, bool recursive)

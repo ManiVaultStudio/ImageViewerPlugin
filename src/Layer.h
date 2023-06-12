@@ -192,7 +192,7 @@ public: /** Action getters */
 
     LayersAction& getLayersAction();
     GeneralAction& getGeneralAction() { return _generalAction; }
-    ImageSettingsAction& getImageAction() { return _imageSettingsAction; }
+    ImageSettingsAction& getImageSettingsAction() { return _imageSettingsAction; }
     SelectionAction& getSelectionAction() { return _selectionAction; }
     MiscellaneousAction& getMiscellaneousAction() { return _miscellaneousAction; }
 

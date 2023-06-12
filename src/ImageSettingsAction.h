@@ -1,12 +1,10 @@
 #pragma once
 
-#include "event/EventListener.h"
-
-#include "actions/GroupAction.h"
-#include "actions/DecimalAction.h"
-#include "actions/ColorMapAction.h"
-#include "actions/ToggleAction.h"
-#include "actions/ColorAction.h"
+#include <actions/GroupAction.h>
+#include <actions/DecimalAction.h>
+#include <actions/ColorMapAction.h>
+#include <actions/ToggleAction.h>
+#include <actions/ColorAction.h>
 
 #include "ScalarChannelAction.h"
 
@@ -25,21 +23,22 @@ using namespace hdps::gui;
  */
 class ImageSettingsAction : public GroupAction
 {
-Q_OBJECT
+    Q_OBJECT
 
 public:
 
     /**
-     * Constructor
-     * @param layer Reference to layer
+     * Construct with \p parent object and \p title
+     * @param parent Pointer to parent object
+     * @param title Title
      */
-    ImageSettingsAction(Layer& layer);
+    Q_INVOKABLE ImageSettingsAction(QObject* parent, const QString& title);
 
-    /** Perform action initialization */
-    void init();
-
-    /** Get reference to parent layer */
-    Layer& getLayer() { return _layer; }
+    /**
+     * Initialize with \p layer
+     * @param layer Pointer to owning layer
+     */
+    void initialize(Layer* layer);
 
     /** Get the number of active scalar channels */
     const std::uint32_t getNumberOfActiveScalarChannels() const;
@@ -56,6 +55,35 @@ protected:
 
     /** Updates the scalar channel actions */
     void updateScalarChannelActions();
+
+protected: // Linking
+
+    /**
+     * Connect this action to a public action
+     * @param publicAction Pointer to public action to connect to
+     * @param recursive Whether to also connect descendant child actions
+     */
+    void connectToPublicAction(WidgetAction* publicAction, bool recursive) override;
+
+    /**
+     * Disconnect this action from its public action
+     * @param recursive Whether to also disconnect descendant child actions
+     */
+    void disconnectFromPublicAction(bool recursive) override;
+
+public: // Serialization
+
+    /**
+     * Load widget action from variant map
+     * @param Variant map representation of the widget action
+     */
+    void fromVariantMap(const QVariantMap& variantMap) override;
+
+    /**
+     * Save widget action to variant map
+     * @return Variant map representation of the widget action
+     */
+    QVariantMap toVariantMap() const override;
 
 public: // Action getters
 
@@ -82,7 +110,7 @@ signals:
     void channelChanged(ScalarChannelAction& scalarChannelAction);
 
 protected:
-    Layer&                  _layer;                         /** Reference to layer */
+    Layer*                  _layer;                         /** Reference to layer */
     DecimalAction           _opacityAction;                 /** Opacity action */
     IntegralAction          _subsampleFactorAction;         /** Subsample factor action */
     OptionAction            _colorSpaceAction;              /** Color space action */
@@ -93,9 +121,12 @@ protected:
     OptionAction            _interpolationTypeAction;       /** Interpolation type action */
     ToggleAction            _useConstantColorAction;        /** Constant color action */
     ColorAction             _constantColorAction;           /** Color action */
-    hdps::EventListener     _eventListener;                 /** Listen to HDPS events */
     QTimer                  _updateSelectionTimer;          /** Timer to update layer selection when appropriate */
     QTimer                  _updateScalarDataTimer;         /** Timer to update layer scalar data when appropriate */
 
     static const std::int32_t LAZY_UPDATE_INTERVAL = 0;
 };
+
+Q_DECLARE_METATYPE(ImageSettingsAction)
+
+inline const auto imageSettingsActionMetaTypeId = qRegisterMetaType<ImageSettingsAction*>("ImageSettingsAction");

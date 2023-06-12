@@ -130,7 +130,7 @@ QVariant LayersModel::data(const QModelIndex& index, int role) const
                     return layer->getGeneralAction().getScaleAction().getValue();
 
                 case Column::Opacity:
-                    return layer->getImageAction().getOpacityAction().getValue();
+                    return layer->getImageSettingsAction().getOpacityAction().getValue();
 
                 default:
                     break;
@@ -465,7 +465,7 @@ void LayersModel::addLayer(Layer* layer)
             });
 
             // Inform views that the layer opacity has changed when it is changed in the action
-            connect(&layer->getImageAction().getOpacityAction(), &DecimalAction::valueChanged, this, [this, layer](const float& value) {
+            connect(&layer->getImageSettingsAction().getOpacityAction(), &DecimalAction::valueChanged, this, [this, layer](const float& value) {
                 const auto changedCell = index(_layers.indexOf(layer), Column::Opacity);
                 emit dataChanged(changedCell, changedCell);
             });
