@@ -1,6 +1,6 @@
 #pragma once
 
-#include <actions/WidgetAction.h>
+#include <actions/GroupAction.h>
 #include <actions/DecimalAction.h>
 
 using namespace hdps::gui;
@@ -10,30 +10,51 @@ class GeneralAction;
 /**
  * Position action class
  *
- * Action class for configurin layer position
+ * Action class for configuring layer position
  *
  * @author Thomas Kroes
  */
-class PositionAction : public WidgetAction
+class PositionAction : public GroupAction
 {
     Q_OBJECT
 
-protected:
-
-    /**
-     * Get widget representation of the position action
-     * @param parent Pointer to parent widget
-     * @param widgetFlags Widget flags for the configuration of the widget (type)
-     */
-    QWidget* getWidget(QWidget* parent, const std::int32_t& widgetFlags) override;
-
 public:
 
-    /** 
-     * Constructor
-     * @param generalAction Reference to general action
+    /**
+     * Construct with \p parent object and \p title
+     * @param parent Pointer to parent object
+     * @param title Title
      */
-    PositionAction(GeneralAction& generalAction);
+    Q_INVOKABLE PositionAction(QObject* parent, const QString& title);
+
+protected: // Linking
+
+    /**
+     * Connect this action to a public action
+     * @param publicAction Pointer to public action to connect to
+     * @param recursive Whether to also connect descendant child actions
+     */
+    void connectToPublicAction(WidgetAction* publicAction, bool recursive) override;
+
+    /**
+     * Disconnect this action from its public action
+     * @param recursive Whether to also disconnect descendant child actions
+     */
+    void disconnectFromPublicAction(bool recursive) override;
+
+public: // Serialization
+
+    /**
+     * Load widget action from variant map
+     * @param Variant map representation of the widget action
+     */
+    void fromVariantMap(const QVariantMap& variantMap) override;
+
+    /**
+     * Save widget action to variant map
+     * @return Variant map representation of the widget action
+     */
+    QVariantMap toVariantMap() const override;
 
 signals:
 
@@ -46,7 +67,10 @@ public: /** Action getters */
     DecimalAction& getYAction() { return _yAction; }
 
 protected:
-    GeneralAction&  _generalAction;     /** Reference to general action */
-    DecimalAction   _xAction;           /** X-position action */
-    DecimalAction   _yAction;           /** Y-position action */
+    DecimalAction   _xAction;   /** X-position action */
+    DecimalAction   _yAction;   /** Y-position action */
 };
+
+Q_DECLARE_METATYPE(PositionAction)
+
+inline const auto positionActionMetaTypeId = qRegisterMetaType<PositionAction*>("PositionAction");

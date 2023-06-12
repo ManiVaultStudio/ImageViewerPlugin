@@ -26,7 +26,7 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const hdps::Dataset<Images>& 
     _imagesDataset(imagesDataset),
     _sourceDataset(_imagesDataset->getDataHierarchyItem().getParent().getDataset()),
     _selectedIndices(),
-    _generalAction(*this),
+    _generalAction(this, "General"),
     _imageSettingsAction(*this),
     _selectionAction(*this, &_imageViewerPlugin.getImageViewerWidget(), _imageViewerPlugin.getImageViewerWidget().getPixelSelectionTool()),
     _miscellaneousAction(*this),
@@ -182,6 +182,7 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const hdps::Dataset<Images>& 
         getRenderer().setAnimationEnabled(animationEnabled);
     });
 
+    _generalAction.initialize(this);
     _imageSettingsAction.init();
 
     _imagesDataset->getMaskData(_maskData);

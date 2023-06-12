@@ -81,6 +81,8 @@ void ViewSettingsAction::connectToPublicAction(WidgetAction* publicAction, bool 
         actions().connectPrivateActionToPublicAction(&_animationEnabledAction, &publicViewSettingsAction->getAnimationEnabledAction(), recursive);
         actions().connectPrivateActionToPublicAction(&_smartZoomAction, &publicViewSettingsAction->getSmartZoomAction(), recursive);
     }
+
+    GroupAction::connectToPublicAction(publicAction, recursive);
 }
 
 void ViewSettingsAction::disconnectFromPublicAction(bool recursive)
