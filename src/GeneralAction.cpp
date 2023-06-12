@@ -13,34 +13,33 @@ GeneralAction::GeneralAction(Layer& layer) :
     _positionAction(*this),
     _scaleAction(this, "Scale", 0.0f, 1000000.0f, 100.0f, 100.0f, 1)
 {
-    setText("General");
+    addAction(&_visibleAction);
+    addAction(&_datasetNameAction);
+    addAction(&_colorAction);
+    addAction(&_nameAction);
+    addAction(&_positionAction);
+    addAction(&_scaleAction);
 
+    _datasetNameAction.setConnectionPermissionsToForceNone();
     _datasetNameAction.setEnabled(false);
     
     _scaleAction.setDefaultWidgetFlags(DecimalAction::SpinBox);
 
-    // Set tooltips
     _visibleAction.setToolTip("Visibility of the layer");
     _datasetNameAction.setToolTip("Name of the images dataset");
     _nameAction.setToolTip("Name of the layer");
     _scaleAction.setToolTip("Layer scale in percentages");
 
-    // Get initial random layer color
     const auto layerColor = _layer.getLayersAction().getRandomLayerColor();
 
-    // Assign the color and default color
     _colorAction.initialize(layerColor, layerColor),
 
-    // Set scale suffix
     _scaleAction.setSuffix("%");
 
-    // Get the name of the images dataset
     const auto guiName = _layer.getImages()->getGuiName();
 
-    // Set dataset name
     _datasetNameAction.setString(guiName);
 
-    // Set layer name and default name
     _nameAction.setString(guiName);
     _nameAction.setDefaultString(guiName);
 
