@@ -19,7 +19,7 @@
 #include <set>
 
 Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const hdps::Dataset<Images>& imagesDataset) :
-    WidgetAction(&imageViewerPlugin),
+    WidgetAction(&imageViewerPlugin, "Layer"),
     Renderable(imageViewerPlugin.getImageViewerWidget().getRenderer()),
     _imageViewerPlugin(imageViewerPlugin),
     _active(false),
@@ -132,43 +132,32 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const hdps::Dataset<Images>& 
         publishSelection();
     };
 
-    // In ROI selection mode select pixels when the viewport changes
     connect(&_imageViewerPlugin.getImageViewerWidget().getRenderer(), &LayersRenderer::zoomRectangleChanged, this, [this, updateSelectionRoi]() {
-
         updateRoi();
 
-        // Don't do anything when the layer is not active
         if (!_active)
             return;
 
-        // Only update and publish the selection when the select pixels in view action is enabled
-        if (_selectionAction.getPixelSelectionAction().getPixelSelectionTool().getType() != PixelSelectionType::ROI)
+        if (_selectionAction.getPixelSelectionAction().getPixelSelectionTool()->getType() != PixelSelectionType::ROI)
             return;
 
-        // Only update when notify during selection is enabled
         if (!_selectionAction.getPixelSelectionAction().getNotifyDuringSelectionAction().isChecked())
             return;
 
-        // Update ROI selection and publish it
         updateSelectionRoi();
     });
 
     // Possibly select pixels when the viewport changes
     connect(&_imageViewerPlugin.getImageViewerWidget(), &ImageViewerWidget::navigationEnded, this, [this, updateSelectionRoi]() {
-
-        // Don't do anything when the layer is not active
         if (!_active)
             return;
 
-        // Only update and publish the selection when the select pixels in view action is enabled
-        if (_selectionAction.getPixelSelectionAction().getPixelSelectionTool().getType() != PixelSelectionType::ROI)
+        if (_selectionAction.getPixelSelectionAction().getPixelSelectionTool()->getType() != PixelSelectionType::ROI)
             return;
 
-        // Only update when notify during selection is disabled
         if (_selectionAction.getPixelSelectionAction().getNotifyDuringSelectionAction().isChecked())
             return;
 
-        // Update ROI selection and publish it
         updateSelectionRoi();
     });
 
@@ -388,7 +377,7 @@ void Layer::activate()
         _selectionAction.getPixelSelectionAction().setShortcutsEnabled(true);
 
         // Enable the pixel selection tool
-        _selectionAction.getPixelSelectionAction().getPixelSelectionTool().setEnabled(true);
+        _selectionAction.getPixelSelectionAction().getPixelSelectionTool()->setEnabled(true);
 
         // Update the view plugin window tile
         updateWindowTitle();
@@ -417,7 +406,7 @@ void Layer::deactivate()
         _selectionAction.getPixelSelectionAction().setShortcutsEnabled(false);
 
         // Disable the pixel selection tool
-        _selectionAction.getPixelSelectionAction().getPixelSelectionTool().setEnabled(false);
+        _selectionAction.getPixelSelectionAction().getPixelSelectionTool()->setEnabled(false);
 
         // Update the view plugin window tile
         updateWindowTitle();
@@ -831,7 +820,7 @@ void Layer::publishSelection()
                 }
 
                 // Remove pixels from current selection
-                case PixelSelectionModifierType::Remove:
+                case PixelSelectionModifierType::Subtract:
                 {
                     // Create selection set of current selection indices
                     auto selectionSet = std::set<std::uint32_t>(selectionIndices.begin(), selectionIndices.end());
@@ -911,7 +900,7 @@ void Layer::publishSelection()
                 }
 
                 // Remove pixels from current selection
-                case PixelSelectionModifierType::Remove:
+                case PixelSelectionModifierType::Subtract:
                 {
                     // Create selection set of current selection indices
                     auto selectionSet = std::set<std::uint32_t>(selectionIndices.begin(), selectionIndices.end());

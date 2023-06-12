@@ -1,6 +1,5 @@
 #pragma once
 
-#include <actions/WidgetAction.h>
 #include <actions/GroupAction.h>
 #include <actions/DecimalAction.h>
 #include <actions/ColorAction.h>
@@ -13,58 +12,73 @@ class ImageViewerPlugin;
 /**
  * Global view settings action class
  *
- * Settings action class for global view settings
+ * Settings action class for mangaing global view settings
  *
  * @author Thomas Kroes
  */
-class GlobalViewSettingsAction : public WidgetAction
+class ViewSettingsAction : public GroupAction
 {
     Q_OBJECT
 
-protected: // Widget
-
-/** Widget class for subset action */
-    class Widget : public WidgetActionWidget {
-    public:
-
-        /**
-         * Constructor
-         * @param parent Pointer to parent widget
-         * @param globalViewSettingsAction Pointer to global view settings action
-         * @param widgetFlags Widget flags for the configuration of the widget (type)
-         */
-        Widget(QWidget* parent, GlobalViewSettingsAction* globalViewSettingsAction, const std::int32_t& widgetFlags);
-    };
-
-    /**
-     * Get widget representation of the global view settings action
-     * @param parent Pointer to parent widget
-     * @param widgetFlags Widget flags for the configuration of the widget (type)
-     */
-    QWidget* getWidget(QWidget* parent, const std::int32_t& widgetFlags) override {
-        return new Widget(parent, this, widgetFlags);
-    };
-
 public:
 
-    /** 
-     * Constructor
-     * @param imageViewerPlugin Reference to image viewer plugin
+    /**
+     * Construct with \p parent object and \p title
+     * @param parent Pointer to parent object
+     * @param title Title
      */
-    GlobalViewSettingsAction(ImageViewerPlugin& imageViewerPlugin);
+    Q_INVOKABLE ViewSettingsAction(QObject* parent, const QString& title);
 
-public: /** Action getters */
+    /**
+     * Initialize with \p imageViewerPlugin
+     * @param imageViewerPlugin Pointer to image viewer plugin
+     */
+    void initialize(ImageViewerPlugin* imageViewerPlugin);
 
-    GroupAction& getGroupAction() { return _groupAction; }
+protected: // Linking
+
+    /**
+     * Connect this action to a public action
+     * @param publicAction Pointer to public action to connect to
+     * @param recursive Whether to also connect descendant child actions
+     */
+    void connectToPublicAction(WidgetAction* publicAction, bool recursive) override;
+
+    /**
+     * Disconnect this action from its public action
+     * @param recursive Whether to also disconnect descendant child actions
+     */
+    void disconnectFromPublicAction(bool recursive) override;
+
+public: // Serialization
+
+    /**
+     * Load widget action from variant map
+     * @param Variant map representation of the widget action
+     */
+    void fromVariantMap(const QVariantMap& variantMap) override;
+
+    /**
+     * Save widget action to variant map
+     * @return Variant map representation of the widget action
+     */
+    QVariantMap toVariantMap() const override;
+
+public: // Action getters
+
     DecimalAction& getZoomMarginAction() { return _zoomMarginAction; }
     ColorAction& getBackgroundColorAction() { return _backgroundColorAction; }
+    ToggleAction& getAnimationEnabledAction() { return _animationEnabledAction; }
     ToggleAction& getSmartZoomAction() { return _smartZoomAction; }
 
 protected:
-    ImageViewerPlugin&  _imageViewerPlugin;         /** Reference to image viewer plugin */
-    GroupAction         _groupAction;               /** Group action */
+    ImageViewerPlugin*  _imageViewerPlugin;         /** Reference to image viewer plugin */
     DecimalAction       _zoomMarginAction;          /** Margin around layers extents action */
     ColorAction         _backgroundColorAction;     /** Background color action action */
     ToggleAction        _animationEnabledAction;    /** Animation on/off action */
     ToggleAction        _smartZoomAction;            /** Automatically zoom when selecting layers action */
 };
+
+Q_DECLARE_METATYPE(ViewSettingsAction)
+
+inline const auto viewSettingsActionMetaTypeId = qRegisterMetaType<ViewSettingsAction*>("ViewSettingsAction");

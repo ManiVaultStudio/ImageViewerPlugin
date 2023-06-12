@@ -4,7 +4,7 @@
 #include "ImageViewerPlugin.h"
 
 MiscellaneousAction::MiscellaneousAction(Layer& layer) :
-    GroupAction(&layer, true),
+    GroupAction(&layer, "Miscellaneous", true),
     _layer(layer),
     _roiLayerAction(this, "Layer ROI"),
     _roiViewAction(this, "View ROI")

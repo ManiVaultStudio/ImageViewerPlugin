@@ -1,7 +1,7 @@
 #pragma once
 
+#include <actions/GroupAction.h>
 #include <actions/TriggerAction.h>
-#include <actions/ToggleAction.h>
 #include <actions/StringAction.h>
 
 class ImageViewerPlugin;
@@ -15,48 +15,24 @@ using namespace hdps::gui;
  *
  * @author Thomas Kroes
  */
-class SubsetAction : public TriggerAction
+class SubsetAction : public GroupAction
 {
-protected: // Widget
-
-    /** Widget class for subset action */
-    class Widget : public WidgetActionWidget {
-    public:
-
-        /**
-         * Constructor
-         * @param parent Pointer to parent widget
-         * @param subsetAction Pointer to subset action
-         * @param widgetFlags Widget flags for the configuration of the widget (type)
-         */
-        Widget(QWidget* parent, SubsetAction* subsetAction, const std::int32_t& widgetFlags);
-
-        /** Destructor */
-        ~Widget();
-
-    protected:
-        SubsetAction*   _subsetAction;  /** Pointer to subset action */
-    };
-
-    /**
-     * Get widget representation of the subset action
-     * @param parent Pointer to parent widget
-     * @param widgetFlags Widget flags for the configuration of the widget (type)
-     */
-    QWidget* getWidget(QWidget* parent, const std::int32_t& widgetFlags) override {
-        return new Widget(parent, this, widgetFlags);
-    };
+    Q_OBJECT
 
 public:
 
-    /** 
-     * Constructor
-     * @param imageViewerPlugin Reference to image viewer plugin
+    /**
+     * Construct with \p parent object and \p title
+     * @param parent Pointer to parent object
+     * @param title Title
      */
-    SubsetAction(ImageViewerPlugin& imageViewerPlugin);
+    Q_INVOKABLE SubsetAction(QObject* parent, const QString& title);
 
-    /** Get reference to image viewer plugin */
-    ImageViewerPlugin& getImageViewerPlugin() { return _imageViewerPlugin; }
+    /**
+     * Initialize with \p imageViewerPlugin
+     * @param imageViewerPlugin Pointer to image viewer plugin
+     */
+    void initialize(ImageViewerPlugin* imageViewerPlugin);
 
 public: // Action getters
 
@@ -64,7 +40,11 @@ public: // Action getters
     TriggerAction& getCreateAction() { return _createAction; }
 
 protected:
-    ImageViewerPlugin&  _imageViewerPlugin;     /** Reference to image viewer plugin */
+    ImageViewerPlugin*  _imageViewerPlugin;     /** Pointer to image viewer plugin */
     StringAction        _nameAction;            /** Subset name action */
     TriggerAction       _createAction;          /** Create subset action */
 };
+
+Q_DECLARE_METATYPE(SubsetAction)
+
+inline const auto subsetActionMetaTypeId = qRegisterMetaType<SubsetAction*>("SubsetAction");

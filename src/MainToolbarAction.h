@@ -81,7 +81,7 @@ public: // Action getters
     ToggleAction& getRoiSelectionAction() { return _roiSelectionAction; }
     SubsetAction& getSubsetAction() { return _subsetAction; }
     TriggerAction& getExportToImageAction() { return _exportToImageAction; }
-    GlobalViewSettingsAction& getGlobalViewSettingsAction() { return _globalViewSettingsAction; }
+    ViewSettingsAction& getGlobalViewSettingsAction() { return _globalViewSettingsAction; }
 
 protected:
     ImageViewerPlugin&          _imageViewerPlugin;                 /** Reference to image viewer plugin */
@@ -96,5 +96,5 @@ protected:
     SubsetAction                _subsetAction;                      /** Subset action */
     TriggerAction               _exportToImageAction;               /** Export to image action */
     QActionGroup                _interactionModeActionGroup;        /** Interaction mode action group */
-    GlobalViewSettingsAction    _globalViewSettingsAction;          /** Global view settings action */
+    ViewSettingsAction    _globalViewSettingsAction;          /** Global view settings action */
 };

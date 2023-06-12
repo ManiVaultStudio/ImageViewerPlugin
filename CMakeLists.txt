@@ -88,8 +88,6 @@ set(ACTIONS
     src/SettingsAction.cpp
     src/SubsetAction.h
     src/SubsetAction.cpp
-    src/ZoomAction.h
-    src/ZoomAction.cpp
     src/ZoomToolbarAction.h
     src/ZoomToolbarAction.cpp
 )

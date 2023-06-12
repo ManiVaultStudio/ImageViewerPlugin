@@ -11,7 +11,7 @@
 using namespace hdps::util;
 
 MainToolbarAction::MainToolbarAction(ImageViewerPlugin& imageViewerPlugin) :
-    WidgetAction(&imageViewerPlugin),
+    WidgetAction(&imageViewerPlugin, "Main Toolbar"),
     _imageViewerPlugin(imageViewerPlugin),
     _panAction(this, "Pan"),
     _selectAction(this, "Select pixels"),
@@ -21,10 +21,10 @@ MainToolbarAction::MainToolbarAction(ImageViewerPlugin& imageViewerPlugin) :
     _polygonSelectionAction(this, "Polygon selection"),
     _sampleSelectionAction(this, "Sample selection"),
     _roiSelectionAction(this, "ROI selection"),
-    _subsetAction(imageViewerPlugin),
-    _exportToImageAction(this, ""),
+    _subsetAction(this, "Subset"),
+    _exportToImageAction(this, "Export"),
     _interactionModeActionGroup(this),
-    _globalViewSettingsAction(imageViewerPlugin)
+    _globalViewSettingsAction(this, "View Settings")
 {
     setText("Navigation");
 

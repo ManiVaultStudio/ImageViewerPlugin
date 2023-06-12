@@ -12,14 +12,14 @@ using namespace hdps;
 using namespace hdps::util;
 
 ImageSettingsAction::ImageSettingsAction(Layer& layer) :
-    GroupAction(&layer, true),
+    GroupAction(&layer, "Image", true),
     _layer(layer),
     _opacityAction(this, "Opacity", 0.0f, 100.0f, 100.0f, 100.0f, 1),
     _subsampleFactorAction(this, "Subsample", 1, 8, 1, 1),
     _colorSpaceAction(this, "Color space", colorSpaces.values(), "Mono", "Mono"),
-    _scalarChannel1Action(*this, ScalarChannelAction::Channel1, ScalarChannelAction::channelIndexes.value(ScalarChannelAction::Channel1)),
-    _scalarChannel2Action(*this, ScalarChannelAction::Channel2, ScalarChannelAction::channelIndexes.value(ScalarChannelAction::Channel2)),
-    _scalarChannel3Action(*this, ScalarChannelAction::Channel3, ScalarChannelAction::channelIndexes.value(ScalarChannelAction::Channel3)),
+    _scalarChannel1Action(this, ScalarChannelAction::channelIndexes.value(ScalarChannelAction::Channel1)),
+    _scalarChannel2Action(this, ScalarChannelAction::channelIndexes.value(ScalarChannelAction::Channel2)),
+    _scalarChannel3Action(this, ScalarChannelAction::channelIndexes.value(ScalarChannelAction::Channel3)),
     _colorMapAction(this, "Color map", ColorMap::Type::OneDimensional, "Black to white", "Black to white"),
     _interpolationTypeAction(this, "Interpolate", interpolationTypes.values(), "Bilinear", "Bilinear"),
     _useConstantColorAction(this, "Use constant color", false, false),
@@ -27,8 +27,6 @@ ImageSettingsAction::ImageSettingsAction(Layer& layer) :
     _updateSelectionTimer(),
     _updateScalarDataTimer()
 {
-    setText("Image");
-
     _scalarChannel1Action.setObjectName("Channel 1");
     _scalarChannel2Action.setObjectName("Channel 2");
     _scalarChannel3Action.setObjectName("Channel 3");
@@ -149,9 +147,9 @@ ImageSettingsAction::ImageSettingsAction(Layer& layer) :
     connect(&_colorMapAction.getDiscretizeAction(), &ToggleAction::toggled, this, &ImageSettingsAction::updateColorMapImage);
 
     const auto updateScalarChannels = [this]() {
-        _scalarChannel1Action.computeScalarData();
-        _scalarChannel2Action.computeScalarData();
-        _scalarChannel3Action.computeScalarData();
+        //_scalarChannel1Action.computeScalarData();
+        //_scalarChannel2Action.computeScalarData();
+        //_scalarChannel3Action.computeScalarData();
     };
 
     _updateSelectionTimer.setSingleShot(true);
@@ -244,6 +242,10 @@ ImageSettingsAction::ImageSettingsAction(Layer& layer) :
 
 void ImageSettingsAction::init()
 {
+    _scalarChannel1Action.initialize(this, ScalarChannelAction::Channel1);
+    _scalarChannel2Action.initialize(this, ScalarChannelAction::Channel2);
+    _scalarChannel3Action.initialize(this, ScalarChannelAction::Channel3);
+
     updateColorMapImage();
 }
 

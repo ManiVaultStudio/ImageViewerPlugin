@@ -1,11 +1,9 @@
 #pragma once
 
-#include <actions/WidgetAction.h>
+#include <actions/HorizontalToolbarAction.h>
 #include <actions/TriggerAction.h>
 #include <actions/DecimalAction.h>
 #include <actions/ToggleAction.h>
-
-#include "SubsetAction.h"
 
 class ImageViewerPlugin;
 class ImageViewerWidget;
@@ -19,44 +17,24 @@ using namespace hdps::gui;
  *
  * @author Thomas Kroes
  */
-class ZoomToolbarAction : public WidgetAction
+class ZoomToolbarAction : public HorizontalToolbarAction
 {
+    Q_OBJECT
+
 public:
-
-    /** Widget class for zoom toolbar action */
-    class Widget : public WidgetActionWidget
-    {
-    protected:
-
-        /**
-         * Constructor
-         * @param parent Pointer to parent widget
-         * @param zoomToolbarAction Pointer to zoom toolbar action
-         */
-        Widget(QWidget* parent, ZoomToolbarAction* zoomToolbarAction);
-
-    protected:
-        friend class ZoomToolbarAction;
-    };
-
-protected:
 
     /**
-     * Get widget representation of the zoom toolbar action
-     * @param parent Pointer to parent widget
-     * @param widgetFlags Widget flags for the configuration of the widget (type)
+     * Construct with \p parent and \p title
+     * @param parent Pointer to parent object
+     * @param title Title of the action
      */
-    QWidget* getWidget(QWidget* parent, const std::int32_t& widgetFlags) override {
-        return new Widget(parent, this);
-    };
+    Q_INVOKABLE ZoomToolbarAction(QObject* parent, const QString& title);
 
-public:
-
-    /** 
-     * Constructor
-     * @param imageViewerWidget Reference to image viewer plugin
+    /**
+     * Initialize with \p imageViewerPlugin
+     * @param imageViewerPlugin Pointer to image viewer plugin
      */
-    ZoomToolbarAction(ImageViewerPlugin& imageViewerPlugin);
+    void initialize(ImageViewerPlugin* imageViewerPlugin);
 
     /** Get reference to image viewer widget */
     ImageViewerWidget& getImageViewerWidget();
@@ -71,7 +49,7 @@ public: // Action getters
     TriggerAction& getExportToImageAction() { return _exportToImageAction; }
 
 protected:
-    ImageViewerPlugin&  _imageViewerPlugin;         /** Reference to image viewer plugin */
+    ImageViewerPlugin*  _imageViewerPlugin;         /** Pointer to image viewer plugin */
     TriggerAction       _zoomOutAction;             /** Zoom out action */
     DecimalAction       _zoomPercentageAction;      /** Zoom action */
     TriggerAction       _zoomInAction;              /** Zoom in action */
@@ -81,3 +59,7 @@ protected:
 
     static const float zoomDeltaPercentage;
 };
+
+Q_DECLARE_METATYPE(ZoomToolbarAction)
+
+inline const auto zoomToolbarActionMetaTypeId = qRegisterMetaType<ZoomToolbarAction*>("ZoomToolbarAction");

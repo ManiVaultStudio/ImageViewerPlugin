@@ -7,7 +7,7 @@
 using namespace hdps;
 
 PositionAction::PositionAction(GeneralAction& generalAction) :
-    WidgetAction(reinterpret_cast<QObject*>(&generalAction)),
+    WidgetAction(reinterpret_cast<QObject*>(&generalAction), "Position"),
     _generalAction(generalAction),
     _xAction(this, "X position", -100000.0f, 100000.0f, 0.0f, 0.0f),
     _yAction(this, "Y position", -100000.0f, 100000.0f, 0.0f, 0.0f)

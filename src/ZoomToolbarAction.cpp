@@ -3,24 +3,19 @@
 #include "ImageViewerWidget.h"
 #include "LayersModel.h"
 
-#include <Application.h>
-#include <util/PixelSelectionTool.h>
-
-#include <QHBoxLayout>
-
 using namespace hdps::util;
 
 const float ZoomToolbarAction::zoomDeltaPercentage = 0.1f;
 
-ZoomToolbarAction::ZoomToolbarAction(ImageViewerPlugin& imageViewerPlugin) :
-    WidgetAction(&imageViewerPlugin),
-    _imageViewerPlugin(imageViewerPlugin),
-    _zoomOutAction(this, ""),
-    _zoomPercentageAction(this, "Zoom percentage", 10.0f, 1000.0f, 100.0f, 100.0f, 1),
-    _zoomInAction(this, ""),
-    _zoomExtentsAction(this, "Zoom all"),
-    _zoomSelectionAction(this, "Zoom around selection"),
-    _exportToImageAction(this, "Export layers to image")
+ZoomToolbarAction::ZoomToolbarAction(QObject* parent, const QString& title) :
+    HorizontalToolbarAction(parent, title),
+    _imageViewerPlugin(nullptr),
+    _zoomOutAction(this, "Zoom out"),
+    _zoomPercentageAction(this, "Zoom Percentage", 10.0f, 1000.0f, 100.0f, 100.0f, 1),
+    _zoomInAction(this, "Zoom In"),
+    _zoomExtentsAction(this, "Zoom All"),
+    _zoomSelectionAction(this, "Zoom Around Selection"),
+    _exportToImageAction(this, "Export Layers")
 {
     setText("Navigation");
 
@@ -48,11 +43,22 @@ ZoomToolbarAction::ZoomToolbarAction(ImageViewerPlugin& imageViewerPlugin) :
     _zoomPercentageAction.setSuffix("%");
     _zoomPercentageAction.setDefaultWidgetFlags(IntegralAction::Slider);
     _zoomPercentageAction.setUpdateDuringDrag(false);
+}
 
+void ZoomToolbarAction::initialize(ImageViewerPlugin* imageViewerPlugin)
+{
+    Q_ASSERT(imageViewerPlugin != nullptr);
+
+    if (imageViewerPlugin == nullptr)
+        return;
+
+    _imageViewerPlugin = imageViewerPlugin;
+
+    /*
     getImageViewerWidget().addAction(&_zoomOutAction);
     getImageViewerWidget().addAction(&_zoomInAction);
     getImageViewerWidget().addAction(&_zoomExtentsAction);
-    getImageViewerWidget().addAction(&_zoomSelectionAction); 
+    getImageViewerWidget().addAction(&_zoomSelectionAction);
     getImageViewerWidget().addAction(&_exportToImageAction);
 
     const auto updateZoomPercentage = [this]() -> void {
@@ -61,17 +67,14 @@ ZoomToolbarAction::ZoomToolbarAction(ImageViewerPlugin& imageViewerPlugin) :
         _zoomOutAction.setEnabled(zoomPercentage > _zoomPercentageAction.getMinimum());
         _zoomPercentageAction.setValue(zoomPercentage);
         _zoomInAction.setEnabled(zoomPercentage < _zoomPercentageAction.getMaximum());
-
     };
 
+    updateZoomPercentage();
+
     auto triggerUpdateZoomPercentageAfterAnimation = [this, updateZoomPercentage]() -> void {
-        // what until the animation is over - only then are the correct view ROI values set internally correctly
         connect(&getImageViewerWidget().getRenderer(), &LayersRenderer::animationFinished, this, [this, updateZoomPercentage]() {
-
             updateZoomPercentage();
-
-            // disconnect this lambda again
-            QObject::disconnect(&getImageViewerWidget().getRenderer(), &LayersRenderer::animationFinished, nullptr, nullptr);
+            disconnect(&getImageViewerWidget().getRenderer(), &LayersRenderer::animationFinished, nullptr, nullptr);
             });
     };
 
@@ -91,11 +94,8 @@ ZoomToolbarAction::ZoomToolbarAction(ImageViewerPlugin& imageViewerPlugin) :
         });
 
     connect(&_zoomExtentsAction, &TriggerAction::triggered, this, [this, triggerUpdateZoomPercentageAfterAnimation]() {
-
-        // Get world bounding rectangles for all layers
         const auto worldBoundingRectangle = getImageViewerWidget().getWorldBoundingRectangle();
 
-        // Zoom to the rectangle and render
         getImageViewerWidget().getRenderer().setZoomRectangle(worldBoundingRectangle);
         getImageViewerWidget().update();
 
@@ -105,25 +105,20 @@ ZoomToolbarAction::ZoomToolbarAction(ImageViewerPlugin& imageViewerPlugin) :
     connect(&_zoomSelectionAction, &TriggerAction::triggered, this, [this, triggerUpdateZoomPercentageAfterAnimation]() {
         const auto worldBoundingRectangle = getImageViewerWidget().getWorldBoundingRectangle();
 
-        auto& _selectionModel = _imageViewerPlugin.getSelectionModel();
+        auto& _selectionModel = _imageViewerPlugin->getSelectionModel();
 
-        // Get selected layers model rows
         const auto selectedRows = _selectionModel.selectedRows();
 
-        // Only compute selection when one layer is selected
         if (selectedRows.count() != 1)
             return;
 
-        // Get pointer to layer from the selected model index
         auto layer = static_cast<Layer*>(selectedRows.first().internalPointer());
 
-        // Zoom to selection, deselect points for interactive hsne update to work
         layer->zoomToSelection();
         layer->selectNone();
 
-        // Inform interactive hsne 
         triggerUpdateZoomPercentageAfterAnimation();
-        });
+    });
 
     connect(&_exportToImageAction, &TriggerAction::triggered, this, [this]() {
         getImageViewerWidget().exportToImage();
@@ -132,42 +127,5 @@ ZoomToolbarAction::ZoomToolbarAction(ImageViewerPlugin& imageViewerPlugin) :
     connect(&getImageViewerWidget().getRenderer(), &LayersRenderer::zoomRectangleChanged, this, [this, updateZoomPercentage]() {
         updateZoomPercentage();
     });
-
-    updateZoomPercentage();
-}
-
-ImageViewerWidget& ZoomToolbarAction::getImageViewerWidget()
-{
-    return _imageViewerPlugin.getImageViewerWidget();
-}
-
-ZoomToolbarAction::Widget::Widget(QWidget* parent, ZoomToolbarAction* zoomToolbarAction) :
-    WidgetActionWidget(parent, zoomToolbarAction)
-{
-    setAutoFillBackground(true);
-
-    const auto getDivider = []() -> QFrame* {
-        auto divider = new QFrame();
-
-        divider->setFrameShape(QFrame::VLine);
-        divider->setFrameShadow(QFrame::Sunken);
-
-        return divider;
-    };
-
-    auto layout = new QHBoxLayout();
-
-    layout->setSpacing(3);
-    layout->setContentsMargins(4, 4, 4, 4);
-
-    layout->addStretch(1);
-    layout->addWidget(zoomToolbarAction->getZoomOutAction().createWidget(this, TriggerAction::Icon));
-    layout->addWidget(zoomToolbarAction->getZoomPercentageAction().createWidget(this, DecimalAction::Slider));
-    layout->addWidget(zoomToolbarAction->getZoomInAction().createWidget(this, TriggerAction::Icon));
-    layout->addWidget(zoomToolbarAction->getZoomExtentsAction().createWidget(this, TriggerAction::Icon));
-    layout->addWidget(zoomToolbarAction->getZoomSelectionAction().createWidget(this, TriggerAction::Icon));
-    //layout->addWidget(navigationAction->getExportToImageAction().createWidget(this, ToggleAction::PushButtonIcon));
-    layout->addStretch(1);
-
-    setLayout(layout);
+    */
 }

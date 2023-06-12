@@ -17,9 +17,8 @@ ExportToImageDialog::ExportToImageDialog(QWidget* parent /*= nullptr*/) :
     QDialog(parent),
     _imageScaleFactorAction(this, "Image scale", 1.0f, 1000.0f, 100.0f, 100.0f),
     _imageResolutionAction(this, "Image resolution"),
-    _groupAction(this)
+    _groupAction(this, "Group")
 {
-    // Update window title and icon
     setWindowTitle("Export layer(s) to image");
     setWindowIcon(Application::getIconFont("FontAwesome").getIcon("camera"));
     
@@ -27,32 +26,25 @@ ExportToImageDialog::ExportToImageDialog(QWidget* parent /*= nullptr*/) :
 
     auto layout = new QVBoxLayout();
 
-    // Add actions to the group
-    _groupAction << _imageScaleFactorAction;
-    _groupAction << _imageResolutionAction;
+    addAction(&_imageScaleFactorAction);
+    addAction(&_imageResolutionAction);
 
-    // Create group action widget
     auto groupActionWidget = _groupAction.createWidget(this);
 
-    // Adjust margins of group action widget
     groupActionWidget->layout()->setContentsMargins(0, 0, 0, 0);
 
-    // Add the widget to the layout
     layout->addWidget(groupActionWidget);
 
     setLayout(layout);
 
-    // Create dialog button box so that the user can proceed or cancel with the conversion
     auto dialogButtonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
 
     dialogButtonBox->button(QDialogButtonBox::Ok)->setText("Export");
     dialogButtonBox->button(QDialogButtonBox::Cancel)->setText("Cancel");
 
-    // Add buttons to the layout
     layout->addStretch(1);
     layout->addWidget(dialogButtonBox);
 
-    // Handle when accepted and rejected buttons are clicked
     connect(dialogButtonBox, &QDialogButtonBox::accepted, this, &ExportToImageDialog::accept);
     connect(dialogButtonBox, &QDialogButtonBox::rejected, this, &ExportToImageDialog::reject);
 

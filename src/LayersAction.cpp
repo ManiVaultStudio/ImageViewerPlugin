@@ -15,9 +15,9 @@ using namespace hdps;
 using namespace hdps::gui;
 
 LayersAction::LayersAction(SettingsAction& settingsAction) :
-    WidgetAction(reinterpret_cast<QObject*>(&settingsAction)),
+    WidgetAction(reinterpret_cast<QObject*>(&settingsAction), "Layers"),
     _settingsAction(settingsAction),
-    _currentLayerAction(this),
+    _currentLayerAction(this, "Groups"),
     _rng(0)
 {
     setText("Layers");
@@ -60,12 +60,12 @@ QColor LayersAction::getRandomLayerColor()
 
 LayersAction::Widget::Widget(QWidget* parent, LayersAction* layersAction) :
     WidgetActionWidget(parent, layersAction),
-    _removeLayerAction(this, ""),
-    _duplicateLayerAction(this, ""),
-    _moveLayerToTopAction(this, ""),
-    _moveLayerUpAction(this, ""),
-    _moveLayerDownAction(this, ""),
-    _moveLayerToBottomAction(this, "")
+    _removeLayerAction(this, "Remove"),
+    _duplicateLayerAction(this, "Duplicate"),
+    _moveLayerToTopAction(this, "Move To Top"),
+    _moveLayerUpAction(this, "Move Up"),
+    _moveLayerDownAction(this, "Move Down"),
+    _moveLayerToBottomAction(this, "Move To Bottom")
 {
     auto& imageViewerPlugin = layersAction->getSettingsAction().getImageViewerPlugin();
 

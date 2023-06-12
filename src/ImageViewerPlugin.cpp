@@ -29,7 +29,7 @@ ImageViewerPlugin::ImageViewerPlugin(hdps::plugin::PluginFactory* factory) :
     _imageViewerWidget(*this),
     _dropWidget(&_imageViewerWidget),
     _mainToolbarAction(*this),
-    _zoomToolbarAction(*this),
+    _zoomToolbarAction(this, "Zoom Toolbar"),
     _settingsAction(*this)
 {
     setObjectName("Images");

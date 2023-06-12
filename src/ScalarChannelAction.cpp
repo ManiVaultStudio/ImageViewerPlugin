@@ -18,20 +18,42 @@ const QMap<ScalarChannelAction::Identifier, QString> ScalarChannelAction::channe
     { ScalarChannelAction::Channel3, "Channel 3" }
 };
 
-ScalarChannelAction::ScalarChannelAction(ImageSettingsAction& imageSettingsAction, const Identifier& index, const QString& name) :
-    WidgetAction(reinterpret_cast<QObject*>(&imageSettingsAction)),
-    _imageSettingsAction(imageSettingsAction),
-    _identifier(index),
+ScalarChannelAction::ScalarChannelAction(QObject* parent, const QString& title) :
+    WidgetAction(parent, title),
+    _imageSettingsAction(nullptr),
+    _identifier(Channel1),
     _enabledAction(this, "Enabled"),
     _dimensionAction(this, "Dimension"),
-    _windowLevelAction(this),
+    _windowLevelAction(this, "Window/Level"),
     _scalarData(),
     _scalarDataRange({0.0f, 0.0f})
 {
-    setText(name);
     setDefaultWidgetFlags(ScalarChannelAction::ComboBox | ScalarChannelAction::WindowLevelWidget);
 
     connect(&_dimensionAction, &OptionAction::isPublishedChanged, this, &ScalarChannelAction::isPublishedChanged);
+
+    const auto updateEnabled = [this]() -> void {
+        setEnabled(_enabledAction.isChecked());
+    };
+
+    connect(&_enabledAction, &ToggleAction::toggled, this, updateEnabled);
+
+    connect(&_windowLevelAction, &WindowLevelAction::changed, this, [this]() {
+        emit changed(*this);
+    });
+
+    updateEnabled();
+}
+
+void ScalarChannelAction::initialize(ImageSettingsAction* imageSettingsAction, const Identifier& identifier)
+{
+    Q_ASSERT(imageSettingsAction != nullptr);
+
+    if (imageSettingsAction == nullptr)
+        return;
+
+    _imageSettingsAction    = imageSettingsAction;
+    _identifier             = identifier;
 
     switch (_identifier)
     {
@@ -43,42 +65,22 @@ ScalarChannelAction::ScalarChannelAction(ImageSettingsAction& imageSettingsActio
             break;
     }
 
-    connect(&_dimensionAction, &OptionAction::currentIndexChanged, this, [this]() {
+    connect(&_imageSettingsAction->getSubsampleFactorAction(), &IntegralAction::valueChanged, this, [this]() {
         computeScalarData();
     });
 
-    connect(&_imageSettingsAction.getSubsampleFactorAction(), &IntegralAction::valueChanged, this, [this]() {
-        computeScalarData();
-    });
-
-    // Compute scalar data when the action is enabled
-    connect(this, &QAction::changed, this, [this]() -> void {
-        computeScalarData();
-    });
-
-    // Allocate space for the data
     const auto resizeScalars = [this]() {
         _scalarData.resize(getImages()->getNumberOfPixels());
     };
 
-    const auto updateEnabled = [this]() -> void {
-        setEnabled(_enabledAction.isChecked());
-    };
-
-    connect(&_enabledAction, &ToggleAction::toggled, this, updateEnabled);
-
-    // Flag as changed when the window level settings change
-    connect(&_windowLevelAction, &WindowLevelAction::changed, this, [this]() {
-        emit changed(*this);
-    });
-
-    // Flag as changed when the window level settings change
-    connect(&_imageSettingsAction.getSubsampleFactorAction(), &IntegralAction::valueChanged, this, resizeScalars);
-
-    updateEnabled();
     resizeScalars();
 
+    connect(&_imageSettingsAction->getSubsampleFactorAction(), &IntegralAction::valueChanged, this, resizeScalars);
+    connect(&_dimensionAction, &OptionAction::currentIndexChanged, this, &ScalarChannelAction::computeScalarData);
+
     computeScalarData();
+
+    //connect(this, &QAction::changed, this, &ScalarChannelAction::computeScalarData);
 }
 
 const ScalarChannelAction::Identifier ScalarChannelAction::getIdentifier() const
@@ -88,8 +90,11 @@ const ScalarChannelAction::Identifier ScalarChannelAction::getIdentifier() const
 
 QSize ScalarChannelAction::getImageSize()
 {
+    if (_imageSettingsAction == nullptr)
+        return {};
+
     const auto imageSize        = getImages()->getImageSize();
-    const auto subsampleFactor  = _imageSettingsAction.getSubsampleFactorAction().getValue();
+    const auto subsampleFactor  = _imageSettingsAction->getSubsampleFactorAction().getValue();
     
     return QSize(static_cast<int>(floorf(imageSize.width() / subsampleFactor)), static_cast<int>(floorf(imageSize.width() / subsampleFactor)));
 }
@@ -166,36 +171,38 @@ void ScalarChannelAction::computeScalarData()
 
 Dataset<Images> ScalarChannelAction::getImages()
 {
-    return _imageSettingsAction.getLayer().getImages();
+    if (_imageSettingsAction == nullptr)
+        return {};
+
+    return _imageSettingsAction->getLayer().getImages();
 }
 
-bool ScalarChannelAction::isPublic() const
+void ScalarChannelAction::connectToPublicAction(WidgetAction* publicAction, bool recursive)
 {
-    return _dimensionAction.isPublic();
+    //_dimensionAction.connectToPublicAction(publicAction);
+
+    //WidgetAction::connectToPublicAction(publicAction);
 }
 
-void ScalarChannelAction::publish(const QString& name)
+void ScalarChannelAction::disconnectFromPublicAction(bool recursive)
 {
-    _dimensionAction.publish(name);
+    //_dimensionAction.disconnectFromPublicAction();
+
+    //WidgetAction::disconnectFromPublicAction();
 }
 
-void ScalarChannelAction::connectToPublicAction(WidgetAction* publicAction)
+void ScalarChannelAction::fromVariantMap(const QVariantMap& variantMap)
 {
-    _dimensionAction.connectToPublicAction(publicAction);
-
-    WidgetAction::connectToPublicAction(publicAction);
+    WidgetAction::fromVariantMap(variantMap);
 }
 
-void ScalarChannelAction::disconnectFromPublicAction()
+QVariantMap ScalarChannelAction::toVariantMap() const
 {
-    _dimensionAction.disconnectFromPublicAction();
+    auto variantMap = WidgetAction::toVariantMap();
 
-    WidgetAction::disconnectFromPublicAction();
-}
+    //_continuousUpdatesAction.insertIntoVariantMap(variantMap);
 
-WidgetAction* ScalarChannelAction::getPublicCopy() const
-{
-    return new OptionAction(parent(), text(), _dimensionAction.getOptions(), _dimensionAction.getCurrentText(), _dimensionAction.getDefaultText());
+    return variantMap;
 }
 
 QWidget* ScalarChannelAction::getWidget(QWidget* parent, const std::int32_t& widgetFlags)

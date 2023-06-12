@@ -7,68 +7,115 @@
 
 using namespace hdps;
 
-GlobalViewSettingsAction::GlobalViewSettingsAction(ImageViewerPlugin& imageViewerPlugin) :
-    WidgetAction(reinterpret_cast<QObject*>(&imageViewerPlugin)),
-    _imageViewerPlugin(imageViewerPlugin),
-    _groupAction(this),
+ViewSettingsAction::ViewSettingsAction(QObject* parent, const QString& title) :
+    GroupAction(parent, title),
+    _imageViewerPlugin(nullptr),
     _zoomMarginAction(this, "Zoom margin", 1.0f, 1000.0f, 100.0f, 100.0f),
     _backgroundColorAction(this, "Background color", QColor(50, 50, 50), QColor(50, 50, 50)),
     _animationEnabledAction(this, "Animation", true, true),
     _smartZoomAction(this, "Smart zoom", true, true)
 {
     setIcon(Application::getIconFont("FontAwesome").getIcon("cog"));
-    setText("Global view settings");
 
     _zoomMarginAction.setToolTip("Zoom margin around the layers extents");
     _backgroundColorAction.setToolTip("Background color of the viewer");
     _animationEnabledAction.setToolTip("Enable animations");
     _smartZoomAction.setToolTip("Automatically zoom when selecting layers");
     
-    _groupAction << _zoomMarginAction;
-    _groupAction << _backgroundColorAction;
-    _groupAction << _animationEnabledAction;
-    _groupAction << _smartZoomAction;
+    addAction(&_zoomMarginAction);
+    addAction(&_backgroundColorAction);
+    addAction(&_animationEnabledAction);
+    addAction(&_smartZoomAction);
 
     _zoomMarginAction.setSuffix("px");
     _zoomMarginAction.setUpdateDuringDrag(false);
+}
 
-    auto& imageViewerWidget = _imageViewerPlugin.getImageViewerWidget();
+void ViewSettingsAction::initialize(ImageViewerPlugin* imageViewerPlugin)
+{
+    Q_ASSERT(imageViewerPlugin != nullptr);
 
-    // Update renderer zoom margin
+    if (imageViewerPlugin == nullptr)
+        return;
+
+    _imageViewerPlugin = imageViewerPlugin;
+
+    auto& imageViewerWidget = _imageViewerPlugin->getImageViewerWidget();
+
     const auto updateZoomMargin = [this, &imageViewerWidget]() {
         imageViewerWidget.getRenderer().setZoomMargin(_zoomMarginAction.getValue());
         imageViewerWidget.getRenderer().setZoomRectangle(imageViewerWidget.getWorldBoundingRectangle());
     };
 
-    // Update the viewer background color
+    updateZoomMargin();
+
     const auto updateBackgroundColor = [this, &imageViewerWidget]() {
         imageViewerWidget.setBackgroundColor(_backgroundColorAction.getColor());
     };
 
-    // Update animation enabled
+    updateBackgroundColor();
+
     const auto updateAnimation = [this, &imageViewerWidget]() {
         imageViewerWidget.getRenderer().setAnimationEnabled(_animationEnabledAction.isChecked());
     };
+    
+    updateAnimation();
 
     connect(&_zoomMarginAction, &DecimalAction::valueChanged, this, updateZoomMargin);
     connect(&_backgroundColorAction, &ColorAction::colorChanged, this, updateBackgroundColor);
     connect(&_animationEnabledAction, &ToggleAction::toggled, this, updateAnimation);
-
-    // Do initial updates
-    updateZoomMargin();
-    updateBackgroundColor();
-    updateAnimation();
 }
 
-GlobalViewSettingsAction::Widget::Widget(QWidget* parent, GlobalViewSettingsAction* globalViewSettingsAction, const std::int32_t& widgetFlags) :
-    WidgetActionWidget(parent, globalViewSettingsAction)
+void ViewSettingsAction::connectToPublicAction(WidgetAction* publicAction, bool recursive)
 {
-    auto layout = new QVBoxLayout();
+    auto publicViewSettingsAction = dynamic_cast<ViewSettingsAction*>(publicAction);
 
-    layout->setContentsMargins(0, 0, 0, 0);
-    layout->setSpacing(3);
+    Q_ASSERT(publicViewSettingsAction != nullptr);
 
-    layout->addWidget(globalViewSettingsAction->getGroupAction().createWidget(this));
+    if (publicViewSettingsAction == nullptr)
+        return;
 
-    setPopupLayout(layout);
+    if (recursive) {
+        actions().connectPrivateActionToPublicAction(&_zoomMarginAction, &publicViewSettingsAction->getZoomMarginAction(), recursive);
+        actions().connectPrivateActionToPublicAction(&_backgroundColorAction, &publicViewSettingsAction->getBackgroundColorAction(), recursive);
+        actions().connectPrivateActionToPublicAction(&_animationEnabledAction, &publicViewSettingsAction->getAnimationEnabledAction(), recursive);
+        actions().connectPrivateActionToPublicAction(&_smartZoomAction, &publicViewSettingsAction->getSmartZoomAction(), recursive);
+    }
+}
+
+void ViewSettingsAction::disconnectFromPublicAction(bool recursive)
+{
+    if (!isConnected())
+        return;
+
+    if (recursive) {
+        actions().disconnectPrivateActionFromPublicAction(&_zoomMarginAction, recursive);
+        actions().disconnectPrivateActionFromPublicAction(&_backgroundColorAction, recursive);
+        actions().disconnectPrivateActionFromPublicAction(&_animationEnabledAction, recursive);
+        actions().disconnectPrivateActionFromPublicAction(&_smartZoomAction, recursive);
+    }
+
+    GroupAction::disconnectFromPublicAction(recursive);
+}
+
+void ViewSettingsAction::fromVariantMap(const QVariantMap& variantMap)
+{
+    GroupAction::fromVariantMap(variantMap);
+
+    _zoomMarginAction.fromParentVariantMap(variantMap);
+    _backgroundColorAction.fromParentVariantMap(variantMap);
+    _animationEnabledAction.fromParentVariantMap(variantMap);
+    _smartZoomAction.fromParentVariantMap(variantMap);
+}
+
+QVariantMap ViewSettingsAction::toVariantMap() const
+{
+    auto variantMap = GroupAction::toVariantMap();
+
+    _zoomMarginAction.insertIntoVariantMap(variantMap);
+    _backgroundColorAction.insertIntoVariantMap(variantMap);
+    _animationEnabledAction.insertIntoVariantMap(variantMap);
+    _smartZoomAction.insertIntoVariantMap(variantMap);
+
+    return variantMap;
 }

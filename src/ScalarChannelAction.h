@@ -57,13 +57,19 @@ protected:
 
 public:
 
-    /** 
-     * Constructor
-     * @param imageSettingsAction Reference to layer image action
-     * @param index Channel index
-     * @param name Name of the scalar channel
+    /**
+     * Construct with \p parent object and \p title
+     * @param parent Pointer to parent object
+     * @param title Title
      */
-    ScalarChannelAction(ImageSettingsAction& imageSettingsAction, const Identifier& index, const QString& name);
+    Q_INVOKABLE ScalarChannelAction(QObject* parent, const QString& title);
+
+    /**
+     * Initialize with \p imageSettingsAction, channel \p identifier
+     * @param imageSettingsAction Pointer to image settings action
+     * @param identifier Channel index identifier
+     */
+    void initialize(ImageSettingsAction* imageSettingsAction, const Identifier& identifier);
 
     /** Get the channel identifier */
     const Identifier getIdentifier() const;
@@ -90,51 +96,49 @@ protected:
     /** Get smart pointer to images dataset */
     hdps::Dataset<Images> getImages();
 
-public: // Action publishing
-
-    /**
-     * Get whether the action is public (visible to other actions)
-     * @return Boolean indicating whether the action is public (visible to other actions)
-     */
-    bool isPublic() const override;
-
-    /**
-     * Publish this action so that other actions can connect to it
-     * @param text Name of the published widget action
-     */
-    void publish(const QString& name) override;
+protected: // Linking
 
     /**
      * Connect this action to a public action
      * @param publicAction Pointer to public action to connect to
+     * @param recursive Whether to also connect descendant child actions
      */
-    void connectToPublicAction(WidgetAction* publicAction) override;
-
-    /** Disconnect this action from a public action */
-    void disconnectFromPublicAction() override;
-
-protected:  // Linking
+    void connectToPublicAction(WidgetAction* publicAction, bool recursive) override;
 
     /**
-     * Get public copy of the action (other compatible actions can connect to it)
-     * @return Pointer to public copy of the action
+     * Disconnect this action from its public action
+     * @param recursive Whether to also disconnect descendant child actions
      */
-    virtual WidgetAction* getPublicCopy() const;
+    void disconnectFromPublicAction(bool recursive) override;
+
+public: // Serialization
+
+    /**
+     * Load widget action from variant map
+     * @param Variant map representation of the widget action
+     */
+    void fromVariantMap(const QVariantMap& variantMap) override;
+
+    /**
+     * Save widget action to variant map
+     * @return Variant map representation of the widget action
+     */
+    QVariantMap toVariantMap() const override;
 
 signals:
-    
+
     /** Signals the channel changed */
     void changed(ScalarChannelAction& channelAction);
 
-public: /** Action getters */
+public: // Action getters
 
     OptionAction& getDimensionAction() { return _dimensionAction; }
     ToggleAction& getEnabledAction() { return _enabledAction; }
     WindowLevelAction& getWindowLevelAction() { return _windowLevelAction; }
 
-protected:
-    ImageSettingsAction&    _imageSettingsAction;   /** Reference to image action */
-    const Identifier        _identifier;            /** Channel index */
+private:
+    ImageSettingsAction*    _imageSettingsAction;   /** Pointer to image action */
+    Identifier              _identifier;            /** Channel index */
     ToggleAction            _enabledAction;         /** Enabled action */
     OptionAction            _dimensionAction;       /** Selected dimension action */
     WindowLevelAction       _windowLevelAction;     /** Window/level action */

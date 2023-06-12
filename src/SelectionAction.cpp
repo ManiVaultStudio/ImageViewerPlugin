@@ -18,26 +18,25 @@ const auto allowedPixelSelectionTypes = PixelSelectionTypes({
 });
 
 SelectionAction::SelectionAction(Layer& layer, QWidget* targetWidget, PixelSelectionTool& pixelSelectionTool) :
-    GroupAction(&layer),
+    GroupAction(&layer, "Selection"),
     _layer(layer),
     _targetWidget(targetWidget),
-    _pixelSelectionAction(&layer, targetWidget, pixelSelectionTool, allowedPixelSelectionTypes),
+    _pixelSelectionAction(&layer, "Pixel Selection"),
     _pixelSelectionTool(pixelSelectionTool),
     _showRegionAction(this, "Show selected region", false, false)
 {
-    setText("Selection");
     setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("mouse-pointer"));
 
     _showRegionAction.setVisible(false);
 
-    // Populate group action
-    *this << _pixelSelectionAction.getTypeAction();
-    *this << _pixelSelectionAction.getBrushRadiusAction();
-    *this << _pixelSelectionAction.getOverlayColorAction();
-    *this << _pixelSelectionAction.getOverlayOpacityAction();
-    *this << _pixelSelectionAction.getNotifyDuringSelectionAction();
+    addAction(&_pixelSelectionAction.getTypeAction());
+    addAction(&_pixelSelectionAction.getBrushRadiusAction());
+    addAction(&_pixelSelectionAction.getOverlayColorAction());
+    addAction(&_pixelSelectionAction.getOverlayOpacityAction());
+    addAction(&_pixelSelectionAction.getNotifyDuringSelectionAction());
 
-    // Re-render when the overlay color, overlay opacity or show region changes
+    _pixelSelectionAction.initialize(targetWidget, &pixelSelectionTool, allowedPixelSelectionTypes);
+
     connect(&_pixelSelectionAction.getOverlayColorAction(), &ColorAction::colorChanged, &_layer, &Layer::invalidate);
     connect(&_pixelSelectionAction.getOverlayOpacityAction(), &DecimalAction::valueChanged, &_layer, &Layer::invalidate);
     connect(&_showRegionAction, &ToggleAction::toggled, &_layer, &Layer::invalidate);

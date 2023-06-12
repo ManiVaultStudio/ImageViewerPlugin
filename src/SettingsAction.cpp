@@ -8,7 +8,7 @@
 using namespace hdps::gui;
 
 SettingsAction::SettingsAction(ImageViewerPlugin& imageViewerPlugin) :
-    WidgetAction(&imageViewerPlugin),
+    WidgetAction(&imageViewerPlugin, "Settings"),
     _imageViewerPlugin(imageViewerPlugin),
     _layersAction(*this)
 {

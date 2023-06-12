@@ -4,15 +4,14 @@
 #include "ImageViewerPlugin.h"
 
 GeneralAction::GeneralAction(Layer& layer) :
-    GroupAction(&layer, true),
+    GroupAction(&layer, "General", true),
     _layer(layer),
     _visibleAction(this, "Visible", true, true),
     _datasetNameAction(this, "Dataset name"),
     _colorAction(this, "Color"),
     _nameAction(this, "Name"),
     _positionAction(*this),
-    _scaleAction(this, "Scale", 0.0f, 1000000.0f, 100.0f, 100.0f, 1),
-    _zoomAction(*this)
+    _scaleAction(this, "Scale", 0.0f, 1000000.0f, 100.0f, 100.0f, 1)
 {
     setText("General");
 
@@ -44,11 +43,6 @@ GeneralAction::GeneralAction(Layer& layer) :
     // Set layer name and default name
     _nameAction.setString(guiName);
     _nameAction.setDefaultString(guiName);
-
-    // Zoom to extents
-    connect(&_zoomAction, &ToggleAction::triggered, this, [this]() {
-        _layer.zoomToExtents();
-    });
 
     const auto render = [this]() {
         _layer.getImageViewerPlugin().getImageViewerWidget().update();
