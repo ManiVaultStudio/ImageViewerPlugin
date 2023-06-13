@@ -4,7 +4,7 @@
 
 #include <actions/WidgetAction.h>
 
-#include "LayersAction.h"
+//#include "EditLayersAction.h"
 #include "GeneralAction.h"
 #include "ImageSettingsAction.h"
 #include "SelectionAction.h"
@@ -212,7 +212,6 @@ public: // Serialization
 
 public: /** Action getters */
 
-    LayersAction& getLayersAction();
     GeneralAction& getGeneralAction() { return _generalAction; }
     ImageSettingsAction& getImageSettingsAction() { return _imageSettingsAction; }
     SelectionAction& getSelectionAction() { return _selectionAction; }

@@ -30,7 +30,7 @@ ImageViewerPlugin::ImageViewerPlugin(hdps::plugin::PluginFactory* factory) :
     _dropWidget(&_imageViewerWidget),
     _mainToolbarAction(*this),
     _zoomToolbarAction(this, "Zoom Toolbar"),
-    _settingsAction(*this)
+    _settingsAction(this, "Settings")
 {
     setObjectName("Images");
 
@@ -367,7 +367,7 @@ void ImageViewerPlugin::arrangeLayers(LayersLayout layersLayout)
 
 void ImageViewerPlugin::addDataset(const Dataset<Images>& dataset)
 {
-    auto layer = new Layer(&_settingsAction.getLayersAction(), dataset->getGuiName());
+    auto layer = new Layer(&_settingsAction.getEditLayersAction(), dataset->getGuiName());
 
     layer->initialize(this, dataset);
     layer->scaleToFit(_imageViewerWidget.getWorldBoundingRectangle(false));
@@ -414,7 +414,7 @@ void ImageViewerPlugin::immigrateDataset(const Dataset<DatasetImpl>& dataset)
         ConvertToImagesDatasetDialog* dialog = new ConvertToImagesDatasetDialog(*this, const_cast<Dataset<DatasetImpl>&>(dataset));
 
         connect(dialog, &ConvertToImagesDatasetDialog::accepted, this, [this, dialog]() -> void {
-            auto layer = new Layer(&_settingsAction.getLayersAction(), dialog->getTargetImagesDataset()->getGuiName());
+            auto layer = new Layer(&_settingsAction.getEditLayersAction(), dialog->getTargetImagesDataset()->getGuiName());
 
             layer->initialize(this, dialog->getTargetImagesDataset());
             layer->scaleToFit(_imageViewerWidget.getWorldBoundingRectangle(false));

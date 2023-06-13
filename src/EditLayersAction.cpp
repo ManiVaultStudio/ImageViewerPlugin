@@ -1,4 +1,4 @@
-#include "LayersAction.h"
+#include "EditLayersAction.h"
 #include "SettingsAction.h"
 #include "ImageViewerPlugin.h"
 #include "ImageViewerWidget.h"
@@ -14,58 +14,46 @@
 using namespace hdps;
 using namespace hdps::gui;
 
-LayersAction::LayersAction(SettingsAction& settingsAction) :
-    WidgetAction(reinterpret_cast<QObject*>(&settingsAction), "Layers"),
-    _settingsAction(settingsAction),
-    _currentLayerAction(this, "Groups"),
-    _rng(0)
-{
-    setText("Layers");
+QRandomGenerator EditLayersAction::rng;
 
-    // Activate selected layer and deactivate any layer that was selected
-    connect(&_settingsAction.getImageViewerPlugin().getSelectionModel(), &QItemSelectionModel::selectionChanged, this, [](const QItemSelection& selected, const QItemSelection& deselected) {
-
-        // Deactivate deselected layers
-        if (!deselected.indexes().isEmpty()) {
-
-            // Get pointer to layer that was deselected
-            auto layer = static_cast<Layer*>(deselected.indexes().first().internalPointer());
-
-            // Deactivate the layer
-            layer->deactivate();
-        }
-
-        // Activate selected layers
-        if (!selected.indexes().isEmpty()) {
-
-            // Get pointer to layer that was selected
-            auto layer = static_cast<Layer*>(selected.indexes().first().internalPointer());
-
-            // Activate the layer
-            layer->activate();
-        }
-    });
-}
-
-QColor LayersAction::getRandomLayerColor()
-{
-    // Randomize HSL parameters
-    const auto randomHue        = _rng.bounded(360);
-    const auto randomSaturation = _rng.bounded(150, 255);
-    const auto randomLightness  = _rng.bounded(150, 220);
-
-    // Create random color from hue, saturation and lightness
-    return QColor::fromHsl(randomHue, randomSaturation, randomLightness);
-}
-
-LayersAction::Widget::Widget(QWidget* parent, LayersAction* layersAction) :
-    WidgetActionWidget(parent, layersAction),
+EditLayersAction::EditLayersAction(QObject* parent, const QString& title) :
+    WidgetAction(parent, title),
+    _settingsAction(*static_cast<SettingsAction*>(parent)),
     _removeLayerAction(this, "Remove"),
     _duplicateLayerAction(this, "Duplicate"),
     _moveLayerToTopAction(this, "Move To Top"),
     _moveLayerUpAction(this, "Move Up"),
     _moveLayerDownAction(this, "Move Down"),
     _moveLayerToBottomAction(this, "Move To Bottom")
+{
+    connect(&_settingsAction.getImageViewerPlugin().getSelectionModel(), &QItemSelectionModel::selectionChanged, this, [](const QItemSelection& selected, const QItemSelection& deselected) {
+        if (!deselected.indexes().isEmpty()) {
+            auto layer = static_cast<Layer*>(deselected.indexes().first().internalPointer());
+
+            layer->deactivate();
+        }
+
+        if (!selected.indexes().isEmpty()) {
+            auto layer = static_cast<Layer*>(selected.indexes().first().internalPointer());
+
+            layer->activate();
+        }
+    });
+}
+
+QColor EditLayersAction::getRandomLayerColor()
+{
+    const auto randomHue        = rng.bounded(360);
+    const auto randomSaturation = rng.bounded(150, 255);
+    const auto randomLightness  = rng.bounded(150, 220);
+
+    return QColor::fromHsl(randomHue, randomSaturation, randomLightness);
+}
+
+/*
+LayersAction::Widget::Widget(QWidget* parent, LayersAction* layersAction) :
+    WidgetActionWidget(parent, layersAction),
+    
 {
     auto& imageViewerPlugin = layersAction->getSettingsAction().getImageViewerPlugin();
 
@@ -269,3 +257,4 @@ LayersAction::Widget::Widget(QWidget* parent, LayersAction* layersAction) :
     updateButtons();
     modelSelectionChanged();
 }
+*/

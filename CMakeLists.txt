@@ -68,8 +68,10 @@ set(DIALOGS
 set(ACTIONS
     src/GlobalViewSettingsAction.h
     src/GlobalViewSettingsAction.cpp
-    src/LayersAction.h
-    src/LayersAction.cpp
+    src/EditLayersAction.h
+    src/EditLayersAction.cpp
+    src/EditLayerAction.h
+    src/EditLayerAction.cpp
     src/SettingsAction.h
     src/SettingsAction.cpp
 )

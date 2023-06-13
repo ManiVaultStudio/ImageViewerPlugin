@@ -1,6 +1,5 @@
 #include "MiscellaneousAction.h"
 #include "Layer.h"
-#include "LayersAction.h"
 #include "ImageViewerPlugin.h"
 
 MiscellaneousAction::MiscellaneousAction(QObject* parent, const QString& title) :

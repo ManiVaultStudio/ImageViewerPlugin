@@ -1,6 +1,6 @@
 #include "GeneralAction.h"
 #include "Layer.h"
-#include "LayersAction.h"
+#include "EditLayersAction.h"
 #include "ImageViewerPlugin.h"
 
 using namespace hdps;
@@ -46,7 +46,7 @@ void GeneralAction::initialize(Layer* layer)
 
     _layer = layer;
 
-    const auto layerColor = _layer->getLayersAction().getRandomLayerColor();
+    const auto layerColor = EditLayersAction::getRandomLayerColor();
 
     _colorAction.initialize(layerColor, layerColor);
 

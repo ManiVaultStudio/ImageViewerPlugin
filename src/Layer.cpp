@@ -358,11 +358,6 @@ QRectF Layer::getScreenBoundingRectangle() const
     return getRenderer()->getScreenRectangleFromWorldRectangle(getWorldBoundingRectangle());
 }
 
-LayersAction& Layer::getLayersAction()
-{
-    return _imageViewerPlugin->getSettingsAction().getLayersAction();
-}
-
 ImageViewerPlugin& Layer::getImageViewerPlugin()
 {
     return *_imageViewerPlugin;
