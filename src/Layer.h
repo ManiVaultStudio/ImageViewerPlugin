@@ -2,7 +2,7 @@
 
 #include "Renderable.h"
 
-#include <actions/WidgetAction.h>
+#include <actions/GroupsAction.h>
 
 //#include "EditLayersAction.h"
 #include "GeneralAction.h"
@@ -19,7 +19,7 @@
 
 class ImageViewerPlugin;
 
-class Layer : public hdps::gui::WidgetAction, public Renderable
+class Layer : public hdps::gui::GroupsAction, public Renderable
 {
     Q_OBJECT
 

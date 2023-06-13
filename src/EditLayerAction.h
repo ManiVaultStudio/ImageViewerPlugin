@@ -1,6 +1,6 @@
 #pragma once
 
-#include <actions/GroupAction.h>
+#include <actions/GroupsAction.h>
 
 using namespace hdps::gui;
 
@@ -11,8 +11,10 @@ using namespace hdps::gui;
  *
  * @author Thomas Kroes
  */
-class EditLayerAction : public GroupAction
+class EditLayerAction : public GroupsAction
 {
+    Q_OBJECT
+
 public:
 
     /**
@@ -21,8 +23,8 @@ public:
      * @param title Title
      */
     Q_INVOKABLE EditLayerAction(QObject* parent, const QString& title);
-
-public: // Action getters
-
-protected:
 };
+
+Q_DECLARE_METATYPE(EditLayerAction)
+
+inline const auto editLayerActionMetaTypeId = qRegisterMetaType<EditLayerAction*>("EditLayerAction");

@@ -21,7 +21,7 @@
 using namespace hdps::gui;
 
 Layer::Layer(QObject* parent, const QString& title) :
-    WidgetAction(parent, title),
+    GroupsAction(parent, title),
     Renderable(),
     _imageViewerPlugin(nullptr),
     _active(false),

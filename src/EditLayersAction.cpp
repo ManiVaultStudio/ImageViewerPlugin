@@ -24,8 +24,35 @@ EditLayersAction::EditLayersAction(QObject* parent, const QString& title) :
     _moveLayerToTopAction(this, "Move To Top"),
     _moveLayerUpAction(this, "Move Up"),
     _moveLayerDownAction(this, "Move Down"),
-    _moveLayerToBottomAction(this, "Move To Bottom")
+    _moveLayerToBottomAction(this, "Move To Bottom"),
+    _operationsAction(this, "Operations")
 {
+    setConnectionPermissionsToForceNone(true);
+
+    _operationsAction.setDefaultWidgetFlags(GroupAction::Horizontal);
+
+    _operationsAction.addAction(&_removeLayerAction, TriggerAction::Icon);
+    _operationsAction.addAction(&_moveLayerToTopAction, TriggerAction::Icon);
+    _operationsAction.addAction(&_moveLayerUpAction, TriggerAction::Icon);
+    _operationsAction.addAction(&_moveLayerDownAction, TriggerAction::Icon);
+    _operationsAction.addAction(&_moveLayerToBottomAction, TriggerAction::Icon);
+
+    _removeLayerAction.setToolTip("Remove the selected layer");
+    _duplicateLayerAction.setToolTip("Duplicate the selected layer");
+    _moveLayerToTopAction.setToolTip("Move the selected layer to the top");
+    _moveLayerUpAction.setToolTip("Move the selected layer up");
+    _moveLayerDownAction.setToolTip("Move the selected layer down");
+    _moveLayerToBottomAction.setToolTip("Move the selected layer to the bottom");
+
+    auto& fontAwesome = Application::getIconFont("FontAwesome");
+
+    _removeLayerAction.setIcon(fontAwesome.getIcon("trash-alt"));
+    _duplicateLayerAction.setIcon(fontAwesome.getIcon("clone"));
+    _moveLayerToTopAction.setIcon(fontAwesome.getIcon("angle-double-up"));
+    _moveLayerUpAction.setIcon(fontAwesome.getIcon("angle-up"));
+    _moveLayerDownAction.setIcon(fontAwesome.getIcon("angle-down"));
+    _moveLayerToBottomAction.setIcon(fontAwesome.getIcon("angle-double-down"));
+
     connect(&_settingsAction.getImageViewerPlugin().getSelectionModel(), &QItemSelectionModel::selectionChanged, this, [](const QItemSelection& selected, const QItemSelection& deselected) {
         if (!deselected.indexes().isEmpty()) {
             auto layer = static_cast<Layer*>(deselected.indexes().first().internalPointer());
@@ -50,28 +77,10 @@ QColor EditLayersAction::getRandomLayerColor()
     return QColor::fromHsl(randomHue, randomSaturation, randomLightness);
 }
 
-/*
-LayersAction::Widget::Widget(QWidget* parent, LayersAction* layersAction) :
-    WidgetActionWidget(parent, layersAction),
-    
+EditLayersAction::Widget::Widget(QWidget* parent, EditLayersAction* editLayersAction) :
+    WidgetActionWidget(parent, editLayersAction)
 {
-    auto& imageViewerPlugin = layersAction->getSettingsAction().getImageViewerPlugin();
-
-    _removeLayerAction.setToolTip("Remove the selected layer");
-    _duplicateLayerAction.setToolTip("Duplicate the selected layer");
-    _moveLayerToTopAction.setToolTip("Move the selected layer to the top");
-    _moveLayerUpAction.setToolTip("Move the selected layer up");
-    _moveLayerDownAction.setToolTip("Move the selected layer down");
-    _moveLayerToBottomAction.setToolTip("Move the selected layer to the bottom");
-
-    auto& fontAwesome = Application::getIconFont("FontAwesome");
-
-    _removeLayerAction.setIcon(fontAwesome.getIcon("trash-alt"));
-    _duplicateLayerAction.setIcon(fontAwesome.getIcon("clone"));
-    _moveLayerToTopAction.setIcon(fontAwesome.getIcon("angle-double-up"));
-    _moveLayerUpAction.setIcon(fontAwesome.getIcon("angle-up"));
-    _moveLayerDownAction.setIcon(fontAwesome.getIcon("angle-down"));
-    _moveLayerToBottomAction.setIcon(fontAwesome.getIcon("angle-double-down"));
+    auto& imageViewerPlugin = editLayersAction->getSettingsAction().getImageViewerPlugin();
 
     auto layout     = new QVBoxLayout();
     auto treeView   = new QTreeView();
@@ -111,90 +120,44 @@ LayersAction::Widget::Widget(QWidget* parent, LayersAction* layersAction) :
 
     layout->setContentsMargins(0, 0, 0, 0);
     layout->addWidget(treeView);
-
-    auto toolbarLayout = new QHBoxLayout();
-
-    toolbarLayout->setSpacing(3);
-
-    toolbarLayout->addWidget(_removeLayerAction.createWidget(this, TriggerAction::Icon));
-    //toolbarLayout->addWidget(_duplicateLayerAction.createWidget(this, TriggerAction::Icon));
-    toolbarLayout->addStretch(1);
-    toolbarLayout->addWidget(_moveLayerToTopAction.createWidget(this, TriggerAction::Icon));
-    toolbarLayout->addWidget(_moveLayerUpAction.createWidget(this, TriggerAction::Icon));
-    toolbarLayout->addWidget(_moveLayerDownAction.createWidget(this, TriggerAction::Icon));
-    toolbarLayout->addWidget(_moveLayerToBottomAction.createWidget(this, TriggerAction::Icon));
-
-    layout->addLayout(toolbarLayout);
-
-    auto currentLayerWidget = layersAction->getCurrentLayerAction().createWidget(this);
-
-    layout->addWidget(createHorizontalDivider());
-    layout->addWidget(currentLayerWidget);
+    layout->addWidget(editLayersAction->getOperationsAction().createWidget(this));
 
     setLayout(layout);
 
-    const auto modelSelectionChanged = [this, layersAction, &imageViewerPlugin, treeView, layout]() -> void {
+    const auto updateButtons = [this, &imageViewerPlugin, treeView, editLayersAction]() -> void {
         const auto selectedRows = imageViewerPlugin.getSelectionModel().selectedRows();
         const auto hasSelection = !selectedRows.isEmpty();
 
-        GroupsAction::GroupActions groupActions;
-
-        if (hasSelection) {
-            auto layer = static_cast<Layer*>(selectedRows.first().internalPointer());
-
-            groupActions << &layer->getGeneralAction() << &layer->getImageSettingsAction() << &layer->getSelectionAction() << &layer->getMiscellaneousAction();
-        }
-
-        layersAction->getCurrentLayerAction().setGroupActions(groupActions);
-
-        // Enable the pixel selection tool when there is a selection and disable otherwise
-        imageViewerPlugin.getImageViewerWidget().getPixelSelectionTool().setEnabled(hasSelection);
-    };
-
-    // Update various actions when the model is somehow changed (rows added/removed etc.)
-    const auto updateButtons = [this, &imageViewerPlugin, treeView, layout]() -> void {
-        const auto selectedRows = imageViewerPlugin.getSelectionModel().selectedRows();
-        const auto hasSelection = !selectedRows.isEmpty();
-
-        _removeLayerAction.setEnabled(hasSelection);
-        _duplicateLayerAction.setEnabled(hasSelection);
+        editLayersAction->getRemoveLayerAction().setEnabled(hasSelection);
+        editLayersAction->getDuplicateLayerAction().setEnabled(hasSelection);
 
         auto selectedRowIndex = hasSelection ? selectedRows.first().row() : -1;
 
-        _moveLayerToTopAction.setEnabled(hasSelection && selectedRowIndex > 0);
-        _moveLayerUpAction.setEnabled(selectedRowIndex > 0 ? selectedRowIndex > 0 : false);
-        _moveLayerDownAction.setEnabled(selectedRowIndex >= 0 ? selectedRowIndex < treeView->model()->rowCount() - 1 : false);
-        _moveLayerToBottomAction.setEnabled(hasSelection && selectedRowIndex < treeView->model()->rowCount() - 1);
+        editLayersAction->getMoveLayerToTopAction().setEnabled(hasSelection && selectedRowIndex > 0);
+        editLayersAction->getMoveLayerUpAction().setEnabled(selectedRowIndex > 0 ? selectedRowIndex > 0 : false);
+        editLayersAction->getMoveLayerDownAction().setEnabled(selectedRowIndex >= 0 ? selectedRowIndex < treeView->model()->rowCount() - 1 : false);
+        editLayersAction->getMoveLayerToBottomAction().setEnabled(hasSelection && selectedRowIndex < treeView->model()->rowCount() - 1);
 
-        // Render
         imageViewerPlugin.getImageViewerWidget().update();
     };
 
-    connect(&imageViewerPlugin.getSelectionModel(), &QItemSelectionModel::selectionChanged, this, modelSelectionChanged);
     connect(&imageViewerPlugin.getSelectionModel(), &QItemSelectionModel::selectionChanged, this, updateButtons);
     connect(treeView->model(), &QAbstractListModel::rowsRemoved, updateButtons);
     connect(treeView->model(), &QAbstractListModel::rowsMoved, updateButtons);
     connect(treeView->model(), &QAbstractListModel::layoutChanged, updateButtons);
 
-    // Select a layer when it is inserted into the model
     const auto onRowsInserted = [treeView, &imageViewerPlugin, updateButtons](const QModelIndex& parent, int first, int last) {
-
-        // Get model of inserted layer
         const auto index = treeView->model()->index(first, 0);
         
-        // Select the layer if the index is valid
         if (index.isValid())
             imageViewerPlugin.getSelectionModel().select(index, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
 
-        // Update layer position buttons
         updateButtons();
     };
 
-    // Special behavior when a row is inserted into the model
     connect(treeView->model(), &QAbstractListModel::rowsInserted, this, onRowsInserted);
 
-    // Remove the layer when the corresponding action is triggered
-    connect(&_removeLayerAction, &TriggerAction::triggered, this, [this, &imageViewerPlugin, treeView]() {
+    connect(&editLayersAction->getRemoveLayerAction(), &TriggerAction::triggered, this, [this, &imageViewerPlugin, treeView]() {
         const auto selectedRows = imageViewerPlugin.getSelectionModel().selectedRows();
 
         if (selectedRows.isEmpty())
@@ -203,8 +166,7 @@ LayersAction::Widget::Widget(QWidget* parent, LayersAction* layersAction) :
         imageViewerPlugin.getModel().removeLayer(selectedRows.first());
     });
 
-    // Duplicate the layer when the corresponding action is triggered
-    connect(&_duplicateLayerAction, &TriggerAction::triggered, this, [this, &imageViewerPlugin, treeView]() {
+    connect(&editLayersAction->getDuplicateLayerAction(), &TriggerAction::triggered, this, [this, &imageViewerPlugin, treeView]() {
         const auto selectedRows = imageViewerPlugin.getSelectionModel().selectedRows();
 
         if (selectedRows.isEmpty())
@@ -213,41 +175,34 @@ LayersAction::Widget::Widget(QWidget* parent, LayersAction* layersAction) :
         imageViewerPlugin.getModel().duplicateLayer(selectedRows.first());
     });
 
-    // Move the layer to the top when the corresponding action is triggered
-    connect(&_moveLayerToTopAction, &TriggerAction::triggered, this, [this, &imageViewerPlugin, treeView]() {
+    connect(&editLayersAction->getMoveLayerToTopAction(), &TriggerAction::triggered, this, [this, &imageViewerPlugin, treeView]() {
         const auto selectedRows = imageViewerPlugin.getSelectionModel().selectedRows();
 
         if (!selectedRows.isEmpty())
             imageViewerPlugin.getModel().moveLayer(selectedRows.first(), -1000);
 
-        // Render
         imageViewerPlugin.getImageViewerWidget().update();
     });
 
-    // Move the layer up when the corresponding action is triggered
-    connect(&_moveLayerUpAction, &TriggerAction::triggered, this, [this, &imageViewerPlugin, treeView]() {
+    connect(&editLayersAction->getMoveLayerUpAction(), &TriggerAction::triggered, this, [this, &imageViewerPlugin, treeView]() {
         const auto selectedRows = imageViewerPlugin.getSelectionModel().selectedRows();
 
         if (!selectedRows.isEmpty())
             imageViewerPlugin.getModel().moveLayer(selectedRows.first(), -1);
 
-        // Render
         imageViewerPlugin.getImageViewerWidget().update();
     });
 
-    // Move the layer down when the corresponding action is triggered
-    connect(&_moveLayerDownAction, &TriggerAction::triggered, this, [this, &imageViewerPlugin, treeView]() {
+    connect(&editLayersAction->getMoveLayerDownAction(), &TriggerAction::triggered, this, [this, &imageViewerPlugin, treeView]() {
         const auto selectedRows = imageViewerPlugin.getSelectionModel().selectedRows();
 
         if (!selectedRows.isEmpty())
             imageViewerPlugin.getModel().moveLayer(selectedRows.first(), 1);
 
-        // Render
         imageViewerPlugin.getImageViewerWidget().update();
     });
 
-    // Move the layer to the bottom when the corresponding action is triggered
-    connect(&_moveLayerToBottomAction, &TriggerAction::triggered, this, [this, &imageViewerPlugin, treeView]() {
+    connect(&editLayersAction->getMoveLayerToBottomAction(), &TriggerAction::triggered, this, [this, &imageViewerPlugin, treeView]() {
         const auto selectedRows = imageViewerPlugin.getSelectionModel().selectedRows();
 
         if (!selectedRows.isEmpty())
@@ -255,6 +210,4 @@ LayersAction::Widget::Widget(QWidget* parent, LayersAction* layersAction) :
     });
 
     updateButtons();
-    modelSelectionChanged();
 }
-*/

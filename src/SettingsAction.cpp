@@ -10,9 +10,15 @@ using namespace hdps::gui;
 SettingsAction::SettingsAction(QObject* parent, const QString& title) :
     GroupAction(parent, title),
     _imageViewerPlugin(*static_cast<ImageViewerPlugin*>(parent)),
-    _editLayersAction(this, "Layers"),
-    _editLayerAction(this, "Layer")
+    _editLayersAction(this, "Edit Layers"),
+    _editLayerAction(this, "Edit Layer")
 {
+    setShowLabels(false);
+
+    addAction(&_editLayersAction);
+    addAction(&_editLayerAction);
+
+    _editLayerAction.setStretch(1);
 }
 
 QMenu* SettingsAction::getContextMenu(QWidget* parent /*= nullptr*/)
