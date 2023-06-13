@@ -244,11 +244,9 @@ void ImageViewerPlugin::init()
 
 void ImageViewerPlugin::loadData(const Datasets& datasets)
 {
-    // Only load data if we at least have one set
     if (datasets.isEmpty())
         return;
 
-    // Add datasets one-by-one
     for (const auto& dataset : datasets)
         addDataset(dataset);
 }
@@ -439,6 +437,22 @@ void ImageViewerPlugin::immigrateDataset(const Dataset<DatasetImpl>& dataset)
     catch (...) {
         exceptionMessageBox(QString("Unable to immigrate dataset: %1").arg(dataset->getGuiName()));
     }
+}
+
+void ImageViewerPlugin::fromVariantMap(const QVariantMap& variantMap)
+{
+    ViewPlugin::fromVariantMap(variantMap);
+
+    _model.fromParentVariantMap(variantMap);
+}
+
+QVariantMap ImageViewerPlugin::toVariantMap() const
+{
+    auto variantMap = ViewPlugin::toVariantMap();
+
+    _model.insertIntoVariantMap(variantMap);
+
+    return variantMap;
 }
 
 QIcon ImageViewerPluginFactory::getIcon(const QColor& color /*= Qt::black*/) const

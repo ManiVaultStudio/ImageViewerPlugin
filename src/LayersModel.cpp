@@ -1,4 +1,5 @@
 #include "LayersModel.h"
+#include "ImageViewerPlugin.h"
 
 #include <Application.h>
 #include <DataHierarchyItem.h>
@@ -636,13 +637,29 @@ Layer& LayersModel::getLayerByDatasetId(const QString& datasetId)
 void LayersModel::fromVariantMap(const QVariantMap& variantMap)
 {
     Serializable::fromVariantMap(variantMap);
+
+    variantMapMustContain(variantMap, "Layers");
+
+    auto imageViewerPlugin = static_cast<ImageViewerPlugin*>(parent());
+
+    for (auto layerMap : variantMap["Layers"].toList())
+        addLayer(new Layer(&imageViewerPlugin->getSettingsAction().getEditLayersAction(), layerMap.toMap()["Title"].toString()));
 }
 
 QVariantMap LayersModel::toVariantMap() const
 {
     auto variantMap = Serializable::toVariantMap();
 
+    QVariantList layers;
+
+    for (auto layer : _layers)
+        layers.push_back(layer->toVariantMap());
+
     //_xAction.insertIntoVariantMap(variantMap);
+
+    variantMap.insert({
+        { "Layers", layers }
+    });
 
     return variantMap;
 }

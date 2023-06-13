@@ -31,12 +31,12 @@ ConvertToImagesDatasetDialog::ConvertToImagesDatasetDialog(ImageViewerPlugin& im
     setWindowTitle(QString("Load %1 as images").arg(_sourceDataset->getGuiName()));
     setWindowIcon(_sourceDataset->getIcon());
     
-    addAction(&_datasetNameAction);
-    addAction(&_imageWidthAction);
-    addAction(&_imageHeightAction);
-    addAction(&_numberOfImagesAction);
-    addAction(&_numberOfPixelsAction);
-    addAction(&_useLinkedDataAction);
+    _groupAction.addAction(&_datasetNameAction);
+    _groupAction.addAction(&_imageWidthAction);
+    _groupAction.addAction(&_imageHeightAction);
+    _groupAction.addAction(&_numberOfImagesAction);
+    _groupAction.addAction(&_numberOfPixelsAction);
+    _groupAction.addAction(&_useLinkedDataAction);
 
     _imageWidthAction.setDefaultWidgetFlags(IntegralAction::SpinBox);
     _imageHeightAction.setDefaultWidgetFlags(IntegralAction::SpinBox);

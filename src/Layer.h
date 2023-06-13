@@ -216,6 +216,7 @@ public: /** Action getters */
     ImageSettingsAction& getImageSettingsAction() { return _imageSettingsAction; }
     SelectionAction& getSelectionAction() { return _selectionAction; }
     MiscellaneousAction& getMiscellaneousAction() { return _miscellaneousAction; }
+    SubsetAction& getSubsetAction() { return _subsetAction; }
 
 signals:
 

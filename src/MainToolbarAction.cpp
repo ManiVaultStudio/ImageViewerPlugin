@@ -51,7 +51,6 @@ MainToolbarAction::MainToolbarAction(ImageViewerPlugin& imageViewerPlugin) :
     getImageViewerWidget().addAction(&_panAction);
     getImageViewerWidget().addAction(&_selectAction);
     getImageViewerWidget().addAction(&_exportToImageAction);
-    getImageViewerWidget().addAction(&_subsetAction);
 
     connect(&_panAction, &ToggleAction::toggled, this, [this](bool toggled) {
         getImageViewerWidget().setInteractionMode(toggled ? ImageViewerWidget::Navigation : ImageViewerWidget::Selection);

@@ -20,7 +20,11 @@ EditLayerAction::EditLayerAction(QObject* parent, const QString& title) :
         if (hasSelection) {
             auto layer = static_cast<Layer*>(selectedRows.first().internalPointer());
 
-            groupActions << &layer->getGeneralAction() << &layer->getImageSettingsAction() << &layer->getSelectionAction() << &layer->getMiscellaneousAction();
+            groupActions << &layer->getGeneralAction();
+            groupActions << &layer->getImageSettingsAction();
+            groupActions << &layer->getSelectionAction();
+            groupActions << &layer->getMiscellaneousAction();
+            groupActions << &layer->getSubsetAction();
         }
 
         setGroupActions(groupActions);

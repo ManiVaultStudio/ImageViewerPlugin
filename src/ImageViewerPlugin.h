@@ -94,6 +94,20 @@ protected:
      */
     void immigrateDataset(const hdps::Dataset<hdps::DatasetImpl>& dataset);
 
+public: // Serialization
+
+    /**
+     * Load widget action from variant map
+     * @param Variant map representation of the widget action
+     */
+    void fromVariantMap(const QVariantMap& variantMap) override;
+
+    /**
+     * Save widget action to variant map
+     * @return Variant map representation of the widget action
+     */
+    QVariantMap toVariantMap() const override;
+
 public: // Action getters
 
     MainToolbarAction& getMainToolbarAction() { return _mainToolbarAction; }

@@ -1079,10 +1079,11 @@ void Layer::fromVariantMap(const QVariantMap& variantMap)
     WidgetAction::fromVariantMap(variantMap);
 
     variantMapMustContain(variantMap, "Dataset");
+    variantMapMustContain(variantMap, "Title");
 
     _imagesDataset = hdps::data().getSet(variantMap["Dataset"].toString());
 
-    //initialize();
+    setText(variantMap["Title"].toString());
 
     _generalAction.fromParentVariantMap(variantMap);
     _imageSettingsAction.fromParentVariantMap(variantMap);
@@ -1096,7 +1097,8 @@ QVariantMap Layer::toVariantMap() const
     auto variantMap = WidgetAction::toVariantMap();
 
     variantMap.insert({
-        { "Dataset", _imagesDataset->getGuid() }
+        { "Dataset", _imagesDataset->getGuid() },
+        { "Title", text() }
     });
 
     _generalAction.insertIntoVariantMap(variantMap);
