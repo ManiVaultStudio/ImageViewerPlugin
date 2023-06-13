@@ -210,7 +210,7 @@ void ScalarChannelAction::disconnectFromPublicAction(bool recursive)
 
 void ScalarChannelAction::fromVariantMap(const QVariantMap& variantMap)
 {
-    WidgetAction::fromVariantMap(variantMap);
+    GroupAction::fromVariantMap(variantMap);
 
     _dimensionAction.fromParentVariantMap(variantMap);
     _windowLevelAction.fromParentVariantMap(variantMap);
@@ -218,7 +218,7 @@ void ScalarChannelAction::fromVariantMap(const QVariantMap& variantMap)
 
 QVariantMap ScalarChannelAction::toVariantMap() const
 {
-    auto variantMap = WidgetAction::toVariantMap();
+    auto variantMap = GroupAction::toVariantMap();
 
     _dimensionAction.insertIntoVariantMap(variantMap);
     _windowLevelAction.insertIntoVariantMap(variantMap);

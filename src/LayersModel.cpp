@@ -12,8 +12,10 @@
 #include <stdexcept>
 
 using namespace hdps;
+using namespace hdps::util;
 
 LayersModel::LayersModel(QObject* parent) :
+    Serializable("Layers"),
     QAbstractListModel(parent),
     _layers()
 {
@@ -629,6 +631,20 @@ Layer& LayersModel::getLayerByDatasetId(const QString& datasetId)
     catch (...) {
         exceptionMessageBox("Unable to get layer from the layers model");
     }
+}
+
+void LayersModel::fromVariantMap(const QVariantMap& variantMap)
+{
+    Serializable::fromVariantMap(variantMap);
+}
+
+QVariantMap LayersModel::toVariantMap() const
+{
+    auto variantMap = Serializable::toVariantMap();
+
+    //_xAction.insertIntoVariantMap(variantMap);
+
+    return variantMap;
 }
 
 QIcon LayersModel::getColorIcon(const QColor& color) const

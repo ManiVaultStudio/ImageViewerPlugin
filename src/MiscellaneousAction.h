@@ -17,16 +17,16 @@ using namespace hdps::gui;
  */
 class MiscellaneousAction : public GroupAction
 {
+    Q_OBJECT
+
 public:
 
-    /** 
-     * Constructor
-     * @param layer Reference to layer
+    /**
+     * Construct with \p parent object and \p title
+     * @param parent Pointer to parent object
+     * @param title Title
      */
-    MiscellaneousAction(Layer& layer);
-
-    /** Get reference to parent layer */
-    Layer& getLayer() { return _layer; }
+    Q_INVOKABLE MiscellaneousAction(QObject* parent, const QString& title);
 
 public: // Action getters
 
@@ -34,7 +34,10 @@ public: // Action getters
     DecimalRectangleAction& getRoiViewAction() { return _roiViewAction; }
 
 protected:
-    Layer&                      _layer;             /** Reference to layer */
     IntegralRectangleAction     _roiLayerAction;    /** Layer region of interest action */
     DecimalRectangleAction      _roiViewAction;     /** View region of interest action */
 };
+
+Q_DECLARE_METATYPE(MiscellaneousAction)
+
+inline const auto miscellaneousActionMetaTypeId = qRegisterMetaType<MiscellaneousAction*>("MiscellaneousAction");

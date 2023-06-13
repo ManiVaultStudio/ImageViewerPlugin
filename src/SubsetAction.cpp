@@ -74,3 +74,51 @@ void SubsetAction::initialize(ImageViewerPlugin* imageViewerPlugin)
         }
     });
 }
+
+void SubsetAction::connectToPublicAction(WidgetAction* publicAction, bool recursive)
+{
+    auto publicSubsetAction = dynamic_cast<SubsetAction*>(publicAction);
+
+    Q_ASSERT(publicSubsetAction != nullptr);
+
+    if (publicSubsetAction == nullptr)
+        return;
+
+    if (recursive) {
+        actions().connectPrivateActionToPublicAction(&_nameAction, &publicSubsetAction->getNameAction(), recursive);
+        actions().connectPrivateActionToPublicAction(&_createAction, &publicSubsetAction->getCreateAction(), recursive);
+    }
+
+    GroupAction::connectToPublicAction(publicAction, recursive);
+}
+
+void SubsetAction::disconnectFromPublicAction(bool recursive)
+{
+    if (!isConnected())
+        return;
+
+    if (recursive) {
+        actions().disconnectPrivateActionFromPublicAction(&_nameAction, recursive);
+        actions().disconnectPrivateActionFromPublicAction(&_createAction, recursive);
+    }
+
+    GroupAction::disconnectFromPublicAction(recursive);
+}
+
+void SubsetAction::fromVariantMap(const QVariantMap& variantMap)
+{
+    GroupAction::fromVariantMap(variantMap);
+
+    _nameAction.fromParentVariantMap(variantMap);
+    _createAction.fromParentVariantMap(variantMap);
+}
+
+QVariantMap SubsetAction::toVariantMap() const
+{
+    auto variantMap = GroupAction::toVariantMap();
+
+    _nameAction.insertIntoVariantMap(variantMap);
+    _createAction.insertIntoVariantMap(variantMap);
+
+    return variantMap;
+}

@@ -18,24 +18,40 @@
 
 #include <set>
 
-Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const hdps::Dataset<Images>& imagesDataset) :
-    WidgetAction(&imageViewerPlugin, "Layer"),
-    Renderable(imageViewerPlugin.getImageViewerWidget().getRenderer()),
-    _imageViewerPlugin(imageViewerPlugin),
+using namespace hdps::gui;
+
+Layer::Layer(QObject* parent, const QString& title) :
+    WidgetAction(parent, title),
+    Renderable(),
+    _imageViewerPlugin(nullptr),
     _active(false),
-    _imagesDataset(imagesDataset),
-    _sourceDataset(_imagesDataset->getDataHierarchyItem().getParent().getDataset()),
+    _imagesDataset(),
+    _sourceDataset(),
     _selectedIndices(),
     _generalAction(this, "General"),
     _imageSettingsAction(this, "Image"),
-    _selectionAction(*this, &_imageViewerPlugin.getImageViewerWidget(), _imageViewerPlugin.getImageViewerWidget().getPixelSelectionTool()),
-    _miscellaneousAction(*this),
+    _selectionAction(this, "Selection"),
+    _miscellaneousAction(this, "Miscellaneous"),
+    _subsetAction(this, "Subset"),
     _selectionData(),
     _imageSelectionRectangle(),
     _maskData()
 {
-    setText("Layer");
-    setObjectName("Layer");
+}
+
+void Layer::initialize(ImageViewerPlugin* imageViewerPlugin, const hdps::Dataset<Images>& imagesDataset)
+{
+    Q_ASSERT(imageViewerPlugin != nullptr);
+
+    if (imageViewerPlugin == nullptr)
+        return;
+
+    _imageViewerPlugin = imageViewerPlugin;
+
+    setRenderer(&_imageViewerPlugin->getImageViewerWidget().getRenderer());
+        
+    _imagesDataset = imagesDataset;
+    _sourceDataset = _imagesDataset->getDataHierarchyItem().getParent().getDataset();
 
     if (!_sourceDataset.isValid())
         throw std::runtime_error("The layer source dataset is not valid after initialization");
@@ -126,13 +142,12 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const hdps::Dataset<Images>& 
         _generalAction.getNameAction().setDefaultString(newGuiName);
     });
 
-    // Update ROI selection and publish it
     const auto updateSelectionRoi = [this]() {
         computeSelection();
         publishSelection();
     };
 
-    connect(&_imageViewerPlugin.getImageViewerWidget().getRenderer(), &LayersRenderer::zoomRectangleChanged, this, [this, updateSelectionRoi]() {
+    connect(&_imageViewerPlugin->getImageViewerWidget().getRenderer(), &LayersRenderer::zoomRectangleChanged, this, [this, updateSelectionRoi]() {
         updateRoi();
 
         if (!_active)
@@ -147,8 +162,7 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const hdps::Dataset<Images>& 
         updateSelectionRoi();
     });
 
-    // Possibly select pixels when the viewport changes
-    connect(&_imageViewerPlugin.getImageViewerWidget(), &ImageViewerWidget::navigationEnded, this, [this, updateSelectionRoi]() {
+    connect(&_imageViewerPlugin->getImageViewerWidget(), &ImageViewerWidget::navigationEnded, this, [this, updateSelectionRoi]() {
         if (!_active)
             return;
 
@@ -169,21 +183,22 @@ Layer::Layer(ImageViewerPlugin& imageViewerPlugin, const hdps::Dataset<Images>& 
             _imagesDataset->selectNone();
     });
 
-    connect(&_miscellaneousAction.getRoiViewAction(), &DecimalRectangleAction::rectangleChanged, &getRenderer(), [this](const QRectF& rectangle) -> void {
-        if (rectangle == getRenderer().getZoomRectangle())
+    connect(&_miscellaneousAction.getRoiViewAction(), &DecimalRectangleAction::rectangleChanged, getRenderer(), [this](const QRectF& rectangle) -> void {
+        if (rectangle == getRenderer()->getZoomRectangle())
             return;
 
-        const auto animationEnabled = getRenderer().getAnimationEnabled();
+        const auto animationEnabled = getRenderer()->getAnimationEnabled();
 
-        getRenderer().setAnimationEnabled(false);
+        getRenderer()->setAnimationEnabled(false);
         {
-            getRenderer().setZoomRectangle(rectangle);
+            getRenderer()->setZoomRectangle(rectangle);
         }
-        getRenderer().setAnimationEnabled(animationEnabled);
+        getRenderer()->setAnimationEnabled(animationEnabled);
     });
 
     _generalAction.initialize(this);
     _imageSettingsAction.initialize(this);
+    _selectionAction.initialize(this, &_imageViewerPlugin->getImageViewerWidget(), &_imageViewerPlugin->getImageViewerWidget().getPixelSelectionTool());
 
     _imagesDataset->getMaskData(_maskData);
 
@@ -287,7 +302,7 @@ void Layer::updateWindowTitle()
         const auto name = _generalAction.getNameAction().getString();
 
         // Update the window title
-        _imageViewerPlugin.getWidget().setWindowTitle(QString("%1%2").arg(_imageViewerPlugin.getGuiName(), _active ? QString(": %1").arg(name) : ""));
+        _imageViewerPlugin->getWidget().setWindowTitle(QString("%1%2").arg(_imageViewerPlugin->getGuiName(), _active ? QString(": %1").arg(name) : ""));
     }
     catch (std::exception& e)
     {
@@ -300,9 +315,9 @@ void Layer::updateWindowTitle()
 
 void Layer::updateRoi()
 {
-    const auto modelViewMatrix      = getRenderer().getViewMatrix() * getModelMatrix() *getPropByName<SelectionToolProp>("SelectionToolProp")->getModelMatrix();
-    const auto roiTopLeft           = getRenderer().getScreenPointToWorldPosition(modelViewMatrix, QPoint(0, getRenderer().getParentWidgetSize().height()));
-    const auto roiBottomRight       = getRenderer().getScreenPointToWorldPosition(modelViewMatrix, QPoint(getRenderer().getParentWidgetSize().width(), 0));
+    const auto modelViewMatrix      = getRenderer()->getViewMatrix() * getModelMatrix() *getPropByName<SelectionToolProp>("SelectionToolProp")->getModelMatrix();
+    const auto roiTopLeft           = getRenderer()->getScreenPointToWorldPosition(modelViewMatrix, QPoint(0, getRenderer()->getParentWidgetSize().height()));
+    const auto roiBottomRight       = getRenderer()->getScreenPointToWorldPosition(modelViewMatrix, QPoint(getRenderer()->getParentWidgetSize().width(), 0));
     const auto inputImageSize       = _imagesDataset->getImageSize();
 
     QRect imageRoi;
@@ -311,7 +326,7 @@ void Layer::updateRoi()
     imageRoi.setTopRight(QPoint(std::clamp(static_cast<int>(std::round(roiBottomRight.x())), 0, inputImageSize.width()), std::clamp(static_cast<int>(std::round(roiBottomRight.y())), 0, inputImageSize.height())));
 
     _miscellaneousAction.getRoiLayerAction().setRectangle(imageRoi);
-    _miscellaneousAction.getRoiViewAction().setRectangle(getRenderer().getZoomRectangle());
+    _miscellaneousAction.getRoiViewAction().setRectangle(getRenderer()->getZoomRectangle());
 }
 
 QRectF Layer::getWorldBoundingRectangle() const
@@ -340,17 +355,17 @@ QRectF Layer::getWorldBoundingRectangle() const
 
 QRectF Layer::getScreenBoundingRectangle() const
 {
-    return getRenderer().getScreenRectangleFromWorldRectangle(getWorldBoundingRectangle());
+    return getRenderer()->getScreenRectangleFromWorldRectangle(getWorldBoundingRectangle());
 }
 
 LayersAction& Layer::getLayersAction()
 {
-    return _imageViewerPlugin.getSettingsAction().getLayersAction();
+    return _imageViewerPlugin->getSettingsAction().getLayersAction();
 }
 
 ImageViewerPlugin& Layer::getImageViewerPlugin()
 {
-    return _imageViewerPlugin;
+    return *_imageViewerPlugin;
 }
 
 QMenu* Layer::getContextMenu(QWidget* parent /*= nullptr*/)
@@ -428,7 +443,7 @@ bool Layer::isActive() const
 
 void Layer::invalidate()
 {
-    _imageViewerPlugin.getImageViewerWidget().update();
+    _imageViewerPlugin->getImageViewerWidget().update();
 }
 
 void Layer::scaleToFit(const QRectF& layersRectangle)
@@ -467,7 +482,7 @@ void Layer::paint(QPainter& painter, const PaintFlag& paintFlags)
         const auto propRectangle = getScreenBoundingRectangle();
 
         // Get pixel selection color
-        const auto pixelSelectionColor = _imageViewerPlugin.getImageViewerWidget().getPixelSelectionTool().getMainColor();
+        const auto pixelSelectionColor = _imageViewerPlugin->getImageViewerWidget().getPixelSelectionTool().getMainColor();
 
         // Draw layer bounds
         if (paintFlags & Layer::Bounds) {
@@ -484,7 +499,7 @@ void Layer::paint(QPainter& painter, const PaintFlag& paintFlags)
         if ((paintFlags & Layer::SelectionRectangle) && _imageSelectionRectangle.isValid() && _selectionAction.getPixelSelectionAction().getTypeAction().getCurrentIndex() != static_cast<std::int16_t>(PixelSelectionType::ROI)) {
 
             // Create perimeter pen
-            auto perimeterPen = QPen(QBrush(_imageViewerPlugin.getImageViewerWidget().getPixelSelectionTool().getMainColor()), 0.7f);
+            auto perimeterPen = QPen(QBrush(_imageViewerPlugin->getImageViewerWidget().getPixelSelectionTool().getMainColor()), 0.7f);
 
             // Custom dash pattern
             perimeterPen.setDashPattern(QVector<qreal>{ 7, 7 });
@@ -494,7 +509,7 @@ void Layer::paint(QPainter& painter, const PaintFlag& paintFlags)
             painter.setBrush(Qt::transparent);
 
             // Draw the bounding rectangle
-            painter.drawRect(getRenderer().getScreenRectangleFromWorldRectangle(getWorldSelectionRectangle()));
+            painter.drawRect(getRenderer()->getScreenRectangleFromWorldRectangle(getWorldSelectionRectangle()));
         }
 
         // Draw layer label
@@ -519,10 +534,10 @@ void Layer::paint(QPainter& painter, const PaintFlag& paintFlags)
         if (paintFlags & Layer::Sample) {
 
             // Get mouse position in widget coordinates
-            const auto mousePositionWidget = _imageViewerPlugin.getImageViewerWidget().mapFromGlobal(QCursor::pos());
+            const auto mousePositionWidget = _imageViewerPlugin->getImageViewerWidget().mapFromGlobal(QCursor::pos());
 
             // Get mouse position in image coordinates
-            const auto mousePositionImage = _renderer.getScreenPointToWorldPosition(getModelViewMatrix() * getPropByName<ImageProp>("ImageProp")->getModelMatrix(), mousePositionWidget).toPoint();
+            const auto mousePositionImage = _renderer->getScreenPointToWorldPosition(getModelViewMatrix() * getPropByName<ImageProp>("ImageProp")->getModelMatrix(), mousePositionWidget).toPoint();
 
             // Establish label prefix text
             QString labelText = QString("Pixel ID\t: [%1, %2]\n").arg(QString::number(mousePositionImage.x()), QString::number(mousePositionImage.y()));
@@ -559,7 +574,7 @@ void Layer::paint(QPainter& painter, const PaintFlag& paintFlags)
                 }
 
                 // Configure pen and brush
-                painter.setPen(QPen(QBrush(_imageViewerPlugin.getImageViewerWidget().getPixelSelectionTool().getMainColor()), _active ? 2.0f : 1.0f));
+                painter.setPen(QPen(QBrush(_imageViewerPlugin->getImageViewerWidget().getPixelSelectionTool().getMainColor()), _active ? 2.0f : 1.0f));
                 painter.setBrush(Qt::transparent);
 
                 // Upper margin in pixels
@@ -1030,13 +1045,10 @@ void Layer::zoomToExtents()
         qDebug() << "Zoom to the extents of layer:" << _generalAction.getNameAction().getString();
 #endif
 
-        // Get pointer to image prop
         auto layerImageProp = getPropByName<ImageProp>("ImageProp");
 
-        // Zoom to layer extents
-        _imageViewerPlugin.getImageViewerWidget().getRenderer().setZoomRectangle(getWorldBoundingRectangle());
+        _imageViewerPlugin->getImageViewerWidget().getRenderer().setZoomRectangle(getWorldBoundingRectangle());
 
-        // Trigger render
         invalidate();
     }
     catch (std::exception& e)
@@ -1056,8 +1068,7 @@ void Layer::zoomToSelection()
         qDebug() << "Zoom to the pixel selection of layer:" << _generalAction.getNameAction().getString();;
 #endif
 
-        // Zoom to the world selection rectangle
-        _imageViewerPlugin.getImageViewerWidget().getRenderer().setZoomRectangle(getWorldSelectionRectangle().marginsAdded(QMarginsF(0.0f, 0.0f, 1.0f, 1.0f)));
+        _imageViewerPlugin->getImageViewerWidget().getRenderer().setZoomRectangle(getWorldSelectionRectangle().marginsAdded(QMarginsF(0.0f, 0.0f, 1.0f, 1.0f)));
     }
     catch (std::exception& e)
     {
@@ -1066,4 +1077,38 @@ void Layer::zoomToSelection()
     catch (...) {
         exceptionMessageBox(QString("Unable to zoom to the pixel selection for layer: %1").arg(_generalAction.getNameAction().getString()));
     }
+}
+
+void Layer::fromVariantMap(const QVariantMap& variantMap)
+{
+    WidgetAction::fromVariantMap(variantMap);
+
+    variantMapMustContain(variantMap, "Dataset");
+
+    _imagesDataset = hdps::data().getSet(variantMap["Dataset"].toString());
+
+    //initialize();
+
+    _generalAction.fromParentVariantMap(variantMap);
+    _imageSettingsAction.fromParentVariantMap(variantMap);
+    _selectionAction.fromParentVariantMap(variantMap);
+    _miscellaneousAction.fromParentVariantMap(variantMap);
+    _subsetAction.fromParentVariantMap(variantMap);
+}
+
+QVariantMap Layer::toVariantMap() const
+{
+    auto variantMap = WidgetAction::toVariantMap();
+
+    variantMap.insert({
+        { "Dataset", _imagesDataset->getGuid() }
+    });
+
+    _generalAction.insertIntoVariantMap(variantMap);
+    _imageSettingsAction.insertIntoVariantMap(variantMap);
+    _selectionAction.insertIntoVariantMap(variantMap);
+    _miscellaneousAction.insertIntoVariantMap(variantMap);
+    _subsetAction.insertIntoVariantMap(variantMap);
+
+    return variantMap;
 }

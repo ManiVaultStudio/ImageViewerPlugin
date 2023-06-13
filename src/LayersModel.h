@@ -1,12 +1,14 @@
 #pragma once
 
+#include <util/Serializable.h>
+
 #include <event/EventListener.h>
 
 #include "Layer.h"
 
 #include <QAbstractListModel>
 
-class LayersModel : public QAbstractListModel
+class LayersModel : public QAbstractListModel, public hdps::util::Serializable
 {
 public:
 
@@ -139,6 +141,20 @@ public: // Layer operations
      * @param Reference to layer
      */
     Layer& getLayerByDatasetId(const QString& datasetId);
+
+public: // Serialization
+
+    /**
+     * Load widget action from variant map
+     * @param Variant map representation of the widget action
+     */
+    void fromVariantMap(const QVariantMap& variantMap) override;
+    
+    /**
+     * Save widget action to variant map
+     * @return Variant map representation of the widget action
+     */
+    QVariantMap toVariantMap() const override;
 
 protected:
     

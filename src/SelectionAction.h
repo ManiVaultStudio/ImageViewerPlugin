@@ -23,21 +23,56 @@ using namespace hdps::gui;
  */
 class SelectionAction : public GroupAction
 {
+    Q_OBJECT
+
 public:
 
     /**
-     * Constructor
-     * @param layer Reference to layer
-     * @param targetWidget Pointer to target widget
-     * @param pixelSelectionTool Reference to pixel selection tool
+     * Construct with \p parent object and \p title
+     * @param parent Pointer to parent object
+     * @param title Title
      */
-    SelectionAction(Layer& layer, QWidget* targetWidget, PixelSelectionTool& pixelSelectionTool);
+    Q_INVOKABLE SelectionAction(QObject* parent, const QString& title);
 
-    /** Get reference to parent layer */
-    Layer& getLayer() { return _layer; }
+    /**
+     * Initialize with \p layer, \p targetWidget and \p pixelSelectionTool
+     * @param layer Pointer to layer
+     * @param targetWidget Target widget to draw the selection
+     * @param pixelSelectionTool Tool for selecting the pixels
+     */
+    void initialize(Layer* layer, QWidget* targetWidget, PixelSelectionTool* pixelSelectionTool);
 
     /** Get selection rectangle in image coordinates */
     QRect getImageSelectionRectangle() const;
+
+protected: // Linking
+
+    /**
+     * Connect this action to a public action
+     * @param publicAction Pointer to public action to connect to
+     * @param recursive Whether to also connect descendant child actions
+     */
+    void connectToPublicAction(WidgetAction* publicAction, bool recursive) override;
+
+    /**
+     * Disconnect this action from its public action
+     * @param recursive Whether to also disconnect descendant child actions
+     */
+    void disconnectFromPublicAction(bool recursive) override;
+
+public: // Serialization
+
+    /**
+     * Load widget action from variant map
+     * @param Variant map representation of the widget action
+     */
+    void fromVariantMap(const QVariantMap& variantMap) override;
+
+    /**
+     * Save widget action to variant map
+     * @return Variant map representation of the widget action
+     */
+    QVariantMap toVariantMap() const override;
 
 public: // Action getters
 
@@ -45,9 +80,13 @@ public: // Action getters
     ToggleAction& getShowRegionAction() { return _showRegionAction; }
 
 protected:
-    Layer&                  _layer;                     /** Reference to layer */
+    Layer*                  _layer;                     /** Pointer to owning layer */
     QWidget*                _targetWidget;              /** Pointer to target widget */
     PixelSelectionAction    _pixelSelectionAction;      /** Pixel selection action */
-    PixelSelectionTool&     _pixelSelectionTool;        /** Reference to pixel selection tool */
+    PixelSelectionTool*     _pixelSelectionTool;        /** Pointer to pixel selection tool */
     ToggleAction            _showRegionAction;          /** Show region action */
 };
+
+Q_DECLARE_METATYPE(SelectionAction)
+
+inline const auto selectionActionMetaTypeId = qRegisterMetaType<SelectionAction*>("SelectionAction");

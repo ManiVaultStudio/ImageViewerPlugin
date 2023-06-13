@@ -367,19 +367,15 @@ void ImageViewerPlugin::arrangeLayers(LayersLayout layersLayout)
 
 void ImageViewerPlugin::addDataset(const Dataset<Images>& dataset)
 {
-    // Create new layer for the converted dataset
-    auto layer = new Layer(*this, dataset);
+    auto layer = new Layer(&_settingsAction.getLayersAction(), dataset->getGuiName());
 
-    // Squeeze the layer in to the layers world bounding rectangle
+    layer->initialize(this, dataset);
     layer->scaleToFit(_imageViewerWidget.getWorldBoundingRectangle(false));
 
-    // Add new layer to the model
     _model.addLayer(layer);
 
-    // Update bounds
     _imageViewerWidget.updateWorldBoundingRectangle();
 
-    // Zoom when this is the first layer added
     if (_model.rowCount() == 1)
         layer->zoomToExtents();
 }
@@ -415,33 +411,24 @@ void ImageViewerPlugin::onLayerSelectionChanged()
 void ImageViewerPlugin::immigrateDataset(const Dataset<DatasetImpl>& dataset)
 {
     try {
-        // don't call QDialog.exec() or use a static method like QDialog::getOpenFileName
-        // since they trigger some assertion failures due to threading issues when opening the dialog here
-
-        // Create conversion dialog
         ConvertToImagesDatasetDialog* dialog = new ConvertToImagesDatasetDialog(*this, const_cast<Dataset<DatasetImpl>&>(dataset));
 
         connect(dialog, &ConvertToImagesDatasetDialog::accepted, this, [this, dialog]() -> void {
-            // Create new layer for the converted dataset
-            auto layer = new Layer(*this, dialog->getTargetImagesDataset());
+            auto layer = new Layer(&_settingsAction.getLayersAction(), dialog->getTargetImagesDataset()->getGuiName());
 
-            // Squeeze the layer in to the layers world bounding rectangle
+            layer->initialize(this, dialog->getTargetImagesDataset());
             layer->scaleToFit(_imageViewerWidget.getWorldBoundingRectangle(false));
 
-            // Add new layer to the model
             _model.addLayer(layer);
 
-            // Update world bounds of all layers
             _imageViewerWidget.updateWorldBoundingRectangle();
 
-            // Zoom to the extents of the layer if smart zoom is enabled
             if (_mainToolbarAction.getGlobalViewSettingsAction().getSmartZoomAction().isChecked() || _model.rowCount() == 1)
                 layer->zoomToExtents();
 
             dialog->deleteLater();
-            });
+        });
 
-        // Show the dialog and add the layer if accepted
         dialog->open();
 
     }

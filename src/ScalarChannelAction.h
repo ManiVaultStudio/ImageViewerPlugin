@@ -129,3 +129,7 @@ private:
 
     friend class ImageAction;
 };
+
+Q_DECLARE_METATYPE(ScalarChannelAction)
+
+inline const auto scalarChannelActionMetaTypeId = qRegisterMetaType<ScalarChannelAction*>("ScalarChannelAction");

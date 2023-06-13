@@ -23,9 +23,9 @@ public: // Construction/destruction
 
     /**
      * Constructor
-     * @param renderer Reference to the renderer in which the renderable object will reside
+     * @param renderer Pointer to the renderer in which the renderable object will reside
      */
-    Renderable(LayersRenderer& renderer);
+    Renderable(LayersRenderer* renderer = nullptr);
 
     /** Destructor */
     ~Renderable() = default;
@@ -38,11 +38,17 @@ public: // Rendering
      */
     virtual void render(const QMatrix4x4& modelViewProjectionMatrix) = 0;
 
-    /** Get reference to the renderer */
-    LayersRenderer& getRenderer();
+    /** Get pointer to the renderer */
+    LayersRenderer* getRenderer();
 
-    /** Get reference to the renderer */
-    const LayersRenderer& getRenderer() const;
+    /** Get const pointer to the renderer */
+    const LayersRenderer* getRenderer() const;
+
+    /**
+     * Set renderer
+     * @param renderer Pointer to renderer
+     */
+    void setRenderer(LayersRenderer* layersRenderer);
 
     /** Returns the model matrix */
     QMatrix4x4 getModelMatrix() const;
@@ -100,7 +106,7 @@ public: // Rendering
     }
 
 protected:
-    LayersRenderer&     _renderer;      /** Reference to the renderer in which the renderable object will reside */
-    QMatrix4x4          _modelMatrix;   /** Model matrix */
-    QVector<Prop*>      _props;         /** Props */
+    LayersRenderer* _renderer;      /** Pointer to the renderer in which the renderable object will reside */
+    QMatrix4x4      _modelMatrix;   /** Model matrix */
+    QVector<Prop*>  _props;         /** Props */
 };
