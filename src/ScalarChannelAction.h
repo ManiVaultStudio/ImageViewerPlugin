@@ -1,6 +1,6 @@
 #pragma once
 
-#include <actions/WidgetAction.h>
+#include <actions/GroupAction.h>
 #include <actions/ToggleAction.h>
 #include <actions/OptionAction.h>
 #include <actions/WindowLevelAction.h>
@@ -19,7 +19,7 @@ class Layer;
  *
  * @author Thomas Kroes
  */
-class ScalarChannelAction : public WidgetAction
+class ScalarChannelAction : public GroupAction
 {
     Q_OBJECT
 
@@ -36,24 +36,6 @@ public:
 
     /** Maps channel index enum to name */
     static const QMap<Identifier, QString> channelIndexes;
-
-    /** Describes the widget flags */
-    enum WidgetFlag {
-        ComboBox            = 0x00001,  /** The widget includes a dimension selection combobox */
-        WindowLevelWidget   = 0x00002,  /** The widget includes a window/level settings widget */
-        ResetPushButton     = 0x00004,  /** The widget includes a reset push button */
-
-        All = ComboBox | WindowLevelWidget | ResetPushButton
-    };
-
-protected:
-
-    /**
-     * Get widget representation of the channel action
-     * @param parent Pointer to parent widget
-     * @param widgetFlags Widget flags for the configuration of the widget (type)
-     */
-    QWidget* getWidget(QWidget* parent, const std::int32_t& widgetFlags) override;
 
 public:
 
