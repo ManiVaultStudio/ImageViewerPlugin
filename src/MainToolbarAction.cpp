@@ -11,7 +11,7 @@
 using namespace hdps::util;
 
 MainToolbarAction::MainToolbarAction(ImageViewerPlugin& imageViewerPlugin) :
-    WidgetAction(&imageViewerPlugin, "Main Toolbar"),
+    HorizontalToolbarAction(&imageViewerPlugin, "Main Toolbar"),
     _imageViewerPlugin(imageViewerPlugin),
     _panAction(this, "Pan"),
     _selectAction(this, "Select pixels"),
@@ -24,7 +24,7 @@ MainToolbarAction::MainToolbarAction(ImageViewerPlugin& imageViewerPlugin) :
     _subsetAction(this, "Subset"),
     _exportToImageAction(this, "Export"),
     _interactionModeActionGroup(this),
-    _globalViewSettingsAction(this, "View Settings")
+    _viewSettingsAction(this, "View Settings")
 {
     setText("Navigation");
 
@@ -196,40 +196,4 @@ void MainToolbarAction::setupInteraction()
             updateSelectionActions();
         }
     });
-}
-
-MainToolbarAction::Widget::Widget(QWidget* parent, MainToolbarAction* interactionAction) :
-    WidgetActionWidget(parent, interactionAction)
-{
-    setAutoFillBackground(true);
-
-    const auto getDivider = []() -> QFrame* {
-        auto divider = new QFrame();
-
-        divider->setFrameShape(QFrame::VLine);
-        divider->setFrameShadow(QFrame::Sunken);
-
-        return divider;
-    };
-
-    auto layout = new QHBoxLayout();
-
-    layout->setSpacing(3);
-    layout->setContentsMargins(4, 4, 4, 4);
-
-    layout->addWidget(interactionAction->getPanAction().createWidget(this, ToggleAction::PushButtonIcon));
-    layout->addWidget(interactionAction->getSelectAction().createWidget(this, ToggleAction::PushButtonIcon));
-    layout->addWidget(getDivider());
-    layout->addWidget(interactionAction->getRectangleSelectionAction().createWidget(this, ToggleAction::PushButtonIcon));
-    layout->addWidget(interactionAction->getBrushSelectionAction().createWidget(this, ToggleAction::PushButtonIcon));
-    layout->addWidget(interactionAction->getLassoSelectionAction().createWidget(this, ToggleAction::PushButtonIcon));
-    layout->addWidget(interactionAction->getPolygonSelectionAction().createWidget(this, ToggleAction::PushButtonIcon));
-    layout->addWidget(interactionAction->getSampleSelectionAction().createWidget(this, ToggleAction::PushButtonIcon));
-    layout->addWidget(interactionAction->getRoiSelectionAction().createWidget(this, ToggleAction::PushButtonIcon));
-    layout->addWidget(getDivider());
-    layout->addWidget(interactionAction->getSubsetAction().createCollapsedWidget(this));
-    layout->addStretch(1);
-    layout->addWidget(interactionAction->getGlobalViewSettingsAction().createCollapsedWidget(this));
-
-    setLayout(layout);
 }

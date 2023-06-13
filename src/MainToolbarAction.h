@@ -1,6 +1,6 @@
 #pragma once
 
-#include <actions/WidgetAction.h>
+#include <actions/HorizontalToolbarAction.h>
 #include <actions/TriggerAction.h>
 #include <actions/DecimalAction.h>
 #include <actions/ToggleAction.h>
@@ -22,37 +22,8 @@ using namespace hdps::gui;
  *
  * @author Thomas Kroes
  */
-class MainToolbarAction : public WidgetAction
+class MainToolbarAction : public HorizontalToolbarAction
 {
-public:
-
-    /** Widget class for main toolbar action */
-    class Widget : public WidgetActionWidget
-    {
-    protected:
-
-        /**
-         * Constructor
-         * @param parent Pointer to parent widget
-         * @param mainToolbarAction Pointer to main toolbar action
-         */
-        Widget(QWidget* parent, MainToolbarAction* mainToolbarAction);
-
-    protected:
-        friend class MainToolbarAction;
-    };
-
-protected:
-
-    /**
-     * Get widget representation of the main toolbar action
-     * @param parent Pointer to parent widget
-     * @param widgetFlags Widget flags for the configuration of the widget (type)
-     */
-    QWidget* getWidget(QWidget* parent, const std::int32_t& widgetFlags) override {
-        return new Widget(parent, this);
-    };
-
 public:
 
     /** 
@@ -81,20 +52,20 @@ public: // Action getters
     ToggleAction& getRoiSelectionAction() { return _roiSelectionAction; }
     SubsetAction& getSubsetAction() { return _subsetAction; }
     TriggerAction& getExportToImageAction() { return _exportToImageAction; }
-    ViewSettingsAction& getGlobalViewSettingsAction() { return _globalViewSettingsAction; }
+    ViewSettingsAction& getGlobalViewSettingsAction() { return _viewSettingsAction; }
 
 protected:
-    ImageViewerPlugin&          _imageViewerPlugin;                 /** Reference to image viewer plugin */
-    ToggleAction                _panAction;                         /** Pan interaction mode action */
-    ToggleAction                _selectAction;                      /** Select interaction mode action */
-    ToggleAction                _rectangleSelectionAction;          /** Rectangle selection action */
-    ToggleAction                _brushSelectionAction;              /** Brush selection action */
-    ToggleAction                _lassoSelectionAction;              /** Lasso selection action */
-    ToggleAction                _polygonSelectionAction;            /** Polygon selection action */
-    ToggleAction                _sampleSelectionAction;             /** Sample selection action */
-    ToggleAction                _roiSelectionAction;                /** ROI selection action */
-    SubsetAction                _subsetAction;                      /** Subset action */
-    TriggerAction               _exportToImageAction;               /** Export to image action */
-    QActionGroup                _interactionModeActionGroup;        /** Interaction mode action group */
-    ViewSettingsAction    _globalViewSettingsAction;          /** Global view settings action */
+    ImageViewerPlugin&      _imageViewerPlugin;                 /** Reference to image viewer plugin */
+    ToggleAction            _panAction;                         /** Pan interaction mode action */
+    ToggleAction            _selectAction;                      /** Select interaction mode action */
+    ToggleAction            _rectangleSelectionAction;          /** Rectangle selection action */
+    ToggleAction            _brushSelectionAction;              /** Brush selection action */
+    ToggleAction            _lassoSelectionAction;              /** Lasso selection action */
+    ToggleAction            _polygonSelectionAction;            /** Polygon selection action */
+    ToggleAction            _sampleSelectionAction;             /** Sample selection action */
+    ToggleAction            _roiSelectionAction;                /** ROI selection action */
+    SubsetAction            _subsetAction;                      /** Subset action */
+    TriggerAction           _exportToImageAction;               /** Export to image action */
+    QActionGroup            _interactionModeActionGroup;        /** Interaction mode action group */
+    ViewSettingsAction      _viewSettingsAction;                /** View settings action */
 };

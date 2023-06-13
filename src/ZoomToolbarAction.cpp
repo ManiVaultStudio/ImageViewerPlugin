@@ -8,7 +8,7 @@ using namespace hdps::util;
 const float ZoomToolbarAction::zoomDeltaPercentage = 0.1f;
 
 ZoomToolbarAction::ZoomToolbarAction(QObject* parent, const QString& title) :
-    HorizontalToolbarAction(parent, title),
+    HorizontalToolbarAction(parent, title, Qt::AlignCenter),
     _imageViewerPlugin(nullptr),
     _zoomOutAction(this, "Zoom out"),
     _zoomPercentageAction(this, "Zoom Percentage", 10.0f, 1000.0f, 100.0f, 100.0f, 1),
@@ -17,7 +17,13 @@ ZoomToolbarAction::ZoomToolbarAction(QObject* parent, const QString& title) :
     _zoomSelectionAction(this, "Zoom Around Selection"),
     _exportToImageAction(this, "Export Layers")
 {
-    setText("Navigation");
+    
+    addAction(&_zoomOutAction, TriggerAction::Icon);
+    addAction(&_zoomPercentageAction, IntegralAction::Slider);
+    addAction(&_zoomInAction, TriggerAction::Icon);
+    addAction(&_zoomExtentsAction, TriggerAction::Icon);
+    addAction(&_zoomSelectionAction, TriggerAction::Icon);
+    addAction(&_exportToImageAction, TriggerAction::Icon);
 
     auto& fontAwesome = hdps::Application::getIconFont("FontAwesome");
 
@@ -41,7 +47,6 @@ ZoomToolbarAction::ZoomToolbarAction(QObject* parent, const QString& title) :
     _exportToImageAction.setShortcut(QKeySequence("e"));
 
     _zoomPercentageAction.setSuffix("%");
-    _zoomPercentageAction.setDefaultWidgetFlags(IntegralAction::Slider);
     _zoomPercentageAction.setUpdateDuringDrag(false);
 }
 
