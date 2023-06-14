@@ -15,15 +15,15 @@ MainToolbarAction::MainToolbarAction(ImageViewerPlugin& imageViewerPlugin) :
     _imageViewerPlugin(imageViewerPlugin),
     _panAction(this, "Pan"),
     _selectAction(this, "Select pixels"),
+    _interactionModeAction(this, "Interaction Mode"),
     _rectangleSelectionAction(this, "Rectangle selection"),
     _brushSelectionAction(this, "Rectangle selection"),
     _lassoSelectionAction(this, "Lasso selection"),
     _polygonSelectionAction(this, "Polygon selection"),
     _sampleSelectionAction(this, "Sample selection"),
     _roiSelectionAction(this, "ROI selection"),
-    _subsetAction(this, "Subset"),
+    _selectionAction(this, "Selection"),
     _exportToImageAction(this, "Export"),
-    _interactionModeActionGroup(this),
     _viewSettingsAction(this, "View Settings")
 {
     setText("Navigation");
@@ -32,7 +32,6 @@ MainToolbarAction::MainToolbarAction(ImageViewerPlugin& imageViewerPlugin) :
 
     _panAction.setToolTip("Move the view");
     _selectAction.setToolTip("Select pixels");
-    _subsetAction.setToolTip("Create subset from selection");
     _exportToImageAction.setToolTip("Export to image pixels");
 
     _panAction.setIcon(fontAwesome.getIcon("arrows-alt"));
@@ -45,8 +44,22 @@ MainToolbarAction::MainToolbarAction(ImageViewerPlugin& imageViewerPlugin) :
     _roiSelectionAction.setIcon(getPixelSelectionTypeIcon(PixelSelectionType::ROI));
     _exportToImageAction.setIcon(fontAwesome.getIcon("camera"));
     
-    _interactionModeActionGroup.addAction(&_panAction);
-    _interactionModeActionGroup.addAction(&_selectAction);
+    _interactionModeAction.setIcon(fontAwesome.getIcon("hand-sparkles"));
+    _interactionModeAction.setToolTip("Interaction type");
+    _interactionModeAction.addAction(&_panAction, ToggleAction::PushButtonIcon);
+    _interactionModeAction.addAction(&_selectAction, ToggleAction::PushButtonIcon);
+
+    _selectionAction.setIcon(fontAwesome.getIcon("mouse-pointer"));
+    _selectionAction.setToolTip("Selection type");
+    _selectionAction.addAction(&_rectangleSelectionAction, ToggleAction::PushButtonIcon);
+    _selectionAction.addAction(&_brushSelectionAction, ToggleAction::PushButtonIcon);
+    _selectionAction.addAction(&_lassoSelectionAction, ToggleAction::PushButtonIcon);
+    _selectionAction.addAction(&_polygonSelectionAction, ToggleAction::PushButtonIcon);
+    _selectionAction.addAction(&_sampleSelectionAction, ToggleAction::PushButtonIcon);
+    _selectionAction.addAction(&_roiSelectionAction, ToggleAction::PushButtonIcon);
+
+    addAction(&_interactionModeAction, 2);
+    addAction(&_selectionAction, 1);
 
     getImageViewerWidget().addAction(&_panAction);
     getImageViewerWidget().addAction(&_selectAction);
@@ -61,13 +74,8 @@ MainToolbarAction::MainToolbarAction(ImageViewerPlugin& imageViewerPlugin) :
     });
 
     const auto updateInteractionActions = [this]() -> void {
-        const auto inSelectionMode = getImageViewerWidget().getInteractionMode() == ImageViewerWidget::InteractionMode::Selection;
-
-        //_panAction.setChecked(!inSelectionMode);
-        //_selectAction.setChecked(inSelectionMode);
-
-        // Determine whether selection may take place
-        const auto maySelect = inSelectionMode && !_imageViewerPlugin.getSelectionModel().selectedRows().isEmpty();
+        const auto inSelectionMode  = getImageViewerWidget().getInteractionMode() == ImageViewerWidget::InteractionMode::Selection;
+        const auto maySelect        = inSelectionMode && !_imageViewerPlugin.getSelectionModel().selectedRows().isEmpty();
 
         // Enable/disable selection type actions
         _rectangleSelectionAction.setEnabled(maySelect);

@@ -307,7 +307,7 @@ void ImageProp::setChannelScalarData(const std::uint32_t& channelIndex, const QV
             setInterpolationType(static_cast<InterpolationType>(_layer.getImageSettingsAction().getInterpolationTypeAction().getCurrentIndex()));
 
             // Assign the scalar data to the texture 
-            //texture->setData(0, channelIndex, QOpenGLTexture::PixelFormat::Red, QOpenGLTexture::PixelType::Float32, scalarData.data());
+            texture->setData(0, channelIndex, QOpenGLTexture::PixelFormat::Red, QOpenGLTexture::PixelType::Float32, scalarData.data());
         }
         getRenderer().releaseOpenGLContext();
     }

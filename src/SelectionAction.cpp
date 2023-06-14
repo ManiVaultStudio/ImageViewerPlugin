@@ -38,8 +38,6 @@ SelectionAction::SelectionAction(QObject* parent, const QString& title) :
     addAction(&_pixelSelectionAction.getOverlayColorAction());
     addAction(&_pixelSelectionAction.getOverlayOpacityAction());
     addAction(&_pixelSelectionAction.getNotifyDuringSelectionAction());
-
-    
 }
 
 void SelectionAction::initialize(Layer* layer, QWidget* targetWidget, PixelSelectionTool* pixelSelectionTool)
@@ -59,10 +57,6 @@ void SelectionAction::initialize(Layer* layer, QWidget* targetWidget, PixelSelec
     connect(&_pixelSelectionAction.getOverlayColorAction(), &ColorAction::colorChanged, _layer, &Layer::invalidate);
     connect(&_pixelSelectionAction.getOverlayOpacityAction(), &DecimalAction::valueChanged, _layer, &Layer::invalidate);
     connect(&_showRegionAction, &ToggleAction::toggled, _layer, &Layer::invalidate);
-
-    connect(&_layer->getImageViewerPlugin().getImageViewerWidget(), &ImageViewerWidget::interactionModeChanged, this, [this](const ImageViewerWidget::InteractionMode& interactionMode) {
-        setEnabled(interactionMode == ImageViewerWidget::InteractionMode::Selection);
-    });
 }
 
 QRect SelectionAction::getImageSelectionRectangle() const

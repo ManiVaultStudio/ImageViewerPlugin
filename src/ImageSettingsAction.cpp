@@ -148,9 +148,9 @@ void ImageSettingsAction::initialize(Layer* layer)
     connect(&_colorMapAction.getDiscretizeAction(), &ToggleAction::toggled, this, &ImageSettingsAction::updateColorMapImage);
 
     const auto updateScalarChannels = [this]() {
-        //_scalarChannel1Action.computeScalarData();
-        //_scalarChannel2Action.computeScalarData();
-        //_scalarChannel3Action.computeScalarData();
+        _scalarChannel1Action.computeScalarData();
+        _scalarChannel2Action.computeScalarData();
+        _scalarChannel3Action.computeScalarData();
     };
 
     _updateSelectionTimer.setSingleShot(true);

@@ -58,8 +58,8 @@ void ZoomToolbarAction::initialize(ImageViewerPlugin* imageViewerPlugin)
         return;
 
     _imageViewerPlugin = imageViewerPlugin;
-
-    /*
+    
+    return;
     getImageViewerWidget().addAction(&_zoomOutAction);
     getImageViewerWidget().addAction(&_zoomInAction);
     getImageViewerWidget().addAction(&_zoomExtentsAction);
@@ -80,23 +80,23 @@ void ZoomToolbarAction::initialize(ImageViewerPlugin* imageViewerPlugin)
         connect(&getImageViewerWidget().getRenderer(), &LayersRenderer::animationFinished, this, [this, updateZoomPercentage]() {
             updateZoomPercentage();
             disconnect(&getImageViewerWidget().getRenderer(), &LayersRenderer::animationFinished, nullptr, nullptr);
-            });
+        });
     };
 
     connect(&_zoomOutAction, &TriggerAction::triggered, this, [this]() {
         getImageViewerWidget().getRenderer().setZoomPercentage(getImageViewerWidget().getRenderer().getZoomPercentage() - zoomDeltaPercentage);
         getImageViewerWidget().update();
-        });
+    });
 
     connect(&_zoomPercentageAction, &DecimalAction::valueChanged, this, [this](const float& value) {
         getImageViewerWidget().getRenderer().setZoomPercentage(0.01f * value);
         getImageViewerWidget().update();
-        });
+    });
 
     connect(&_zoomInAction, &TriggerAction::triggered, this, [this]() {
         getImageViewerWidget().getRenderer().setZoomPercentage(getImageViewerWidget().getRenderer().getZoomPercentage() + zoomDeltaPercentage);
         getImageViewerWidget().update();
-        });
+    });
 
     connect(&_zoomExtentsAction, &TriggerAction::triggered, this, [this, triggerUpdateZoomPercentageAfterAnimation]() {
         const auto worldBoundingRectangle = getImageViewerWidget().getWorldBoundingRectangle();
@@ -105,7 +105,7 @@ void ZoomToolbarAction::initialize(ImageViewerPlugin* imageViewerPlugin)
         getImageViewerWidget().update();
 
         triggerUpdateZoomPercentageAfterAnimation();
-        });
+    });
 
     connect(&_zoomSelectionAction, &TriggerAction::triggered, this, [this, triggerUpdateZoomPercentageAfterAnimation]() {
         const auto worldBoundingRectangle = getImageViewerWidget().getWorldBoundingRectangle();
@@ -127,10 +127,14 @@ void ZoomToolbarAction::initialize(ImageViewerPlugin* imageViewerPlugin)
 
     connect(&_exportToImageAction, &TriggerAction::triggered, this, [this]() {
         getImageViewerWidget().exportToImage();
-        });
+    });
 
     connect(&getImageViewerWidget().getRenderer(), &LayersRenderer::zoomRectangleChanged, this, [this, updateZoomPercentage]() {
         updateZoomPercentage();
     });
-    */
+}
+
+ImageViewerWidget& ZoomToolbarAction::getImageViewerWidget()
+{
+    return _imageViewerPlugin->getImageViewerWidget();
 }

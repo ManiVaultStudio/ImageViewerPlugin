@@ -45,7 +45,7 @@ void GeneralAction::initialize(Layer* layer)
         return;
 
     _layer = layer;
-
+    return;
     const auto layerColor = EditLayersAction::getRandomLayerColor();
 
     _colorAction.initialize(layerColor, layerColor);

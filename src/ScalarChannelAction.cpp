@@ -158,7 +158,6 @@ void ScalarChannelAction::computeScalarData()
                 break;
         }
 
-        // Publish scalar data change
         emit changed(*this);
     }
     catch (std::exception& e)

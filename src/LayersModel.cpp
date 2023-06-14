@@ -2,6 +2,7 @@
 #include "ImageViewerPlugin.h"
 
 #include <Application.h>
+#include <CoreInterface.h>
 #include <DataHierarchyItem.h>
 #include <util/Exception.h>
 #include <event/Event.h>
@@ -437,43 +438,41 @@ void LayersModel::addLayer(Layer* layer)
 {
     try
     {
-        // Insert the layer action at the beginning
         beginInsertRows(QModelIndex(), 0, 0);
         {
-            // Insert the layer at the beginning (layer will be added on top of all other layers)
             _layers.insert(0, layer);
 
-            // Inform views that the layer visibility has changed when it is changed in the action
             connect(&layer->getGeneralAction().getVisibleAction(), &ToggleAction::toggled, this, [this, layer](bool toggled) {
                 const auto changedCell = index(_layers.indexOf(layer), Column::Name);
                 emit dataChanged(changedCell, changedCell.siblingAtColumn(Column::Last));
             });
 
-            // Inform views that the layer color has changed when it is changed in the action
             connect(&layer->getGeneralAction().getColorAction(), &ColorAction::colorChanged, this, [this, layer](const QColor& color) {
                 const auto changedCell = index(_layers.indexOf(layer), Column::Color);
                 emit dataChanged(changedCell, changedCell);
             });
 
-            // Inform views that the layer name has changed when it is changed in the action
             connect(&layer->getGeneralAction().getNameAction(), &StringAction::stringChanged, this, [this, layer]() {
                 const auto changedCell = index(_layers.indexOf(layer), Column::Name);
                 emit dataChanged(changedCell, changedCell);
             });
 
-            // Inform views that the layer scale has changed when it is changed in the action
             connect(&layer->getGeneralAction().getScaleAction(), &DecimalAction::valueChanged, this, [this, layer](const float& value) {
                 const auto changedCell = index(_layers.indexOf(layer), Column::Scale);
                 emit dataChanged(changedCell, changedCell);
             });
 
-            // Inform views that the layer opacity has changed when it is changed in the action
             connect(&layer->getImageSettingsAction().getOpacityAction(), &DecimalAction::valueChanged, this, [this, layer](const float& value) {
                 const auto changedCell = index(_layers.indexOf(layer), Column::Opacity);
                 emit dataChanged(changedCell, changedCell);
             });
         }
         endInsertRows();
+
+        static_cast<ImageViewerPlugin*>(parent())->getImageViewerWidget().updateWorldBoundingRectangle();
+
+        if (rowCount() == 1)
+            layer->zoomToExtents();
     }
     catch (std::exception& e)
     {
@@ -642,8 +641,17 @@ void LayersModel::fromVariantMap(const QVariantMap& variantMap)
 
     auto imageViewerPlugin = static_cast<ImageViewerPlugin*>(parent());
 
-    for (auto layerMap : variantMap["Layers"].toList())
-        addLayer(new Layer(&imageViewerPlugin->getSettingsAction().getEditLayersAction(), layerMap.toMap()["Title"].toString()));
+    for (auto layerVariant : variantMap["Layers"].toList()) {
+        auto layer = new Layer(&imageViewerPlugin->getSettingsAction().getEditLayersAction(), layerVariant.toMap()["Title"].toString());
+
+        layer->initialize(imageViewerPlugin, hdps::data().getSet(layerVariant.toMap()["Dataset"].toString()));
+        layer->fromVariantMap(layerVariant.toMap());
+        layer->scaleToFit(imageViewerPlugin->getImageViewerWidget().getWorldBoundingRectangle(false));
+
+        addLayer(layer);
+    }
+
+    imageViewerPlugin->getImageViewerWidget().update();
 }
 
 QVariantMap LayersModel::toVariantMap() const

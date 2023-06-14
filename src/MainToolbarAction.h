@@ -4,11 +4,9 @@
 #include <actions/TriggerAction.h>
 #include <actions/DecimalAction.h>
 #include <actions/ToggleAction.h>
+#include <actions/HorizontalGroupAction.h>
 
-#include "SubsetAction.h"
 #include "GlobalViewSettingsAction.h"
-
-#include <QActionGroup>
 
 class ImageViewerPlugin;
 class ImageViewerWidget;
@@ -50,22 +48,21 @@ public: // Action getters
     ToggleAction& getPolygonSelectionAction() { return _polygonSelectionAction; }
     ToggleAction& getSampleSelectionAction() { return _sampleSelectionAction; }
     ToggleAction& getRoiSelectionAction() { return _roiSelectionAction; }
-    SubsetAction& getSubsetAction() { return _subsetAction; }
     TriggerAction& getExportToImageAction() { return _exportToImageAction; }
     ViewSettingsAction& getGlobalViewSettingsAction() { return _viewSettingsAction; }
 
 protected:
-    ImageViewerPlugin&      _imageViewerPlugin;                 /** Reference to image viewer plugin */
-    ToggleAction            _panAction;                         /** Pan interaction mode action */
-    ToggleAction            _selectAction;                      /** Select interaction mode action */
-    ToggleAction            _rectangleSelectionAction;          /** Rectangle selection action */
-    ToggleAction            _brushSelectionAction;              /** Brush selection action */
-    ToggleAction            _lassoSelectionAction;              /** Lasso selection action */
-    ToggleAction            _polygonSelectionAction;            /** Polygon selection action */
-    ToggleAction            _sampleSelectionAction;             /** Sample selection action */
-    ToggleAction            _roiSelectionAction;                /** ROI selection action */
-    SubsetAction            _subsetAction;                      /** Subset action */
-    TriggerAction           _exportToImageAction;               /** Export to image action */
-    QActionGroup            _interactionModeActionGroup;        /** Interaction mode action group */
-    ViewSettingsAction      _viewSettingsAction;                /** View settings action */
+    ImageViewerPlugin&      _imageViewerPlugin;             /** Reference to image viewer plugin */
+    ToggleAction            _panAction;                     /** Pan interaction mode action */
+    ToggleAction            _selectAction;                  /** Select interaction mode action */
+    HorizontalGroupAction   _interactionModeAction;         /** Interaction mode group action */
+    ToggleAction            _rectangleSelectionAction;      /** Rectangle selection action */
+    ToggleAction            _brushSelectionAction;          /** Brush selection action */
+    ToggleAction            _lassoSelectionAction;          /** Lasso selection action */
+    ToggleAction            _polygonSelectionAction;        /** Polygon selection action */
+    ToggleAction            _sampleSelectionAction;         /** Sample selection action */
+    ToggleAction            _roiSelectionAction;            /** ROI selection action */
+    HorizontalGroupAction   _selectionAction;               /** Selection group action */
+    TriggerAction           _exportToImageAction;           /** Export to image action */
+    ViewSettingsAction      _viewSettingsAction;            /** View settings action */
 };

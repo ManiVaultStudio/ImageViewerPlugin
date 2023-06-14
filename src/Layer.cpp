@@ -62,7 +62,6 @@ void Layer::initialize(ImageViewerPlugin* imageViewerPlugin, const hdps::Dataset
     // Resize selection data with number of pixels
     _selectionData.resize(_imagesDataset->getNumberOfPixels());
 
-    // Create layer render props
     _props << new ImageProp(*this, "ImageProp");
     _props << new SelectionProp(*this, "SelectionProp");
     _props << new SelectionToolProp(*this, "SelectionToolProp");
@@ -71,10 +70,12 @@ void Layer::initialize(ImageViewerPlugin* imageViewerPlugin, const hdps::Dataset
     this->getPropByName<SelectionProp>("SelectionProp")->setGeometry(_imagesDataset->getRectangle());
     this->getPropByName<SelectionToolProp>("SelectionToolProp")->setGeometry(_imagesDataset->getRectangle());
 
-    // Do an initial computation of the selected indices
+    _generalAction.initialize(this);
+    _imageSettingsAction.initialize(this);
+    _selectionAction.initialize(this, &_imageViewerPlugin->getImageViewerWidget(), &_imageViewerPlugin->getImageViewerWidget().getPixelSelectionTool());
+
     computeSelectionIndices();
 
-    // Resize mask data vector
     _maskData.resize(_imagesDataset->getNumberOfPixels());
 
     // Update the color map scalar data in the image prop
@@ -97,16 +98,8 @@ void Layer::initialize(ImageViewerPlugin* imageViewerPlugin, const hdps::Dataset
         invalidate();
     };
 
-    // Update the interpolation type in the image prop
     const auto updateInterpolationType = [this]() {
-
-        // Get pointer to image prop
-        auto imageProp = this->getPropByName<ImageProp>("ImageProp");
-
-        // Assign the scalar data to the prop
-        imageProp->setInterpolationType(static_cast<InterpolationType>(_imageSettingsAction.getInterpolationTypeAction().getCurrentIndex()));
-
-        // Render
+        this->getPropByName<ImageProp>("ImageProp")->setInterpolationType(static_cast<InterpolationType>(_imageSettingsAction.getInterpolationTypeAction().getCurrentIndex()));
         invalidate();
     };
 
@@ -195,10 +188,6 @@ void Layer::initialize(ImageViewerPlugin* imageViewerPlugin, const hdps::Dataset
         }
         getRenderer()->setAnimationEnabled(animationEnabled);
     });
-
-    _generalAction.initialize(this);
-    _imageSettingsAction.initialize(this);
-    _selectionAction.initialize(this, &_imageViewerPlugin->getImageViewerWidget(), &_imageViewerPlugin->getImageViewerWidget().getPixelSelectionTool());
 
     _imagesDataset->getMaskData(_maskData);
 
@@ -511,7 +500,7 @@ void Layer::paint(QPainter& painter, const PaintFlag& paintFlags)
         if ((paintFlags & Layer::Label) && _active) {
 
             // Establish label text
-            const auto labelText = QString("%1").arg(_imagesDataset->getDataHierarchyItem().getFullPathName());
+            const auto labelText = QString("%1 (%2)").arg(_generalAction.getNameAction().getString(), _imagesDataset->getDataHierarchyItem().getFullPathName());
 
             // Configure pen and brush
             painter.setPen(QPen(QBrush(_generalAction.getColorAction().getColor()), _active ? 2.0f : 1.0f));

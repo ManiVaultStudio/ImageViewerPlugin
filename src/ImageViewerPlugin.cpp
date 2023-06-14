@@ -36,6 +36,8 @@ ImageViewerPlugin::ImageViewerPlugin(hdps::plugin::PluginFactory* factory) :
 
     getWidget().setContextMenuPolicy(Qt::CustomContextMenu);
     getWidget().setFocusPolicy(Qt::ClickFocus);
+
+    _zoomToolbarAction.initialize(this);
 }
 
 void ImageViewerPlugin::init()
@@ -371,11 +373,6 @@ void ImageViewerPlugin::addDataset(const Dataset<Images>& dataset)
     layer->scaleToFit(_imageViewerWidget.getWorldBoundingRectangle(false));
 
     _model.addLayer(layer);
-
-    _imageViewerWidget.updateWorldBoundingRectangle();
-
-    if (_model.rowCount() == 1)
-        layer->zoomToExtents();
 }
 
 void ImageViewerPlugin::onLayerSelectionChanged()
