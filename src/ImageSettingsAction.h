@@ -2,7 +2,8 @@
 
 #include <actions/GroupAction.h>
 #include <actions/DecimalAction.h>
-#include <actions/ColorMapAction.h>
+#include <actions/ColorMap1DAction.h>
+#include <actions/ColorMap2DAction.h>
 #include <actions/ToggleAction.h>
 #include <actions/ColorAction.h>
 
@@ -118,8 +119,8 @@ protected:
     ScalarChannelAction     _scalarChannel1Action;          /** Scalar channel 1 action */
     ScalarChannelAction     _scalarChannel2Action;          /** Scalar channel 2 action */
     ScalarChannelAction     _scalarChannel3Action;          /** Scalar channel 3 action */
-    ColorMapAction          _colorMap1DAction;              /** One-dimensional color map action */
-    ColorMapAction          _colorMap2DAction;              /** Two-dimensional color map action */
+    ColorMap1DAction        _colorMap1DAction;              /** One-dimensional color map action */
+    ColorMap2DAction        _colorMap2DAction;              /** Two-dimensional color map action */
     OptionAction            _interpolationTypeAction;       /** Interpolation type action */
     ToggleAction            _useConstantColorAction;        /** Constant color action */
     ColorAction             _constantColorAction;           /** Color action */

@@ -301,7 +301,7 @@ void ImageSettingsAction::updateScalarChannelActions()
             _scalarChannel2Action.setText("Channel 2");
             _scalarChannel3Action.setText("Channel 3");
 
-            _colorMap1DAction.setEnabled(isClusterType ? false : true);
+            _colorMap1DAction.setEnabled(isClusterType ? false : (!_useConstantColorAction.isChecked()));
             _colorMap2DAction.setEnabled(false);
 
             break;
@@ -318,7 +318,7 @@ void ImageSettingsAction::updateScalarChannelActions()
             _scalarChannel3Action.setText("Channel 3");
 
             _colorMap1DAction.setEnabled(false);
-            _colorMap2DAction.setEnabled(true);
+            _colorMap2DAction.setEnabled(!_useConstantColorAction.isChecked());
 
             break;
         }
