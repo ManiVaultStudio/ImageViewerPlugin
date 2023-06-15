@@ -60,9 +60,6 @@ ImageSettingsAction::ImageSettingsAction(QObject* parent, const QString& title) 
     _colorMap1DAction.getRangeAction(ColorMapAction::Axis::X).setEnabled(false);
     _colorMap1DAction.getRangeAction(ColorMapAction::Axis::Y).setEnabled(false);
 
-    _colorMap1DAction.setColorMapType(ColorMap::Type::OneDimensional);
-    _colorMap2DAction.setColorMapType(ColorMap::Type::TwoDimensional);
-
     const auto useConstantColorToggled = [this]() {
         _colorMap1DAction.setEnabled(!_useConstantColorAction.isChecked() && (_colorSpaceAction.getCurrentIndex() == 0));
         _colorMap2DAction.setEnabled(!_useConstantColorAction.isChecked() && (_colorSpaceAction.getCurrentIndex() == 1));
