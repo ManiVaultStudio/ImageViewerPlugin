@@ -7,8 +7,8 @@
 #include <ImageData/ImageData.h>
 #include <ClusterData/ClusterData.h>
 #include <util/Exception.h>
-
 #include <actions/PluginTriggerAction.h>
+#include <DatasetsMimeData.h>
 
 #include <QDebug>
 #include <QSplitter>
@@ -87,15 +87,19 @@ void ImageViewerPlugin::init()
     _dropWidget.initialize([this](const QMimeData* mimeData) -> DropWidget::DropRegions {
         DropWidget::DropRegions dropRegions;
 
-        const auto mimeText         = mimeData->text();
-        const auto tokens           = mimeText.split("\n");
-        const auto datasetGuiName   = tokens[0];
-        const auto datasetId        = tokens[1];
-        const auto dataType         = hdps::DataType(tokens[2]);
-        const auto dataTypes        = hdps::DataTypes({ ImageType, PointType, ClusterType });
+        const auto datasetsMimeData = dynamic_cast<const DatasetsMimeData*>(mimeData);
 
-        // Get reference to the drop dataset
-        auto dataset = _core->requestDataset(datasetId);
+        if (datasetsMimeData == nullptr)
+            return dropRegions;
+
+        if (datasetsMimeData->getDatasets().count() > 1)
+            return dropRegions;
+
+        const auto dataset          = datasetsMimeData->getDatasets().first();
+        const auto datasetGuiName   = dataset->getGuiName();
+        const auto datasetId        = dataset->getGuid();
+        const auto dataType         = dataset->getDataType();
+        const auto dataTypes        = hdps::DataTypes({ ImageType, PointType, ClusterType });
 
         if (!dataTypes.contains(dataType))
             dropRegions << new DropWidget::DropRegion(this, "Incompatible data", "This type of data is not supported", "exclamation-circle", false);
@@ -132,6 +136,7 @@ void ImageViewerPlugin::init()
             });
         }
 
+        qDebug() << "----------------" << dropRegions.count();
         return dropRegions;
     });
 

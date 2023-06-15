@@ -56,6 +56,7 @@ ImageSettingsAction::ImageSettingsAction(QObject* parent, const QString& title) 
 
     _opacityAction.setSuffix("%");
 
+    _colorMap1DAction.setColorMap("Black to white");
     _colorMap1DAction.getRangeAction(ColorMapAction::Axis::X).setEnabled(false);
     _colorMap1DAction.getRangeAction(ColorMapAction::Axis::Y).setEnabled(false);
 
@@ -108,6 +109,9 @@ void ImageSettingsAction::initialize(Layer* layer)
     connect(&_subsampleFactorAction, &IntegralAction::valueChanged, _layer, &Layer::invalidate);
     connect(&_interpolationTypeAction, &OptionAction::currentIndexChanged, _layer, &Layer::invalidate);
     connect(&_constantColorAction, &ColorAction::colorChanged, _layer, &Layer::invalidate);
+
+    connect(&_colorSpaceAction, &OptionAction::currentIndexChanged, _layer, &Layer::invalidate);
+    connect(&_colorSpaceAction, &OptionAction::currentIndexChanged, this, &ImageSettingsAction::updateColorMapImage);
 
     if (dimensionNames.count() == 1)
         _colorSpaceAction.setCurrentText("Mono");
@@ -253,8 +257,9 @@ QImage ImageSettingsAction::getColorMapImage() const
             default:
                 break;
         }
-        
     }
+
+    return {};
 }
 
 void ImageSettingsAction::updateColorMapImage()
@@ -275,7 +280,9 @@ void ImageSettingsAction::updateColorMapImage()
             break;
     }
 
-    _layer->setColorMapImage(getColorMapImage(), interpolationType);
+
+    if (_colorSpaceAction.getCurrentIndex() <= 1)
+        _layer->setColorMapImage(getColorMapImage(), interpolationType);
 }
 
 void ImageSettingsAction::updateScalarChannelActions()
