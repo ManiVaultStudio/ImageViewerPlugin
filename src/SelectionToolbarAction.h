@@ -5,8 +5,7 @@
 #include <actions/DecimalAction.h>
 #include <actions/ToggleAction.h>
 #include <actions/HorizontalGroupAction.h>
-
-#include "GlobalViewSettingsAction.h"
+#include <actions/OptionAction.h>
 
 class ImageViewerPlugin;
 class ImageViewerWidget;
@@ -40,19 +39,17 @@ protected:
 
 public: // Action getters
 
-    HorizontalGroupAction& getModifierAction() { return _modifierAction; }
+    
     ToggleAction& getRectangleSelectionAction() { return _rectangleSelectionAction; }
     ToggleAction& getBrushSelectionAction() { return _brushSelectionAction; }
     ToggleAction& getLassoSelectionAction() { return _lassoSelectionAction; }
     ToggleAction& getPolygonSelectionAction() { return _polygonSelectionAction; }
     ToggleAction& getSampleSelectionAction() { return _sampleSelectionAction; }
     ToggleAction& getRoiSelectionAction() { return _roiSelectionAction; }
-    TriggerAction& getExportToImageAction() { return _exportToImageAction; }
-    ViewSettingsAction& getGlobalViewSettingsAction() { return _viewSettingsAction; }
+    OptionAction& getModifierAction() { return _modifierAction; }
 
 protected:
     ImageViewerPlugin&      _imageViewerPlugin;             /** Reference to image viewer plugin */
-    HorizontalGroupAction   _modifierAction;                /** Modifier group action */
     ToggleAction            _rectangleSelectionAction;      /** Rectangle selection action */
     ToggleAction            _brushSelectionAction;          /** Brush selection action */
     ToggleAction            _lassoSelectionAction;          /** Lasso selection action */
@@ -60,6 +57,5 @@ protected:
     ToggleAction            _sampleSelectionAction;         /** Sample selection action */
     ToggleAction            _roiSelectionAction;            /** ROI selection action */
     HorizontalGroupAction   _selectionAction;               /** Selection group action */
-    TriggerAction           _exportToImageAction;           /** Export to image action */
-    ViewSettingsAction      _viewSettingsAction;            /** View settings action */
+    OptionAction            _modifierAction;                /** Modifier action */
 };

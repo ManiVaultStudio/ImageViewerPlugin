@@ -19,7 +19,7 @@ InteractionToolbarAction::InteractionToolbarAction(QObject* parent, const QStrin
     _zoomInAction(this, "Zoom In"),
     _zoomExtentsAction(this, "Zoom All"),
     _zoomSelectionAction(this, "Zoom Around Selection"),
-    _exportToImageAction(this, "Export Layers")
+    _viewSettingsAction(this, "View Settings")
 {
     addAction(&_interactionModeGroupAction);
     addAction(&_zoomOutAction, TriggerAction::Icon);
@@ -27,7 +27,7 @@ InteractionToolbarAction::InteractionToolbarAction(QObject* parent, const QStrin
     addAction(&_zoomInAction, TriggerAction::Icon);
     addAction(&_zoomExtentsAction, TriggerAction::Icon);
     addAction(&_zoomSelectionAction, TriggerAction::Icon);
-    //addAction(&_exportToImageAction, TriggerAction::Icon);
+    addAction(&_viewSettingsAction, TriggerAction::Icon);
 
     auto& fontAwesome = hdps::Application::getIconFont("FontAwesome");
 
@@ -38,7 +38,6 @@ InteractionToolbarAction::InteractionToolbarAction(QObject* parent, const QStrin
     _zoomInAction.setToolTip("Zoom in by 10%");
     _zoomExtentsAction.setToolTip("Zoom to the boundaries of all layers (z)");
     _zoomSelectionAction.setToolTip("Zoom to the boundaries of the selection (d)");
-    _exportToImageAction.setToolTip("Export to image pixels");
 
     _navigationAction.setIcon(fontAwesome.getIcon("arrows-alt"));
     _selectAction.setIcon(fontAwesome.getIcon("mouse-pointer"));
@@ -46,13 +45,11 @@ InteractionToolbarAction::InteractionToolbarAction(QObject* parent, const QStrin
     _zoomInAction.setIcon(fontAwesome.getIcon("search-plus"));
     _zoomExtentsAction.setIcon(fontAwesome.getIcon("compress"));
     _zoomSelectionAction.setIcon(fontAwesome.getIcon("search-plus"));
-    _exportToImageAction.setIcon(fontAwesome.getIcon("camera"));
     
     _zoomOutAction.setShortcut(QKeySequence("-"));
     _zoomInAction.setShortcut(QKeySequence("+"));
     _zoomExtentsAction.setShortcut(QKeySequence("z"));
     _zoomSelectionAction.setShortcut(QKeySequence("d"));
-    _exportToImageAction.setShortcut(QKeySequence("e"));
 
     _interactionModeAction.setIcon(fontAwesome.getIcon("hand-sparkles"));
     _interactionModeAction.setToolTip("Interaction Mode");
@@ -62,6 +59,8 @@ InteractionToolbarAction::InteractionToolbarAction(QObject* parent, const QStrin
 
     _zoomPercentageAction.setSuffix("%");
     _zoomPercentageAction.setUpdateDuringDrag(false);
+
+    _viewSettingsAction.setConfigurationFlag(WidgetAction::ConfigurationFlag::ForceCollapsedInGroup);
 }
 
 void InteractionToolbarAction::initialize(ImageViewerPlugin* imageViewerPlugin)
@@ -79,7 +78,6 @@ void InteractionToolbarAction::initialize(ImageViewerPlugin* imageViewerPlugin)
     getImageViewerWidget().addAction(&_zoomInAction);
     getImageViewerWidget().addAction(&_zoomExtentsAction);
     getImageViewerWidget().addAction(&_zoomSelectionAction);
-    getImageViewerWidget().addAction(&_exportToImageAction);
 
     connect(&_navigationAction, &ToggleAction::toggled, this, [this](bool toggled) {
         if (toggled)
@@ -161,10 +159,6 @@ void InteractionToolbarAction::initialize(ImageViewerPlugin* imageViewerPlugin)
         layer->selectNone();
 
         triggerUpdateZoomPercentageAfterAnimation();
-    });
-
-    connect(&_exportToImageAction, &TriggerAction::triggered, this, [this]() {
-        getImageViewerWidget().exportToImage();
     });
 
     connect(&getImageViewerWidget().getRenderer(), &LayersRenderer::zoomRectangleChanged, this, [this, updateZoomPercentage]() {

@@ -1,4 +1,4 @@
-#include "GlobalViewSettingsAction.h"
+#include "ViewSettingsAction.h"
 #include "ImageViewerPlugin.h"
 
 #include <Application.h> 

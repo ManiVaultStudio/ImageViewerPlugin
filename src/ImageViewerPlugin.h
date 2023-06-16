@@ -111,7 +111,7 @@ public: // Serialization
 public: // Action getters
 
     SelectionToolbarAction& getMainToolbarAction() { return _selectionToolbarAction; }
-    InteractionToolbarAction& getInteractionToolbarAction() { return _zoomToolbarAction; }
+    InteractionToolbarAction& getInteractionToolbarAction() { return _interactionToolbarAction; }
     SettingsAction& getSettingsAction() { return _settingsAction; }
 
 private:
@@ -120,8 +120,8 @@ private:
     QSplitter                   _splitter;                  /** Splitter which divides the layers view and editor */
     ImageViewerWidget           _imageViewerWidget;         /** Image viewer widget */
     DropWidget                  _dropWidget;                /** Widget for dropping data */
-    SelectionToolbarAction      _selectionToolbarAction;    /** Main toolbar action */
-    InteractionToolbarAction    _zoomToolbarAction;         /** Zoom toolbar action */
+    SelectionToolbarAction      _selectionToolbarAction;    /** Toolbar action for selection */
+    InteractionToolbarAction    _interactionToolbarAction;  /** Toolbar action for interaction */
     SettingsAction              _settingsAction;            /** Layers settings action */
 };
 

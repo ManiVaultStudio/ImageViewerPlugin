@@ -13,7 +13,6 @@ using namespace hdps::util;
 SelectionToolbarAction::SelectionToolbarAction(ImageViewerPlugin& imageViewerPlugin) :
     HorizontalToolbarAction(&imageViewerPlugin, "Main Toolbar"),
     _imageViewerPlugin(imageViewerPlugin),
-    _modifierAction(this, "Modifier"),
     _rectangleSelectionAction(this, "Rectangle selection"),
     _brushSelectionAction(this, "Rectangle selection"),
     _lassoSelectionAction(this, "Lasso selection"),
@@ -21,14 +20,9 @@ SelectionToolbarAction::SelectionToolbarAction(ImageViewerPlugin& imageViewerPlu
     _sampleSelectionAction(this, "Sample selection"),
     _roiSelectionAction(this, "ROI selection"),
     _selectionAction(this, "Selection"),
-    _exportToImageAction(this, "Export"),
-    _viewSettingsAction(this, "View Settings")
+    _modifierAction(this, "Modifier", { "Replace", "Add", "Subtract" })
 {
-    setText("Navigation");
-
     auto& fontAwesome = hdps::Application::getIconFont("FontAwesome");
-
-    _exportToImageAction.setToolTip("Export to image pixels");
 
     _rectangleSelectionAction.setIcon(getPixelSelectionTypeIcon(PixelSelectionType::Rectangle));
     _brushSelectionAction.setIcon(getPixelSelectionTypeIcon(PixelSelectionType::Brush));
@@ -36,9 +30,6 @@ SelectionToolbarAction::SelectionToolbarAction(ImageViewerPlugin& imageViewerPlu
     _polygonSelectionAction.setIcon(getPixelSelectionTypeIcon(PixelSelectionType::Polygon));
     _sampleSelectionAction.setIcon(getPixelSelectionTypeIcon(PixelSelectionType::Sample));
     _roiSelectionAction.setIcon(getPixelSelectionTypeIcon(PixelSelectionType::ROI));
-    _exportToImageAction.setIcon(fontAwesome.getIcon("camera"));
-
-    //_modifierAction.addAction();
 
     _selectionAction.setIcon(fontAwesome.getIcon("mouse-pointer"));
     _selectionAction.setToolTip("Selection type");
@@ -49,19 +40,16 @@ SelectionToolbarAction::SelectionToolbarAction(ImageViewerPlugin& imageViewerPlu
     _selectionAction.addAction(&_sampleSelectionAction, ToggleAction::PushButtonIcon);
     _selectionAction.addAction(&_roiSelectionAction, ToggleAction::PushButtonIcon);
 
-    addAction(&_modifierAction, 1);
+    _modifierAction.setToolTip("Determines how to combined with the current selection");
+
     addAction(&_selectionAction, 2);
-
-    getImageViewerWidget().addAction(&_exportToImageAction);
-
-    connect(&_exportToImageAction, &TriggerAction::triggered, this, [this]() {
-        getImageViewerWidget().exportToImage();
-    });
+    addAction(&_modifierAction, 1);
 
     const auto updateInteractionActions = [this]() -> void {
         const auto inSelectionMode  = getImageViewerWidget().getInteractionMode() == ImageViewerWidget::InteractionMode::Selection;
         const auto maySelect        = inSelectionMode && !_imageViewerPlugin.getSelectionModel().selectedRows().isEmpty();
 
+        _modifierAction.setEnabled(maySelect);
         _rectangleSelectionAction.setEnabled(maySelect);
         _brushSelectionAction.setEnabled(maySelect);
         _lassoSelectionAction.setEnabled(maySelect);
@@ -84,75 +72,39 @@ ImageViewerWidget& SelectionToolbarAction::getImageViewerWidget()
 
 void SelectionToolbarAction::setupInteraction()
 {
-    const auto getSelectedLayer = [this]() -> Layer* {
-        const auto selectedRows = _imageViewerPlugin.getSelectionModel().selectedRows();
-
-        if (selectedRows.isEmpty())
-            return nullptr;
-
-        return static_cast<Layer*>(selectedRows.first().internalPointer());
+    const auto unlinkToggleAction = [this](ToggleAction* toggleAction) -> void {
+        disconnect(toggleAction, &ToggleAction::toggled, this, nullptr);
     };
 
-    connect(&_rectangleSelectionAction, &ToggleAction::toggled, this, [this, getSelectedLayer](bool toggled) {
-        auto selectedLayer = getSelectedLayer();
+    const auto linkToggleActions = [this](ToggleAction* toggleActionSource, ToggleAction* toggleActionTarget) -> void {
+        getImageViewerWidget().addAction(toggleActionSource);
 
-        if (selectedLayer)
-            selectedLayer->getSelectionAction().getPixelSelectionAction().getRectangleAction().setChecked(toggled);
-    });
+        toggleActionSource->setChecked(toggleActionTarget->isChecked());
 
-    connect(&_brushSelectionAction, &ToggleAction::toggled, this, [this, getSelectedLayer](bool toggled) {
-        auto selectedLayer = getSelectedLayer();
+        connect(toggleActionSource, &ToggleAction::toggled, this, [this, toggleActionTarget](bool toggled) {
+            toggleActionTarget->setChecked(toggled);
+        });
 
-        if (selectedLayer)
-            selectedLayer->getSelectionAction().getPixelSelectionAction().getBrushAction().setChecked(toggled);
-    });
+        connect(toggleActionTarget, &ToggleAction::toggled, this, [this, toggleActionSource](bool toggled) {
+            toggleActionSource->setChecked(toggled);
+        });
+    };
 
-    connect(&_lassoSelectionAction, &ToggleAction::toggled, this, [this, getSelectedLayer](bool toggled) {
-        auto selectedLayer = getSelectedLayer();
-
-        if (selectedLayer)
-            selectedLayer->getSelectionAction().getPixelSelectionAction().getLassoAction().setChecked(toggled);
-    });
-
-    connect(&_polygonSelectionAction, &ToggleAction::toggled, this, [this, getSelectedLayer](bool toggled) {
-        auto selectedLayer = getSelectedLayer();
-
-        if (selectedLayer)
-            selectedLayer->getSelectionAction().getPixelSelectionAction().getPolygonAction().setChecked(toggled);
-    });
-
-    connect(&_sampleSelectionAction, &ToggleAction::toggled, this, [this, getSelectedLayer](bool toggled) {
-        auto selectedLayer = getSelectedLayer();
-
-        if (selectedLayer)
-            selectedLayer->getSelectionAction().getPixelSelectionAction().getSampleAction().setChecked(toggled);
-    });
-
-    connect(&_roiSelectionAction, &ToggleAction::toggled, this, [this, getSelectedLayer](bool toggled) {
-        auto selectedLayer = getSelectedLayer();
-
-        if (selectedLayer)
-            selectedLayer->getSelectionAction().getPixelSelectionAction().getRoiAction().setChecked(toggled);
-    });
-
-    connect(&_imageViewerPlugin.getSelectionModel(), &QItemSelectionModel::selectionChanged, this, [this](const QItemSelection& newSelection, const QItemSelection& oldSelection) {
-
-        // Process deselected layers
+    connect(&_imageViewerPlugin.getSelectionModel(), &QItemSelectionModel::selectionChanged, this, [this, unlinkToggleAction, linkToggleActions](const QItemSelection& newSelection, const QItemSelection& oldSelection) {
         if (!oldSelection.indexes().isEmpty()) {
-
-            // Get pointer to layer that was deselected
             auto layer = static_cast<Layer*>(oldSelection.indexes().first().internalPointer());
 
-            // Get reference to the layer pixel selection action
             auto& pixelSelectionAction = layer->getSelectionAction().getPixelSelectionAction();
 
-            // Disconnect
-            disconnect(&pixelSelectionAction.getRectangleAction(), &ToggleAction::toggled, this, nullptr);
-            disconnect(&pixelSelectionAction.getBrushAction(), &ToggleAction::toggled, this, nullptr);
-            disconnect(&pixelSelectionAction.getLassoAction(), &ToggleAction::toggled, this, nullptr);
-            disconnect(&pixelSelectionAction.getPolygonAction(), &ToggleAction::toggled, this, nullptr);
-            disconnect(&pixelSelectionAction.getSampleAction(), &ToggleAction::toggled, this, nullptr);
-            disconnect(&pixelSelectionAction.getRoiAction(), &ToggleAction::toggled, this, nullptr);
+            unlinkToggleAction(&pixelSelectionAction.getRectangleAction());
+            unlinkToggleAction(&pixelSelectionAction.getBrushAction());
+            unlinkToggleAction(&pixelSelectionAction.getLassoAction());
+            unlinkToggleAction(&pixelSelectionAction.getPolygonAction());
+            unlinkToggleAction(&pixelSelectionAction.getSampleAction());
+            unlinkToggleAction(&pixelSelectionAction.getRoiAction());
+            
+            disconnect(&_modifierAction, &OptionAction::currentIndexChanged, this, nullptr);
+            disconnect(&pixelSelectionAction.getModifierAction(), &OptionAction::currentIndexChanged, this, nullptr);
         }
 
         if (!newSelection.indexes().isEmpty()) {
@@ -160,27 +112,22 @@ void SelectionToolbarAction::setupInteraction()
 
             auto& pixelSelectionAction = layer->getSelectionAction().getPixelSelectionAction();
 
-            _modifierAction.addAction(&pixelSelectionAction.getModifierReplaceAction());
-            _modifierAction.addAction(&pixelSelectionAction.getModifierAddAction());
-            _modifierAction.addAction(&pixelSelectionAction.getModifierSubtractAction());
+            linkToggleActions(&_rectangleSelectionAction, &pixelSelectionAction.getRectangleAction());
+            linkToggleActions(&_brushSelectionAction, &pixelSelectionAction.getBrushAction());
+            linkToggleActions(&_lassoSelectionAction, &pixelSelectionAction.getLassoAction());
+            linkToggleActions(&_polygonSelectionAction, &pixelSelectionAction.getPolygonAction());
+            linkToggleActions(&_sampleSelectionAction, &pixelSelectionAction.getSampleAction());
+            linkToggleActions(&_roiSelectionAction, &pixelSelectionAction.getRoiAction());
+            
+            _modifierAction.setCurrentIndex(pixelSelectionAction.getModifierAction().getCurrentIndex());
 
-            const auto updateSelectionActions = [this, &pixelSelectionAction]() -> void {
-                _rectangleSelectionAction.setChecked(pixelSelectionAction.getRectangleAction().isChecked());
-                _brushSelectionAction.setChecked(pixelSelectionAction.getBrushAction().isChecked());
-                _lassoSelectionAction.setChecked(pixelSelectionAction.getLassoAction().isChecked());
-                _polygonSelectionAction.setChecked(pixelSelectionAction.getPolygonAction().isChecked());
-                _sampleSelectionAction.setChecked(pixelSelectionAction.getSampleAction().isChecked());
-                _roiSelectionAction.setChecked(pixelSelectionAction.getRoiAction().isChecked());
-            };
+            connect(&_modifierAction, &OptionAction::currentIndexChanged, this, [this, &pixelSelectionAction](const std::int32_t& currentIndex) {
+                pixelSelectionAction.getModifierAction().setCurrentIndex(currentIndex);
+            });
 
-            connect(&pixelSelectionAction.getRectangleAction(), &ToggleAction::toggled, this, updateSelectionActions);
-            connect(&pixelSelectionAction.getBrushAction(), &ToggleAction::toggled, this, updateSelectionActions);
-            connect(&pixelSelectionAction.getLassoAction(), &ToggleAction::toggled, this, updateSelectionActions);
-            connect(&pixelSelectionAction.getPolygonAction(), &ToggleAction::toggled, this, updateSelectionActions);
-            connect(&pixelSelectionAction.getSampleAction(), &ToggleAction::toggled, this, updateSelectionActions);
-            connect(&pixelSelectionAction.getRoiAction(), &ToggleAction::toggled, this, updateSelectionActions);
-
-            updateSelectionActions();
+            connect(&pixelSelectionAction.getModifierAction(), &OptionAction::currentIndexChanged, this, [this](const std::int32_t& currentIndex) {
+                _modifierAction.setCurrentIndex(currentIndex);
+            });
         }
     });
 }

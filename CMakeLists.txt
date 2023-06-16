@@ -66,8 +66,8 @@ set(DIALOGS
 )
 
 set(ACTIONS
-    src/GlobalViewSettingsAction.h
-    src/GlobalViewSettingsAction.cpp
+    src/ViewSettingsAction.h
+    src/ViewSettingsAction.cpp
     src/EditLayersAction.h
     src/EditLayersAction.cpp
     src/EditLayerAction.h

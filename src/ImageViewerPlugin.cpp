@@ -29,7 +29,7 @@ ImageViewerPlugin::ImageViewerPlugin(hdps::plugin::PluginFactory* factory) :
     _imageViewerWidget(*this),
     _dropWidget(&_imageViewerWidget),
     _selectionToolbarAction(*this),
-    _zoomToolbarAction(this, "Zoom Toolbar"),
+    _interactionToolbarAction(this, "Zoom Toolbar"),
     _settingsAction(this, "Settings")
 {
     setObjectName("Images");
@@ -37,7 +37,7 @@ ImageViewerPlugin::ImageViewerPlugin(hdps::plugin::PluginFactory* factory) :
     getWidget().setContextMenuPolicy(Qt::CustomContextMenu);
     getWidget().setFocusPolicy(Qt::ClickFocus);
 
-    _zoomToolbarAction.initialize(this);
+    _interactionToolbarAction.initialize(this);
 }
 
 void ImageViewerPlugin::init()
@@ -63,7 +63,7 @@ void ImageViewerPlugin::init()
     // And add the toolbar, image viewer widget
     mainWidgetLayout->addWidget(_selectionToolbarAction.createWidget(&getWidget()));
     mainWidgetLayout->addWidget(&_imageViewerWidget, 1);
-    mainWidgetLayout->addWidget(_zoomToolbarAction.createWidget(&getWidget()));
+    mainWidgetLayout->addWidget(_interactionToolbarAction.createWidget(&getWidget()));
 
     // Apply layout to main widget
     mainWidget->setLayout(mainWidgetLayout);
@@ -136,7 +136,6 @@ void ImageViewerPlugin::init()
             });
         }
 
-        qDebug() << "----------------" << dropRegions.count();
         return dropRegions;
     });
 
@@ -217,7 +216,7 @@ void ImageViewerPlugin::init()
 
         // Enabled/disable navigation tool bar
         _selectionToolbarAction.setEnabled(hasVisibleLayers);
-        _zoomToolbarAction.setEnabled(hasVisibleLayers);
+        _interactionToolbarAction.setEnabled(hasVisibleLayers);
     };
 
     // Enable/disable the navigation action when rows are inserted/removed
@@ -400,7 +399,7 @@ void ImageViewerPlugin::onLayerSelectionChanged()
         currentLayerName = layer->getGeneralAction().getNameAction().getString();
 
         // Zoom to the extents of the layer if smart zoom is enabled
-        if (_selectionToolbarAction.getGlobalViewSettingsAction().getSmartZoomAction().isChecked() && layer->getGeneralAction().getVisibleAction().isChecked())
+        if (_interactionToolbarAction.getViewSettingsAction().getSmartZoomAction().isChecked() && layer->getGeneralAction().getVisibleAction().isChecked())
             layer->zoomToExtents();
     }
 
@@ -423,7 +422,7 @@ void ImageViewerPlugin::immigrateDataset(const Dataset<DatasetImpl>& dataset)
 
             _imageViewerWidget.updateWorldBoundingRectangle();
 
-            if (_selectionToolbarAction.getGlobalViewSettingsAction().getSmartZoomAction().isChecked() || _model.rowCount() == 1)
+            if (_interactionToolbarAction.getViewSettingsAction().getSmartZoomAction().isChecked() || _model.rowCount() == 1)
                 layer->zoomToExtents();
 
             dialog->deleteLater();
