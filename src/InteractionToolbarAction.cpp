@@ -170,3 +170,19 @@ ImageViewerWidget& InteractionToolbarAction::getImageViewerWidget()
 {
     return _imageViewerPlugin->getImageViewerWidget();
 }
+
+void InteractionToolbarAction::fromVariantMap(const QVariantMap& variantMap)
+{
+    HorizontalToolbarAction::fromVariantMap(variantMap);
+
+    _interactionModeAction.fromParentVariantMap(variantMap);
+}
+
+QVariantMap InteractionToolbarAction::toVariantMap() const
+{
+    auto variantMap = HorizontalToolbarAction::toVariantMap();
+
+    _interactionModeAction.insertIntoVariantMap(variantMap);
+
+    return variantMap;
+}
