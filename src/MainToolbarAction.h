@@ -40,8 +40,6 @@ protected:
 
 public: // Action getters
 
-    ToggleAction& getPanAction() { return _panAction; }
-    ToggleAction& getSelectAction() { return _selectAction; }
     ToggleAction& getRectangleSelectionAction() { return _rectangleSelectionAction; }
     ToggleAction& getBrushSelectionAction() { return _brushSelectionAction; }
     ToggleAction& getLassoSelectionAction() { return _lassoSelectionAction; }
@@ -53,9 +51,6 @@ public: // Action getters
 
 protected:
     ImageViewerPlugin&      _imageViewerPlugin;             /** Reference to image viewer plugin */
-    ToggleAction            _panAction;                     /** Pan interaction mode action */
-    ToggleAction            _selectAction;                  /** Select interaction mode action */
-    HorizontalGroupAction   _interactionModeAction;         /** Interaction mode group action */
     ToggleAction            _rectangleSelectionAction;      /** Rectangle selection action */
     ToggleAction            _brushSelectionAction;          /** Brush selection action */
     ToggleAction            _lassoSelectionAction;          /** Lasso selection action */

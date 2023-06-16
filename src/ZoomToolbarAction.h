@@ -4,6 +4,8 @@
 #include <actions/TriggerAction.h>
 #include <actions/DecimalAction.h>
 #include <actions/ToggleAction.h>
+#include <actions/OptionAction.h>
+#include <actions/HorizontalGroupAction.h>
 
 class ImageViewerPlugin;
 class ImageViewerWidget;
@@ -41,6 +43,9 @@ public:
 
 public: // Action getters
 
+    ToggleAction& getPanAction() { return _navigationAction; }
+    ToggleAction& getSelectAction() { return _selectAction; }
+    OptionAction& getInteractionModeAction() { return _interactionModeAction; }
     TriggerAction& getZoomOutAction() { return _zoomOutAction; }
     DecimalAction& getZoomPercentageAction() { return _zoomPercentageAction; }
     TriggerAction& getZoomInAction() { return _zoomInAction; }
@@ -49,13 +54,17 @@ public: // Action getters
     TriggerAction& getExportToImageAction() { return _exportToImageAction; }
 
 protected:
-    ImageViewerPlugin*  _imageViewerPlugin;         /** Pointer to image viewer plugin */
-    TriggerAction       _zoomOutAction;             /** Zoom out action */
-    DecimalAction       _zoomPercentageAction;      /** Zoom action */
-    TriggerAction       _zoomInAction;              /** Zoom in action */
-    TriggerAction       _zoomExtentsAction;         /** Zoom extents action */
-    TriggerAction       _zoomSelectionAction;       /** Zoom to selection extents action */
-    TriggerAction       _exportToImageAction;       /** Export to image action */
+    ImageViewerPlugin*      _imageViewerPlugin;             /** Pointer to image viewer plugin */
+    ToggleAction            _navigationAction;                     /** Pan interaction mode action */
+    ToggleAction            _selectAction;                  /** Select interaction mode action */
+    OptionAction            _interactionModeAction;         /** Interaction mode option action */
+    HorizontalGroupAction   _interactionModeGroupAction;    /** Interaction mode option action */
+    TriggerAction           _zoomOutAction;                 /** Zoom out action */
+    DecimalAction           _zoomPercentageAction;          /** Zoom action */
+    TriggerAction           _zoomInAction;                  /** Zoom in action */
+    TriggerAction           _zoomExtentsAction;             /** Zoom extents action */
+    TriggerAction           _zoomSelectionAction;           /** Zoom to selection extents action */
+    TriggerAction           _exportToImageAction;           /** Export to image action */
 
     static const float zoomDeltaPercentage;
 };

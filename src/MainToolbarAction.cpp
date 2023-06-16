@@ -13,9 +13,6 @@ using namespace hdps::util;
 MainToolbarAction::MainToolbarAction(ImageViewerPlugin& imageViewerPlugin) :
     HorizontalToolbarAction(&imageViewerPlugin, "Main Toolbar"),
     _imageViewerPlugin(imageViewerPlugin),
-    _panAction(this, "Pan"),
-    _selectAction(this, "Select pixels"),
-    _interactionModeAction(this, "Interaction Mode"),
     _rectangleSelectionAction(this, "Rectangle selection"),
     _brushSelectionAction(this, "Rectangle selection"),
     _lassoSelectionAction(this, "Lasso selection"),
@@ -30,12 +27,8 @@ MainToolbarAction::MainToolbarAction(ImageViewerPlugin& imageViewerPlugin) :
 
     auto& fontAwesome = hdps::Application::getIconFont("FontAwesome");
 
-    _panAction.setToolTip("Move the view");
-    _selectAction.setToolTip("Select pixels");
     _exportToImageAction.setToolTip("Export to image pixels");
 
-    _panAction.setIcon(fontAwesome.getIcon("arrows-alt"));
-    _selectAction.setIcon(fontAwesome.getIcon("mouse-pointer"));
     _rectangleSelectionAction.setIcon(getPixelSelectionTypeIcon(PixelSelectionType::Rectangle));
     _brushSelectionAction.setIcon(getPixelSelectionTypeIcon(PixelSelectionType::Brush));
     _lassoSelectionAction.setIcon(getPixelSelectionTypeIcon(PixelSelectionType::Lasso));
@@ -43,11 +36,6 @@ MainToolbarAction::MainToolbarAction(ImageViewerPlugin& imageViewerPlugin) :
     _sampleSelectionAction.setIcon(getPixelSelectionTypeIcon(PixelSelectionType::Sample));
     _roiSelectionAction.setIcon(getPixelSelectionTypeIcon(PixelSelectionType::ROI));
     _exportToImageAction.setIcon(fontAwesome.getIcon("camera"));
-    
-    _interactionModeAction.setIcon(fontAwesome.getIcon("hand-sparkles"));
-    _interactionModeAction.setToolTip("Interaction type");
-    _interactionModeAction.addAction(&_panAction, ToggleAction::PushButtonIcon);
-    _interactionModeAction.addAction(&_selectAction, ToggleAction::PushButtonIcon);
 
     _selectionAction.setIcon(fontAwesome.getIcon("mouse-pointer"));
     _selectionAction.setToolTip("Selection type");
@@ -58,16 +46,11 @@ MainToolbarAction::MainToolbarAction(ImageViewerPlugin& imageViewerPlugin) :
     _selectionAction.addAction(&_sampleSelectionAction, ToggleAction::PushButtonIcon);
     _selectionAction.addAction(&_roiSelectionAction, ToggleAction::PushButtonIcon);
 
-    addAction(&_interactionModeAction, 2);
     addAction(&_selectionAction, 1);
 
-    getImageViewerWidget().addAction(&_panAction);
-    getImageViewerWidget().addAction(&_selectAction);
     getImageViewerWidget().addAction(&_exportToImageAction);
 
-    connect(&_panAction, &ToggleAction::toggled, this, [this](bool toggled) {
-        getImageViewerWidget().setInteractionMode(toggled ? ImageViewerWidget::Navigation : ImageViewerWidget::Selection);
-    });
+    
 
     connect(&_exportToImageAction, &TriggerAction::triggered, this, [this]() {
         getImageViewerWidget().exportToImage();

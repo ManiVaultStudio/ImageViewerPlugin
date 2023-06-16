@@ -20,8 +20,8 @@ ImageSettingsAction::ImageSettingsAction(QObject* parent, const QString& title) 
     _scalarChannel1Action(this, ScalarChannelAction::channelIndexes.value(ScalarChannelAction::Channel1)),
     _scalarChannel2Action(this, ScalarChannelAction::channelIndexes.value(ScalarChannelAction::Channel2)),
     _scalarChannel3Action(this, ScalarChannelAction::channelIndexes.value(ScalarChannelAction::Channel3)),
-    _colorMap1DAction(this, "1D Color map"),
-    _colorMap2DAction(this, "2D Color map"),
+    _colorMap1DAction(this, "1D Color map", "Black to white"),
+    _colorMap2DAction(this, "2D Color map", "example_a"),
     _interpolationTypeAction(this, "Interpolate", interpolationTypes.values(), "Bilinear", "Bilinear"),
     _useConstantColorAction(this, "Use constant color", false, false),
     _constantColorAction(this, "Constant color", QColor(Qt::white), QColor(Qt::white)),
@@ -56,7 +56,6 @@ ImageSettingsAction::ImageSettingsAction(QObject* parent, const QString& title) 
 
     _opacityAction.setSuffix("%");
 
-    _colorMap1DAction.setColorMap("Black to white");
     _colorMap1DAction.getRangeAction(ColorMapAction::Axis::X).setEnabled(false);
     _colorMap1DAction.getRangeAction(ColorMapAction::Axis::Y).setEnabled(false);
 
@@ -182,7 +181,7 @@ void ImageSettingsAction::initialize(Layer* layer)
         }
         });
 
-    auto sourceDataset = _layer->getSourceDataset();
+    auto& sourceDataset = _layer->getSourceDataset();
     
     if (sourceDataset.isValid()) {
         connect(&sourceDataset, &Dataset<DatasetImpl>::dataChanged, [this, sourceDataset]() -> void {
