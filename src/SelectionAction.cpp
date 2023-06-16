@@ -35,6 +35,7 @@ SelectionAction::SelectionAction(QObject* parent, const QString& title) :
 
     addAction(&_pixelSelectionAction.getTypeAction());
     addAction(&_pixelSelectionAction.getBrushRadiusAction());
+    addAction(&_pixelSelectionAction.getModifierAction());
     addAction(&_pixelSelectionAction.getOverlayColorAction());
     addAction(&_pixelSelectionAction.getOverlayOpacityAction());
     addAction(&_pixelSelectionAction.getNotifyDuringSelectionAction());
