@@ -96,8 +96,8 @@ set(LAYER_ACTIONS
 set(TOOLBAR_ACTIONS
     src/MainToolbarAction.h
     src/MainToolbarAction.cpp
-    src/ZoomToolbarAction.h
-    src/ZoomToolbarAction.cpp
+    src/InteractionToolbar.h
+    src/InteractionToolbar.cpp
 )
 
 set(SHADERS

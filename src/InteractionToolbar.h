@@ -13,13 +13,13 @@ class ImageViewerWidget;
 using namespace hdps::gui;
 
 /**
- * Zoom toolbar action class
+ * Interaction toolbar action class
  *
- * Action class for zooming
+ * Action class for various interaction modalities
  *
  * @author Thomas Kroes
  */
-class ZoomToolbarAction : public HorizontalToolbarAction
+class InteractionToolbarAction : public HorizontalToolbarAction
 {
     Q_OBJECT
 
@@ -30,7 +30,7 @@ public:
      * @param parent Pointer to parent object
      * @param title Title of the action
      */
-    Q_INVOKABLE ZoomToolbarAction(QObject* parent, const QString& title);
+    Q_INVOKABLE InteractionToolbarAction(QObject* parent, const QString& title);
 
     /**
      * Initialize with \p imageViewerPlugin
@@ -69,6 +69,6 @@ protected:
     static const float zoomDeltaPercentage;
 };
 
-Q_DECLARE_METATYPE(ZoomToolbarAction)
+Q_DECLARE_METATYPE(InteractionToolbarAction)
 
-inline const auto zoomToolbarActionMetaTypeId = qRegisterMetaType<ZoomToolbarAction*>("ZoomToolbarAction");
+inline const auto interactionToolbarActionMetaTypeId = qRegisterMetaType<InteractionToolbarAction*>("InteractionToolbarAction");
