@@ -778,7 +778,7 @@ void Layer::publishSelection()
         if (_sourceDataset->getDataType() == PointType) {
             
             // Get reference to points selection indices
-            std::vector<std::uint32_t> selectionIndices;
+            std::vector<std::uint32_t> selectionIndices = _sourceDataset->getSelection<Points>()->indices;
 
             // Establish new selection indices depending on the type of modifier
             switch (pixelSelectionTool.getModifier())

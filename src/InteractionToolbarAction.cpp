@@ -12,7 +12,7 @@ InteractionToolbarAction::InteractionToolbarAction(QObject* parent, const QStrin
     _imageViewerPlugin(nullptr),
     _navigationAction(this, "Navigation"),
     _selectAction(this, "Select"),
-    _interactionModeAction(this, "Interaction Mode", { "Navigation", "Select" }),
+    _interactionModeAction(this, "Interaction Mode", { "Navigation", "Select" }, "Navigation"),
     _interactionModeGroupAction(this, "Interaction Mode Group"),
     _zoomOutAction(this, "Zoom out"),
     _zoomPercentageAction(this, "Zoom Percentage", 10.0f, 1000.0f, 100.0f, 100.0f, 1),
@@ -57,8 +57,8 @@ InteractionToolbarAction::InteractionToolbarAction(QObject* parent, const QStrin
     _interactionModeAction.setIcon(fontAwesome.getIcon("hand-sparkles"));
     _interactionModeAction.setToolTip("Interaction Mode");
 
-    _interactionModeGroupAction.addAction(&_navigationAction, TriggerAction::Icon);
-    _interactionModeGroupAction.addAction(&_selectAction, TriggerAction::Icon);
+    _interactionModeGroupAction.addAction(&_navigationAction, ToggleAction::PushButtonIcon);
+    _interactionModeGroupAction.addAction(&_selectAction, ToggleAction::PushButtonIcon);
 
     _zoomPercentageAction.setSuffix("%");
     _zoomPercentageAction.setUpdateDuringDrag(false);
@@ -91,12 +91,18 @@ void InteractionToolbarAction::initialize(ImageViewerPlugin* imageViewerPlugin)
             _interactionModeAction.setCurrentText("Select");
     });
 
-    connect(&_interactionModeAction, &OptionAction::currentIndexChanged, this, [this](const std::int32_t& currentIndex) {
+    const auto currentIndexChanged = [this]() -> void {
+        const auto currentIndex = _interactionModeAction.getCurrentIndex();
+
         _navigationAction.setChecked(currentIndex == 0);
         _selectAction.setChecked(currentIndex == 1);
 
         getImageViewerWidget().setInteractionMode(currentIndex == 0 ? ImageViewerWidget::Navigation : ImageViewerWidget::Selection);
-    });
+    };
+
+    currentIndexChanged();
+
+    connect(&_interactionModeAction, &OptionAction::currentIndexChanged, this, currentIndexChanged);
 
     const auto updateZoomPercentage = [this]() -> void {
         const auto zoomPercentage = 100.0f * getImageViewerWidget().getRenderer().getZoomPercentage();

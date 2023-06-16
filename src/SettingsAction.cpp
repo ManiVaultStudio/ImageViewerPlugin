@@ -1,7 +1,7 @@
 #include "SettingsAction.h"
 #include "ImageViewerPlugin.h"
 #include "MainToolbarAction.h"
-#include "ZoomToolbarAction.h"
+#include "InteractionToolbarAction.h"
 
 #include <QMenu>
 
@@ -74,8 +74,8 @@ QMenu* SettingsAction::getContextMenu(QWidget* parent /*= nullptr*/)
 
     menu->addSeparator();
 
-    menu->addAction(&_imageViewerPlugin.getZoomToolbarAction().getZoomExtentsAction());
-    menu->addAction(&_imageViewerPlugin.getZoomToolbarAction().getZoomSelectionAction());
+    menu->addAction(&_imageViewerPlugin.getInteractionToolbarAction().getZoomExtentsAction());
+    menu->addAction(&_imageViewerPlugin.getInteractionToolbarAction().getZoomSelectionAction());
 
     return menu;
 }

@@ -111,18 +111,18 @@ public: // Serialization
 public: // Action getters
 
     MainToolbarAction& getMainToolbarAction() { return _mainToolbarAction; }
-    ZoomToolbarAction& getZoomToolbarAction() { return _zoomToolbarAction; }
+    InteractionToolbarAction& getInteractionToolbarAction() { return _zoomToolbarAction; }
     SettingsAction& getSettingsAction() { return _settingsAction; }
 
 private:
-    LayersModel             _model;                 /** Layers model */
-    QItemSelectionModel     _selectionModel;        /** Layers selection model */
-    QSplitter               _splitter;              /** Splitter which divides the layers view and editor */
-    ImageViewerWidget       _imageViewerWidget;     /** Image viewer widget */
-    DropWidget              _dropWidget;            /** Widget for dropping data */
-    MainToolbarAction       _mainToolbarAction;     /** Main toolbar action */
-    ZoomToolbarAction       _zoomToolbarAction;     /** Zoom toolbar action */
-    SettingsAction          _settingsAction;        /** Layers settings action */
+    LayersModel                 _model;                 /** Layers model */
+    QItemSelectionModel         _selectionModel;        /** Layers selection model */
+    QSplitter                   _splitter;              /** Splitter which divides the layers view and editor */
+    ImageViewerWidget           _imageViewerWidget;     /** Image viewer widget */
+    DropWidget                  _dropWidget;            /** Widget for dropping data */
+    MainToolbarAction           _mainToolbarAction;     /** Main toolbar action */
+    InteractionToolbarAction    _zoomToolbarAction;     /** Zoom toolbar action */
+    SettingsAction              _settingsAction;        /** Layers settings action */
 };
 
 /**
