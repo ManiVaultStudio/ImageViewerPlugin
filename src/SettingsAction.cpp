@@ -1,6 +1,6 @@
 #include "SettingsAction.h"
 #include "ImageViewerPlugin.h"
-#include "MainToolbarAction.h"
+#include "SelectionToolbarAction.h"
 #include "InteractionToolbarAction.h"
 
 #include <QMenu>

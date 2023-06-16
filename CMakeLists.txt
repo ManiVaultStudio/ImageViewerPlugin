@@ -94,8 +94,8 @@ set(LAYER_ACTIONS
 )
 
 set(TOOLBAR_ACTIONS
-    src/MainToolbarAction.h
-    src/MainToolbarAction.cpp
+    src/SelectionToolbarAction.h
+    src/SelectionToolbarAction.cpp
     src/InteractionToolbarAction.h
     src/InteractionToolbarAction.cpp
 )

@@ -28,7 +28,7 @@ ImageViewerPlugin::ImageViewerPlugin(hdps::plugin::PluginFactory* factory) :
     _splitter(Qt::Horizontal, &getWidget()),
     _imageViewerWidget(*this),
     _dropWidget(&_imageViewerWidget),
-    _mainToolbarAction(*this),
+    _selectionToolbarAction(*this),
     _zoomToolbarAction(this, "Zoom Toolbar"),
     _settingsAction(this, "Settings")
 {
@@ -61,7 +61,7 @@ void ImageViewerPlugin::init()
     mainWidgetLayout->setSpacing(0);
 
     // And add the toolbar, image viewer widget
-    mainWidgetLayout->addWidget(_mainToolbarAction.createWidget(&getWidget()));
+    mainWidgetLayout->addWidget(_selectionToolbarAction.createWidget(&getWidget()));
     mainWidgetLayout->addWidget(&_imageViewerWidget, 1);
     mainWidgetLayout->addWidget(_zoomToolbarAction.createWidget(&getWidget()));
 
@@ -216,7 +216,7 @@ void ImageViewerPlugin::init()
         const auto hasVisibleLayers = _model.rowCount() == 0 ? false : !_model.match(_model.index(0, LayersModel::Visible), Qt::EditRole, true, -1).isEmpty();
 
         // Enabled/disable navigation tool bar
-        _mainToolbarAction.setEnabled(hasVisibleLayers);
+        _selectionToolbarAction.setEnabled(hasVisibleLayers);
         _zoomToolbarAction.setEnabled(hasVisibleLayers);
     };
 
@@ -400,7 +400,7 @@ void ImageViewerPlugin::onLayerSelectionChanged()
         currentLayerName = layer->getGeneralAction().getNameAction().getString();
 
         // Zoom to the extents of the layer if smart zoom is enabled
-        if (_mainToolbarAction.getGlobalViewSettingsAction().getSmartZoomAction().isChecked() && layer->getGeneralAction().getVisibleAction().isChecked())
+        if (_selectionToolbarAction.getGlobalViewSettingsAction().getSmartZoomAction().isChecked() && layer->getGeneralAction().getVisibleAction().isChecked())
             layer->zoomToExtents();
     }
 
@@ -423,7 +423,7 @@ void ImageViewerPlugin::immigrateDataset(const Dataset<DatasetImpl>& dataset)
 
             _imageViewerWidget.updateWorldBoundingRectangle();
 
-            if (_mainToolbarAction.getGlobalViewSettingsAction().getSmartZoomAction().isChecked() || _model.rowCount() == 1)
+            if (_selectionToolbarAction.getGlobalViewSettingsAction().getSmartZoomAction().isChecked() || _model.rowCount() == 1)
                 layer->zoomToExtents();
 
             dialog->deleteLater();

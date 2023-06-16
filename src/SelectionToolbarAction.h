@@ -14,13 +14,13 @@ class ImageViewerWidget;
 using namespace hdps::gui;
 
 /**
- * Main toolbar action class
+ * Selection toolbar action class
  *
- * Action class for main toolbar
+ * Action class for selection toolbar
  *
  * @author Thomas Kroes
  */
-class MainToolbarAction : public HorizontalToolbarAction
+class SelectionToolbarAction : public HorizontalToolbarAction
 {
 public:
 
@@ -28,7 +28,7 @@ public:
      * Constructor
      * @param imageViewerPlugin Reference to image viewer plugin
      */
-    MainToolbarAction(ImageViewerPlugin& imageViewerPlugin);
+    SelectionToolbarAction(ImageViewerPlugin& imageViewerPlugin);
 
     /** Get reference to image viewer widget */
     ImageViewerWidget& getImageViewerWidget();
@@ -40,6 +40,7 @@ protected:
 
 public: // Action getters
 
+    HorizontalGroupAction& getModifierAction() { return _modifierAction; }
     ToggleAction& getRectangleSelectionAction() { return _rectangleSelectionAction; }
     ToggleAction& getBrushSelectionAction() { return _brushSelectionAction; }
     ToggleAction& getLassoSelectionAction() { return _lassoSelectionAction; }
@@ -51,6 +52,7 @@ public: // Action getters
 
 protected:
     ImageViewerPlugin&      _imageViewerPlugin;             /** Reference to image viewer plugin */
+    HorizontalGroupAction   _modifierAction;                /** Modifier group action */
     ToggleAction            _rectangleSelectionAction;      /** Rectangle selection action */
     ToggleAction            _brushSelectionAction;          /** Brush selection action */
     ToggleAction            _lassoSelectionAction;          /** Lasso selection action */

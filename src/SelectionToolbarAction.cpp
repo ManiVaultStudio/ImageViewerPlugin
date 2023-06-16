@@ -1,4 +1,4 @@
-#include "MainToolbarAction.h"
+#include "SelectionToolbarAction.h"
 #include "ImageViewerPlugin.h"
 #include "ImageViewerWidget.h"
 #include "LayersModel.h"
@@ -10,9 +10,10 @@
 
 using namespace hdps::util;
 
-MainToolbarAction::MainToolbarAction(ImageViewerPlugin& imageViewerPlugin) :
+SelectionToolbarAction::SelectionToolbarAction(ImageViewerPlugin& imageViewerPlugin) :
     HorizontalToolbarAction(&imageViewerPlugin, "Main Toolbar"),
     _imageViewerPlugin(imageViewerPlugin),
+    _modifierAction(this, "Modifier"),
     _rectangleSelectionAction(this, "Rectangle selection"),
     _brushSelectionAction(this, "Rectangle selection"),
     _lassoSelectionAction(this, "Lasso selection"),
@@ -37,6 +38,8 @@ MainToolbarAction::MainToolbarAction(ImageViewerPlugin& imageViewerPlugin) :
     _roiSelectionAction.setIcon(getPixelSelectionTypeIcon(PixelSelectionType::ROI));
     _exportToImageAction.setIcon(fontAwesome.getIcon("camera"));
 
+    //_modifierAction.addAction();
+
     _selectionAction.setIcon(fontAwesome.getIcon("mouse-pointer"));
     _selectionAction.setToolTip("Selection type");
     _selectionAction.addAction(&_rectangleSelectionAction, ToggleAction::PushButtonIcon);
@@ -46,11 +49,10 @@ MainToolbarAction::MainToolbarAction(ImageViewerPlugin& imageViewerPlugin) :
     _selectionAction.addAction(&_sampleSelectionAction, ToggleAction::PushButtonIcon);
     _selectionAction.addAction(&_roiSelectionAction, ToggleAction::PushButtonIcon);
 
-    addAction(&_selectionAction, 1);
+    addAction(&_modifierAction, 1);
+    addAction(&_selectionAction, 2);
 
     getImageViewerWidget().addAction(&_exportToImageAction);
-
-    
 
     connect(&_exportToImageAction, &TriggerAction::triggered, this, [this]() {
         getImageViewerWidget().exportToImage();
@@ -60,7 +62,6 @@ MainToolbarAction::MainToolbarAction(ImageViewerPlugin& imageViewerPlugin) :
         const auto inSelectionMode  = getImageViewerWidget().getInteractionMode() == ImageViewerWidget::InteractionMode::Selection;
         const auto maySelect        = inSelectionMode && !_imageViewerPlugin.getSelectionModel().selectedRows().isEmpty();
 
-        // Enable/disable selection type actions
         _rectangleSelectionAction.setEnabled(maySelect);
         _brushSelectionAction.setEnabled(maySelect);
         _lassoSelectionAction.setEnabled(maySelect);
@@ -76,19 +77,16 @@ MainToolbarAction::MainToolbarAction(ImageViewerPlugin& imageViewerPlugin) :
     setupInteraction();
 }
 
-ImageViewerWidget& MainToolbarAction::getImageViewerWidget()
+ImageViewerWidget& SelectionToolbarAction::getImageViewerWidget()
 {
     return _imageViewerPlugin.getImageViewerWidget();
 }
 
-void MainToolbarAction::setupInteraction()
+void SelectionToolbarAction::setupInteraction()
 {
     const auto getSelectedLayer = [this]() -> Layer* {
-
-        // Get selected row from selection model
         const auto selectedRows = _imageViewerPlugin.getSelectionModel().selectedRows();
 
-        // Only accept one selected layer at a time
         if (selectedRows.isEmpty())
             return nullptr;
 
@@ -157,16 +155,15 @@ void MainToolbarAction::setupInteraction()
             disconnect(&pixelSelectionAction.getRoiAction(), &ToggleAction::toggled, this, nullptr);
         }
 
-        // Process selected layers
         if (!newSelection.indexes().isEmpty()) {
-
-            // Get pointer to layer that was selected
             auto layer = static_cast<Layer*>(newSelection.indexes().first().internalPointer());
 
-            // Get reference to the layer pixel selection action
             auto& pixelSelectionAction = layer->getSelectionAction().getPixelSelectionAction();
 
-            // Update the check state of the selection actions
+            _modifierAction.addAction(&pixelSelectionAction.getModifierReplaceAction());
+            _modifierAction.addAction(&pixelSelectionAction.getModifierAddAction());
+            _modifierAction.addAction(&pixelSelectionAction.getModifierSubtractAction());
+
             const auto updateSelectionActions = [this, &pixelSelectionAction]() -> void {
                 _rectangleSelectionAction.setChecked(pixelSelectionAction.getRectangleAction().isChecked());
                 _brushSelectionAction.setChecked(pixelSelectionAction.getBrushAction().isChecked());
@@ -183,7 +180,6 @@ void MainToolbarAction::setupInteraction()
             connect(&pixelSelectionAction.getSampleAction(), &ToggleAction::toggled, this, updateSelectionActions);
             connect(&pixelSelectionAction.getRoiAction(), &ToggleAction::toggled, this, updateSelectionActions);
 
-            // Do an initial update when the layer is selected
             updateSelectionActions();
         }
     });
