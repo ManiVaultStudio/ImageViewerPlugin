@@ -1,13 +1,13 @@
-#include "ZoomToolbarAction.h"
+#include "InteractionToolbarAction.h"
 #include "ImageViewerPlugin.h"
 #include "ImageViewerWidget.h"
 #include "LayersModel.h"
 
 using namespace hdps::util;
 
-const float ZoomToolbarAction::zoomDeltaPercentage = 0.1f;
+const float InteractionToolbarAction::zoomDeltaPercentage = 0.1f;
 
-ZoomToolbarAction::ZoomToolbarAction(QObject* parent, const QString& title) :
+InteractionToolbarAction::InteractionToolbarAction(QObject* parent, const QString& title) :
     HorizontalToolbarAction(parent, title, Qt::AlignCenter),
     _imageViewerPlugin(nullptr),
     _navigationAction(this, "Navigation"),
@@ -64,7 +64,7 @@ ZoomToolbarAction::ZoomToolbarAction(QObject* parent, const QString& title) :
     _zoomPercentageAction.setUpdateDuringDrag(false);
 }
 
-void ZoomToolbarAction::initialize(ImageViewerPlugin* imageViewerPlugin)
+void InteractionToolbarAction::initialize(ImageViewerPlugin* imageViewerPlugin)
 {
     Q_ASSERT(imageViewerPlugin != nullptr);
 
@@ -166,7 +166,7 @@ void ZoomToolbarAction::initialize(ImageViewerPlugin* imageViewerPlugin)
     });
 }
 
-ImageViewerWidget& ZoomToolbarAction::getImageViewerWidget()
+ImageViewerWidget& InteractionToolbarAction::getImageViewerWidget()
 {
     return _imageViewerPlugin->getImageViewerWidget();
 }

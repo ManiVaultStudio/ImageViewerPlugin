@@ -5,7 +5,7 @@
 #include "LayersModel.h"
 #include "ImageViewerWidget.h"
 #include "MainToolbarAction.h"
-#include "ZoomToolbarAction.h"
+#include "InteractionToolbarAction.h"
 #include "SettingsAction.h"
 
 #include <widgets/DropWidget.h>
