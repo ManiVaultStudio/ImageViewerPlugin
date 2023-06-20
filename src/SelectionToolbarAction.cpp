@@ -38,7 +38,7 @@ SelectionToolbarAction::SelectionToolbarAction(ImageViewerPlugin& imageViewerPlu
     _selectionAction.addAction(&_lassoSelectionAction, ToggleAction::PushButtonIcon);
     _selectionAction.addAction(&_polygonSelectionAction, ToggleAction::PushButtonIcon);
     _selectionAction.addAction(&_sampleSelectionAction, ToggleAction::PushButtonIcon);
-    _selectionAction.addAction(&_roiSelectionAction, ToggleAction::PushButtonIcon);
+    //_selectionAction.addAction(&_roiSelectionAction, ToggleAction::PushButtonIcon);
 
     _modifierAction.setToolTip("Determines how to combined with the current selection");
 

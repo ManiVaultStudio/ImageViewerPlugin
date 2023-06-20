@@ -79,6 +79,8 @@ void InteractionToolbarAction::initialize(ImageViewerPlugin* imageViewerPlugin)
     getImageViewerWidget().addAction(&_zoomExtentsAction);
     getImageViewerWidget().addAction(&_zoomSelectionAction);
 
+    _viewSettingsAction.initialize(_imageViewerPlugin);
+
     connect(&_navigationAction, &ToggleAction::toggled, this, [this](bool toggled) {
         if (toggled)
             _interactionModeAction.setCurrentText("Navigation");

@@ -10,7 +10,7 @@ using namespace hdps;
 ViewSettingsAction::ViewSettingsAction(QObject* parent, const QString& title) :
     GroupAction(parent, title),
     _imageViewerPlugin(nullptr),
-    _zoomMarginAction(this, "Zoom margin", 1.0f, 1000.0f, 100.0f, 100.0f),
+    _zoomMarginAction(this, "Zoom margin", 1.0f, 1000.0f, 100.0f),
     _backgroundColorAction(this, "Background color", QColor(50, 50, 50)),
     _animationEnabledAction(this, "Animation", true),
     _smartZoomAction(this, "Smart zoom", true)
