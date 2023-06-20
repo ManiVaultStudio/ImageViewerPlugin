@@ -132,7 +132,6 @@ void Layer::initialize(ImageViewerPlugin* imageViewerPlugin, const hdps::Dataset
     // Update dataset name action when the images dataset GUI name changes
     connect(&_imagesDataset, &Dataset<Points>::dataGuiNameChanged, this, [this](const QString& oldGuiName, const QString& newGuiName) {
         _generalAction.getDatasetNameAction().setString(newGuiName);
-        _generalAction.getNameAction().setDefaultString(newGuiName);
     });
 
     const auto updateSelectionRoi = [this]() {

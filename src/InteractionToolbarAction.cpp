@@ -15,7 +15,7 @@ InteractionToolbarAction::InteractionToolbarAction(QObject* parent, const QStrin
     _interactionModeAction(this, "Interaction Mode", { "Navigation", "Select" }, "Navigation"),
     _interactionModeGroupAction(this, "Interaction Mode Group"),
     _zoomOutAction(this, "Zoom out"),
-    _zoomPercentageAction(this, "Zoom Percentage", 10.0f, 1000.0f, 100.0f, 100.0f, 1),
+    _zoomPercentageAction(this, "Zoom Percentage", 10.0f, 1000.0f, 100.0f, 1),
     _zoomInAction(this, "Zoom In"),
     _zoomExtentsAction(this, "Zoom All"),
     _zoomSelectionAction(this, "Zoom Around Selection"),

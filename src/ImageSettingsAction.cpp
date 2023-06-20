@@ -14,17 +14,17 @@ using namespace hdps::util;
 ImageSettingsAction::ImageSettingsAction(QObject* parent, const QString& title) :
     GroupAction(parent, title, true),
     _layer(nullptr),
-    _opacityAction(this, "Opacity", 0.0f, 100.0f, 100.0f, 100.0f, 1),
-    _subsampleFactorAction(this, "Subsample", 1, 8, 1, 1),
-    _colorSpaceAction(this, "Color space", colorSpaces.values(), "Mono", "Mono"),
+    _opacityAction(this, "Opacity", 0.0f, 100.0f, 100.0f, 1),
+    _subsampleFactorAction(this, "Subsample", 1, 8, 1),
+    _colorSpaceAction(this, "Color space", colorSpaces.values(), "Mono"),
     _scalarChannel1Action(this, ScalarChannelAction::channelIndexes.value(ScalarChannelAction::Channel1)),
     _scalarChannel2Action(this, ScalarChannelAction::channelIndexes.value(ScalarChannelAction::Channel2)),
     _scalarChannel3Action(this, ScalarChannelAction::channelIndexes.value(ScalarChannelAction::Channel3)),
     _colorMap1DAction(this, "1D Color map", "Black to white"),
     _colorMap2DAction(this, "2D Color map", "example_a"),
-    _interpolationTypeAction(this, "Interpolate", interpolationTypes.values(), "Bilinear", "Bilinear"),
-    _useConstantColorAction(this, "Use constant color", false, false),
-    _constantColorAction(this, "Constant color", QColor(Qt::white), QColor(Qt::white)),
+    _interpolationTypeAction(this, "Interpolate", interpolationTypes.values(), "Bilinear"),
+    _useConstantColorAction(this, "Use constant color", false),
+    _constantColorAction(this, "Constant color", QColor(Qt::white)),
     _updateSelectionTimer(),
     _updateScalarDataTimer()
 {
@@ -120,7 +120,6 @@ void ImageSettingsAction::initialize(Layer* layer)
     _scalarChannel3Action.getDimensionAction().setOptions(dimensionNames);
 
     _scalarChannel1Action.getDimensionAction().setCurrentIndex(0);
-    _scalarChannel1Action.getDimensionAction().setDefaultIndex(0);
 
     if (isClusterType) {
         _interpolationTypeAction.setCurrentIndex(static_cast<std::int32_t>(InterpolationType::NearestNeighbor));
@@ -141,12 +140,10 @@ void ImageSettingsAction::initialize(Layer* layer)
     else {
         if (_layer->getNumberOfImages() >= 2) {
             _scalarChannel2Action.getDimensionAction().setCurrentIndex(1);
-            _scalarChannel2Action.getDimensionAction().setDefaultIndex(1);
         }
 
         if (_layer->getNumberOfImages() >= 3) {
             _scalarChannel3Action.getDimensionAction().setCurrentIndex(2);
-            _scalarChannel3Action.getDimensionAction().setDefaultIndex(2);
         }
     }
 

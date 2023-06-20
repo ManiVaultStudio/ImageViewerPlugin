@@ -8,12 +8,12 @@ using namespace hdps;
 GeneralAction::GeneralAction(QObject* parent, const QString& title) :
     GroupAction(parent, title),
     _layer(nullptr),
-    _visibleAction(this, "Visible", true, true),
+    _visibleAction(this, "Visible", true),
     _datasetNameAction(this, "Dataset name"),
     _colorAction(this, "Color"),
     _nameAction(this, "Name"),
     _positionAction(this, "Position"),
-    _scaleAction(this, "Scale", 0.0f, 1000000.0f, 100.0f, 100.0f, 1)
+    _scaleAction(this, "Scale", 0.0f, 1000000.0f, 100.0f, 1)
 {
     addAction(&_visibleAction);
     addAction(&_datasetNameAction);
@@ -48,13 +48,12 @@ void GeneralAction::initialize(Layer* layer)
 
     const auto layerColor = EditLayersAction::getRandomLayerColor();
 
-    _colorAction.initialize(layerColor, layerColor);
+    _colorAction.setColor(layerColor);
 
     const auto guiName = _layer->getImages()->getGuiName();
 
     _datasetNameAction.setString(guiName);
     _nameAction.setString(guiName);
-    _nameAction.setDefaultString(guiName);
 
     const auto render = [this]() {
         _layer->getImageViewerPlugin().getImageViewerWidget().update();

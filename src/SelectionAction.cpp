@@ -27,7 +27,7 @@ SelectionAction::SelectionAction(QObject* parent, const QString& title) :
     _targetWidget(nullptr),
     _pixelSelectionAction(this, "Pixel Selection"),
     _pixelSelectionTool(nullptr),
-    _showRegionAction(this, "Show selected region", false, false)
+    _showRegionAction(this, "Show selected region", false)
 {
     setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("mouse-pointer"));
 

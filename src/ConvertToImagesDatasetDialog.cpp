@@ -21,11 +21,11 @@ ConvertToImagesDatasetDialog::ConvertToImagesDatasetDialog(ImageViewerPlugin& im
     _sourceImagesDataset(),
     _targetImagesDataset(),
     _datasetNameAction(this, "Dataset name"),
-    _imageWidthAction(this, "Image width", 1, 10000, 100, 100),
-    _imageHeightAction(this, "Image height", 1, 10000, 100, 100),
-    _numberOfImagesAction(this, "Number of images", 1, 10000, 1, 1),
+    _imageWidthAction(this, "Image width", 1, 10000, 100),
+    _imageHeightAction(this, "Image height", 1, 10000, 100),
+    _numberOfImagesAction(this, "Number of images", 1, 10000, 1),
     _numberOfPixelsAction(this, "Number of pixels"),
-    _useLinkedDataAction(this, "Use linked data", true, true),
+    _useLinkedDataAction(this, "Use linked data", true),
     _groupAction(this, "Group")
 {
     setWindowTitle(QString("Load %1 as images").arg(_sourceDataset->getGuiName()));
@@ -47,13 +47,13 @@ ConvertToImagesDatasetDialog::ConvertToImagesDatasetDialog(ImageViewerPlugin& im
     if (_sourceImagesDataset.isValid()) {
         const auto imageSize = _sourceImagesDataset->getImageSize();
 
-        _imageWidthAction.initialize(0, 10000, imageSize.width(), imageSize.width());
-        _imageHeightAction.initialize(0, 10000, imageSize.height(), imageSize.height());
+        _imageWidthAction.initialize(0, 10000, imageSize.width());
+        _imageHeightAction.initialize(0, 10000, imageSize.height());
     }
 
     const auto defaultDatasetName = QString("%1_img").arg(_sourceDataset->getGuiName());
 
-    _datasetNameAction.initialize(defaultDatasetName, defaultDatasetName);
+    _datasetNameAction.setString(defaultDatasetName);
 
     _numberOfImagesAction.setDefaultWidgetFlags(IntegralAction::LineEdit);
     _numberOfImagesAction.setEnabled(false);
