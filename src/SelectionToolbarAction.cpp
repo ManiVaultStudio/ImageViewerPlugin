@@ -83,10 +83,8 @@ void SelectionToolbarAction::setupInteraction()
     };
 
     connect(&_imageViewerPlugin.getSelectionModel(), &QItemSelectionModel::selectionChanged, this, [this, unlinkToggleAction, linkToggleActions](const QItemSelection& newSelection, const QItemSelection& oldSelection) {
-        return;
-
         if (!oldSelection.indexes().isEmpty()) {
-            auto layer = static_cast<Layer*>(oldSelection.indexes().first().internalPointer());
+            auto layer = _imageViewerPlugin.getLayersModel().getLayerFromIndex(oldSelection.indexes().first());
 
             auto& pixelSelectionAction = layer->getSelectionAction().getPixelSelectionAction();
 
@@ -103,7 +101,7 @@ void SelectionToolbarAction::setupInteraction()
         }
 
         if (!newSelection.indexes().isEmpty()) {
-            auto layer = static_cast<Layer*>(newSelection.indexes().first().internalPointer());
+            auto layer = _imageViewerPlugin.getLayersModel().getLayerFromIndex(newSelection.indexes().first());
 
             auto& pixelSelectionAction = layer->getSelectionAction().getPixelSelectionAction();
 

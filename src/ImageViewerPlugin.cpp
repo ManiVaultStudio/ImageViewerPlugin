@@ -130,7 +130,12 @@ void ImageViewerPlugin::init()
         if (selectedRows.count() != 1)
             return;
 
-        auto layer = static_cast<Layer*>(selectedRows.first().internalPointer());
+        auto layer = _layersModel.getLayerFromIndex(selectedRows.first());
+
+        Q_ASSERT(layer != nullptr);
+
+        if (layer == nullptr)
+            return;
 
         layer->startSelection();
     });
@@ -144,7 +149,12 @@ void ImageViewerPlugin::init()
         if (selectedRows.count() != 1)
             return;
 
-        auto layer = static_cast<Layer*>(selectedRows.first().internalPointer());
+        auto layer = _layersModel.getLayerFromIndex(selectedRows.first());
+
+        Q_ASSERT(layer != nullptr);
+
+        if (layer == nullptr)
+            return;
 
         layer->computeSelection(mousePositions);
 
@@ -165,7 +175,12 @@ void ImageViewerPlugin::init()
         if (selectedRows.count() != 1)
             return;
 
-        auto layer = static_cast<Layer*>(selectedRows.first().internalPointer());
+        auto layer = _layersModel.getLayerFromIndex(selectedRows.first());
+
+        Q_ASSERT(layer != nullptr);
+
+        if (layer == nullptr)
+            return;
 
         layer->publishSelection();
         layer->resetSelectionBuffer();

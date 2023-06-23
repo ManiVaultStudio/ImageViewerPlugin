@@ -28,7 +28,13 @@ QMenu* SettingsAction::getContextMenu(QWidget* parent /*= nullptr*/)
     const auto selectedRows = _imageViewerPlugin.getSelectionModel().selectedRows();
 
     if (!selectedRows.isEmpty()) {
-        auto layer = static_cast<Layer*>(selectedRows.first().internalPointer());
+        auto layer = _imageViewerPlugin.getLayersModel().getLayerFromIndex(selectedRows.first());
+
+        Q_ASSERT(layer != nullptr);
+
+        if (layer == nullptr)
+            return nullptr;
+
         auto& selectionAction = layer->getSelectionAction();
 
         auto selectionTypesWidget = new QWidget();

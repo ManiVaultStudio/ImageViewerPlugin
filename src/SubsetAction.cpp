@@ -49,7 +49,13 @@ void SubsetAction::initialize(ImageViewerPlugin* imageViewerPlugin)
             if (selectedRows.isEmpty())
                 throw std::runtime_error("No layer selected");
 
-            auto layer = static_cast<Layer*>(selectedRows.first().internalPointer());
+            auto layer = _imageViewerPlugin->getLayersModel().getLayerFromIndex(selectedRows.first());
+
+            Q_ASSERT(layer != nullptr);
+
+            if (layer == nullptr)
+                return;
+
             auto points = Dataset<Points>(layer->getSourceDataset());
             auto images = layer->getImages();
 

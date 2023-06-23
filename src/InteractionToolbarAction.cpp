@@ -155,7 +155,12 @@ void InteractionToolbarAction::initialize(ImageViewerPlugin* imageViewerPlugin)
         if (selectedRows.count() != 1)
             return;
 
-        auto layer = static_cast<Layer*>(selectedRows.first().internalPointer());
+        auto layer = _imageViewerPlugin->getLayersModel().getLayerFromIndex(selectedRows.first());
+
+        Q_ASSERT(layer != nullptr);
+
+        if (layer == nullptr)
+            return;
 
         layer->zoomToSelection();
         layer->selectNone();
