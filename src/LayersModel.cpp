@@ -602,7 +602,7 @@ void LayersModel::fromVariantMap(const QVariantMap& variantMap)
     for (auto layerVariant : variantMap["Layers"].toList()) {
         auto layer = new Layer(&imageViewerPlugin->getSettingsAction().getEditLayersAction(), layerVariant.toMap()["Title"].toString());
 
-        layer->initialize(imageViewerPlugin, hdps::data().getSet(layerVariant.toMap()["Dataset"].toString()));
+        layer->initialize(imageViewerPlugin, hdps::data().getSet(layerVariant.toMap()["DatasetId"].toString()));
         layer->fromVariantMap(layerVariant.toMap());
         layer->scaleToFit(imageViewerPlugin->getImageViewerWidget().getWorldBoundingRectangle(false));
 
