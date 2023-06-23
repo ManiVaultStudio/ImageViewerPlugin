@@ -41,25 +41,30 @@ QMenu* SettingsAction::getContextMenu(QWidget* parent /*= nullptr*/)
 
         auto& pixelSelectionAction = selectionAction.getPixelSelectionAction();
 
+        auto& interactionToolbar = _imageViewerPlugin.getInteractionToolbarAction();
+        auto& selectionToolbar   = _imageViewerPlugin.getSelectionToolbarAction();
+
+        selectionTypesLayout->addWidget(interactionToolbar.getSelectAction().createWidget(selectionTypesWidget, ToggleAction::PushButtonIcon));
+        selectionTypesLayout->addWidget(interactionToolbar.getNavigationAction().createWidget(selectionTypesWidget, ToggleAction::PushButtonIcon));
+        selectionTypesLayout->addStretch(1);
         selectionTypesLayout->addWidget(pixelSelectionAction.getRectangleAction().createWidget(selectionTypesWidget, ToggleAction::PushButtonIcon));
         selectionTypesLayout->addWidget(pixelSelectionAction.getBrushAction().createWidget(selectionTypesWidget, ToggleAction::PushButtonIcon));
         selectionTypesLayout->addWidget(pixelSelectionAction.getLassoAction().createWidget(selectionTypesWidget, ToggleAction::PushButtonIcon));
         selectionTypesLayout->addWidget(pixelSelectionAction.getPolygonAction().createWidget(selectionTypesWidget, ToggleAction::PushButtonIcon));
         selectionTypesLayout->addWidget(pixelSelectionAction.getSampleAction().createWidget(selectionTypesWidget, ToggleAction::PushButtonIcon));
-        selectionTypesLayout->addStretch(1);
 
         auto selectionTypeWidgetAction = new QWidgetAction(this);
 
         selectionTypeWidgetAction->setDefaultWidget(selectionTypesWidget);
 
-        selectionTypeWidgetAction->setEnabled(layer->getGeneralAction().getVisibleAction().isChecked() && _imageViewerPlugin.getImageViewerWidget().getInteractionMode() == ImageViewerWidget::Selection);
+        //selectionTypeWidgetAction->setEnabled(layer->getGeneralAction().getVisibleAction().isChecked() && _imageViewerPlugin.getImageViewerWidget().getInteractionMode() == ImageViewerWidget::Selection);
 
         menu->addAction(selectionTypeWidgetAction);
     }
 
     menu->addSeparator();
 
-    for (auto layer : _imageViewerPlugin.getModel().getLayers()) {
+    for (auto layer : _imageViewerPlugin.getLayersModel().getLayers()) {
         auto layerAction = new QAction(layer->getGeneralAction().getNameAction().getString());
 
         layerAction->setCheckable(true);

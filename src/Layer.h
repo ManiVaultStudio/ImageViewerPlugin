@@ -96,7 +96,7 @@ public:
     }
 
     /** Get images dataset */
-    hdps::Dataset<Images> getImages() {
+    hdps::Dataset<Images>& getImages() {
         return _imagesDataset;
     }
 

@@ -3,6 +3,10 @@
 #include <actions/TriggerAction.h>
 #include <actions/GroupAction.h>
 
+#include <widgets/HierarchyWidget.h>
+
+#include "LayersFilterModel.h"
+
 #include <QRandomGenerator>
 
 class QMenu;
@@ -33,8 +37,9 @@ public:
          */
         Widget(QWidget* parent, EditLayersAction* editLayersAction);
 
-    protected:
-        
+    private:
+        LayersFilterModel   _layersFilterModel;     /** Layers filter model */
+        HierarchyWidget     _hierarchyWidget;       /** Layers widget */
 
         friend class EditLayersAction;
     };
@@ -66,7 +71,6 @@ public: // Action getters
 
     SettingsAction& getSettingsAction() { return _settingsAction; }
     TriggerAction& getRemoveLayerAction() { return _removeLayerAction; }
-    TriggerAction& getDuplicateLayerAction() { return _duplicateLayerAction; }
     TriggerAction& getMoveLayerToTopAction() { return _moveLayerToTopAction; }
     TriggerAction& getMoveLayerUpAction() { return _moveLayerUpAction; }
     TriggerAction& getMoveLayerDownAction() { return _moveLayerDownAction; }
@@ -76,7 +80,6 @@ public: // Action getters
 private:
     SettingsAction&     _settingsAction;            /** Reference to settings action */
     TriggerAction       _removeLayerAction;         /** Remove layer action */
-    TriggerAction       _duplicateLayerAction;      /** Duplicate layer action */
     TriggerAction       _moveLayerToTopAction;      /** Move layer to top action */
     TriggerAction       _moveLayerUpAction;         /** Move layer up action */
     TriggerAction       _moveLayerDownAction;       /** Move layer down action */

@@ -39,7 +39,7 @@ InteractionToolbarAction::InteractionToolbarAction(QObject* parent, const QStrin
     _zoomExtentsAction.setToolTip("Zoom to the boundaries of all layers (z)");
     _zoomSelectionAction.setToolTip("Zoom to the boundaries of the selection (d)");
 
-    _navigationAction.setIcon(fontAwesome.getIcon("arrows-alt"));
+    _navigationAction.setIcon(fontAwesome.getIcon("hand-pointer"));
     _selectAction.setIcon(fontAwesome.getIcon("mouse-pointer"));
     _zoomOutAction.setIcon(fontAwesome.getIcon("search-minus"));
     _zoomInAction.setIcon(fontAwesome.getIcon("search-plus"));

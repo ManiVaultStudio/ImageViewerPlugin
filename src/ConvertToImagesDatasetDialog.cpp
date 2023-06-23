@@ -28,7 +28,7 @@ ConvertToImagesDatasetDialog::ConvertToImagesDatasetDialog(ImageViewerPlugin& im
     _useLinkedDataAction(this, "Use linked data", true),
     _groupAction(this, "Group")
 {
-    setWindowTitle(QString("Load %1 as images").arg(_sourceDataset->getGuiName()));
+    setWindowTitle(QString("Load %1 as images").arg(_sourceDataset->getLocation()));
     setWindowIcon(_sourceDataset->getIcon());
     
     _groupAction.addAction(&_datasetNameAction);
@@ -51,7 +51,7 @@ ConvertToImagesDatasetDialog::ConvertToImagesDatasetDialog(ImageViewerPlugin& im
         _imageHeightAction.initialize(0, 10000, imageSize.height());
     }
 
-    const auto defaultDatasetName = QString("%1_img").arg(_sourceDataset->getGuiName());
+    const auto defaultDatasetName = QString("%1_img").arg(_sourceDataset->text());
 
     _datasetNameAction.setString(defaultDatasetName);
 

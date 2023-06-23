@@ -32,6 +32,8 @@ set(MODEL
     src/Layer.cpp
     src/LayersModel.h
     src/LayersModel.cpp
+    src/LayersFilterModel.h
+    src/LayersFilterModel.cpp
     src/Renderable.h
     src/Renderable.cpp
 )

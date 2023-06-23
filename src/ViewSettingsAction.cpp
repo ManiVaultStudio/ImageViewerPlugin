@@ -12,10 +12,11 @@ ViewSettingsAction::ViewSettingsAction(QObject* parent, const QString& title) :
     _imageViewerPlugin(nullptr),
     _zoomMarginAction(this, "Zoom margin", 1.0f, 1000.0f, 100.0f),
     _backgroundColorAction(this, "Background color", QColor(50, 50, 50)),
-    _animationEnabledAction(this, "Animation", true),
-    _smartZoomAction(this, "Smart zoom", true)
+    _animationEnabledAction(this, "Animation", false),
+    _smartZoomAction(this, "Smart zoom", false)
 {
     setIcon(Application::getIconFont("FontAwesome").getIcon("cog"));
+    setLabelSizingType(LabelSizingType::Auto);
 
     _zoomMarginAction.setToolTip("Zoom margin around the layers extents");
     _backgroundColorAction.setToolTip("Background color of the viewer");

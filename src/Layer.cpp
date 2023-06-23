@@ -73,6 +73,7 @@ void Layer::initialize(ImageViewerPlugin* imageViewerPlugin, const hdps::Dataset
     _generalAction.initialize(this);
     _imageSettingsAction.initialize(this);
     _selectionAction.initialize(this, &_imageViewerPlugin->getImageViewerWidget(), &_imageViewerPlugin->getImageViewerWidget().getPixelSelectionTool());
+    _subsetAction.initialize(_imageViewerPlugin);
 
     computeSelectionIndices();
 
@@ -128,11 +129,6 @@ void Layer::initialize(ImageViewerPlugin* imageViewerPlugin, const hdps::Dataset
 
     // Update the window title when the layer name changes
     connect(&_generalAction.getNameAction(), &StringAction::stringChanged, this, &Layer::updateWindowTitle);
-
-    // Update dataset name action when the images dataset GUI name changes
-    connect(&_imagesDataset, &Dataset<Points>::dataGuiNameChanged, this, [this](const QString& oldGuiName, const QString& newGuiName) {
-        _generalAction.getDatasetNameAction().setString(newGuiName);
-    });
 
     const auto updateSelectionRoi = [this]() {
         computeSelection();
@@ -499,7 +495,7 @@ void Layer::paint(QPainter& painter, const PaintFlag& paintFlags)
         if ((paintFlags & Layer::Label) && _active) {
 
             // Establish label text
-            const auto labelText = QString("%1 (%2)").arg(_generalAction.getNameAction().getString(), _imagesDataset->getDataHierarchyItem().getFullPathName());
+            const auto labelText = QString("%1 (%2)").arg(_generalAction.getNameAction().getString(), _imagesDataset->getDataHierarchyItem().getLocation());
 
             // Configure pen and brush
             painter.setPen(QPen(QBrush(_generalAction.getColorAction().getColor()), _active ? 2.0f : 1.0f));
@@ -604,7 +600,7 @@ void Layer::paint(QPainter& painter, const PaintFlag& paintFlags)
 
 const QString Layer::getImagesDatasetId() const
 {
-    return _imagesDataset->getGuid();
+    return _imagesDataset->getId();
 }
 
 const std::uint32_t Layer::getNumberOfImages() const
@@ -1066,10 +1062,10 @@ void Layer::fromVariantMap(const QVariantMap& variantMap)
 {
     WidgetAction::fromVariantMap(variantMap);
 
-    variantMapMustContain(variantMap, "Dataset");
+    variantMapMustContain(variantMap, "DatasetId");
     variantMapMustContain(variantMap, "Title");
 
-    _imagesDataset = hdps::data().getSet(variantMap["Dataset"].toString());
+    _imagesDataset = hdps::data().getSet(variantMap["DatasetId"].toString());
 
     setText(variantMap["Title"].toString());
 
@@ -1085,7 +1081,7 @@ QVariantMap Layer::toVariantMap() const
     auto variantMap = WidgetAction::toVariantMap();
 
     variantMap.insert({
-        { "Dataset", _imagesDataset->getGuid() },
+        { "DatasetId", _imagesDataset->getId() },
         { "Title", text() }
     });
 

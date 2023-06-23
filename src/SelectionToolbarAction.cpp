@@ -45,23 +45,6 @@ SelectionToolbarAction::SelectionToolbarAction(ImageViewerPlugin& imageViewerPlu
     addAction(&_selectionAction, 2);
     addAction(&_modifierAction, 1);
 
-    const auto updateInteractionActions = [this]() -> void {
-        const auto inSelectionMode  = getImageViewerWidget().getInteractionMode() == ImageViewerWidget::InteractionMode::Selection;
-        const auto maySelect        = inSelectionMode && !_imageViewerPlugin.getSelectionModel().selectedRows().isEmpty();
-
-        _modifierAction.setEnabled(maySelect);
-        _rectangleSelectionAction.setEnabled(maySelect);
-        _brushSelectionAction.setEnabled(maySelect);
-        _lassoSelectionAction.setEnabled(maySelect);
-        _polygonSelectionAction.setEnabled(maySelect);
-        _sampleSelectionAction.setEnabled(maySelect);
-    };
-
-    connect(&getImageViewerWidget(), &ImageViewerWidget::interactionModeChanged, this, updateInteractionActions);
-    connect(&_imageViewerPlugin.getSelectionModel(), &QItemSelectionModel::selectionChanged, this, updateInteractionActions);
-
-    updateInteractionActions();
-
     setupInteraction();
 }
 
@@ -74,6 +57,7 @@ void SelectionToolbarAction::setupInteraction()
 {
     const auto unlinkToggleAction = [this](ToggleAction* toggleAction) -> void {
         disconnect(toggleAction, &ToggleAction::toggled, this, nullptr);
+        disconnect(toggleAction, &QAction::enabledChanged, this, nullptr);
     };
 
     const auto linkToggleActions = [this](ToggleAction* toggleActionSource, ToggleAction* toggleActionTarget) -> void {
@@ -88,9 +72,19 @@ void SelectionToolbarAction::setupInteraction()
         connect(toggleActionTarget, &ToggleAction::toggled, this, [this, toggleActionSource](bool toggled) {
             toggleActionSource->setChecked(toggled);
         });
+
+        const auto updateReadOnly = [toggleActionSource, toggleActionTarget]() -> void {
+            toggleActionSource->setEnabled(toggleActionTarget->isEnabled());
+        };
+
+        updateReadOnly();
+
+        connect(toggleActionTarget, &QAction::enabledChanged, this, updateReadOnly);
     };
 
     connect(&_imageViewerPlugin.getSelectionModel(), &QItemSelectionModel::selectionChanged, this, [this, unlinkToggleAction, linkToggleActions](const QItemSelection& newSelection, const QItemSelection& oldSelection) {
+        return;
+
         if (!oldSelection.indexes().isEmpty()) {
             auto layer = static_cast<Layer*>(oldSelection.indexes().first().internalPointer());
 
@@ -105,6 +99,7 @@ void SelectionToolbarAction::setupInteraction()
             
             disconnect(&_modifierAction, &OptionAction::currentIndexChanged, this, nullptr);
             disconnect(&pixelSelectionAction.getModifierAction(), &OptionAction::currentIndexChanged, this, nullptr);
+            disconnect(&pixelSelectionAction.getModifierAction(), &QAction::enabledChanged, this, nullptr);
         }
 
         if (!newSelection.indexes().isEmpty()) {
@@ -128,6 +123,14 @@ void SelectionToolbarAction::setupInteraction()
             connect(&pixelSelectionAction.getModifierAction(), &OptionAction::currentIndexChanged, this, [this](const std::int32_t& currentIndex) {
                 _modifierAction.setCurrentIndex(currentIndex);
             });
+
+            const auto updateReadOnly = [this, &pixelSelectionAction]() -> void {
+                _modifierAction.setEnabled(pixelSelectionAction.getModifierAction().isEnabled());
+            };
+
+            updateReadOnly();
+
+            connect(&pixelSelectionAction.getModifierAction(), &QAction::enabledChanged, this, updateReadOnly);
         }
     });
 }

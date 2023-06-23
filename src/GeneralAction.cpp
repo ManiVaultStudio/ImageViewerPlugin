@@ -49,11 +49,7 @@ void GeneralAction::initialize(Layer* layer)
     const auto layerColor = EditLayersAction::getRandomLayerColor();
 
     _colorAction.setColor(layerColor);
-
-    const auto guiName = _layer->getImages()->getGuiName();
-
-    _datasetNameAction.setString(guiName);
-    _nameAction.setString(guiName);
+    _nameAction.setString(_layer->getImages()->text());
 
     const auto render = [this]() {
         _layer->getImageViewerPlugin().getImageViewerWidget().update();
@@ -73,6 +69,14 @@ void GeneralAction::initialize(Layer* layer)
     connect(&_scaleAction, &DecimalAction::valueChanged, this, updateBounds);
     connect(&_colorAction, &ColorAction::colorChanged, this, updateBounds);
     connect(&_colorAction, &ColorAction::colorChanged, this, render);
+
+    const auto updateDatasetNameAction = [this]() -> void {
+        _datasetNameAction.setString(_layer->getImages()->getDataHierarchyItem().getLocation());
+    };
+
+    updateDatasetNameAction();
+
+    connect(_layer->getImages().get(), &DatasetImpl::textChanged, this, updateDatasetNameAction);
 }
 
 void GeneralAction::connectToPublicAction(WidgetAction* publicAction, bool recursive)

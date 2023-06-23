@@ -59,7 +59,7 @@ public: // Serialization
 
 public: // Action getters
 
-    ToggleAction& getPanAction() { return _navigationAction; }
+    ToggleAction& getNavigationAction() { return _navigationAction; }
     ToggleAction& getSelectAction() { return _selectAction; }
     OptionAction& getInteractionModeAction() { return _interactionModeAction; }
     TriggerAction& getZoomOutAction() { return _zoomOutAction; }

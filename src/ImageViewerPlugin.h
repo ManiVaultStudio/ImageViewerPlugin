@@ -69,8 +69,8 @@ public: // Inherited from ViewPlugin
 public: // Miscellaneous
 
     /** Get the layers model */
-    LayersModel& getModel() {
-        return _model;
+    LayersModel& getLayersModel() {
+        return _layersModel;
     }
 
     /** Get the layers selection model */
@@ -110,12 +110,12 @@ public: // Serialization
 
 public: // Action getters
 
-    SelectionToolbarAction& getMainToolbarAction() { return _selectionToolbarAction; }
+    SelectionToolbarAction& getSelectionToolbarAction() { return _selectionToolbarAction; }
     InteractionToolbarAction& getInteractionToolbarAction() { return _interactionToolbarAction; }
     SettingsAction& getSettingsAction() { return _settingsAction; }
 
 private:
-    LayersModel                 _model;                     /** Layers model */
+    LayersModel                 _layersModel;               /** Layers model */
     QItemSelectionModel         _selectionModel;            /** Layers selection model */
     QSplitter                   _splitter;                  /** Splitter which divides the layers view and editor */
     ImageViewerWidget           _imageViewerWidget;         /** Image viewer widget */

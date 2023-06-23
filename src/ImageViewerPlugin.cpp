@@ -23,8 +23,8 @@ Q_PLUGIN_METADATA(IID "nl.BioVault.ImageViewerPlugin")
 
 ImageViewerPlugin::ImageViewerPlugin(hdps::plugin::PluginFactory* factory) :
     ViewPlugin(factory),
-    _model(this),
-    _selectionModel(&_model),
+    _layersModel(this),
+    _selectionModel(&_layersModel),
     _splitter(Qt::Horizontal, &getWidget()),
     _imageViewerWidget(*this),
     _dropWidget(&_imageViewerWidget),
@@ -42,7 +42,6 @@ ImageViewerPlugin::ImageViewerPlugin(hdps::plugin::PluginFactory* factory) :
 
 void ImageViewerPlugin::init()
 {
-    // Create main layout for view and editing
     auto mainLayout = new QHBoxLayout();
 
     mainLayout->setContentsMargins(0, 0, 0, 0);
@@ -50,40 +49,30 @@ void ImageViewerPlugin::init()
 
     getWidget().setLayout(mainLayout);
 
-    // Create main left widget
     auto mainWidget = new QWidget();
 
-    // Create main widget layout
     auto mainWidgetLayout = new QVBoxLayout();
 
-    // Configure main layout
     mainWidgetLayout->setContentsMargins(0, 0, 0, 0);
     mainWidgetLayout->setSpacing(0);
 
-    // And add the toolbar, image viewer widget
     mainWidgetLayout->addWidget(_selectionToolbarAction.createWidget(&getWidget()));
     mainWidgetLayout->addWidget(&_imageViewerWidget, 1);
     mainWidgetLayout->addWidget(_interactionToolbarAction.createWidget(&getWidget()));
 
-    // Apply layout to main widget
     mainWidget->setLayout(mainWidgetLayout);
 
-    // Add viewer widget and settings panel to the splitter
     _splitter.addWidget(mainWidget);
     _splitter.addWidget(_settingsAction.createWidget(&getWidget()));
 
-    // Configure splitter
     _splitter.setStretchFactor(0, 1);
     _splitter.setStretchFactor(1, 0);
     _splitter.setCollapsible(1, true);
 
-    // Add splitter to the main layout
     mainLayout->addWidget(&_splitter);
 
-    // Provide a hint on how to load data
     _dropWidget.setDropIndicatorWidget(new DropWidget::DropIndicatorWidget(&getWidget(), "No data loaded", "Drag an item from the data hierarchy and drop it here to visualize data..."));
 
-    // Establish droppable regions
     _dropWidget.initialize([this](const QMimeData* mimeData) -> DropWidget::DropRegions {
         DropWidget::DropRegions dropRegions;
 
@@ -96,8 +85,8 @@ void ImageViewerPlugin::init()
             return dropRegions;
 
         const auto dataset          = datasetsMimeData->getDatasets().first();
-        const auto datasetGuiName   = dataset->getGuiName();
-        const auto datasetId        = dataset->getGuid();
+        const auto datasetGuiName   = dataset->text();
+        const auto datasetId        = dataset->getId();
         const auto dataType         = dataset->getDataType();
         const auto dataTypes        = hdps::DataTypes({ ImageType, PointType, ClusterType });
 
@@ -122,16 +111,12 @@ void ImageViewerPlugin::init()
 
         if (dataType == PointType) {
             dropRegions << new DropWidget::DropRegion(this, "Points", QString("Convert %1 to image layer").arg(datasetGuiName), "braille", true, [this, dataset]() {
-
-                // Convert the points dataset to an images dataset and add as a layer
                 immigrateDataset(dataset);
             });
         }
 
         if (dataType == ClusterType) {
             dropRegions << new DropWidget::DropRegion(this, "Clusters", QString("Convert %1 to image layer").arg(datasetGuiName), "th-large", true, [this, dataset]() {
-
-                // Convert the points dataset to an images dataset and add as a layer
                 immigrateDataset(dataset);
             });
         }
@@ -140,107 +125,75 @@ void ImageViewerPlugin::init()
     });
 
     connect(&_imageViewerWidget, &ImageViewerWidget::pixelSelectionStarted, this, [this]() {
-
-        // Get selected layers model rows
         const auto selectedRows = _selectionModel.selectedRows();
 
-        // Only compute selection when one layer is selected
         if (selectedRows.count() != 1)
             return;
 
-        // Get pointer to layer from the selected model index
         auto layer = static_cast<Layer*>(selectedRows.first().internalPointer());
 
-        // Publish the selection
         layer->startSelection();
     });
 
     connect(&_imageViewerWidget, &ImageViewerWidget::mousePositionsChanged, this, [this](const QVector<QPoint>& mousePositions) {
-
-        // No point in computing selection when there are no mouse positions
         if (mousePositions.count() == 0)
             return;
 
-        // Get selected layers model rows
         const auto selectedRows = _selectionModel.selectedRows();
 
-        // Only compute selection when one layer is selected
         if (selectedRows.count() != 1)
             return;
 
-        // Get pointer to layer from the selected model index
         auto layer = static_cast<Layer*>(selectedRows.first().internalPointer());
 
-        // Compute the layer selection
         layer->computeSelection(mousePositions);
 
-        // Get reference to the selection action
         auto& selectionAction = layer->getSelectionAction();
 
-        // Establish whether the selection type is sample
         const auto isSampleSelection = layer->getSelectionAction().getPixelSelectionAction().getTypeAction().getCurrentIndex() == static_cast<std::int32_t>(PixelSelectionType::Sample);
 
-        // Publish the selection
         if (selectionAction.getPixelSelectionAction().getNotifyDuringSelectionAction().isChecked() || isSampleSelection)
             layer->publishSelection();
 
-        // Reset the off-screen selection buffer in the case of sample selection
         if (isSampleSelection)
             layer->resetSelectionBuffer();
     });
 
     connect(&_imageViewerWidget, &ImageViewerWidget::pixelSelectionEnded, this, [this]() {
-
-        // Get selected layers model rows
         const auto selectedRows = _selectionModel.selectedRows();
 
-        // Only compute selection when one layer is selected
         if (selectedRows.count() != 1)
             return;
 
-        // Get pointer to layer from the selected model index
         auto layer = static_cast<Layer*>(selectedRows.first().internalPointer());
 
-        // Publish the selection if notifications during selection are turned on
         layer->publishSelection();
-
-        // Reset the off-screen selection buffer
         layer->resetSelectionBuffer();
     });
 
     const auto layersInsertedRemovedChanged = [this]() {
-        _dropWidget.setShowDropIndicator(_model.rowCount() == 0);
+        _dropWidget.setShowDropIndicator(_layersModel.rowCount() == 0);
 
-        // Establish the number of visible layers
-        const auto hasVisibleLayers = _model.rowCount() == 0 ? false : !_model.match(_model.index(0, LayersModel::Visible), Qt::EditRole, true, -1).isEmpty();
+        const auto hasVisibleLayers = _layersModel.rowCount() == 0 ? false : !_layersModel.match(_layersModel.index(0, static_cast<int>(LayersModel::Column::Visible)), Qt::EditRole, true, -1).isEmpty();
 
-        // Enabled/disable navigation tool bar
         _selectionToolbarAction.setEnabled(hasVisibleLayers);
         _interactionToolbarAction.setEnabled(hasVisibleLayers);
     };
 
-    // Enable/disable the navigation action when rows are inserted/removed
-    connect(&_model, &LayersModel::rowsInserted, this, layersInsertedRemovedChanged);
-    connect(&_model, &LayersModel::rowsRemoved, this, layersInsertedRemovedChanged);
-    connect(&_model, &LayersModel::dataChanged, this, layersInsertedRemovedChanged);
+    connect(&_layersModel, &LayersModel::rowsInserted, this, layersInsertedRemovedChanged);
+    connect(&_layersModel, &LayersModel::rowsRemoved, this, layersInsertedRemovedChanged);
+    connect(&_layersModel, &LayersModel::dataChanged, this, layersInsertedRemovedChanged);
 
-    // Initially enable/disable the navigation action
     layersInsertedRemovedChanged();
 
-    // Change the window title when the layer selection or layer name changes
     connect(&_selectionModel, &QItemSelectionModel::selectionChanged, this, &ImageViewerPlugin::onLayerSelectionChanged);
 
-    // Do an initial update of the window title
     onLayerSelectionChanged();
 
-    // Routine to show the context menu
     connect(&_imageViewerWidget, &ImageViewerWidget::customContextMenuRequested, this, [this](const QPoint& point) {
-
-        // Only show a context menu when there is data loaded
-        if (_model.rowCount() <= 0)
+        if (_layersModel.rowCount() <= 0)
             return;
 
-        // Show the context menu
         _settingsAction.getContextMenu()->exec(getWidget().mapToGlobal(point));
     });
 
@@ -259,7 +212,7 @@ void ImageViewerPlugin::loadData(const Datasets& datasets)
 
 void ImageViewerPlugin::arrangeLayers(LayersLayout layersLayout)
 {
-    auto layers = _model.getLayers();
+    auto layers = _layersModel.getLayers();
 
     const auto numberOfLayers   = layers.size();
     
@@ -371,17 +324,17 @@ void ImageViewerPlugin::arrangeLayers(LayersLayout layersLayout)
 
 void ImageViewerPlugin::addDataset(const Dataset<Images>& dataset)
 {
-    auto layer = new Layer(&_settingsAction.getEditLayersAction(), dataset->getGuiName());
+    auto layer = new Layer(&_settingsAction.getEditLayersAction(), dataset->text());
 
     layer->initialize(this, dataset);
     layer->scaleToFit(_imageViewerWidget.getWorldBoundingRectangle(false));
 
-    _model.addLayer(layer);
+    _layersModel.addLayer(layer);
 }
 
 void ImageViewerPlugin::onLayerSelectionChanged()
 {
-    return;
+    /*
     // Get selected row and establish whether there is a valid selection
     const auto selectedRows = _selectionModel.selectedRows();
     const auto hasSelection = !selectedRows.isEmpty();
@@ -405,6 +358,7 @@ void ImageViewerPlugin::onLayerSelectionChanged()
 
     // Update the window title
     getWidget().setWindowTitle(QString("%1%2").arg(getGuiName(), currentLayerName.isEmpty() ? "" : QString(": %1").arg(currentLayerName)));
+    */
 }
 
 void ImageViewerPlugin::immigrateDataset(const Dataset<DatasetImpl>& dataset)
@@ -413,16 +367,16 @@ void ImageViewerPlugin::immigrateDataset(const Dataset<DatasetImpl>& dataset)
         ConvertToImagesDatasetDialog* dialog = new ConvertToImagesDatasetDialog(*this, const_cast<Dataset<DatasetImpl>&>(dataset));
 
         connect(dialog, &ConvertToImagesDatasetDialog::accepted, this, [this, dialog]() -> void {
-            auto layer = new Layer(&_settingsAction.getEditLayersAction(), dialog->getTargetImagesDataset()->getGuiName());
+            auto layer = new Layer(&_settingsAction.getEditLayersAction(), dialog->getTargetImagesDataset()->text());
 
             layer->initialize(this, dialog->getTargetImagesDataset());
             layer->scaleToFit(_imageViewerWidget.getWorldBoundingRectangle(false));
 
-            _model.addLayer(layer);
+            _layersModel.addLayer(layer);
 
             _imageViewerWidget.updateWorldBoundingRectangle();
 
-            if (_interactionToolbarAction.getViewSettingsAction().getSmartZoomAction().isChecked() || _model.rowCount() == 1)
+            if (_interactionToolbarAction.getViewSettingsAction().getSmartZoomAction().isChecked() || _layersModel.rowCount() == 1)
                 layer->zoomToExtents();
 
             dialog->deleteLater();
@@ -433,10 +387,10 @@ void ImageViewerPlugin::immigrateDataset(const Dataset<DatasetImpl>& dataset)
     }
     catch (std::exception& e)
     {
-        exceptionMessageBox(QString("Unable to immigrate dataset: %1").arg(dataset->getGuiName()), e);
+        exceptionMessageBox(QString("Unable to immigrate dataset: %1").arg(dataset->text()), e);
     }
     catch (...) {
-        exceptionMessageBox(QString("Unable to immigrate dataset: %1").arg(dataset->getGuiName()));
+        exceptionMessageBox(QString("Unable to immigrate dataset: %1").arg(dataset->text()));
     }
 }
 
@@ -444,14 +398,14 @@ void ImageViewerPlugin::fromVariantMap(const QVariantMap& variantMap)
 {
     ViewPlugin::fromVariantMap(variantMap);
 
-    _model.fromParentVariantMap(variantMap);
+    _layersModel.fromParentVariantMap(variantMap);
 }
 
 QVariantMap ImageViewerPlugin::toVariantMap() const
 {
     auto variantMap = ViewPlugin::toVariantMap();
 
-    _model.insertIntoVariantMap(variantMap);
+    _layersModel.insertIntoVariantMap(variantMap);
 
     return variantMap;
 }

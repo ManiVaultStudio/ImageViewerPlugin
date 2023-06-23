@@ -12,13 +12,21 @@ EditLayerAction::EditLayerAction(QObject* parent, const QString& title) :
     auto imageViewerPlugin = static_cast<ImageViewerPlugin*>(parent->parent());
 
     const auto modelSelectionChanged = [this, imageViewerPlugin]() -> void {
+        if (projects().isOpeningProject() || projects().isImportingProject())
+            return;
+
         const auto selectedRows = imageViewerPlugin->getSelectionModel().selectedRows();
         const auto hasSelection = !selectedRows.isEmpty();
 
         GroupsAction::GroupActions groupActions;
 
         if (hasSelection) {
-            auto layer = static_cast<Layer*>(selectedRows.first().internalPointer());
+            auto layer = imageViewerPlugin->getLayersModel().getLayerFromIndex(selectedRows.first());
+
+            Q_ASSERT(layer != nullptr);
+
+            if (layer == nullptr)
+                return;
 
             groupActions << &layer->getGeneralAction();
             groupActions << &layer->getImageSettingsAction();

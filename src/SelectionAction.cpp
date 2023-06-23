@@ -58,6 +58,22 @@ void SelectionAction::initialize(Layer* layer, QWidget* targetWidget, PixelSelec
     connect(&_pixelSelectionAction.getOverlayColorAction(), &ColorAction::colorChanged, _layer, &Layer::invalidate);
     connect(&_pixelSelectionAction.getOverlayOpacityAction(), &DecimalAction::valueChanged, _layer, &Layer::invalidate);
     connect(&_showRegionAction, &ToggleAction::toggled, _layer, &Layer::invalidate);
+
+    const auto updateInteractionActions = [this]() -> void {
+        const auto inSelectionMode  = _layer->getImageViewerPlugin().getImageViewerWidget().getInteractionMode() == ImageViewerWidget::InteractionMode::Selection;
+        const auto enable           = inSelectionMode && _layer->isActive();
+        
+        _pixelSelectionAction.getRectangleAction().setEnabled(enable);
+        _pixelSelectionAction.getBrushAction().setEnabled(enable);
+        _pixelSelectionAction.getLassoAction().setEnabled(enable);
+        _pixelSelectionAction.getPolygonAction().setEnabled(enable);
+        _pixelSelectionAction.getSampleAction().setEnabled(enable);
+        _pixelSelectionAction.getModifierAction().setEnabled(enable);
+    };
+
+    updateInteractionActions();
+
+    connect(&_layer->getImageViewerPlugin().getImageViewerWidget(), &ImageViewerWidget::interactionModeChanged, this, updateInteractionActions);
 }
 
 QRect SelectionAction::getImageSelectionRectangle() const
