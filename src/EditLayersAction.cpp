@@ -94,7 +94,7 @@ EditLayersAction::Widget::Widget(QWidget* parent, EditLayersAction* editLayersAc
     auto& imageViewerPlugin = editLayersAction->getSettingsAction().getImageViewerPlugin();
 
     _layersFilterModel.setSourceModel(&imageViewerPlugin.getLayersModel());
-    //_layersFilterModel.setFilterKeyColumn(static_cast<int>(LayersModel::Column::Name));
+    _layersFilterModel.setFilterKeyColumn(static_cast<int>(LayersModel::Column::Name));
 
     _hierarchyWidget.setWindowIcon(Application::getIconFont("FontAwesome").getIcon("layer-group"));
     
