@@ -88,7 +88,8 @@ QColor EditLayersAction::getRandomLayerColor()
 
 EditLayersAction::Widget::Widget(QWidget* parent, EditLayersAction* editLayersAction) :
     WidgetActionWidget(parent, editLayersAction),
-    _hierarchyWidget(this, "Layer", editLayersAction->getSettingsAction().getImageViewerPlugin().getLayersModel())
+    _layersFilterModel(),
+    _hierarchyWidget(this, "Layer", editLayersAction->getSettingsAction().getImageViewerPlugin().getLayersModel(), &_layersFilterModel)
 {
     auto& imageViewerPlugin = editLayersAction->getSettingsAction().getImageViewerPlugin();
 

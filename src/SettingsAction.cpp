@@ -63,8 +63,6 @@ QMenu* SettingsAction::getContextMenu(QWidget* parent /*= nullptr*/)
 
         selectionTypeWidgetAction->setDefaultWidget(selectionTypesWidget);
 
-        //selectionTypeWidgetAction->setEnabled(layer->getGeneralAction().getVisibleAction().isChecked() && _imageViewerPlugin.getImageViewerWidget().getInteractionMode() == ImageViewerWidget::Selection);
-
         menu->addAction(selectionTypeWidgetAction);
     }
 
