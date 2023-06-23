@@ -452,7 +452,7 @@ Qt::ItemFlags LayersModel::flags(const QModelIndex& index) const
     if (!index.isValid())
         return Qt::NoItemFlags;
 
-    auto itemFlags = QAbstractItemModel::flags(index);
+    auto itemFlags = itemFromIndex(index)->flags();
 
     if (index.column() == static_cast<int>(Column::Visible))
         itemFlags |= Qt::ItemIsUserCheckable;
@@ -465,6 +465,9 @@ void LayersModel::addLayer(Layer* layer)
     try
     {
         Q_ASSERT(layer != nullptr);
+
+        if (layer == nullptr)
+            return;
 
         appendRow(Row(layer));
 
