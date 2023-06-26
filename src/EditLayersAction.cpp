@@ -101,7 +101,7 @@ EditLayersAction::Widget::Widget(QWidget* parent, EditLayersAction* editLayersAc
     
     auto& treeView = _hierarchyWidget.getTreeView();
 
-    treeView.setSelectionModel(&imageViewerPlugin.getSelectionModel());
+    //treeView.setSelectionModel(&imageViewerPlugin.getSelectionModel());
     treeView.setRootIsDecorated(false);
     
     auto treeViewHeader = treeView.header();

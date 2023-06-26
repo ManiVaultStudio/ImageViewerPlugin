@@ -56,14 +56,14 @@ void ImageViewerPlugin::init()
     mainWidgetLayout->setContentsMargins(0, 0, 0, 0);
     mainWidgetLayout->setSpacing(0);
 
-    mainWidgetLayout->addWidget(_selectionToolbarAction.createWidget(&getWidget()));
+    //mainWidgetLayout->addWidget(_selectionToolbarAction.createWidget(&getWidget()));
     mainWidgetLayout->addWidget(&_imageViewerWidget, 1);
-    mainWidgetLayout->addWidget(_interactionToolbarAction.createWidget(&getWidget()));
+    //mainWidgetLayout->addWidget(_interactionToolbarAction.createWidget(&getWidget()));
 
     mainWidget->setLayout(mainWidgetLayout);
 
     _splitter.addWidget(mainWidget);
-    _splitter.addWidget(_settingsAction.createWidget(&getWidget()));
+    //_splitter.addWidget(_settingsAction.createWidget(&getWidget()));
 
     _splitter.setStretchFactor(0, 1);
     _splitter.setStretchFactor(1, 0);
@@ -214,6 +214,10 @@ void ImageViewerPlugin::init()
 
     _dropWidget.setShowDropIndicator(false);
     _dropWidget.setShowDropIndicator(true);
+
+    addSettingsAction(&_settingsAction, nullptr, DockAreaFlag::Left);
+    addSettingsAction(&_selectionToolbarAction, &_settingsAction, DockAreaFlag::Bottom);
+    addSettingsAction(&_interactionToolbarAction, &_selectionToolbarAction, DockAreaFlag::Bottom);
 }
 
 void ImageViewerPlugin::loadData(const Datasets& datasets)
