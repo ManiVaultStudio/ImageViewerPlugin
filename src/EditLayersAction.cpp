@@ -35,6 +35,7 @@ EditLayersAction::EditLayersAction(QObject* parent, const QString& title) :
     _operationsAction.addAction(&_moveLayerUpAction, TriggerAction::Icon);
     _operationsAction.addAction(&_moveLayerDownAction, TriggerAction::Icon);
     _operationsAction.addAction(&_moveLayerToBottomAction, TriggerAction::Icon);
+    _operationsAction.addStretch(1);
 
     _removeLayerAction.setToolTip("Remove the selected layer");
     _moveLayerToTopAction.setToolTip("Move the selected layer to the top");
