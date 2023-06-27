@@ -5,8 +5,6 @@
 
 #include <widgets/HierarchyWidget.h>
 
-#include "LayersFilterModel.h"
-
 #include <QRandomGenerator>
 
 class QMenu;
@@ -38,7 +36,6 @@ public:
         Widget(QWidget* parent, EditLayersAction* editLayersAction);
 
     private:
-        LayersFilterModel   _layersFilterModel;     /** Layers filter model */
         HierarchyWidget     _hierarchyWidget;       /** Layers widget */
 
         friend class EditLayersAction;

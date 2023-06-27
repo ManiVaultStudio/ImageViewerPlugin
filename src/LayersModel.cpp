@@ -131,7 +131,7 @@ QVariant LayersModel::ColorItem::data(int role /*= Qt::UserRole + 1*/) const
         {
             const auto color = data(Qt::EditRole).value<QColor>();
 
-            return QString("Color: rgb(%1, %2, %3)").arg(color.red(), color.green(), color.blue());
+            return QString("Color: rgb(%1, %2, %3)").arg(QString::number(color.red()), QString::number(color.green()), QString::number(color.blue()));
         }
 
         case Qt::DecorationRole:
@@ -532,48 +532,14 @@ void LayersModel::moveLayer(const QModelIndex& layerModelIndex, const std::int32
 {
     try
     {
-        /*
-        // Establish source and target row index
-        const auto sourceRowIndex = layerModelIndex.row();
-        const auto targetRowIndex = std::clamp(sourceRowIndex + amount, 0, rowCount() - 1);
+        auto row = takeRow(layerModelIndex.row());
 
-        QVector<std::int32_t> rowIndices{ sourceRowIndex, targetRowIndex };
+        if (amount < 0)
+            insertRow(std::clamp(layerModelIndex.row() + amount, 0, rowCount() - 1), row);
+        else
+            insertRow(std::clamp(layerModelIndex.row() + amount, 0, rowCount()), row);
 
-        if (sourceRowIndex < targetRowIndex) {
-            
-            // Begin moving the row in the model
-            if (beginMoveRows(QModelIndex(), rowIndices.first(), rowIndices.first(), QModelIndex(), rowIndices.last() + 1)) {
-
-                // Re-arrange internal layers data
-                _layers.insert(rowIndices.last() + 1, _layers[rowIndices.first()]);
-                _layers.removeAt(rowIndices.first());
-
-                // Finished moving row around
-                endMoveRows();
-            }
-            else {
-                throw std::runtime_error("Unable to begin moving rows");
-            }
-        }
-        else {
-
-            // Begin moving the row in the model
-            if (beginMoveRows(QModelIndex(), rowIndices.first(), rowIndices.first(), QModelIndex(), rowIndices.last())) {
-
-                auto cache = _layers[rowIndices.first()];
-
-                // Re-arrange internal layers data
-                _layers.removeAt(rowIndices.first());
-                _layers.insert(rowIndices.last(), cache);
-
-                // Finished moving row around
-                endMoveRows();
-            }
-            else {
-                throw std::runtime_error("Unable to begin moving rows");
-            }
-        }
-        */
+        static_cast<ImageViewerPlugin*>(parent())->getImageViewerWidget().update();
     }
     catch (std::exception& e)
     {
@@ -607,7 +573,9 @@ void LayersModel::fromVariantMap(const QVariantMap& variantMap)
 
         layer->initialize(imageViewerPlugin, hdps::data().getSet(layerVariant.toMap()["DatasetId"].toString()));
         layer->fromVariantMap(layerVariant.toMap());
-        layer->scaleToFit(imageViewerPlugin->getImageViewerWidget().getWorldBoundingRectangle(false));
+
+        if (!projects().isOpeningProject() && !projects().isImportingProject())
+            layer->scaleToFit(imageViewerPlugin->getImageViewerWidget().getWorldBoundingRectangle(false));
 
         addLayer(layer);
     }

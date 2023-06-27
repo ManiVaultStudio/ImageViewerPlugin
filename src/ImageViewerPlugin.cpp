@@ -344,7 +344,9 @@ void ImageViewerPlugin::addDataset(const Dataset<Images>& dataset)
     auto layer = new Layer(&_settingsAction.getEditLayersAction(), dataset->text());
 
     layer->initialize(this, dataset);
-    layer->scaleToFit(_imageViewerWidget.getWorldBoundingRectangle(false));
+
+    if (!projects().isOpeningProject() && !projects().isImportingProject())
+        layer->scaleToFit(_imageViewerWidget.getWorldBoundingRectangle(false));
 
     _layersModel.addLayer(layer);
 }

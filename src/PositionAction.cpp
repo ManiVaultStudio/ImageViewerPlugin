@@ -6,8 +6,8 @@ using namespace hdps;
 
 PositionAction::PositionAction(QObject* parent, const QString& title) :
     GroupAction(parent, title),
-    _xAction(this, "X position", -100000.0f, 100000.0f, 0.0f, 0.0f),
-    _yAction(this, "Y position", -100000.0f, 100000.0f, 0.0f, 0.0f)
+    _xAction(this, "X", -100000.0f, 100000.0f, 0.0f, 0.0f),
+    _yAction(this, "Y", -100000.0f, 100000.0f, 0.0f, 0.0f)
 {
     setToolTip("Layer position");
     setDefaultWidgetFlags(GroupAction::Horizontal);

@@ -89,13 +89,9 @@ QColor EditLayersAction::getRandomLayerColor()
 
 EditLayersAction::Widget::Widget(QWidget* parent, EditLayersAction* editLayersAction) :
     WidgetActionWidget(parent, editLayersAction),
-    _layersFilterModel(),
-    _hierarchyWidget(this, "Layer", editLayersAction->getSettingsAction().getImageViewerPlugin().getLayersModel())
+    _hierarchyWidget(this, "Layer", editLayersAction->getSettingsAction().getImageViewerPlugin().getLayersModel(), nullptr, false)
 {
     auto& imageViewerPlugin = editLayersAction->getSettingsAction().getImageViewerPlugin();
-
-    //_layersFilterModel.setSourceModel(&imageViewerPlugin.getLayersModel());
-    //_layersFilterModel.setFilterKeyColumn(static_cast<int>(LayersModel::Column::Name));
 
     _hierarchyWidget.setWindowIcon(Application::getIconFont("FontAwesome").getIcon("layer-group"));
     
@@ -103,6 +99,8 @@ EditLayersAction::Widget::Widget(QWidget* parent, EditLayersAction* editLayersAc
 
     treeView.setSelectionModel(&imageViewerPlugin.getSelectionModel());
     treeView.setRootIsDecorated(false);
+    treeView.setSelectionBehavior(QAbstractItemView::SelectionBehavior::SelectRows);
+    treeView.setSelectionMode(QAbstractItemView::SelectionMode::ContiguousSelection);
     
     auto treeViewHeader = treeView.header();
 
@@ -143,17 +141,18 @@ EditLayersAction::Widget::Widget(QWidget* parent, EditLayersAction* editLayersAc
     setLayout(layout);
 
     const auto updateButtons = [this, &imageViewerPlugin, editLayersAction]() -> void {
-        const auto selectedRows = imageViewerPlugin.getSelectionModel().selectedRows();
-        const auto hasSelection = !selectedRows.isEmpty();
+        const auto selectedRows     = imageViewerPlugin.getSelectionModel().selectedRows();
+        const auto hasSelection     = !selectedRows.isEmpty();
+        const auto multiSelection   = selectedRows.count() >= 2;
 
         editLayersAction->getRemoveLayerAction().setEnabled(hasSelection);
 
         auto selectedRowIndex = hasSelection ? selectedRows.first().row() : -1;
 
-        editLayersAction->getMoveLayerToTopAction().setEnabled(hasSelection && selectedRowIndex > 0);
-        editLayersAction->getMoveLayerUpAction().setEnabled(selectedRowIndex > 0 ? selectedRowIndex > 0 : false);
-        editLayersAction->getMoveLayerDownAction().setEnabled(selectedRowIndex >= 0 ? selectedRowIndex < _hierarchyWidget.getModel().rowCount() - 1 : false);
-        editLayersAction->getMoveLayerToBottomAction().setEnabled(hasSelection && selectedRowIndex < _hierarchyWidget.getModel().rowCount() - 1);
+        editLayersAction->getMoveLayerToTopAction().setEnabled(!multiSelection && hasSelection && selectedRowIndex > 0);
+        editLayersAction->getMoveLayerUpAction().setEnabled(!multiSelection && selectedRowIndex > 0 ? selectedRowIndex > 0 : false);
+        editLayersAction->getMoveLayerDownAction().setEnabled(!multiSelection && selectedRowIndex >= 0 ? selectedRowIndex < _hierarchyWidget.getModel().rowCount() - 1 : false);
+        editLayersAction->getMoveLayerToBottomAction().setEnabled(!multiSelection && hasSelection && selectedRowIndex < _hierarchyWidget.getModel().rowCount() - 1);
 
         imageViewerPlugin.getImageViewerWidget().update();
     };
@@ -183,43 +182,49 @@ EditLayersAction::Widget::Widget(QWidget* parent, EditLayersAction* editLayersAc
         if (selectedRows.isEmpty())
             return;
 
-        imageViewerPlugin.getLayersModel().removeLayer(selectedRows.first());
-    });
+        QVector<QPersistentModelIndex> persistentSelectedRows;
 
-    return;
+        for (auto selectedRow : selectedRows)
+            persistentSelectedRows << selectedRow;
+
+        for (auto persistentSelectedRow : persistentSelectedRows)
+            imageViewerPlugin.getLayersModel().removeLayer(persistentSelectedRow);
+    });
 
     connect(&editLayersAction->getMoveLayerToTopAction(), &TriggerAction::triggered, this, [this, &imageViewerPlugin]() {
         const auto selectedRows = imageViewerPlugin.getSelectionModel().selectedRows();
 
-        if (!selectedRows.isEmpty())
-            imageViewerPlugin.getLayersModel().moveLayer(selectedRows.first(), -1000);
+        if (selectedRows.count() != 1)
+            return;
 
-        imageViewerPlugin.getImageViewerWidget().update();
+        imageViewerPlugin.getLayersModel().moveLayer(selectedRows.first(), -1000);
     });
 
     connect(&editLayersAction->getMoveLayerUpAction(), &TriggerAction::triggered, this, [this, &imageViewerPlugin]() {
         const auto selectedRows = imageViewerPlugin.getSelectionModel().selectedRows();
 
-        if (!selectedRows.isEmpty())
-            imageViewerPlugin.getLayersModel().moveLayer(selectedRows.first(), -1);
-
-        imageViewerPlugin.getImageViewerWidget().update();
+        if (selectedRows.count() != 1)
+            return;
+    
+        imageViewerPlugin.getLayersModel().moveLayer(selectedRows.first(), -1);
     });
 
     connect(&editLayersAction->getMoveLayerDownAction(), &TriggerAction::triggered, this, [this, &imageViewerPlugin]() {
         const auto selectedRows = imageViewerPlugin.getSelectionModel().selectedRows();
 
-        if (!selectedRows.isEmpty())
-            imageViewerPlugin.getLayersModel().moveLayer(selectedRows.first(), 1);
-
-        imageViewerPlugin.getImageViewerWidget().update();
+        if (selectedRows.count() != 1)
+            return;
+        
+        imageViewerPlugin.getLayersModel().moveLayer(selectedRows.first(), 1);
     });
 
     connect(&editLayersAction->getMoveLayerToBottomAction(), &TriggerAction::triggered, this, [this, &imageViewerPlugin]() {
         const auto selectedRows = imageViewerPlugin.getSelectionModel().selectedRows();
 
-        if (!selectedRows.isEmpty())
-            imageViewerPlugin.getLayersModel().moveLayer(selectedRows.first(), 1000);
+        if (selectedRows.count() != 1)
+            return;
+        
+        imageViewerPlugin.getLayersModel().moveLayer(selectedRows.first(), 1000);
     });
 
     updateButtons();

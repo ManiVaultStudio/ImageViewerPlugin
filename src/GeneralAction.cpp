@@ -76,7 +76,7 @@ void GeneralAction::initialize(Layer* layer)
 
     updateDatasetNameAction();
 
-    connect(_layer->getImages().get(), &DatasetImpl::textChanged, this, updateDatasetNameAction);
+    connect(_layer->getImages().get(), &DatasetImpl::locationChanged, this, updateDatasetNameAction);
 }
 
 void GeneralAction::connectToPublicAction(WidgetAction* publicAction, bool recursive)

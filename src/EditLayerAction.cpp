@@ -15,12 +15,13 @@ EditLayerAction::EditLayerAction(QObject* parent, const QString& title) :
         if (projects().isOpeningProject() || projects().isImportingProject())
             return;
 
-        const auto selectedRows = imageViewerPlugin->getSelectionModel().selectedRows();
-        const auto hasSelection = !selectedRows.isEmpty();
+        const auto selectedRows     = imageViewerPlugin->getSelectionModel().selectedRows();
+        const auto hasSelection     = !selectedRows.isEmpty();
+        const auto multiSelection   = selectedRows.count() >= 2;
 
         GroupsAction::GroupActions groupActions;
 
-        if (hasSelection) {
+        if (hasSelection && !multiSelection) {
             auto layer = imageViewerPlugin->getLayersModel().getLayerFromIndex(selectedRows.first());
 
             Q_ASSERT(layer != nullptr);
@@ -34,7 +35,7 @@ EditLayerAction::EditLayerAction(QObject* parent, const QString& title) :
             groupActions << &layer->getMiscellaneousAction();
             groupActions << &layer->getSubsetAction();
         }
-
+        
         setGroupActions(groupActions);
 
         imageViewerPlugin->getImageViewerWidget().getPixelSelectionTool().setEnabled(hasSelection);

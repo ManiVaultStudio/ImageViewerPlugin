@@ -127,8 +127,8 @@ void Layer::initialize(ImageViewerPlugin* imageViewerPlugin, const hdps::Dataset
     updateInterpolationType();
     updateModelMatrixAndReRender();
 
-    // Update the window title when the layer name changes
     connect(&_generalAction.getNameAction(), &StringAction::stringChanged, this, &Layer::updateWindowTitle);
+    connect(&_generalAction.getDatasetNameAction(), &StringAction::stringChanged, this, &Layer::invalidate);
 
     const auto updateSelectionRoi = [this]() {
         computeSelection();
