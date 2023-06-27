@@ -418,6 +418,8 @@ void ImageViewerPlugin::fromVariantMap(const QVariantMap& variantMap)
     ViewPlugin::fromVariantMap(variantMap);
 
     _layersModel.fromParentVariantMap(variantMap);
+    _selectionToolbarAction.fromParentVariantMap(variantMap);
+    _interactionToolbarAction.fromParentVariantMap(variantMap);
 }
 
 QVariantMap ImageViewerPlugin::toVariantMap() const
@@ -425,6 +427,8 @@ QVariantMap ImageViewerPlugin::toVariantMap() const
     auto variantMap = ViewPlugin::toVariantMap();
 
     _layersModel.insertIntoVariantMap(variantMap);
+    _selectionToolbarAction.insertIntoVariantMap(variantMap);
+    _interactionToolbarAction.insertIntoVariantMap(variantMap);
 
     return variantMap;
 }

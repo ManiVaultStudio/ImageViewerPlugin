@@ -24,6 +24,14 @@ SelectionToolbarAction::SelectionToolbarAction(ImageViewerPlugin& imageViewerPlu
 {
     auto& fontAwesome = hdps::Application::getIconFont("FontAwesome");
 
+    _rectangleSelectionAction.setEnabled(false);
+    _brushSelectionAction.setEnabled(false);
+    _lassoSelectionAction.setEnabled(false);
+    _polygonSelectionAction.setEnabled(false);
+    _sampleSelectionAction.setEnabled(false);
+    _roiSelectionAction.setEnabled(false);
+    _modifierAction.setEnabled(false);
+
     _rectangleSelectionAction.setIcon(getPixelSelectionTypeIcon(PixelSelectionType::Rectangle));
     _brushSelectionAction.setIcon(getPixelSelectionTypeIcon(PixelSelectionType::Brush));
     _lassoSelectionAction.setIcon(getPixelSelectionTypeIcon(PixelSelectionType::Lasso));

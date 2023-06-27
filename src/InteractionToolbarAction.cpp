@@ -182,6 +182,7 @@ void InteractionToolbarAction::fromVariantMap(const QVariantMap& variantMap)
     HorizontalToolbarAction::fromVariantMap(variantMap);
 
     _interactionModeAction.fromParentVariantMap(variantMap);
+    _viewSettingsAction.fromParentVariantMap(variantMap);
 }
 
 QVariantMap InteractionToolbarAction::toVariantMap() const
@@ -189,6 +190,7 @@ QVariantMap InteractionToolbarAction::toVariantMap() const
     auto variantMap = HorizontalToolbarAction::toVariantMap();
 
     _interactionModeAction.insertIntoVariantMap(variantMap);
+    _viewSettingsAction.insertIntoVariantMap(variantMap);
 
     return variantMap;
 }
