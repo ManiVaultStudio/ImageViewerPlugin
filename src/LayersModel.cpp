@@ -469,7 +469,7 @@ void LayersModel::addLayer(Layer* layer)
         if (layer == nullptr)
             return;
 
-        appendRow(Row(layer));
+        insertRow(0, Row(layer));
 
         static_cast<ImageViewerPlugin*>(parent())->getImageViewerWidget().updateWorldBoundingRectangle();
 
