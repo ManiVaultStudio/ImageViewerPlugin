@@ -580,7 +580,7 @@ void LayersModel::fromVariantMap(const QVariantMap& variantMap)
         addLayer(layer);
     }
 
-    imageViewerPlugin->getImageViewerWidget().update();
+    imageViewerPlugin->getInteractionToolbarAction().getZoomExtentsAction().trigger();
 }
 
 QVariantMap LayersModel::toVariantMap() const
