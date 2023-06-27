@@ -163,7 +163,6 @@ void InteractionToolbarAction::initialize(ImageViewerPlugin* imageViewerPlugin)
             return;
 
         layer->zoomToSelection();
-        layer->selectNone();
 
         triggerUpdateZoomPercentageAfterAnimation();
     });
