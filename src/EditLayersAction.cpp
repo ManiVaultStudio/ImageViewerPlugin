@@ -163,9 +163,10 @@ EditLayersAction::Widget::Widget(QWidget* parent, EditLayersAction* editLayersAc
     connect(&_hierarchyWidget.getModel(), &QAbstractListModel::rowsMoved, updateButtons);
     connect(&_hierarchyWidget.getModel(), &QAbstractListModel::layoutChanged, updateButtons);
 
-    return;
-
     const auto onRowsInserted = [this, &imageViewerPlugin, updateButtons](const QModelIndex& parent, int first, int last) {
+        if (projects().isOpeningProject() || projects().isImportingProject())
+            return;
+
         const auto index = _hierarchyWidget.getModel().index(first, 0);
         
         if (index.isValid())
@@ -175,6 +176,8 @@ EditLayersAction::Widget::Widget(QWidget* parent, EditLayersAction* editLayersAc
     };
 
     connect(&_hierarchyWidget.getModel(), &QAbstractListModel::rowsInserted, this, onRowsInserted);
+
+    return;
 
     connect(&editLayersAction->getRemoveLayerAction(), &TriggerAction::triggered, this, [this, &imageViewerPlugin]() {
         const auto selectedRows = imageViewerPlugin.getSelectionModel().selectedRows();
