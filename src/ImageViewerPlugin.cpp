@@ -56,9 +56,9 @@ void ImageViewerPlugin::init()
     mainWidgetLayout->setContentsMargins(0, 0, 0, 0);
     mainWidgetLayout->setSpacing(0);
 
-    //mainWidgetLayout->addWidget(_selectionToolbarAction.createWidget(&getWidget()));
+    mainWidgetLayout->addWidget(_selectionToolbarAction.createWidget(&getWidget()));
     mainWidgetLayout->addWidget(&_imageViewerWidget, 1);
-    //mainWidgetLayout->addWidget(_interactionToolbarAction.createWidget(&getWidget()));
+    mainWidgetLayout->addWidget(_interactionToolbarAction.createWidget(&getWidget()));
 
     mainWidget->setLayout(mainWidgetLayout);
 
