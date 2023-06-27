@@ -177,8 +177,6 @@ EditLayersAction::Widget::Widget(QWidget* parent, EditLayersAction* editLayersAc
 
     connect(&_hierarchyWidget.getModel(), &QAbstractListModel::rowsInserted, this, onRowsInserted);
 
-    return;
-
     connect(&editLayersAction->getRemoveLayerAction(), &TriggerAction::triggered, this, [this, &imageViewerPlugin]() {
         const auto selectedRows = imageViewerPlugin.getSelectionModel().selectedRows();
 
@@ -187,6 +185,8 @@ EditLayersAction::Widget::Widget(QWidget* parent, EditLayersAction* editLayersAc
 
         imageViewerPlugin.getLayersModel().removeLayer(selectedRows.first());
     });
+
+    return;
 
     connect(&editLayersAction->getMoveLayerToTopAction(), &TriggerAction::triggered, this, [this, &imageViewerPlugin]() {
         const auto selectedRows = imageViewerPlugin.getSelectionModel().selectedRows();
