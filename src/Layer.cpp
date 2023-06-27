@@ -127,7 +127,14 @@ void Layer::initialize(ImageViewerPlugin* imageViewerPlugin, const hdps::Dataset
     updateInterpolationType();
     updateModelMatrixAndReRender();
 
-    connect(&_generalAction.getNameAction(), &StringAction::stringChanged, this, &Layer::updateWindowTitle);
+    const auto nameChanged = [this]() -> void {
+        setText(_generalAction.getNameAction().getString());
+        updateWindowTitle();
+    };
+
+    nameChanged();
+
+    connect(&_generalAction.getNameAction(), &StringAction::stringChanged, this, nameChanged);
     connect(&_generalAction.getDatasetNameAction(), &StringAction::stringChanged, this, &Layer::invalidate);
 
     const auto updateSelectionRoi = [this]() {
