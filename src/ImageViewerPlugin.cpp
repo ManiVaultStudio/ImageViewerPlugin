@@ -215,9 +215,7 @@ void ImageViewerPlugin::init()
     _dropWidget.setShowDropIndicator(false);
     _dropWidget.setShowDropIndicator(true);
 
-    addSettingsAction(&_settingsAction, nullptr, DockAreaFlag::Left);
-    addSettingsAction(&_selectionToolbarAction, &_settingsAction, DockAreaFlag::Bottom);
-    addSettingsAction(&_interactionToolbarAction, &_selectionToolbarAction, DockAreaFlag::Bottom);
+    addSettingsAction(&_settingsAction, nullptr, DockAreaFlag::Left, true, AutoHideLocation::Right, QSize(300, 300));
 }
 
 void ImageViewerPlugin::loadData(const Datasets& datasets)
