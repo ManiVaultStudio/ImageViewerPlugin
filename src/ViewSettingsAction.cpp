@@ -25,8 +25,8 @@ ViewSettingsAction::ViewSettingsAction(QObject* parent, const QString& title) :
     
     addAction(&_zoomMarginAction);
     addAction(&_backgroundColorAction);
-    addAction(&_animationEnabledAction);
-    addAction(&_smartZoomAction);
+    //addAction(&_animationEnabledAction);
+    //addAction(&_smartZoomAction);
 
     _zoomMarginAction.setSuffix("px");
     _zoomMarginAction.setUpdateDuringDrag(false);
