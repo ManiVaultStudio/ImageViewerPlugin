@@ -13,13 +13,13 @@ InteractionToolbarAction::InteractionToolbarAction(QObject* parent, const QStrin
     _navigationAction(this, "Navigation"),
     _selectAction(this, "Select"),
     _interactionModeAction(this, "Interaction Mode", { "Navigation", "Select" }, "Navigation"),
-    _interactionModeGroupAction(this, "Interaction Mode Group"),
+    _interactionModeGroupAction(this, "Interaction"),
     _zoomOutAction(this, "Zoom out"),
     _zoomPercentageAction(this, "Zoom Percentage", 10.0f, 1000.0f, 100.0f, 1),
     _zoomInAction(this, "Zoom In"),
     _zoomExtentsAction(this, "Zoom All"),
     _zoomSelectionAction(this, "Zoom Around Selection"),
-    _zoomGroupAction(this, "Zoom Group"),
+    _zoomGroupAction(this, "Zoom"),
     _viewSettingsAction(this, "View Settings")
 {
     auto& fontAwesome = hdps::Application::getIconFont("FontAwesome");
@@ -47,8 +47,14 @@ InteractionToolbarAction::InteractionToolbarAction(QObject* parent, const QStrin
     _zoomExtentsAction.setShortcut(QKeySequence("z"));
     _zoomSelectionAction.setShortcut(QKeySequence("d"));
 
+    _selectAction.setEnabled(false);
+    _zoomSelectionAction.setEnabled(false);
+
     _interactionModeAction.setIcon(fontAwesome.getIcon("hand-sparkles"));
     _interactionModeAction.setToolTip("Interaction Mode");
+
+    _interactionModeGroupAction.setDefaultWidgetFlags(GroupAction::Horizontal);
+    _interactionModeGroupAction.setShowLabels(false);
 
     _interactionModeGroupAction.addAction(&_navigationAction, ToggleAction::PushButtonIcon);
     _interactionModeGroupAction.addAction(&_selectAction, ToggleAction::PushButtonIcon);
@@ -56,6 +62,7 @@ InteractionToolbarAction::InteractionToolbarAction(QObject* parent, const QStrin
     _zoomPercentageAction.setSuffix("%");
     _zoomPercentageAction.setUpdateDuringDrag(false);
 
+    _zoomGroupAction.setDefaultWidgetFlags(GroupAction::Horizontal);
     _zoomGroupAction.setShowLabels(false);
 
     _zoomGroupAction.addAction(&_zoomOutAction, TriggerAction::Icon);
@@ -66,9 +73,9 @@ InteractionToolbarAction::InteractionToolbarAction(QObject* parent, const QStrin
 
     _viewSettingsAction.setConfigurationFlag(WidgetAction::ConfigurationFlag::ForceCollapsedInGroup);
 
-    addAction(&_interactionModeGroupAction);
-    addAction(&_zoomGroupAction, TriggerAction::Icon);
-    addAction(&_viewSettingsAction, TriggerAction::Icon);
+    addAction(&_interactionModeGroupAction, 1, GroupAction::Horizontal);
+    addAction(&_zoomGroupAction, 2, GroupAction::Horizontal);
+    addAction(&_viewSettingsAction);
 }
 
 void InteractionToolbarAction::initialize(ImageViewerPlugin* imageViewerPlugin)
@@ -153,11 +160,7 @@ void InteractionToolbarAction::initialize(ImageViewerPlugin* imageViewerPlugin)
     });
 
     connect(&_zoomSelectionAction, &TriggerAction::triggered, this, [this, triggerUpdateZoomPercentageAfterAnimation]() {
-        const auto worldBoundingRectangle = getImageViewerWidget().getWorldBoundingRectangle();
-
-        auto& _selectionModel = _imageViewerPlugin->getSelectionModel();
-
-        const auto selectedRows = _selectionModel.selectedRows();
+        const auto selectedRows = _imageViewerPlugin->getSelectionModel().selectedRows();
 
         if (selectedRows.count() != 1)
             return;
@@ -172,6 +175,39 @@ void InteractionToolbarAction::initialize(ImageViewerPlugin* imageViewerPlugin)
         layer->zoomToSelection();
 
         triggerUpdateZoomPercentageAfterAnimation();
+    });
+
+    connect(&_imageViewerPlugin->getSelectionModel(), &QItemSelectionModel::selectionChanged, this, [this](const QItemSelection& newSelection, const QItemSelection& oldSelection) {
+        if (!oldSelection.indexes().isEmpty()) {
+            auto layer = _imageViewerPlugin->getLayersModel().getLayerFromIndex(oldSelection.indexes().first());
+
+            Q_ASSERT(layer != nullptr);
+
+            if (layer == nullptr)
+                return;
+
+            disconnect(layer, &Layer::selectionChanged, this, nullptr);
+        }
+
+        if (!newSelection.indexes().isEmpty()) {
+            auto layer = _imageViewerPlugin->getLayersModel().getLayerFromIndex(newSelection.indexes().first());
+
+            Q_ASSERT(layer != nullptr);
+
+            if (layer == nullptr)
+                return;
+
+            connect(layer, &Layer::selectionChanged, this, [this](const std::vector<std::uint32_t>& selectedIndices) -> void {
+                _zoomSelectionAction.setEnabled(!selectedIndices.empty());
+            });
+
+            _selectAction.setEnabled(true);
+            _zoomSelectionAction.setEnabled(!layer->getSelectedIndices().empty());
+        }
+        else {
+            _selectAction.setEnabled(false);
+            _zoomSelectionAction.setEnabled(false);
+        }
     });
 
     connect(&getImageViewerWidget().getRenderer(), &LayersRenderer::zoomRectangleChanged, this, [this, updateZoomPercentage]() {

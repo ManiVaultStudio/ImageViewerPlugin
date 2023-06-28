@@ -41,17 +41,18 @@ SelectionToolbarAction::SelectionToolbarAction(ImageViewerPlugin& imageViewerPlu
 
     _selectionAction.setIcon(fontAwesome.getIcon("mouse-pointer"));
     _selectionAction.setToolTip("Selection type");
+    _selectionAction.setShowLabels(false);
+
     _selectionAction.addAction(&_rectangleSelectionAction, ToggleAction::PushButtonIcon);
     _selectionAction.addAction(&_brushSelectionAction, ToggleAction::PushButtonIcon);
     _selectionAction.addAction(&_lassoSelectionAction, ToggleAction::PushButtonIcon);
     _selectionAction.addAction(&_polygonSelectionAction, ToggleAction::PushButtonIcon);
     _selectionAction.addAction(&_sampleSelectionAction, ToggleAction::PushButtonIcon);
-    //_selectionAction.addAction(&_roiSelectionAction, ToggleAction::PushButtonIcon);
+    _selectionAction.addAction(&_modifierAction);
 
     _modifierAction.setToolTip("Determines how to combined with the current selection");
 
-    addAction(&_selectionAction, 2);
-    addAction(&_modifierAction, 1);
+    addAction(&_selectionAction, 1, GroupAction::Horizontal);
 
     setupInteraction();
 }
