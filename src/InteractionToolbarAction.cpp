@@ -19,16 +19,9 @@ InteractionToolbarAction::InteractionToolbarAction(QObject* parent, const QStrin
     _zoomInAction(this, "Zoom In"),
     _zoomExtentsAction(this, "Zoom All"),
     _zoomSelectionAction(this, "Zoom Around Selection"),
+    _zoomGroupAction(this, "Zoom Group"),
     _viewSettingsAction(this, "View Settings")
 {
-    addAction(&_interactionModeGroupAction);
-    addAction(&_zoomOutAction, TriggerAction::Icon);
-    addAction(&_zoomPercentageAction, IntegralAction::Slider);
-    addAction(&_zoomInAction, TriggerAction::Icon);
-    addAction(&_zoomExtentsAction, TriggerAction::Icon);
-    addAction(&_zoomSelectionAction, TriggerAction::Icon);
-    addAction(&_viewSettingsAction, TriggerAction::Icon);
-
     auto& fontAwesome = hdps::Application::getIconFont("FontAwesome");
 
     _navigationAction.setToolTip("Navigate the view");
@@ -44,7 +37,7 @@ InteractionToolbarAction::InteractionToolbarAction(QObject* parent, const QStrin
     _zoomOutAction.setIcon(fontAwesome.getIcon("search-minus"));
     _zoomInAction.setIcon(fontAwesome.getIcon("search-plus"));
     _zoomExtentsAction.setIcon(fontAwesome.getIcon("compress"));
-    _zoomSelectionAction.setIcon(fontAwesome.getIcon("search-plus"));
+    _zoomSelectionAction.setIcon(fontAwesome.getIcon("search-location"));
     
     _zoomOutAction.setShortcut(QKeySequence("-"));
     _zoomInAction.setShortcut(QKeySequence("+"));
@@ -60,7 +53,19 @@ InteractionToolbarAction::InteractionToolbarAction(QObject* parent, const QStrin
     _zoomPercentageAction.setSuffix("%");
     _zoomPercentageAction.setUpdateDuringDrag(false);
 
+    _zoomGroupAction.setShowLabels(false);
+
+    _zoomGroupAction.addAction(&_zoomOutAction, TriggerAction::Icon);
+    _zoomGroupAction.addAction(&_zoomPercentageAction);
+    _zoomGroupAction.addAction(&_zoomInAction, TriggerAction::Icon);
+    _zoomGroupAction.addAction(&_zoomExtentsAction, TriggerAction::Icon);
+    _zoomGroupAction.addAction(&_zoomSelectionAction, TriggerAction::Icon);
+
     _viewSettingsAction.setConfigurationFlag(WidgetAction::ConfigurationFlag::ForceCollapsedInGroup);
+
+    addAction(&_interactionModeGroupAction);
+    addAction(&_zoomGroupAction, TriggerAction::Icon);
+    addAction(&_viewSettingsAction, TriggerAction::Icon);
 }
 
 void InteractionToolbarAction::initialize(ImageViewerPlugin* imageViewerPlugin)
@@ -72,10 +77,9 @@ void InteractionToolbarAction::initialize(ImageViewerPlugin* imageViewerPlugin)
 
     _imageViewerPlugin = imageViewerPlugin;
     
-    getImageViewerWidget().addAction(&_navigationAction);
-    getImageViewerWidget().addAction(&_selectAction);
     getImageViewerWidget().addAction(&_zoomOutAction);
     getImageViewerWidget().addAction(&_zoomInAction);
+    getImageViewerWidget().addAction(&_zoomExtentsAction);
     getImageViewerWidget().addAction(&_zoomExtentsAction);
     getImageViewerWidget().addAction(&_zoomSelectionAction);
 
