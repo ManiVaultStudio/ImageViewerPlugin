@@ -117,7 +117,6 @@ public: // Action getters
 private:
     LayersModel                 _layersModel;               /** Layers model */
     QItemSelectionModel         _selectionModel;            /** Layers selection model */
-    QSplitter                   _splitter;                  /** Splitter which divides the layers view and editor */
     ImageViewerWidget           _imageViewerWidget;         /** Image viewer widget */
     DropWidget                  _dropWidget;                /** Widget for dropping data */
     SelectionToolbarAction      _selectionToolbarAction;    /** Toolbar action for selection */

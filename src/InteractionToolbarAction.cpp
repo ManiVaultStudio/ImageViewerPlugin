@@ -34,10 +34,13 @@ InteractionToolbarAction::InteractionToolbarAction(QObject* parent, const QStrin
 
     _navigationAction.setIcon(fontAwesome.getIcon("hand-pointer"));
     _selectAction.setIcon(fontAwesome.getIcon("mouse-pointer"));
+    _interactionModeGroupAction.setIcon(fontAwesome.getIcon("hand-sparkles"));
+
     _zoomOutAction.setIcon(fontAwesome.getIcon("search-minus"));
     _zoomInAction.setIcon(fontAwesome.getIcon("search-plus"));
     _zoomExtentsAction.setIcon(fontAwesome.getIcon("compress"));
     _zoomSelectionAction.setIcon(fontAwesome.getIcon("search-location"));
+    _zoomGroupAction.setIcon(fontAwesome.getIcon("search"));
     
     _zoomOutAction.setShortcut(QKeySequence("-"));
     _zoomInAction.setShortcut(QKeySequence("+"));

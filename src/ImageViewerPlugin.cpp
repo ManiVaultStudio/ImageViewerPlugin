@@ -25,7 +25,6 @@ ImageViewerPlugin::ImageViewerPlugin(hdps::plugin::PluginFactory* factory) :
     ViewPlugin(factory),
     _layersModel(this),
     _selectionModel(&_layersModel),
-    _splitter(Qt::Horizontal, &getWidget()),
     _imageViewerWidget(*this),
     _dropWidget(&_imageViewerWidget),
     _selectionToolbarAction(*this),
@@ -42,34 +41,16 @@ ImageViewerPlugin::ImageViewerPlugin(hdps::plugin::PluginFactory* factory) :
 
 void ImageViewerPlugin::init()
 {
-    auto mainLayout = new QHBoxLayout();
+    auto layout = new QVBoxLayout();
 
-    mainLayout->setContentsMargins(0, 0, 0, 0);
-    mainLayout->setSpacing(0);
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setSpacing(0);
 
-    getWidget().setLayout(mainLayout);
+    layout->addWidget(_selectionToolbarAction.createWidget(&getWidget()));
+    layout->addWidget(&_imageViewerWidget, 1);
+    layout->addWidget(_interactionToolbarAction.createWidget(&getWidget()));
 
-    auto mainWidget = new QWidget();
-
-    auto mainWidgetLayout = new QVBoxLayout();
-
-    mainWidgetLayout->setContentsMargins(0, 0, 0, 0);
-    mainWidgetLayout->setSpacing(0);
-
-    mainWidgetLayout->addWidget(_selectionToolbarAction.createWidget(&getWidget()));
-    mainWidgetLayout->addWidget(&_imageViewerWidget, 1);
-    mainWidgetLayout->addWidget(_interactionToolbarAction.createWidget(&getWidget()));
-
-    mainWidget->setLayout(mainWidgetLayout);
-
-    _splitter.addWidget(mainWidget);
-    //_splitter.addWidget(_settingsAction.createWidget(&getWidget()));
-
-    _splitter.setStretchFactor(0, 1);
-    _splitter.setStretchFactor(1, 0);
-    _splitter.setCollapsible(1, true);
-
-    mainLayout->addWidget(&_splitter);
+    getWidget().setLayout(layout);
 
     _dropWidget.setDropIndicatorWidget(new DropWidget::DropIndicatorWidget(&getWidget(), "No data loaded", "Drag an item from the data hierarchy and drop it here to visualize data..."));
 
