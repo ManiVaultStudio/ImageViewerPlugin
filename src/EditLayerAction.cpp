@@ -32,7 +32,7 @@ EditLayerAction::EditLayerAction(QObject* parent, const QString& title) :
             groupActions << &layer->getGeneralAction();
             groupActions << &layer->getImageSettingsAction();
             groupActions << &layer->getSelectionAction();
-            groupActions << &layer->getMiscellaneousAction();
+            //groupActions << &layer->getMiscellaneousAction();
             groupActions << &layer->getSubsetAction();
         }
         
