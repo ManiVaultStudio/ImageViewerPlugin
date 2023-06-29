@@ -4,8 +4,8 @@
 
 #include "LayersModel.h"
 #include "ImageViewerWidget.h"
-#include "MainToolbarAction.h"
-#include "ZoomToolbarAction.h"
+#include "SelectionToolbarAction.h"
+#include "InteractionToolbarAction.h"
 #include "SettingsAction.h"
 
 #include <widgets/DropWidget.h>
@@ -69,8 +69,8 @@ public: // Inherited from ViewPlugin
 public: // Miscellaneous
 
     /** Get the layers model */
-    LayersModel& getModel() {
-        return _model;
+    LayersModel& getLayersModel() {
+        return _layersModel;
     }
 
     /** Get the layers selection model */
@@ -94,21 +94,34 @@ protected:
      */
     void immigrateDataset(const hdps::Dataset<hdps::DatasetImpl>& dataset);
 
+public: // Serialization
+
+    /**
+     * Load widget action from variant map
+     * @param Variant map representation of the widget action
+     */
+    void fromVariantMap(const QVariantMap& variantMap) override;
+
+    /**
+     * Save widget action to variant map
+     * @return Variant map representation of the widget action
+     */
+    QVariantMap toVariantMap() const override;
+
 public: // Action getters
 
-    MainToolbarAction& getMainToolbarAction() { return _mainToolbarAction; }
-    ZoomToolbarAction& getZoomToolbarAction() { return _zoomToolbarAction; }
+    SelectionToolbarAction& getSelectionToolbarAction() { return _selectionToolbarAction; }
+    InteractionToolbarAction& getInteractionToolbarAction() { return _interactionToolbarAction; }
     SettingsAction& getSettingsAction() { return _settingsAction; }
 
 private:
-    LayersModel             _model;                 /** Layers model */
-    QItemSelectionModel     _selectionModel;        /** Layers selection model */
-    QSplitter               _splitter;              /** Splitter which divides the layers view and editor */
-    ImageViewerWidget       _imageViewerWidget;     /** Image viewer widget */
-    DropWidget              _dropWidget;            /** Widget for dropping data */
-    MainToolbarAction       _mainToolbarAction;     /** Main toolbar action */
-    ZoomToolbarAction       _zoomToolbarAction;     /** Zoom toolbar action */
-    SettingsAction          _settingsAction;        /** Layers settings action */
+    LayersModel                 _layersModel;               /** Layers model */
+    QItemSelectionModel         _selectionModel;            /** Layers selection model */
+    ImageViewerWidget           _imageViewerWidget;         /** Image viewer widget */
+    DropWidget                  _dropWidget;                /** Widget for dropping data */
+    SelectionToolbarAction      _selectionToolbarAction;    /** Toolbar action for selection */
+    InteractionToolbarAction    _interactionToolbarAction;  /** Toolbar action for interaction */
+    SettingsAction              _settingsAction;            /** Layers settings action */
 };
 
 /**

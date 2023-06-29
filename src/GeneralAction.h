@@ -7,7 +7,6 @@
 #include <actions/DecimalAction.h>
 
 #include "PositionAction.h"
-#include "ZoomAction.h"
 
 class Layer;
 
@@ -22,16 +21,51 @@ using namespace hdps::gui;
  */
 class GeneralAction : public GroupAction
 {
+    Q_OBJECT
+
 public:
 
-    /** 
-     * Constructor
-     * @param layer Reference to layer
+    /**
+     * Construct with \p parent object and \p title
+     * @param parent Pointer to parent object
+     * @param title Title
      */
-    GeneralAction(Layer& layer);
+    Q_INVOKABLE GeneralAction(QObject* parent, const QString& title);
 
-    /** Get reference to parent layer */
-    Layer& getLayer() { return _layer; }
+    /**
+     * Initialize with \p layer
+     * @param layer Pointer to owning layer
+     */
+    void initialize(Layer* layer);
+
+protected: // Linking
+
+    /**
+     * Connect this action to a public action
+     * @param publicAction Pointer to public action to connect to
+     * @param recursive Whether to also connect descendant child actions
+     */
+    void connectToPublicAction(WidgetAction* publicAction, bool recursive) override;
+
+    /**
+     * Disconnect this action from its public action
+     * @param recursive Whether to also disconnect descendant child actions
+     */
+    void disconnectFromPublicAction(bool recursive) override;
+
+public: // Serialization
+
+    /**
+     * Load widget action from variant map
+     * @param Variant map representation of the widget action
+     */
+    void fromVariantMap(const QVariantMap& variantMap) override;
+
+    /**
+     * Save widget action to variant map
+     * @return Variant map representation of the widget action
+     */
+    QVariantMap toVariantMap() const override;
 
 public: /** Action getters */
 
@@ -41,15 +75,17 @@ public: /** Action getters */
     StringAction& getNameAction() { return _nameAction; }
     PositionAction& getPositionAction() { return _positionAction; }
     DecimalAction& getScaleAction() { return _scaleAction; }
-    ZoomAction& getZoomAction() { return _zoomAction; }
 
 protected:
-    Layer&          _layer;                 /** Reference to layer */
+    Layer*          _layer;                 /** Pointer to owning layer */
     ToggleAction    _visibleAction;         /** Visible action */
     StringAction    _datasetNameAction;     /** Dataset name action */
     ColorAction     _colorAction;           /** Color action */
     StringAction    _nameAction;            /** Name action */
     PositionAction  _positionAction;        /** Position action */
     DecimalAction   _scaleAction;           /** Scale action */
-    ZoomAction      _zoomAction;            /** Zoom to extents action */
 };
+
+Q_DECLARE_METATYPE(GeneralAction)
+
+inline const auto generalActionMetaTypeId = qRegisterMetaType<GeneralAction*>("GeneralAction");

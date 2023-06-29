@@ -1,6 +1,6 @@
 #pragma once
 
-#include <actions/WidgetAction.h>
+#include <actions/GroupAction.h>
 #include <actions/ToggleAction.h>
 #include <actions/OptionAction.h>
 #include <actions/WindowLevelAction.h>
@@ -10,7 +10,7 @@
 using namespace hdps::gui;
 using namespace hdps::util;
 
-class ImageSettingsAction;
+class Layer;
 
 /**
  * Scalar channel action class
@@ -19,7 +19,7 @@ class ImageSettingsAction;
  *
  * @author Thomas Kroes
  */
-class ScalarChannelAction : public WidgetAction
+class ScalarChannelAction : public GroupAction
 {
     Q_OBJECT
 
@@ -37,33 +37,21 @@ public:
     /** Maps channel index enum to name */
     static const QMap<Identifier, QString> channelIndexes;
 
-    /** Describes the widget flags */
-    enum WidgetFlag {
-        ComboBox            = 0x00001,  /** The widget includes a dimension selection combobox */
-        WindowLevelWidget   = 0x00002,  /** The widget includes a window/level settings widget */
-        ResetPushButton     = 0x00004,  /** The widget includes a reset push button */
-
-        All = ComboBox | WindowLevelWidget | ResetPushButton
-    };
-
-protected:
-
-    /**
-     * Get widget representation of the channel action
-     * @param parent Pointer to parent widget
-     * @param widgetFlags Widget flags for the configuration of the widget (type)
-     */
-    QWidget* getWidget(QWidget* parent, const std::int32_t& widgetFlags) override;
-
 public:
 
-    /** 
-     * Constructor
-     * @param imageSettingsAction Reference to layer image action
-     * @param index Channel index
-     * @param name Name of the scalar channel
+    /**
+     * Construct with \p parent object and \p title
+     * @param parent Pointer to parent object
+     * @param title Title
      */
-    ScalarChannelAction(ImageSettingsAction& imageSettingsAction, const Identifier& index, const QString& name);
+    Q_INVOKABLE ScalarChannelAction(QObject* parent, const QString& title);
+
+    /**
+     * Initialize with \p layer, channel \p identifier
+     * @param layer Pointer to layer
+     * @param identifier Channel index identifier
+     */
+    void initialize(Layer* layer, const Identifier& identifier);
 
     /** Get the channel identifier */
     const Identifier getIdentifier() const;
@@ -90,51 +78,49 @@ protected:
     /** Get smart pointer to images dataset */
     hdps::Dataset<Images> getImages();
 
-public: // Action publishing
-
-    /**
-     * Get whether the action is public (visible to other actions)
-     * @return Boolean indicating whether the action is public (visible to other actions)
-     */
-    bool isPublic() const override;
-
-    /**
-     * Publish this action so that other actions can connect to it
-     * @param text Name of the published widget action
-     */
-    void publish(const QString& name) override;
+protected: // Linking
 
     /**
      * Connect this action to a public action
      * @param publicAction Pointer to public action to connect to
+     * @param recursive Whether to also connect descendant child actions
      */
-    void connectToPublicAction(WidgetAction* publicAction) override;
-
-    /** Disconnect this action from a public action */
-    void disconnectFromPublicAction() override;
-
-protected:  // Linking
+    void connectToPublicAction(WidgetAction* publicAction, bool recursive) override;
 
     /**
-     * Get public copy of the action (other compatible actions can connect to it)
-     * @return Pointer to public copy of the action
+     * Disconnect this action from its public action
+     * @param recursive Whether to also disconnect descendant child actions
      */
-    virtual WidgetAction* getPublicCopy() const;
+    void disconnectFromPublicAction(bool recursive) override;
+
+public: // Serialization
+
+    /**
+     * Load widget action from variant map
+     * @param Variant map representation of the widget action
+     */
+    void fromVariantMap(const QVariantMap& variantMap) override;
+
+    /**
+     * Save widget action to variant map
+     * @return Variant map representation of the widget action
+     */
+    QVariantMap toVariantMap() const override;
 
 signals:
-    
+
     /** Signals the channel changed */
     void changed(ScalarChannelAction& channelAction);
 
-public: /** Action getters */
+public: // Action getters
 
     OptionAction& getDimensionAction() { return _dimensionAction; }
     ToggleAction& getEnabledAction() { return _enabledAction; }
     WindowLevelAction& getWindowLevelAction() { return _windowLevelAction; }
 
-protected:
-    ImageSettingsAction&    _imageSettingsAction;   /** Reference to image action */
-    const Identifier        _identifier;            /** Channel index */
+private:
+    Layer*                  _layer;                 /** Pointer to layer */
+    Identifier              _identifier;            /** Channel index */
     ToggleAction            _enabledAction;         /** Enabled action */
     OptionAction            _dimensionAction;       /** Selected dimension action */
     WindowLevelAction       _windowLevelAction;     /** Window/level action */
@@ -143,3 +129,7 @@ protected:
 
     friend class ImageAction;
 };
+
+Q_DECLARE_METATYPE(ScalarChannelAction)
+
+inline const auto scalarChannelActionMetaTypeId = qRegisterMetaType<ScalarChannelAction*>("ScalarChannelAction");

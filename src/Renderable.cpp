@@ -3,21 +3,26 @@
 
 #include <QDebug>
 
-Renderable::Renderable(LayersRenderer& renderer) :
+Renderable::Renderable(LayersRenderer* renderer /*= nullptr*/) :
     _renderer(renderer),
     _modelMatrix(),
     _props()
 {
 }
 
-LayersRenderer& Renderable::getRenderer()
+LayersRenderer* Renderable::getRenderer()
 {
     return _renderer;
 }
 
-const LayersRenderer& Renderable::getRenderer() const
+const LayersRenderer* Renderable::getRenderer() const
 {
     return _renderer;
+}
+
+void Renderable::setRenderer(LayersRenderer* layersRenderer)
+{
+    _renderer = layersRenderer;
 }
 
 QMatrix4x4 Renderable::getModelMatrix() const
@@ -35,10 +40,16 @@ void Renderable::setModelMatrix(const QMatrix4x4& modelMatrix)
 
 QMatrix4x4 Renderable::getModelViewMatrix() const
 {
-    return _renderer.getViewMatrix() * _modelMatrix;
+    if (_renderer == nullptr)
+        return {};
+
+    return _renderer->getViewMatrix() * _modelMatrix;
 }
 
 QMatrix4x4 Renderable::getModelViewProjectionMatrix() const
 {
-    return _renderer.getProjectionMatrix() * getModelViewMatrix();
+    if (_renderer == nullptr)
+        return {};
+
+    return _renderer->getProjectionMatrix() * getModelViewMatrix();
 }

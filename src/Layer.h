@@ -1,22 +1,25 @@
 #pragma once
 
 #include "Renderable.h"
-#include "LayersAction.h"
+
+#include <actions/GroupsAction.h>
+
+//#include "EditLayersAction.h"
 #include "GeneralAction.h"
 #include "ImageSettingsAction.h"
 #include "SelectionAction.h"
 #include "MiscellaneousAction.h"
+#include "SubsetAction.h"
 
+#include <util/Serializable.h>
 #include <util/Interpolation.h>
-#include <actions/WidgetAction.h>
+
 #include <Set.h>
 #include <ImageData/Images.h>
 
-using namespace hdps::util;
-
 class ImageViewerPlugin;
 
-class Layer : public WidgetAction, public Renderable
+class Layer : public hdps::gui::GroupsAction, public Renderable
 {
     Q_OBJECT
 
@@ -35,10 +38,23 @@ public:
      * @param imageViewerPlugin Reference to image viewer plugin
      * @param dataset Smart pointer to images dataset
      */
-    Layer(ImageViewerPlugin& imageViewerPlugin, const hdps::Dataset<Images>& imagesDataset);
+
+     /**
+      * Construct with \p parent object and \p title
+      * @param parent Pointer to parent object
+      * @param title Title
+      */
+    Q_INVOKABLE Layer(QObject* parent, const QString& title);// );
 
     /** Destructor */
     virtual ~Layer();
+
+    /**
+     * Initialize the layer with an \p imageViewerPlugin and \p imagesDataset
+     * @param imageViewerPlugin Pointer to image viewer plugin
+     * @param imagesDataset Source images dataset
+     */
+    void initialize(ImageViewerPlugin* imageViewerPlugin, const hdps::Dataset<Images>& imagesDataset);
 
     /** Get reference to image viewer plugin */
     ImageViewerPlugin& getImageViewerPlugin();
@@ -80,7 +96,7 @@ public:
     }
 
     /** Get images dataset */
-    hdps::Dataset<Images> getImages() {
+    hdps::Dataset<Images>& getImages() {
         return _imagesDataset;
     }
 
@@ -180,6 +196,28 @@ protected: // Miscellaneous
     /** Update image ROI */
     void updateRoi();
 
+public: // Serialization
+
+    /**
+     * Load widget action from variant map
+     * @param Variant map representation of the widget action
+     */
+    void fromVariantMap(const QVariantMap& variantMap) override;
+    
+    /**
+     * Save widget action to variant map
+     * @return Variant map representation of the widget action
+     */
+    QVariantMap toVariantMap() const override;
+
+public: /** Action getters */
+
+    GeneralAction& getGeneralAction() { return _generalAction; }
+    ImageSettingsAction& getImageSettingsAction() { return _imageSettingsAction; }
+    SelectionAction& getSelectionAction() { return _selectionAction; }
+    MiscellaneousAction& getMiscellaneousAction() { return _miscellaneousAction; }
+    SubsetAction& getSubsetAction() { return _subsetAction; }
+
 signals:
 
     /**
@@ -188,16 +226,8 @@ signals:
      */
     void selectionChanged(const std::vector<std::uint32_t>& selectedIndices);
 
-public: /** Action getters */
-
-    LayersAction& getLayersAction();
-    GeneralAction& getGeneralAction() { return _generalAction; }
-    ImageSettingsAction& getImageAction() { return _imageSettingsAction; }
-    SelectionAction& getSelectionAction() { return _selectionAction; }
-    MiscellaneousAction& getMiscellaneousAction() { return _miscellaneousAction; }
-
 protected:
-    ImageViewerPlugin&                  _imageViewerPlugin;             /** Reference to image viewer plugin */
+    ImageViewerPlugin*                  _imageViewerPlugin;             /** Pointer to image viewer plugin */
     bool                                _active;                        /** Whether the layer is active (editable) */
     hdps::Dataset<Images>               _imagesDataset;                 /** Smart pointer to images dataset */
     hdps::Dataset<hdps::DatasetImpl>    _sourceDataset;                 /** Smart pointer to source dataset of the images */
@@ -206,6 +236,7 @@ protected:
     ImageSettingsAction                 _imageSettingsAction;           /** Image settings action */
     SelectionAction                     _selectionAction;               /** Selection action */
     MiscellaneousAction                 _miscellaneousAction;           /** Miscellaneous action */
+    SubsetAction                        _subsetAction;                  /** Subset action */
     std::vector<std::uint8_t>           _selectionData;                 /** Selection data for selection prop */
     QRect                               _imageSelectionRectangle;       /** Selection boundaries in image coordinates */
     std::vector<std::uint8_t>           _maskData;                      /** Mask data for the image */

@@ -1,21 +1,22 @@
 #pragma once
 
 #include <actions/GroupAction.h>
-#include <actions/TriggerAction.h>
-#include <actions/StringAction.h>
-
-class ImageViewerPlugin;
+#include <actions/DecimalAction.h>
+#include <actions/ColorAction.h>
+#include <actions/ToggleAction.h>
 
 using namespace hdps::gui;
 
+class ImageViewerPlugin;
+
 /**
- * Subset action class
+ * Global view settings action class
  *
- * Action class for creating images/points subsets
+ * Settings action class for mangaing global view settings
  *
  * @author Thomas Kroes
  */
-class SubsetAction : public GroupAction
+class ViewSettingsAction : public GroupAction
 {
     Q_OBJECT
 
@@ -26,7 +27,7 @@ public:
      * @param parent Pointer to parent object
      * @param title Title
      */
-    Q_INVOKABLE SubsetAction(QObject* parent, const QString& title);
+    Q_INVOKABLE ViewSettingsAction(QObject* parent, const QString& title);
 
     /**
      * Initialize with \p imageViewerPlugin
@@ -65,15 +66,19 @@ public: // Serialization
 
 public: // Action getters
 
-    StringAction& getNameAction() { return _nameAction; }
-    TriggerAction& getCreateAction() { return _createAction; }
+    DecimalAction& getZoomMarginAction() { return _zoomMarginAction; }
+    ColorAction& getBackgroundColorAction() { return _backgroundColorAction; }
+    ToggleAction& getAnimationEnabledAction() { return _animationEnabledAction; }
+    ToggleAction& getSmartZoomAction() { return _smartZoomAction; }
 
 protected:
-    ImageViewerPlugin*  _imageViewerPlugin;     /** Pointer to image viewer plugin */
-    StringAction        _nameAction;            /** Subset name action */
-    TriggerAction       _createAction;          /** Create subset action */
+    ImageViewerPlugin*  _imageViewerPlugin;         /** Reference to image viewer plugin */
+    DecimalAction       _zoomMarginAction;          /** Margin around layers extents action */
+    ColorAction         _backgroundColorAction;     /** Background color action action */
+    ToggleAction        _animationEnabledAction;    /** Animation on/off action */
+    ToggleAction        _smartZoomAction;            /** Automatically zoom when selecting layers action */
 };
 
-Q_DECLARE_METATYPE(SubsetAction)
+Q_DECLARE_METATYPE(ViewSettingsAction)
 
-inline const auto subsetActionMetaTypeId = qRegisterMetaType<SubsetAction*>("SubsetAction");
+inline const auto viewSettingsActionMetaTypeId = qRegisterMetaType<ViewSettingsAction*>("ViewSettingsAction");

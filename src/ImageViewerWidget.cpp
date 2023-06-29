@@ -579,7 +579,7 @@ void ImageViewerWidget::paintGL()
         painter.setBrush(_backgroundColor);
         painter.drawRect(rect());
 
-        auto layersSorted = _imageViewerPlugin.getModel().getLayers();
+        auto layersSorted = _imageViewerPlugin.getLayersModel().getLayers();
 
         // Sort the layers
         std::reverse(layersSorted.begin(), layersSorted.end());
@@ -686,7 +686,7 @@ void ImageViewerWidget::cleanup()
 Layer* ImageViewerWidget::getLayerBeneathCursor()
 {
     // Iterate over all active layers from front to back
-    for (auto layer : _imageViewerPlugin.getModel().getLayers()) {
+    for (auto layer : _imageViewerPlugin.getLayersModel().getLayers()) {
 
         // Only do an intersection test when the layer is visible
         if (!layer->getGeneralAction().getVisibleAction().isChecked())
@@ -737,7 +737,7 @@ QRectF ImageViewerWidget::getWorldBoundingRectangle(bool visibleOnly /*= true*/)
 {
     QRectF worldBoundingRectangle;
 
-    for (const auto& layer : _imageViewerPlugin.getModel().getLayers()) {
+    for (const auto& layer : _imageViewerPlugin.getLayersModel().getLayers()) {
         if (visibleOnly && !layer->getGeneralAction().getVisibleAction().isChecked())
             continue;
         

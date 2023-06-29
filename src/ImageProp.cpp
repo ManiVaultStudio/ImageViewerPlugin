@@ -134,7 +134,7 @@ void ImageProp::render(const QMatrix4x4& modelViewProjectionMatrix)
         if (!shaderProgram->bind())
             throw std::runtime_error("Unable to bind quad shader program");
 
-        auto& imageAction = _layer.getImageAction();
+        auto& imageAction = _layer.getImageSettingsAction();
 
         // Convert display ranges
         const QVector2D displayRanges[3] = {
@@ -304,9 +304,9 @@ void ImageProp::setChannelScalarData(const std::uint32_t& channelIndex, const QV
             }
 
             // Set the interpolation type
-            setInterpolationType(static_cast<InterpolationType>(_layer.getImageAction().getInterpolationTypeAction().getCurrentIndex()));
+            setInterpolationType(static_cast<InterpolationType>(_layer.getImageSettingsAction().getInterpolationTypeAction().getCurrentIndex()));
 
-            // Assign the scalar data to the texture
+            // Assign the scalar data to the texture 
             texture->setData(0, channelIndex, QOpenGLTexture::PixelFormat::Red, QOpenGLTexture::PixelType::Float32, scalarData.data());
         }
         getRenderer().releaseOpenGLContext();

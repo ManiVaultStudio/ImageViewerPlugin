@@ -11,29 +11,34 @@
 using namespace hdps;
 using namespace hdps::util;
 
-ImageSettingsAction::ImageSettingsAction(Layer& layer) :
-    GroupAction(&layer, true),
-    _layer(layer),
-    _opacityAction(this, "Opacity", 0.0f, 100.0f, 100.0f, 100.0f, 1),
-    _subsampleFactorAction(this, "Subsample", 1, 8, 1, 1),
-    _colorSpaceAction(this, "Color space", colorSpaces.values(), "Mono", "Mono"),
-    _scalarChannel1Action(*this, ScalarChannelAction::Channel1, ScalarChannelAction::channelIndexes.value(ScalarChannelAction::Channel1)),
-    _scalarChannel2Action(*this, ScalarChannelAction::Channel2, ScalarChannelAction::channelIndexes.value(ScalarChannelAction::Channel2)),
-    _scalarChannel3Action(*this, ScalarChannelAction::Channel3, ScalarChannelAction::channelIndexes.value(ScalarChannelAction::Channel3)),
-    _colorMapAction(this, "Color map", ColorMap::Type::OneDimensional, "Black to white", "Black to white"),
-    _interpolationTypeAction(this, "Interpolate", interpolationTypes.values(), "Bilinear", "Bilinear"),
-    _useConstantColorAction(this, "Use constant color", false, false),
-    _constantColorAction(this, "Constant color", QColor(Qt::white), QColor(Qt::white)),
+ImageSettingsAction::ImageSettingsAction(QObject* parent, const QString& title) :
+    GroupAction(parent, title, true),
+    _layer(nullptr),
+    _opacityAction(this, "Opacity", 0.0f, 100.0f, 100.0f, 1),
+    _subsampleFactorAction(this, "Subsample", 1, 8, 1),
+    _colorSpaceAction(this, "Color space", colorSpaces.values(), "Mono"),
+    _scalarChannel1Action(this, ScalarChannelAction::channelIndexes.value(ScalarChannelAction::Channel1)),
+    _scalarChannel2Action(this, ScalarChannelAction::channelIndexes.value(ScalarChannelAction::Channel2)),
+    _scalarChannel3Action(this, ScalarChannelAction::channelIndexes.value(ScalarChannelAction::Channel3)),
+    _colorMap1DAction(this, "1D Color map", "Black to white"),
+    _colorMap2DAction(this, "2D Color map", "example_a"),
+    _interpolationTypeAction(this, "Interpolate", interpolationTypes.values(), "Bilinear"),
+    _useConstantColorAction(this, "Use constant color", false),
+    _constantColorAction(this, "Constant color", QColor(Qt::white)),
     _updateSelectionTimer(),
     _updateScalarDataTimer()
 {
-    setText("Image");
-
-    _scalarChannel1Action.setObjectName("Channel 1");
-    _scalarChannel2Action.setObjectName("Channel 2");
-    _scalarChannel3Action.setObjectName("Channel 3");
-
-    const auto isClusterType = _layer.getSourceDataset()->getDataType() == ClusterType;
+    addAction(&_opacityAction);
+    addAction(&_subsampleFactorAction);
+    addAction(&_colorSpaceAction);
+    addAction(&_scalarChannel1Action);
+    addAction(&_scalarChannel2Action);
+    addAction(&_scalarChannel3Action);
+    addAction(&_colorMap1DAction);
+    addAction(&_colorMap2DAction);
+    addAction(&_interpolationTypeAction);
+    addAction(&_useConstantColorAction);
+    addAction(&_constantColorAction);
 
     _subsampleFactorAction.setVisible(false);
 
@@ -43,25 +48,24 @@ ImageSettingsAction::ImageSettingsAction(Layer& layer) :
     _scalarChannel2Action.setToolTip("Scalar channel 2");
     _scalarChannel3Action.setToolTip("Scalar channel 3");
     _colorSpaceAction.setToolTip("The color space used to shade the image");
-    _colorMapAction.setToolTip("Image color map");
+    _colorMap1DAction.setToolTip("Image one-dimensional color map");
+    _colorMap2DAction.setToolTip("Image two-dimensional color map");
     _interpolationTypeAction.setToolTip("The type of two-dimensional image interpolation used");
     _useConstantColorAction.setToolTip("Use constant color to shade the image");
     _constantColorAction.setToolTip("Constant color");
 
     _opacityAction.setSuffix("%");
 
-    _colorMapAction.setColorMapType(ColorMap::Type::TwoDimensional);
-
-    _colorMapAction.getRangeAction(ColorMapAction::Axis::X).setEnabled(false);
-    _colorMapAction.getRangeAction(ColorMapAction::Axis::Y).setEnabled(false);
-
-    const auto dimensionNames = _layer.getDimensionNames();
+    _colorMap1DAction.getRangeAction(ColorMapAction::Axis::X).setEnabled(false);
+    _colorMap1DAction.getRangeAction(ColorMapAction::Axis::Y).setEnabled(false);
 
     const auto useConstantColorToggled = [this]() {
-        _colorMapAction.setEnabled(!_useConstantColorAction.isChecked());
+        _colorMap1DAction.setEnabled(!_useConstantColorAction.isChecked() && (_colorSpaceAction.getCurrentIndex() == 0));
+        _colorMap2DAction.setEnabled(!_useConstantColorAction.isChecked() && (_colorSpaceAction.getCurrentIndex() == 1));
         _constantColorAction.setEnabled(_useConstantColorAction.isChecked());
-        _layer.invalidate();
     };
+
+    useConstantColorToggled();
 
     connect(&_useConstantColorAction, &ToggleAction::toggled, this, useConstantColorToggled);
 
@@ -76,77 +80,76 @@ ImageSettingsAction::ImageSettingsAction(Layer& layer) :
     connect(&_scalarChannel3Action, &ScalarChannelAction::changed, this, [this]() {
         emit channelChanged(_scalarChannel3Action);
     });
+}
 
-    //connect(&_scalarChannelMaskAction, &ScalarChannelAction::changed, this, [this]() {
-    //    emit channelChanged(_scalarChannelMaskAction);
-    //});
+void ImageSettingsAction::initialize(Layer* layer)
+{
+    Q_ASSERT(layer != nullptr);
 
-    const auto render = [this]() {
-        _layer.invalidate();
-    };
+    if (layer == nullptr)
+        return;
 
-    connect(&_opacityAction, &DecimalAction::valueChanged, this, render);
-    connect(&_subsampleFactorAction, &IntegralAction::valueChanged, this, render);
-    connect(&_interpolationTypeAction, &OptionAction::currentIndexChanged, this, render);
-    connect(&_constantColorAction, &ColorAction::colorChanged, this, render);
+    _layer = layer;
 
-    updateScalarChannelActions();
-    useConstantColorToggled();
+    _scalarChannel1Action.initialize(_layer, ScalarChannelAction::Channel1);
+    _scalarChannel2Action.initialize(_layer, ScalarChannelAction::Channel2);
+    _scalarChannel3Action.initialize(_layer, ScalarChannelAction::Channel3);
 
-    connect(&_colorSpaceAction, &OptionAction::currentIndexChanged, this, &ImageSettingsAction::updateScalarChannelActions);
+    updateColorMapImage();
 
-    // Set color space to mono in case of one dimension
+    const auto isClusterType    = _layer->getSourceDataset()->getDataType() == ClusterType;
+    const auto dimensionNames   = _layer->getDimensionNames();
+
+    connect(&_useConstantColorAction, &ToggleAction::toggled, _layer, &Layer::invalidate);
+    connect(&_opacityAction, &DecimalAction::valueChanged, _layer, &Layer::invalidate);
+    connect(&_subsampleFactorAction, &IntegralAction::valueChanged, _layer, &Layer::invalidate);
+    connect(&_interpolationTypeAction, &OptionAction::currentIndexChanged, _layer, &Layer::invalidate);
+    connect(&_constantColorAction, &ColorAction::colorChanged, _layer, &Layer::invalidate);
+
+    connect(&_colorSpaceAction, &OptionAction::currentIndexChanged, _layer, &Layer::invalidate);
+    connect(&_colorSpaceAction, &OptionAction::currentIndexChanged, this, &ImageSettingsAction::updateColorMapImage);
+
     if (dimensionNames.count() == 1)
         _colorSpaceAction.setCurrentText("Mono");
 
-    // Set color space to duo in case of two dimensions
     if (dimensionNames.count() == 2)
         _colorSpaceAction.setCurrentText("Duo");
 
-    // Set channel dimension names
     _scalarChannel1Action.getDimensionAction().setOptions(dimensionNames);
     _scalarChannel2Action.getDimensionAction().setOptions(dimensionNames);
     _scalarChannel3Action.getDimensionAction().setOptions(dimensionNames);
 
     _scalarChannel1Action.getDimensionAction().setCurrentIndex(0);
-    _scalarChannel1Action.getDimensionAction().setDefaultIndex(0);
 
     if (isClusterType) {
-        
-        // Configure image interpolation action
         _interpolationTypeAction.setCurrentIndex(static_cast<std::int32_t>(InterpolationType::NearestNeighbor));
         _interpolationTypeAction.setEnabled(false);
 
-        // Configure color space action
         _colorSpaceAction.setEnabled(false);
         _colorSpaceAction.setCurrentText("Mono");
 
-        // Configure color map action
-        _colorMapAction.setEnabled(false);
+        _colorMap1DAction.setEnabled(false);
+        _colorMap2DAction.setEnabled(false);
 
-        // Configure use constant color action
         _useConstantColorAction.setEnabled(false);
 
-        // Disable all channels
         _scalarChannel1Action.getWindowLevelAction().setEnabled(false);
         _scalarChannel2Action.getWindowLevelAction().setEnabled(false);
         _scalarChannel3Action.getWindowLevelAction().setEnabled(false);
     }
     else {
-        if (_layer.getNumberOfImages() >= 2) {
+        if (_layer->getNumberOfImages() >= 2) {
             _scalarChannel2Action.getDimensionAction().setCurrentIndex(1);
-            _scalarChannel2Action.getDimensionAction().setDefaultIndex(1);
         }
 
-        if (_layer.getNumberOfImages() >= 3) {
+        if (_layer->getNumberOfImages() >= 3) {
             _scalarChannel3Action.getDimensionAction().setCurrentIndex(2);
-            _scalarChannel3Action.getDimensionAction().setDefaultIndex(2);
         }
     }
 
-    // Update the color map image when the discrete color map option changes
-    connect(&_colorMapAction, &ColorMapAction::imageChanged, this, &ImageSettingsAction::updateColorMapImage);
-    connect(&_colorMapAction.getDiscretizeAction(), &ToggleAction::toggled, this, &ImageSettingsAction::updateColorMapImage);
+    connect(&_colorMap1DAction, &ColorMapAction::imageChanged, this, &ImageSettingsAction::updateColorMapImage);
+    connect(&_colorMap2DAction, &ColorMapAction::imageChanged, this, &ImageSettingsAction::updateColorMapImage);
+    //connect(&_colorMapAction.getDiscretizeAction(), &ToggleAction::toggled, this, &ImageSettingsAction::updateColorMapImage);
 
     const auto updateScalarChannels = [this]() {
         _scalarChannel1Action.computeScalarData();
@@ -162,7 +165,7 @@ ImageSettingsAction::ImageSettingsAction(Layer& layer) :
             _updateSelectionTimer.start(LAZY_UPDATE_INTERVAL);
         else {
             _updateSelectionTimer.stop();
-            _layer.computeSelectionIndices();
+            _layer->computeSelectionIndices();
         }
     });
 
@@ -173,78 +176,28 @@ ImageSettingsAction::ImageSettingsAction(Layer& layer) :
             _updateScalarDataTimer.stop();
             updateScalarChannels();
         }
-    });
+        });
 
-    _eventListener.addSupportedEventType(static_cast<std::uint32_t>(EventType::DataChanged));
-    _eventListener.addSupportedEventType(static_cast<std::uint32_t>(EventType::DataSelectionChanged));
-    _eventListener.registerDataEventByType(PointType, [this, updateScalarChannels](DataEvent* dataEvent) {
+    auto& sourceDataset = _layer->getSourceDataset();
+    
+    if (sourceDataset.isValid()) {
+        connect(&sourceDataset, &Dataset<DatasetImpl>::dataChanged, [this, sourceDataset]() -> void {
+            _updateScalarDataTimer.start(LAZY_UPDATE_INTERVAL);
 
-        // The points dataset might have been deleted so check first if it is valid
-        if (!_layer.getSourceDataset().isValid())
-            return;
-
-        // Only process points dataset that is referenced by us
-        if (dataEvent->getDataset() != _layer.getSourceDataset())
-            return;
-
-        switch (dataEvent->getType())
-        {
-            case EventType::DataChanged:
-            {
-                _updateScalarDataTimer.start(LAZY_UPDATE_INTERVAL);
-                break;
-            }
-
-            case EventType::DataSelectionChanged:
-            {
-                _updateSelectionTimer.start(LAZY_UPDATE_INTERVAL);
-                break;
-            }
-
-            default:
-                break;
-        }
-    });
-
-    _eventListener.addSupportedEventType(static_cast<std::uint32_t>(EventType::DataChanged));
-    _eventListener.addSupportedEventType(static_cast<std::uint32_t>(EventType::DataSelectionChanged));
-    _eventListener.registerDataEventByType(ClusterType, [this, updateScalarChannels](DataEvent* dataEvent) {
-
-        // The points dataset might have been deleted so check first if it is valid
-        if (!_layer.getSourceDataset().isValid())
-            return;
-
-        // Only process points dataset that is referenced by us
-        if (dataEvent->getDataset() != _layer.getSourceDataset())
-            return;
-
-        switch (dataEvent->getType())
-        {
-            case EventType::DataChanged:
-            {
-                _updateScalarDataTimer.start(LAZY_UPDATE_INTERVAL);
+            if (sourceDataset->getDataType() == ClusterType)
                 updateColorMapImage();
-                break;
-            }
+        });
 
-            case EventType::DataSelectionChanged:
-            {
-                _updateSelectionTimer.start(LAZY_UPDATE_INTERVAL);
-                break;
-            }
+        connect(&sourceDataset, &Dataset<DatasetImpl>::dataSelectionChanged, [this]() -> void {
+            _updateSelectionTimer.start(LAZY_UPDATE_INTERVAL);
+        });
+    }
 
-            default:
-                break;
-        }
-    });
-
-    // Do an initial update of the scalar data
     updateScalarChannels();
-}
 
-void ImageSettingsAction::init()
-{
-    updateColorMapImage();
+    connect(&_colorSpaceAction, &OptionAction::currentIndexChanged, this, &ImageSettingsAction::updateScalarChannelActions);
+
+    updateScalarChannelActions();
 }
 
 const std::uint32_t ImageSettingsAction::getNumberOfActiveScalarChannels() const
@@ -271,20 +224,14 @@ const std::uint32_t ImageSettingsAction::getNumberOfActiveScalarChannels() const
 
 QImage ImageSettingsAction::getColorMapImage() const
 {
-    if (_layer.getSourceDataset()->getDataType() == ClusterType) {
-        
-        // Get pointer to clusters
-        auto clusters = Dataset<Clusters>(_layer.getSourceDataset())->getClusters();
+    if (_layer->getSourceDataset()->getDataType() == ClusterType) {
+        auto clusters = Dataset<Clusters>(_layer->getSourceDataset())->getClusters();
 
-        // Create discrete one-dimensional color map image
         QImage discreteColorMapImage(static_cast<std::int32_t>(clusters.size()), 1, QImage::Format::Format_RGB32);
 
         auto clusterIndex = 0;
 
-        // Populate color map
         for (const auto& cluster : clusters) {
-
-            // Assign pixel color by cluster color
             discreteColorMapImage.setPixelColor(clusterIndex, 0, cluster.getColor());
             clusterIndex++;
         }
@@ -292,24 +239,48 @@ QImage ImageSettingsAction::getColorMapImage() const
         return discreteColorMapImage.convertToFormat(QImage::Format_RGB32);
     }
     else {
-        return _colorMapAction.getColorMapImage();
+        switch (_colorSpaceAction.getCurrentIndex())
+        {
+            case 0:
+                return _colorMap1DAction.getColorMapImage();
+
+            case 1:
+                return _colorMap2DAction.getColorMapImage();
+
+            default:
+                break;
+        }
     }
+
+    return {};
 }
 
 void ImageSettingsAction::updateColorMapImage()
 {
-    // Establish the color map image interpolation type
-    const auto isDiscreteColorMap   = _colorMapAction.getDiscretizeAction().isChecked();
-    const auto interpolationType    = isDiscreteColorMap ? InterpolationType::NearestNeighbor : InterpolationType::Bilinear;
+    auto interpolationType = InterpolationType::Bilinear;
 
-    // Set the color map image in the layer
-    _layer.setColorMapImage(getColorMapImage(), interpolationType);
+    switch (_colorSpaceAction.getCurrentIndex())
+    {
+        case 0:
+            interpolationType = _colorMap1DAction.getDiscretizeAction().isChecked() ? InterpolationType::NearestNeighbor : InterpolationType::Bilinear;
+            break;
+
+        case 1:
+            interpolationType = _colorMap2DAction.getDiscretizeAction().isChecked() ? InterpolationType::NearestNeighbor : InterpolationType::Bilinear;
+            break;
+
+        default:
+            break;
+    }
+
+
+    if (_colorSpaceAction.getCurrentIndex() <= 1)
+        _layer->setColorMapImage(getColorMapImage(), interpolationType);
 }
 
 void ImageSettingsAction::updateScalarChannelActions()
 {
-    // Establish whether the source dataset is a clusters dataset
-    const auto isClusterType = _layer.getSourceDataset()->getDataType() == ClusterType;
+    const auto isClusterType = _layer->getSourceDataset()->getDataType() == ClusterType;
 
     switch (static_cast<ColorSpaceType>(_colorSpaceAction.getCurrentIndex()))
     {
@@ -323,8 +294,8 @@ void ImageSettingsAction::updateScalarChannelActions()
             _scalarChannel2Action.setText("Channel 2");
             _scalarChannel3Action.setText("Channel 3");
 
-            _colorMapAction.setEnabled(isClusterType ? false : true);
-            _colorMapAction.setColorMapType(ColorMap::Type::OneDimensional);
+            _colorMap1DAction.setEnabled(isClusterType ? false : (!_useConstantColorAction.isChecked()));
+            _colorMap2DAction.setEnabled(false);
 
             break;
         }
@@ -339,8 +310,8 @@ void ImageSettingsAction::updateScalarChannelActions()
             _scalarChannel2Action.setText("Channel 2");
             _scalarChannel3Action.setText("Channel 3");
 
-            _colorMapAction.setEnabled(true);
-            _colorMapAction.setColorMapType(ColorMap::Type::TwoDimensional);
+            _colorMap1DAction.setEnabled(false);
+            _colorMap2DAction.setEnabled(!_useConstantColorAction.isChecked());
 
             break;
         }
@@ -355,7 +326,8 @@ void ImageSettingsAction::updateScalarChannelActions()
             _scalarChannel2Action.setText("Green");
             _scalarChannel3Action.setText("Blue");
 
-            _colorMapAction.setEnabled(false);
+            _colorMap1DAction.setEnabled(false);
+            _colorMap2DAction.setEnabled(false);
 
             break;
         }
@@ -370,7 +342,8 @@ void ImageSettingsAction::updateScalarChannelActions()
             _scalarChannel2Action.setText("Saturation");
             _scalarChannel3Action.setText("Lightness");
 
-            _colorMapAction.setEnabled(false);
+            _colorMap1DAction.setEnabled(false);
+            _colorMap2DAction.setEnabled(false);
 
             break;
         }
@@ -385,7 +358,8 @@ void ImageSettingsAction::updateScalarChannelActions()
             _scalarChannel2Action.setText("A");
             _scalarChannel3Action.setText("B");
 
-            _colorMapAction.setEnabled(false);
+            _colorMap1DAction.setEnabled(false);
+            _colorMap2DAction.setEnabled(false);
 
             break;
         }
@@ -393,4 +367,88 @@ void ImageSettingsAction::updateScalarChannelActions()
         default:
             break;
     }
+}
+
+void ImageSettingsAction::connectToPublicAction(WidgetAction* publicAction, bool recursive)
+{
+    auto publicImageSettingsAction = dynamic_cast<ImageSettingsAction*>(publicAction);
+
+    Q_ASSERT(publicImageSettingsAction != nullptr);
+
+    if (publicImageSettingsAction == nullptr)
+        return;
+
+    if (recursive) {
+        actions().connectPrivateActionToPublicAction(&_opacityAction, &publicImageSettingsAction->getOpacityAction(), recursive);
+        actions().connectPrivateActionToPublicAction(&_subsampleFactorAction, &publicImageSettingsAction->getSubsampleFactorAction(), recursive);
+        actions().connectPrivateActionToPublicAction(&_colorSpaceAction, &publicImageSettingsAction->getColorSpaceAction(), recursive);
+        actions().connectPrivateActionToPublicAction(&_scalarChannel1Action, &publicImageSettingsAction->getScalarChannel1Action(), recursive);
+        actions().connectPrivateActionToPublicAction(&_scalarChannel2Action, &publicImageSettingsAction->getScalarChannel2Action(), recursive);
+        actions().connectPrivateActionToPublicAction(&_scalarChannel3Action, &publicImageSettingsAction->getScalarChannel3Action(), recursive);
+        actions().connectPrivateActionToPublicAction(&_colorMap1DAction, &publicImageSettingsAction->getColorMap1DAction(), recursive);
+        actions().connectPrivateActionToPublicAction(&_colorMap2DAction, &publicImageSettingsAction->getColorMap2DAction(), recursive);
+        actions().connectPrivateActionToPublicAction(&_interpolationTypeAction, &publicImageSettingsAction->getInterpolationTypeAction(), recursive);
+        actions().connectPrivateActionToPublicAction(&_useConstantColorAction, &publicImageSettingsAction->getUseConstantColorAction(), recursive);
+        actions().connectPrivateActionToPublicAction(&_constantColorAction, &publicImageSettingsAction->getConstantColorAction(), recursive);
+    }
+
+    GroupAction::connectToPublicAction(publicAction, recursive);
+}
+
+void ImageSettingsAction::disconnectFromPublicAction(bool recursive)
+{
+    if (!isConnected())
+        return;
+
+    if (recursive) {
+        actions().disconnectPrivateActionFromPublicAction(&_opacityAction, recursive);
+        actions().disconnectPrivateActionFromPublicAction(&_subsampleFactorAction, recursive);
+        actions().disconnectPrivateActionFromPublicAction(&_colorSpaceAction, recursive);
+        actions().disconnectPrivateActionFromPublicAction(&_scalarChannel1Action, recursive);
+        actions().disconnectPrivateActionFromPublicAction(&_scalarChannel2Action, recursive);
+        actions().disconnectPrivateActionFromPublicAction(&_scalarChannel3Action, recursive);
+        actions().disconnectPrivateActionFromPublicAction(&_colorMap1DAction, recursive);
+        actions().disconnectPrivateActionFromPublicAction(&_colorMap2DAction, recursive);
+        actions().disconnectPrivateActionFromPublicAction(&_interpolationTypeAction, recursive);
+        actions().disconnectPrivateActionFromPublicAction(&_useConstantColorAction, recursive);
+        actions().disconnectPrivateActionFromPublicAction(&_constantColorAction, recursive);
+    }
+
+    GroupAction::disconnectFromPublicAction(recursive);
+}
+
+void ImageSettingsAction::fromVariantMap(const QVariantMap& variantMap)
+{
+    GroupAction::fromVariantMap(variantMap);
+
+    _opacityAction.fromParentVariantMap(variantMap);
+    _subsampleFactorAction.fromParentVariantMap(variantMap);
+    _colorSpaceAction.fromParentVariantMap(variantMap);
+    _scalarChannel1Action.fromParentVariantMap(variantMap);
+    _scalarChannel2Action.fromParentVariantMap(variantMap);
+    _scalarChannel3Action.fromParentVariantMap(variantMap);
+    _colorMap1DAction.fromParentVariantMap(variantMap);
+    _colorMap2DAction.fromParentVariantMap(variantMap);
+    _interpolationTypeAction.fromParentVariantMap(variantMap);
+    _useConstantColorAction.fromParentVariantMap(variantMap);
+    _constantColorAction.fromParentVariantMap(variantMap);
+}
+
+QVariantMap ImageSettingsAction::toVariantMap() const
+{
+    auto variantMap = GroupAction::toVariantMap();
+
+    _opacityAction.insertIntoVariantMap(variantMap);
+    _subsampleFactorAction.insertIntoVariantMap(variantMap);
+    _colorSpaceAction.insertIntoVariantMap(variantMap);
+    _scalarChannel1Action.insertIntoVariantMap(variantMap);
+    _scalarChannel2Action.insertIntoVariantMap(variantMap);
+    _scalarChannel3Action.insertIntoVariantMap(variantMap);
+    _colorMap1DAction.insertIntoVariantMap(variantMap);
+    _colorMap2DAction.insertIntoVariantMap(variantMap);
+    _interpolationTypeAction.insertIntoVariantMap(variantMap);
+    _useConstantColorAction.insertIntoVariantMap(variantMap);
+    _constantColorAction.insertIntoVariantMap(variantMap);
+
+    return variantMap;
 }

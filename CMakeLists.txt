@@ -32,6 +32,8 @@ set(MODEL
     src/Layer.cpp
     src/LayersModel.h
     src/LayersModel.cpp
+    src/LayersFilterModel.h
+    src/LayersFilterModel.cpp
     src/Renderable.h
     src/Renderable.cpp
 )
@@ -66,16 +68,21 @@ set(DIALOGS
 )
 
 set(ACTIONS
+    src/ViewSettingsAction.h
+    src/ViewSettingsAction.cpp
+    src/EditLayersAction.h
+    src/EditLayersAction.cpp
+    src/EditLayerAction.h
+    src/EditLayerAction.cpp
+    src/SettingsAction.h
+    src/SettingsAction.cpp
+)
+
+set(LAYER_ACTIONS
     src/GeneralAction.h
     src/GeneralAction.cpp
-    src/GlobalViewSettingsAction.h
-    src/GlobalViewSettingsAction.cpp
     src/ImageSettingsAction.h
     src/ImageSettingsAction.cpp
-    src/LayersAction.h
-    src/LayersAction.cpp
-    src/MainToolbarAction.h
-    src/MainToolbarAction.cpp
     src/MiscellaneousAction.h
     src/MiscellaneousAction.cpp
     src/PositionAction.h
@@ -84,14 +91,15 @@ set(ACTIONS
     src/ScalarChannelAction.cpp
     src/SelectionAction.h
     src/SelectionAction.cpp
-    src/SettingsAction.h
-    src/SettingsAction.cpp
     src/SubsetAction.h
     src/SubsetAction.cpp
-    src/ZoomAction.h
-    src/ZoomAction.cpp
-    src/ZoomToolbarAction.h
-    src/ZoomToolbarAction.cpp
+)
+
+set(TOOLBAR_ACTIONS
+    src/SelectionToolbarAction.h
+    src/SelectionToolbarAction.cpp
+    src/InteractionToolbarAction.h
+    src/InteractionToolbarAction.cpp
 )
 
 set(SHADERS
@@ -113,7 +121,7 @@ set(QRC
     res/resources_imgageviewer.qrc
 )
 
-set(SOURCES ${PLUGIN} ${MODEL} ${RENDERING} ${WIDGETS} ${DIALOGS} ${ACTIONS})
+set(SOURCES ${PLUGIN} ${MODEL} ${RENDERING} ${WIDGETS} ${DIALOGS} ${ACTIONS} ${LAYER_ACTIONS} ${TOOLBAR_ACTIONS})
 set(AUX ${JSON} ${QRC})
 
 source_group(Plugin FILES ${PLUGIN})
@@ -122,6 +130,8 @@ source_group(Rendering FILES ${RENDERING})
 source_group(Widgets FILES ${WIDGETS})
 source_group(Dialogs FILES ${DIALOGS})
 source_group(Actions FILES ${ACTIONS})
+source_group(Actions\\Layer FILES ${LAYER_ACTIONS})
+source_group(Actions\\Toolbars FILES ${TOOLBAR_ACTIONS})
 source_group(Shaders FILES ${SHADERS})
 source_group(Aux FILES ${AUX})
 source_group(Resources FILES ${QRC})

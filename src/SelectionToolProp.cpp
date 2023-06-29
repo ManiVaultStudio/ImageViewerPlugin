@@ -160,7 +160,7 @@ void SelectionToolProp::compute(const QVector<QPoint>& mousePositions)
             // Get quad shape and compute the model-view-matrix
             const auto quadShape        = getShapeByName<QuadShape>("Quad");
             const auto quadRectangle    = quadShape->getRectangle();
-            const auto modelViewMatrix  = _layer.getRenderer().getViewMatrix() * _renderable.getModelMatrix() * getModelMatrix();
+            const auto modelViewMatrix  = _layer.getRenderer()->getViewMatrix() * _renderable.getModelMatrix() * getModelMatrix();
 
             // Create viewport with the same size as the FBO a
             glViewport(0.0f, 0.0f, _fbo->width(), _fbo->height());
@@ -209,8 +209,8 @@ void SelectionToolProp::compute(const QVector<QPoint>& mousePositions)
                     if (numberOfMousePositions < 2)
                         break;
 
-                    const auto rectangleTopLeft         = getRenderer().getScreenPointToWorldPosition(modelViewMatrix, mousePositions.first());
-                    const auto rectangleBottomRight     = getRenderer().getScreenPointToWorldPosition(modelViewMatrix, mousePositions.last());
+                    const auto rectangleTopLeft = getRenderer().getScreenPointToWorldPosition(modelViewMatrix, mousePositions.first());
+                    const auto rectangleBottomRight = getRenderer().getScreenPointToWorldPosition(modelViewMatrix, mousePositions.last());
                     const auto rectangleTopLeftUV       = QVector2D(rectangleTopLeft.x() / fboSize.width(), rectangleTopLeft.y() / fboSize.height());
                     const auto rectangleBottomRightUV   = QVector2D(rectangleBottomRight.x() / fboSize.width(), rectangleBottomRight.y() / fboSize.height());
                     const auto rectangle                = QRectF(QPointF(rectangleTopLeftUV.x(), rectangleTopLeftUV.y()), QPointF(rectangleBottomRightUV.x(), rectangleBottomRightUV.y())).normalized();

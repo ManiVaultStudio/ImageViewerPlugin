@@ -24,7 +24,7 @@ void Prop::initialize()
 {
     //qDebug() << "Initialize" << fullName();
 
-    _renderable.getRenderer().bindOpenGLContext();
+    _renderable.getRenderer()->bindOpenGLContext();
 
     for (auto shape : _shapes) {
         shape->initialize();
@@ -35,7 +35,7 @@ void Prop::destroy()
 {
     //qDebug() << "Destroy" << fullName();
 
-    _renderable.getRenderer().bindOpenGLContext();
+    _renderable.getRenderer()->bindOpenGLContext();
 
     for (auto shape : _shapes) {
         shape->destroy();
@@ -74,7 +74,7 @@ void Prop::render(const QMatrix4x4& modelViewProjectionMatrix)
 
 LayersRenderer& Prop::getRenderer()
 {
-    return _renderable.getRenderer();
+    return *_renderable.getRenderer();
 }
 
 bool Prop::isInitialized() const
@@ -144,5 +144,5 @@ void Prop::setModelMatrix(const QMatrix4x4& modelMatrix)
 
 QRect Prop::getScreenBoundingRectangle() const
 {
-    return _renderable.getRenderer().getScreenRectangleFromWorldRectangle(getWorldBoundingRectangle());
+    return _renderable.getRenderer()->getScreenRectangleFromWorldRectangle(getWorldBoundingRectangle());
 }

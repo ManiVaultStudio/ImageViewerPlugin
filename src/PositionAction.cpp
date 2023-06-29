@@ -2,24 +2,23 @@
 #include "GeneralAction.h"
 #include "Layer.h"
 
-#include <QHBoxLayout>
-
 using namespace hdps;
 
-PositionAction::PositionAction(GeneralAction& generalAction) :
-    WidgetAction(reinterpret_cast<QObject*>(&generalAction)),
-    _generalAction(generalAction),
-    _xAction(this, "X position", -100000.0f, 100000.0f, 0.0f, 0.0f),
-    _yAction(this, "Y position", -100000.0f, 100000.0f, 0.0f, 0.0f)
+PositionAction::PositionAction(QObject* parent, const QString& title) :
+    GroupAction(parent, title),
+    _xAction(this, "X", -100000.0f, 100000.0f, 0.0f, 0.0f),
+    _yAction(this, "Y", -100000.0f, 100000.0f, 0.0f, 0.0f)
 {
-    setText("Position");
     setToolTip("Layer position");
+    setDefaultWidgetFlags(GroupAction::Horizontal);
+    setShowLabels(false);
 
-    // Set tooltips
+    addAction(&_xAction);
+    addAction(&_yAction);
+
     _xAction.setToolTip("Layer x-position");
     _yAction.setToolTip("Layer y-position");
 
-    // Configure position widgets
     _xAction.setDefaultWidgetFlags(DecimalAction::SpinBox);
     _yAction.setDefaultWidgetFlags(DecimalAction::SpinBox);
 
@@ -31,18 +30,50 @@ PositionAction::PositionAction(GeneralAction& generalAction) :
     connect(&_yAction, &DecimalAction::valueChanged, this, notifyChanged);
 }
 
-QWidget* PositionAction::getWidget(QWidget* parent, const std::int32_t& widgetFlags)
+void PositionAction::connectToPublicAction(WidgetAction* publicAction, bool recursive)
 {
-    auto widget = new WidgetActionWidget(parent, this);
-    auto layout = new QHBoxLayout();
+    auto publicPositionAction = dynamic_cast<PositionAction*>(publicAction);
 
-    layout->setContentsMargins(0, 0, 0, 0);
-    layout->setSpacing(3);
+    Q_ASSERT(publicPositionAction != nullptr);
 
-    layout->addWidget(_xAction.createWidget(widget));
-    layout->addWidget(_yAction.createWidget(widget));
+    if (publicPositionAction == nullptr)
+        return;
 
-    widget->setLayout(layout);
+    if (recursive) {
+        actions().connectPrivateActionToPublicAction(&_xAction, &publicPositionAction->getXAction(), recursive);
+        actions().connectPrivateActionToPublicAction(&_yAction, &publicPositionAction->getYAction(), recursive);
+    }
 
-    return widget;
+    GroupAction::connectToPublicAction(publicAction, recursive);
+}
+
+void PositionAction::disconnectFromPublicAction(bool recursive)
+{
+    if (!isConnected())
+        return;
+
+    if (recursive) {
+        actions().disconnectPrivateActionFromPublicAction(&_xAction, recursive);
+        actions().disconnectPrivateActionFromPublicAction(&_yAction, recursive);
+    }
+
+    GroupAction::disconnectFromPublicAction(recursive);
+}
+
+void PositionAction::fromVariantMap(const QVariantMap& variantMap)
+{
+    GroupAction::fromVariantMap(variantMap);
+
+    _xAction.fromParentVariantMap(variantMap);
+    _yAction.fromParentVariantMap(variantMap);
+}
+
+QVariantMap PositionAction::toVariantMap() const
+{
+    auto variantMap = GroupAction::toVariantMap();
+
+    _xAction.insertIntoVariantMap(variantMap);
+    _yAction.insertIntoVariantMap(variantMap);
+
+    return variantMap;
 }
