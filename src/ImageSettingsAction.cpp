@@ -181,14 +181,14 @@ void ImageSettingsAction::initialize(Layer* layer)
     auto& sourceDataset = _layer->getSourceDataset();
     
     if (sourceDataset.isValid()) {
-        connect(&sourceDataset, &Dataset<DatasetImpl>::datasetChanged, [this, sourceDataset]() -> void {
+        connect(&sourceDataset, &Dataset<DatasetImpl>::dataChanged, [this, sourceDataset]() -> void {
             _updateScalarDataTimer.start(LAZY_UPDATE_INTERVAL);
 
             if (sourceDataset->getDataType() == ClusterType)
                 updateColorMapImage();
         });
 
-        connect(&sourceDataset, &Dataset<DatasetImpl>::datasetSelectionChanged, [this]() -> void {
+        connect(&sourceDataset, &Dataset<DatasetImpl>::dataSelectionChanged, [this]() -> void {
             _updateSelectionTimer.start(LAZY_UPDATE_INTERVAL);
         });
     }

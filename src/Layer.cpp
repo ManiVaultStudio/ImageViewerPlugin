@@ -949,11 +949,11 @@ void Layer::publishSelection()
                 selection->indices.push_back(globalIndices[selectedIndex]);
 
             // Notify others that the point selection changed
-            events().notifyDatasetSelectionChanged(points);
+            events().notifyDatasetDataSelectionChanged(points);
         }
 
         // Notify listeners of the selection change
-        events().notifyDatasetSelectionChanged(_sourceDataset->getSourceDataset<DatasetImpl>());
+        events().notifyDatasetDataSelectionChanged(_sourceDataset->getSourceDataset<DatasetImpl>());
 
         // Render
         invalidate();

@@ -414,12 +414,12 @@ LayersModel::LayersModel(QObject* parent) :
 
     _eventListener.addSupportedEventType(static_cast<std::uint32_t>(EventType::DatasetRemoved));
 
-    _eventListener.registerDataEventByType(PointType, [this](DataEvent* dataEvent) {
+    _eventListener.registerDataEventByType(PointType, [this](DatasetEvent* datasetEvent) {
 
-        switch (dataEvent->getType())
+        switch (datasetEvent->getType())
         {
             case EventType::DatasetRemoved:
-                removeLayer(dataEvent->getDataset()->getId());
+                removeLayer(datasetEvent->getDataset()->getId());
                 break;
 
             default:
@@ -427,12 +427,12 @@ LayersModel::LayersModel(QObject* parent) :
         }
     });
 
-    _eventListener.registerDataEventByType(ImageType, [this](DataEvent* dataEvent) {
+    _eventListener.registerDataEventByType(ImageType, [this](DatasetEvent* datasetEvent) {
 
-        switch (dataEvent->getType())
+        switch (datasetEvent->getType())
         {
             case EventType::DatasetRemoved:
-                removeLayer(dataEvent->getDataset()->getId());
+                removeLayer(datasetEvent->getDataset()->getId());
                 break;
 
             default:
