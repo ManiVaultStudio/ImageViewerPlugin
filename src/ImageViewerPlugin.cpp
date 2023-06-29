@@ -324,6 +324,8 @@ void ImageViewerPlugin::addDataset(const Dataset<Images>& dataset)
 {
     auto layer = new Layer(&_settingsAction.getEditLayersAction(), dataset->text());
 
+    qDebug() << __FUNCTION__;
+
     layer->initialize(this, dataset);
 
     if (!projects().isOpeningProject() && !projects().isImportingProject())

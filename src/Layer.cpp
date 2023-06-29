@@ -970,7 +970,6 @@ void Layer::publishSelection()
 void Layer::computeSelectionIndices()
 {
     try {
-        qDebug() << __FUNCTION__;
         // Get selection image, selected indices and selection boundaries from the image dataset
         _imagesDataset->getSelectionData(_selectionData, _selectedIndices, _imageSelectionRectangle);
 
