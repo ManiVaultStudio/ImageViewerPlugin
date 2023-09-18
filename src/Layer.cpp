@@ -31,7 +31,7 @@ Layer::Layer(QObject* parent, const QString& title) :
     _generalAction(this, "General"),
     _imageSettingsAction(this, "Image"),
     _selectionAction(this, "Selection"),
-    _miscellaneousAction(this, "Miscellaneous"),
+    _miscellaneousAction(this, "Miscellaneous", *this),
     _subsetAction(this, "Subset"),
     _selectionData(),
     _imageSelectionRectangle(),
