@@ -18,7 +18,7 @@ MiscellaneousAction::MiscellaneousAction(QObject* parent, const QString& title) 
     addAction(&_roiViewAction);
     addAction(&_roiDetailAction);
 
-    _roiLayerAction.setConnectionPermissionsFlag(ConnectionPermissionFlag::All);
-    _roiViewAction.setConnectionPermissionsFlag(ConnectionPermissionFlag::All);
-    _roiDetailAction.setConnectionPermissionsFlag(ConnectionPermissionFlag::All);
+    _roiLayerAction.setConnectionPermissionsFlag(ConnectionPermissionFlag::All, false, true);
+    _roiViewAction.setConnectionPermissionsFlag(ConnectionPermissionFlag::All, false, true);
+    _roiDetailAction.setConnectionPermissionsFlag(ConnectionPermissionFlag::All, false, true);
 }
