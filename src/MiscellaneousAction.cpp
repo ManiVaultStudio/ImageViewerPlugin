@@ -2,9 +2,8 @@
 #include "Layer.h"
 #include "ImageViewerPlugin.h"
 
-MiscellaneousAction::MiscellaneousAction(QObject* parent, const QString& title, Layer& layer) :
+MiscellaneousAction::MiscellaneousAction(QObject* parent, const QString& title) :
     GroupAction(parent, title),
-    _layer(layer),
     _roiLayerAction(this, "Layer ROI"),
     _roiViewAction(this, "View ROI"),
     _roiDetailAction(this, "Detail ROI")

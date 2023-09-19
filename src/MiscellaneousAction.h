@@ -26,7 +26,7 @@ public:
      * @param parent Pointer to parent object
      * @param title Title
      */
-    Q_INVOKABLE MiscellaneousAction(QObject* parent, const QString& title, Layer& layer);
+    Q_INVOKABLE MiscellaneousAction(QObject* parent, const QString& title);
 
 public: // Action getters
 
@@ -35,7 +35,6 @@ public: // Action getters
     IntegralRectangleAction& getRoiDetailAction() { return _roiDetailAction; }
 
 protected:
-    Layer& _layer;                                  /** Reference to layer */
     IntegralRectangleAction     _roiLayerAction;    /** Layer region of interest action */
     DecimalRectangleAction      _roiViewAction;     /** View region of interest action */
     IntegralRectangleAction     _roiDetailAction;   /** Layer region of interest of another viewer action */
