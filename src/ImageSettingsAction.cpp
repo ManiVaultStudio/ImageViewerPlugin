@@ -23,6 +23,7 @@ ImageSettingsAction::ImageSettingsAction(QObject* parent, const QString& title) 
     _colorMap1DAction(this, "1D Color map", "Black to white"),
     _colorMap2DAction(this, "2D Color map", "example_a"),
     _interpolationTypeAction(this, "Interpolate", interpolationTypes.values(), "Bilinear"),
+    _fixRgbToData(this, "Fix RGB to data [0, 255]", false),
     _useConstantColorAction(this, "Use constant color", false),
     _constantColorAction(this, "Constant color", QColor(Qt::white)),
     _updateSelectionTimer(),
@@ -37,6 +38,7 @@ ImageSettingsAction::ImageSettingsAction(QObject* parent, const QString& title) 
     addAction(&_colorMap1DAction);
     addAction(&_colorMap2DAction);
     addAction(&_interpolationTypeAction);
+    addAction(&_fixRgbToData);
     addAction(&_useConstantColorAction);
     addAction(&_constantColorAction);
 
@@ -51,6 +53,7 @@ ImageSettingsAction::ImageSettingsAction(QObject* parent, const QString& title) 
     _colorMap1DAction.setToolTip("Image one-dimensional color map");
     _colorMap2DAction.setToolTip("Image two-dimensional color map");
     _interpolationTypeAction.setToolTip("The type of two-dimensional image interpolation used");
+    _fixRgbToData.setToolTip("Fix RGB level/window to [0, 255], only works in RGB mode");
     _useConstantColorAction.setToolTip("Use constant color to shade the image");
     _constantColorAction.setToolTip("Constant color");
 
@@ -68,6 +71,16 @@ ImageSettingsAction::ImageSettingsAction(QObject* parent, const QString& title) 
     useConstantColorToggled();
 
     connect(&_useConstantColorAction, &ToggleAction::toggled, this, useConstantColorToggled);
+
+    connect(&_fixRgbToData, &ToggleAction::toggled, this, [this](bool toggled) {
+        if (static_cast<ColorSpaceType>(_colorSpaceAction.getCurrentIndex()) == ColorSpaceType::RGB)
+        {
+            updateScalarChannelActions();
+            emit channelChanged(_scalarChannel1Action);
+            emit channelChanged(_scalarChannel2Action);
+            emit channelChanged(_scalarChannel3Action);
+        }
+    });
 
     connect(&_scalarChannel1Action, &ScalarChannelAction::changed, this, [this]() {
         emit channelChanged(_scalarChannel1Action);
@@ -282,6 +295,14 @@ void ImageSettingsAction::updateScalarChannelActions()
 {
     const auto isClusterType = _layer->getSourceDataset()->getDataType() == ClusterType;
 
+    _scalarChannel1Action.setFixedDisplayRange(false);
+    _scalarChannel2Action.setFixedDisplayRange(false);
+    _scalarChannel3Action.setFixedDisplayRange(false);
+
+    _scalarChannel1Action.getWindowLevelAction().setEnabled(true);
+    _scalarChannel2Action.getWindowLevelAction().setEnabled(true);
+    _scalarChannel3Action.getWindowLevelAction().setEnabled(true);
+
     switch (static_cast<ColorSpaceType>(_colorSpaceAction.getCurrentIndex()))
     {
         case ColorSpaceType::Mono:
@@ -318,6 +339,17 @@ void ImageSettingsAction::updateScalarChannelActions()
 
         case ColorSpaceType::RGB:
         {
+            if (_fixRgbToData.isChecked())
+            {
+                _scalarChannel1Action.setFixedDisplayRange(true, 0, 255);
+                _scalarChannel2Action.setFixedDisplayRange(true, 0, 255);
+                _scalarChannel3Action.setFixedDisplayRange(true, 0, 255);
+
+                _scalarChannel1Action.getWindowLevelAction().setEnabled(false);
+                _scalarChannel2Action.getWindowLevelAction().setEnabled(false);
+                _scalarChannel3Action.getWindowLevelAction().setEnabled(false);
+            }
+
             _scalarChannel1Action.getEnabledAction().setChecked(true);
             _scalarChannel2Action.getEnabledAction().setChecked(true);
             _scalarChannel3Action.getEnabledAction().setChecked(true);

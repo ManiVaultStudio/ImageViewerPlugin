@@ -23,7 +23,9 @@ ScalarChannelAction::ScalarChannelAction(QObject* parent, const QString& title) 
     _dimensionAction(this, "Dimension"),
     _windowLevelAction(this, "Window/Level"),
     _scalarData(),
-    _scalarDataRange({0.0f, 0.0f})
+    _scalarDataRange({ 0.0f, 0.0f }),
+    _displayRange({ 0.0f, 1.0f }),
+    _fixedDisplayRange(false) 
 {
     setDefaultWidgetFlags(GroupAction::Horizontal);
     setShowLabels(false);
@@ -110,24 +112,32 @@ const QPair<float, float>& ScalarChannelAction::getScalarDataRange() const
     return _scalarDataRange;
 }
 
+void ScalarChannelAction::setFixedDisplayRange(bool status, float lower, float upper)
+{
+    _fixedDisplayRange = status;
+    _displayRange.first = lower;
+    _displayRange.second = upper;
+}
+
 QPair<float, float> ScalarChannelAction::getDisplayRange()
 {
-    QPair<float, float> displayRange;
+    if (!_fixedDisplayRange)
+    {
+        const auto range            = _scalarDataRange.second - _scalarDataRange.first;
+        const auto maxWindow        = range;
+        const auto windowNormalized = _windowLevelAction.getWindowAction().getValue();
+        const auto levelNormalized  = _windowLevelAction.getLevelAction().getValue();
+        const auto level            = std::clamp(0.f + (levelNormalized * maxWindow), 0.f, range);
+        const auto window           = std::clamp(windowNormalized * maxWindow, 0.f, range);
 
-    const auto range            = _scalarDataRange.second - _scalarDataRange.first;
-    const auto maxWindow        = range;
-    const auto windowNormalized = _windowLevelAction.getWindowAction().getValue();
-    const auto levelNormalized  = _windowLevelAction.getLevelAction().getValue();
-    const auto level            = std::clamp(0.f + (levelNormalized * maxWindow), 0.f, range);
-    const auto window           = std::clamp(windowNormalized * maxWindow, 0.f, range);
+        _displayRange.first  = std::clamp(level - (window / 2.0f), 0.f, range);
+        _displayRange.second = std::clamp(level + (window / 2.0f), 0.f, range);
 
-    displayRange.first  = std::clamp(level - (window / 2.0f), 0.f, range);
-    displayRange.second = std::clamp(level + (window / 2.0f), 0.f, range);
+        _displayRange.first  += _scalarDataRange.first;
+        _displayRange.second += _scalarDataRange.first;
+    }
 
-    displayRange.first += _scalarDataRange.first;
-    displayRange.second += _scalarDataRange.first;
-
-    return displayRange;
+    return _displayRange;
 }
 
 void ScalarChannelAction::computeScalarData()
