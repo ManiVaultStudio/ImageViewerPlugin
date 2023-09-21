@@ -15,7 +15,8 @@ MiscellaneousAction::MiscellaneousAction(QObject* parent, const QString& title) 
     _roiViewAction.setToolTip("View region of interest in fractional world coordinates (bottom-left:x, bottom-left:y, top-right:x, top-right:y)");
 
     addAction(&_roiLayerAction);
-    addAction(&_roiViewAction);
+    // TODO: setting the viewport by jumping to past entries does not work yet reliably 
+    //addAction(&_roiViewAction);
 
     _roiLayerAction.setConnectionPermissionsFlag(ConnectionPermissionFlag::All, false, true);
     _roiViewAction.setConnectionPermissionsFlag(ConnectionPermissionFlag::All, false, true);
