@@ -183,13 +183,10 @@ void Layer::initialize(ImageViewerPlugin* imageViewerPlugin, const hdps::Dataset
             return;
 
         const auto animationEnabled = getRenderer()->getAnimationEnabled();
-        qDebug() << "MiscellaneousAction::viewROIChanged: " << rectangle;
+
         getRenderer()->setAnimationEnabled(false);
         {
-            if (rectangle == QRectF(-1, -1, -1, -1))
-                getRenderer()->setZoomRectangle(_imageViewerPlugin->getImageViewerWidget().getWorldBoundingRectangle());
-            else
-                getRenderer()->setZoomRectangle(rectangle);
+            getRenderer()->setZoomRectangle(rectangle);
         }
         getRenderer()->setAnimationEnabled(animationEnabled);
 
