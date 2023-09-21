@@ -32,12 +32,10 @@ public: // Action getters
 
     IntegralRectangleAction& getRoiLayerAction() { return _roiLayerAction; }
     DecimalRectangleAction& getRoiViewAction() { return _roiViewAction; }
-    IntegralRectangleAction& getRoiDetailAction() { return _roiDetailAction; }
 
 protected:
     IntegralRectangleAction     _roiLayerAction;    /** Layer region of interest action */
     DecimalRectangleAction      _roiViewAction;     /** View region of interest action */
-    IntegralRectangleAction     _roiDetailAction;   /** Layer region of interest of another viewer action */
 };
 
 Q_DECLARE_METATYPE(MiscellaneousAction)
