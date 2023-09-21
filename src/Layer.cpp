@@ -178,17 +178,22 @@ void Layer::initialize(ImageViewerPlugin* imageViewerPlugin, const hdps::Dataset
             _imagesDataset->selectNone();
     });
 
-    connect(&_miscellaneousAction.getRoiViewAction(), &DecimalRectangleAction::rectangleChanged, getRenderer(), [this](const QRectF& rectangle) -> void {
+    connect(&_miscellaneousAction, &MiscellaneousAction::viewROIChanged, getRenderer(), [this](const QRectF& rectangle) -> void {
         if (rectangle == getRenderer()->getZoomRectangle())
             return;
 
         const auto animationEnabled = getRenderer()->getAnimationEnabled();
-
+        qDebug() << "MiscellaneousAction::viewROIChanged: " << rectangle;
         getRenderer()->setAnimationEnabled(false);
         {
-            getRenderer()->setZoomRectangle(rectangle);
+            if (rectangle == QRectF(-1, -1, -1, -1))
+                getRenderer()->setZoomRectangle(_imageViewerPlugin->getImageViewerWidget().getWorldBoundingRectangle());
+            else
+                getRenderer()->setZoomRectangle(rectangle);
         }
         getRenderer()->setAnimationEnabled(animationEnabled);
+
+        emit _imageViewerPlugin->getImageViewerWidget().navigationEnded();
     });
 
     _imagesDataset->getMaskData(_maskData);
@@ -312,7 +317,6 @@ void Layer::updateRoi()
     const auto inputImageSize       = _imagesDataset->getImageSize();
 
     QRect imageRoi;
-
     imageRoi.setBottomLeft(QPoint(std::clamp(static_cast<int>(std::round(roiTopLeft.x())), 0, inputImageSize.width()), std::clamp(static_cast<int>(std::round(roiTopLeft.y())), 0, inputImageSize.height())));
     imageRoi.setTopRight(QPoint(std::clamp(static_cast<int>(std::round(roiBottomRight.x())), 0, inputImageSize.width()), std::clamp(static_cast<int>(std::round(roiBottomRight.y())), 0, inputImageSize.height())));
 

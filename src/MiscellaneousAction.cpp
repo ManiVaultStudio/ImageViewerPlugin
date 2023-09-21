@@ -5,7 +5,9 @@
 MiscellaneousAction::MiscellaneousAction(QObject* parent, const QString& title) :
     GroupAction(parent, title),
     _roiLayerAction(this, "Layer ROI"),
-    _roiViewAction(this, "View ROI")
+    _roiViewAction(this, "View ROI"),
+    _timer(),
+    _viewROI()
 {
     setText("Miscellaneous");
 
@@ -17,4 +19,25 @@ MiscellaneousAction::MiscellaneousAction(QObject* parent, const QString& title) 
 
     _roiLayerAction.setConnectionPermissionsFlag(ConnectionPermissionFlag::All, false, true);
     _roiViewAction.setConnectionPermissionsFlag(ConnectionPermissionFlag::All, false, true);
+
+    connect(&_timer, &QTimer::timeout, this, [this]() {
+        if (!_roiViewAction.isConnected())
+            return;
+
+        QRectF viewROI;
+
+        viewROI.setX(_roiViewAction.getRangeAction(DecimalRectangleAction::Axis::X).getRangeMinAction().getValue());
+        viewROI.setY(_roiViewAction.getRangeAction(DecimalRectangleAction::Axis::Y).getRangeMinAction().getValue());
+        const float w = std::abs(_roiViewAction.getRangeAction(DecimalRectangleAction::Axis::X).getRangeMinAction().getValue()) + std::abs(_roiViewAction.getRangeAction(DecimalRectangleAction::Axis::X).getRangeMaxAction().getValue());
+        viewROI.setWidth(w);
+        viewROI.setHeight(w);
+
+        if (viewROI != _viewROI)
+        {
+            _viewROI = viewROI;
+            emit viewROIChanged(_viewROI);
+        }
+        });
+
+    _timer.start(30);
 }

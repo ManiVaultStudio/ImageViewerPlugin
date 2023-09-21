@@ -5,6 +5,9 @@
 #include <actions/DecimalRectangleAction.h>
 #include <actions/VerticalGroupAction.h>
 
+#include <QTimer>
+#include <QRectF>
+
 class Layer;
 using namespace hdps::gui;
 
@@ -33,9 +36,16 @@ public: // Action getters
     IntegralRectangleAction& getRoiLayerAction() { return _roiLayerAction; }
     DecimalRectangleAction& getRoiViewAction() { return _roiViewAction; }
 
+signals:
+    void viewROIChanged(const QRectF& rectangle);
+
 protected:
     IntegralRectangleAction     _roiLayerAction;    /** Layer region of interest action */
     DecimalRectangleAction      _roiViewAction;     /** View region of interest action */
+
+private:
+    QTimer                      _timer;
+    QRectF                      _viewROI;
 };
 
 Q_DECLARE_METATYPE(MiscellaneousAction)
