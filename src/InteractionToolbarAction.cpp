@@ -138,16 +138,19 @@ void InteractionToolbarAction::initialize(ImageViewerPlugin* imageViewerPlugin)
     connect(&_zoomOutAction, &TriggerAction::triggered, this, [this]() {
         getImageViewerWidget().getRenderer().setZoomPercentage(getImageViewerWidget().getRenderer().getZoomPercentage() - zoomDeltaPercentage);
         getImageViewerWidget().update();
+        emit getImageViewerWidget().navigationEnded();
     });
 
     connect(&_zoomPercentageAction, &DecimalAction::valueChanged, this, [this](const float& value) {
         getImageViewerWidget().getRenderer().setZoomPercentage(0.01f * value);
         getImageViewerWidget().update();
+        emit getImageViewerWidget().navigationEnded();
     });
 
     connect(&_zoomInAction, &TriggerAction::triggered, this, [this]() {
         getImageViewerWidget().getRenderer().setZoomPercentage(getImageViewerWidget().getRenderer().getZoomPercentage() + zoomDeltaPercentage);
         getImageViewerWidget().update();
+        emit getImageViewerWidget().navigationEnded();
     });
 
     connect(&_zoomExtentsAction, &TriggerAction::triggered, this, [this, triggerUpdateZoomPercentageAfterAnimation]() {
@@ -155,6 +158,7 @@ void InteractionToolbarAction::initialize(ImageViewerPlugin* imageViewerPlugin)
 
         getImageViewerWidget().getRenderer().setZoomRectangle(worldBoundingRectangle);
         getImageViewerWidget().update();
+        emit getImageViewerWidget().navigationEnded();
 
         triggerUpdateZoomPercentageAfterAnimation();
     });
