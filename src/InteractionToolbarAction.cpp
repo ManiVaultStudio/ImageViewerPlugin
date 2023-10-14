@@ -3,7 +3,7 @@
 #include "ImageViewerWidget.h"
 #include "LayersModel.h"
 
-using namespace hdps::util;
+using namespace mv::util;
 
 const float InteractionToolbarAction::zoomDeltaPercentage = 0.1f;
 
@@ -22,7 +22,7 @@ InteractionToolbarAction::InteractionToolbarAction(QObject* parent, const QStrin
     _zoomGroupAction(this, "Zoom"),
     _viewSettingsAction(this, "View Settings")
 {
-    auto& fontAwesome = hdps::Application::getIconFont("FontAwesome");
+    auto& fontAwesome = mv::Application::getIconFont("FontAwesome");
 
     _navigationAction.setToolTip("Navigate the view");
     _selectAction.setToolTip("Select pixels");

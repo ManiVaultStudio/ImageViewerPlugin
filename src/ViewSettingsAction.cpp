@@ -5,7 +5,7 @@
 
 #include <QHBoxLayout>
 
-using namespace hdps;
+using namespace mv;
 
 ViewSettingsAction::ViewSettingsAction(QObject* parent, const QString& title) :
     GroupAction(parent, title),

@@ -8,8 +8,8 @@
 #include <PointData/PointData.h>
 #include <ClusterData/ClusterData.h>
 
-using namespace hdps;
-using namespace hdps::util;
+using namespace mv;
+using namespace mv::util;
 
 ImageSettingsAction::ImageSettingsAction(QObject* parent, const QString& title) :
     GroupAction(parent, title, true),

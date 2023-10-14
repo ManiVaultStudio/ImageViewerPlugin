@@ -13,8 +13,8 @@
 
 #include <stdexcept>
 
-using namespace hdps;
-using namespace hdps::util;
+using namespace mv;
+using namespace mv::util;
 
 LayersModel::HeaderItem::HeaderItem(const ColumHeaderInfo& columHeaderInfo) :
     QStandardItem(),
@@ -571,7 +571,7 @@ void LayersModel::fromVariantMap(const QVariantMap& variantMap)
     for (auto layerVariant : variantMap["Layers"].toList()) {
         auto layer = new Layer(&imageViewerPlugin->getSettingsAction().getEditLayersAction(), layerVariant.toMap()["Title"].toString());
 
-        layer->initialize(imageViewerPlugin, hdps::data().getSet(layerVariant.toMap()["DatasetId"].toString()));
+        layer->initialize(imageViewerPlugin, mv::data().getSet(layerVariant.toMap()["DatasetId"].toString()));
         layer->fromVariantMap(layerVariant.toMap());
 
         if (!projects().isOpeningProject() && !projects().isImportingProject())

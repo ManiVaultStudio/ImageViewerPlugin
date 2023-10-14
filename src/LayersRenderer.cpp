@@ -15,7 +15,7 @@
 
 LayersRenderer::LayersRenderer(QOpenGLWidget* parent) :
     QObject(parent),
-    hdps::Renderer(),
+    mv::Renderer(),
     _zoomSensitivity(0.1f),
     _zoomMargin(50.0f),
     _worldBoundingRectangle(),

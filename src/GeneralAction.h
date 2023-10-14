@@ -10,7 +10,7 @@
 
 class Layer;
 
-using namespace hdps::gui;
+using namespace mv::gui;
 
 /**
  * General action class

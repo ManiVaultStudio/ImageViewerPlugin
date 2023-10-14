@@ -7,8 +7,8 @@
 
 #include <ImageData/Images.h>
 
-using namespace hdps::gui;
-using namespace hdps::util;
+using namespace mv::gui;
+using namespace mv::util;
 
 class Layer;
 
@@ -76,7 +76,7 @@ public: // Channel data
 protected:
 
     /** Get smart pointer to images dataset */
-    hdps::Dataset<Images> getImages();
+    mv::Dataset<Images> getImages();
 
 protected: // Linking
 

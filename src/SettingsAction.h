@@ -7,7 +7,7 @@
 
 class ImageViewerPlugin;
 
-using namespace hdps::gui;
+using namespace mv::gui;
 
 /**
  * Settings action class

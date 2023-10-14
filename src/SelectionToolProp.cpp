@@ -15,7 +15,7 @@
 
 #include <stdexcept>
 
-using namespace hdps::util;
+using namespace mv::util;
 
 SelectionToolProp::SelectionToolProp(Layer& layer, const QString& name) :
     Prop(layer, name),

@@ -1,8 +1,8 @@
 #include "EditLayerAction.h"
 #include "ImageViewerPlugin.h"
 
-using namespace hdps;
-using namespace hdps::gui;
+using namespace mv;
+using namespace mv::gui;
 
 EditLayerAction::EditLayerAction(QObject* parent, const QString& title) :
     GroupsAction(parent, title)

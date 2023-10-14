@@ -2,7 +2,7 @@
 
 #include <actions/GroupsAction.h>
 
-using namespace hdps::gui;
+using namespace mv::gui;
 
 /**
  * Edit layer action class

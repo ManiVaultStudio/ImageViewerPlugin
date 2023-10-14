@@ -9,8 +9,8 @@
 
 #include <Application.h>
 
-using namespace hdps;
-using namespace hdps::util;
+using namespace mv;
+using namespace mv::util;
 
 const auto allowedPixelSelectionTypes = PixelSelectionTypes({
     PixelSelectionType::Rectangle,
@@ -29,7 +29,7 @@ SelectionAction::SelectionAction(QObject* parent, const QString& title) :
     _pixelSelectionTool(nullptr),
     _showRegionAction(this, "Show selected region", false)
 {
-    setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("mouse-pointer"));
+    setIcon(mv::Application::getIconFont("FontAwesome").getIcon("mouse-pointer"));
 
     _showRegionAction.setVisible(false);
 

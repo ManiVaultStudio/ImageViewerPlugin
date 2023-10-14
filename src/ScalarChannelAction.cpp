@@ -7,7 +7,7 @@
 #include <PointData/PointData.h>
 #include <ClusterData/ClusterData.h>
 
-using namespace hdps;
+using namespace mv;
 
 const QMap<ScalarChannelAction::Identifier, QString> ScalarChannelAction::channelIndexes = {
     { ScalarChannelAction::Channel1, "Channel 1" },

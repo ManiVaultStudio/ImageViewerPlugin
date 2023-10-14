@@ -12,7 +12,7 @@
 
 #include <stdexcept>
 
-using namespace hdps;
+using namespace mv;
 
 ConvertToImagesDatasetDialog::ConvertToImagesDatasetDialog(ImageViewerPlugin& imageViewerPlugin, Dataset<DatasetImpl>& dataset) :
     QDialog(&imageViewerPlugin.getWidget()),
@@ -124,7 +124,7 @@ Dataset<Images> ConvertToImagesDatasetDialog::getTargetImagesDataset() const
     return _targetImagesDataset;
 }
 
-void ConvertToImagesDatasetDialog::findSourceImagesDataset(hdps::DataHierarchyItem& dataHierarchyItem)
+void ConvertToImagesDatasetDialog::findSourceImagesDataset(mv::DataHierarchyItem& dataHierarchyItem)
 {
     for (auto childHierarchyItem : dataHierarchyItem.getChildren()) {
         if (childHierarchyItem->getDataType() == ImageType) {

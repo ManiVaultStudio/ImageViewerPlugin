@@ -6,7 +6,7 @@
 
 #include <PointData/PointData.h>
 
-using namespace hdps;
+using namespace mv;
 
 SubsetAction::SubsetAction(QObject* parent, const QString& title) :
     GroupAction(parent, title),

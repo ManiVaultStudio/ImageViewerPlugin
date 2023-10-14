@@ -6,7 +6,7 @@
 
 class ImageViewerPlugin;
 
-using namespace hdps::gui;
+using namespace mv::gui;
 
 /**
  * Subset action class
