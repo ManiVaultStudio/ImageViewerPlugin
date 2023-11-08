@@ -22,7 +22,7 @@ class Renderable;
  *
  * @author Thomas Kroes
  */
-class LayersRenderer : public QObject, public hdps::Renderer
+class LayersRenderer : public QObject, public mv::Renderer
 {
     Q_OBJECT
 

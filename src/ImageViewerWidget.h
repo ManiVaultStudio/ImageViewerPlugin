@@ -11,7 +11,7 @@
 class ImageViewerPlugin;
 class Layer;
 
-using namespace hdps::util;
+using namespace mv::util;
 
 /**
  * Image viewer widget class

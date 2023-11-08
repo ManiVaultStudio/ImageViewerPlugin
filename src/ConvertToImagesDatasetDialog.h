@@ -11,8 +11,8 @@
 
 #include <QDialog>
 
-using namespace hdps::gui;
-using namespace hdps::util;
+using namespace mv::gui;
+using namespace mv::util;
 
 class ImageViewerPlugin;
 
@@ -31,7 +31,7 @@ public:
      * @param dataset Dataset to convert
      * @param parent Pointer to parent widget
      */
-    ConvertToImagesDatasetDialog(ImageViewerPlugin& imageViewerPlugin, hdps::Dataset<hdps::DatasetImpl>& dataset);
+    ConvertToImagesDatasetDialog(ImageViewerPlugin& imageViewerPlugin, mv::Dataset<mv::DatasetImpl>& dataset);
 
     /** Destructor */
     ~ConvertToImagesDatasetDialog() = default;
@@ -47,7 +47,7 @@ public:
     }
 
     /** Get smart pointer to the target images dataset */
-    hdps::Dataset<Images> getTargetImagesDataset() const;
+    mv::Dataset<Images> getTargetImagesDataset() const;
 
 protected:
 
@@ -55,7 +55,7 @@ protected:
      * Find the image size by walking up the tree and looking for images datasets
      * @param dataHierarchyItem Reference to data hierarchy item
      */
-    void findSourceImagesDataset(hdps::DataHierarchyItem& dataHierarchyItem);
+    void findSourceImagesDataset(mv::DataHierarchyItem& dataHierarchyItem);
 
 public: // Action getters
 
@@ -65,9 +65,9 @@ public: // Action getters
 
 protected:
     ImageViewerPlugin&                  _imageViewerPlugin;             /** Reference to image viewer plugin */
-    hdps::Dataset<hdps::DatasetImpl>    _sourceDataset;                 /** Reference to source dataset */
-    hdps::Dataset<Images>               _sourceImagesDataset;           /** Reference to the source images dataset */
-    hdps::Dataset<Images>               _targetImagesDataset;           /** Reference to the target images dataset */
+    mv::Dataset<mv::DatasetImpl>    _sourceDataset;                 /** Reference to source dataset */
+    mv::Dataset<Images>               _sourceImagesDataset;           /** Reference to the source images dataset */
+    mv::Dataset<Images>               _targetImagesDataset;           /** Reference to the target images dataset */
     QRect                               _sourceRectangle;               /** Source rectangle (if a source images dataset is found) */
     StringAction                        _datasetNameAction;             /** Images dataset name action */
     IntegralAction                      _imageWidthAction;              /** Image width action */

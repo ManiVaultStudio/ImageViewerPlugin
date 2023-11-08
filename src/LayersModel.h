@@ -13,7 +13,7 @@
  *
  * @author Thomas Kroes
  */
-class LayersModel final : public QStandardItemModel, public hdps::util::Serializable
+class LayersModel final : public QStandardItemModel, public mv::util::Serializable
 {
 public:
 
@@ -355,5 +355,5 @@ public: // Serialization
     QVariantMap toVariantMap() const override;
 
 protected:
-    hdps::EventListener     _eventListener;     /** Listen to HDPS events */
+    mv::EventListener     _eventListener;     /** Listen to HDPS events */
 };

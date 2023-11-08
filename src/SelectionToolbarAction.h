@@ -10,7 +10,7 @@
 class ImageViewerPlugin;
 class ImageViewerWidget;
 
-using namespace hdps::gui;
+using namespace mv::gui;
 
 /**
  * Selection toolbar action class

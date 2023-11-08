@@ -19,7 +19,7 @@
 
 class ImageViewerPlugin;
 
-class Layer : public hdps::gui::GroupsAction, public Renderable
+class Layer : public mv::gui::GroupsAction, public Renderable
 {
     Q_OBJECT
 
@@ -54,7 +54,7 @@ public:
      * @param imageViewerPlugin Pointer to image viewer plugin
      * @param imagesDataset Source images dataset
      */
-    void initialize(ImageViewerPlugin* imageViewerPlugin, const hdps::Dataset<Images>& imagesDataset);
+    void initialize(ImageViewerPlugin* imageViewerPlugin, const mv::Dataset<Images>& imagesDataset);
 
     /** Get reference to image viewer plugin */
     ImageViewerPlugin& getImageViewerPlugin();
@@ -91,12 +91,12 @@ public:
     void paint(QPainter& painter, const PaintFlag& paintFlags);
 
     /** Get source dataset */
-    hdps::Dataset<hdps::DatasetImpl>& getSourceDataset() {
+    mv::Dataset<mv::DatasetImpl>& getSourceDataset() {
         return _sourceDataset;
     }
 
     /** Get images dataset */
-    hdps::Dataset<Images>& getImages() {
+    mv::Dataset<Images>& getImages() {
         return _imagesDataset;
     }
 
@@ -229,8 +229,8 @@ signals:
 protected:
     ImageViewerPlugin*                  _imageViewerPlugin;             /** Pointer to image viewer plugin */
     bool                                _active;                        /** Whether the layer is active (editable) */
-    hdps::Dataset<Images>               _imagesDataset;                 /** Smart pointer to images dataset */
-    hdps::Dataset<hdps::DatasetImpl>    _sourceDataset;                 /** Smart pointer to source dataset of the images */
+    mv::Dataset<Images>               _imagesDataset;                 /** Smart pointer to images dataset */
+    mv::Dataset<mv::DatasetImpl>    _sourceDataset;                 /** Smart pointer to source dataset of the images */
     std::vector<std::uint32_t>          _selectedIndices;               /** Indices of the selected pixels */
     GeneralAction                       _generalAction;                 /** General action */
     ImageSettingsAction                 _imageSettingsAction;           /** Image settings action */

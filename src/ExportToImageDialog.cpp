@@ -11,7 +11,7 @@
 
 #include <stdexcept>
 
-using namespace hdps;
+using namespace mv;
 
 ExportToImageDialog::ExportToImageDialog(QWidget* parent /*= nullptr*/) :
     QDialog(parent),

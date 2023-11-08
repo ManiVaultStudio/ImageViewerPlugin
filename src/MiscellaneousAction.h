@@ -8,8 +8,7 @@
 #include <QTimer>
 #include <QRectF>
 
-class Layer;
-using namespace hdps::gui;
+using namespace mv::gui;
 
 /**
  * Miscellaneous action class

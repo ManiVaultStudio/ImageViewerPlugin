@@ -18,7 +18,7 @@
 
 #include <set>
 
-using namespace hdps::gui;
+using namespace mv::gui;
 
 Layer::Layer(QObject* parent, const QString& title) :
     GroupsAction(parent, title),
@@ -39,7 +39,7 @@ Layer::Layer(QObject* parent, const QString& title) :
 {
 }
 
-void Layer::initialize(ImageViewerPlugin* imageViewerPlugin, const hdps::Dataset<Images>& imagesDataset)
+void Layer::initialize(ImageViewerPlugin* imageViewerPlugin, const mv::Dataset<Images>& imagesDataset)
 {
     Q_ASSERT(imageViewerPlugin != nullptr);
 
@@ -1072,7 +1072,7 @@ void Layer::fromVariantMap(const QVariantMap& variantMap)
     variantMapMustContain(variantMap, "DatasetId");
     variantMapMustContain(variantMap, "Title");
 
-    _imagesDataset = hdps::data().getSet(variantMap["DatasetId"].toString());
+    _imagesDataset = mv::data().getSet(variantMap["DatasetId"].toString());
 
     setText(variantMap["Title"].toString());
 

@@ -7,7 +7,7 @@
 
 class Layer;
 
-using namespace hdps::util;
+using namespace mv::util;
 
 /**
  * Image prop class

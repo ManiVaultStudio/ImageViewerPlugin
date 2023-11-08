@@ -3,7 +3,7 @@
 #include "EditLayersAction.h"
 #include "ImageViewerPlugin.h"
 
-using namespace hdps;
+using namespace mv;
 
 GeneralAction::GeneralAction(QObject* parent, const QString& title) :
     GroupAction(parent, title),

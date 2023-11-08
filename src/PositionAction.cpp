@@ -2,7 +2,7 @@
 #include "GeneralAction.h"
 #include "Layer.h"
 
-using namespace hdps;
+using namespace mv;
 
 PositionAction::PositionAction(QObject* parent, const QString& title) :
     GroupAction(parent, title),

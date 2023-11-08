@@ -3,7 +3,7 @@
 #include <actions/GroupAction.h>
 #include <actions/DecimalAction.h>
 
-using namespace hdps::gui;
+using namespace mv::gui;
 
 class GeneralAction;
 

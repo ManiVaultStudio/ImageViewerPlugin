@@ -15,13 +15,13 @@
 #include <QMimeData>
 #include <QMenu>
 
-using namespace hdps;
-using namespace hdps::gui;
-using namespace hdps::util;
+using namespace mv;
+using namespace mv::gui;
+using namespace mv::util;
 
 Q_PLUGIN_METADATA(IID "nl.BioVault.ImageViewerPlugin")
 
-ImageViewerPlugin::ImageViewerPlugin(hdps::plugin::PluginFactory* factory) :
+ImageViewerPlugin::ImageViewerPlugin(mv::plugin::PluginFactory* factory) :
     ViewPlugin(factory),
     _layersModel(this),
     _selectionModel(&_layersModel),
@@ -69,7 +69,7 @@ void ImageViewerPlugin::init()
         const auto datasetGuiName   = dataset->text();
         const auto datasetId        = dataset->getId();
         const auto dataType         = dataset->getDataType();
-        const auto dataTypes        = hdps::DataTypes({ ImageType, PointType, ClusterType });
+        const auto dataTypes        = mv::DataTypes({ ImageType, PointType, ClusterType });
 
         if (!dataTypes.contains(dataType))
             dropRegions << new DropWidget::DropRegion(this, "Incompatible data", "This type of data is not supported", "exclamation-circle", false);
@@ -418,7 +418,7 @@ QVariantMap ImageViewerPlugin::toVariantMap() const
 
 QIcon ImageViewerPluginFactory::getIcon(const QColor& color /*= Qt::black*/) const
 {
-    return hdps::Application::getIconFont("FontAwesome").getIcon("images", color);
+    return mv::Application::getIconFont("FontAwesome").getIcon("images", color);
 }
 
 ImageViewerPlugin* ImageViewerPluginFactory::produce()
@@ -426,7 +426,7 @@ ImageViewerPlugin* ImageViewerPluginFactory::produce()
     return new ImageViewerPlugin(this);
 }
 
-PluginTriggerActions ImageViewerPluginFactory::getPluginTriggerActions(const hdps::Datasets& datasets) const
+PluginTriggerActions ImageViewerPluginFactory::getPluginTriggerActions(const mv::Datasets& datasets) const
 {
     PluginTriggerActions pluginTriggerActions;
 

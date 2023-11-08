@@ -14,10 +14,10 @@
 #include <QItemSelectionModel>
 #include <QSplitter>
 
-using hdps::plugin::ViewPluginFactory;
-using hdps::plugin::ViewPlugin;
+using mv::plugin::ViewPluginFactory;
+using mv::plugin::ViewPlugin;
 
-using namespace hdps::gui;
+using namespace mv::gui;
 
 /**
  * Image viewer plugin class
@@ -41,7 +41,7 @@ public:
 
 public:
     /** Constructor */
-    ImageViewerPlugin(hdps::plugin::PluginFactory* factory);
+    ImageViewerPlugin(mv::plugin::PluginFactory* factory);
 
 public: // Inherited from ViewPlugin
 
@@ -52,7 +52,7 @@ public: // Inherited from ViewPlugin
      * Load one (or more datasets in the view)
      * @param datasets Dataset(s) to load
      */
-    void loadData(const hdps::Datasets& datasets) override;
+    void loadData(const mv::Datasets& datasets) override;
 
     /**
      * Arrange layers in layout
@@ -64,7 +64,7 @@ public: // Inherited from ViewPlugin
      * Add dataset to the viewer
      * @param dataset Smart pointer to images dataset
      */
-    void addDataset(const hdps::Dataset<Images>& dataset);
+    void addDataset(const mv::Dataset<Images>& dataset);
 
 public: // Miscellaneous
 
@@ -92,7 +92,7 @@ protected:
      * Converts a non-images dataset to an images dataset and adds the created dataset as a layer
      * @param dataset Smart pointer to the dataset that will be converted and added
      */
-    void immigrateDataset(const hdps::Dataset<hdps::DatasetImpl>& dataset);
+    void immigrateDataset(const mv::Dataset<mv::DatasetImpl>& dataset);
 
 public: // Serialization
 
@@ -130,7 +130,7 @@ private:
  */
 class ImageViewerPluginFactory : public ViewPluginFactory
 {
-    Q_INTERFACES(hdps::plugin::ViewPluginFactory hdps::plugin::PluginFactory)
+    Q_INTERFACES(mv::plugin::ViewPluginFactory mv::plugin::PluginFactory)
         Q_OBJECT
         Q_PLUGIN_METADATA(IID "nl.BioVault.ImageViewerPlugin" FILE "ImageViewerPlugin.json")
 
@@ -159,5 +159,5 @@ public:
      * @param datasets Vector of input datasets
      * @return Vector of plugin trigger actions
      */
-    PluginTriggerActions getPluginTriggerActions(const hdps::Datasets& datasets) const override;
+    PluginTriggerActions getPluginTriggerActions(const mv::Datasets& datasets) const override;
 };

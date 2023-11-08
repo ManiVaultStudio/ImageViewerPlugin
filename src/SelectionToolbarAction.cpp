@@ -8,7 +8,7 @@
 
 #include <QHBoxLayout>
 
-using namespace hdps::util;
+using namespace mv::util;
 
 SelectionToolbarAction::SelectionToolbarAction(ImageViewerPlugin& imageViewerPlugin) :
     HorizontalToolbarAction(&imageViewerPlugin, "Main Toolbar"),
@@ -22,7 +22,7 @@ SelectionToolbarAction::SelectionToolbarAction(ImageViewerPlugin& imageViewerPlu
     _selectionAction(this, "Selection"),
     _modifierAction(this, "Modifier", { "Replace", "Add", "Subtract" })
 {
-    auto& fontAwesome = hdps::Application::getIconFont("FontAwesome");
+    auto& fontAwesome = mv::Application::getIconFont("FontAwesome");
 
     _rectangleSelectionAction.setEnabled(false);
     _brushSelectionAction.setEnabled(false);

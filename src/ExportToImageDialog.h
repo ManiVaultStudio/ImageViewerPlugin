@@ -6,7 +6,7 @@
 
 #include <QDialog>
 
-using namespace hdps::gui;
+using namespace mv::gui;
 
 /**
  * Export to image dialog class

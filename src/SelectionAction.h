@@ -11,8 +11,8 @@ class QWidget;
 
 class Layer;
 
-using namespace hdps::util;
-using namespace hdps::gui;
+using namespace mv::util;
+using namespace mv::gui;
 
 /**
  * Selection action class
