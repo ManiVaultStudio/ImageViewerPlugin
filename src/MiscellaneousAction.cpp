@@ -2,6 +2,8 @@
 #include "Layer.h"
 #include "ImageViewerPlugin.h"
 
+#include <QRect>
+
 MiscellaneousAction::MiscellaneousAction(QObject* parent, const QString& title) :
     GroupAction(parent, title),
     _roiLayerAction(this, "Layer ROI"),
@@ -15,8 +17,7 @@ MiscellaneousAction::MiscellaneousAction(QObject* parent, const QString& title) 
     _roiViewAction.setToolTip("View region of interest in fractional world coordinates (bottom-left:x, bottom-left:y, top-right:x, top-right:y)");
 
     addAction(&_roiLayerAction);
-    // TODO: setting the viewport by jumping to past entries does not work yet reliably 
-    //addAction(&_roiViewAction);
+    addAction(&_roiViewAction);
 
     _roiLayerAction.setConnectionPermissionsFlag(ConnectionPermissionFlag::All, false, true);
     _roiViewAction.setConnectionPermissionsFlag(ConnectionPermissionFlag::All, false, true);
@@ -26,18 +27,22 @@ MiscellaneousAction::MiscellaneousAction(QObject* parent, const QString& title) 
             return;
 
         QRectF viewROI;
-
         viewROI.setX(_roiViewAction.getRangeAction(DecimalRectangleAction::Axis::X).getRangeMinAction().getValue());
         viewROI.setY(_roiViewAction.getRangeAction(DecimalRectangleAction::Axis::Y).getRangeMinAction().getValue());
         const float w = std::abs(_roiViewAction.getRangeAction(DecimalRectangleAction::Axis::X).getRangeMinAction().getValue()) + std::abs(_roiViewAction.getRangeAction(DecimalRectangleAction::Axis::X).getRangeMaxAction().getValue());
         viewROI.setWidth(w);
         viewROI.setHeight(w);
 
-        if (viewROI != _viewROI)
-        {
-            _viewROI = viewROI;
-            emit viewROIChanged(_viewROI);
-        }
+        if (viewROI == _viewROI)
+            return;
+
+        _viewROI = viewROI;
+
+        qDebug() << " -- MiscellaneousAction -- ";
+        qDebug() << "viewROI: " << viewROI;
+
+        //emit viewROIChanged(_viewROI);
+
         });
 
     _timer.start(30);

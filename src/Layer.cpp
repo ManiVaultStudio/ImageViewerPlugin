@@ -159,7 +159,7 @@ void Layer::initialize(ImageViewerPlugin* imageViewerPlugin, const mv::Dataset<I
         if (!_active)
             return;
 
-        updateRoi();
+        updateRoiMiscAction();
 
         if (_selectionAction.getPixelSelectionAction().getPixelSelectionTool()->getType() != PixelSelectionType::ROI)
             return;
@@ -186,7 +186,10 @@ void Layer::initialize(ImageViewerPlugin* imageViewerPlugin, const mv::Dataset<I
 
         getRenderer()->setAnimationEnabled(false);
         {
-            getRenderer()->setZoomRectangle(rectangle);
+            if (rectangle == QRectF(-1.f, -1.f, -1.f, -1.f))
+                getRenderer()->setZoomRectangle(_imageViewerPlugin->getImageViewerWidget().getWorldBoundingRectangle());
+            else
+                getRenderer()->setZoomRectangle(rectangle);
         }
         getRenderer()->setAnimationEnabled(animationEnabled);
 
@@ -306,7 +309,7 @@ void Layer::updateWindowTitle()
     }
 }
 
-void Layer::updateRoi()
+void Layer::updateRoiMiscAction()
 {
     const auto modelViewMatrix      = getRenderer()->getViewMatrix() * getModelMatrix() *getPropByName<SelectionToolProp>("SelectionToolProp")->getModelMatrix();
     const auto roiTopLeft           = getRenderer()->getScreenPointToWorldPosition(modelViewMatrix, QPoint(0, getRenderer()->getParentWidgetSize().height()));
@@ -317,8 +320,14 @@ void Layer::updateRoi()
     imageRoi.setBottomLeft(QPoint(std::clamp(static_cast<int>(std::round(roiTopLeft.x())), 0, inputImageSize.width()), std::clamp(static_cast<int>(std::round(roiTopLeft.y())), 0, inputImageSize.height())));
     imageRoi.setTopRight(QPoint(std::clamp(static_cast<int>(std::round(roiBottomRight.x())), 0, inputImageSize.width()), std::clamp(static_cast<int>(std::round(roiBottomRight.y())), 0, inputImageSize.height())));
 
+    QRectF viewRoi = getRenderer()->getZoomRectangle();
+    qDebug() <<" -- Layer::updateRoiMiscAction -- ";
+    qDebug() << "RoiLayer: " << imageRoi;
+    qDebug() << "RoiView: " << viewRoi;
+
+    _miscellaneousAction.setViewROI(viewRoi);
+    _miscellaneousAction.getRoiViewAction().setRectangle(viewRoi);
     _miscellaneousAction.getRoiLayerAction().setRectangle(imageRoi);
-    _miscellaneousAction.getRoiViewAction().setRectangle(getRenderer()->getZoomRectangle());
 }
 
 QRectF Layer::getWorldBoundingRectangle() const

@@ -30,6 +30,9 @@ public:
      */
     Q_INVOKABLE MiscellaneousAction(QObject* parent, const QString& title);
 
+public: // Setter
+    void setViewROI(const QRectF& r) { _viewROI = r; }
+
 public: // Action getters
 
     IntegralRectangleAction& getRoiLayerAction() { return _roiLayerAction; }
