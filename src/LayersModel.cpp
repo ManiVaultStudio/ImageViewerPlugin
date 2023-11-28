@@ -475,6 +475,8 @@ void LayersModel::addLayer(Layer* layer)
 
         if (rowCount() == 1)
             layer->zoomToExtents();
+
+        layer->updateRoiMiscAction();
     }
     catch (std::exception& e)
     {
@@ -568,7 +570,7 @@ void LayersModel::fromVariantMap(const QVariantMap& variantMap)
 
     auto imageViewerPlugin = static_cast<ImageViewerPlugin*>(parent());
 
-    for (auto layerVariant : variantMap["Layers"].toList()) {
+    for (const auto& layerVariant : variantMap["Layers"].toList()) {
         auto layer = new Layer(&imageViewerPlugin->getSettingsAction().getEditLayersAction(), layerVariant.toMap()["Title"].toString());
 
         layer->initialize(imageViewerPlugin, mv::data().getSet(layerVariant.toMap()["DatasetId"].toString()));

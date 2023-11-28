@@ -84,6 +84,9 @@ public:
      */
     void scaleToFit(const QRectF& layersRectangle);
 
+    /** Update image ROI in MiscAction */
+    void updateRoiMiscAction();
+
     /**
      * Paint
      * @param painter Reference to painter
@@ -192,9 +195,6 @@ protected: // Miscellaneous
 
     /** Update the view plugin window title when activated or when the layer name changes */
     void updateWindowTitle();
-
-    /** Update image ROI */
-    void updateRoi();
 
 public: // Serialization
 
