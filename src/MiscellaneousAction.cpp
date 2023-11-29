@@ -33,6 +33,7 @@ MiscellaneousAction::MiscellaneousAction(QObject* parent, const QString& title, 
         auto left = _roiViewAction.getRangeAction(DecimalRectangleAction::Axis::X).getRangeMinAction().getValue();
         auto top = _roiViewAction.getRangeAction(DecimalRectangleAction::Axis::X).getRangeMaxAction().getValue();
 
+        // Hack: Range actions do not allow to set the min value larger than the max value
         if (_layer->_sourceDataset.get<Points>()->getProperty("_viewRoi_FLIP").toBool())
         {
             auto temp = left;

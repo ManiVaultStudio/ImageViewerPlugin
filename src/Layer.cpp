@@ -319,18 +319,13 @@ void Layer::updateRoiMiscAction()
     QRect imageRoi;
     imageRoi.setBottomLeft(QPoint(std::clamp(static_cast<int>(std::round(roiTopLeft.x())), 0, inputImageSize.width()), std::clamp(static_cast<int>(std::round(roiTopLeft.y())), 0, inputImageSize.height())));
     imageRoi.setTopRight(QPoint(std::clamp(static_cast<int>(std::round(roiBottomRight.x())), 0, inputImageSize.width()), std::clamp(static_cast<int>(std::round(roiBottomRight.y())), 0, inputImageSize.height())));
-
-    QRectF viewRoi = getRenderer()->getZoomRectangle();
-    qDebug() <<" -- Layer::updateRoiMiscAction -- ";
-    qDebug() << "RoiLayer: " << imageRoi;
-    qDebug() << "RoiView: " << viewRoi.left() << " " << viewRoi.top() << " " << viewRoi.width() << " " << viewRoi.height();
-    qDebug() << "RoiView: " << viewRoi;
-
     _miscellaneousAction.getRoiLayerAction().setRectangle(imageRoi);
 
+    QRectF viewRoi = getRenderer()->getZoomRectangle();
     _miscellaneousAction.setViewROI(viewRoi);
     //_miscellaneousAction.getRoiViewAction().setRectangle(viewRoi);     // this does not work
 
+    // Hack: Range actions do not allow to set the min value larger than the max value
     auto left = viewRoi.left();
     auto top = viewRoi.top();
     bool flip = left > top;
