@@ -323,11 +323,18 @@ void Layer::updateRoiMiscAction()
     QRectF viewRoi = getRenderer()->getZoomRectangle();
     qDebug() <<" -- Layer::updateRoiMiscAction -- ";
     qDebug() << "RoiLayer: " << imageRoi;
+    qDebug() << "RoiView: " << viewRoi.left() << " " << viewRoi.top() << " " << viewRoi.width() << " " << viewRoi.height();
     qDebug() << "RoiView: " << viewRoi;
 
-    _miscellaneousAction.setViewROI(viewRoi);
-    _miscellaneousAction.getRoiViewAction().setRectangle(viewRoi);
     _miscellaneousAction.getRoiLayerAction().setRectangle(imageRoi);
+
+    _miscellaneousAction.setViewROI(viewRoi);
+    _miscellaneousAction.getRoiViewAction().getRangeAction(DecimalRectangleAction::Axis::X).getRangeMinAction().setValue(viewRoi.left());
+    _miscellaneousAction.getRoiViewAction().getRangeAction(DecimalRectangleAction::Axis::X).getRangeMaxAction().setValue(viewRoi.top());
+    _miscellaneousAction.getRoiViewAction().getRangeAction(DecimalRectangleAction::Axis::Y).getRangeMinAction().setValue(viewRoi.width());
+    _miscellaneousAction.getRoiViewAction().getRangeAction(DecimalRectangleAction::Axis::Y).getRangeMaxAction().setValue(viewRoi.height());
+
+    QCoreApplication::processEvents();
 }
 
 QRectF Layer::getWorldBoundingRectangle() const

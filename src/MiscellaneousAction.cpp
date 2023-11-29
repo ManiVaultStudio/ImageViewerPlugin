@@ -28,8 +28,11 @@ MiscellaneousAction::MiscellaneousAction(QObject* parent, const QString& title) 
 
         QRectF viewROI;
         viewROI.setX(_roiViewAction.getRangeAction(DecimalRectangleAction::Axis::X).getRangeMinAction().getValue());
-        viewROI.setY(_roiViewAction.getRangeAction(DecimalRectangleAction::Axis::Y).getRangeMinAction().getValue());
-        const float w = std::abs(_roiViewAction.getRangeAction(DecimalRectangleAction::Axis::X).getRangeMinAction().getValue()) + std::abs(_roiViewAction.getRangeAction(DecimalRectangleAction::Axis::X).getRangeMaxAction().getValue());
+        viewROI.setY(_roiViewAction.getRangeAction(DecimalRectangleAction::Axis::X).getRangeMaxAction().getValue());
+
+        assert(_roiViewAction.getRangeAction(DecimalRectangleAction::Axis::Y).getRangeMinAction().getValue() == _roiViewAction.getRangeAction(DecimalRectangleAction::Axis::Y).getRangeMaxAction().getValue());
+
+        const float w = _roiViewAction.getRangeAction(DecimalRectangleAction::Axis::Y).getRangeMinAction().getValue();
         viewROI.setWidth(w);
         viewROI.setHeight(w);
 
@@ -41,7 +44,7 @@ MiscellaneousAction::MiscellaneousAction(QObject* parent, const QString& title) 
         qDebug() << " -- MiscellaneousAction -- ";
         qDebug() << "viewROI: " << viewROI;
 
-        //emit viewROIChanged(_viewROI);
+        emit viewROIChanged(_viewROI);
 
         });
 
