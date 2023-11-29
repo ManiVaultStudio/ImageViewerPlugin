@@ -5,6 +5,8 @@
 
 #include <QRect>
 
+#include <utility>
+
 MiscellaneousAction::MiscellaneousAction(QObject* parent, const QString& title, Layer* layer) :
     GroupAction(parent, title),
     _roiLayerAction(this, "Layer ROI"),
@@ -35,11 +37,7 @@ MiscellaneousAction::MiscellaneousAction(QObject* parent, const QString& title, 
 
         // Hack: Range actions do not allow to set the min value larger than the max value
         if (_layer->_sourceDataset.get<Points>()->getProperty("_viewRoi_FLIP").toBool())
-        {
-            auto temp = left;
-            left = top;
-            top = temp;
-        }
+            std::swap(left, top);
 
         viewROI.setLeft(left);
         viewROI.setTop(top);

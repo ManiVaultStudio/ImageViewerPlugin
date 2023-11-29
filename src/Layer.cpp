@@ -17,6 +17,7 @@
 #include <QMenu>
 
 #include <set>
+#include <utility>
 
 using namespace mv::gui;
 
@@ -332,11 +333,7 @@ void Layer::updateRoiMiscAction()
     _sourceDataset.get<Points>()->setProperty("_viewRoi_FLIP", flip);
 
     if (flip)
-    {
-        auto temp = left;
-        left = top;
-        top = temp;
-    }
+        std::swap(left, top);
 
     _miscellaneousAction.getRoiViewAction().getRangeAction(DecimalRectangleAction::Axis::X).getRangeMinAction().setValue(left);
     _miscellaneousAction.getRoiViewAction().getRangeAction(DecimalRectangleAction::Axis::X).getRangeMaxAction().setValue(top);
