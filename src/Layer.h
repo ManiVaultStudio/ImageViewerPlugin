@@ -229,8 +229,8 @@ signals:
 protected:
     ImageViewerPlugin*                  _imageViewerPlugin;             /** Pointer to image viewer plugin */
     bool                                _active;                        /** Whether the layer is active (editable) */
-    mv::Dataset<Images>               _imagesDataset;                 /** Smart pointer to images dataset */
-    mv::Dataset<mv::DatasetImpl>    _sourceDataset;                 /** Smart pointer to source dataset of the images */
+    mv::Dataset<Images>                 _imagesDataset;                 /** Smart pointer to images dataset */
+    mv::Dataset<mv::DatasetImpl>        _sourceDataset;                 /** Smart pointer to source dataset of the images */
     std::vector<std::uint32_t>          _selectedIndices;               /** Indices of the selected pixels */
     GeneralAction                       _generalAction;                 /** General action */
     ImageSettingsAction                 _imageSettingsAction;           /** Image settings action */
@@ -243,4 +243,5 @@ protected:
 
     friend class ImageViewerWidget;
     friend class ImageSettingsAction;
+    friend class MiscellaneousAction;
 };

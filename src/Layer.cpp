@@ -31,7 +31,7 @@ Layer::Layer(QObject* parent, const QString& title) :
     _generalAction(this, "General"),
     _imageSettingsAction(this, "Image"),
     _selectionAction(this, "Selection"),
-    _miscellaneousAction(this, "Miscellaneous"),
+    _miscellaneousAction(this, "Miscellaneous", this),
     _subsetAction(this, "Subset"),
     _selectionData(),
     _imageSelectionRectangle(),
@@ -329,8 +329,22 @@ void Layer::updateRoiMiscAction()
     _miscellaneousAction.getRoiLayerAction().setRectangle(imageRoi);
 
     _miscellaneousAction.setViewROI(viewRoi);
-    _miscellaneousAction.getRoiViewAction().getRangeAction(DecimalRectangleAction::Axis::X).getRangeMinAction().setValue(viewRoi.left());
-    _miscellaneousAction.getRoiViewAction().getRangeAction(DecimalRectangleAction::Axis::X).getRangeMaxAction().setValue(viewRoi.top());
+    //_miscellaneousAction.getRoiViewAction().setRectangle(viewRoi);     // this does not work
+
+    auto left = viewRoi.left();
+    auto top = viewRoi.top();
+    bool flip = left > top;
+    _sourceDataset.get<Points>()->setProperty("_viewRoi_FLIP", flip);
+
+    if (flip)
+    {
+        auto temp = left;
+        left = top;
+        top = temp;
+    }
+
+    _miscellaneousAction.getRoiViewAction().getRangeAction(DecimalRectangleAction::Axis::X).getRangeMinAction().setValue(left);
+    _miscellaneousAction.getRoiViewAction().getRangeAction(DecimalRectangleAction::Axis::X).getRangeMaxAction().setValue(top);
     _miscellaneousAction.getRoiViewAction().getRangeAction(DecimalRectangleAction::Axis::Y).getRangeMinAction().setValue(viewRoi.width());
     _miscellaneousAction.getRoiViewAction().getRangeAction(DecimalRectangleAction::Axis::Y).getRangeMaxAction().setValue(viewRoi.height());
 

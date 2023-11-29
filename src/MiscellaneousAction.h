@@ -10,6 +10,8 @@
 
 using namespace mv::gui;
 
+class Layer;
+
 /**
  * Miscellaneous action class
  *
@@ -28,7 +30,7 @@ public:
      * @param parent Pointer to parent object
      * @param title Title
      */
-    Q_INVOKABLE MiscellaneousAction(QObject* parent, const QString& title);
+    Q_INVOKABLE MiscellaneousAction(QObject* parent, const QString& title, Layer* layer);
 
 public: // Setter
     void setViewROI(const QRectF& r) { _viewROI = r; }
@@ -48,6 +50,7 @@ protected:
 private:
     QTimer                      _timer;
     QRectF                      _viewROI;
+    Layer*                      _layer;
 };
 
 Q_DECLARE_METATYPE(MiscellaneousAction)

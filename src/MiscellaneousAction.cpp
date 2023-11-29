@@ -1,15 +1,17 @@
 #include "MiscellaneousAction.h"
 #include "Layer.h"
-#include "ImageViewerPlugin.h"
+
+#include <PointData/PointData.h>
 
 #include <QRect>
 
-MiscellaneousAction::MiscellaneousAction(QObject* parent, const QString& title) :
+MiscellaneousAction::MiscellaneousAction(QObject* parent, const QString& title, Layer* layer) :
     GroupAction(parent, title),
     _roiLayerAction(this, "Layer ROI"),
     _roiViewAction(this, "View ROI"),
     _timer(),
-    _viewROI()
+    _viewROI(),
+    _layer(layer)
 {
     setText("Miscellaneous");
 
@@ -27,8 +29,19 @@ MiscellaneousAction::MiscellaneousAction(QObject* parent, const QString& title) 
             return;
 
         QRectF viewROI;
-        viewROI.setX(_roiViewAction.getRangeAction(DecimalRectangleAction::Axis::X).getRangeMinAction().getValue());
-        viewROI.setY(_roiViewAction.getRangeAction(DecimalRectangleAction::Axis::X).getRangeMaxAction().getValue());
+
+        auto left = _roiViewAction.getRangeAction(DecimalRectangleAction::Axis::X).getRangeMinAction().getValue();
+        auto top = _roiViewAction.getRangeAction(DecimalRectangleAction::Axis::X).getRangeMaxAction().getValue();
+
+        if (_layer->_sourceDataset.get<Points>()->getProperty("_viewRoi_FLIP").toBool())
+        {
+            auto temp = left;
+            left = top;
+            top = temp;
+        }
+
+        viewROI.setLeft(left);
+        viewROI.setTop(top);
 
         assert(_roiViewAction.getRangeAction(DecimalRectangleAction::Axis::Y).getRangeMinAction().getValue() == _roiViewAction.getRangeAction(DecimalRectangleAction::Axis::Y).getRangeMaxAction().getValue());
 
@@ -40,10 +53,6 @@ MiscellaneousAction::MiscellaneousAction(QObject* parent, const QString& title) 
             return;
 
         _viewROI = viewROI;
-
-        qDebug() << " -- MiscellaneousAction -- ";
-        qDebug() << "viewROI: " << viewROI;
-
         emit viewROIChanged(_viewROI);
 
         });
