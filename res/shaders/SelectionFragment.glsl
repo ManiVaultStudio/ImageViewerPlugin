@@ -13,4 +13,6 @@ void main(void)
 {
     if (texture(textures, vec3(uv, 0)).r > 0u && texture(textures, vec3(uv, 1)).r > 0u)
         fragmentColor = vec4(overlayColor.rgb, opacity);
+    else
+        fragmentColor = vec4(overlayColor.rgb, 0.f);
 }
