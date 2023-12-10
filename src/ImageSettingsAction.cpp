@@ -106,8 +106,8 @@ void ImageSettingsAction::initialize(Layer* layer)
     connect(&_interpolationTypeAction, &OptionAction::currentIndexChanged, _layer, &Layer::invalidate);
     connect(&_constantColorAction, &ColorAction::colorChanged, _layer, &Layer::invalidate);
 
-    connect(&_colorSpaceAction, &OptionAction::currentIndexChanged, _layer, &Layer::invalidate);
-    connect(&_colorSpaceAction, &OptionAction::currentIndexChanged, this, &ImageSettingsAction::updateColorMapImage);
+    //connect(&_colorSpaceAction, &OptionAction::currentIndexChanged, _layer, &Layer::invalidate);
+    //connect(&_colorSpaceAction, &OptionAction::currentIndexChanged, this, &ImageSettingsAction::updateColorMapImage);
 
     if (dimensionNames.count() == 1)
         _colorSpaceAction.setCurrentText("Mono");
@@ -195,9 +195,9 @@ void ImageSettingsAction::initialize(Layer* layer)
 
     updateScalarChannels();
 
-    connect(&_colorSpaceAction, &OptionAction::currentIndexChanged, this, &ImageSettingsAction::updateScalarChannelActions);
+    connect(&_colorSpaceAction, &OptionAction::currentIndexChanged, this, &ImageSettingsAction::colorSpaceChanged);
 
-    updateScalarChannelActions();
+    colorSpaceChanged();
 }
 
 const std::uint32_t ImageSettingsAction::getNumberOfActiveScalarChannels() const
@@ -262,9 +262,6 @@ void ImageSettingsAction::updateColorMapImage()
     switch (_colorSpaceAction.getCurrentIndex())
     {
         case 0:
-            interpolationType = _colorMap1DAction.getDiscretizeAction().isChecked() ? InterpolationType::NearestNeighbor : InterpolationType::Bilinear;
-            break;
-
         case 1:
             interpolationType = _colorMap2DAction.getDiscretizeAction().isChecked() ? InterpolationType::NearestNeighbor : InterpolationType::Bilinear;
             break;
@@ -278,7 +275,7 @@ void ImageSettingsAction::updateColorMapImage()
         _layer->setColorMapImage(getColorMapImage(), interpolationType);
 }
 
-void ImageSettingsAction::updateScalarChannelActions()
+void ImageSettingsAction::colorSpaceChanged()
 {
     const auto isClusterType = _layer->getSourceDataset()->getDataType() == ClusterType;
 
@@ -367,6 +364,14 @@ void ImageSettingsAction::updateScalarChannelActions()
         default:
             break;
     }
+
+    updateColorMapImage();
+
+    _scalarChannel1Action.computeScalarData();
+    _scalarChannel2Action.computeScalarData();
+    _scalarChannel3Action.computeScalarData();
+
+    _layer->invalidate();
 }
 
 void ImageSettingsAction::connectToPublicAction(WidgetAction* publicAction, bool recursive)
