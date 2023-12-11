@@ -37,10 +37,10 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin& imageViewerPlugin) :
     _renderer(this),
     _interactionMode(InteractionMode::Selection)
 {
-    setContextMenuPolicy(Qt::CustomContextMenu);
+    //setContextMenuPolicy(Qt::CustomContextMenu);
     setAcceptDrops(true);
     setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
-    setFocusPolicy(Qt::StrongFocus);
+    //setFocusPolicy(Qt::StrongFocus);
     setMouseTracking(true);
 
     // Configure pixel selection tool
