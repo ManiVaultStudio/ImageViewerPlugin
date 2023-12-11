@@ -34,7 +34,7 @@ ImageViewerPlugin::ImageViewerPlugin(mv::plugin::PluginFactory* factory) :
     setObjectName("Images");
 
     getWidget().setContextMenuPolicy(Qt::CustomContextMenu);
-    getWidget().setFocusPolicy(Qt::ClickFocus);
+    //getWidget().setFocusPolicy(Qt::ClickFocus);
 
     _interactionToolbarAction.initialize(this);
 }
@@ -78,7 +78,9 @@ void ImageViewerPlugin::init()
             dropRegions << new DropWidget::DropRegion(this, "Images", QString("Add an image layer for %1").arg(datasetGuiName), "images", true, [this, datasetGuiName, dataset]() {
                 try
                 {
-                    addDataset(dataset);
+                    getWidget().setFocus(Qt::OtherFocusReason);
+
+                    loadData({ dataset });
                 }
                 catch (std::exception& e)
                 {
@@ -324,14 +326,14 @@ void ImageViewerPlugin::addDataset(const Dataset<Images>& dataset)
 {
     auto layer = new Layer(&_settingsAction.getEditLayersAction(), dataset->text());
 
-    qDebug() << __FUNCTION__;
-
     layer->initialize(this, dataset);
 
     if (!projects().isOpeningProject() && !projects().isImportingProject())
         layer->scaleToFit(_imageViewerWidget.getWorldBoundingRectangle(false));
 
     _layersModel.addLayer(layer);
+
+    getImageViewerWidget().update();
 }
 
 void ImageViewerPlugin::onLayerSelectionChanged()

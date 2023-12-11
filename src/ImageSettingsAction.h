@@ -54,8 +54,8 @@ protected: // Color map
 
 protected:
 
-    /** Updates the scalar channel actions */
-    void updateScalarChannelActions();
+    /** Invoked when the color space changed */
+    void colorSpaceChanged();
 
 protected: // Linking
 
