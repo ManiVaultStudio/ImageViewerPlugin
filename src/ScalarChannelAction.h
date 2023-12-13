@@ -59,6 +59,9 @@ public:
     /** Get image size */
     QSize getImageSize();
 
+    /** Set fixed displayRange */
+    void setFixedDisplayRange(bool status, float lower = -1, float upper = -1);
+
 public: // Channel data
 
     /** Get scalar data */
@@ -126,6 +129,8 @@ private:
     WindowLevelAction       _windowLevelAction;     /** Window/level action */
     QVector<float>          _scalarData;            /** Channel scalar data for the specified dimension */
     QPair<float, float>     _scalarDataRange;       /** Scalar data range */
+    QPair<float, float>     _displayRange;
+    bool                    _fixedDisplayRange;
 
     friend class ImageAction;
 };

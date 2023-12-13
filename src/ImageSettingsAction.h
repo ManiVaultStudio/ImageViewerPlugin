@@ -97,6 +97,7 @@ public: // Action getters
     ColorMapAction& getColorMap1DAction() { return _colorMap1DAction; }
     ColorMapAction& getColorMap2DAction() { return _colorMap2DAction; }
     OptionAction& getInterpolationTypeAction() { return _interpolationTypeAction; }
+    ToggleAction& getFixRgbToDataAction() { return _fixRgbToData; }
     ToggleAction& getUseConstantColorAction() { return _useConstantColorAction; }
     ColorAction& getConstantColorAction() { return _constantColorAction; }
 
@@ -122,6 +123,7 @@ protected:
     ColorMap1DAction        _colorMap1DAction;              /** One-dimensional color map action */
     ColorMap2DAction        _colorMap2DAction;              /** Two-dimensional color map action */
     OptionAction            _interpolationTypeAction;       /** Interpolation type action */
+    ToggleAction            _fixRgbToData;                  /** Fix color range to RGB*/
     ToggleAction            _useConstantColorAction;        /** Constant color action */
     ColorAction             _constantColorAction;           /** Color action */
     QTimer                  _updateSelectionTimer;          /** Timer to update layer selection when appropriate */

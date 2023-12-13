@@ -17,6 +17,7 @@
 #include <QMenu>
 
 #include <set>
+#include <utility>
 
 using namespace mv::gui;
 
@@ -31,7 +32,7 @@ Layer::Layer(QObject* parent, const QString& title) :
     _generalAction(this, "General"),
     _imageSettingsAction(this, "Image"),
     _selectionAction(this, "Selection"),
-    _miscellaneousAction(this, "Miscellaneous"),
+    _miscellaneousAction(this, "Miscellaneous", this),
     _subsetAction(this, "Subset"),
     _selectionData(),
     _imageSelectionRectangle(),
@@ -143,8 +144,6 @@ void Layer::initialize(ImageViewerPlugin* imageViewerPlugin, const mv::Dataset<I
     };
 
     connect(&_imageViewerPlugin->getImageViewerWidget().getRenderer(), &LayersRenderer::zoomRectangleChanged, this, [this, updateSelectionRoi]() {
-        updateRoi();
-
         if (!_active)
             return;
 
@@ -160,6 +159,8 @@ void Layer::initialize(ImageViewerPlugin* imageViewerPlugin, const mv::Dataset<I
     connect(&_imageViewerPlugin->getImageViewerWidget(), &ImageViewerWidget::navigationEnded, this, [this, updateSelectionRoi]() {
         if (!_active)
             return;
+
+        updateRoiMiscAction();
 
         if (_selectionAction.getPixelSelectionAction().getPixelSelectionTool()->getType() != PixelSelectionType::ROI)
             return;
@@ -178,7 +179,7 @@ void Layer::initialize(ImageViewerPlugin* imageViewerPlugin, const mv::Dataset<I
             _imagesDataset->selectNone();
     });
 
-    connect(&_miscellaneousAction.getRoiViewAction(), &DecimalRectangleAction::rectangleChanged, getRenderer(), [this](const QRectF& rectangle) -> void {
+    connect(&_miscellaneousAction, &MiscellaneousAction::viewROIChanged, getRenderer(), [this](const QRectF& rectangle) -> void {
         if (rectangle == getRenderer()->getZoomRectangle())
             return;
 
@@ -186,9 +187,14 @@ void Layer::initialize(ImageViewerPlugin* imageViewerPlugin, const mv::Dataset<I
 
         getRenderer()->setAnimationEnabled(false);
         {
-            getRenderer()->setZoomRectangle(rectangle);
+            if (rectangle == QRectF(-1.f, -1.f, -1.f, -1.f))
+                getRenderer()->setZoomRectangle(_imageViewerPlugin->getImageViewerWidget().getWorldBoundingRectangle());
+            else
+                getRenderer()->setZoomRectangle(rectangle);
         }
         getRenderer()->setAnimationEnabled(animationEnabled);
+
+        emit _imageViewerPlugin->getImageViewerWidget().navigationEnded();
     });
 
     _imagesDataset->getMaskData(_maskData);
@@ -304,7 +310,7 @@ void Layer::updateWindowTitle()
     }
 }
 
-void Layer::updateRoi()
+void Layer::updateRoiMiscAction()
 {
     const auto modelViewMatrix      = getRenderer()->getViewMatrix() * getModelMatrix() *getPropByName<SelectionToolProp>("SelectionToolProp")->getModelMatrix();
     const auto roiTopLeft           = getRenderer()->getScreenPointToWorldPosition(modelViewMatrix, QPoint(0, getRenderer()->getParentWidgetSize().height()));
@@ -312,12 +318,29 @@ void Layer::updateRoi()
     const auto inputImageSize       = _imagesDataset->getImageSize();
 
     QRect imageRoi;
-
     imageRoi.setBottomLeft(QPoint(std::clamp(static_cast<int>(std::round(roiTopLeft.x())), 0, inputImageSize.width()), std::clamp(static_cast<int>(std::round(roiTopLeft.y())), 0, inputImageSize.height())));
     imageRoi.setTopRight(QPoint(std::clamp(static_cast<int>(std::round(roiBottomRight.x())), 0, inputImageSize.width()), std::clamp(static_cast<int>(std::round(roiBottomRight.y())), 0, inputImageSize.height())));
-
     _miscellaneousAction.getRoiLayerAction().setRectangle(imageRoi);
-    _miscellaneousAction.getRoiViewAction().setRectangle(getRenderer()->getZoomRectangle());
+
+    QRectF viewRoi = getRenderer()->getZoomRectangle();
+    _miscellaneousAction.setViewROI(viewRoi);
+    //_miscellaneousAction.getRoiViewAction().setRectangle(viewRoi);     // this does not work
+
+    // Hack: Range actions do not allow to set the min value larger than the max value
+    auto left = viewRoi.left();
+    auto top = viewRoi.top();
+    bool flip = left > top;
+    _sourceDataset.get<Points>()->setProperty("_viewRoi_FLIP", flip);
+
+    if (flip)
+        std::swap(left, top);
+
+    _miscellaneousAction.getRoiViewAction().getRangeAction(DecimalRectangleAction::Axis::X).getRangeMinAction().setValue(left);
+    _miscellaneousAction.getRoiViewAction().getRangeAction(DecimalRectangleAction::Axis::X).getRangeMaxAction().setValue(top);
+    _miscellaneousAction.getRoiViewAction().getRangeAction(DecimalRectangleAction::Axis::Y).getRangeMinAction().setValue(viewRoi.width());
+    _miscellaneousAction.getRoiViewAction().getRangeAction(DecimalRectangleAction::Axis::Y).getRangeMaxAction().setValue(viewRoi.height());
+
+    QCoreApplication::processEvents();
 }
 
 QRectF Layer::getWorldBoundingRectangle() const
