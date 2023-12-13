@@ -75,7 +75,7 @@ ImageSettingsAction::ImageSettingsAction(QObject* parent, const QString& title) 
     connect(&_fixRgbToData, &ToggleAction::toggled, this, [this](bool toggled) {
         if (static_cast<ColorSpaceType>(_colorSpaceAction.getCurrentIndex()) == ColorSpaceType::RGB)
         {
-            updateScalarChannelActions();
+            colorSpaceChanged();
             emit channelChanged(_scalarChannel1Action);
             emit channelChanged(_scalarChannel2Action);
             emit channelChanged(_scalarChannel3Action);
