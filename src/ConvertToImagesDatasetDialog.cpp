@@ -95,8 +95,6 @@ ConvertToImagesDatasetDialog::ConvertToImagesDatasetDialog(ImageViewerPlugin& im
         images->setNumberOfComponentsPerPixel(1);
         images->setLinkedDataFlag(DatasetImpl::LinkedDataFlag::Receive, _useLinkedDataAction.isChecked());
 
-        events().notifyDatasetAdded(*images);
-
         _targetImagesDataset = images;
 
         accept();
@@ -124,15 +122,20 @@ Dataset<Images> ConvertToImagesDatasetDialog::getTargetImagesDataset() const
     return _targetImagesDataset;
 }
 
-void ConvertToImagesDatasetDialog::findSourceImagesDataset(mv::DataHierarchyItem& dataHierarchyItem)
+void ConvertToImagesDatasetDialog::findSourceImagesDataset(mv::DataHierarchyItem* dataHierarchyItem)
 {
-    for (auto childHierarchyItem : dataHierarchyItem.getChildren()) {
+    Q_ASSERT(dataHierarchyItem != nullptr);
+
+    if (dataHierarchyItem == nullptr)
+        return;
+
+    for (auto childHierarchyItem : dataHierarchyItem->getChildren()) {
         if (childHierarchyItem->getDataType() == ImageType) {
             _sourceImagesDataset = childHierarchyItem->getDataset();
             return;
         }
     }
 
-    if (dataHierarchyItem.hasParent())
-        findSourceImagesDataset(dataHierarchyItem.getParent());
+    if (dataHierarchyItem->hasParent())
+        findSourceImagesDataset(dataHierarchyItem->getParent());
 }

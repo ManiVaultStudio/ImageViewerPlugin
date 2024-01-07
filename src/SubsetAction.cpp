@@ -61,16 +61,12 @@ void SubsetAction::initialize(ImageViewerPlugin* imageViewerPlugin)
 
             auto subset = points->createSubsetFromSelection(_nameAction.getString(), points);
 
-            events().notifyDatasetAdded(subset);
-
             auto imagesSubset = Application::core()->addDataset<Images>("Images", _nameAction.getString(), subset);
 
             imagesSubset->setType(images->getType());
             imagesSubset->setNumberOfImages(images->getNumberOfImages());
             imagesSubset->setImageSize(images->getImageSize());
             imagesSubset->setNumberOfComponentsPerPixel(images->getNumberOfComponentsPerPixel());
-
-            events().notifyDatasetAdded(*imagesSubset);
         }
         catch (std::exception& e)
         {

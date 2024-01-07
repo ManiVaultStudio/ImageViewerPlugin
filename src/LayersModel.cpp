@@ -571,7 +571,7 @@ void LayersModel::fromVariantMap(const QVariantMap& variantMap)
     for (auto layerVariant : variantMap["Layers"].toList()) {
         auto layer = new Layer(&imageViewerPlugin->getSettingsAction().getEditLayersAction(), layerVariant.toMap()["Title"].toString());
 
-        layer->initialize(imageViewerPlugin, mv::data().getSet(layerVariant.toMap()["DatasetId"].toString()));
+        layer->initialize(imageViewerPlugin, mv::data().getDataset(layerVariant.toMap()["DatasetId"].toString()));
         layer->fromVariantMap(layerVariant.toMap());
 
         if (!projects().isOpeningProject() && !projects().isImportingProject())
