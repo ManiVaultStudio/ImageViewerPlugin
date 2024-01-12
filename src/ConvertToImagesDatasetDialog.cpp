@@ -85,7 +85,7 @@ ConvertToImagesDatasetDialog::ConvertToImagesDatasetDialog(ImageViewerPlugin& im
     layout->addWidget(dialogButtonBox);
 
     connect(dialogButtonBox, &QDialogButtonBox::accepted, this, [this]() {
-        auto images = Application::core()->addDataset<Images>("Images", _datasetNameAction.getString(), _sourceDataset);
+        auto images = mv::data().createDataset<Images>("Images", _datasetNameAction.getString(), _sourceDataset);
 
         const auto imageSize = _sourceImagesDataset.isValid() ? _sourceImagesDataset->getImageSize() : QSize(_imageWidthAction.getValue(), _imageHeightAction.getValue());
 

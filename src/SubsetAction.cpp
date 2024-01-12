@@ -61,7 +61,7 @@ void SubsetAction::initialize(ImageViewerPlugin* imageViewerPlugin)
 
             auto subset = points->createSubsetFromSelection(_nameAction.getString(), points);
 
-            auto imagesSubset = Application::core()->addDataset<Images>("Images", _nameAction.getString(), subset);
+            auto imagesSubset = mv::data().createDataset<Images>("Images", _nameAction.getString(), subset);
 
             imagesSubset->setType(images->getType());
             imagesSubset->setNumberOfImages(images->getNumberOfImages());
