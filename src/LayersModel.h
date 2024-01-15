@@ -2,8 +2,6 @@
 
 #include <util/Serializable.h>
 
-#include <event/EventListener.h>
-
 #include "Layer.h"
 
 /**
@@ -353,7 +351,4 @@ public: // Serialization
      * @return Variant map representation of the widget action
      */
     QVariantMap toVariantMap() const override;
-
-protected:
-    mv::EventListener     _eventListener;     /** Listen to HDPS events */
 };
