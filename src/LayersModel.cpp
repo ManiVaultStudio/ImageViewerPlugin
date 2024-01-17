@@ -250,7 +250,7 @@ QVariant LayersModel::DatasetIdItem::data(int role /*= Qt::UserRole + 1*/) const
     switch (role) {
         case Qt::EditRole:
         case Qt::DisplayRole:
-            return getLayer()->getImages()->getDataHierarchyItem().getDataset().getDatasetId();
+            return getLayer()->getImagesDataset()->getDataHierarchyItem().getDataset().getDatasetId();
 
         case Qt::ToolTipRole:
             return QString("Dataset ID: %1").arg(data(Qt::DisplayRole).toString());
@@ -411,34 +411,6 @@ LayersModel::LayersModel(QObject* parent) :
 
     for (auto column : columnInfo.keys())
         setHorizontalHeaderItem(static_cast<int>(column), new HeaderItem(columnInfo[column]));
-
-    _eventListener.addSupportedEventType(static_cast<std::uint32_t>(EventType::DatasetRemoved));
-
-    _eventListener.registerDataEventByType(PointType, [this](DatasetEvent* datasetEvent) {
-
-        switch (datasetEvent->getType())
-        {
-            case EventType::DatasetRemoved:
-                removeLayer(datasetEvent->getDataset()->getId());
-                break;
-
-            default:
-                break;
-        }
-    });
-
-    _eventListener.registerDataEventByType(ImageType, [this](DatasetEvent* datasetEvent) {
-
-        switch (datasetEvent->getType())
-        {
-            case EventType::DatasetRemoved:
-                removeLayer(datasetEvent->getDataset()->getId());
-                break;
-
-            default:
-                break;
-        }
-    });
 }
 
 LayersModel::~LayersModel()
@@ -470,6 +442,12 @@ void LayersModel::addLayer(Layer* layer)
             return;
 
         insertRow(0, Row(layer));
+
+        auto& imagesDataset = layer->getImagesDataset();
+
+        connect(&imagesDataset, &Dataset<DatasetImpl>::aboutToBeRemoved, this, [this, imagesDataset]() -> void {
+            removeLayer(imagesDataset->getId());
+        });
 
         static_cast<ImageViewerPlugin*>(parent())->getImageViewerWidget().updateWorldBoundingRectangle();
 
@@ -573,7 +551,7 @@ void LayersModel::fromVariantMap(const QVariantMap& variantMap)
     for (const auto& layerVariant : variantMap["Layers"].toList()) {
         auto layer = new Layer(&imageViewerPlugin->getSettingsAction().getEditLayersAction(), layerVariant.toMap()["Title"].toString());
 
-        layer->initialize(imageViewerPlugin, mv::data().getSet(layerVariant.toMap()["DatasetId"].toString()));
+        layer->initialize(imageViewerPlugin, mv::data().getDataset(layerVariant.toMap()["DatasetId"].toString()));
         layer->fromVariantMap(layerVariant.toMap());
 
         if (!projects().isOpeningProject() && !projects().isImportingProject())

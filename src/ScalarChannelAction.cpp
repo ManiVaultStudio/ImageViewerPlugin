@@ -184,7 +184,7 @@ Dataset<Images> ScalarChannelAction::getImages()
     if (_layer == nullptr)
         return {};
 
-    return _layer->getImages();
+    return _layer->getImagesDataset();
 }
 
 void ScalarChannelAction::connectToPublicAction(WidgetAction* publicAction, bool recursive)

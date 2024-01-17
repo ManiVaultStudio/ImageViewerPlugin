@@ -85,7 +85,7 @@ ConvertToImagesDatasetDialog::ConvertToImagesDatasetDialog(ImageViewerPlugin& im
     layout->addWidget(dialogButtonBox);
 
     connect(dialogButtonBox, &QDialogButtonBox::accepted, this, [this]() {
-        auto images = Application::core()->addDataset<Images>("Images", _datasetNameAction.getString(), _sourceDataset);
+        auto images = mv::data().createDataset<Images>("Images", _datasetNameAction.getString(), _sourceDataset);
 
         const auto imageSize = _sourceImagesDataset.isValid() ? _sourceImagesDataset->getImageSize() : QSize(_imageWidthAction.getValue(), _imageHeightAction.getValue());
 
@@ -94,8 +94,6 @@ ConvertToImagesDatasetDialog::ConvertToImagesDatasetDialog(ImageViewerPlugin& im
         images->setImageSize(imageSize);
         images->setNumberOfComponentsPerPixel(1);
         images->setLinkedDataFlag(DatasetImpl::LinkedDataFlag::Receive, _useLinkedDataAction.isChecked());
-
-        events().notifyDatasetAdded(*images);
 
         _targetImagesDataset = images;
 
@@ -124,15 +122,20 @@ Dataset<Images> ConvertToImagesDatasetDialog::getTargetImagesDataset() const
     return _targetImagesDataset;
 }
 
-void ConvertToImagesDatasetDialog::findSourceImagesDataset(mv::DataHierarchyItem& dataHierarchyItem)
+void ConvertToImagesDatasetDialog::findSourceImagesDataset(mv::DataHierarchyItem* dataHierarchyItem)
 {
-    for (auto childHierarchyItem : dataHierarchyItem.getChildren()) {
+    Q_ASSERT(dataHierarchyItem != nullptr);
+
+    if (dataHierarchyItem == nullptr)
+        return;
+
+    for (auto childHierarchyItem : dataHierarchyItem->getChildren()) {
         if (childHierarchyItem->getDataType() == ImageType) {
             _sourceImagesDataset = childHierarchyItem->getDataset();
             return;
         }
     }
 
-    if (dataHierarchyItem.hasParent())
-        findSourceImagesDataset(dataHierarchyItem.getParent());
+    if (dataHierarchyItem->hasParent())
+        findSourceImagesDataset(dataHierarchyItem->getParent());
 }

@@ -53,9 +53,9 @@ protected:
 
     /**
      * Find the image size by walking up the tree and looking for images datasets
-     * @param dataHierarchyItem Reference to data hierarchy item
+     * @param dataHierarchyItem Pointer to data hierarchy item
      */
-    void findSourceImagesDataset(mv::DataHierarchyItem& dataHierarchyItem);
+    void findSourceImagesDataset(mv::DataHierarchyItem* dataHierarchyItem);
 
 public: // Action getters
 

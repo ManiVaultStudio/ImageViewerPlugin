@@ -99,7 +99,7 @@ public:
     }
 
     /** Get images dataset */
-    mv::Dataset<Images>& getImages() {
+    mv::Dataset<Images>& getImagesDataset() {
         return _imagesDataset;
     }
 

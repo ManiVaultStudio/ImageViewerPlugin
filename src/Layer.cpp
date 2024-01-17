@@ -52,7 +52,7 @@ void Layer::initialize(ImageViewerPlugin* imageViewerPlugin, const mv::Dataset<I
     setRenderer(&_imageViewerPlugin->getImageViewerWidget().getRenderer());
         
     _imagesDataset = imagesDataset;
-    _sourceDataset = _imagesDataset->getDataHierarchyItem().getParent().getDataset();
+    _sourceDataset = _imagesDataset->getDataHierarchyItem().getParent()->getDataset();
 
     if (!_sourceDataset.isValid())
         throw std::runtime_error("The layer source dataset is not valid after initialization");
@@ -955,7 +955,7 @@ void Layer::publishSelection()
             const auto selectedIndices = clusters->getSelectedIndices();
             
             // Get reference to clusters input points and its selection
-            auto points     = _sourceDataset->getDataHierarchyItem().getParent().getDataset<Points>();
+            auto points     = _sourceDataset->getDataHierarchyItem().getParent()->getDataset<Points>();
             auto selection  = points->getSelection<Points>();
 
             // Reserve enough space for selection
@@ -1094,7 +1094,7 @@ void Layer::fromVariantMap(const QVariantMap& variantMap)
     variantMapMustContain(variantMap, "DatasetId");
     variantMapMustContain(variantMap, "Title");
 
-    _imagesDataset = mv::data().getSet(variantMap["DatasetId"].toString());
+    _imagesDataset = mv::data().getDataset(variantMap["DatasetId"].toString());
 
     setText(variantMap["Title"].toString());
 
