@@ -1065,7 +1065,7 @@ void Layer::zoomToSelection()
     }
 }
 
-void Layer::fromVariantMap(const QVariantMap& variantMap)
+void Layer::fromVariantMap(const mv::VariantMap& variantMap)
 {
     WidgetAction::fromVariantMap(variantMap);
 
@@ -1083,7 +1083,7 @@ void Layer::fromVariantMap(const QVariantMap& variantMap)
     _subsetAction.fromParentVariantMap(variantMap);
 }
 
-QVariantMap Layer::toVariantMap() const
+mv::VariantMap Layer::toVariantMap() const
 {
     auto variantMap = WidgetAction::toVariantMap();
 

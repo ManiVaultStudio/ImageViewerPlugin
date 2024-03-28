@@ -114,7 +114,7 @@ void SelectionAction::disconnectFromPublicAction(bool recursive)
     GroupAction::disconnectFromPublicAction(recursive);
 }
 
-void SelectionAction::fromVariantMap(const QVariantMap& variantMap)
+void SelectionAction::fromVariantMap(const mv::VariantMap& variantMap)
 {
     WidgetAction::fromVariantMap(variantMap);
 
@@ -122,7 +122,7 @@ void SelectionAction::fromVariantMap(const QVariantMap& variantMap)
     _showRegionAction.fromParentVariantMap(variantMap);
 }
 
-QVariantMap SelectionAction::toVariantMap() const
+mv::VariantMap SelectionAction::toVariantMap() const
 {
     auto variantMap = WidgetAction::toVariantMap();
 

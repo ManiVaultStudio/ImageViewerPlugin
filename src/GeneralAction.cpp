@@ -115,7 +115,7 @@ void GeneralAction::disconnectFromPublicAction(bool recursive)
     GroupAction::disconnectFromPublicAction(recursive);
 }
 
-void GeneralAction::fromVariantMap(const QVariantMap& variantMap)
+void GeneralAction::fromVariantMap(const mv::VariantMap& variantMap)
 {
     GroupAction::fromVariantMap(variantMap);
 
@@ -126,7 +126,7 @@ void GeneralAction::fromVariantMap(const QVariantMap& variantMap)
     _scaleAction.fromParentVariantMap(variantMap);
 }
 
-QVariantMap GeneralAction::toVariantMap() const
+mv::VariantMap GeneralAction::toVariantMap() const
 {
     auto variantMap = GroupAction::toVariantMap();
 
