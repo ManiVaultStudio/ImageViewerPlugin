@@ -179,7 +179,7 @@ void Layer::initialize(ImageViewerPlugin* imageViewerPlugin, const mv::Dataset<I
     });
 
     connect(&_miscellaneousAction.getRoiViewAction(), &DecimalRectangleAction::rectangleChanged, getRenderer(), [this](float left, float right, float bottom, float top) -> void {
-        auto rectangle = QRectF{ left, top, /*width*/ std::abs(right - left), /*height*/ 100.0f }; //std::abs(bottom - top)
+        auto rectangle = QRectF{ left, top, /*width*/ right - left, /*height*/ bottom - top };
         if (rectangle == getRenderer()->getZoomRectangle())
             return;
 
