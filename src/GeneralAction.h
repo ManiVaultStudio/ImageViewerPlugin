@@ -75,6 +75,7 @@ public: /** Action getters */
     StringAction& getNameAction() { return _nameAction; }
     PositionAction& getPositionAction() { return _positionAction; }
     DecimalAction& getScaleAction() { return _scaleAction; }
+    DecimalAction& getRotationAction() { return _rotationAction; }
 
 protected:
     Layer*          _layer;                 /** Pointer to owning layer */
@@ -84,6 +85,7 @@ protected:
     StringAction    _nameAction;            /** Name action */
     PositionAction  _positionAction;        /** Position action */
     DecimalAction   _scaleAction;           /** Scale action */
+    DecimalAction   _rotationAction;        /** Rotation action */
 };
 
 Q_DECLARE_METATYPE(GeneralAction)
