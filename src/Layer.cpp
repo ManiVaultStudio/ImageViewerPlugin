@@ -179,7 +179,8 @@ void Layer::initialize(ImageViewerPlugin* imageViewerPlugin, const mv::Dataset<I
     });
 
     connect(&_miscellaneousAction.getRoiViewAction(), &DecimalRectangleAction::rectangleChanged, getRenderer(), [this](float left, float right, float bottom, float top) -> void {
-        auto rectangle = QRectF{ left, top, /*width*/ right - left, /*height*/ top - bottom};
+        auto rectangle = QRectF{ left, bottom, right - left, top - bottom};
+
         if (rectangle == getRenderer()->getZoomRectangle())
             return;
 
@@ -318,7 +319,10 @@ void Layer::updateRoi()
     imageRoi.setTopRight(QPoint(std::clamp(static_cast<int>(std::round(roiBottomRight.x())), 0, inputImageSize.width()), std::clamp(static_cast<int>(std::round(roiBottomRight.y())), 0, inputImageSize.height())));
 
     _miscellaneousAction.getRoiLayerAction().setRectangle(imageRoi);
-    _miscellaneousAction.getRoiViewAction().setRectangle(getRenderer()->getZoomRectangle());
+
+    const auto zoomRectangle = getRenderer()->getZoomRectangle();
+
+    _miscellaneousAction.getRoiViewAction().setRectangle(zoomRectangle.left(), zoomRectangle.right(), zoomRectangle.top(), zoomRectangle.bottom());
 }
 
 QRectF Layer::getWorldBoundingRectangle() const
