@@ -42,6 +42,7 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin& imageViewerPlugin) :
     setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
     //setFocusPolicy(Qt::StrongFocus);
     setMouseTracking(true);
+    setFocusPolicy(Qt::StrongFocus);
 
     // Configure pixel selection tool
     _pixelSelectionTool.setEnabled(false);
