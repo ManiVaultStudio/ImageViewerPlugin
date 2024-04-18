@@ -164,6 +164,6 @@ protected:
     std::int32_t                            _keys;                      /** Currently pressed keyboard keys */
     QVector<QPoint>                         _mousePositions;            /** Recorded mouse positions */
     int                                     _mouseButtons;              /** State of the left, middle and right mouse buttons */
-    LayersRenderer                                _renderer;                  /** Layers OpenGL renderer */
+    LayersRenderer                          _renderer;                  /** Layers OpenGL renderer */
     InteractionMode                         _interactionMode;           /** Interaction mode e.g. navigation and layer editing */
 };
