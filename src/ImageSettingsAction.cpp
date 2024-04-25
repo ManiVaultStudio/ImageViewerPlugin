@@ -422,7 +422,7 @@ void ImageSettingsAction::disconnectFromPublicAction(bool recursive)
     GroupAction::disconnectFromPublicAction(recursive);
 }
 
-void ImageSettingsAction::fromVariantMap(const QVariantMap& variantMap)
+void ImageSettingsAction::fromVariantMap(const mv::VariantMap& variantMap)
 {
     GroupAction::fromVariantMap(variantMap);
 
@@ -439,7 +439,7 @@ void ImageSettingsAction::fromVariantMap(const QVariantMap& variantMap)
     _constantColorAction.fromParentVariantMap(variantMap);
 }
 
-QVariantMap ImageSettingsAction::toVariantMap() const
+mv::VariantMap ImageSettingsAction::toVariantMap() const
 {
     auto variantMap = GroupAction::toVariantMap();
 
