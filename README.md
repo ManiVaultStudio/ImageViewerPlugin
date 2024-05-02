@@ -1,9 +1,24 @@
-# ImageViewerPlugin
-HDPS plugin for viewing high dimensional image collections
+# Image Viewer Plugin ![Build Status](https://github.com/ManiVaultStudio/ImageViewerPlugin/actions/workflows/build.yml/badge.svg?branch=master)
 
-# CI-CD
+Viewer plugin for high dimensional images in the [ManiVault](https://github.com/ManiVaultStudio/core) visual analytics framework.
 
-Linux, Macos, Windows - GithubActions
+```bash
+git clone git@github.com:ManiVaultStudio/ImageViewerPlugin.git
+```
+<p align="middle">
+  <img src="https://github.com/ManiVaultStudio/ImageViewerPlugin/assets/58806453/1b790f05-64cb-47d4-bd6a-913e64d25356" align="middle"  width="80%" /> </br>
+  Three image viewers showing serveral images
+</p>
 
-![Build Status](https://github.com/hdps/core/actions/workflows/build.yml/badge.svg)
+## Features
+- Colormapping by dimension:
+  - Mono
+  - Duo
+  - RGB/HSL/LAB
+- Zoom and pan navigation
+- Value interpolation
+- Selections
+- Creating subsets
+- Multiple layers
 
+Have a look at the [wiki](https://github.com/ManiVaultStudio/ImageViewerPlugin/wiki/Image-viewer-plugin-for-ManiVault) for several showcases of the image viewer's feature set.
