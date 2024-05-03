@@ -43,6 +43,8 @@ You can add multiple images to an image viewer instance and change their visibil
 - `Spacebar` Switch to navigation when in selection mode (while pressed)
 - `Mouse grab` Pan
 - `Mouse wheel` Zoom
+- `D` Zoom around selection
+- `Z` Reset zoom to overview
 
 ## Gallery
 Have a look at the [wiki](https://github.com/ManiVaultStudio/ImageViewerPlugin/wiki/Image-viewer-plugin-for-ManiVault) for more showcases of the image viewer's feature set.
