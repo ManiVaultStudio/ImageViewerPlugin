@@ -23,7 +23,7 @@ You can add multiple images to an image viewer instance and change their visibil
 - Value interpolation: `Nearest Neighbor` and `Bilinear`
 - Selections:
   - Automatically synchronize selections (default) or delay global notification until manual selection is finished
-  - Several selection types: `Rectangle` (default), `Lasso`, `Brush`
+  - Several selection types: `Rectangle` (default), `Lasso`, `Brush` and `Polygon`
 - Creating subsets: Create subset from selection
 - Multiple layers:
   - View multiple image data sets
@@ -35,7 +35,9 @@ You can add multiple images to an image viewer instance and change their visibil
 **Selection**
 - `R` Retangle (default)
 - `L` Lasson
-- `B` Brush, circular. Mouse wheel adjusts the radius
+- `B` Brush, circular: Mouse wheel adjusts the radius
+- `P` Polygon: left-click to add a vertex, right-click to finish
+- `S` Sample: single pixel, opens pixel value inspection overlay
 - `Shift` Add to selection (while pressed)
 - `Control` Remove from selection (while pressed)
 
