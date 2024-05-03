@@ -591,7 +591,7 @@ void Layer::paint(QPainter& painter, const PaintFlag& paintFlags)
 
                 // Draw text rectangle
                 painter.setPen(QPen(QBrush(pixelSelectionColor), 0.7f));
-                painter.setBrush(QBrush(QColor::fromHsl(pixelSelectionColor.hslHue(), pixelSelectionColor.hsvSaturation(), 80, 200)));
+                painter.setBrush(QBrush(QColor::fromHsl(pixelSelectionColor.hslHue(), pixelSelectionColor.hslSaturation(), 80, 200)));
                 painter.drawRoundedRect(textRectangle.translated(mousePositionWidget - QPoint(0, textRectangle.height()) + QPoint(margin, -margin)).marginsAdded(QMargins(5, 5, 5, 5)), 2.5f, 2.5f);
 
                 // Draw text
