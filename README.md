@@ -18,7 +18,7 @@ Next to layering, the image viewer is also capable to automatically layout image
 - Grid layout: images are arranged in a grid
 - Horizontal: images are layed out left-to-right
 - Vertical: images are arranged bottom-to-top-to
-- Stacked: images are layered on top of each other (idential to adding multiple images via drag & drop)
+- Stacked: images are layered on top of each other (identical to adding multiple images via drag & drop)
 
 ## Features
 - Colormapping by dimension/channel:
