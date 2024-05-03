@@ -20,8 +20,9 @@ git clone git@github.com:ManiVaultStudio/ImageViewerPlugin.git
 - Selections
 - Creating subsets
 - Multiple layers
+- Inspect pixel values
 
-## Keybindings
+### Keybindings
 
 **Selection**
 - `R` Retangle (default)
