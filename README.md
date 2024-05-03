@@ -19,6 +19,7 @@ You can add multiple images to an image viewer instance and change their visibil
   - `Mono`: Using a one-dimensional colormap
   - `Duo`: Using a two-dimensional colormap
   - `RGB`/`HSL`/`LAB`: map any data channel to any of the respective color space dimensions
+  - Adjust brightness and contrast of each mapped dimensions 
 - Zoom and pan navigation
 - Value interpolation: `Nearest Neighbor` and `Bilinear`
 - Selections:
