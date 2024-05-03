@@ -6,7 +6,7 @@ Viewer plugin for high dimensional images in the [ManiVault](https://github.com/
 git clone git@github.com:ManiVaultStudio/ImageViewerPlugin.git
 ```
 
-Drag & drop an image data set from the data hierarchy into an over viewer or right-click a the data hierarchy item and select `View -> Image Viewer`. 
+Drag & drop an image data set from the data hierarchy into an open viewer or right-click a the data hierarchy item and select `View -> Image Viewer`. 
 You can add multiple images to an image viewer instance and change their visibility and layering order.
 
 <p align="middle">
@@ -14,7 +14,7 @@ You can add multiple images to an image viewer instance and change their visibil
   Image viewers with open setting panel and single-channel colormapped images (left), a false color RGB image (right top) and a 2D colormapped image (right bottom). Each viewer shows a different high-dimensional image with several dozen data channels.
 </p>
 
-Next to layering, the image viewer is also capable to automatically layout image datasets side-by-side (see [gallery](https://github.com/ManiVaultStudio/ImageViewerPlugin?tab=readme-ov-file#Gallery) below). To achieve this, select multiple image datasets from the data hierarchy, right click `View -> Images` and select from either:
+Next to layering, the image viewer is also capable of automatically layouting image datasets side-by-side (see [gallery](https://github.com/ManiVaultStudio/ImageViewerPlugin?tab=readme-ov-file#Gallery) below). To achieve this, select multiple image datasets from the data hierarchy, right click `View -> Images` and select from either:
 - Grid layout: images are arranged in a grid
 - Horizontal: images are layed out left-to-right
 - Vertical: images are arranged bottom-to-top-to
