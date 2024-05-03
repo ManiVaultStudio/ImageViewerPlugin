@@ -21,4 +21,18 @@ git clone git@github.com:ManiVaultStudio/ImageViewerPlugin.git
 - Creating subsets
 - Multiple layers
 
+## Keybindings
+
+**Selection**
+- `R` Retangle (default)
+- `L` Lasson
+- `B` Brush, circular. Mouse wheel adjusts the radius
+- `Shift` Add to selection (while pressed)
+- `Control` Remove from selection (while pressed)
+
+**Navigation**
+- `Spacebar` Switch to navigation when in selection mode (while pressed)
+- `Mouse grab` Pan
+- `Mouse wheel` Zoom
+
 Have a look at the [wiki](https://github.com/ManiVaultStudio/ImageViewerPlugin/wiki/Image-viewer-plugin-for-ManiVault) for several showcases of the image viewer's feature set.
