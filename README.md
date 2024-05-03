@@ -37,3 +37,10 @@ git clone git@github.com:ManiVaultStudio/ImageViewerPlugin.git
 - `Mouse wheel` Zoom
 
 Have a look at the [wiki](https://github.com/ManiVaultStudio/ImageViewerPlugin/wiki/Image-viewer-plugin-for-ManiVault) for several showcases of the image viewer's feature set.
+
+## Gallery
+
+<p align="middle">
+  <img src="https://github.com/ManiVaultStudio/ImageViewerPlugin/assets/58806453/454d202d-c6fe-4fc1-aaee-7166112a1ea9" align="middle"  width="50%" /> </br>
+  Sample the pixel values
+</p>
