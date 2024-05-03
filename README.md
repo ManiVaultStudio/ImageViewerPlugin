@@ -10,17 +10,22 @@ git clone git@github.com:ManiVaultStudio/ImageViewerPlugin.git
   Three image viewers showing serveral images
 </p>
 
+Drag & drop an image data set from the data hierarchy into an over viewer or right-click a the data hierarchy item and select `View -> Image Viewer`. 
+You can add multiple images to an image viewer instance and change their visibility and layering order.
+
 ## Features
-- Colormapping by dimension:
-  - Mono
-  - Duo
-  - RGB/HSL/LAB
+- Colormapping by dimension/channel:
+  - Mono: Using a one-dimensional colormap
+  - Duo: Using a two-dimensional colormap
+  - RGB/HSL/LAB: map any data channel to any of the respective color space dimensions
 - Zoom and pan navigation
-- Value interpolation
-- Selections
-- Creating subsets
-- Multiple layers
-- Inspect pixel values
+- Value interpolation: `Nearest Neighbor` and `Bilinear`
+- Selections: Automatically synchronize selections (default) or delay global notification until manual selection is finished
+- Creating subsets: Create subset from selection
+- Multiple layers:
+  - View multiple image data sets
+  - Adjsut transparency individually
+- Inspect pixel values of all currently rendered channels
 
 ### Keybindings
 
