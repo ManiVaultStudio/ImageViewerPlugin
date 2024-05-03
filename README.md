@@ -11,7 +11,7 @@ You can add multiple images to an image viewer instance and change their visibil
 
 <p align="middle">
   <img src="https://github.com/ManiVaultStudio/ImageViewerPlugin/assets/58806453/1b790f05-64cb-47d4-bd6a-913e64d25356" align="middle"  width="80%" /> </br>
-  Image viewers with open setting panel and single-channel colormapped images (left), a false color RGB image (right top) and a 2D colormapped image (right bottom). Each viewer shows a different high-dimensional image with severeal dozen data channels.
+  Image viewers with open setting panel and single-channel colormapped images (left), a false color RGB image (right top) and a 2D colormapped image (right bottom). Each viewer shows a different high-dimensional image with several dozen data channels.
 </p>
 
 ## Features
@@ -28,14 +28,14 @@ You can add multiple images to an image viewer instance and change their visibil
 - Creating subsets: Create subset from selection
 - Multiple layers:
   - View multiple image data sets
-  - Adjsut transparency individually
+  - Adjust transparency individually
 - Inspect pixel values of all currently rendered channels
 
 ### Keybindings
 
 **Selection**
-- `R` Retangle (default)
-- `L` Lasson
+- `R` Rectangle (default)
+- `L` Lasso
 - `B` Brush, circular: Mouse wheel adjusts the radius
 - `P` Polygon: left-click to add a vertex, right-click to finish
 - `S` Sample: single pixel, opens pixel value inspection overlay
