@@ -5,13 +5,14 @@ Viewer plugin for high dimensional images in the [ManiVault](https://github.com/
 ```bash
 git clone git@github.com:ManiVaultStudio/ImageViewerPlugin.git
 ```
+
+Drag & drop an image data set from the data hierarchy into an over viewer or right-click a the data hierarchy item and select `View -> Image Viewer`. 
+You can add multiple images to an image viewer instance and change their visibility and layering order.
+
 <p align="middle">
   <img src="https://github.com/ManiVaultStudio/ImageViewerPlugin/assets/58806453/1b790f05-64cb-47d4-bd6a-913e64d25356" align="middle"  width="80%" /> </br>
   Image viewers with open setting panel and single-channel colormapped images (left), a false color RGB image (right top) and a 2D colormapped image (right bottom). Each viewer shows a different high-dimensional image with severeal dozen data channels.
 </p>
-
-Drag & drop an image data set from the data hierarchy into an over viewer or right-click a the data hierarchy item and select `View -> Image Viewer`. 
-You can add multiple images to an image viewer instance and change their visibility and layering order.
 
 ## Features
 - Colormapping by dimension/channel:
