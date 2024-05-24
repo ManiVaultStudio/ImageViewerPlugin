@@ -483,3 +483,8 @@ PluginTriggerActions ImageViewerPluginFactory::getPluginTriggerActions(const mv:
 
 	return pluginTriggerActions;
 }
+
+QUrl ImageViewerPluginFactory::getRespositoryUrl() const
+{
+    return QUrl("https://github.com/ManiVaultStudio/ImageViewerPlugin");
+}
