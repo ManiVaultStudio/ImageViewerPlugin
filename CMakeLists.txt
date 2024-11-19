@@ -206,6 +206,11 @@ add_custom_command(TARGET ${PROJECT} POST_BUILD
     --verbose
 )
 
+set_target_properties(${PROJECT}
+    PROPERTIES
+    FOLDER ViewPlugins
+)
+
 # -----------------------------------------------------------------------------
 # Miscellaneous
 # -----------------------------------------------------------------------------
