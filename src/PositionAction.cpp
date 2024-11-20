@@ -60,7 +60,7 @@ void PositionAction::disconnectFromPublicAction(bool recursive)
     GroupAction::disconnectFromPublicAction(recursive);
 }
 
-void PositionAction::fromVariantMap(const QVariantMap& variantMap)
+void PositionAction::fromVariantMap(const mv::VariantMap& variantMap)
 {
     GroupAction::fromVariantMap(variantMap);
 
@@ -68,7 +68,7 @@ void PositionAction::fromVariantMap(const QVariantMap& variantMap)
     _yAction.fromParentVariantMap(variantMap);
 }
 
-QVariantMap PositionAction::toVariantMap() const
+mv::VariantMap PositionAction::toVariantMap() const
 {
     auto variantMap = GroupAction::toVariantMap();
 

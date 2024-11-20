@@ -398,7 +398,7 @@ void ImageViewerPlugin::immigrateDataset(const Dataset<DatasetImpl>& dataset)
     }
 }
 
-void ImageViewerPlugin::fromVariantMap(const QVariantMap& variantMap)
+void ImageViewerPlugin::fromVariantMap(const mv::VariantMap& variantMap)
 {
     ViewPlugin::fromVariantMap(variantMap);
 
@@ -407,7 +407,7 @@ void ImageViewerPlugin::fromVariantMap(const QVariantMap& variantMap)
     _interactionToolbarAction.fromParentVariantMap(variantMap);
 }
 
-QVariantMap ImageViewerPlugin::toVariantMap() const
+mv::VariantMap ImageViewerPlugin::toVariantMap() const
 {
     auto variantMap = ViewPlugin::toVariantMap();
 
