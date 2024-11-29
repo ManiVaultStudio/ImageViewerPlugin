@@ -6,12 +6,25 @@
 #include <QDebug>
 #include <QOpenGLWidget>
 #include <QMouseEvent>
+#include <QtNumeric>
 #include <QVector2D>
 #include <QVector3D>
 #include <QVector4D>
 #include <QMatrix4x4>
 
 #include <stdexcept>
+
+static inline bool arePointsEqual(const QPointF& point1, const QPointF& point2, qreal epsilon = 1e-5) {
+    return qAbs(point1.x() - point2.x()) < epsilon && qAbs(point1.y() - point2.y()) < epsilon;
+}
+
+static inline bool areSizesEqual(const QSizeF& size1, const QSizeF& size2, qreal epsilon = 1e-5) {
+    return qAbs(size1.width() - size2.width()) < epsilon && qAbs(size1.height() - size2.height()) < epsilon;
+}
+
+static inline bool areRectsEqual(const QRectF& rect1, const QRectF& rect2, qreal epsilon = 1e-5) {
+    return arePointsEqual(rect1.topLeft(), rect2.topLeft()) && areSizesEqual(rect1.size(), rect2.size());
+}
 
 LayersRenderer::LayersRenderer(QOpenGLWidget* parent) :
     QObject(parent),
@@ -200,10 +213,16 @@ void LayersRenderer::setZoomPercentage(const float& zoomPercentage)
     const auto factorY          = static_cast<float>(_worldBoundingRectangle.height()) / static_cast<float>(zoomPercentage * getZoomRectangle().height());
     const auto scaleFactor      = factorX < factorY ? factorX : factorY;
 
-    _zoomRectangleTopLeft   = viewerCenter - QPoint(0.5f * scaleFactor * getZoomRectangle().width(), 0.5f * scaleFactor * getZoomRectangle().height());
-    _zoomRectangleSize      = getZoomRectangle().size() * scaleFactor;
+    QPointF newTopLeft          = viewerCenter - QPoint(0.5f * scaleFactor * getZoomRectangle().width(), 0.5f * scaleFactor * getZoomRectangle().height());
+    QSizeF newSize              = getZoomRectangle().size() * scaleFactor;
 
-    emit zoomRectangleChanged();
+    if (!arePointsEqual(newTopLeft, _zoomRectangleTopLeft) || !areSizesEqual(newSize, _zoomRectangleSize))
+    {
+        _zoomRectangleTopLeft   = newTopLeft;
+        _zoomRectangleSize      = newSize;
+
+        emit zoomRectangleChanged();
+    }
 }
 
 float LayersRenderer::getZoomSensitivity() const
@@ -254,7 +273,7 @@ QRectF LayersRenderer::getZoomRectangle() const
 
 void LayersRenderer::setZoomRectangle(const QRectF& zoomRectangle)
 {
-    if (zoomRectangle == getZoomRectangle())
+    if (areRectsEqual(zoomRectangle, getZoomRectangle()))
         return;
 
     if (!getZoomRectangle().isValid() || !_animationEnabled) {
