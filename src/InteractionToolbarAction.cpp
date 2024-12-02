@@ -3,6 +3,8 @@
 #include "ImageViewerWidget.h"
 #include "LayersModel.h"
 
+#include <QtNumeric>
+
 using namespace mv::util;
 
 const float InteractionToolbarAction::zoomDeltaPercentage = 0.1f;
@@ -120,6 +122,9 @@ void InteractionToolbarAction::initialize(ImageViewerPlugin* imageViewerPlugin)
 
     const auto updateZoomPercentage = [this]() -> void {
         const auto zoomPercentage = 100.0f * getImageViewerWidget().getRenderer().getZoomPercentage();
+
+        if(qAbs(_zoomPercentageAction.getValue() - zoomPercentage) < 1e-5f)
+            return;
 
         _zoomOutAction.setEnabled(zoomPercentage > _zoomPercentageAction.getMinimum());
         _zoomPercentageAction.setValue(zoomPercentage);

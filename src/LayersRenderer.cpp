@@ -1,11 +1,13 @@
 #include "LayersRenderer.h"
 #include "Renderable.h"
 
-#include <QtMath>
+#include <util/Math.h>
+
 #include <QMenu>
 #include <QDebug>
 #include <QOpenGLWidget>
 #include <QMouseEvent>
+#include <QtNumeric>
 #include <QVector2D>
 #include <QVector3D>
 #include <QVector4D>
@@ -200,10 +202,16 @@ void LayersRenderer::setZoomPercentage(const float& zoomPercentage)
     const auto factorY          = static_cast<float>(_worldBoundingRectangle.height()) / static_cast<float>(zoomPercentage * getZoomRectangle().height());
     const auto scaleFactor      = factorX < factorY ? factorX : factorY;
 
-    _zoomRectangleTopLeft   = viewerCenter - QPoint(0.5f * scaleFactor * getZoomRectangle().width(), 0.5f * scaleFactor * getZoomRectangle().height());
-    _zoomRectangleSize      = getZoomRectangle().size() * scaleFactor;
+    QPointF newTopLeft          = viewerCenter - QPoint(0.5f * scaleFactor * getZoomRectangle().width(), 0.5f * scaleFactor * getZoomRectangle().height());
+    QSizeF newSize              = getZoomRectangle().size() * scaleFactor;
 
-    emit zoomRectangleChanged();
+    if (!mv::util::arePointsEqual(newTopLeft, _zoomRectangleTopLeft) || !mv::util::areSizesEqual(newSize, _zoomRectangleSize))
+    {
+        _zoomRectangleTopLeft   = newTopLeft;
+        _zoomRectangleSize      = newSize;
+
+        emit zoomRectangleChanged();
+    }
 }
 
 float LayersRenderer::getZoomSensitivity() const
@@ -254,7 +262,7 @@ QRectF LayersRenderer::getZoomRectangle() const
 
 void LayersRenderer::setZoomRectangle(const QRectF& zoomRectangle)
 {
-    if (zoomRectangle == getZoomRectangle())
+    if (mv::util::areRectanglesEqual(zoomRectangle, getZoomRectangle()))
         return;
 
     if (!getZoomRectangle().isValid() || !_animationEnabled) {
