@@ -26,6 +26,9 @@ class LayersRenderer : public QObject, public mv::Renderer
 {
     Q_OBJECT
 
+    Q_PROPERTY(QPointF zoomRectangleTopLeft MEMBER _zoomRectangleTopLeft NOTIFY zoomRectangleChanged)
+    Q_PROPERTY(QSizeF zoomRectangleSize MEMBER _zoomRectangleSize NOTIFY zoomRectangleChanged)
+
 public: // Construction
 
     /**
