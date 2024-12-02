@@ -67,6 +67,8 @@ void SubsetAction::initialize(ImageViewerPlugin* imageViewerPlugin)
             imagesSubset->setNumberOfImages(images->getNumberOfImages());
             imagesSubset->setImageSize(images->getImageSize());
             imagesSubset->setNumberOfComponentsPerPixel(images->getNumberOfComponentsPerPixel());
+
+            events().notifyDatasetDataChanged(imagesSubset);
         }
         catch (std::exception& e)
         {

@@ -95,6 +95,8 @@ ConvertToImagesDatasetDialog::ConvertToImagesDatasetDialog(ImageViewerPlugin& im
         images->setNumberOfComponentsPerPixel(1);
         images->setLinkedDataFlag(DatasetImpl::LinkedDataFlag::Receive, _useLinkedDataAction.isChecked());
 
+        events().notifyDatasetDataChanged(images);
+
         _targetImagesDataset = images;
 
         accept();
