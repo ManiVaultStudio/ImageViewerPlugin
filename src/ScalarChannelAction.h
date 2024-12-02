@@ -59,6 +59,9 @@ public:
     /** Get image size */
     QSize getImageSize();
 
+    /** Set fixed displayRange */
+    void setColorSpaceRange(bool status, float lower = -1, float upper = -1);
+
 public: // Channel data
 
     /** Get scalar data */
@@ -126,6 +129,8 @@ private:
     WindowLevelAction       _windowLevelAction;     /** Window/level action */
     QVector<float>          _scalarData;            /** Channel scalar data for the specified dimension */
     QPair<float, float>     _scalarDataRange;       /** Scalar data range */
+    QPair<float, float>     _colorSpaceRange;       /** Color Space range */
+    bool                    _useColorSpaceRange;    /** _scalarDataRange is ignored and instead a color space dependend range is used */
 
     friend class ImageAction;
 };

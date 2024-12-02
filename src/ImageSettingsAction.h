@@ -98,6 +98,7 @@ public: // Action getters
     ColorMapAction& getColorMap2DAction() { return _colorMap2DAction; }
     OptionAction& getInterpolationTypeAction() { return _interpolationTypeAction; }
     ToggleAction& getUseConstantColorAction() { return _useConstantColorAction; }
+    ToggleAction& getFixChannelRangesToColorSpaceAction() { return _fixChannelRangesToColorSpace; }
     ColorAction& getConstantColorAction() { return _constantColorAction; }
 
 signals:
@@ -123,6 +124,7 @@ protected:
     ColorMap2DAction        _colorMap2DAction;              /** Two-dimensional color map action */
     OptionAction            _interpolationTypeAction;       /** Interpolation type action */
     ToggleAction            _useConstantColorAction;        /** Constant color action */
+    ToggleAction            _fixChannelRangesToColorSpace;  /** Fixes ranges of channels to color space ranges action */
     ColorAction             _constantColorAction;           /** Color action */
     QTimer                  _updateSelectionTimer;          /** Timer to update layer selection when appropriate */
     QTimer                  _updateScalarDataTimer;         /** Timer to update layer scalar data when appropriate */

@@ -2,6 +2,7 @@
 #include "ImageSettingsAction.h"
 #include "Layer.h"
 
+#include <util/ColorSpace.h>
 #include <util/Exception.h>
 
 #include <PointData/PointData.h>
@@ -23,7 +24,9 @@ ScalarChannelAction::ScalarChannelAction(QObject* parent, const QString& title) 
     _dimensionAction(this, "Dimension"),
     _windowLevelAction(this, "Window/Level"),
     _scalarData(),
-    _scalarDataRange({0.0f, 0.0f})
+    _scalarDataRange({ 0.0f, 0.0f }),
+    _colorSpaceRange({ 0.0f, 0.0f }),
+    _useColorSpaceRange(false) 
 {
     setDefaultWidgetFlags(GroupAction::Horizontal);
     setShowLabels(false);
@@ -110,11 +113,24 @@ const QPair<float, float>& ScalarChannelAction::getScalarDataRange() const
     return _scalarDataRange;
 }
 
+void ScalarChannelAction::setColorSpaceRange(bool status, float lower, float upper)
+{
+    _useColorSpaceRange = status;
+    _colorSpaceRange.first = lower;
+    _colorSpaceRange.second = upper;
+}
+
 QPair<float, float> ScalarChannelAction::getDisplayRange()
 {
     QPair<float, float> displayRange;
+    QPair<float, float> dataRange = _scalarDataRange;
 
-    const auto range            = _scalarDataRange.second - _scalarDataRange.first;
+    if (_useColorSpaceRange)
+    {
+        dataRange = _colorSpaceRange;
+    }
+
+    const auto range            = dataRange.second - dataRange.first;
     const auto maxWindow        = range;
     const auto windowNormalized = _windowLevelAction.getWindowAction().getValue();
     const auto levelNormalized  = _windowLevelAction.getLevelAction().getValue();
@@ -124,8 +140,8 @@ QPair<float, float> ScalarChannelAction::getDisplayRange()
     displayRange.first  = std::clamp(level - (window / 2.0f), 0.f, range);
     displayRange.second = std::clamp(level + (window / 2.0f), 0.f, range);
 
-    displayRange.first += _scalarDataRange.first;
-    displayRange.second += _scalarDataRange.first;
+    displayRange.first += dataRange.first;
+    displayRange.second += dataRange.first;
 
     return displayRange;
 }
