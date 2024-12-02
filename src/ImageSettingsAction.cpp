@@ -24,6 +24,7 @@ ImageSettingsAction::ImageSettingsAction(QObject* parent, const QString& title) 
     _colorMap2DAction(this, "2D Color map", "example_a"),
     _interpolationTypeAction(this, "Interpolate", interpolationTypes.values(), "Bilinear"),
     _useConstantColorAction(this, "Use constant color", false),
+    _fixChannelRangesToColorSpace(this, "Set channel ranges to color space", false),
     _constantColorAction(this, "Constant color", QColor(Qt::white)),
     _updateSelectionTimer(),
     _updateScalarDataTimer()
@@ -38,6 +39,7 @@ ImageSettingsAction::ImageSettingsAction(QObject* parent, const QString& title) 
     addAction(&_colorMap2DAction);
     addAction(&_interpolationTypeAction);
     addAction(&_useConstantColorAction);
+    addAction(&_fixChannelRangesToColorSpace);
     addAction(&_constantColorAction);
 
     _subsampleFactorAction.setVisible(false);
@@ -52,6 +54,7 @@ ImageSettingsAction::ImageSettingsAction(QObject* parent, const QString& title) 
     _colorMap2DAction.setToolTip("Image two-dimensional color map");
     _interpolationTypeAction.setToolTip("The type of two-dimensional image interpolation used");
     _useConstantColorAction.setToolTip("Use constant color to shade the image");
+    _fixChannelRangesToColorSpace.setToolTip("In this mode, data ranges are ignored and the channel ranges are set to the current color space range (RGB, HSL or LAB)");
     _constantColorAction.setToolTip("Constant color");
 
     _opacityAction.setSuffix("%");
@@ -68,6 +71,61 @@ ImageSettingsAction::ImageSettingsAction(QObject* parent, const QString& title) 
     useConstantColorToggled();
 
     connect(&_useConstantColorAction, &ToggleAction::toggled, this, useConstantColorToggled);
+
+    connect(&_fixChannelRangesToColorSpace, &ToggleAction::toggled, this, [this](bool toggled) {
+
+        // Set color space range
+        if (_fixChannelRangesToColorSpace.isChecked())
+        {
+            // only set color space range for RGB, HSL and LAB
+            switch (static_cast<ColorSpaceType>(_colorSpaceAction.getCurrentIndex()))
+            {
+            case ColorSpaceType::RGB:
+            {
+                _scalarChannel1Action.setColorSpaceRange(true, 0, 255); // red
+                _scalarChannel2Action.setColorSpaceRange(true, 0, 255); // green
+                _scalarChannel3Action.setColorSpaceRange(true, 0, 255); // blue
+                break;
+            }
+
+            case ColorSpaceType::HSL:
+            {
+                _scalarChannel1Action.setColorSpaceRange(true, 0, 360); // hue
+                _scalarChannel2Action.setColorSpaceRange(true, 0, 1);   // saturation
+                _scalarChannel3Action.setColorSpaceRange(true, 0, 1);   // value
+                break;
+            }
+
+            case ColorSpaceType::LAB:
+            {
+                _scalarChannel1Action.setColorSpaceRange(true, 0, 100);     // L
+                _scalarChannel2Action.setColorSpaceRange(true, -128, 127);  // A
+                _scalarChannel3Action.setColorSpaceRange(true, -128, 127);  // B
+                break;
+            }
+            default:
+            {
+                _scalarChannel1Action.setColorSpaceRange(false);
+                _scalarChannel2Action.setColorSpaceRange(false);
+                _scalarChannel3Action.setColorSpaceRange(false);
+                break;
+            }
+
+            } // switch
+        }
+        else
+        {
+            _scalarChannel1Action.setColorSpaceRange(false);
+            _scalarChannel2Action.setColorSpaceRange(false);
+            _scalarChannel3Action.setColorSpaceRange(false);
+        }
+
+        // update channels
+        emit channelChanged(_scalarChannel1Action);
+        emit channelChanged(_scalarChannel2Action);
+        emit channelChanged(_scalarChannel3Action);
+
+    });
 
     connect(&_scalarChannel1Action, &ScalarChannelAction::changed, this, [this]() {
         emit channelChanged(_scalarChannel1Action);
