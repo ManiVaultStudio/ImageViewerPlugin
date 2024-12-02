@@ -1,7 +1,8 @@
 #include "LayersRenderer.h"
 #include "Renderable.h"
 
-#include <QtMath>
+#include <util/Math.h>
+
 #include <QMenu>
 #include <QDebug>
 #include <QOpenGLWidget>
@@ -13,18 +14,6 @@
 #include <QMatrix4x4>
 
 #include <stdexcept>
-
-static inline bool arePointsEqual(const QPointF& point1, const QPointF& point2, qreal epsilon = 1e-5) {
-    return qAbs(point1.x() - point2.x()) < epsilon && qAbs(point1.y() - point2.y()) < epsilon;
-}
-
-static inline bool areSizesEqual(const QSizeF& size1, const QSizeF& size2, qreal epsilon = 1e-5) {
-    return qAbs(size1.width() - size2.width()) < epsilon && qAbs(size1.height() - size2.height()) < epsilon;
-}
-
-static inline bool areRectsEqual(const QRectF& rect1, const QRectF& rect2, qreal epsilon = 1e-5) {
-    return arePointsEqual(rect1.topLeft(), rect2.topLeft()) && areSizesEqual(rect1.size(), rect2.size());
-}
 
 LayersRenderer::LayersRenderer(QOpenGLWidget* parent) :
     QObject(parent),
@@ -216,7 +205,7 @@ void LayersRenderer::setZoomPercentage(const float& zoomPercentage)
     QPointF newTopLeft          = viewerCenter - QPoint(0.5f * scaleFactor * getZoomRectangle().width(), 0.5f * scaleFactor * getZoomRectangle().height());
     QSizeF newSize              = getZoomRectangle().size() * scaleFactor;
 
-    if (!arePointsEqual(newTopLeft, _zoomRectangleTopLeft) || !areSizesEqual(newSize, _zoomRectangleSize))
+    if (!mv::util::arePointsEqual(newTopLeft, _zoomRectangleTopLeft) || !mv::util::areSizesEqual(newSize, _zoomRectangleSize))
     {
         _zoomRectangleTopLeft   = newTopLeft;
         _zoomRectangleSize      = newSize;
@@ -273,7 +262,7 @@ QRectF LayersRenderer::getZoomRectangle() const
 
 void LayersRenderer::setZoomRectangle(const QRectF& zoomRectangle)
 {
-    if (areRectsEqual(zoomRectangle, getZoomRectangle()))
+    if (mv::util::areRectanglesEqual(zoomRectangle, getZoomRectangle()))
         return;
 
     if (!getZoomRectangle().isValid() || !_animationEnabled) {
