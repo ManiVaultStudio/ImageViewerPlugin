@@ -2,18 +2,9 @@ from conans import ConanFile
 from conan.tools.cmake import CMakeDeps, CMake, CMakeToolchain
 from conans.tools import save, load
 import os
-import shutil
 import pathlib
 import subprocess
 from rules_support import PluginBranchInfo
-import re
-
-def compatibility(os, compiler, compiler_version):
-    # On macos fallback to zlib apple-clang 13
-    if os == "Macos" and compiler == "apple-clang" and bool(re.match("14.*", compiler_version)):  
-        print("Compatibility match")
-        return ["zlib/1.3:compiler.version=13"]
-    return None
 
 class ImageViewerPluginConan(ConanFile):
     """Class to package ImageViewerPlugin using conan
@@ -26,7 +17,7 @@ class ImageViewerPluginConan(ConanFile):
 
     name = "ImageViewerPlugin"
     description = (
-        "A plugin for viewing image data in the high-dimensional plugin system (HDPS)."
+        "A plugin for viewing image data in ManiVaultStudio."
     )
     topics = ("hdps", "plugin", "image data", "viewing")
     url = "https://github.com/hdps/ImageViewerPlugin"
@@ -91,30 +82,29 @@ class ImageViewerPluginConan(ConanFile):
             generator = "Xcode"
         if self.settings.os == "Linux":
             generator = "Ninja Multi-Config"
-        # Use the Qt provided .cmake files
-        qtpath = pathlib.Path(self.deps_cpp_info["qt"].rootpath)
-        qt_root = str(list(qtpath.glob("**/Qt6Config.cmake"))[0].parents[3].as_posix())
-
+        
         tc = CMakeToolchain(self, generator=generator)
-        if self.settings.os == "Windows" and self.options.shared:
-            tc.variables["CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS"] = True
-        if self.settings.os == "Linux" or self.settings.os == "Macos":
-            tc.variables["CMAKE_CXX_STANDARD_REQUIRED"] = "ON"
-        tc.variables["CMAKE_PREFIX_PATH"] = qt_root
-        
-        # Set the installation directory for ManiVault based on the MV_INSTALL_DIR environment variable
-        # or if none is specified, set it to the build/install dir.
-        if not os.environ.get("MV_INSTALL_DIR", None):
-            os.environ["MV_INSTALL_DIR"] = os.path.join(self.build_folder, "install")
-        print("MV_INSTALL_DIR: ", os.environ["MV_INSTALL_DIR"])
-        self.install_dir = pathlib.Path(os.environ["MV_INSTALL_DIR"]).as_posix()
-        # Give the installation directory to CMake
-        tc.variables["MV_INSTALL_DIR"] = self.install_dir
-        
-        # Find ManiVault with find_package
-        self.manivault_dir = self.install_dir + '/cmake/mv/'
-        tc.variables["ManiVault_DIR"] = self.manivault_dir
-        
+
+        tc.variables["CMAKE_CXX_STANDARD_REQUIRED"] = "ON"
+
+        # Use the Qt provided .cmake files
+        qt_path = pathlib.Path(self.deps_cpp_info["qt"].rootpath)
+        qt_cfg = list(qt_path.glob("**/Qt6Config.cmake"))[0]
+        qt_dir = qt_cfg.parents[0].as_posix()
+        qt_root = qt_cfg.parents[3].as_posix()
+
+        # for Qt >= 6.4.2
+        #tc.variables["Qt6_DIR"] = qt_dir
+
+        # for Qt < 6.4.2
+        tc.variables["Qt6_ROOT"] = qt_root
+
+        # Use the ManiVault .cmake file to find ManiVault with find_package
+        mv_core_root = self.deps_cpp_info["hdps-core"].rootpath
+        manivault_dir = pathlib.Path(mv_core_root, "cmake", "mv").as_posix()
+        print("ManiVault_DIR: ", manivault_dir)
+        tc.variables["ManiVault_DIR"] = manivault_dir
+
         # Set some build options
         tc.variables["MV_UNITY_BUILD"] = "ON"
         
@@ -127,23 +117,16 @@ class ImageViewerPluginConan(ConanFile):
         return cmake
 
     def build(self):
-        print("Build OS is : ", self.settings.os)
-
-        # The ImageViewerPlugin build expects the HDPS package to be in this install dir
-        hdps_pkg_root = self.deps_cpp_info["hdps-core"].rootpath
-        print("Install dir type: ", self.install_dir)
-        shutil.copytree(hdps_pkg_root, self.install_dir)
+        print("Build OS is: ", self.settings.os)
 
         cmake = self._configure_cmake()
         cmake.build(build_type="Debug")
-        cmake.install(build_type="Debug")
-
-        # cmake_release = self._configure_cmake()
         cmake.build(build_type="Release")
-        cmake.install(build_type="Release")
 
     def package(self):
-        package_dir = os.path.join(self.build_folder, "package")
+        package_dir = pathlib.Path(self.build_folder, "package")
+        debug_dir = package_dir / "Debug"
+        release_dir = package_dir / "Release"
         print("Packaging install dir: ", package_dir)
         subprocess.run(
             [
@@ -153,7 +136,7 @@ class ImageViewerPluginConan(ConanFile):
                 "--config",
                 "Debug",
                 "--prefix",
-                os.path.join(package_dir, "Debug"),
+                debug_dir,
             ]
         )
         subprocess.run(
@@ -164,11 +147,11 @@ class ImageViewerPluginConan(ConanFile):
                 "--config",
                 "Release",
                 "--prefix",
-                os.path.join(package_dir, "Release"),
+                release_dir,
             ]
         )
         self.copy(pattern="*", src=package_dir)
-
+        
     def package_info(self):
         self.cpp_info.debug.libdirs = ["Debug/lib"]
         self.cpp_info.debug.bindirs = ["Debug/Plugins", "Debug"]
