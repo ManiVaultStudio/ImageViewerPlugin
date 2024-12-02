@@ -57,7 +57,7 @@ void SubsetAction::initialize(ImageViewerPlugin* imageViewerPlugin)
                 return;
 
             auto points = Dataset<Points>(layer->getSourceDataset());
-            auto images = layer->getImagesDataset();
+            const auto& images = layer->getImagesDataset();
 
             auto subset = points->createSubsetFromSelection(_nameAction.getString(), points);
 
