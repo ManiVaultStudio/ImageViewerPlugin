@@ -25,9 +25,7 @@ ImageSettingsAction::ImageSettingsAction(QObject* parent, const QString& title) 
     _interpolationTypeAction(this, "Interpolate", interpolationTypes.values(), "Bilinear"),
     _useConstantColorAction(this, "Use constant color", false),
     _fixChannelRangesToColorSpaceAction(this, "Set channel ranges to color space", false),
-    _constantColorAction(this, "Constant color", QColor(Qt::white)),
-    _updateSelectionTimer(),
-    _updateScalarDataTimer()
+    _constantColorAction(this, "Constant color", QColor(Qt::white))
 {
     addAction(&_opacityAction);
     addAction(&_subsampleFactorAction);
@@ -75,41 +73,38 @@ ImageSettingsAction::ImageSettingsAction(QObject* parent, const QString& title) 
     connect(&_fixChannelRangesToColorSpaceAction, &ToggleAction::toggled, this, [this](bool toggled) {
 
         // Set color space range
-        if (_fixChannelRangesToColorSpaceAction.isChecked())
-        {
+        if (_fixChannelRangesToColorSpaceAction.isChecked()) {
+
             // only set color space range for RGB, HSL and LAB
             switch (static_cast<ColorSpaceType>(_colorSpaceAction.getCurrentIndex()))
             {
-            case ColorSpaceType::RGB:
-            {
-                _scalarChannel1Action.setColorSpaceRange(true, 0, 255); // red
-                _scalarChannel2Action.setColorSpaceRange(true, 0, 255); // green
-                _scalarChannel3Action.setColorSpaceRange(true, 0, 255); // blue
-                break;
-            }
+	            case ColorSpaceType::RGB: {
+	                _scalarChannel1Action.setColorSpaceRange(true, 0, 255); // red
+	                _scalarChannel2Action.setColorSpaceRange(true, 0, 255); // green
+	                _scalarChannel3Action.setColorSpaceRange(true, 0, 255); // blue
+	                break;
+	            }
 
-            case ColorSpaceType::HSL:
-            {
-                _scalarChannel1Action.setColorSpaceRange(true, 0, 360); // hue
-                _scalarChannel2Action.setColorSpaceRange(true, 0, 1);   // saturation
-                _scalarChannel3Action.setColorSpaceRange(true, 0, 1);   // value
-                break;
-            }
+	            case ColorSpaceType::HSL: {
+	                _scalarChannel1Action.setColorSpaceRange(true, 0, 360); // hue
+	                _scalarChannel2Action.setColorSpaceRange(true, 0, 1);   // saturation
+	                _scalarChannel3Action.setColorSpaceRange(true, 0, 1);   // value
+	                break;
+	            }
 
-            case ColorSpaceType::LAB:
-            {
-                _scalarChannel1Action.setColorSpaceRange(true, 0, 100);     // L
-                _scalarChannel2Action.setColorSpaceRange(true, -128, 127);  // A
-                _scalarChannel3Action.setColorSpaceRange(true, -128, 127);  // B
-                break;
-            }
-            default:
-            {
-                _scalarChannel1Action.setColorSpaceRange(false);
-                _scalarChannel2Action.setColorSpaceRange(false);
-                _scalarChannel3Action.setColorSpaceRange(false);
-                break;
-            }
+	            case ColorSpaceType::LAB: {
+	                _scalarChannel1Action.setColorSpaceRange(true, 0, 100);     // L
+	                _scalarChannel2Action.setColorSpaceRange(true, -128, 127);  // A
+	                _scalarChannel3Action.setColorSpaceRange(true, -128, 127);  // B
+	                break;
+	            }
+
+	            default: {
+	                _scalarChannel1Action.setColorSpaceRange(false);
+	                _scalarChannel2Action.setColorSpaceRange(false);
+	                _scalarChannel3Action.setColorSpaceRange(false);
+	                break;
+	            }
 
             } // switch
         }
