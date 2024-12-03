@@ -76,8 +76,7 @@ ImageSettingsAction::ImageSettingsAction(QObject* parent, const QString& title) 
         if (_fixChannelRangesToColorSpaceAction.isChecked()) {
 
             // only set color space range for RGB, HSL and LAB
-            switch (static_cast<ColorSpaceType>(_colorSpaceAction.getCurrentIndex()))
-            {
+            switch (static_cast<ColorSpaceType>(_colorSpaceAction.getCurrentIndex())) {
 	            case ColorSpaceType::RGB: {
 	                _scalarChannel1Action.setColorSpaceRange(true, 0, 255); // red
 	                _scalarChannel2Action.setColorSpaceRange(true, 0, 255); // green
