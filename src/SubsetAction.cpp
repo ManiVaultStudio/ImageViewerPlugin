@@ -57,7 +57,7 @@ void SubsetAction::initialize(ImageViewerPlugin* imageViewerPlugin)
                 return;
 
             auto points = Dataset<Points>(layer->getSourceDataset());
-            auto images = layer->getImagesDataset();
+            const auto& images = layer->getImagesDataset();
 
             auto subset = points->createSubsetFromSelection(_nameAction.getString(), points);
 
@@ -67,6 +67,8 @@ void SubsetAction::initialize(ImageViewerPlugin* imageViewerPlugin)
             imagesSubset->setNumberOfImages(images->getNumberOfImages());
             imagesSubset->setImageSize(images->getImageSize());
             imagesSubset->setNumberOfComponentsPerPixel(images->getNumberOfComponentsPerPixel());
+
+            events().notifyDatasetDataChanged(imagesSubset);
         }
         catch (std::exception& e)
         {
