@@ -283,7 +283,7 @@ const std::uint32_t ImageSettingsAction::getNumberOfActiveScalarChannels() const
 QImage ImageSettingsAction::getColorMapImage() const
 {
     if (_layer->getSourceDataset()->getDataType() == ClusterType) {
-        auto clusters = Dataset<Clusters>(_layer->getSourceDataset())->getClusters();
+        const auto& clusters = Dataset<Clusters>(_layer->getSourceDataset())->getClusters();
 
         QImage discreteColorMapImage(static_cast<std::int32_t>(clusters.size()), 1, QImage::Format::Format_RGB32);
 
