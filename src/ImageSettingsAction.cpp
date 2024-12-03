@@ -352,6 +352,9 @@ void ImageSettingsAction::colorSpaceChanged()
             _colorMap1DAction.setEnabled(isClusterType ? false : (!_useConstantColorAction.isChecked()));
             _colorMap2DAction.setEnabled(false);
 
+            _fixChannelRangesToColorSpace.setChecked(false);
+            _fixChannelRangesToColorSpace.setEnabled(false);
+
             break;
         }
 
@@ -367,6 +370,9 @@ void ImageSettingsAction::colorSpaceChanged()
 
             _colorMap1DAction.setEnabled(false);
             _colorMap2DAction.setEnabled(!_useConstantColorAction.isChecked());
+
+            _fixChannelRangesToColorSpace.setChecked(false);
+            _fixChannelRangesToColorSpace.setEnabled(false);
 
             break;
         }
@@ -384,6 +390,8 @@ void ImageSettingsAction::colorSpaceChanged()
             _colorMap1DAction.setEnabled(false);
             _colorMap2DAction.setEnabled(false);
 
+            _fixChannelRangesToColorSpace.setEnabled(true);
+
             break;
         }
 
@@ -400,6 +408,8 @@ void ImageSettingsAction::colorSpaceChanged()
             _colorMap1DAction.setEnabled(false);
             _colorMap2DAction.setEnabled(false);
 
+            _fixChannelRangesToColorSpace.setEnabled(true);
+
             break;
         }
 
@@ -415,6 +425,8 @@ void ImageSettingsAction::colorSpaceChanged()
 
             _colorMap1DAction.setEnabled(false);
             _colorMap2DAction.setEnabled(false);
+
+            _fixChannelRangesToColorSpace.setEnabled(true);
 
             break;
         }
