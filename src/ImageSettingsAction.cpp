@@ -24,7 +24,7 @@ ImageSettingsAction::ImageSettingsAction(QObject* parent, const QString& title) 
     _colorMap2DAction(this, "2D Color map", "example_a"),
     _interpolationTypeAction(this, "Interpolate", interpolationTypes.values(), "Bilinear"),
     _useConstantColorAction(this, "Use constant color", false),
-    _fixChannelRangesToColorSpace(this, "Set channel ranges to color space", false),
+    _fixChannelRangesToColorSpaceAction(this, "Set channel ranges to color space", false),
     _constantColorAction(this, "Constant color", QColor(Qt::white)),
     _updateSelectionTimer(),
     _updateScalarDataTimer()
@@ -39,7 +39,7 @@ ImageSettingsAction::ImageSettingsAction(QObject* parent, const QString& title) 
     addAction(&_colorMap2DAction);
     addAction(&_interpolationTypeAction);
     addAction(&_useConstantColorAction);
-    addAction(&_fixChannelRangesToColorSpace);
+    addAction(&_fixChannelRangesToColorSpaceAction);
     addAction(&_constantColorAction);
 
     _subsampleFactorAction.setVisible(false);
@@ -54,7 +54,7 @@ ImageSettingsAction::ImageSettingsAction(QObject* parent, const QString& title) 
     _colorMap2DAction.setToolTip("Image two-dimensional color map");
     _interpolationTypeAction.setToolTip("The type of two-dimensional image interpolation used");
     _useConstantColorAction.setToolTip("Use constant color to shade the image");
-    _fixChannelRangesToColorSpace.setToolTip("In this mode, data ranges are ignored and the channel ranges are set to the current color space range (RGB, HSL or LAB)");
+    _fixChannelRangesToColorSpaceAction.setToolTip("In this mode, data ranges are ignored and the channel ranges are set to the current color space range (RGB, HSL or LAB)");
     _constantColorAction.setToolTip("Constant color");
 
     _opacityAction.setSuffix("%");
@@ -72,10 +72,10 @@ ImageSettingsAction::ImageSettingsAction(QObject* parent, const QString& title) 
 
     connect(&_useConstantColorAction, &ToggleAction::toggled, this, useConstantColorToggled);
 
-    connect(&_fixChannelRangesToColorSpace, &ToggleAction::toggled, this, [this](bool toggled) {
+    connect(&_fixChannelRangesToColorSpaceAction, &ToggleAction::toggled, this, [this](bool toggled) {
 
         // Set color space range
-        if (_fixChannelRangesToColorSpace.isChecked())
+        if (_fixChannelRangesToColorSpaceAction.isChecked())
         {
             // only set color space range for RGB, HSL and LAB
             switch (static_cast<ColorSpaceType>(_colorSpaceAction.getCurrentIndex()))
@@ -352,8 +352,8 @@ void ImageSettingsAction::colorSpaceChanged()
             _colorMap1DAction.setEnabled(isClusterType ? false : (!_useConstantColorAction.isChecked()));
             _colorMap2DAction.setEnabled(false);
 
-            _fixChannelRangesToColorSpace.setChecked(false);
-            _fixChannelRangesToColorSpace.setEnabled(false);
+            _fixChannelRangesToColorSpaceAction.setChecked(false);
+            _fixChannelRangesToColorSpaceAction.setEnabled(false);
 
             break;
         }
@@ -371,8 +371,8 @@ void ImageSettingsAction::colorSpaceChanged()
             _colorMap1DAction.setEnabled(false);
             _colorMap2DAction.setEnabled(!_useConstantColorAction.isChecked());
 
-            _fixChannelRangesToColorSpace.setChecked(false);
-            _fixChannelRangesToColorSpace.setEnabled(false);
+            _fixChannelRangesToColorSpaceAction.setChecked(false);
+            _fixChannelRangesToColorSpaceAction.setEnabled(false);
 
             break;
         }
@@ -390,7 +390,7 @@ void ImageSettingsAction::colorSpaceChanged()
             _colorMap1DAction.setEnabled(false);
             _colorMap2DAction.setEnabled(false);
 
-            _fixChannelRangesToColorSpace.setEnabled(true);
+            _fixChannelRangesToColorSpaceAction.setEnabled(true);
 
             break;
         }
@@ -408,7 +408,7 @@ void ImageSettingsAction::colorSpaceChanged()
             _colorMap1DAction.setEnabled(false);
             _colorMap2DAction.setEnabled(false);
 
-            _fixChannelRangesToColorSpace.setEnabled(true);
+            _fixChannelRangesToColorSpaceAction.setEnabled(true);
 
             break;
         }
@@ -426,7 +426,7 @@ void ImageSettingsAction::colorSpaceChanged()
             _colorMap1DAction.setEnabled(false);
             _colorMap2DAction.setEnabled(false);
 
-            _fixChannelRangesToColorSpace.setEnabled(true);
+            _fixChannelRangesToColorSpaceAction.setEnabled(true);
 
             break;
         }

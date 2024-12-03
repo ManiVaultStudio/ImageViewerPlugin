@@ -98,7 +98,7 @@ public: // Action getters
     ColorMapAction& getColorMap2DAction() { return _colorMap2DAction; }
     OptionAction& getInterpolationTypeAction() { return _interpolationTypeAction; }
     ToggleAction& getUseConstantColorAction() { return _useConstantColorAction; }
-    ToggleAction& getFixChannelRangesToColorSpaceAction() { return _fixChannelRangesToColorSpace; }
+    ToggleAction& getFixChannelRangesToColorSpaceAction() { return _fixChannelRangesToColorSpaceAction; }
     ColorAction& getConstantColorAction() { return _constantColorAction; }
 
 signals:
@@ -113,21 +113,21 @@ signals:
     void channelChanged(ScalarChannelAction& scalarChannelAction);
 
 protected:
-    Layer*                  _layer;                         /** Reference to layer */
-    DecimalAction           _opacityAction;                 /** Opacity action */
-    IntegralAction          _subsampleFactorAction;         /** Subsample factor action */
-    OptionAction            _colorSpaceAction;              /** Color space action */
-    ScalarChannelAction     _scalarChannel1Action;          /** Scalar channel 1 action */
-    ScalarChannelAction     _scalarChannel2Action;          /** Scalar channel 2 action */
-    ScalarChannelAction     _scalarChannel3Action;          /** Scalar channel 3 action */
-    ColorMap1DAction        _colorMap1DAction;              /** One-dimensional color map action */
-    ColorMap2DAction        _colorMap2DAction;              /** Two-dimensional color map action */
-    OptionAction            _interpolationTypeAction;       /** Interpolation type action */
-    ToggleAction            _useConstantColorAction;        /** Constant color action */
-    ToggleAction            _fixChannelRangesToColorSpace;  /** Fixes ranges of channels to color space ranges action */
-    ColorAction             _constantColorAction;           /** Color action */
-    QTimer                  _updateSelectionTimer;          /** Timer to update layer selection when appropriate */
-    QTimer                  _updateScalarDataTimer;         /** Timer to update layer scalar data when appropriate */
+    Layer*                  _layer;                                 /** Reference to layer */
+    DecimalAction           _opacityAction;                         /** Opacity action */
+    IntegralAction          _subsampleFactorAction;                 /** Subsample factor action */
+    OptionAction            _colorSpaceAction;                      /** Color space action */
+    ScalarChannelAction     _scalarChannel1Action;                  /** Scalar channel 1 action */
+    ScalarChannelAction     _scalarChannel2Action;                  /** Scalar channel 2 action */
+    ScalarChannelAction     _scalarChannel3Action;                  /** Scalar channel 3 action */
+    ColorMap1DAction        _colorMap1DAction;                      /** One-dimensional color map action */
+    ColorMap2DAction        _colorMap2DAction;                      /** Two-dimensional color map action */
+    OptionAction            _interpolationTypeAction;               /** Interpolation type action */
+    ToggleAction            _useConstantColorAction;                /** Constant color action */
+    ToggleAction            _fixChannelRangesToColorSpaceAction;    /** Fixes ranges of channels to color space ranges action */
+    ColorAction             _constantColorAction;                   /** Color action */
+    QTimer                  _updateSelectionTimer;                  /** Timer to update layer selection when appropriate */
+    QTimer                  _updateScalarDataTimer;                 /** Timer to update layer scalar data when appropriate */
 
     static const std::int32_t LAZY_UPDATE_INTERVAL = 0;
 };
