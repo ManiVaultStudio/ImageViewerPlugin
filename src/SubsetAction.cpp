@@ -110,7 +110,7 @@ void SubsetAction::disconnectFromPublicAction(bool recursive)
     GroupAction::disconnectFromPublicAction(recursive);
 }
 
-void SubsetAction::fromVariantMap(const QVariantMap& variantMap)
+void SubsetAction::fromVariantMap(const mv::VariantMap& variantMap)
 {
     GroupAction::fromVariantMap(variantMap);
 
@@ -118,7 +118,7 @@ void SubsetAction::fromVariantMap(const QVariantMap& variantMap)
     _createAction.fromParentVariantMap(variantMap);
 }
 
-QVariantMap SubsetAction::toVariantMap() const
+mv::VariantMap SubsetAction::toVariantMap() const
 {
     auto variantMap = GroupAction::toVariantMap();
 

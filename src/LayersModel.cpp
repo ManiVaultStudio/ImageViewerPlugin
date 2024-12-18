@@ -538,7 +538,7 @@ LayersModel::Layers LayersModel::getLayers() const
     return layers;
 }
 
-void LayersModel::fromVariantMap(const QVariantMap& variantMap)
+void LayersModel::fromVariantMap(const mv::VariantMap& variantMap)
 {
     Serializable::fromVariantMap(variantMap);
 
@@ -561,7 +561,7 @@ void LayersModel::fromVariantMap(const QVariantMap& variantMap)
     imageViewerPlugin->getInteractionToolbarAction().getZoomExtentsAction().trigger();
 }
 
-QVariantMap LayersModel::toVariantMap() const
+mv::VariantMap LayersModel::toVariantMap() const
 {
     auto variantMap = Serializable::toVariantMap();
 

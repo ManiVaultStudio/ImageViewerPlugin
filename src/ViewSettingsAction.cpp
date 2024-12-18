@@ -101,7 +101,7 @@ void ViewSettingsAction::disconnectFromPublicAction(bool recursive)
     GroupAction::disconnectFromPublicAction(recursive);
 }
 
-void ViewSettingsAction::fromVariantMap(const QVariantMap& variantMap)
+void ViewSettingsAction::fromVariantMap(const mv::VariantMap& variantMap)
 {
     GroupAction::fromVariantMap(variantMap);
 
@@ -111,7 +111,7 @@ void ViewSettingsAction::fromVariantMap(const QVariantMap& variantMap)
     _smartZoomAction.fromParentVariantMap(variantMap);
 }
 
-QVariantMap ViewSettingsAction::toVariantMap() const
+mv::VariantMap ViewSettingsAction::toVariantMap() const
 {
     auto variantMap = GroupAction::toVariantMap();
 

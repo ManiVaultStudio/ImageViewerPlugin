@@ -223,7 +223,7 @@ void ScalarChannelAction::disconnectFromPublicAction(bool recursive)
     GroupAction::disconnectFromPublicAction(recursive);
 }
 
-void ScalarChannelAction::fromVariantMap(const QVariantMap& variantMap)
+void ScalarChannelAction::fromVariantMap(const mv::VariantMap& variantMap)
 {
     GroupAction::fromVariantMap(variantMap);
 
@@ -231,7 +231,7 @@ void ScalarChannelAction::fromVariantMap(const QVariantMap& variantMap)
     _windowLevelAction.fromParentVariantMap(variantMap);
 }
 
-QVariantMap ScalarChannelAction::toVariantMap() const
+mv::VariantMap ScalarChannelAction::toVariantMap() const
 {
     auto variantMap = GroupAction::toVariantMap();
 
