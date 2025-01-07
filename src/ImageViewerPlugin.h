@@ -80,7 +80,7 @@ public: // Miscellaneous
 
     /** Get reference to the image viewer widget */
     ImageViewerWidget& getImageViewerWidget() {
-        return _imageViewerWidget;
+        return *_imageViewerWidget;
     }
 
 protected:
@@ -117,7 +117,7 @@ public: // Action getters
 private:
     LayersModel                 _layersModel;               /** Layers model */
     QItemSelectionModel         _selectionModel;            /** Layers selection model */
-    ImageViewerWidget           _imageViewerWidget;         /** Image viewer widget */
+    ImageViewerWidget*          _imageViewerWidget;         /** Image viewer widget */
     DropWidget                  _dropWidget;                /** Widget for dropping data */
     SelectionToolbarAction      _selectionToolbarAction;    /** Toolbar action for selection */
     InteractionToolbarAction    _interactionToolbarAction;  /** Toolbar action for interaction */

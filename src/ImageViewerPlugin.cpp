@@ -24,8 +24,8 @@ ImageViewerPlugin::ImageViewerPlugin(mv::plugin::PluginFactory* factory) :
     ViewPlugin(factory),
     _layersModel(this),
     _selectionModel(&_layersModel),
-    _imageViewerWidget(*this),
-    _dropWidget(&_imageViewerWidget),
+    _imageViewerWidget(new ImageViewerWidget(*this)),
+    _dropWidget(_imageViewerWidget),
     _selectionToolbarAction(*this),
     _interactionToolbarAction(this, "Zoom Toolbar"),
     _settingsAction(this, "Settings")
@@ -39,7 +39,7 @@ ImageViewerPlugin::ImageViewerPlugin(mv::plugin::PluginFactory* factory) :
 
     connect(&_layersModel, &QObject::destroyed, this, []() -> void { qDebug() << "Layers model destroyed!"; });
     connect(&_selectionModel, &QObject::destroyed, this, []() -> void { qDebug() << "Layers selection model destroyed!"; });
-    connect(&_imageViewerWidget, &QObject::destroyed, this, []() -> void { qDebug() << "Image viewer destroyed!"; });
+    connect(_imageViewerWidget, &QObject::destroyed, this, []() -> void { qDebug() << "Image viewer destroyed!"; });
     connect(&_dropWidget, &QObject::destroyed, this, []() -> void { qDebug() << "Drop widget destroyed!"; });
     connect(&_selectionToolbarAction, &QObject::destroyed, this, []() -> void { qDebug() << "Selection toolbar action destroyed!"; });
     connect(&_interactionToolbarAction, &QObject::destroyed, this, []() -> void { qDebug() << "Interaction toolbar action destroyed!"; });
@@ -54,7 +54,7 @@ void ImageViewerPlugin::init()
     layout->setSpacing(0);
 
     layout->addWidget(_selectionToolbarAction.createWidget(&getWidget()));
-    layout->addWidget(&_imageViewerWidget, 1);
+    layout->addWidget(_imageViewerWidget, 1);
     layout->addWidget(_interactionToolbarAction.createWidget(&getWidget()));
 
     getWidget().setLayout(layout);
@@ -114,7 +114,7 @@ void ImageViewerPlugin::init()
         return dropRegions;
     });
 
-    connect(&_imageViewerWidget, &ImageViewerWidget::pixelSelectionStarted, this, [this]() {
+    connect(_imageViewerWidget, &ImageViewerWidget::pixelSelectionStarted, this, [this]() {
         const auto selectedRows = _selectionModel.selectedRows();
 
         if (selectedRows.count() != 1)
@@ -130,7 +130,7 @@ void ImageViewerPlugin::init()
         layer->startSelection();
     });
 
-    connect(&_imageViewerWidget, &ImageViewerWidget::mousePositionsChanged, this, [this](const QVector<QPoint>& mousePositions) {
+    connect(_imageViewerWidget, &ImageViewerWidget::mousePositionsChanged, this, [this](const QVector<QPoint>& mousePositions) {
         if (mousePositions.count() == 0)
             return;
 
@@ -159,7 +159,7 @@ void ImageViewerPlugin::init()
             layer->resetSelectionBuffer();
     });
 
-    connect(&_imageViewerWidget, &ImageViewerWidget::pixelSelectionEnded, this, [this]() {
+    connect(_imageViewerWidget, &ImageViewerWidget::pixelSelectionEnded, this, [this]() {
         const auto selectedRows = _selectionModel.selectedRows();
 
         if (selectedRows.count() != 1)
@@ -195,7 +195,7 @@ void ImageViewerPlugin::init()
 
     onLayerSelectionChanged();
 
-    connect(&_imageViewerWidget, &ImageViewerWidget::customContextMenuRequested, this, [this](const QPoint& point) {
+    connect(_imageViewerWidget, &ImageViewerWidget::customContextMenuRequested, this, [this](const QPoint& point) {
         if (_layersModel.rowCount() <= 0)
             return;
 
@@ -336,7 +336,7 @@ void ImageViewerPlugin::addDataset(const Dataset<Images>& dataset)
     layer->initialize(this, dataset);
 
     if (!projects().isOpeningProject() && !projects().isImportingProject())
-        layer->scaleToFit(_imageViewerWidget.getWorldBoundingRectangle(false));
+        layer->scaleToFit(_imageViewerWidget->getWorldBoundingRectangle(false));
 
     _layersModel.addLayer(layer);
 
@@ -381,11 +381,11 @@ void ImageViewerPlugin::immigrateDataset(const Dataset<DatasetImpl>& dataset)
             auto layer = new Layer(&_settingsAction.getEditLayersAction(), dialog->getTargetImagesDataset()->text());
 
             layer->initialize(this, dialog->getTargetImagesDataset());
-            layer->scaleToFit(_imageViewerWidget.getWorldBoundingRectangle(false));
+            layer->scaleToFit(_imageViewerWidget->getWorldBoundingRectangle(false));
 
             _layersModel.addLayer(layer);
 
-            _imageViewerWidget.updateWorldBoundingRectangle();
+            _imageViewerWidget->updateWorldBoundingRectangle();
 
             if (_interactionToolbarAction.getViewSettingsAction().getSmartZoomAction().isChecked() || _layersModel.rowCount() == 1)
                 layer->zoomToExtents();
