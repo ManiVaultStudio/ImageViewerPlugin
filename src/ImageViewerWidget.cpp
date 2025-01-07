@@ -32,11 +32,13 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin& imageViewerPlugin) :
     _openglDebugLogger(std::make_unique<QOpenGLDebugLogger>()),
     _backgroundColor(Qt::darkGray),
     _keys(),
-    _mousePositions(),
     _mouseButtons(),
     _renderer(this),
     _interactionMode(InteractionMode::Selection)
 {
+    connect(&_renderer, &QObject::destroyed, this, []() -> void { qDebug() << "Renderer destroyed!"; });
+    connect(&_pixelSelectionTool, &QObject::destroyed, this, []() -> void { qDebug() << "Pixel selection tool destroyed!"; });
+
     setContextMenuPolicy(Qt::CustomContextMenu);
     setAcceptDrops(true);
     setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));

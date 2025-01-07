@@ -11,7 +11,6 @@
 #include <DatasetsMimeData.h>
 
 #include <QDebug>
-#include <QSplitter>
 #include <QMimeData>
 #include <QMenu>
 
@@ -37,6 +36,14 @@ ImageViewerPlugin::ImageViewerPlugin(mv::plugin::PluginFactory* factory) :
     //getWidget().setFocusPolicy(Qt::ClickFocus);
 
     _interactionToolbarAction.initialize(this);
+
+    connect(&_layersModel, &QObject::destroyed, this, []() -> void { qDebug() << "Layers model destroyed!"; });
+    connect(&_selectionModel, &QObject::destroyed, this, []() -> void { qDebug() << "Layers selection model destroyed!"; });
+    connect(&_imageViewerWidget, &QObject::destroyed, this, []() -> void { qDebug() << "Image viewer destroyed!"; });
+    connect(&_dropWidget, &QObject::destroyed, this, []() -> void { qDebug() << "Drop widget destroyed!"; });
+    connect(&_selectionToolbarAction, &QObject::destroyed, this, []() -> void { qDebug() << "Selection toolbar action destroyed!"; });
+    connect(&_interactionToolbarAction, &QObject::destroyed, this, []() -> void { qDebug() << "Interaction toolbar action destroyed!"; });
+    connect(&_settingsAction, &QObject::destroyed, this, []() -> void { qDebug() << "Settings action destroyed!"; });
 }
 
 void ImageViewerPlugin::init()
