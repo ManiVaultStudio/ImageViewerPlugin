@@ -24,7 +24,7 @@ const QMap<ImageViewerWidget::InteractionMode, QString> ImageViewerWidget::inter
 };
 
 ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin& imageViewerPlugin) :
-    QOpenGLWidget(&imageViewerPlugin.getWidget()),
+    QOpenGLWidget(nullptr),
     QOpenGLFunctions_3_3_Core(),
     _imageViewerPlugin(imageViewerPlugin),
     _openGLInitialized(false),

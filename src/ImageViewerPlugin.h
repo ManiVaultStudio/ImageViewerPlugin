@@ -9,10 +9,8 @@
 #include "SettingsAction.h"
 
 #include <widgets/DropWidget.h>
-#include <actions/TriggerAction.h>
 
 #include <QItemSelectionModel>
-#include <QSplitter>
 
 using mv::plugin::ViewPluginFactory;
 using mv::plugin::ViewPlugin;
@@ -70,7 +68,7 @@ public: // Miscellaneous
 
     /** Get the layers model */
     LayersModel& getLayersModel() {
-        return _layersModel;
+        return *_layersModel;
     }
 
     /** Get the layers selection model */
@@ -115,7 +113,7 @@ public: // Action getters
     SettingsAction& getSettingsAction() { return _settingsAction; }
 
 private:
-    LayersModel                 _layersModel;               /** Layers model */
+    LayersModel*                _layersModel;               /** Layers model */
     QItemSelectionModel         _selectionModel;            /** Layers selection model */
     ImageViewerWidget*          _imageViewerWidget;         /** Image viewer widget */
     DropWidget                  _dropWidget;                /** Widget for dropping data */
