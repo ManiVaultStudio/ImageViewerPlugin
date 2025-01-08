@@ -23,8 +23,8 @@ Q_PLUGIN_METADATA(IID "nl.BioVault.ImageViewerPlugin")
 
 ImageViewerPlugin::ImageViewerPlugin(mv::plugin::PluginFactory* factory) :
     ViewPlugin(factory),
-    _layersModel(this),
-    _selectionModel(&_layersModel),
+    _layersModel(new LayersModel(this)),
+    _selectionModel(_layersModel),
     _imageViewerWidget(*this),
     _dropWidget(&_imageViewerWidget),
     _selectionToolbarAction(*this),
@@ -34,7 +34,6 @@ ImageViewerPlugin::ImageViewerPlugin(mv::plugin::PluginFactory* factory) :
     setObjectName("Images");
 
     getWidget().setContextMenuPolicy(Qt::CustomContextMenu);
-    //getWidget().setFocusPolicy(Qt::ClickFocus);
 
     _interactionToolbarAction.initialize(this);
 }
@@ -113,7 +112,7 @@ void ImageViewerPlugin::init()
         if (selectedRows.count() != 1)
             return;
 
-        auto layer = _layersModel.getLayerFromIndex(selectedRows.first());
+        auto layer = _layersModel->getLayerFromIndex(selectedRows.first());
 
         Q_ASSERT(layer != nullptr);
 
@@ -132,7 +131,7 @@ void ImageViewerPlugin::init()
         if (selectedRows.count() != 1)
             return;
 
-        auto layer = _layersModel.getLayerFromIndex(selectedRows.first());
+        auto layer = _layersModel->getLayerFromIndex(selectedRows.first());
 
         Q_ASSERT(layer != nullptr);
 
@@ -158,7 +157,7 @@ void ImageViewerPlugin::init()
         if (selectedRows.count() != 1)
             return;
 
-        auto layer = _layersModel.getLayerFromIndex(selectedRows.first());
+        auto layer = _layersModel->getLayerFromIndex(selectedRows.first());
 
         Q_ASSERT(layer != nullptr);
 
@@ -170,17 +169,17 @@ void ImageViewerPlugin::init()
     });
 
     const auto layersInsertedRemovedChanged = [this]() {
-        _dropWidget.setShowDropIndicator(_layersModel.rowCount() == 0);
+        _dropWidget.setShowDropIndicator(_layersModel->rowCount() == 0);
 
-        const auto hasVisibleLayers = _layersModel.rowCount() == 0 ? false : !_layersModel.match(_layersModel.index(0, static_cast<int>(LayersModel::Column::Visible)), Qt::EditRole, true, -1).isEmpty();
+        const auto hasVisibleLayers = _layersModel->rowCount() == 0 ? false : !_layersModel->match(_layersModel->index(0, static_cast<int>(LayersModel::Column::Visible)), Qt::EditRole, true, -1).isEmpty();
 
         _selectionToolbarAction.setEnabled(hasVisibleLayers);
         _interactionToolbarAction.setEnabled(hasVisibleLayers);
     };
 
-    connect(&_layersModel, &LayersModel::rowsInserted, this, layersInsertedRemovedChanged);
-    connect(&_layersModel, &LayersModel::rowsRemoved, this, layersInsertedRemovedChanged);
-    connect(&_layersModel, &LayersModel::dataChanged, this, layersInsertedRemovedChanged);
+    connect(_layersModel, &LayersModel::rowsInserted, this, layersInsertedRemovedChanged);
+    connect(_layersModel, &LayersModel::rowsRemoved, this, layersInsertedRemovedChanged);
+    connect(_layersModel, &LayersModel::dataChanged, this, layersInsertedRemovedChanged);
 
     layersInsertedRemovedChanged();
 
@@ -189,7 +188,7 @@ void ImageViewerPlugin::init()
     onLayerSelectionChanged();
 
     connect(&_imageViewerWidget, &ImageViewerWidget::customContextMenuRequested, this, [this](const QPoint& point) {
-        if (_layersModel.rowCount() <= 0)
+        if (_layersModel->rowCount() <= 0)
             return;
 
         _settingsAction.getContextMenu()->exec(getWidget().mapToGlobal(point));
@@ -212,7 +211,7 @@ void ImageViewerPlugin::loadData(const Datasets& datasets)
 
 void ImageViewerPlugin::arrangeLayers(LayersLayout layersLayout)
 {
-    auto layers = _layersModel.getLayers();
+    auto layers = _layersModel->getLayers();
 
     const auto numberOfLayers   = layers.size();
     
@@ -331,7 +330,7 @@ void ImageViewerPlugin::addDataset(const Dataset<Images>& dataset)
     if (!projects().isOpeningProject() && !projects().isImportingProject())
         layer->scaleToFit(_imageViewerWidget.getWorldBoundingRectangle(false));
 
-    _layersModel.addLayer(layer);
+    _layersModel->addLayer(layer);
 
     getImageViewerWidget().update();
 }
@@ -376,11 +375,11 @@ void ImageViewerPlugin::immigrateDataset(const Dataset<DatasetImpl>& dataset)
             layer->initialize(this, dialog->getTargetImagesDataset());
             layer->scaleToFit(_imageViewerWidget.getWorldBoundingRectangle(false));
 
-            _layersModel.addLayer(layer);
+            _layersModel->addLayer(layer);
 
             _imageViewerWidget.updateWorldBoundingRectangle();
 
-            if (_interactionToolbarAction.getViewSettingsAction().getSmartZoomAction().isChecked() || _layersModel.rowCount() == 1)
+            if (_interactionToolbarAction.getViewSettingsAction().getSmartZoomAction().isChecked() || _layersModel->rowCount() == 1)
                 layer->zoomToExtents();
 
             dialog->deleteLater();
@@ -402,7 +401,7 @@ void ImageViewerPlugin::fromVariantMap(const QVariantMap& variantMap)
 {
     ViewPlugin::fromVariantMap(variantMap);
 
-    _layersModel.fromParentVariantMap(variantMap);
+    _layersModel->fromParentVariantMap(variantMap);
     _selectionToolbarAction.fromParentVariantMap(variantMap);
     _interactionToolbarAction.fromParentVariantMap(variantMap);
 }
@@ -411,7 +410,7 @@ QVariantMap ImageViewerPlugin::toVariantMap() const
 {
     auto variantMap = ViewPlugin::toVariantMap();
 
-    _layersModel.insertIntoVariantMap(variantMap);
+    _layersModel->insertIntoVariantMap(variantMap);
     _selectionToolbarAction.insertIntoVariantMap(variantMap);
     _interactionToolbarAction.insertIntoVariantMap(variantMap);
 
