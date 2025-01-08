@@ -79,14 +79,6 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin& imageViewerPlugin) :
         if (isInitialized())
             update();
     });
-
-    connect(context(), &QOpenGLContext::aboutToBeDestroyed, context(), [this]() -> void {
-#ifdef _DEBUG
-        qDebug() << "Destroying image viewer widget context";
-#endif
-
-        _openGLInitialized = false;
-	});
 }
 
 bool ImageViewerWidget::eventFilter(QObject* target, QEvent* event)
@@ -554,7 +546,13 @@ void ImageViewerWidget::initializeGL()
 {
     initializeOpenGLFunctions();
 
-    //connect(context(), &QOpenGLContext::aboutToBeDestroyed, this, &ImageViewerWidget::cleanup);
+    connect(context(), &QOpenGLContext::aboutToBeDestroyed, context(), [this]() -> void {
+#ifdef _DEBUG
+        qDebug() << "Destroying image viewer widget context";
+#endif
+
+        _openGLInitialized = false;
+	});
 
     _openGLInitialized = true;
 
