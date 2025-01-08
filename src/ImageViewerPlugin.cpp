@@ -34,7 +34,6 @@ ImageViewerPlugin::ImageViewerPlugin(mv::plugin::PluginFactory* factory) :
     setObjectName("Images");
 
     getWidget().setContextMenuPolicy(Qt::CustomContextMenu);
-    //getWidget().setFocusPolicy(Qt::ClickFocus);
 
     _interactionToolbarAction.initialize(this);
 }
@@ -46,9 +45,9 @@ void ImageViewerPlugin::init()
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
 
-    //layout->addWidget(_selectionToolbarAction.createWidget(&getWidget()));
+    layout->addWidget(_selectionToolbarAction.createWidget(&getWidget()));
     layout->addWidget(&_imageViewerWidget, 1);
-    //layout->addWidget(_interactionToolbarAction.createWidget(&getWidget()));
+    layout->addWidget(_interactionToolbarAction.createWidget(&getWidget()));
 
     getWidget().setLayout(layout);
 

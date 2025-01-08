@@ -43,6 +43,8 @@ public:
     /** Constructor */
     ImageViewerPlugin(mv::plugin::PluginFactory* factory);
 
+    ~ImageViewerPlugin();
+
 public: // Inherited from ViewPlugin
 
     /** Initializes the plugin */
