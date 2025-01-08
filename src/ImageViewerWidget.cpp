@@ -79,6 +79,14 @@ ImageViewerWidget::ImageViewerWidget(ImageViewerPlugin& imageViewerPlugin) :
         if (isInitialized())
             update();
     });
+
+    connect(context(), &QOpenGLContext::aboutToBeDestroyed, context(), [this]() -> void {
+#ifdef _DEBUG
+        qDebug() << "Destroying image viewer widget context";
+#endif
+
+        _openGLInitialized = false;
+	});
 }
 
 bool ImageViewerWidget::eventFilter(QObject* target, QEvent* event)
@@ -673,15 +681,6 @@ void ImageViewerWidget::paintGL()
         }
         
 #endif
-}
-
-void ImageViewerWidget::cleanup()
-{
-    qDebug() << "Deleting image viewer widget, performing clean up...";
-    
-    _openGLInitialized = false;
-
-    makeCurrent();
 }
 
 Layer* ImageViewerWidget::getLayerBeneathCursor()

@@ -100,9 +100,6 @@ protected: // OpenGL
     /** The actual OpenGL painting takes place here */
     void paintGL() override;
 
-    /** Perform cleanup when viewer widget is destroyed */
-    void cleanup();
-
     /** Get a pointer to the layer that is beneath the cursor */
     Layer* getLayerBeneathCursor();
 
