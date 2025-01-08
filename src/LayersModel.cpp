@@ -403,9 +403,9 @@ QMap<LayersModel::Column, LayersModel::ColumHeaderInfo> LayersModel::columnInfo 
     { LayersModel::Column::Opacity, { "Opacity", "Opacity", "Layer transparency" } }
 });
 
-LayersModel::LayersModel(QObject* parent) :
+LayersModel::LayersModel(ImageViewerPlugin* imageViewerPlugin) :
     Serializable("Layers"),
-    QStandardItemModel(parent)
+    _imageViewerPlugin(imageViewerPlugin)
 {
     setColumnCount(static_cast<int>(Column::Count));
 
@@ -449,7 +449,7 @@ void LayersModel::addLayer(Layer* layer)
             removeLayer(imagesDataset->getId());
         });
 
-        static_cast<ImageViewerPlugin*>(parent())->getImageViewerWidget().updateWorldBoundingRectangle();
+        _imageViewerPlugin->getImageViewerWidget().updateWorldBoundingRectangle();
 
         if (rowCount() == 1)
             layer->zoomToExtents();
@@ -517,7 +517,7 @@ void LayersModel::moveLayer(const QModelIndex& layerModelIndex, const std::int32
         else
             insertRow(std::clamp(layerModelIndex.row() + amount, 0, rowCount()), row);
 
-        static_cast<ImageViewerPlugin*>(parent())->getImageViewerWidget().update();
+        _imageViewerPlugin->getImageViewerWidget().update();
     }
     catch (std::exception& e)
     {
@@ -544,21 +544,19 @@ void LayersModel::fromVariantMap(const QVariantMap& variantMap)
 
     variantMapMustContain(variantMap, "Layers");
 
-    auto imageViewerPlugin = static_cast<ImageViewerPlugin*>(parent());
-
     for (auto layerVariant : variantMap["Layers"].toList()) {
-        auto layer = new Layer(&imageViewerPlugin->getSettingsAction().getEditLayersAction(), layerVariant.toMap()["Title"].toString());
+        auto layer = new Layer(&_imageViewerPlugin->getSettingsAction().getEditLayersAction(), layerVariant.toMap()["Title"].toString());
 
-        layer->initialize(imageViewerPlugin, mv::data().getDataset(layerVariant.toMap()["DatasetId"].toString()));
+        layer->initialize(_imageViewerPlugin, mv::data().getDataset(layerVariant.toMap()["DatasetId"].toString()));
         layer->fromVariantMap(layerVariant.toMap());
 
         if (!projects().isOpeningProject() && !projects().isImportingProject())
-            layer->scaleToFit(imageViewerPlugin->getImageViewerWidget().getWorldBoundingRectangle(false));
+            layer->scaleToFit(_imageViewerPlugin->getImageViewerWidget().getWorldBoundingRectangle(false));
 
         addLayer(layer);
     }
 
-    imageViewerPlugin->getInteractionToolbarAction().getZoomExtentsAction().trigger();
+    _imageViewerPlugin->getInteractionToolbarAction().getZoomExtentsAction().trigger();
 }
 
 QVariantMap LayersModel::toVariantMap() const

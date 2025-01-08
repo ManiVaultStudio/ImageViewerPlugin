@@ -4,6 +4,8 @@
 
 #include "Layer.h"
 
+class ImageViewerPlugin;
+
 /**
  * Layers model class
  *
@@ -278,10 +280,10 @@ public:
     using Layers = QVector<Layer*>;
 
     /**
-     * Constructor
-     * @param parent Pointer to parent object
+     * Construct with pointer to owning image viewer plugin
+     * @param imageViewerPlugin Pointer to owning image viewer plugin
      */
-    explicit LayersModel(QObject* parent);
+    explicit LayersModel(ImageViewerPlugin* imageViewerPlugin);
     
     /** Destructor */
     ~LayersModel();
@@ -351,4 +353,7 @@ public: // Serialization
      * @return Variant map representation of the widget action
      */
     QVariantMap toVariantMap() const override;
+
+private:
+    ImageViewerPlugin*  _imageViewerPlugin;  /** Pointer to owning image viewer plugin */
 };

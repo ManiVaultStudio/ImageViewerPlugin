@@ -546,7 +546,7 @@ void ImageViewerWidget::initializeGL()
 {
     initializeOpenGLFunctions();
 
-    connect(context(), &QOpenGLContext::aboutToBeDestroyed, this, &ImageViewerWidget::cleanup);
+    //connect(context(), &QOpenGLContext::aboutToBeDestroyed, this, &ImageViewerWidget::cleanup);
 
     _openGLInitialized = true;
 
