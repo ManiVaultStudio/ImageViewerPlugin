@@ -417,6 +417,22 @@ QVariantMap ImageViewerPlugin::toVariantMap() const
     return variantMap;
 }
 
+ImageViewerPluginFactory::ImageViewerPluginFactory()
+{
+    getPluginMetadata().setDescription("Image viewer plugin");
+    getPluginMetadata().setSummary("High-performance image viewer for layered analysis of image data in ManiVault Studio.");
+    getPluginMetadata().setCopyrightHolder({ "BioVault (Biomedical Visual Analytics Unit LUMC - TU Delft)" });
+    getPluginMetadata().setAuthors({
+        { "T. Kroes", { "Lead software architect", "Plugin developer", "Maintainer" }, { "LUMC" } },
+        { "A. Vieth", { "Plugin developer", "Maintainer" }, { "LUMC", "TU Delft" } }
+	});
+    getPluginMetadata().setOrganizations({
+        { "LUMC", "Leiden University Medical Center", "https://www.lumc.nl/en/" },
+        { "TU Delft", "Delft university of technology", "https://www.tudelft.nl/" }
+    });
+    getPluginMetadata().setLicenseText("This plugin is distributed under the [LGPL v3.0](https://www.gnu.org/licenses/lgpl-3.0.en.html) license.");
+}
+
 QIcon ImageViewerPluginFactory::getIcon(const QColor& color /*= Qt::black*/) const
 {
     return mv::Application::getIconFont("FontAwesome").getIcon("images", color);

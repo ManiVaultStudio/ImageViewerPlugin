@@ -136,10 +136,7 @@ class ImageViewerPluginFactory : public ViewPluginFactory
 
 public:
     /** Default constructor */
-    ImageViewerPluginFactory() {}
-
-    /** Destructor */
-    ~ImageViewerPluginFactory() override {}
+    ImageViewerPluginFactory();
 
     /**
      * Get plugin icon
