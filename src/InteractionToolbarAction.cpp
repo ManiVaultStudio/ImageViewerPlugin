@@ -24,8 +24,6 @@ InteractionToolbarAction::InteractionToolbarAction(QObject* parent, const QStrin
     _zoomGroupAction(this, "Zoom"),
     _viewSettingsAction(this, "View Settings")
 {
-    auto& fontAwesome = mv::Application::getIconFont("FontAwesome");
-
     _navigationAction.setToolTip("Navigate the view");
     _selectAction.setToolTip("Select pixels");
     _zoomOutAction.setToolTip("Zoom out by 10% (-)");
@@ -34,15 +32,15 @@ InteractionToolbarAction::InteractionToolbarAction(QObject* parent, const QStrin
     _zoomExtentsAction.setToolTip("Zoom to the boundaries of all layers (z)");
     _zoomSelectionAction.setToolTip("Zoom to the boundaries of the selection (d)");
 
-    _navigationAction.setIcon(fontAwesome.getIcon("hand-pointer"));
-    _selectAction.setIcon(fontAwesome.getIcon("mouse-pointer"));
-    _interactionModeGroupAction.setIcon(fontAwesome.getIcon("hand-sparkles"));
+    _navigationAction.setIconByName("hand-pointer");
+    _selectAction.setIconByName("mouse-pointer");
+    _interactionModeGroupAction.setIconByName("hand-sparkles");
 
-    _zoomOutAction.setIcon(fontAwesome.getIcon("search-minus"));
-    _zoomInAction.setIcon(fontAwesome.getIcon("search-plus"));
-    _zoomExtentsAction.setIcon(fontAwesome.getIcon("compress"));
-    _zoomSelectionAction.setIcon(fontAwesome.getIcon("search-location"));
-    _zoomGroupAction.setIcon(fontAwesome.getIcon("search"));
+    _zoomOutAction.setIconByName("search-minus");
+    _zoomInAction.setIconByName("search-plus");
+    _zoomExtentsAction.setIconByName("compress");
+    _zoomSelectionAction.setIconByName("search-location");
+    _zoomGroupAction.setIconByName("search");
     
     _zoomOutAction.setShortcut(QKeySequence("-"));
     _zoomInAction.setShortcut(QKeySequence("+"));
@@ -52,7 +50,7 @@ InteractionToolbarAction::InteractionToolbarAction(QObject* parent, const QStrin
     _selectAction.setEnabled(false);
     _zoomSelectionAction.setEnabled(false);
 
-    _interactionModeAction.setIcon(fontAwesome.getIcon("hand-sparkles"));
+    _interactionModeAction.setIconByName("hand-sparkles");
     _interactionModeAction.setToolTip("Interaction Mode");
 
     _interactionModeGroupAction.setDefaultWidgetFlags(GroupAction::Horizontal);
