@@ -433,11 +433,6 @@ ImageViewerPluginFactory::ImageViewerPluginFactory()
     getPluginMetadata().setLicenseText("This plugin is distributed under the [LGPL v3.0](https://www.gnu.org/licenses/lgpl-3.0.en.html) license.");
 }
 
-QIcon ImageViewerPluginFactory::getIcon(const QColor& color /*= Qt::black*/) const
-{
-    return mv::Application::getIconFont("FontAwesome").getIcon("images", color);
-}
-
 ImageViewerPlugin* ImageViewerPluginFactory::produce()
 {
     return new ImageViewerPlugin(this);
