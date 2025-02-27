@@ -22,8 +22,6 @@ SelectionToolbarAction::SelectionToolbarAction(ImageViewerPlugin& imageViewerPlu
     _selectionAction(this, "Selection"),
     _modifierAction(this, "Modifier", { "Replace", "Add", "Subtract" })
 {
-    auto& fontAwesome = mv::Application::getIconFont("FontAwesome");
-
     _rectangleSelectionAction.setEnabled(false);
     _brushSelectionAction.setEnabled(false);
     _lassoSelectionAction.setEnabled(false);
@@ -39,7 +37,7 @@ SelectionToolbarAction::SelectionToolbarAction(ImageViewerPlugin& imageViewerPlu
     _sampleSelectionAction.setIcon(getPixelSelectionTypeIcon(PixelSelectionType::Sample));
     _roiSelectionAction.setIcon(getPixelSelectionTypeIcon(PixelSelectionType::ROI));
 
-    _selectionAction.setIcon(fontAwesome.getIcon("mouse-pointer"));
+    _selectionAction.setIconByName("mouse-pointer");
     _selectionAction.setToolTip("Selection type");
     _selectionAction.setShowLabels(false);
 
