@@ -419,6 +419,8 @@ QVariantMap ImageViewerPlugin::toVariantMap() const
 
 ImageViewerPluginFactory::ImageViewerPluginFactory()
 {
+    setIconByName("images");
+
     getPluginMetadata().setDescription("Image viewer plugin");
     getPluginMetadata().setSummary("High-performance image viewer for layered analysis of image data in ManiVault Studio.");
     getPluginMetadata().setCopyrightHolder({ "BioVault (Biomedical Visual Analytics Unit LUMC - TU Delft)" });
