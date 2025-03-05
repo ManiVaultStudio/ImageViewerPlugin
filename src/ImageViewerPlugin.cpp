@@ -419,6 +419,8 @@ QVariantMap ImageViewerPlugin::toVariantMap() const
 
 ImageViewerPluginFactory::ImageViewerPluginFactory()
 {
+    setIconByName("images");
+
     getPluginMetadata().setDescription("Image viewer plugin");
     getPluginMetadata().setSummary("High-performance image viewer for layered analysis of image data in ManiVault Studio.");
     getPluginMetadata().setCopyrightHolder({ "BioVault (Biomedical Visual Analytics Unit LUMC - TU Delft)" });
@@ -431,11 +433,6 @@ ImageViewerPluginFactory::ImageViewerPluginFactory()
         { "TU Delft", "Delft university of technology", "https://www.tudelft.nl/" }
     });
     getPluginMetadata().setLicenseText("This plugin is distributed under the [LGPL v3.0](https://www.gnu.org/licenses/lgpl-3.0.en.html) license.");
-}
-
-QIcon ImageViewerPluginFactory::getIcon(const QColor& color /*= Qt::black*/) const
-{
-    return mv::Application::getIconFont("FontAwesome").getIcon("images", color);
 }
 
 ImageViewerPlugin* ImageViewerPluginFactory::produce()
@@ -454,11 +451,9 @@ PluginTriggerActions ImageViewerPluginFactory::getPluginTriggerActions(const mv:
     const auto numberOfDatasets = datasets.count();
 
     if (PluginFactory::areAllDatasetsOfTheSameType(datasets, ImageType)) {
-        auto& fontAwesome = Application::getIconFont("FontAwesome");
-
         if (numberOfDatasets == 1) {
             if (datasets.first()->getDataType() == ImageType) {
-                auto pluginTriggerAction = new PluginTriggerAction(const_cast<ImageViewerPluginFactory*>(this), this, "Image Viewer", "Load dataset in image viewer", fontAwesome.getIcon("images"), [this, getInstance, datasets](PluginTriggerAction& pluginTriggerAction) -> void {
+                auto pluginTriggerAction = new PluginTriggerAction(const_cast<ImageViewerPluginFactory*>(this), this, "Image Viewer", "Load dataset in image viewer", StyledIcon("images"), [this, getInstance, datasets](PluginTriggerAction& pluginTriggerAction) -> void {
                     getInstance()->loadData(datasets);
                 });
 
@@ -467,25 +462,25 @@ PluginTriggerActions ImageViewerPluginFactory::getPluginTriggerActions(const mv:
         }
         
         if (numberOfDatasets >= 2) {
-            auto viewTogetherAction = new PluginTriggerAction(const_cast<ImageViewerPluginFactory*>(this), this, "Images/Stacked", "View datasets in the image viewer arranged on top of each other", fontAwesome.getIcon("layer-group"), [this, getInstance, datasets](PluginTriggerAction& pluginTriggerAction) -> void {
+            auto viewTogetherAction = new PluginTriggerAction(const_cast<ImageViewerPluginFactory*>(this), this, "Images/Stacked", "View datasets in the image viewer arranged on top of each other", StyledIcon("layer-group"), [this, getInstance, datasets](PluginTriggerAction& pluginTriggerAction) -> void {
                 getInstance()->loadData(datasets);
             });
 
-            auto arrangeVerticallyAction = new PluginTriggerAction(const_cast<ImageViewerPluginFactory*>(this), this, "Images/Vertically", "View datasets in the image viewer arranged vertically", fontAwesome.getIcon("long-arrow-alt-down"), [this, getInstance, datasets](PluginTriggerAction& pluginTriggerAction) -> void {
+            auto arrangeVerticallyAction = new PluginTriggerAction(const_cast<ImageViewerPluginFactory*>(this), this, "Images/Vertically", "View datasets in the image viewer arranged vertically", StyledIcon("long-arrow-alt-down"), [this, getInstance, datasets](PluginTriggerAction& pluginTriggerAction) -> void {
                 auto plugin = getInstance();
                 
                 plugin->loadData(datasets);
                 plugin->arrangeLayers(ImageViewerPlugin::LayersLayout::Vertical);
             });
 
-            auto arrangeHorizontallyAction = new PluginTriggerAction(const_cast<ImageViewerPluginFactory*>(this), this, "Images/Horizontally", "View datasets in the image viewer arranged horizontally", fontAwesome.getIcon("long-arrow-alt-right"), [this, getInstance, datasets](PluginTriggerAction& pluginTriggerAction) -> void {
+            auto arrangeHorizontallyAction = new PluginTriggerAction(const_cast<ImageViewerPluginFactory*>(this), this, "Images/Horizontally", "View datasets in the image viewer arranged horizontally", StyledIcon("long-arrow-alt-right"), [this, getInstance, datasets](PluginTriggerAction& pluginTriggerAction) -> void {
                 auto plugin = getInstance();
 
                 plugin->loadData(datasets);
                 plugin->arrangeLayers(ImageViewerPlugin::LayersLayout::Horizontal);
             });
 
-            auto arrangeGridAction = new PluginTriggerAction(const_cast<ImageViewerPluginFactory*>(this), this, "Images/Grid", "View datasets in the image viewer arranged in a grid", fontAwesome.getIcon("th"), [this, getInstance, datasets](PluginTriggerAction& pluginTriggerAction) -> void {
+            auto arrangeGridAction = new PluginTriggerAction(const_cast<ImageViewerPluginFactory*>(this), this, "Images/Grid", "View datasets in the image viewer arranged in a grid", StyledIcon("th"), [this, getInstance, datasets](PluginTriggerAction& pluginTriggerAction) -> void {
                 auto plugin = getInstance();
 
                 plugin->loadData(datasets);

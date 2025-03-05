@@ -14,7 +14,7 @@ SubsetAction::SubsetAction(QObject* parent, const QString& title) :
     _nameAction(this, "Name"),
     _createAction(this, "Create")
 {
-    setIcon(Application::getIconFont("FontAwesome").getIcon("crop"));
+    setIconByName("crop");
     setConfigurationFlag(WidgetAction::ConfigurationFlag::ForceCollapsedInGroup);
     setConnectionPermissionsToForceNone(true);
 

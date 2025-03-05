@@ -43,13 +43,11 @@ EditLayersAction::EditLayersAction(QObject* parent, const QString& title) :
     _moveLayerDownAction.setToolTip("Move the selected layer down");
     _moveLayerToBottomAction.setToolTip("Move the selected layer to the bottom");
 
-    auto& fontAwesome = Application::getIconFont("FontAwesome");
-
-    _removeLayerAction.setIcon(fontAwesome.getIcon("trash-alt"));
-    _moveLayerToTopAction.setIcon(fontAwesome.getIcon("angle-double-up"));
-    _moveLayerUpAction.setIcon(fontAwesome.getIcon("angle-up"));
-    _moveLayerDownAction.setIcon(fontAwesome.getIcon("angle-down"));
-    _moveLayerToBottomAction.setIcon(fontAwesome.getIcon("angle-double-down"));
+    _removeLayerAction.setIconByName("trash-alt");
+    _moveLayerToTopAction.setIconByName("angle-double-up");
+    _moveLayerUpAction.setIconByName("angle-up");
+    _moveLayerDownAction.setIconByName("angle-down");
+    _moveLayerToBottomAction.setIconByName("angle-double-down");
 
     connect(&_settingsAction.getImageViewerPlugin().getSelectionModel(), &QItemSelectionModel::selectionChanged, this, [this](const QItemSelection& selected, const QItemSelection& deselected) {
         auto& layersModel = _settingsAction.getImageViewerPlugin().getLayersModel();
@@ -93,7 +91,7 @@ EditLayersAction::Widget::Widget(QWidget* parent, EditLayersAction* editLayersAc
 {
     auto& imageViewerPlugin = editLayersAction->getSettingsAction().getImageViewerPlugin();
 
-    _hierarchyWidget.setWindowIcon(Application::getIconFont("FontAwesome").getIcon("layer-group"));
+    _hierarchyWidget.setWindowIcon(StyledIcon("layer-group"));
     
     auto& treeView = _hierarchyWidget.getTreeView();
 

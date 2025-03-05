@@ -12,6 +12,7 @@
 #include <stdexcept>
 
 using namespace mv;
+using namespace mv::util;
 
 ExportToImageDialog::ExportToImageDialog(QWidget* parent /*= nullptr*/) :
     QDialog(parent),
@@ -20,7 +21,7 @@ ExportToImageDialog::ExportToImageDialog(QWidget* parent /*= nullptr*/) :
     _groupAction(this, "Group")
 {
     setWindowTitle("Export layer(s) to image");
-    setWindowIcon(Application::getIconFont("FontAwesome").getIcon("camera"));
+    setWindowIcon(StyledIcon("camera"));
     
     _imageScaleFactorAction.setSuffix("%");
 

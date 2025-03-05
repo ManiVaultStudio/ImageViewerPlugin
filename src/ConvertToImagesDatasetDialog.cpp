@@ -29,7 +29,7 @@ ConvertToImagesDatasetDialog::ConvertToImagesDatasetDialog(ImageViewerPlugin& im
     _groupAction(this, "Group")
 {
     setWindowTitle(QString("Load %1 as images").arg(_sourceDataset->getLocation()));
-    setWindowIcon(_sourceDataset->getIcon());
+    setWindowIcon(_sourceDataset->icon());
     
     _groupAction.addAction(&_datasetNameAction);
     _groupAction.addAction(&_imageWidthAction);

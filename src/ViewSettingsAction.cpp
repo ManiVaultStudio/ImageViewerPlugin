@@ -15,7 +15,7 @@ ViewSettingsAction::ViewSettingsAction(QObject* parent, const QString& title) :
     _animationEnabledAction(this, "Animation", false),
     _smartZoomAction(this, "Smart zoom", false)
 {
-    setIcon(Application::getIconFont("FontAwesome").getIcon("cog"));
+    setIconByName("gear");
     setLabelSizingType(LabelSizingType::Auto);
 
     _zoomMarginAction.setToolTip("Zoom margin around the layers extents");

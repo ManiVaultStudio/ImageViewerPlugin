@@ -29,7 +29,7 @@ SelectionAction::SelectionAction(QObject* parent, const QString& title) :
     _pixelSelectionTool(nullptr),
     _showRegionAction(this, "Show selected region", false)
 {
-    setIcon(mv::Application::getIconFont("FontAwesome").getIcon("mouse-pointer"));
+    setIconByName("mouse-pointer");
 
     _showRegionAction.setVisible(false);
 
