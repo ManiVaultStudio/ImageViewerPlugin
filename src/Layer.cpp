@@ -143,8 +143,6 @@ void Layer::initialize(ImageViewerPlugin* imageViewerPlugin, const mv::Dataset<I
     };
 
     connect(&_imageViewerPlugin->getImageViewerWidget().getRenderer(), &LayersRenderer::zoomRectangleChanged, this, [this, updateSelectionRoi]() {
-        updateRoi();
-
         if (!_active)
             return;
 
@@ -160,6 +158,8 @@ void Layer::initialize(ImageViewerPlugin* imageViewerPlugin, const mv::Dataset<I
     connect(&_imageViewerPlugin->getImageViewerWidget(), &ImageViewerWidget::navigationEnded, this, [this, updateSelectionRoi]() {
         if (!_active)
             return;
+
+        updateRoi();
 
         if (_selectionAction.getPixelSelectionAction().getPixelSelectionTool()->getType() != PixelSelectionType::ROI)
             return;
