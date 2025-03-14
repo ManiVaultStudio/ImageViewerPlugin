@@ -5,7 +5,7 @@ option(MV_UNITY_BUILD "Combine target source files into batches for faster compi
 # -----------------------------------------------------------------------------
 # ImageViewer Plugin
 # -----------------------------------------------------------------------------
-set(PROJECT "ImageViewerPlugin")
+set(PROJECT "InteractiveHsneImageViewerPlugin")
 PROJECT(${PROJECT})
 
 # -----------------------------------------------------------------------------

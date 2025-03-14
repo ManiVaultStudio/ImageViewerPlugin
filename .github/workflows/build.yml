@@ -1,4 +1,4 @@
-name: ImageViewerPlugin
+name: InteractiveHSNEImageViewerPlugin
 
 on:
   push:

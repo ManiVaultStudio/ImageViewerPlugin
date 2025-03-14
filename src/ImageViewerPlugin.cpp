@@ -19,7 +19,7 @@ using namespace mv;
 using namespace mv::gui;
 using namespace mv::util;
 
-Q_PLUGIN_METADATA(IID "nl.BioVault.ImageViewerPlugin")
+Q_PLUGIN_METADATA(IID "nl.BioVault.InteractiveHsneImageViewerPlugin")
 
 ImageViewerPlugin::ImageViewerPlugin(mv::plugin::PluginFactory* factory) :
     ViewPlugin(factory),
@@ -453,7 +453,7 @@ PluginTriggerActions ImageViewerPluginFactory::getPluginTriggerActions(const mv:
     if (PluginFactory::areAllDatasetsOfTheSameType(datasets, ImageType)) {
         if (numberOfDatasets == 1) {
             if (datasets.first()->getDataType() == ImageType) {
-                auto pluginTriggerAction = new PluginTriggerAction(const_cast<ImageViewerPluginFactory*>(this), this, "Image Viewer", "Load dataset in image viewer", StyledIcon("images"), [this, getInstance, datasets](PluginTriggerAction& pluginTriggerAction) -> void {
+                auto pluginTriggerAction = new PluginTriggerAction(const_cast<ImageViewerPluginFactory*>(this), this, "Interactive Hsne Image Viewer", "Load dataset in interactive Hsne image viewer", StyledIcon("images"), [this, getInstance, datasets](PluginTriggerAction& pluginTriggerAction) -> void {
                     getInstance()->loadData(datasets);
                 });
 

@@ -1,5 +1,5 @@
 {
-  "name" : "Image Viewer",
+  "name" : "Interactive HSNE Image Viewer",
   "version" : "0.1.0",
   "dependencies": ["Images"]
 }

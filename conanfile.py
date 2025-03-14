@@ -7,7 +7,7 @@ import subprocess
 from rules_support import PluginBranchInfo
 
 class ImageViewerPluginConan(ConanFile):
-    """Class to package ImageViewerPlugin using conan
+    """Class to package InteractiveHSNEImageViewerPlugin using conan
 
     Packages both RELEASE and RELWITHDEBINFO.
     Uses rules_support (github.com/ManiVaultStudio/rulessupport) to derive
@@ -15,7 +15,7 @@ class ImageViewerPluginConan(ConanFile):
     as described in https://github.com/ManiVaultStudio/core/wiki/Branch-naming-rules
     """
 
-    name = "ImageViewerPlugin"
+    name = "InteractiveHSNEImageViewerPlugin"
     description = (
         "A plugin for viewing image data in ManiVaultStudio."
     )
@@ -34,7 +34,7 @@ class ImageViewerPluginConan(ConanFile):
 
     scm = {
         "type": "git",
-        "subfolder": "hdps/ImageViewerPlugin",
+        "subfolder": "hdps/InteractiveHSNEImageViewerPlugin",
         "url": "auto",
         "revision": "auto",
     }
@@ -107,7 +107,7 @@ class ImageViewerPluginConan(ConanFile):
 
     def _configure_cmake(self):
         cmake = CMake(self)
-        cmake.configure(build_script_folder="hdps/ImageViewerPlugin")
+        cmake.configure(build_script_folder="hdps/InteractiveHSNEImageViewerPlugin")
         cmake.verbose = True
         return cmake
 
