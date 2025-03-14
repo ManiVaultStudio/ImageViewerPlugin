@@ -3,7 +3,7 @@
 #include <actions/GroupAction.h>
 #include <actions/IntegralRectangleAction.h>
 #include <actions/DecimalRectangleAction.h>
-#include <actions/VerticalGroupAction.h>
+//#include <actions/VerticalGroupAction.h>
 
 class Layer;
 
@@ -36,9 +36,9 @@ public: // Action getters
 
 protected:
     IntegralRectangleAction _roiLayerAction;        /** Layer region of interest action */
-    VerticalGroupAction     _roiLayerGroupAction;   /** Layer region of interest group action */
+    //VerticalGroupAction     _roiLayerGroupAction;   /** Layer region of interest group action */
     DecimalRectangleAction  _roiViewAction;         /** View region of interest action */
-    VerticalGroupAction     _roiViewGroupAction;    /** View region of interest group action */
+    //VerticalGroupAction     _roiViewGroupAction;    /** View region of interest group action */
 
 };
 
