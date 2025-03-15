@@ -453,6 +453,8 @@ void LayersModel::addLayer(Layer* layer)
 
         if (rowCount() == 1)
             layer->zoomToExtents();
+
+        layer->updateRoi();
     }
     catch (std::exception& e)
     {

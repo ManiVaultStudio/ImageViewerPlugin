@@ -156,6 +156,9 @@ public: // Selection
     /** Get selection rectangle in world coordinates */
     QRectF getWorldSelectionRectangle() const;
 
+    /** Update image ROI */
+    void updateRoi();
+
 public: // View
 
     // Zoom to layer extents
@@ -192,9 +195,6 @@ protected: // Miscellaneous
 
     /** Update the view plugin window title when activated or when the layer name changes */
     void updateWindowTitle();
-
-    /** Update image ROI */
-    void updateRoi();
 
 public: // Serialization
 
