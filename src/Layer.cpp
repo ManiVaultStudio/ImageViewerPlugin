@@ -8,6 +8,7 @@
 #include "LayersRenderer.h"
 
 #include <util/Exception.h>
+#include <util/Math.h>
 #include <PointData/PointData.h>
 #include <ClusterData/ClusterData.h>
 
@@ -17,6 +18,7 @@
 #include <QMenu>
 
 #include <set>
+#include <cstdlib>
 
 using namespace mv::gui;
 
@@ -178,11 +180,17 @@ void Layer::initialize(ImageViewerPlugin* imageViewerPlugin, const mv::Dataset<I
             _imagesDataset->selectNone();
     });
 
-    connect(&_miscellaneousAction.getRoiViewAction(), &DecimalRectangleAction::rectangleChanged, getRenderer(), [this](float left, float right, float bottom, float top) -> void {
+    connect(&_miscellaneousAction.getRoiViewAction(), &DecimalRectangleAction::rectangleChanged, this, [this](float left, float right, float bottom, float top) -> void {
         auto rectangle = QRectF{ left, bottom, right - left, top - bottom};
+        auto currentRectangle = getRenderer()->getZoomRectangle();
 
-        if (rectangle == getRenderer()->getZoomRectangle())
+        if (mv::util::areRectanglesEqual(rectangle, currentRectangle))
             return;
+
+        if (++_signalCounter != 4)
+            return;
+
+        _signalCounter = 0;
 
         const auto animationEnabled = getRenderer()->getAnimationEnabled();
 
