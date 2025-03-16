@@ -220,9 +220,11 @@ void InteractionToolbarAction::initialize(ImageViewerPlugin* imageViewerPlugin)
         }
     });
 
-    connect(&getImageViewerWidget().getRenderer(), &LayersRenderer::zoomRectangleChanged, this, [this, updateZoomPercentage]() {
-        updateZoomPercentage();
-    });
+    // Hotfix: this interferes with setting a zoomed in ROI from a connected rectangle action
+    // the zoom factor is not updated an this call reverts to the old zoom factor, changin the ROI again
+    //connect(&getImageViewerWidget().getRenderer(), &LayersRenderer::zoomRectangleChanged, this, [this, updateZoomPercentage]() {
+    //    updateZoomPercentage();
+    //});
 }
 
 ImageViewerWidget& InteractionToolbarAction::getImageViewerWidget()

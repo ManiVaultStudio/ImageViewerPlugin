@@ -187,10 +187,6 @@ void Layer::initialize(ImageViewerPlugin* imageViewerPlugin, const mv::Dataset<I
         if (mv::util::areRectanglesEqual(rectangle, currentRectangle))
             return;
 
-        if (++_signalCounter != 4)
-            return;
-
-        _signalCounter = 0;
 
         const auto animationEnabled = getRenderer()->getAnimationEnabled();
 

@@ -240,7 +240,6 @@ protected:
     std::vector<std::uint8_t>           _selectionData;                 /** Selection data for selection prop */
     QRect                               _imageSelectionRectangle;       /** Selection boundaries in image coordinates */
     std::vector<std::uint8_t>           _maskData;                      /** Mask data for the image */
-    uint32_t                            _signalCounter = 0;             /** Hot-fix for ManiVault bug: rectangle action fires rectangleChanged 4 times when connected action is changed */
 
     friend class ImageViewerWidget;
     friend class ImageSettingsAction;
