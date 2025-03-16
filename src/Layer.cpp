@@ -1044,6 +1044,7 @@ void Layer::zoomToExtents()
         _imageViewerPlugin->getImageViewerWidget().getRenderer().setZoomRectangle(getWorldBoundingRectangle());
 
         invalidate();
+        updateRoi();
     }
     catch (std::exception& e)
     {
@@ -1063,6 +1064,9 @@ void Layer::zoomToSelection()
 #endif
 
         _imageViewerPlugin->getImageViewerWidget().getRenderer().setZoomRectangle(getWorldSelectionRectangle().marginsAdded(QMarginsF(0.0f, 0.0f, 1.0f, 1.0f)));
+
+        invalidate();
+        updateRoi();
     }
     catch (std::exception& e)
     {
