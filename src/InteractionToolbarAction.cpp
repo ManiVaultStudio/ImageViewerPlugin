@@ -21,6 +21,7 @@ InteractionToolbarAction::InteractionToolbarAction(QObject* parent, const QStrin
     _zoomInAction(this, "Zoom In"),
     _zoomExtentsAction(this, "Zoom All"),
     _zoomSelectionAction(this, "Zoom Around Selection"),
+    _updateSelectionROI(this, "Update Selection ROI"),
     _zoomGroupAction(this, "Zoom"),
     _viewSettingsAction(this, "View Settings")
 {
@@ -31,6 +32,7 @@ InteractionToolbarAction::InteractionToolbarAction(QObject* parent, const QStrin
     _zoomInAction.setToolTip("Zoom in by 10%");
     _zoomExtentsAction.setToolTip("Zoom to the boundaries of all layers (z)");
     _zoomSelectionAction.setToolTip("Zoom to the boundaries of the selection (d)");
+    _updateSelectionROI.setToolTip("Update selection boundaries (u)");
 
     _navigationAction.setIconByName("hand-pointer");
     _selectAction.setIconByName("mouse-pointer");
@@ -40,15 +42,18 @@ InteractionToolbarAction::InteractionToolbarAction(QObject* parent, const QStrin
     _zoomInAction.setIconByName("search-plus");
     _zoomExtentsAction.setIconByName("compress");
     _zoomSelectionAction.setIconByName("search-location");
+    _updateSelectionROI.setIconByName("search-location");
     _zoomGroupAction.setIconByName("search");
     
     _zoomOutAction.setShortcut(QKeySequence("-"));
     _zoomInAction.setShortcut(QKeySequence("+"));
     _zoomExtentsAction.setShortcut(QKeySequence("z"));
     _zoomSelectionAction.setShortcut(QKeySequence("d"));
+    _updateSelectionROI.setShortcut(QKeySequence("u"));
 
     _selectAction.setEnabled(false);
     _zoomSelectionAction.setEnabled(false);
+    _updateSelectionROI.setEnabled(false);
 
     _interactionModeAction.setIconByName("hand-sparkles");
     _interactionModeAction.setToolTip("Interaction Mode");
@@ -70,6 +75,7 @@ InteractionToolbarAction::InteractionToolbarAction(QObject* parent, const QStrin
     _zoomGroupAction.addAction(&_zoomInAction, TriggerAction::Icon);
     _zoomGroupAction.addAction(&_zoomExtentsAction, TriggerAction::Icon);
     _zoomGroupAction.addAction(&_zoomSelectionAction, TriggerAction::Icon);
+    _zoomGroupAction.addAction(&_updateSelectionROI, TriggerAction::Icon);
 
     _viewSettingsAction.setConfigurationFlag(WidgetAction::ConfigurationFlag::ForceCollapsedInGroup);
 
@@ -90,8 +96,8 @@ void InteractionToolbarAction::initialize(ImageViewerPlugin* imageViewerPlugin)
     getImageViewerWidget().addAction(&_zoomOutAction);
     getImageViewerWidget().addAction(&_zoomInAction);
     getImageViewerWidget().addAction(&_zoomExtentsAction);
-    getImageViewerWidget().addAction(&_zoomExtentsAction);
     getImageViewerWidget().addAction(&_zoomSelectionAction);
+    getImageViewerWidget().addAction(&_updateSelectionROI);
 
     _viewSettingsAction.initialize(_imageViewerPlugin);
 
@@ -187,6 +193,23 @@ void InteractionToolbarAction::initialize(ImageViewerPlugin* imageViewerPlugin)
         triggerUpdateZoomPercentageAfterAnimation();
     });
 
+    connect(&_updateSelectionROI, &TriggerAction::triggered, this, [this]() {
+        const auto selectedRows = _imageViewerPlugin->getSelectionModel().selectedRows();
+
+        if (selectedRows.count() != 1)
+            return;
+
+        auto layer = _imageViewerPlugin->getLayersModel().getLayerFromIndex(selectedRows.first());
+
+        Q_ASSERT(layer != nullptr);
+
+        if (layer == nullptr)
+            return;
+
+        layer->updateSelectionROIMiscAction();
+
+    });
+
     connect(&_imageViewerPlugin->getSelectionModel(), &QItemSelectionModel::selectionChanged, this, [this](const QItemSelection& newSelection, const QItemSelection& oldSelection) {
         if (!oldSelection.indexes().isEmpty()) {
             auto layer = _imageViewerPlugin->getLayersModel().getLayerFromIndex(oldSelection.indexes().first());
@@ -209,14 +232,17 @@ void InteractionToolbarAction::initialize(ImageViewerPlugin* imageViewerPlugin)
 
             connect(layer, &Layer::selectionChanged, this, [this](const std::vector<std::uint32_t>& selectedIndices) -> void {
                 _zoomSelectionAction.setEnabled(!selectedIndices.empty());
+                _updateSelectionROI.setEnabled(!selectedIndices.empty());
             });
 
             _selectAction.setEnabled(true);
             _zoomSelectionAction.setEnabled(!layer->getSelectedIndices().empty());
+            _updateSelectionROI.setEnabled(!layer->getSelectedIndices().empty());
         }
         else {
             _selectAction.setEnabled(false);
             _zoomSelectionAction.setEnabled(false);
+            _updateSelectionROI.setEnabled(false);
         }
     });
 

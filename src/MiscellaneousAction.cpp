@@ -4,6 +4,7 @@
 
 MiscellaneousAction::MiscellaneousAction(QObject* parent, const QString& title) :
     GroupAction(parent, title),
+    _roiSelectionAction(this, "Selection"),
     _roiLayerAction(this, "Layer ROI"),
     //_roiLayerGroupAction(this, "Layer ROI"),
     _roiViewAction(this, "View ROI")
@@ -12,9 +13,13 @@ MiscellaneousAction::MiscellaneousAction(QObject* parent, const QString& title) 
 
     _roiLayerAction.setConnectionPermissionsFlag(ConnectionPermissionFlag::All, false, true);
     _roiViewAction.setConnectionPermissionsFlag(ConnectionPermissionFlag::All, false, true);
+    _roiSelectionAction.setConnectionPermissionsFlag(ConnectionPermissionFlag::All, false, true);
+
+    _roiSelectionAction.setRectangle({0, 0, 0, 0});
 
     addAction(&_roiLayerAction);
     addAction(&_roiViewAction);
+    addAction(&_roiSelectionAction);
 
     //_roiLayerGroupAction.setDefaultWidgetFlags(GroupAction::Vertical | GroupAction::NoMargins);
     //_roiLayerGroupAction.setEnabled(true);
@@ -37,4 +42,5 @@ MiscellaneousAction::MiscellaneousAction(QObject* parent, const QString& title) 
 
     _roiLayerAction.setToolTip("Layer region of interest discrete image coordinates (bottom-left:x, bottom-left:y, top-right:x, top-right:y)");
     _roiViewAction.setToolTip("View region of interest in fractional world coordinates (bottom-left:x, bottom-left:y, top-right:x, top-right:y)");
+    _roiSelectionAction.setToolTip("Selection ROI");
 }

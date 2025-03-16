@@ -67,6 +67,7 @@ public: // Action getters
     TriggerAction& getZoomInAction() { return _zoomInAction; }
     TriggerAction& getZoomExtentsAction() { return _zoomExtentsAction; }
     TriggerAction& getZoomSelectionAction() { return _zoomSelectionAction; }
+    TriggerAction& getUpdateSelectionROI() { return _updateSelectionROI; }
     HorizontalGroupAction& getZoomGroupAction() { return _zoomGroupAction; }
     ViewSettingsAction& getViewSettingsAction() { return _viewSettingsAction; }
 
@@ -81,6 +82,7 @@ protected:
     TriggerAction           _zoomInAction;                  /** Zoom in action */
     TriggerAction           _zoomExtentsAction;             /** Zoom extents action */
     TriggerAction           _zoomSelectionAction;           /** Zoom to selection extents action */
+    TriggerAction           _updateSelectionROI;            /** Update selection ROI in Misc action */
     HorizontalGroupAction   _zoomGroupAction;               /** Zoom group action */
     ViewSettingsAction      _viewSettingsAction;            /** View settings action */
 

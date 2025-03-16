@@ -167,6 +167,9 @@ public: // View
     // Zoom to layer selection
     void zoomToSelection();
 
+    // Update selection ROI
+    void updateSelectionROIMiscAction();
+
     /** Get the visible rectangle in world coordinates */
     QRectF getWorldBoundingRectangle() const override;
 

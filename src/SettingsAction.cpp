@@ -85,6 +85,7 @@ QMenu* SettingsAction::getContextMenu(QWidget* parent /*= nullptr*/)
 
     menu->addAction(&_imageViewerPlugin.getInteractionToolbarAction().getZoomExtentsAction());
     menu->addAction(&_imageViewerPlugin.getInteractionToolbarAction().getZoomSelectionAction());
+    menu->addAction(&_imageViewerPlugin.getInteractionToolbarAction().getUpdateSelectionROI());
 
     return menu;
 }

@@ -1077,6 +1077,22 @@ void Layer::zoomToSelection()
     }
 }
 
+void Layer::updateSelectionROIMiscAction()
+{
+    try {
+        QRect imageSelectionRectangle = getImageSelectionRectangle();
+        _miscellaneousAction.getRoiSelectionAction().setRectangle(imageSelectionRectangle.left(), imageSelectionRectangle.right(), imageSelectionRectangle.top(), imageSelectionRectangle.bottom());
+
+    }
+    catch (std::exception& e)
+    {
+        exceptionMessageBox(QString("Unable to zoom to the pixel selection for layer: %1").arg(_generalAction.getNameAction().getString()), e);
+    }
+    catch (...) {
+        exceptionMessageBox(QString("Unable to zoom to the pixel selection for layer: %1").arg(_generalAction.getNameAction().getString()));
+    }
+}
+
 void Layer::fromVariantMap(const QVariantMap& variantMap)
 {
     WidgetAction::fromVariantMap(variantMap);
