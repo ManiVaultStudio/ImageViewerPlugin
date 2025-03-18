@@ -29,7 +29,6 @@ endif(MSVC)
 find_package(OpenGL REQUIRED)
 find_package(Qt6 COMPONENTS Widgets WebEngineWidgets OpenGL OpenGLWidgets REQUIRED)
 find_package(ManiVault COMPONENTS Core PointData ClusterData ImageData CONFIG QUIET)
-find_package(OpenMP)
 
 # -----------------------------------------------------------------------------
 # Source files
