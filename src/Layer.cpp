@@ -197,11 +197,17 @@ void Layer::initialize(ImageViewerPlugin* imageViewerPlugin, const mv::Dataset<I
         getRenderer()->setAnimationEnabled(animationEnabled);
     });
 
-    _imagesDataset->getMaskData(_maskData);
+    auto updateMaskData = [this]() {
+        _imagesDataset->getMaskData(_maskData);
 
-    // Apply masking to props
-    this->getPropByName<ImageProp>("ImageProp")->setMaskData(_maskData);
-    this->getPropByName<SelectionProp>("SelectionProp")->setMaskData(_maskData);
+        // Apply masking to props
+        this->getPropByName<ImageProp>("ImageProp")->setMaskData(_maskData);
+        this->getPropByName<SelectionProp>("SelectionProp")->setMaskData(_maskData);
+        };
+
+    connect(&_imagesDataset, &Dataset<Images>::dataChanged, this, updateMaskData);
+
+    updateMaskData();
 }
 
 Layer::~Layer()
