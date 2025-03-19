@@ -372,7 +372,7 @@ void ImageSettingsAction::colorSpaceChanged()
             _colorMap1DAction.setEnabled(false);
             _colorMap2DAction.setEnabled(!_useConstantColorAction.isChecked());
 
-            _fixChannelRangesToColorSpaceAction.setChecked(false);
+            _fixChannelRangesToColorSpaceAction.setChecked(true);
             _fixChannelRangesToColorSpaceAction.setEnabled(false);
 
             break;
