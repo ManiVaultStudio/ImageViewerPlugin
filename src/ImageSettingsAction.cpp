@@ -94,7 +94,7 @@ ImageSettingsAction::ImageSettingsAction(QObject* parent, const QString& title) 
 	            case ColorSpaceType::HSL: {
 	                _scalarChannel1Action.setColorSpaceRange(true, 0, 360); // hue
 	                _scalarChannel2Action.setColorSpaceRange(true, 0, 1);   // saturation
-	                _scalarChannel3Action.setColorSpaceRange(true, 0, 1);   // value
+	                _scalarChannel3Action.setColorSpaceRange(true, 0, 1);   // lightness
 	                break;
 	            }
 
