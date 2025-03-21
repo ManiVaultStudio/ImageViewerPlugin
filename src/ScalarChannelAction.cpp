@@ -115,9 +115,14 @@ const QPair<float, float>& ScalarChannelAction::getScalarDataRange() const
 
 void ScalarChannelAction::setColorSpaceRange(bool status, float lower, float upper)
 {
-    _useColorSpaceRange = status;
     _colorSpaceRange.first = lower;
     _colorSpaceRange.second = upper;
+    _useColorSpaceRange = status;
+}
+
+void ScalarChannelAction::setColorSpaceRangeMinIsZero(bool status)
+{
+    _colorSpaceRangeMinIs0 = status;
 }
 
 QPair<float, float> ScalarChannelAction::getDisplayRange()
@@ -125,9 +130,12 @@ QPair<float, float> ScalarChannelAction::getDisplayRange()
     QPair<float, float> displayRange;
     QPair<float, float> dataRange = _scalarDataRange;
 
-    if (_useColorSpaceRange)
-    {
+    if (_useColorSpaceRange) {
         dataRange = _colorSpaceRange;
+    }
+
+    if (_colorSpaceRangeMinIs0) {
+        dataRange.first = 0;
     }
 
     const auto range            = dataRange.second - dataRange.first;

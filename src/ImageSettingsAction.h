@@ -99,6 +99,7 @@ public: // Action getters
     OptionAction& getInterpolationTypeAction() { return _interpolationTypeAction; }
     ToggleAction& getUseConstantColorAction() { return _useConstantColorAction; }
     ToggleAction& getFixChannelRangesToColorSpaceAction() { return _fixChannelRangesToColorSpaceAction; }
+    ToggleAction& getRangeMinIsZeroAction() { return _rangeMinIsZeroAction; }
     ColorAction& getConstantColorAction() { return _constantColorAction; }
 
 signals:
@@ -125,6 +126,7 @@ protected:
     OptionAction            _interpolationTypeAction;               /** Interpolation type action */
     ToggleAction            _useConstantColorAction;                /** Constant color action */
     ToggleAction            _fixChannelRangesToColorSpaceAction;    /** Fixes ranges of channels to color space ranges action */
+    ToggleAction            _rangeMinIsZeroAction;                  /** Use 0 as the range minimum instead of the data minimum */
     ColorAction             _constantColorAction;                   /** Color action */
     QTimer                  _updateSelectionTimer;                  /** Timer to update layer selection when appropriate */
     QTimer                  _updateScalarDataTimer;                 /** Timer to update layer scalar data when appropriate */

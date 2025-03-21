@@ -62,6 +62,9 @@ public:
     /** Set fixed displayRange */
     void setColorSpaceRange(bool status, float lower = -1, float upper = -1);
 
+    /** Set fixed displayRange */
+    void setColorSpaceRangeMinIsZero(bool status);
+
 public: // Channel data
 
     /** Get scalar data */
@@ -131,6 +134,7 @@ private:
     QPair<float, float>     _scalarDataRange;       /** Scalar data range */
     QPair<float, float>     _colorSpaceRange;       /** Color Space range */
     bool                    _useColorSpaceRange;    /** _scalarDataRange is ignored and instead a color space dependend range is used */
+    bool                    _colorSpaceRangeMinIs0; /** _colorSpaceRange.first should be 0 */
 
     friend class ImageAction;
 };
