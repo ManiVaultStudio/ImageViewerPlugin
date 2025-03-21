@@ -400,6 +400,9 @@ void ImageSettingsAction::colorSpaceChanged()
             _scalarChannel2Action.setText("Green");
             _scalarChannel3Action.setText("Blue");
 
+            _colorMap1DAction.setEnabled(false);
+            _colorMap2DAction.setEnabled(false);
+
             _fixChannelRangesToColorSpaceAction.setEnabled(true);
 
             break;
