@@ -22,7 +22,7 @@ class Renderable;
  *
  * @author Thomas Kroes
  */
-class LayersRenderer : public QObject, public mv::Renderer
+class LayersRenderer : public mv::Renderer
 {
     Q_OBJECT
 
@@ -48,6 +48,18 @@ public: // Construction
 
     /** Resizes the renderer */
     void resize(QSize renderSize) override {};
+
+    /**
+     * Get the render size
+     * @return Render size
+     */
+    QSize getRenderSize() const override { return {}; };
+
+    /** Begin rendering */
+    void beginRender() override {};
+
+    /** End rendering */
+    void endRender() override {};
 
 public: // Coordinate conversions
 
