@@ -113,6 +113,78 @@ void LayersModel::VisibleItem::setData(const QVariant& value, int role /* = Qt::
     }
 }
 
+LayersModel::FlipHorizontalItem::FlipHorizontalItem(Layer* layer) :
+    Item(layer)
+{
+    setCheckable(true);
+    setCheckState(getLayer()->getGeneralAction().getFlipHorizontalAction().isChecked() ? Qt::Checked : Qt::Unchecked);
+}
+
+QVariant LayersModel::FlipHorizontalItem::data(int role /*= Qt::UserRole + 1*/) const
+{
+    switch (role) {
+        case Qt::EditRole:
+            return getLayer()->getGeneralAction().getFlipHorizontalAction().isChecked();
+
+        case Qt::ToolTipRole:
+            return QString("Layer is flipped horizontally: %1").arg(data(Qt::EditRole).toBool() ? "yes" : "no");
+
+        case Qt::CheckStateRole:
+            return data(Qt::EditRole).toBool() ? Qt::CheckState::Checked : Qt::CheckState::Unchecked;
+
+        default:
+            break;
+    }
+
+    return Item::data(role);
+}
+void LayersModel::FlipHorizontalItem::setData(const QVariant& value, int role /* = Qt::UserRole + 1 */)
+{
+    switch (role) {
+        case Qt::CheckStateRole:
+            getLayer()->getGeneralAction().getFlipHorizontalAction().setChecked(value.toBool());
+            break;
+
+        default:
+            Item::setData(value, role);
+    }
+}
+LayersModel::FlipVerticalItem::FlipVerticalItem(Layer* layer) :
+    Item(layer)
+{
+    setCheckable(true);
+    setCheckState(getLayer()->getGeneralAction().getFlipVerticalAction().isChecked() ? Qt::Checked : Qt::Unchecked);
+}
+QVariant LayersModel::FlipVerticalItem::data(int role /*= Qt::UserRole + 1*/) const
+{
+    switch (role) {
+        case Qt::EditRole:
+            return getLayer()->getGeneralAction().getFlipVerticalAction().isChecked();
+
+        case Qt::ToolTipRole:
+            return QString("Layer is flipped vertically: %1").arg(data(Qt::EditRole).toBool() ? "yes" : "no");
+
+        case Qt::CheckStateRole:
+            return data(Qt::EditRole).toBool() ? Qt::CheckState::Checked : Qt::CheckState::Unchecked;
+
+        default:
+            break;
+    }
+
+    return Item::data(role);
+}
+void LayersModel::FlipVerticalItem::setData(const QVariant& value, int role /* = Qt::UserRole + 1 */)
+{
+    switch (role) {
+        case Qt::CheckStateRole:
+            getLayer()->getGeneralAction().getFlipVerticalAction().setChecked(value.toBool());
+            break;
+
+        default:
+            Item::setData(value, role);
+    }
+}
+
 LayersModel::ColorItem::ColorItem(Layer* layer) :
     Item(layer)
 {
@@ -389,6 +461,8 @@ LayersModel::Row::Row(Layer* layer)
     append(new HeightItem(layer));
     append(new ScaleItem(layer));
     append(new OpacityItem(layer));
+    append(new FlipHorizontalItem(layer));
+    append(new FlipVerticalItem(layer));
 }
 
 QMap<LayersModel::Column, LayersModel::ColumHeaderInfo> LayersModel::columnInfo = QMap<LayersModel::Column, LayersModel::ColumHeaderInfo>({
@@ -400,7 +474,9 @@ QMap<LayersModel::Column, LayersModel::ColumHeaderInfo> LayersModel::columnInfo 
     { LayersModel::Column::ImageWidth, { "Width",  "Width", "Width of the image" } },
     { LayersModel::Column::ImageHeight, { "Height",  "Height", "Height of the image" } },
     { LayersModel::Column::Scale, { "Scale", "Scale", "Scale of the image" } },
-    { LayersModel::Column::Opacity, { "Opacity", "Opacity", "Layer transparency" } }
+    { LayersModel::Column::Opacity, { "Opacity", "Opacity", "Layer transparency" } }, 
+    { LayersModel::Column::FlipHorizontal, { "Horizontal Flip", "Horizontal Flip", "Whether the layer is flipped horizontally or not" } },
+    { LayersModel::Column::FlipVertical, { "Vertical Flip", "Vertical Flip", "Whether the layer is flipped vertically or not" } }
 });
 
 LayersModel::LayersModel(ImageViewerPlugin* imageViewerPlugin) :

@@ -120,6 +120,8 @@ void Layer::initialize(ImageViewerPlugin* imageViewerPlugin, const mv::Dataset<I
 
     connect(&_generalAction.getScaleAction(), &DecimalAction::valueChanged, this, updateModelMatrixAndReRender);
     connect(&_generalAction.getPositionAction(), &PositionAction::changed, this, updateModelMatrixAndReRender);
+    connect(&_generalAction.getFlipHorizontalAction(), &ToggleAction::toggled, this, updateModelMatrixAndReRender);
+    connect(&_generalAction.getFlipVerticalAction(), &ToggleAction::toggled, this, updateModelMatrixAndReRender);
 
     updateChannelScalarData(_imageSettingsAction.getScalarChannel1Action());
     updateChannelScalarData(_imageSettingsAction.getScalarChannel2Action());
@@ -253,7 +255,20 @@ void Layer::updateModelMatrix()
         // Get reference to general action for getting the layer position and scale
         auto& generalAction = _generalAction;
 
-        QMatrix4x4 translateMatrix, scaleMatrix;
+        QMatrix4x4 translateMatrix, scaleMatrix, flipMatrix;
+        // Compute the flip matrix
+        if (generalAction.getFlipHorizontalAction().isChecked() && generalAction.getFlipVerticalAction().isChecked())
+        {
+            flipMatrix.scale(-1.0f, -1.0f, 1.0f);
+        }
+        else if (generalAction.getFlipHorizontalAction().isChecked())
+        {
+            flipMatrix.scale(-1.0f, 1.0f, 1.0f);
+        }
+        else if (generalAction.getFlipVerticalAction().isChecked())
+        {
+            flipMatrix.scale(1.0f, -1.0f, 1.0f);
+        }
 
         // Compute the translation matrix
         translateMatrix.translate(generalAction.getPositionAction().getXAction().getValue(), generalAction.getPositionAction().getYAction().getValue(), 0.0f);
@@ -265,7 +280,7 @@ void Layer::updateModelMatrix()
         scaleMatrix.scale(scaleFactor, scaleFactor, scaleFactor);
 
         // Assign model matrix
-        setModelMatrix(translateMatrix * scaleMatrix);
+        setModelMatrix(translateMatrix * scaleMatrix * flipMatrix);
     }
     catch (std::exception& e)
     {

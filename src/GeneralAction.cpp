@@ -13,7 +13,9 @@ GeneralAction::GeneralAction(QObject* parent, const QString& title) :
     _colorAction(this, "Color"),
     _nameAction(this, "Name"),
     _positionAction(this, "Position"),
-    _scaleAction(this, "Scale", 0.0f, 1000000.0f, 100.0f, 1)
+    _scaleAction(this, "Scale", 0.0f, 1000000.0f, 100.0f, 1), 
+    _flipHorizontalAction(this, "Horizontal flip", false),
+    _flipVerticalAction(this, "Vertical flip", false)
 {
     addAction(&_visibleAction);
     addAction(&_datasetNameAction);
@@ -21,6 +23,8 @@ GeneralAction::GeneralAction(QObject* parent, const QString& title) :
     addAction(&_nameAction);
     addAction(&_positionAction);
     addAction(&_scaleAction);
+    addAction(&_flipHorizontalAction);
+    addAction(&_flipVerticalAction);
 
     _datasetNameAction.setConnectionPermissionsToForceNone();
     _datasetNameAction.setEnabled(false);
@@ -33,6 +37,8 @@ GeneralAction::GeneralAction(QObject* parent, const QString& title) :
     _datasetNameAction.setToolTip("Name of the images dataset");
     _nameAction.setToolTip("Name of the layer");
     _scaleAction.setToolTip("Layer scale in percentages");
+    _flipHorizontalAction.setToolTip("Flip the layer horizontally");
+    _flipVerticalAction.setToolTip("Flip the layer vertically");
 
     _scaleAction.setSuffix("%");
 }
@@ -67,6 +73,8 @@ void GeneralAction::initialize(Layer* layer)
     connect(&_visibleAction, &ToggleAction::toggled, this, updateBounds);
     connect(&_positionAction, &PositionAction::changed, this, updateBounds);
     connect(&_scaleAction, &DecimalAction::valueChanged, this, updateBounds);
+    connect(&_flipHorizontalAction, &ToggleAction::toggled, this, updateBounds);
+    connect(&_flipVerticalAction, &ToggleAction::toggled, this, updateBounds);
     connect(&_colorAction, &ColorAction::colorChanged, this, updateBounds);
     connect(&_colorAction, &ColorAction::colorChanged, this, render);
 
@@ -94,6 +102,8 @@ void GeneralAction::connectToPublicAction(WidgetAction* publicAction, bool recur
         actions().connectPrivateActionToPublicAction(&_nameAction, &publicGeneralAction->getNameAction(), recursive);
         actions().connectPrivateActionToPublicAction(&_positionAction, &publicGeneralAction->getPositionAction(), recursive);
         actions().connectPrivateActionToPublicAction(&_scaleAction, &publicGeneralAction->getScaleAction(), recursive);
+        actions().connectPrivateActionToPublicAction(&_flipHorizontalAction, &publicGeneralAction->getFlipHorizontalAction(), recursive);
+        actions().connectPrivateActionToPublicAction(&_flipVerticalAction, &publicGeneralAction->getFlipVerticalAction(), recursive);
     }
 
     GroupAction::connectToPublicAction(publicAction, recursive);
@@ -110,6 +120,8 @@ void GeneralAction::disconnectFromPublicAction(bool recursive)
         actions().disconnectPrivateActionFromPublicAction(&_nameAction, recursive);
         actions().disconnectPrivateActionFromPublicAction(&_positionAction, recursive);
         actions().disconnectPrivateActionFromPublicAction(&_scaleAction, recursive);
+        actions().disconnectPrivateActionFromPublicAction(&_flipHorizontalAction, recursive);
+        actions().disconnectPrivateActionFromPublicAction(&_flipVerticalAction, recursive);
     }
 
     GroupAction::disconnectFromPublicAction(recursive);
@@ -124,6 +136,8 @@ void GeneralAction::fromVariantMap(const QVariantMap& variantMap)
     _nameAction.fromParentVariantMap(variantMap);
     _positionAction.fromParentVariantMap(variantMap);
     _scaleAction.fromParentVariantMap(variantMap);
+    _flipHorizontalAction.fromParentVariantMap(variantMap);
+    _flipVerticalAction.fromParentVariantMap(variantMap);
 }
 
 QVariantMap GeneralAction::toVariantMap() const
@@ -135,6 +149,8 @@ QVariantMap GeneralAction::toVariantMap() const
     _nameAction.insertIntoVariantMap(variantMap);
     _positionAction.insertIntoVariantMap(variantMap);
     _scaleAction.insertIntoVariantMap(variantMap);
+    _flipHorizontalAction.insertIntoVariantMap(variantMap);
+    _flipVerticalAction.insertIntoVariantMap(variantMap);
 
     return variantMap;
 }
