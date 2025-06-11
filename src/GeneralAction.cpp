@@ -85,6 +85,27 @@ void GeneralAction::initialize(Layer* layer)
     updateDatasetNameAction();
 
     connect(_layer->getImagesDataset().get(), &DatasetImpl::locationChanged, this, updateDatasetNameAction);
+
+    const auto showNotificationFlipX = [this]() -> void {
+        static bool notificationShownFlipX = false;
+
+        if (!notificationShownFlipX) {
+            notificationShownFlipX = true;
+            _layer->getImageViewerPlugin().addNotification("Image is flipped horizontally for display purposes; the underlying data structure is not altered.");
+        }
+    };
+
+    const auto showNotificationFlipY = [this]() -> void {
+        static bool notificationShownFlipY = false;
+
+        if (!notificationShownFlipY) {
+            notificationShownFlipY = true;
+            _layer->getImageViewerPlugin().addNotification("Image is flipped vertically for display purposes; the underlying data structure is not altered.");
+        }
+	};
+
+    connect(&_flipHorizontalAction, &ToggleAction::toggled, this, showNotificationFlipX);
+    connect(&_flipVerticalAction, &ToggleAction::toggled, this, showNotificationFlipY);
 }
 
 void GeneralAction::connectToPublicAction(WidgetAction* publicAction, bool recursive)
