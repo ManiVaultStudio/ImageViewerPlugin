@@ -75,6 +75,8 @@ public: /** Action getters */
     StringAction& getNameAction() { return _nameAction; }
     PositionAction& getPositionAction() { return _positionAction; }
     DecimalAction& getScaleAction() { return _scaleAction; }
+    ToggleAction& getFlipHorizontalAction() { return _flipHorizontalAction; }
+    ToggleAction& getFlipVerticalAction() { return _flipVerticalAction; }
 
 protected:
     Layer*          _layer;                 /** Pointer to owning layer */
@@ -84,6 +86,8 @@ protected:
     StringAction    _nameAction;            /** Name action */
     PositionAction  _positionAction;        /** Position action */
     DecimalAction   _scaleAction;           /** Scale action */
+    ToggleAction    _flipHorizontalAction; /** Flip horizontal action */
+    ToggleAction    _flipVerticalAction;   /** Flip vertical action */
 };
 
 Q_DECLARE_METATYPE(GeneralAction)
