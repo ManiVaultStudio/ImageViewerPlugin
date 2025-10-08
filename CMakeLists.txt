@@ -6,7 +6,10 @@ option(MV_UNITY_BUILD "Combine target source files into batches for faster compi
 # ImageViewer Plugin
 # -----------------------------------------------------------------------------
 set(PROJECT "ImageViewerPlugin")
-PROJECT(${PROJECT})
+PROJECT(${PROJECT}
+        DESCRIPTION "An image viewer plugin for ManiVault"
+        LANGUAGES CXX
+)
 
 # -----------------------------------------------------------------------------
 # CMake Options
