@@ -128,8 +128,8 @@ set(SHADERS
     res/shaders/SelectionToolOffScreenVertex.glsl
 )
 
-set(JSON
-    src/ImageViewerPlugin.json
+set(PLUGININFO
+    PluginInfo.json
 )
 
 set(QRC
@@ -137,7 +137,7 @@ set(QRC
 )
 
 set(SOURCES ${PLUGIN} ${MODEL} ${RENDERING} ${WIDGETS} ${DIALOGS} ${ACTIONS} ${LAYER_ACTIONS} ${TOOLBAR_ACTIONS})
-set(AUX ${JSON} ${QRC})
+set(AUX ${PLUGININFO} ${QRC})
 
 source_group(Plugin FILES ${PLUGIN})
 source_group(Model FILES ${MODEL})
@@ -205,10 +205,7 @@ add_custom_command(TARGET ${PROJECT} POST_BUILD
     --verbose
 )
 
-set_target_properties(${PROJECT}
-    PROPERTIES
-    FOLDER ViewPlugins
-)
+mv_handle_plugin_config(${PROJECT})
 
 # -----------------------------------------------------------------------------
 # Miscellaneous
