@@ -6,7 +6,10 @@ option(MV_UNITY_BUILD "Combine target source files into batches for faster compi
 # ImageViewer Plugin
 # -----------------------------------------------------------------------------
 set(PROJECT "ImageViewerPlugin")
-PROJECT(${PROJECT})
+PROJECT(${PROJECT}
+        DESCRIPTION "An image viewer plugin for ManiVault"
+        LANGUAGES CXX
+)
 
 # -----------------------------------------------------------------------------
 # CMake Options
@@ -16,12 +19,12 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-if(MSVC)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /DWIN32 /EHsc /MP /permissive- /Zc:__cplusplus")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MDd")
     set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /MD")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MD")
-endif(MSVC)
+endif()
 
 # -----------------------------------------------------------------------------
 # Dependencies
@@ -36,10 +39,6 @@ find_package(ManiVault COMPONENTS Core PointData ClusterData ImageData CONFIG QU
 set(PLUGIN
     src/ImageViewerPlugin.h
     src/ImageViewerPlugin.cpp
-)
-
-set(PLUGIN_MOC_HEADERS
-    src/ImageViewerPlugin.h
 )
 
 set(MODEL
@@ -128,8 +127,8 @@ set(SHADERS
     res/shaders/SelectionToolOffScreenVertex.glsl
 )
 
-set(JSON
-    src/ImageViewerPlugin.json
+set(PLUGININFO
+    PluginInfo.json
 )
 
 set(QRC
@@ -137,7 +136,7 @@ set(QRC
 )
 
 set(SOURCES ${PLUGIN} ${MODEL} ${RENDERING} ${WIDGETS} ${DIALOGS} ${ACTIONS} ${LAYER_ACTIONS} ${TOOLBAR_ACTIONS})
-set(AUX ${JSON} ${QRC})
+set(AUX ${PLUGININFO} ${QRC})
 
 source_group(Plugin FILES ${PLUGIN})
 source_group(Model FILES ${MODEL})
@@ -151,19 +150,16 @@ source_group(Shaders FILES ${SHADERS})
 source_group(Aux FILES ${AUX})
 source_group(Resources FILES ${QRC})
 
-QT6_WRAP_UI(UI_HEADERS ${UIS})
 QT6_ADD_RESOURCES(RESOURCE_FILES ${QRC})
 
 # -----------------------------------------------------------------------------
 # CMake Target
 # -----------------------------------------------------------------------------
-add_library(${PROJECT} SHARED ${SOURCES} ${UIS} ${SHADERS} ${AUX} ${RESOURCE_FILES})
+add_library(${PROJECT} SHARED ${SOURCES} ${SHADERS} ${AUX} ${RESOURCE_FILES})
 
 # -----------------------------------------------------------------------------
 # Target include directories
 # -----------------------------------------------------------------------------
-# Note: src is included for ClustersLayerWidget.h
-target_include_directories(${PROJECT} PRIVATE src)
 target_include_directories(${PROJECT} PRIVATE "${ManiVault_INCLUDE_DIR}")
 
 # -----------------------------------------------------------------------------
@@ -205,16 +201,13 @@ add_custom_command(TARGET ${PROJECT} POST_BUILD
     --verbose
 )
 
-set_target_properties(${PROJECT}
-    PROPERTIES
-    FOLDER ViewPlugins
-)
+mv_handle_plugin_config(${PROJECT})
 
 # -----------------------------------------------------------------------------
 # Miscellaneous
 # -----------------------------------------------------------------------------
 # Automatically set the debug environment (command + working directory) for MSVC
-if(MSVC)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     set_property(TARGET ${PROJECT} PROPERTY VS_DEBUGGER_WORKING_DIRECTORY $<IF:$<CONFIG:DEBUG>,${ManiVault_INSTALL_DIR}/Debug,$<IF:$<CONFIG:RELWITHDEBINFO>,${ManiVault_INSTALL_DIR}/RelWithDebInfo,${ManiVault_INSTALL_DIR}/Release>>)
     set_property(TARGET ${PROJECT} PROPERTY VS_DEBUGGER_COMMAND $<IF:$<CONFIG:DEBUG>,"${ManiVault_INSTALL_DIR}/Debug/ManiVault Studio.exe",$<IF:$<CONFIG:RELWITHDEBINFO>,"${ManiVault_INSTALL_DIR}/RelWithDebInfo/ManiVault Studio.exe","${ManiVault_INSTALL_DIR}/Release/ManiVault Studio.exe">>)
 endif()
