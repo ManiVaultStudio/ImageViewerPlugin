@@ -165,8 +165,6 @@ add_library(${PROJECT} SHARED ${SOURCES} ${UIS} ${SHADERS} ${AUX} ${RESOURCE_FIL
 # -----------------------------------------------------------------------------
 # Target include directories
 # -----------------------------------------------------------------------------
-# Note: src is included for ClustersLayerWidget.h
-target_include_directories(${PROJECT} PRIVATE src)
 target_include_directories(${PROJECT} PRIVATE "${ManiVault_INCLUDE_DIR}")
 
 # -----------------------------------------------------------------------------
