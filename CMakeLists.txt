@@ -41,10 +41,6 @@ set(PLUGIN
     src/ImageViewerPlugin.cpp
 )
 
-set(PLUGIN_MOC_HEADERS
-    src/ImageViewerPlugin.h
-)
-
 set(MODEL
     src/Layer.h
     src/Layer.cpp
@@ -154,13 +150,12 @@ source_group(Shaders FILES ${SHADERS})
 source_group(Aux FILES ${AUX})
 source_group(Resources FILES ${QRC})
 
-QT6_WRAP_UI(UI_HEADERS ${UIS})
 QT6_ADD_RESOURCES(RESOURCE_FILES ${QRC})
 
 # -----------------------------------------------------------------------------
 # CMake Target
 # -----------------------------------------------------------------------------
-add_library(${PROJECT} SHARED ${SOURCES} ${UIS} ${SHADERS} ${AUX} ${RESOURCE_FILES})
+add_library(${PROJECT} SHARED ${SOURCES} ${SHADERS} ${AUX} ${RESOURCE_FILES})
 
 # -----------------------------------------------------------------------------
 # Target include directories
