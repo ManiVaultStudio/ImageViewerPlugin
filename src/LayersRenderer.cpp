@@ -16,7 +16,6 @@
 #include <stdexcept>
 
 LayersRenderer::LayersRenderer(QOpenGLWidget* parent) :
-    QObject(parent),
     mv::Renderer(),
     _zoomSensitivity(0.1f),
     _zoomMargin(50.0f),
