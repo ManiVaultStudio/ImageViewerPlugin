@@ -45,7 +45,8 @@ LayersRenderer::LayersRenderer(QOpenGLWidget* parent) :
 
     // Re-render when the zoom rectangle changes
     connect(this, &LayersRenderer::zoomRectangleChanged, this, [this]() {
-        getParentWidget()->update();
+        if (const auto parentWidget = getParentWidget())
+            parentWidget->update();
     });
 
     // Send _parallelAnimationGroup::finished outwards, used in e.g. when view ROI is set internally to send ROI after animation is finished
