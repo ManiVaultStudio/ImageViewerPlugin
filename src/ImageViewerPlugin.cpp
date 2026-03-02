@@ -421,7 +421,7 @@ ImageViewerPluginFactory::ImageViewerPluginFactory()
 {
     setIconByName("images");
 
-    getPluginMetadata().setDescription("Image viewer plugin");
+    getPluginMetadata().setDescription("Interactive HSNE Image Viewer plugin");
     getPluginMetadata().setSummary("High-performance image viewer for layered analysis of image data in ManiVault Studio.");
     getPluginMetadata().setCopyrightHolder({ "BioVault (Biomedical Visual Analytics Unit LUMC - TU Delft)" });
     getPluginMetadata().setAuthors({
