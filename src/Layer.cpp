@@ -18,6 +18,7 @@
 
 #include <set>
 
+using namespace mv;
 using namespace mv::gui;
 
 Layer::Layer(QObject* parent, const QString& title) :
