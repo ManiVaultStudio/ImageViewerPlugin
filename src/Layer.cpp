@@ -20,6 +20,7 @@
 #include <set>
 #include <cstdlib>
 
+using namespace mv;
 using namespace mv::gui;
 
 Layer::Layer(QObject* parent, const QString& title) :
