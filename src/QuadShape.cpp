@@ -3,6 +3,7 @@
 #include "LayersRenderer.h"
 
 #include <QDebug>
+#include <QOpenGLFunctions>
 
 std::uint32_t QuadShape::_vertexAttribute = 0;
 std::uint32_t QuadShape::_textureAttribute = 1;
@@ -46,16 +47,11 @@ void QuadShape::render()
     if (!canRender())
         return;
 
-    auto& renderer = _prop.getRenderer();
-
-    renderer.bindOpenGLContext();
+    _vao.bind();
     {
-        _vao.bind();
-        {
-            glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-        }
-        _vao.release();
+        _prop.getRenderer().getOpenGLContext()->functions()->glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
     }
+    _vao.release();
 }
 
 QRectF QuadShape::getRectangle() const
