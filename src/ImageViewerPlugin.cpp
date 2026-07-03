@@ -275,8 +275,8 @@ void ImageViewerPlugin::arrangeLayers(LayersLayout layersLayout)
             columnWidths.resize(numberOfColumns, 0.0f);
             rowHeights.resize(numberOfRows, 0.0f);
 
-            for (int columnIndex = 0; columnIndex < numberOfColumns; ++columnIndex) {
-                for (int rowIndex = 0; rowIndex < numberOfRows; ++rowIndex) {
+            for (std::uint32_t columnIndex = 0; columnIndex < numberOfColumns; ++columnIndex) {
+                for (std::uint32_t rowIndex = 0; rowIndex < numberOfRows; ++rowIndex) {
                     auto layer = layers[rowIndex * numberOfColumns + columnIndex];
                     
                     const auto layerWidth = layer->getWorldBoundingRectangle().width();
@@ -286,8 +286,8 @@ void ImageViewerPlugin::arrangeLayers(LayersLayout layersLayout)
                 }
             }
 
-            for (int rowIndex = 0; rowIndex < numberOfRows; ++rowIndex) {
-                for (int columnIndex = 0; columnIndex < numberOfColumns; ++columnIndex) {
+            for (std::uint32_t rowIndex = 0; rowIndex < numberOfRows; ++rowIndex) {
+                for (std::uint32_t columnIndex = 0; columnIndex < numberOfColumns; ++columnIndex) {
                     auto layer = layers[rowIndex * numberOfColumns + columnIndex];
 
                     const auto layerHeight = layer->getWorldBoundingRectangle().height();
