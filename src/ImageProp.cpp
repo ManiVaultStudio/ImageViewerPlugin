@@ -185,8 +185,8 @@ QRectF ImageProp::getWorldBoundingRectangle() const
     const auto matrix = _renderable.getModelMatrix() * getModelMatrix();
 
     // Compute rectangle extents in world coordinates
-    const auto worldTopLeft     = matrix * boundingRectangle.topLeft();
-    const auto worldBottomRight = matrix * boundingRectangle.bottomRight();
+    const auto worldTopLeft     = matrix.map(boundingRectangle.topLeft());
+    const auto worldBottomRight = matrix.map(boundingRectangle.bottomRight());
 
     const auto rectangleFromPoints = [](const QPointF& first, const QPointF& second) -> QRectF {
         QRectF rectangle;
