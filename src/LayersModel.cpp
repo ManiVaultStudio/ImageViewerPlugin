@@ -6,6 +6,7 @@
 #include <DataHierarchyItem.h>
 #include <util/Exception.h>
 #include <event/Event.h>
+#include <util/Serialization.h>
 #include <PointData/PointData.h>
 
 #include <QMessageBox>

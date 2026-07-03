@@ -8,6 +8,7 @@
 #include "LayersRenderer.h"
 
 #include <util/Exception.h>
+#include <util/Serialization.h>
 #include <PointData/PointData.h>
 #include <ClusterData/ClusterData.h>
 
