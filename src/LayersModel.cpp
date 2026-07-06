@@ -1,11 +1,13 @@
 #include "LayersModel.h"
 #include "ImageViewerPlugin.h"
 
-#include <Application.h>
 #include <CoreInterface.h>
 #include <DataHierarchyItem.h>
-#include <util/Exception.h>
+
 #include <event/Event.h>
+#include <util/Exception.h>
+#include <util/Serialization.h>
+
 #include <PointData/PointData.h>
 
 #include <QMessageBox>
