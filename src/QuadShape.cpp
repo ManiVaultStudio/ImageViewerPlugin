@@ -28,7 +28,7 @@ void QuadShape::initialize()
             _vbo.bind();
             {
                 _vbo.setUsagePattern(QOpenGLBuffer::DynamicDraw);
-                _vbo.allocate(_vertexData.constData(), _vertexData.count() * sizeof(GLfloat));
+                _vbo.allocate(_vertexData.constData(), static_cast<int>(_vertexData.count() * sizeof(GLfloat)));
             }
             _vbo.release();
         }
@@ -107,7 +107,7 @@ void QuadShape::createQuad()
     renderer.bindOpenGLContext();
     {
         _vbo.bind();
-        _vbo.allocate(_vertexData.constData(), _vertexData.count() * sizeof(GLfloat));
+        _vbo.allocate(_vertexData.constData(), static_cast<int>(_vertexData.count() * sizeof(GLfloat)));
         _vbo.release();
     }
 }

@@ -299,8 +299,8 @@ void ImageViewerPlugin::arrangeLayers(LayersLayout layersLayout)
 
             QPoint offset;
 
-            for (int rowIndex = 0; rowIndex < numberOfRows; ++rowIndex) {
-                for (int columnIndex = 0; columnIndex < numberOfColumns; ++columnIndex) {
+            for (std::uint32_t rowIndex = 0; rowIndex < numberOfRows; ++rowIndex) {
+                for (std::uint32_t columnIndex = 0; columnIndex < numberOfColumns; ++columnIndex) {
                     auto layer = layers[rowIndex * numberOfColumns + columnIndex];
 
                     layer->getGeneralAction().getPositionAction().getXAction().setValue(offset.x());
