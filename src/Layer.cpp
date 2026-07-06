@@ -8,6 +8,7 @@
 #include "LayersRenderer.h"
 
 #include <util/Exception.h>
+#include <util/Serialization.h>
 #include <PointData/PointData.h>
 #include <ClusterData/ClusterData.h>
 
@@ -337,8 +338,8 @@ QRectF Layer::getWorldBoundingRectangle() const
     // Compute composite matrix and rectangle extents in world coordinates
     const auto matrix           = getModelMatrix() * getPropByName<ImageProp>("ImageProp")->getModelMatrix();
     const auto visibleRectangle = QRectF(_imagesDataset->getVisibleRectangle());
-    const auto worldTopLeft     = matrix * visibleRectangle.topLeft();
-    const auto worldBottomRight = matrix * visibleRectangle.bottomRight();
+    const auto worldTopLeft     = matrix.map(visibleRectangle.topLeft());
+    const auto worldBottomRight = matrix.map(visibleRectangle.bottomRight());
 
     //qDebug() << _imagesDataset->getGuiName() << visibleRectangle;
 
@@ -1031,7 +1032,8 @@ QRectF Layer::getWorldSelectionRectangle() const
     const auto matrix = getModelMatrix() * layerImageProp->getModelMatrix();
 
     // Compute rectangle extents in world coordinates
-    return QRectF(matrix * QPointF(_imageSelectionRectangle.topLeft()), matrix * QPointF(_imageSelectionRectangle.bottomRight()));
+    return { matrix.map(QPointF(_imageSelectionRectangle.topLeft())),
+            matrix.map(QPointF(_imageSelectionRectangle.bottomRight())) };
 }
 
 void Layer::zoomToExtents()
