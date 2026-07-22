@@ -21,7 +21,7 @@ ImageSettingsAction::ImageSettingsAction(QObject* parent, const QString& title) 
     _scalarChannel2Action(this, ScalarChannelAction::channelIndexes.value(ScalarChannelAction::Channel2)),
     _scalarChannel3Action(this, ScalarChannelAction::channelIndexes.value(ScalarChannelAction::Channel3)),
     _colorMap1DAction(this, "1D Color map", "Black to white"),
-    _colorMap2DAction(this, "2D Color map", "example_a"),
+    _colorMap2DAction(this, "2D Color map"),
     _interpolationTypeAction(this, "Interpolate", interpolationTypes.values(), "Bilinear"),
     _useConstantColorAction(this, "Use constant color", false),
     _fixChannelRangesToColorSpaceAction(this, "Set channel ranges to color space", false),
