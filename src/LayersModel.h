@@ -28,6 +28,8 @@ public:
         ImageHeight,    /** Height of the image(s) */
         Scale,          /** Layer scale */
         Opacity,        /** Layer opacity */
+        FlipHorizontal, /** Flip layer horizontally */
+        FlipVertical,   /** Flip layer vertically */
 
         Count
     };
@@ -104,6 +106,43 @@ protected:
          * @param layer Pointer to layer to display item for
          */
         VisibleItem(Layer* layer);
+
+        /**
+         * Get model data for \p role
+         * @return Data for \p role in variant form
+         */
+        QVariant data(int role = Qt::UserRole + 1) const override;
+
+        /** Set model data to \p value for \p role */
+        void setData(const QVariant& value, int role /* = Qt::UserRole + 1 */) override;
+    };
+
+    class FlipHorizontalItem final : public Item {
+    public:
+
+        /**
+         * Construct with \p layer
+         * @param layer Pointer to layer to display item for
+         */
+        FlipHorizontalItem(Layer* layer);
+
+        /**
+         * Get model data for \p role
+         * @return Data for \p role in variant form
+         */
+        QVariant data(int role = Qt::UserRole + 1) const override;
+
+        /** Set model data to \p value for \p role */
+        void setData(const QVariant& value, int role /* = Qt::UserRole + 1 */) override;
+    };
+    class FlipVerticalItem final : public Item {
+    public:
+
+        /**
+         * Construct with \p layer
+         * @param layer Pointer to layer to display item for
+         */
+        FlipVerticalItem(Layer* layer);
 
         /**
          * Get model data for \p role
