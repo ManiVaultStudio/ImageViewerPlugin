@@ -19,7 +19,7 @@ using namespace mv;
 using namespace mv::gui;
 using namespace mv::util;
 
-Q_PLUGIN_METADATA(IID "nl.BioVault.ImageViewerPlugin")
+Q_PLUGIN_METADATA(IID "studio.manivault.ImageViewerPlugin")
 
 ImageViewerPlugin::ImageViewerPlugin(mv::plugin::PluginFactory* factory) :
     ViewPlugin(factory),
