@@ -11,7 +11,6 @@
 #include <DatasetsMimeData.h>
 
 #include <QDebug>
-#include <QSplitter>
 #include <QMimeData>
 #include <QMenu>
 

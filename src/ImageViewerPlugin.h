@@ -9,23 +9,16 @@
 #include "SettingsAction.h"
 
 #include <widgets/DropWidget.h>
-#include <actions/TriggerAction.h>
 
 #include <QItemSelectionModel>
-#include <QSplitter>
-
-using mv::plugin::ViewPluginFactory;
-using mv::plugin::ViewPlugin;
-
-using namespace mv::gui;
 
 /**
  * Image viewer plugin class
- * This HDPS view plugin class provides functionality to view/interact with high-dimensional image data
+ * This ManiVault view plugin class provides functionality to view/interact with high-dimensional image data
  *
  * @author Thomas Kroes
  */
-class ImageViewerPlugin : public ViewPlugin
+class ImageViewerPlugin : public mv::plugin::ViewPlugin
 {
     Q_OBJECT
 
@@ -128,7 +121,7 @@ private:
  * Image viewer plugin factory class
  * A factory for creating image viewer plugin instances
  */
-class ImageViewerPluginFactory : public ViewPluginFactory
+class ImageViewerPluginFactory : public mv::plugin::ViewPluginFactory
 {
     Q_INTERFACES(mv::plugin::ViewPluginFactory mv::plugin::PluginFactory)
         Q_OBJECT

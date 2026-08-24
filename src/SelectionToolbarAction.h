@@ -1,8 +1,6 @@
 #pragma once
 
 #include <actions/HorizontalToolbarAction.h>
-#include <actions/TriggerAction.h>
-#include <actions/DecimalAction.h>
 #include <actions/ToggleAction.h>
 #include <actions/HorizontalGroupAction.h>
 #include <actions/OptionAction.h>

@@ -12,7 +12,7 @@ class ImageViewerPlugin;
 /**
  * Global view settings action class
  *
- * Settings action class for mangaing global view settings
+ * Settings action class for managing global view settings
  *
  * @author Thomas Kroes
  */
