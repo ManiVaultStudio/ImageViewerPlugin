@@ -15,9 +15,6 @@ PROJECT(${PROJECT}
 # CMake Options
 # -----------------------------------------------------------------------------
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
-set(CMAKE_AUTOUIC ON)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /DWIN32 /EHsc /MP /permissive- /Zc:__cplusplus")
@@ -167,9 +164,11 @@ target_include_directories(${PROJECT} PRIVATE "${ManiVault_INCLUDE_DIR}")
 # -----------------------------------------------------------------------------
 target_compile_features(${PROJECT} PRIVATE cxx_std_20)
 
-if(MV_UNITY_BUILD)
-    set_target_properties(${PROJECT} PROPERTIES UNITY_BUILD ON)
-endif()
+set_target_properties(${PROJECT} PROPERTIES 
+    AUTOMOC ON
+    AUTORCC ON
+    UNITY_BUILD ${MV_UNITY_BUILD}
+)
 
 # -----------------------------------------------------------------------------
 # Target library linking
