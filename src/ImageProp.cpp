@@ -244,7 +244,7 @@ void ImageProp::setColorMapImage(const QImage& colorMapImage)
             auto& texture = getTextureByName("ColorMap");
 
             // Reset and assign the texture
-            texture.reset(new QOpenGLTexture(colorMapImage.mirrored()));
+            texture.reset(new QOpenGLTexture(colorMapImage.flipped(Qt::Vertical)));
 
             // Create the texture if not created
             if (!texture->isCreated())
