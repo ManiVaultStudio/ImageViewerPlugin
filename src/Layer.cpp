@@ -778,7 +778,7 @@ void Layer::publishSelection()
         auto& pixelSelectionTool = getImageViewerPlugin().getImageViewerWidget().getPixelSelectionTool();
 
         // Get current selection image
-        auto selectionImage = getPropByName<SelectionToolProp>("SelectionToolProp")->getSelectionImage().mirrored(true, true);
+        auto selectionImage = getPropByName<SelectionToolProp>("SelectionToolProp")->getSelectionImage().flipped(Qt::Horizontal | Qt::Vertical);
 
         const auto noComponents     = 4;
         const auto width            = static_cast<float>(getImageSize().width());
